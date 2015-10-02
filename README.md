@@ -34,9 +34,9 @@ The code is organized into the following PHP namespace organization, with mirror
     /src                % containing all snac sourcecode
         /snac           % ...
         /virtualhosts
-            /web
+            /www
             /rest
-            /server
+            /internal
     /test               % containing all unit tests (mirrors /src)
         /snac           % ...
     LICENSE             % code license
@@ -49,12 +49,12 @@ All endpoints to the server will share the same codebase, but with an index.php 
 
 ```
 www.snaccooperative.org
-    mapped to     /src/virtualhosts/web
+    mapped to     /src/virtualhosts/www
     instantiates  \snac\client\webui\WebUI
 api.snaccooperative.org
     mapped to     /src/virtualhosts/rest
-    instantiates  \snac\client\rest\RestAPI
+    instantiates  \snac\client\rest\Rest
 localhost:xxxx   
-    mapped to     /src/virtualhosts/server
+    mapped to     /src/virtualhosts/internal
     instantiates  \snac\server\Server
 ```
