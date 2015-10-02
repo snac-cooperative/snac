@@ -12,7 +12,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and 
  * the Regents of the University of California
  */
-namespace \snac\server;
+namespace snac\server;
 
 
 /**
@@ -24,10 +24,14 @@ namespace \snac\server;
  * @author Robbie Hott
  */
 
+class Server {
 
-public class Server {
 
-
+    /**
+     * Run Method
+     *
+     * Starts the server
+     */
     public function run() {
 
         return;

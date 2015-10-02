@@ -1,8 +1,8 @@
 <?php
 /*
- * Web Interface Class File
+ * Rest API Class File
  *
- * Contains the main web interface class that instantiates the web ui
+ * Contains the main REST interface class that instantiates the REST UI
  *
  * License:
  * 
@@ -12,20 +12,20 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and 
  * the Regents of the University of California
  */
-namespace snac\client\webui;
+namespace snac\client\rest;
 
 
 /**
- * WebUI Class
+ * Rest Class
  *
- * This is the main web user interface class.  It should be instantiated, then the run() 
- * method called to start the webui handler.
+ * This is the main REST user interface class.  It should be instantiated, then the run() 
+ * method called to start the rest api handler.
  *
  * @author Robbie Hott
  */
 
 
-class WebUI {
+class Rest {
 
 
     public function run() {
@@ -34,3 +34,4 @@ class WebUI {
     }
 
 }
+
