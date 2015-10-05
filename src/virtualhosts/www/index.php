@@ -19,9 +19,17 @@ spl_autoload_register("snac_autoload");
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
 
+// Use the GET variables as input
+$input = $_GET;
+
 // Instantiate and run the server
-$server = new WebUI();
+$server = new WebUI($input);
 $server->run();
+
+// Return the content type and output of the server
+foreach ($server->getResponseHeaders() as $header)
+	header($header);
+echo $server->getResponse();
 
 // Exit
 exit();

@@ -15,6 +15,7 @@
 namespace snac\client\webui;
 
 
+use snac\interfaces\ServerInterface;
 /**
  * WebUI Class
  *
@@ -25,12 +26,23 @@ namespace snac\client\webui;
  */
 
 
-class WebUI {
+class WebUI implements \snac\interfaces\ServerInterface {
 
+	public function __construct($input) {
+		return;
+	}
 
     public function run() {
 
         return;
+    }
+    
+    public function getResponse() {
+    	return "Successfully made response";
+    }
+    
+    public function getResponseHeaders() {
+    	return array();
     }
 
 }

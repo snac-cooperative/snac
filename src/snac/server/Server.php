@@ -24,7 +24,7 @@ namespace snac\server;
  * @author Robbie Hott
  */
 
-class Server {
+class Server implements \snac\interfaces\ServerInterface {
 	
 	/**
 	 * Input parameters from the querier
