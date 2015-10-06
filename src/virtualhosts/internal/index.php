@@ -20,33 +20,30 @@ spl_autoload_register("snac_autoload");
 use \snac\server\Server as Server;
 
 
+try {
+	// Get the request body for processing
+	$input = file_get_contents("php://input");
+	if ($input == null) {
+		throw new \snac\exceptions\SNACInputException("No input given to the server");
+	}
 
-// Get the request body for processing
-$input = file_get_contents("php://input");
-if ($input == null) {
-	// Header for JSON
+	// Parse the JSON input 
+	$jsonInput = json_decode($input,true);
+	if ($jsonInput == null) {
+		throw new \snac\exceptions\SNACInputException("Could not parse input");
+	}
+
+	// Instantiate and run the server
+	$server = new Server($jsonInput);
+	$server->run();
+
+	// Return the content type and output of the server
+	foreach ($server->getResponseHeaders() as $header)
+		header($header);
+	echo $server->getResponse();
+} catch (Exception $e) {
 	header("Content-Type: application/json");
-	echo "{\"error\": \"Unknown request.\"}\n";
-	exit(1);
+	die($e);
 }
-
-// Parse the JSON input 
-$jsonInput = json_decode($input,true);
-if ($jsonInput == null) {
-	// Header for JSON
-	header("Content-Type: application/json");
-	echo "{\"error\": \"Could not parse JSON request.\"}\n";
-	exit(1);
-}
-
-// Instantiate and run the server
-$server = new Server($jsonInput);
-$server->run();
-
-// Return the content type and output of the server
-foreach ($server->getResponseHeaders() as $header)
-	header($header);
-echo $server->getResponse();
-
 // Exit
 exit();

@@ -38,11 +38,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
     }
     
     public function getResponse() {
-    	return "Successfully made response";
+    	return "<html><body><h1>Successfully made response</h1></body></html>";
     }
     
     public function getResponseHeaders() {
-    	return array();
+    	return array("Content-Type: text/html");
     }
 
 }
