@@ -38,7 +38,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
 		return;
 	}
 
-    public function run() {		$connect = new ServerConnect();
+    public function run() {		
+    	
+    	$connect = new ServerConnect();
 		
 		$serverResponse = $connect->query($this->input);
 		
