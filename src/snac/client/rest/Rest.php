@@ -14,6 +14,7 @@
  */
 namespace snac\client\rest;
 
+use \snac\client\util\ServerConnect as ServerConnect;
 
 /**
  * Rest Class
@@ -23,8 +24,6 @@ namespace snac\client\rest;
  *
  * @author Robbie Hott
  */
-
-
 class Rest {
 
 
@@ -63,24 +62,11 @@ class Rest {
 	 */
 	public function run() {
 		
-		// server url
-		$url = "http://localhost:8081";
+		$connect = new ServerConnect();
 		
-		//Convert input to JSON
-		$data = json_encode($this->input);
+		$serverResponse = $connect->query($this->input);
 		
-		// Use CURL to send request to the internal server
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json',
-				'Content-Length: ' . strlen($data)));
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-		curl_setopt($ch, CURLOPT_POSTFIELDS,$data);
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		$response  = curl_exec($ch);
-		curl_close($ch);
-		
-		$this->response = $response;
+		$this->response = json_encode($serverResponse);
 		
 		return;
 	}

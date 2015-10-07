@@ -16,6 +16,8 @@ namespace snac\client\webui;
 
 
 use snac\interfaces\ServerInterface;
+use \snac\client\util\ServerConnect as ServerConnect;
+
 /**
  * WebUI Class
  *
@@ -24,21 +26,29 @@ use snac\interfaces\ServerInterface;
  *
  * @author Robbie Hott
  */
-
-
 class WebUI implements \snac\interfaces\ServerInterface {
-
+	
+	/**
+	 * Response text
+	 * @var string response
+	 */
+	private $response = "";
+	
 	public function __construct($input) {
 		return;
 	}
 
-    public function run() {
+    public function run() {		$connect = new ServerConnect();
+		
+		$serverResponse = $connect->query($this->input);
+		
+		$this->response = "<html><body><h1>Server Response</h1><pre>" . print_r($serverResponse, true) . "</pre></body></html>";
 
         return;
     }
     
     public function getResponse() {
-    	return "<html><body><h1>Successfully made response</h1></body></html>";
+    	return $this->response;
     }
     
     public function getResponseHeaders() {
