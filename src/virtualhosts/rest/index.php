@@ -23,7 +23,6 @@ use \snac\client\rest\Rest as Rest;
 try {
 	// Get the request body for processing
 	$input = file_get_contents("php://input");
-	$input = "{\"Hello\": \"Two\"}";
 	
 	if ($input == null) {
 		throw new \snac\exceptions\SNACInputException("No input given to the server");
