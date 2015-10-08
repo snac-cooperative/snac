@@ -66,7 +66,7 @@ class Rest {
 		
 		$serverResponse = $connect->query($this->input);
 		
-		$this->response = json_encode($serverResponse);
+		$this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
 		
 		return;
 	}

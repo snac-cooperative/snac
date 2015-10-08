@@ -82,7 +82,7 @@ class Server implements \snac\interfaces\ServerInterface {
     public function getResponse() {
     	// TODO: Fill in body
     	
-    	$response = array("Generic Response" => "Successfully Queried");
-    	return json_encode($response);
+    	$response = array("Generic Response" => "Successfully Queried", "Request" => $this->input);
+    	return json_encode($response, JSON_PRETTY_PRINT);
     }
 }

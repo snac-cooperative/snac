@@ -28,6 +28,9 @@ use \snac\client\util\ServerConnect as ServerConnect;
  */
 class WebUI implements \snac\interfaces\ServerInterface {
 	
+
+	private $input = null;
+
 	/**
 	 * Response text
 	 * @var string response
@@ -35,6 +38,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 	private $response = "";
 	
 	public function __construct($input) {
+		$this->input = $input;
 		return;
 	}
 
