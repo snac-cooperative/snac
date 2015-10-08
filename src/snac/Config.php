@@ -30,6 +30,6 @@ class Config {
 	/**
 	 * @var string URL of the back-end server
 	 */
-	public static $INTERNAL_SERVERURL = "http://localhost:8081";
+	public static $INTERNAL_SERVERURL = "http://localhost:82";
 	
 }

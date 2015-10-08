@@ -51,7 +51,7 @@ class Server implements \snac\interfaces\ServerInterface {
 	 */
 	public function __construct($input) {
 		$this->input = $input;
-		$this->timing = microtime();
+		$this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
 	}
 
     /**
@@ -91,7 +91,7 @@ class Server implements \snac\interfaces\ServerInterface {
     	$response = array(
     			"message" => "Successfully Queried", 
     			"request" => $this->input,
-    			"timing" => microtime() - $this->timing
+    			"timing" => round((microtime(true) - $this->timing) * 1000,2)
     	);
     	return json_encode($response, JSON_PRETTY_PRINT);
     }
