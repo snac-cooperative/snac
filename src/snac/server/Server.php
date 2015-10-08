@@ -39,6 +39,11 @@ class Server implements \snac\interfaces\ServerInterface {
 	private $responseHeaders = array("Content-Type: application/json");
 	
 	/**
+	 * @var int Timing information (ms)
+	 */
+	private $timing = 0;
+	
+	/**
 	 * Constructor
 	 * 
 	 * Requires the input to the server as an associative array
@@ -46,6 +51,7 @@ class Server implements \snac\interfaces\ServerInterface {
 	 */
 	public function __construct($input) {
 		$this->input = $input;
+		$this->timing = microtime();
 	}
 
     /**
@@ -82,7 +88,11 @@ class Server implements \snac\interfaces\ServerInterface {
     public function getResponse() {
     	// TODO: Fill in body
     	
-    	$response = array("Generic Response" => "Successfully Queried", "Request" => $this->input);
+    	$response = array(
+    			"message" => "Successfully Queried", 
+    			"request" => $this->input,
+    			"timing" => microtime() - $this->timing
+    	);
     	return json_encode($response, JSON_PRETTY_PRINT);
     }
 }
