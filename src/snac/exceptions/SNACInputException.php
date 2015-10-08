@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Input Exception Class 
  *
  *

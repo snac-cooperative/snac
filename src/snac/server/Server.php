@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Server Class File
  *
  * Contains the main server class that instantiates the main server

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Web Interface Class File
  *
  * Contains the main web interface class that instantiates the web ui

@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Base Exception Class 
  *
  * The master exception.  All SNAC Exceptions should extend this class

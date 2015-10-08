@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Connect Class Util file 
  *
  * Contains the connection class between the clients and server
@@ -25,11 +25,17 @@ namespace snac\client\util;
  */
 class ServerConnect {
 	
-	// server url
 	/**
 	 * @var string The URL for the backend server
 	 */
-	private $serverURL = "http://localhost:8081";
+	private $serverURL;
+	
+	/**
+	 * Default constructor
+	 */
+	public function __construct() {
+		$this->serverURL = \snac\Config::$INTERNAL_SERVERURL;
+	}
 	
 	/**
 	 * Perform Server Query

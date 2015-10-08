@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * Rest API Class File
  *
  * Contains the main REST interface class that instantiates the REST UI
