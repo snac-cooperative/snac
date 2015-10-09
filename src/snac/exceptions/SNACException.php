@@ -39,11 +39,14 @@ class SNACException extends \Exception {
 	 * @see Exception::__toString()
 	 */
 	public function __toString() {
-		$toPrint = "{ \"SNACError\": \"";
+		$toPrint = "{ \"error\" : ";
+		$toPrint .= "{ \"type\": \"";
 		$toPrint .= $this->type;
-		$toPrint .= "\", \"Message\" : \"";
+		$toPrint .= "\", \"message\" : \"";
 		$toPrint .= $this->message;
-		$toPrint .= "\"}";
+		$toPrint .= "\"},";
+		$toPrint .= "\"timing\" : " . round((microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) * 1000,2);
+		$toPrint .= "}";
 		
 		return $toPrint;
 	}
