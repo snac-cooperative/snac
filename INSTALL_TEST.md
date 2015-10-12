@@ -16,6 +16,6 @@ This tutorial gives the steps needed to install the SNAC server in a user's home
         public static $INTERNAL_SERVERURL = "http://localhost/~userid/snac/internal/";
 
 5. That's it! If configured correctly, you can access your local snac server, where `webserver.com` is the URL of your server, at:
-    a. Backend server at `http://webserver.com/~userid/snac/internal`
-    b. Web server at `http://webserver.com/~userid/snac/www`
-    c. REST server at `http://webserver.com/~userid/snac/rest` 
+    * Backend server at `http://webserver.com/~userid/snac/internal`
+    * Web server at `http://webserver.com/~userid/snac/www`
+    * REST server at `http://webserver.com/~userid/snac/rest` 
