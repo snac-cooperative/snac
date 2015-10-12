@@ -9,13 +9,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  * the Regents of the University of California
  */
- error_reporting(E_ALL);
-
-// SNAC Autoload function
-function snac_autoload ($pClassName) {
-    include("../../" . str_replace("\\", "/", $pClassName) . ".php");
-}
-spl_autoload_register("snac_autoload");
+include("../../autoload.php");
 
 // Namespace shortcuts
 use \snac\client\rest\Rest as Rest;
