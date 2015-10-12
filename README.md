@@ -2,6 +2,8 @@
 
 This repository contains the entirety of the SNAC Server code, including all components written by the UVA development team.
 
+The [Testing Install](INSTALL_TEST.md) file includes instructions for how to install the server locally for testing purposes.
+
 ## Codebase Organization
 
 The code is organized into the following PHP namespace organization, with mirroring directory structure.
@@ -43,7 +45,7 @@ The code is organized into the following PHP namespace organization, with mirror
     README.md           % this readme file
 ```
 
-### Web Application Instantiallization
+### Optional Web Application URL Mappings
 
 All endpoints to the server will share the same codebase, but with an index.php that includes the codebase and instantiates and executes the `run()` method of the appropriate class.  Then, for example, we may have:
 
