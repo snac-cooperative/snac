@@ -7,38 +7,37 @@
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
- * the Regents of the University of California
+ *            the Regents of the University of California
  */
-include("../../autoload.php");
+include ("../../autoload.php");
 
 // Namespace shortcuts
 use \snac\server\Server as Server;
 
-
 try {
-	// Get the request body for processing
-	$input = file_get_contents("php://input");
-	if ($input == null) {
-		throw new \snac\exceptions\SNACInputException("No input given to the server");
-	}
-
-	// Parse the JSON input 
-	$jsonInput = json_decode($input,true);
-	if ($jsonInput == null) {
-		throw new \snac\exceptions\SNACInputException("Could not parse input");
-	}
-
-	// Instantiate and run the server
-	$server = new Server($jsonInput);
-	$server->run();
-
-	// Return the content type and output of the server
-	foreach ($server->getResponseHeaders() as $header)
-		header($header);
-	echo $server->getResponse();
+    // Get the request body for processing
+    $input = file_get_contents("php://input");
+    if ($input == null) {
+        throw new \snac\exceptions\SNACInputException("No input given to the server");
+    }
+    
+    // Parse the JSON input
+    $jsonInput = json_decode($input, true);
+    if ($jsonInput == null) {
+        throw new \snac\exceptions\SNACInputException("Could not parse input");
+    }
+    
+    // Instantiate and run the server
+    $server = new Server($jsonInput);
+    $server->run();
+    
+    // Return the content type and output of the server
+    foreach ($server->getResponseHeaders() as $header)
+        header($header);
+    echo $server->getResponse();
 } catch (Exception $e) {
-	header("Content-Type: application/json");
-	die($e);
+    header("Content-Type: application/json");
+    die($e);
 }
 // Exit
 exit();
