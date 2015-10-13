@@ -32,4 +32,30 @@ class Config {
      * @var string URL of the back-end server
      */
     public static $INTERNAL_SERVERURL = "http://localhost:82";
+
+    /**
+     * Full databse connection information for the POSTGRES database
+     *
+     * @var array database connection information
+     */
+    public static $DATABASE = array (
+            "database" => "db_name",
+            "host" => "hostname.com",
+            "port" => 5432,
+            "user" => "user_id",
+            "password" => "full_password"
+    );
+
+    /**
+     *
+     * @var string location of database logfile
+     */
+    public static $DATABASE_LOG = "";
+
+    /**
+     *
+     * @var boolean whether or not the database is in testing mode. In testing mode,
+     *      database calls will only be logged and not committed to the database.
+     */
+    public static $DATABASE_TESTING = false;
 }
