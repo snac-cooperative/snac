@@ -1,12 +1,8 @@
 <?php
-
 /**
  * Web Interface Class File
  *
  * Contains the main web interface class that instantiates the web ui
- *
- * License:
- *
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -28,21 +24,40 @@ use \snac\client\util\ServerConnect as ServerConnect;
  */
 class WebUI implements \snac\interfaces\ServerInterface {
 
+    /**
+     * @var array $input input for the web server
+     */
     private $input = null;
 
     /**
      * Response text
      *
-     * @var string response
+     * @var string $response  generated response for the web server
      */
     private $response = "";
 
+    /**
+     * Constructor
+     * 
+     * Takes the input parameters to the web server as an associative array.  These will likely
+     * be the GET or POST variables from the user's web browser.
+     * 
+     * @param array $input web input as an associative array
+     */
     public function __construct($input) {
 
         $this->input = $input;
         return;
     }
 
+    /**
+     * Run Function
+     * 
+     * Runs the web server on the input and produces the response.
+     * 
+     * {@inheritDoc}
+     * @see \snac\interfaces\ServerInterface::run()
+     */
     public function run() {
 
         $connect = new ServerConnect();
@@ -55,11 +70,23 @@ class WebUI implements \snac\interfaces\ServerInterface {
         return;
     }
 
+    /**
+     * Returns the web server's response (as a string)
+     * 
+     * {@inheritDoc}
+     * @see \snac\interfaces\ServerInterface::getResponse()
+     */
     public function getResponse() {
 
         return $this->response;
     }
 
+    /**
+     * Returns the headers for the web server's response (as array of strings)
+     * 
+     * {@inheritDoc}
+     * @see \snac\interfaces\ServerInterface::getResponseHeaders()
+     */
     public function getResponseHeaders() {
 
         return array (

@@ -1,12 +1,8 @@
 <?php
-
 /**
  * Connect Class Util file
  *
  * Contains the connection class between the clients and server
- *
- * License:
- *
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause

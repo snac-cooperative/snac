@@ -1,12 +1,8 @@
 <?php
-
-/*
+/**
  * ServerInterface Interface File
  *
  * Contains the main server interface
- *
- * License:
- *
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
