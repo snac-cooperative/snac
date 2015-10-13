@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
-	<buildpathentry kind="src" path="src/snac/client/rest"/>
-	<buildpathentry kind="src" path="src/snac/client/webui"/>
-	<buildpathentry kind="src" path="src/snac/server"/>
-	<buildpathentry kind="src" path="src/virtualhosts/internal"/>
-	<buildpathentry kind="src" path="src/virtualhosts/rest"/>
-	<buildpathentry kind="src" path="src/virtualhosts/www"/>
-	<buildpathentry kind="src" path="src/snac/interfaces"/>
 	<buildpathentry kind="src" path="src/snac/exceptions"/>
-	<buildpathentry kind="src" path="src/snac/client/util"/>
 	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
+	<buildpathentry kind="src" path="src/virtualhosts/internal"/>
+	<buildpathentry kind="src" path="src/snac/interfaces"/>
+	<buildpathentry kind="src" path="src/virtualhosts/www"/>
+	<buildpathentry kind="src" path="src/snac/client/webui"/>
+	<buildpathentry kind="src" path="src/snac/client/util"/>
+	<buildpathentry kind="src" path="src/snac/server"/>
+	<buildpathentry kind="src" path="src/snac/client/rest"/>
+	<buildpathentry kind="src" path="src/virtualhosts/rest"/>
 </buildpath>
