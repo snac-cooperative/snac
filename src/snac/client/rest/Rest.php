@@ -25,7 +25,7 @@ use \snac\client\util\ServerConnect as ServerConnect;
  *
  * @author Robbie Hott
  */
-class Rest {
+class Rest implements \snac\interfaces\ServerInterface {
 
     /**
      * Input parameters from the querier
