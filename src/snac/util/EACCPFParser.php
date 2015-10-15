@@ -40,12 +40,69 @@ class EACCPFParser {
                             break;
                         case "maintenanceAgency":
                             $identity->setMaintenanceAgency((string) $control);
+                            $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "languageDeclaration":
+                            foreach ($this->getChildren($control) as $lang) {
+                                $latts = $this->getAttributes($lang);
+                                switch ($lang->getName()) {
+                                    case "language":
+                                        if (isset($latts["languageCode"])) {
+                                            $code = $latts["languageCode"];
+                                            unset($latts["languageCode"]);
+                                        }
+                                        $identity->setLanguage($code, (string)$lang);
+                                        $this->markUnknownAtt(array($node->getName(), $control->getName(), $lang->getName()), $latts);
+                                        break;
+                                    case "script":
+                                        if (isset($latts["scriptCode"])) {
+                                            $code = $latts["scriptCode"];
+                                            unset($latts["scriptCode"]);
+                                        }
+                                        $identity->setScript($code, (string)$lang);
+                                        $this->markUnknownAtt(array($node->getName(), $control->getName(), $lang->getName()), $latts);
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(array($node->getName(), $control->getName()), $lang);
+                                }
+                            }
+                            $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "maintenanceHistory":
+                            foreach ($this->getChildren($control) as $mevent) {
+                                $event = new \snac\data\MaintenanceEvent();
+                                foreach ($this->getChildren($mevent) as $mev) {
+                                    $eatts = $this->getAttributes($mev);
+                                    switch ($mev->getName()) {
+                                        case "eventType":
+                                            $event->setEventType((string) $mev);
+                                            break;
+                                        case "eventDateTime":
+                                            $event->setEventDateTime((string) $mev);
+                                            break;
+                                        case "agentType":
+                                            $event->setAgentType((string) $mev);
+                                            break;
+                                        case "agent":
+                                            $event->setAgent((string) $mev);
+                                            break;
+                                        case "eventDescription":
+                                            $event->setEventDescription((string) $mev);
+                                            break;
+                                        default:
+                                            $this->markUnknownTag(array($node->getName(), $control->getName(), $mevent->getName()), $mev);
+                                    }
+                                    $this->markUnknownAtt(array($node->getName(), $control->getName(),$mevent->getName(), $mev->getName()), $eatts);
+                                }
+                                $this->markUnknownAtt(array($node->getName(), $control->getName(),$mevent->getName()), $this->getAttributes($mevent));
+                            
+                                $identity->addMaintenanceEvent($event);
+                            }
+                            $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "conventionDeclaration":
+                            $identity->setConventionDeclaration((string) $control);                            
+                            $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "sources":
                             foreach ($this->getChildren($control) as $source) {
@@ -68,12 +125,32 @@ class EACCPFParser {
                                 $iatts = $this->getAttributes($ident);
                                 switch($ident->getName()) {
                                     case "entityType":
+                                        $identity->setEntityType((string)$ident);
                                         break;
                                     case "nameEntry":
+                                        $nameEntry = new \snac\data\NameEntry();
+                                        $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
+                                        unset($iatts["preferenceScore"]);
+                                        foreach ($this->getChildren($ident) as $npart) {
+                                            switch($npart->getName()){
+                                                case "part":
+                                                    $nameEntry->setOriginal((string)$npart);
+                                                    break;
+                                                case "alternativeForm":
+                                                case "authorizedForm":
+                                                    $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(array($node->getName(), $desc->getName(), $ident->getName()), array($npart));
+                                            }
+                                            $this->markUnknownAtt(array($node->getName(), $desc->getName(), $ident->getName(), $npart->getName()), $this->getAttributes($npart));
+                                        }
+                                        $identity->addNameEntry($nameEntry);
                                         break;
                                     default:
                                         $this->markUnknownTag(array($node->getName(), $desc->getName()), array($ident));
                                 }
+                                $this->markUnknownAtt(array($node->getName(), $desc->getName(), $ident->getName()), $iatts);
                             }
                             break;
                         case "description":
@@ -81,16 +158,52 @@ class EACCPFParser {
                                 $d2atts = $this->getAttributes($desc2);
                                 switch($desc2->getName()) {
                                     case "existDates":
+                                        //TODO
                                         break;
                                     case "place":
+                                        //TODO
                                         break;
                                     case "localDescription":
+                                        //TODO
                                         break;
                                     case "languageUsed":
+                                        foreach ($this->getChildren($desc2) as $lang) {
+                                            $latts = $this->getAttributes($lang);
+                                            switch ($lang->getName()) {
+                                                case "language":
+                                                    if (isset($latts["languageCode"])) {
+                                                        $code = $latts["languageCode"];
+                                                        unset($latts["languageCode"]);
+                                                    }
+                                                    $identity->setLanguageUsed($code, (string)$lang);
+                                                    $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName(), $lang->getName()), $latts);
+                                                    break;
+                                                case "script":
+                                                    if (isset($latts["scriptCode"])) {
+                                                        $code = $latts["scriptCode"];
+                                                        unset($latts["scriptCode"]);
+                                                    }
+                                                    $identity->setScript($code, (string)$lang);
+                                                    $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName(), $lang->getName()), $latts);
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(array($node->getName(), $desc->getName(), $desc2->getName()), $lang);
+                                            }
+                                        }
+                                        $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName()), $d2atts);
                                         break;
                                     case "occupation":
+                                        foreach ($this->getChildren($desc2) as $occ) {
+                                            $oatts = $this->getAttributes($occ);
+                                            if ($occ->getName() == "term")
+                                                $identity->addOccupation((string) $occ);
+                                            else 
+                                                $this->markUnknownTag(array($node->getName(), $desc->getName(), $desc2->getName()), array($occ));
+                                            $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc->getName(), $occ->getName()), $oatts);
+                                        }
                                         break;
                                     case "biogHist":
+                                        $identity->addBiogHist($desc2->asXML());
                                         break;
                                     default:
                                         $this->markUnknownTag(array($node->getName(), $desc->getName()), array($desc2));
@@ -102,8 +215,10 @@ class EACCPFParser {
                                 $ratts = $this->getAttributes($rel);
                                 switch($rel->getName()) {
                                     case "cpfRelation":
+                                        //TODO
                                         break;
                                     case "resourceRelation":
+                                        //TODO
                                         break;
                                     default:
                                         $this->markUnknownTag(array($node->getName(), $desc->getName()), array($rel));
@@ -114,16 +229,15 @@ class EACCPFParser {
                             $this->markUnknownTag(array($node->getName()), array($desc));
                     }
                 }
-                //print_r($node);
             } else {
                 $this->markUnknownTag(array(), array($node->getName()));
-                //print_r($node);
             }
         }
-     
-        echo "UNKNOWNS ";
-        print_r($this->unknowns);
-        return;
+        return $identity;
+    }
+    
+    public function getMissing() {
+        return $this->unknowns;
     }
     
     
