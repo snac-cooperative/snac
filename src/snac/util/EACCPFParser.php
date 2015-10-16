@@ -1,18 +1,58 @@
 <?php
+/**
+ * EAC-CPF Parser File
+ *
+ * Contains the configuration options for this instance of the server
+ *
+ * License:
+ *
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+namespace snac\util;
 
-
+/**
+ * EAC-CPF Parser
+ * 
+ * This class provides the utility to parser EAC-CPF XML files into PHP Identity constellations.
+ * After parsing, it returns the \snac\data\Constellation object and provides a method to
+ * access any tags or attributes from the file (including their values) that were not
+ * understood by the parser.
+ * 
+ * @author Robbie Hott
+ *
+ */
 class EACCPFParser {
     
+    /**
+     * @var string[] The list of namespaces in the document
+     */
     private $namespaces;
     
-    private $xml;
-    
+    /**
+     * @var string[] The list of unknown elements and their values
+     */
     private $unknowns;
     
+    /**
+     * Parse a file into an identity constellation.
+     * 
+     * @param string $filename  Filename of the file to parse
+     * @return \snac\data\Constellation The resulting constellation
+     */
     public function parse_file($filename) {
         return $this->parse(file_get_contents($filename));
     }
     
+    /**
+     * Parse a string containing EAC-CPF XML into an identity constellation.
+     * 
+     * @param string $xmlText XML text to parse
+     * @return \snac\data\Constellation The resulting constellation
+     */
     public function parse($xmlText) {
         $xml = simplexml_load_string($xmlText);
         
@@ -236,11 +276,28 @@ class EACCPFParser {
         return $identity;
     }
     
+    /**
+     * Get the tags and attributes that were not understood by this parser.
+     * The resulting strings are 
+     * <code>
+     * full/path/to/tag :: value
+     * full/path/to/@att :: value
+     * </code>
+     * 
+     * @return string[] List of tags and attributes and their values
+     */
     public function getMissing() {
         return $this->unknowns;
     }
     
     
+    /**
+     * Get the attributes for a given SimpleXMLElement, ignoring all namespaces.  This is a way
+     * to get around the need to query for each namespace separately
+     * 
+     * @param SimpleXMLElement $element Element to query for attributes
+     * @return string[] Attributes and values, attName => value
+     */
     private function getAttributes($element) {
         $att = array();
         
@@ -254,6 +311,13 @@ class EACCPFParser {
         return $att;
     }
     
+    /**
+     * Get the children for a given SimpleXMLElement, ignoring all namespaces. This is a way to 
+     * get around the need to query for each namespace separately.
+     * 
+     * @param SimpleXMLElement $element Element to query for children
+     * @return SimpleXMLElement[] array of children elements from any namespace
+     */
     private function getChildren($element) {
         $children = array();
         
@@ -270,6 +334,14 @@ class EACCPFParser {
         return $children;
     }
     
+    /**
+     * Mark a tag or element as unknown to this parser.  
+     * Adds the given information to the list of missing data.
+     * 
+     * @param string[] $xpath Ordered array of the path names down to the current element.
+     * @param string[] $missing Array of missing elements (tag or att) as "name"=>"value" pairs.
+     * @param boolean $isTag Flag to determine if the $missing is a list of tags or attributes.
+     */
     private function markUnknowns($xpath, $missing, $isTag) {
         $path = implode("/", $xpath);
         $path .= "/";
@@ -283,10 +355,22 @@ class EACCPFParser {
         }
     }
     
+    /**
+     * Mark an unknown attribute from the given path and element
+     * 
+     * @param string[] $xpath Ordered array of the path names down to just before the current element.
+     * @param string[] $missing Array of missing tags as "name"=>"value" pairs.
+     */
     private function markUnknownAtt($xpath, $missing) {
         $this->markUnknowns($xpath, $missing, false);
     }
     
+    /**
+     * Mark an unknown tag from the given path and element
+     * 
+     * @param string[] $xpath Ordered array of the path names down to the current tag.
+     * @param string[] $missing Array of missing attributes as "name"=>"value" pairs.
+     */
     private function markUnknownTag($xpath, $missing) {
         foreach ($missing as $m) {
             $this->markUnknowns($xpath, array($m->getName() => (string)$m), true);
