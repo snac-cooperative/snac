@@ -91,6 +91,12 @@ class Constellation {
      * @var string[] BiogHist entries for this constellation (in XML strings)
      */
     private $biogHists = null;
+    
+    /**
+     * 
+     * @var \snac\data\SNACDate Exist dates for the entity
+     */
+    private $existDates = null;
 
     /**
      * Constructor
@@ -264,5 +270,41 @@ class Constellation {
      */
     public function setScriptUsed($code, $value) {
         // TODO
+    }
+    
+    /**
+     * Add the subject to this Constellation
+     * 
+     * @param string $subject Subject to add.
+     */
+    public function addSubject($subject) {
+        // TODO
+    }
+    
+    /**
+     * Set the nationality of this Constellation
+     * 
+     * @param string $nationality Nationality
+     */
+    public function setNationality($nationality) {
+        // TODO
+    }
+    
+    /**
+     * Set the gender of this Constellation
+     * 
+     * @param string $gender Gender to set
+     */
+    public function setGender($gender) {
+        // TODO
+    }
+    
+    /**
+     * Set the exist dates for this Constellation
+     * 
+     * @param \snac\data\SNACDate $dates Date object
+     */
+    public function setExistDates($dates) {
+       $this->existDates = $dates;
     }
 }

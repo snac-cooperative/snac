@@ -79,7 +79,11 @@ class EACCPFParser {
                             $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "maintenanceAgency":
-                            $identity->setMaintenanceAgency((string) $control);
+                            $agencyInfo = $this->getChildren($control);
+                            for ($i = 1; $i < count($agencyInfo); $i++)
+                                $this->markUnknownTag(array($node->getName, $control->getName()), array($agencyInfo[$i]));
+                            $identity->setMaintenanceAgency((string) $agencyInfo[0]);
+                            $this->markUnknownAtt(array($node->getName(), $control->getName(), $agencyInfo[0]->getName()), $this->getAttributes($agencyInfo[0]));
                             $this->markUnknownAtt(array($node->getName(), $control->getName()), $catts);
                             break;
                         case "languageDeclaration":
@@ -198,13 +202,72 @@ class EACCPFParser {
                                 $d2atts = $this->getAttributes($desc2);
                                 switch($desc2->getName()) {
                                     case "existDates":
-                                        //TODO
+                                        foreach ($this->getChildren($desc2) as $dates) {
+                                            $date = new \snac\data\SNACDate();
+                                            if ($dates->getName() == "dateRange") {
+                                                // Handle the date range
+                                                $date->setRange(true);
+                                                foreach ($this->getChildren($dates) as $dateTag) {
+                                                    $dateAtts = $this->getAttributes($dateTag);
+                                                    switch ($dateTag->getName()) {
+                                                        case "fromDate":
+                                                            if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                                                                $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
+                                                                unset($dateAtts["standardDate"]);
+                                                                unset($dateAtts["localType"]);
+                                                                $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName(), $dates->getName(), $dateTag->getName()), $dateAtts);
+                                                            }
+                                                            break;
+                                                        case "toDate":
+                                                            if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                                                                $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
+                                                                unset($dateAtts["standardDate"]);
+                                                                unset($dateAtts["localType"]);
+                                                                $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName(), $dates->getName(), $dateTag->getName()), $dateAtts);
+                                                            }
+                                                            break;
+                                                        default:
+                                                            $this->markUnknownTag(array($node->getName(), $desc->getName(), $desc2->getName(), $dates->getName()), array($dateTag));
+                                                    }
+                                                }
+                                                $identity->setExistDates($date);
+                                            } elseif ($dates->getName() == "date") {
+                                                // Handle the single date that appears
+                                                $date->setRange(false);
+                                                $dateAtts = $this->getAttributes($dates);
+                                                $date->setDate((string) $dates, $dateAtts["standardDate"], $dateAtts["localType"]);
+                                                unset($dateAtts["standardDate"]);
+                                                unset($dateAtts["localType"]);
+                                                $identity->setExistDates($date);
+                                                $this->markUnknownAtt(array($node->getName(), $desc->getName(), $desc2->getName(), $dates->getName()), $dateAtts);
+                                            } else {
+                                                $this->markUnknownTag(array($node->getName(), $desc->getName(), $desc2->getName()), array($dates));
+                                            }
+                                        }
                                         break;
                                     case "place":
                                         //TODO
                                         break;
                                     case "localDescription":
-                                        //TODO
+                                        $subTags = $this->getChildren($desc2);
+                                        $subTag = $subTags[0];
+                                        for( $i = 1; $i < count($subTags); $i++) {
+                                                $this->markUnknownTag(array($node->getName(), $desc->getName(), $desc2->getName()), array($subTags[$i]));
+                                        }
+                                        switch($d2atts["localType"]) {
+                                            // Each of these is in a sub element
+                                            case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
+                                                $identity->addSubject((string) $subTag);
+                                                break;
+                                            case "http://viaf.org/viaf/terms#nationalityOfEntity":
+                                                $identity->setNationality((string) $subTag);
+                                                break;
+                                            case "gender":
+                                                $identity->setGender((string) $subTag);
+                                                break;
+                                            default:
+                                                $this->markUnknownTag(array($node->getName(), $desc->getName()), array($desc2));
+                                        }
                                         break;
                                     case "languageUsed":
                                         foreach ($this->getChildren($desc2) as $lang) {
