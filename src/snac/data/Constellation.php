@@ -82,7 +82,7 @@ class Constellation {
 
     /**
      *
-     * @var string[] List of occupations
+     * @var string[][] List of occupations with their vocabulary sources (if available)
      */
     private $occupations = null;
 
@@ -240,10 +240,11 @@ class Constellation {
      * Add occupation
      * 
      * @param string $occupation Occupation string to add
+     * @param string $vocabSource Vocabulary source if available, else null
      */
-    public function addOccupation($occupation) {
+    public function addOccupation($occupation, $vocabSource) {
 
-        array_push($this->occupations, $occupation);
+        array_push($this->occupations, array("term" => $occupation, "vocabSource" => $vocabSource));
     }
 
     /**

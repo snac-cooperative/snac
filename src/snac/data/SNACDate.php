@@ -44,6 +44,11 @@ class SNACDate {
      * @var boolean If the from date is BC
      */
     private $fromBC;
+    
+    /**
+     * $var string[] From date range
+     */
+    private $fromRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
      * @var string End date (if range)
@@ -66,10 +71,20 @@ class SNACDate {
     private $toBC;
 
     /**
+     * $var string[] To date range
+     */
+    private $toRange = array ("notBefore" => null, "notAfter" => null);
+
+    /**
      * @var boolean If this SNACDate object contains a range or a single date
      */
     private $isRange;
 
+    /**
+     * @var string Note about this date
+     */
+    private $note;
+    
     /**
      * Set whether or not this is a date range.
      * 
@@ -93,6 +108,17 @@ class SNACDate {
         $this->fromDateOriginal = $original;
         $this->fromType = $type;
     }
+    
+    /**
+     * Set the fuzzy range around the from date
+     * 
+     * @param string $notBefore Beginning of fuzzy range
+     * @param string $notAfter End of fuzzy range
+     */
+    public function setFromDateRange($notBefore, $notAfter) {
+        $this->fromRange["notBefore"] = $notBefore;
+        $this->fromRange["notAfter"] = $notAfter;
+    }
 
     /**
      * Set the to date in this object
@@ -109,6 +135,17 @@ class SNACDate {
     }
 
     /**
+     * Set the fuzzy range around the to date
+     * 
+     * @param string $notBefore Beginning of fuzzy range
+     * @param string $notAfter End of fuzzy range
+     */
+    public function setToDateRange($notBefore, $notAfter) {
+        $this->toRange["notBefore"] = $notBefore;
+        $this->toRange["notAfter"] = $notAfter;
+    }
+
+    /**
      * Set the single date in this object
      * 
      * @param string $original Original date
@@ -120,7 +157,26 @@ class SNACDate {
         $this->setFromDate($original, $standardDate, $type);
         $this->isRange = false;
     }
+    
+    /**
+     * Set the fuzzy range around the date
+     * 
+     * @param string $notBefore Beginning of fuzzy range
+     * @param string $notAfter End of fuzzy range
+     */
+    public function setDateRange($notBefore, $notAfter) {
+        $this->setFromDateRange($notBefore, $notAfter);
+    }
 
+    /**
+     * Set note about this date
+     * 
+     * @param string $note Note about this date
+     */
+    public function setNote($note) {
+        $this->note = $note;
+    }
+    
     /**
      * Parse the given standard date string and determine if the date is BC and strip the date out if possible
      * 
