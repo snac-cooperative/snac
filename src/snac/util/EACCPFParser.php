@@ -2,7 +2,7 @@
 /**
  * EAC-CPF Parser File
  *
- * Contains the configuration options for this instance of the server
+ * Contains the parser for EAC-CPF files into PHP Identity Constellation objects.
  *
  * License:
  *
@@ -318,10 +318,48 @@ class EACCPFParser {
                                 $ratts = $this->getAttributes($rel);
                                 switch($rel->getName()) {
                                     case "cpfRelation":
-                                        //TODO
+                                        $relation = new \snac\data\ConstellationRelation();
+                                        $relation->setType($ratts["arcrole"]);
+                                        $relation->setTargetArkID($ratts['href']);
+                                        $relation->setTargetType($ratts['role']);
+                                        $relation->setAltType($ratts["type"]);
+                                        $children = $this->getChildren($rel);
+                                        $relation->setContent((string) $children[0]);
+                                        unset($ratts["arcrole"]);
+                                        unset($ratts["href"]);
+                                        unset($ratts["role"]);
+                                        unset($ratts["type"]);
+                                        for ($i = 1; $i < count($children); $i++) {
+                                            $this->markUnknownTag(array($node->getName(), $desc->getName(), $rel->getName()), array($children[$i]));
+                                        }
+                                        $this->markUnknownAtt(array($node->getName(), $desc->getName(), $rel->getName()), $ratts);
+                                        $identity->addRelation($relation);
                                         break;
                                     case "resourceRelation":
-                                        //TODO
+                                        $relation = new \snac\data\ResourceRelation();
+                                        $relation->setDocumentType($ratts["role"]);
+                                        $relation->setLink($ratts['href']);
+                                        $relation->setLinkType($ratts['type']);
+                                        $relation->setRole($ratts['arcrole']);
+                                        foreach ($this->getChildren($rel) as $relItem) {
+                                            switch($relItem->getName()) {
+                                                case "relationEntry":
+                                                    $relation->setContent((string) $relItem);
+                                                    $this->markUnknownAtt(array($node->getName(), $desc->getName(), $rel->getName(), $relItem->getName()), $this->getAttributes($relItem));
+                                                    break;
+                                                case "objectXMLWrap":
+                                                    $relation->setSource($relItem->asXML());
+                                                    $this->markUnknownAtt(array($node->getName(), $desc->getName(), $rel->getName(), $relItem->getName()), $this->getAttributes($relItem));
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $relation->setNote($relItem->asXML());
+                                                    $this->markUnknownAtt(array($node->getName(), $desc->getName(), $rel->getName(), $relItem->getName()), $this->getAttributes($relItem));
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(array($node->getName(), $desc->getName(), $rel->getName()), array($relItem));
+                                            }
+                                        }
+                                        $identity->addResourceRelation($relation);
                                         break;
                                     default:
                                         $this->markUnknownTag(array($node->getName(), $desc->getName()), array($rel));

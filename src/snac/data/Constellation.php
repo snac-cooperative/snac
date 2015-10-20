@@ -97,6 +97,18 @@ class Constellation {
      * @var \snac\data\SNACDate Exist dates for the entity
      */
     private $existDates = null;
+    
+    /**
+     * 
+     * @var \snac\data\ConstellationRelation[] Constellation relations
+     */
+    private $relations = null;
+    
+    /**
+     * 
+     * @var \snac\data\ResourceRelation[] Resource relations
+     */
+    private $resourceRelations = null;
 
     /**
      * Constructor
@@ -111,6 +123,8 @@ class Constellation {
         $this->nameEntries = array ();
         $this->biogHists = array ();
         $this->occupations = array ();
+        $this->relations = array ();
+        $this->resourceRelations = array ();
     }
 
     /**
@@ -306,5 +320,23 @@ class Constellation {
      */
     public function setExistDates($dates) {
        $this->existDates = $dates;
+    }
+    
+    /**
+     * Add relation to another constellation
+     * 
+     * @param \snac\data\ConstellationRelation $relation  Relation object defining the relationship
+     */
+    public function addRelation($relation) {
+        array_push($this->relations, $relation);
+    }
+    
+    /**
+     * Add relation to a resource
+     * 
+     * @param \snac\data\ResourceRelation $relation Relation object defining the relationship
+     */
+    public function addResourceRelation($relation) {
+        array_push($this->resourceRelations, $relation);
     }
 }
