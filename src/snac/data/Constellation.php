@@ -324,6 +324,15 @@ class Constellation {
     }
     
     /**
+     * Set the note on the exist dates for this Constellation
+     * 
+     * @param string $note The descriptive note for the dates
+     */
+    public function setExistDatesNote($note) {
+        $this->existDates->setNote($note);
+    }
+    
+    /**
      * Add relation to another constellation
      * 
      * @param \snac\data\ConstellationRelation $relation  Relation object defining the relationship

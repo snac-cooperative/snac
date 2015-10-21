@@ -65,12 +65,23 @@ class ConstellationRelation {
      * @var string Alternate type
      */
     private $altType = null;
+    
+    /**
+     * 
+     * @var string CPF Relation Type
+     */
+    private $cpfRelationType = null;
 
     /**
      *
      * @var string Content of the relation
      */
     private $content = null;
+    
+    /**
+     * @var \snac\data\SNACDate Dates of thie relationship
+     */
+    private $dates = null;
 
     /**
      * Set the target ARK ID
@@ -100,6 +111,15 @@ class ConstellationRelation {
 
         $this->type = $type;
     }
+    
+    /**
+     * Set the CPF Relation type
+     * 
+     * @param string $type CPF Relation Type
+     */
+    public function setCPFRelationType($type) {
+        $this->cpfRelationType = $type;
+    }
 
     /**
      * Set the relation's alternate type
@@ -119,5 +139,15 @@ class ConstellationRelation {
     public function setContent($content) {
 
         $this->content = $content;
+    }
+
+
+    /**
+     * Set the dates of this relation
+     * 
+     * @param \snac\data\SNACDate $date The date or range of this relation
+     */
+    public function setDates($date) {
+        $this->dates = $date;
     }
 }

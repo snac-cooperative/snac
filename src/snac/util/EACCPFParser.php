@@ -306,127 +306,34 @@ class EACCPFParser {
                                 switch ($desc2->getName()) {
                                     case "existDates":
                                         foreach ($this->getChildren($desc2) as $dates) {
-                                            $date = new \snac\data\SNACDate();
-                                            if ($dates->getName() == "dateRange") {
-                                                // Handle the date range
-                                                $date->setRange(true);
-                                                foreach ($this->getChildren($dates) as $dateTag) {
-                                                    $dateAtts = $this->getAttributes($dateTag);
-                                                    switch ($dateTag->getName()) {
-                                                        case "fromDate":
-                                                            if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                                                                $date->setFromDate((string) $dateTag, 
-                                                                        $dateAtts["standardDate"], 
-                                                                        $dateAtts["localType"]);
-                                                                $notBefore = null;
-                                                                $notAfter = null;
-                                                                if (isset($dateAtts["notBefore"]))
-                                                                    $notBefore = $dateAtts["notBefore"];
-                                                                if (isset($dateAtts["notAfter"]))
-                                                                    $notAfter = $dateAtts["notAfter"];
-                                                                $date->setFromDateRange($notBefore, $notAfter);
-                                                                
-                                                                unset($dateAtts["notBefore"]);
-                                                                unset($dateAtts["notAfter"]);
-                                                                unset($dateAtts["standardDate"]);
-                                                                unset($dateAtts["localType"]);
-                                                                $this->markUnknownAtt(
-                                                                        array (
-                                                                                $node->getName(),
-                                                                                $desc->getName(),
-                                                                                $desc2->getName(),
-                                                                                $dates->getName(),
-                                                                                $dateTag->getName()
-                                                                        ), $dateAtts);
-                                                            }
-                                                            break;
-                                                        case "toDate":
-                                                            if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                                                                $date->setToDate((string) $dateTag, 
-                                                                        $dateAtts["standardDate"], 
-                                                                        $dateAtts["localType"]);
-                                                                $notBefore = null;
-                                                                $notAfter = null;
-                                                                if (isset($dateAtts["notBefore"]))
-                                                                    $notBefore = $dateAtts["notBefore"];
-                                                                if (isset($dateAtts["notAfter"]))
-                                                                    $notAfter = $dateAtts["notAfter"];
-                                                                $date->setToDateRange($notBefore, $notAfter);
-                                                                
-                                                                unset($dateAtts["notBefore"]);
-                                                                unset($dateAtts["notAfter"]);
-                                                                unset($dateAtts["standardDate"]);
-                                                                unset($dateAtts["localType"]);
-                                                                $this->markUnknownAtt(
-                                                                        array (
-                                                                                $node->getName(),
-                                                                                $desc->getName(),
-                                                                                $desc2->getName(),
-                                                                                $dates->getName(),
-                                                                                $dateTag->getName()
-                                                                        ), $dateAtts);
-                                                            }
-                                                            break;
-                                                        default:
-                                                            $this->markUnknownTag(
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $desc2->getName(),
-                                                                            $dates->getName()
-                                                                    ), 
-                                                                    array (
-                                                                            $dateTag
-                                                                    ));
-                                                    }
-                                                }
-                                                $identity->setExistDates($date);
-                                            } elseif ($dates->getName() == "date") {
-                                                // Handle the single date that appears
-                                                $date->setRange(false);
-                                                $dateAtts = $this->getAttributes($dates);
-                                                $date->setDate((string) $dates, $dateAtts["standardDate"], 
-                                                        $dateAtts["localType"]);
-                                                $notBefore = null;
-                                                $notAfter = null;
-                                                if (isset($dateAtts["notBefore"]))
-                                                    $notBefore = $dateAtts["notBefore"];
-                                                if (isset($dateAtts["notAfter"]))
-                                                    $notAfter = $dateAtts["notAfter"];
-                                                $date->setDateRange($notBefore, $notAfter);
-                                                
-                                                unset($dateAtts["notBefore"]);
-                                                unset($dateAtts["notAfter"]);
-                                                unset($dateAtts["standardDate"]);
-                                                unset($dateAtts["localType"]);
-                                                $identity->setExistDates($date);
-                                                $this->markUnknownAtt(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName(),
-                                                                $desc2->getName(),
-                                                                $dates->getName()
-                                                        ), $dateAtts);
-                                            } elseif ($dates->getName() == "descriptiveNote") {
-                                                $date->setNote((string) $dates);
-                                                $this->markUnknownAtt(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName(),
-                                                                $desc2->getName(),
-                                                                $dates->getName()
-                                                        ), $this->getAttributes($dates));
-                                            } else {
-                                                $this->markUnknownTag(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName(),
-                                                                $desc2->getName()
-                                                        ), 
-                                                        array (
-                                                                $dates
-                                                        ));
+                                            switch($dates->getName()) {
+                                                case "dateRange":
+                                                case "date":
+                                                    $date = $this->parseDate($dates, array($node->getName(). $desc->getName(), $desc2->getName()));
+                                                    $identity->setExistDates($date);
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $identity->setExistDatesNote((string) $dates);
+                                                    $this->markUnknownAtt(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName(),
+                                                                    $dates->getName()
+                                                            ), $this->getAttributes($dates));
+                                                    break;
+                                                default;
+                                                    $this->markUnknownTag(
+                                                                array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ), 
+                                                            array (
+                                                                    $dates
+                                                            ));
                                             }
+                                            
                                         }
                                         break;
                                     case "place":
@@ -569,22 +476,34 @@ class EACCPFParser {
                                         $relation->setTargetArkID($ratts['href']);
                                         $relation->setTargetType($ratts['role']);
                                         $relation->setAltType($ratts["type"]);
-                                        $children = $this->getChildren($rel);
-                                        $relation->setContent((string) $children[0]);
+                                        $relation->setCPFRelationType($ratts['cpfRelationType']);
                                         unset($ratts["arcrole"]);
                                         unset($ratts["href"]);
                                         unset($ratts["role"]);
                                         unset($ratts["type"]);
-                                        for($i = 1; $i < count($children); $i++) {
-                                            $this->markUnknownTag(
-                                                    array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $rel->getName()
-                                                    ), 
-                                                    array (
-                                                            $children[$i]
-                                                    ));
+                                        unset($ratts["cpfRelationType"]);
+                                        $children = $this->getChildren($rel);
+                                        $relation->setContent((string) $children[0]);
+                                        foreach ($children as $child){ 
+                                            switch($child->getName()) {
+                                                case "relationEntry":
+                                                    $relation->setContent((string) $child);
+                                                    break;
+                                                case "date":
+                                                case "dateRange":
+                                                    $relation->setDates($this->parseDate($child, array($node->getName(), $desc->getName(), $rel->getName())));
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $rel->getName()
+                                                            ), 
+                                                            array (
+                                                                    $child
+                                                            ));
+                                            }
                                         }
                                         $this->markUnknownAtt(
                                                 array (
@@ -788,5 +707,89 @@ class EACCPFParser {
                     $m->getName()
             )), $this->getAttributes($m), false);
         }
+    }
+
+    private function parseDate($dateElement, $xpath) {
+        $date = new \snac\data\SNACDate();
+        if ($dateElement->getName() == "dateRange") {
+            // Handle the date range
+            $date->setRange(true);
+            foreach ($this->getChildren($dateElement) as $dateTag) {
+                $dateAtts = $this->getAttributes($dateTag);
+                switch ($dateTag->getName()) {
+                    case "fromDate":
+                        if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                            $date->setFromDate((string) $dateTag, 
+                                    $dateAtts["standardDate"], 
+                                    $dateAtts["localType"]);
+                            $notBefore = null;
+                            $notAfter = null;
+                            if (isset($dateAtts["notBefore"]))
+                                $notBefore = $dateAtts["notBefore"];
+                            if (isset($dateAtts["notAfter"]))
+                                $notAfter = $dateAtts["notAfter"];
+                            $date->setFromDateRange($notBefore, $notAfter);
+                            
+                            unset($dateAtts["notBefore"]);
+                            unset($dateAtts["notAfter"]);
+                            unset($dateAtts["standardDate"]);
+                            unset($dateAtts["localType"]);
+                            $this->markUnknownAtt( array_merge($xpath, array($dateElement->getName(), $dateTag->getName()))
+                                    , $dateAtts);
+                        }
+                        break;
+                    case "toDate":
+                        if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                            $date->setToDate((string) $dateTag, 
+                                    $dateAtts["standardDate"], 
+                                    $dateAtts["localType"]);
+                            $notBefore = null;
+                            $notAfter = null;
+                            if (isset($dateAtts["notBefore"]))
+                                $notBefore = $dateAtts["notBefore"];
+                            if (isset($dateAtts["notAfter"]))
+                                $notAfter = $dateAtts["notAfter"];
+                            $date->setToDateRange($notBefore, $notAfter);
+                            
+                            unset($dateAtts["notBefore"]);
+                            unset($dateAtts["notAfter"]);
+                            unset($dateAtts["standardDate"]);
+                            unset($dateAtts["localType"]);
+                            $this->markUnknownAtt( array_merge($xpath, array($dateElement->getName(), $dateTag->getName()))
+                                    , $dateAtts);
+                        }
+                        break;
+                    default:
+                        $this->markUnknownTag( array_merge($xpath, array($dateElement->getName()))
+                                , 
+                                array (
+                                        $dateTag
+                                ));
+                }
+            }
+        } elseif ($dateElement->getName() == "date") {
+            // Handle the single date that appears
+            $date->setRange(false);
+            $dateAtts = $this->getAttributes($dateElement);
+            $date->setDate((string) $dateElement, $dateAtts["standardDate"], 
+                    $dateAtts["localType"]);
+            $notBefore = null;
+            $notAfter = null;
+            if (isset($dateAtts["notBefore"]))
+                $notBefore = $dateAtts["notBefore"];
+            if (isset($dateAtts["notAfter"]))
+                $notAfter = $dateAtts["notAfter"];
+            $date->setDateRange($notBefore, $notAfter);
+            
+            unset($dateAtts["notBefore"]);
+            unset($dateAtts["notAfter"]);
+            unset($dateAtts["standardDate"]);
+            unset($dateAtts["localType"]);
+            $this->markUnknownAtt(
+                    array_merge($xpath, array($dateElement->getName()))
+                          , $dateAtts);
+
+        }
+        return $date;
     }
 }
