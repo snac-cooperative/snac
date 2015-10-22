@@ -36,6 +36,12 @@ class ResourceRelation {
      * @var string Link type
      */
     private $linkType = null;
+    
+    /**
+     * @var string Relation entry type
+     * 
+     */
+    private $entryType = null;
 
     /**
      *
@@ -135,5 +141,14 @@ class ResourceRelation {
     public function setNote($note) {
 
         $this->note = $note;
+    }
+    
+    /**
+     * Set the relation entry type
+     * 
+     * @param string $type Relation entry type
+     */
+    public function setRelationEntryType($type) {
+        $this->entryType = $type;
     }
 }

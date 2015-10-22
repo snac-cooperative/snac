@@ -306,11 +306,41 @@ class EACCPFParser {
                                 switch ($desc2->getName()) {
                                     case "existDates":
                                         foreach ($this->getChildren($desc2) as $dates) {
-                                            switch($dates->getName()) {
+                                            switch ($dates->getName()) {
+                                                case "dateSet":
+                                                    foreach ($this->getChildren($dates) as $dateEntry) {
+                                                        $dateEntryName = $dateEntry->getName();
+                                                        if ($dateEntryName == "dateRange" || $dateEntryName == "date") {
+                                                            $date = $this->parseDate($dateEntry, 
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $desc2->getName(),
+                                                                            $dates->getName()
+                                                                    ));
+                                                            $identity->addExistDates($date);
+                                                        } else {
+                                                            $this->markUnknownTag(
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $desc2->getName(),
+                                                                            $dates->getName()
+                                                                    ), 
+                                                                    array (
+                                                                            $dateEntry
+                                                                    ));
+                                                        }
+                                                    }
+                                                    break;
                                                 case "dateRange":
                                                 case "date":
-                                                    $date = $this->parseDate($dates, array($node->getName(). $desc->getName(), $desc2->getName()));
-                                                    $identity->setExistDates($date);
+                                                    $date = $this->parseDate($dates, 
+                                                            array (
+                                                                    $node->getName() . $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ));
+                                                    $identity->addExistDates($date);
                                                     break;
                                                 case "descriptiveNote":
                                                     $identity->setExistDatesNote((string) $dates);
@@ -322,9 +352,9 @@ class EACCPFParser {
                                                                     $dates->getName()
                                                             ), $this->getAttributes($dates));
                                                     break;
-                                                default;
+                                                default:
                                                     $this->markUnknownTag(
-                                                                array (
+                                                            array (
                                                                     $node->getName(),
                                                                     $desc->getName(),
                                                                     $desc2->getName()
@@ -333,11 +363,75 @@ class EACCPFParser {
                                                                     $dates
                                                             ));
                                             }
-                                            
                                         }
                                         break;
                                     case "place":
-                                        // TODO
+                                        $place = new \snac\data\Place();
+                                        $platts = $this->getAttributes($desc2);
+                                        if (isset($platts["localType"])) {
+                                            $place->setType($platts["localType"]);
+                                            unset($platts["localType"]);
+                                        }
+                                        foreach ($this->getChildren($desc2) as $placePart) {
+                                            switch ($placePart->getName()) {
+                                                case "date":
+                                                case "dateRange":
+                                                    $place->setDateRange(
+                                                            $this->parseDate($placePart, 
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $desc2->getName()
+                                                                    )));
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $place->setNote((string) $placePart);
+                                                    $this->markUnknownAtt(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName(),
+                                                                    $placePart->getName()
+                                                            ), $this->getAttributes($placePart));
+                                                    break;
+                                                case "placeRole":
+                                                    $place->setRole((string) $placePart);
+                                                    $this->markUnknownAtt(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName(),
+                                                                    $placePart->getName()
+                                                            ), $this->getAttributes($placePart));
+                                                    break;
+                                                case "placeEntry":
+                                                    $place->addPlaceEntry(
+                                                            $this->parsePlaceEntry($placePart, 
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $desc2->getName()
+                                                                    )));
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ), 
+                                                            array (
+                                                                    $placePart
+                                                            ));
+                                            }
+                                        }
+                                        $identity->addPlace($place);
+                                        $this->markUnknownAtt(
+                                                array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $desc2->getName()
+                                                ), $platts);
                                         break;
                                     case "localDescription":
                                         $subTags = $this->getChildren($desc2);
@@ -426,22 +520,39 @@ class EACCPFParser {
                                     case "occupation":
                                         foreach ($this->getChildren($desc2) as $occ) {
                                             $oatts = $this->getAttributes($occ);
-                                            if ($occ->getName() == "term") {
-                                                $vocabSource = null;
-                                                if (isset($oatts["vocabularySource"]))
-                                                    $vocabSource = $oatts["vocabularySource"];
-                                                $identity->addOccupation((string) $occ, $vocabSource);
-                                                unset($oatts["vocabularySource"]);
-                                            } else
-                                                $this->markUnknownTag(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName(),
-                                                                $desc2->getName()
-                                                        ), 
-                                                        array (
-                                                                $occ
-                                                        ));
+                                            $occupation = new \snac\data\Occupation();
+                                            switch ($occ->getName()) {
+                                                case "term":
+                                                    $occupation->setTerm((string) $occ);
+                                                    if (isset($oatts["vocabularySource"])) {
+                                                        $occupation->setVocabularySource($oatts["vocabularySource"]);
+                                                        unset($oatts["vocabularySource"]);
+                                                    }
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $occupation->setNote((string) $occ);
+                                                    break;
+                                                case "dateRange":
+                                                    $date = $this->parseDate($occ, 
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ));
+                                                    $occupation->setDateRange($date);
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ), 
+                                                            array (
+                                                                    $occ
+                                                            ));
+                                            }
+                                            $identity->addOccupation($occupation);
                                             $this->markUnknownAtt(
                                                     array (
                                                             $node->getName(),
@@ -449,6 +560,55 @@ class EACCPFParser {
                                                             $desc2->getName(),
                                                             $occ->getName()
                                                     ), $oatts);
+                                        }
+                                        break;
+                                    case "function":
+                                        foreach ($this->getChildren($desc2) as $fun) {
+                                            $fatts = $this->getAttributes($fun);
+                                            $function = new \snac\data\SNACFunction();
+                                            switch ($fun->getName()) {
+                                                case "term":
+                                                    $function->setTerm((string) $fun);
+                                                    if (isset($fatts["vocabularySource"])) {
+                                                        $function->setVocabularySource($fatts["vocabularySource"]);
+                                                        unset($fatts["vocabularySource"]);
+                                                    }
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $function->setNote((string) $fun);
+                                                    break;
+                                                case "dateRange":
+                                                    $date = $this->parseDate($fun, 
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ));
+                                                    $function->setDateRange($date);
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ), 
+                                                            array (
+                                                                    $fun
+                                                            ));
+                                            }
+                                            if (isset($fatts["localType"])) {
+                                                $function->setType($fatts["localType"]);
+                                                unset($fatts["localType"]);
+                                            }
+                                            $identity->addFunction($function);
+                                            $this->markUnknownAtt(
+                                                    array (
+                                                            $node->getName(),
+                                                            $desc->getName(),
+                                                            $desc2->getName(),
+                                                            $fun->getName()
+                                                    ), $fatts);
                                         }
                                         break;
                                     case "biogHist":
@@ -484,14 +644,20 @@ class EACCPFParser {
                                         unset($ratts["cpfRelationType"]);
                                         $children = $this->getChildren($rel);
                                         $relation->setContent((string) $children[0]);
-                                        foreach ($children as $child){ 
-                                            switch($child->getName()) {
+                                        foreach ($children as $child) {
+                                            switch ($child->getName()) {
                                                 case "relationEntry":
                                                     $relation->setContent((string) $child);
                                                     break;
                                                 case "date":
                                                 case "dateRange":
-                                                    $relation->setDates($this->parseDate($child, array($node->getName(), $desc->getName(), $rel->getName())));
+                                                    $relation->setDates(
+                                                            $this->parseDate($child, 
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $rel->getName()
+                                                                    )));
                                                     break;
                                                 default:
                                                     $this->markUnknownTag(
@@ -523,13 +689,18 @@ class EACCPFParser {
                                             switch ($relItem->getName()) {
                                                 case "relationEntry":
                                                     $relation->setContent((string) $relItem);
+                                                    $relAtts = $this->getAttributes($relItem);
+                                                    if (isset($relAtts["localType"])) {
+                                                        $relation->setRelationEntryType($relAtts["localType"]);
+                                                        unset($relAtts["localType"]);
+                                                    }
                                                     $this->markUnknownAtt(
                                                             array (
                                                                     $node->getName(),
                                                                     $desc->getName(),
                                                                     $rel->getName(),
                                                                     $relItem->getName()
-                                                            ), $this->getAttributes($relItem));
+                                                            ), $relAtts);
                                                     break;
                                                 case "objectXMLWrap":
                                                     $relation->setSource($relItem->asXML());
@@ -581,7 +752,8 @@ class EACCPFParser {
                             $this->markUnknownTag(
                                     array (
                                             $node->getName()
-                                    ), array (
+                                    ), 
+                                    array (
                                             $desc
                                     ));
                     }
@@ -700,16 +872,33 @@ class EACCPFParser {
     private function markUnknownTag($xpath, $missing) {
 
         foreach ($missing as $m) {
+            // Mark this tag as missing
             $this->markUnknowns($xpath, array (
                     $m->getName() => (string) $m
             ), true);
+            // Mark all attributes of this tag as missing
             $this->markUnknowns(array_merge($xpath, array (
                     $m->getName()
             )), $this->getAttributes($m), false);
+            
+            // Traverse down the children
+            $this->markUnknownTag(array_merge($xpath, array (
+                    $m->getName()
+            )), $this->getChildren($m));
         }
     }
 
+    /**
+     * Parse the given date element into its appropriate object.
+     * This requires testing for both a dateRange, as well
+     * as notBefore and notAfter ranges on each date given.
+     *
+     * @param \SimpleXMLElement $dateElement Date element to parse
+     * @param string[] $xpath All pieces of the xpath leading up to the date to parse
+     * @return \snac\data\SNACDate The resulting date object
+     */
     private function parseDate($dateElement, $xpath) {
+
         $date = new \snac\data\SNACDate();
         if ($dateElement->getName() == "dateRange") {
             // Handle the date range
@@ -719,9 +908,7 @@ class EACCPFParser {
                 switch ($dateTag->getName()) {
                     case "fromDate":
                         if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setFromDate((string) $dateTag, 
-                                    $dateAtts["standardDate"], 
-                                    $dateAtts["localType"]);
+                            $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
                             $notBefore = null;
                             $notAfter = null;
                             if (isset($dateAtts["notBefore"]))
@@ -734,15 +921,17 @@ class EACCPFParser {
                             unset($dateAtts["notAfter"]);
                             unset($dateAtts["standardDate"]);
                             unset($dateAtts["localType"]);
-                            $this->markUnknownAtt( array_merge($xpath, array($dateElement->getName(), $dateTag->getName()))
-                                    , $dateAtts);
+                            $this->markUnknownAtt(
+                                    array_merge($xpath, 
+                                            array (
+                                                    $dateElement->getName(),
+                                                    $dateTag->getName()
+                                            )), $dateAtts);
                         }
                         break;
                     case "toDate":
                         if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setToDate((string) $dateTag, 
-                                    $dateAtts["standardDate"], 
-                                    $dateAtts["localType"]);
+                            $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
                             $notBefore = null;
                             $notAfter = null;
                             if (isset($dateAtts["notBefore"]))
@@ -755,14 +944,20 @@ class EACCPFParser {
                             unset($dateAtts["notAfter"]);
                             unset($dateAtts["standardDate"]);
                             unset($dateAtts["localType"]);
-                            $this->markUnknownAtt( array_merge($xpath, array($dateElement->getName(), $dateTag->getName()))
-                                    , $dateAtts);
+                            $this->markUnknownAtt(
+                                    array_merge($xpath, 
+                                            array (
+                                                    $dateElement->getName(),
+                                                    $dateTag->getName()
+                                            )), $dateAtts);
                         }
                         break;
                     default:
-                        $this->markUnknownTag( array_merge($xpath, array($dateElement->getName()))
-                                , 
-                                array (
+                        $this->markUnknownTag(
+                                array_merge($xpath, 
+                                        array (
+                                                $dateElement->getName()
+                                        )), array (
                                         $dateTag
                                 ));
                 }
@@ -771,8 +966,7 @@ class EACCPFParser {
             // Handle the single date that appears
             $date->setRange(false);
             $dateAtts = $this->getAttributes($dateElement);
-            $date->setDate((string) $dateElement, $dateAtts["standardDate"], 
-                    $dateAtts["localType"]);
+            $date->setDate((string) $dateElement, $dateAtts["standardDate"], $dateAtts["localType"]);
             $notBefore = null;
             $notAfter = null;
             if (isset($dateAtts["notBefore"]))
@@ -786,10 +980,110 @@ class EACCPFParser {
             unset($dateAtts["standardDate"]);
             unset($dateAtts["localType"]);
             $this->markUnknownAtt(
-                    array_merge($xpath, array($dateElement->getName()))
-                          , $dateAtts);
-
+                    array_merge($xpath, array (
+                            $dateElement->getName()
+                    )), $dateAtts);
         }
         return $date;
+    }
+
+    /**
+     * Parse a place entry XML tag into a \snac\data\PlaceEntry object.
+     * This is a recursively called function, since
+     * some placeEntry tags are nested. The best example is the snac:placeEntry tag, which may include the following
+     * placeEntry tag variants:
+     *
+     * <ul>
+     * <li>placeEntry</li>
+     * <li>placeEntryMaybeSame</li>
+     * <li>placeEntryLikelySame</li>
+     * <li>placeEntryBestMaybeSame</li>
+     * </ul>
+     *
+     * @param \SimpleXMLElement $placeTag Place element to parse
+     * @param string[] $xpath all pieces of the xpath leading up to the $placeTag element
+     * @return \snac\data\PlaceEntry resulting object
+     */
+    private function parsePlaceEntry($placeTag, $xpath) {
+
+        $plAtts = $this->getAttributes($placeTag);
+        $placeEntry = new \snac\data\PlaceEntry();
+        
+        if (isset($plAtts["latitude"])) {
+            $placeEntry->setLatitude($plAtts["latitude"]);
+            unset($plAtts["latitude"]);
+        }
+        if (isset($plAtts["longitude"])) {
+            $placeEntry->setLongitude($plAtts["longitude"]);
+            unset($plAtts["longitude"]);
+        }
+        if (isset($plAtts["localType"])) {
+            $placeEntry->setType($plAtts["localType"]);
+            unset($plAtts["localType"]);
+        }
+        if (isset($plAtts["administrationCode"])) {
+            $placeEntry->setAdministrationCode($plAtts["administrationCode"]);
+            unset($plAtts["administrationCode"]);
+        }
+        if (isset($plAtts["countryCode"])) {
+            $placeEntry->setCountryCode($plAtts["countryCode"]);
+            unset($plAtts["countryCode"]);
+        }
+        if (isset($plAtts["vocabularySource"])) {
+            $placeEntry->setVocabularySource($plAtts["vocabularySource"]);
+            unset($plAtts["vocabularySource"]);
+        }
+        if (isset($plAtts["certaintyScore"])) {
+            $placeEntry->setCertaintyScore($plAtts["certaintyScore"]);
+            unset($plAtts["certaintyScore"]);
+        }
+        $this->markUnknownAtt(array_merge($xpath, array (
+                $placeTag->getName()
+        )), $plAtts);
+        
+        // Set the original string. If this is a snac:placeEntry, it will be empty, but there will be a sub-placeEntry
+        // that will be found below to overwrite the original string
+        $placeEntry->setOriginal((string) $placeTag);
+        
+        foreach ($this->getChildren($placeTag) as $child) {
+            switch ($child->getName()) {
+                case "placeEntryBestMaybeSame":
+                case "placeEntryLikelySame":
+                    $placeEntry->setBestMatch(
+                            $this->parsePlaceEntry($child, 
+                                    array_merge($xpath, 
+                                            array (
+                                                    $placeTag->getName()
+                                            ))));
+                    break;
+                case "placeEntryMaybeSame":
+                    $placeEntry->addMaybeSame(
+                            $this->parsePlaceEntry($child, 
+                                    array_merge($xpath, 
+                                            array (
+                                                    $placeTag->getName()
+                                            ))));
+                    break;
+                case "placeEntry":
+                    $placeEntry->setOriginal((string) $child);
+                    $this->markUnknownAtt(
+                            array_merge($xpath, 
+                                    array (
+                                            $placeTag->getName(),
+                                            $child->getName()
+                                    )), $this->getAttributes($child));
+                    break;
+                default:
+                    $this->markUnknownTag(
+                            array_merge($xpath, 
+                                    array (
+                                            $placeTag->getName()
+                                    )), array (
+                                    $child
+                            ));
+            }
+        }
+        
+        return $placeEntry;
     }
 }
