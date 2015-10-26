@@ -73,6 +73,46 @@ class Constellation {
      * @var string Convention declaration
      */
     private $conventionDeclaration = null;
+    
+    /**
+     * @var string Language used for Constellation Record
+     */
+    private $constellationLanguage = null;
+    
+    /**
+     * @var string Language code used for Constellation Record
+     */
+    private $constellationLanguageCode = null;
+    
+    /**
+     * @var string Script used for Constellation Record
+     */
+    private $constellationScript = null;
+    
+    /**
+     * @var string Script code used for Constellation Record
+     */
+    private $constellationScriptCode = null;
+    
+    /**
+     * @var string Language used by the identity described
+     */
+    private $language = null;
+    
+    /**
+     * @var string Language code used by the identity described
+     */
+    private $languageCode = null;
+    
+    /**
+     * @var string Script used by the identity described
+     */
+    private $script = null;
+    
+    /**
+     * @var string Script code used by the identity described
+     */
+    private $scriptCode = null;
 
     /**
      *
@@ -127,6 +167,21 @@ class Constellation {
      * @var \snac\data\Place[] Places
      */
     private $places = null;
+    
+    /**
+     * @var string[] Subjects
+     */
+    private $subjects = null;
+    
+    /**
+     * @var string nationality
+     */
+    private $nationality = null;
+    
+    /**
+     * @var string Gender
+     */
+    private $gender = null;
 
     /**
      * Constructor
@@ -146,6 +201,7 @@ class Constellation {
         $this->existDates = array ();
         $this->functions = array ();
         $this->places = array ();
+        $this->subjects = array();
     }
 
     /**
@@ -284,7 +340,8 @@ class Constellation {
      * @param string $value Human-readable language
      */
     public function setLanguage($code, $value) {
-        // TODO
+        $this->constellationLanguage = $value;
+        $this->constellationLanguageCode = $code;
     }
 
     /**
@@ -294,7 +351,8 @@ class Constellation {
      * @param string $value Human-readable script
      */
     public function setScript($code, $value) {
-        // TODO
+        $this->constellationScript = $value;
+        $this->constellationScriptCode = $code;
     }
 
     /**
@@ -304,7 +362,8 @@ class Constellation {
      * @param string $value Human-readable language
      */
     public function setLanguageUsed($code, $value) {
-        // TODO
+        $this->language = $value;
+        $this->languageCode = $code;
     }
 
     /**
@@ -314,7 +373,8 @@ class Constellation {
      * @param string $value Human-readable script
      */
     public function setScriptUsed($code, $value) {
-        // TODO
+        $this->script = $value;
+        $this->scriptCode = $code;
     }
 
     /**
@@ -323,7 +383,7 @@ class Constellation {
      * @param string $subject Subject to add.
      */
     public function addSubject($subject) {
-        // TODO
+        array_push($this->subjects, $subject);
     }
 
     /**
@@ -332,7 +392,7 @@ class Constellation {
      * @param string $nationality Nationality
      */
     public function setNationality($nationality) {
-        // TODO
+        $this->nationality = $nationality;
     }
 
     /**
@@ -341,7 +401,7 @@ class Constellation {
      * @param string $gender Gender to set
      */
     public function setGender($gender) {
-        // TODO
+        $this->gender = $gender;
     }
 
     /**
