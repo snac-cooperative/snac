@@ -223,6 +223,7 @@ class EACCPFParser {
                             foreach ($this->getChildren($control) as $source) {
                                 $satts = $this->getAttributes($source);
                                 $identity->addSource($satts['type'], $satts['href']);
+                                // TODO Need to handle the ObjectXMLWrap
                             }
                             break;
                         default:
@@ -518,9 +519,9 @@ class EACCPFParser {
                                                 ), $d2atts);
                                         break;
                                     case "occupation":
+                                        $occupation = new \snac\data\Occupation();
                                         foreach ($this->getChildren($desc2) as $occ) {
                                             $oatts = $this->getAttributes($occ);
-                                            $occupation = new \snac\data\Occupation();
                                             switch ($occ->getName()) {
                                                 case "term":
                                                     $occupation->setTerm((string) $occ);
@@ -552,7 +553,6 @@ class EACCPFParser {
                                                                     $occ
                                                             ));
                                             }
-                                            $identity->addOccupation($occupation);
                                             $this->markUnknownAtt(
                                                     array (
                                                             $node->getName(),
@@ -561,11 +561,18 @@ class EACCPFParser {
                                                             $occ->getName()
                                                     ), $oatts);
                                         }
+                                        $identity->addOccupation($occupation);
+                                        $this->markUnknownAtt(
+                                                array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $desc2->getName()
+                                                ), $this->getAttributes($desc2));
                                         break;
                                     case "function":
+                                        $function = new \snac\data\SNACFunction();
                                         foreach ($this->getChildren($desc2) as $fun) {
                                             $fatts = $this->getAttributes($fun);
-                                            $function = new \snac\data\SNACFunction();
                                             switch ($fun->getName()) {
                                                 case "term":
                                                     $function->setTerm((string) $fun);
@@ -596,20 +603,27 @@ class EACCPFParser {
                                                             array (
                                                                     $fun
                                                             ));
+                                                $this->markUnknownAtt(
+                                                        array (
+                                                                $node->getName(),
+                                                                $desc->getName(),
+                                                                $desc2->getName(),
+                                                                $fun->getName()
+                                                        ), $fatts);
                                             }
-                                            if (isset($fatts["localType"])) {
-                                                $function->setType($fatts["localType"]);
-                                                unset($fatts["localType"]);
-                                            }
-                                            $identity->addFunction($function);
-                                            $this->markUnknownAtt(
-                                                    array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $desc2->getName(),
-                                                            $fun->getName()
-                                                    ), $fatts);
                                         }
+                                        $fatts = $this->getAttributes($desc2);
+                                        if (isset($fatts["localType"])) {
+                                            $function->setType($fatts["localType"]);
+                                            unset($fatts["localType"]);
+                                        }
+                                        $identity->addFunction($function);
+                                        $this->markUnknownAtt(
+                                                array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $desc2->getName()
+                                                    ), $fatts);
                                         break;
                                     case "biogHist":
                                         $identity->addBiogHist($desc2->asXML());
