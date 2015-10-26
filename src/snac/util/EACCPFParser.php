@@ -170,6 +170,10 @@ class EACCPFParser {
                                             break;
                                         case "eventDateTime":
                                             $event->setEventDateTime((string) $mev);
+                                            if (isset($eatts["standardDateTime"])) {
+                                                $event->setStandardDateTime($eatts["standardDateTime"]);
+                                                unset($eatts["standardDateTime"]);
+                                            }
                                             break;
                                         case "agentType":
                                             $event->setAgentType((string) $mev);
@@ -246,13 +250,26 @@ class EACCPFParser {
                             foreach ($this->getChildren($desc) as $ident) {
                                 $iatts = $this->getAttributes($ident);
                                 switch ($ident->getName()) {
+                                    case "entityId":
+                                        $identity->addOtherRecordID("entityId", (string) $ident);
+                                        break;
                                     case "entityType":
                                         $identity->setEntityType((string) $ident);
                                         break;
                                     case "nameEntry":
                                         $nameEntry = new \snac\data\NameEntry();
-                                        $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
-                                        unset($iatts["preferenceScore"]);
+                                        if (isset($iatts["preferenceScore"])) {
+                                            $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
+                                            unset($iatts["preferenceScore"]);
+                                        }
+                                        if (isset($iatts["lang"])) {
+                                            $nameEntry->setLanguage($iatts["lang"]);
+                                            unset($iatts["lang"]);
+                                        }
+                                        if (isset($iatts["scriptCode"])) {
+                                            $nameEntry->setScriptCode($iatts["scriptCode"]);
+                                            unset($iatts["scriptCode"]);
+                                        }
                                         foreach ($this->getChildren($ident) as $npart) {
                                             switch ($npart->getName()) {
                                                 case "part":
@@ -261,6 +278,31 @@ class EACCPFParser {
                                                 case "alternativeForm":
                                                 case "authorizedForm":
                                                     $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                                    break;
+                                                case "useDates":
+                                                    foreach ($this->getChildren($npart) as $dateEntry) {
+                                                        if ($dateEntry->getName() == "dateRange" ||
+                                                                 $dateEntry->getName() == "date") {
+                                                            $nameEntry->setUseDates(
+                                                                    $this->parseDate($dateEntry, 
+                                                                            array (
+                                                                                    $node->getName(),
+                                                                                    $desc->getName(),
+                                                                                    $ident->getName(),
+                                                                                    $npart->getName()
+                                                                            )));
+                                                        } else {
+                                                            $this->markUnknownTag(
+                                                                    array (
+                                                                            $node->getName(),
+                                                                            $desc->getName(),
+                                                                            $ident->getName(),
+                                                                            $npart->getName()
+                                                                    ), array (
+                                                                            $dateEntry
+                                                                    ));
+                                                        }
+                                                    }
                                                     break;
                                                 default:
                                                     $this->markUnknownTag(
@@ -518,6 +560,50 @@ class EACCPFParser {
                                                         $desc2->getName()
                                                 ), $d2atts);
                                         break;
+                                    case "generalContext":
+                                        $identity->setGeneralContext($desc2->asXML());
+                                        break;
+                                    case "legalStatus":
+                                        $legalTerm = null;
+                                        $legalVocab = null;
+                                        foreach ($this->getChildren($desc2) as $legal) {
+                                            $legalAtts = $this->getAttributes($legal);
+                                            switch ($legal->getName()) {
+                                                case "term":
+                                                    $legalTerm = (string) $legal;
+                                                    if (isset($legalAtts["vocabularySource"])) {
+                                                        $legalVocab = $legalAtts["vocabularySource"];
+                                                        unset($legalAtts["vocabularySource"]);
+                                                    }
+                                                    break;
+                                                default:
+                                                    $this->markUnknownTag(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName()
+                                                            ), 
+                                                            array (
+                                                                    $legal
+                                                            ));
+                                            }
+                                            $this->markUnknownAtt(
+                                                    array (
+                                                            $node->getName(),
+                                                            $desc->getName(),
+                                                            $desc2->getName(),
+                                                            $legal->getName()
+                                                    ), $legalAtts);
+                                        }
+                                        $identity->addLegalStatus($legalTerm, $legalVocab);
+                                        break;
+                                    case "mandate":
+                                        // These are only seen in ANF, and they always have only a descriptiveNote
+                                        $identity->setMandate($desc2->asXML());
+                                        break;
+                                    case "structureOrGenealogy":
+                                        $identity->setStructureOrGenealogy($desc2->asXML());
+                                        break;
                                     case "occupation":
                                         $occupation = new \snac\data\Occupation();
                                         foreach ($this->getChildren($desc2) as $occ) {
@@ -603,13 +689,13 @@ class EACCPFParser {
                                                             array (
                                                                     $fun
                                                             ));
-                                                $this->markUnknownAtt(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName(),
-                                                                $desc2->getName(),
-                                                                $fun->getName()
-                                                        ), $fatts);
+                                                    $this->markUnknownAtt(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $desc2->getName(),
+                                                                    $fun->getName()
+                                                            ), $fatts);
                                             }
                                         }
                                         $fatts = $this->getAttributes($desc2);
@@ -623,7 +709,7 @@ class EACCPFParser {
                                                         $node->getName(),
                                                         $desc->getName(),
                                                         $desc2->getName()
-                                                    ), $fatts);
+                                                ), $fatts);
                                         break;
                                     case "biogHist":
                                         $identity->addBiogHist($desc2->asXML());
@@ -672,6 +758,16 @@ class EACCPFParser {
                                                                             $desc->getName(),
                                                                             $rel->getName()
                                                                     )));
+                                                    break;
+                                                case "descriptiveNote":
+                                                    $relation->setNote($child->asXML());
+                                                    $this->markUnknownAtt(
+                                                            array (
+                                                                    $node->getName(),
+                                                                    $desc->getName(),
+                                                                    $rel->getName(),
+                                                                    $child->getName()
+                                                            ), $this->getAttributes($child));
                                                     break;
                                                 default:
                                                     $this->markUnknownTag(
@@ -971,7 +1067,8 @@ class EACCPFParser {
                                 array_merge($xpath, 
                                         array (
                                                 $dateElement->getName()
-                                        )), array (
+                                        )), 
+                                array (
                                         $dateTag
                                 ));
                 }
@@ -994,9 +1091,10 @@ class EACCPFParser {
             unset($dateAtts["standardDate"]);
             unset($dateAtts["localType"]);
             $this->markUnknownAtt(
-                    array_merge($xpath, array (
-                            $dateElement->getName()
-                    )), $dateAtts);
+                    array_merge($xpath, 
+                            array (
+                                    $dateElement->getName()
+                            )), $dateAtts);
         }
         return $date;
     }

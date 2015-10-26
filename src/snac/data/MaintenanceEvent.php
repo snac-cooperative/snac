@@ -38,6 +38,12 @@ class MaintenanceEvent {
     private $eventDateTime;
 
     /**
+     * @var string Standardized date time of the event
+     * 
+     */
+    private $standardDateTime;
+    
+    /**
      *
      * @var string Type of the agent performing the event
      */
@@ -73,6 +79,16 @@ class MaintenanceEvent {
     public function setEventDateTime($eventDateTime) {
 
         $this->eventDateTime = $eventDateTime;
+    }
+
+    /**
+     * Set the standardized date and time of the event.
+     * 
+     * @param string $eventDateTime DateTime string of the event
+     */
+    public function setStandardDateTime($eventDateTime) {
+
+        $this->standardDateTime = $eventDateTime;
     }
 
     /**

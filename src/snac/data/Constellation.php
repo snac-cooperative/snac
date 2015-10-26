@@ -64,9 +64,14 @@ class Constellation {
 
     /**
      *
-     * @var array[][] List of sources, each source is an array of type,value entries
+     * @var string[][] List of sources, each source is an array of type,value entries
      */
     private $sources = null;
+    
+    /**
+     * @var string[][] List of legal status, each status as an array of term,vocabularySource entries
+     */
+    private $legalStatuses = null;
 
     /**
      *
@@ -122,7 +127,7 @@ class Constellation {
 
     /**
      *
-     * @var string[][] List of occupations with their vocabulary sources (if available)
+     * @var \snac\data\Occupation[] List of occupations
      */
     private $occupations = null;
 
@@ -182,6 +187,21 @@ class Constellation {
      * @var string Gender
      */
     private $gender = null;
+    
+    /**
+     * @var string General Context
+     */
+    private $generalContext = null;
+    
+    /**
+     * @var string Structure Or Genealogy information
+     */
+    private $structureOrGenealogy = null;
+    
+    /**
+     * @var string Mandate
+     */
+    private $mandate = null;
 
     /**
      * Constructor
@@ -202,6 +222,7 @@ class Constellation {
         $this->functions = array ();
         $this->places = array ();
         $this->subjects = array();
+        $this->legalStatuses = array();
     }
 
     /**
@@ -452,5 +473,42 @@ class Constellation {
     public function addPlace($place) {
 
         array_push($this->places, $place);
+    }
+    
+    /**
+     * Add the general context for this constellation
+     * 
+     * @param string $context General context
+     */
+    public function setGeneralContext($context) {
+        $this->generalContext = $context;
+    }
+    
+    /**
+     * Set the structure or genealogy for this constellation
+     * 
+     * @param string $structure StructureOrGenealogy information
+     */
+    public function setStructureOrGenealogy($structure) {
+        $this->structureOrGenealogy = $structure;
+    }
+    
+    /**
+     * Add a legal status to this constellation
+     * 
+     * @param string $term Term of the status
+     * @param string $vocabularySource Vocabulary source for the term
+     */
+    public function addLegalStatus($term, $vocabularySource) {
+        array_push($this->legalStatuses, array("term"=>$term, "vocabularySource"=>$vocabularySource));
+    }
+    
+    /**
+     * Set the mandate of this constellation
+     * 
+     * @param string $mandate Mandate information
+     */
+    public function setMandate($mandate) {
+        $this->mandate = $mandate;
     }
 }

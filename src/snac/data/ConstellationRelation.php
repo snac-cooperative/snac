@@ -81,7 +81,13 @@ class ConstellationRelation {
     /**
      * @var \snac\data\SNACDate Dates of thie relationship
      */
-    private $dates = null;
+    private $dates = null;    
+    
+    /**
+     *
+     * @var string Note attached to relation
+     */
+    private $note = null;
 
     /**
      * Set the target ARK ID
@@ -149,5 +155,15 @@ class ConstellationRelation {
      */
     public function setDates($date) {
         $this->dates = $date;
+    }
+    
+    /**
+     * Set the note for this constellation relation
+     * 
+     * @param string $note Resource note
+     */
+    public function setNote($note) {
+
+        $this->note = $note;
     }
 }

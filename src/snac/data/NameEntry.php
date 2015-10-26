@@ -41,6 +41,21 @@ class NameEntry {
      * @var string[][] Contributors providing this name entry including their type for this name entry
      */
     private $contributors;
+    
+    /**
+     * @var string Language of the entry
+     */
+    private $language;
+    
+    /**
+     * @var string Script code of the entry
+     */
+    private $scriptCode;
+    
+    /**
+     * @var \snac\data\SNACDate Use dates of the name entry
+     */
+    private $useDates;
 
     /**
      * Constructor
@@ -59,6 +74,24 @@ class NameEntry {
 
         $this->original = $original;
     }
+    
+    /**
+     * Set the language
+     * 
+     * @param string $lang Language
+     */
+    public function setLanguage($lang) {
+        $this->language = $lang;
+    }
+    
+    /**
+     * Set the script code of the name entry
+     * 
+     * @param string $code Script code
+     */
+    public function setScriptCode($code) {
+        $this->scriptCode = $code;
+    }
 
     /**
      * Add contributor to the list of contributors.
@@ -73,6 +106,15 @@ class NameEntry {
                         "type" => $type,
                         "contributor" => $name
                 ));
+    }
+    
+    /**
+     * Set the use dates of the entry
+     * 
+     * @param \snac\data\SNACDate $date Dates
+     */
+    public function setUseDates($date) {
+        $this->useDates = $date;
     }
 
     /**
