@@ -1,6 +1,6 @@
 eclipse.preferences.version=1
 phpunit_config_file=/SNAC_Server/phpunit.xml
-preload_script=/SNAC_Server/src/autoload.php
+preload_script=/SNAC_Server/vendor/autoload.php
 test_file_pattern=
 test_folders=/SNAC_Server/test
 testing_framework=PHPUnit

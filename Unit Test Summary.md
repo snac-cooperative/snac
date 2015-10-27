@@ -1,13 +1,13 @@
 # Current Test Results
 
-Date: Tue Oct 13 16:51:51 EDT 2015
+Date: Tue Oct 27 13:16:10 EDT 2015
 
 ```
-PHPUnit 5.0.5 by Sebastian Bergmann and contributors.
+PHPUnit 5.0.8 by Sebastian Bergmann and contributors.
 
-.                                                                   1 / 1 (100%)
+..                                                                  2 / 2 (100%)
 
-Time: 49 ms, Memory: 8.00Mb
+Time: 159 ms, Memory: 4.00Mb
 
-OK (1 test, 1 assertion)
+OK (2 tests, 1 assertion)
 ```
