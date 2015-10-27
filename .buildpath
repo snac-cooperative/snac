@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <buildpath>
 	<buildpathentry kind="src" path="src/snac/exceptions"/>
+	<buildpathentry kind="src" path="vendor"/>
 	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
 	<buildpathentry kind="src" path="src/virtualhosts/internal"/>
 	<buildpathentry kind="src" path="src/snac/interfaces"/>

@@ -9,7 +9,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
-include ("../../autoload.php");
+include ("../../../vendor/autoload.php");
 
 // Namespace shortcuts
 use \snac\client\rest\Rest as Rest;
