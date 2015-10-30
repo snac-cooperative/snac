@@ -46,9 +46,13 @@ class EACCPFParser {
      * @param string $filename Filename of the file to parse
      * @return \snac\data\Constellation The resulting constellation
      */
-    public function parse_file($filename) {
+    public function parseFile($filename) {
 
-        return $this->parse(file_get_contents($filename));
+        try {
+            return $this->parse(file_get_contents($filename));
+        } catch (\Exception $e) {
+            throw new \snac\exceptions\SNACParserException($e->getMessage());
+        }
     }
 
     /**
@@ -102,7 +106,7 @@ class EACCPFParser {
                                         array (
                                                 $agencyInfo[$i]
                                         ));
-                            $identity->setMaintenanceAgency((string) $agencyInfo[0]);
+                            $identity->setMaintenanceAgency(trim((string) $agencyInfo[0]));
                             $this->markUnknownAtt(
                                     array (
                                             $node->getName(),
