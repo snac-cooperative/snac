@@ -12,5 +12,7 @@
 	<buildpathentry kind="src" path="src/snac/client/rest"/>
 	<buildpathentry kind="src" path="src/virtualhosts/rest"/>
 	<buildpathentry kind="src" path="vendor"/>
+	<buildpathentry kind="src" path="test"/>
+	<buildpathentry kind="src" path="src"/>
 	<buildpathentry kind="con" path="org.eclipse.php.core.LANGUAGE"/>
 </buildpath>
