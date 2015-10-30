@@ -10,7 +10,7 @@
  *            the Regents of the University of California
  */
 
-include ("../../autoload.php");
+include ("../../../vendor/autoload.php");
 
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
