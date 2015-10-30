@@ -1,13 +1,13 @@
 # Current Test Results
 
-Date: Tue Oct 27 14:20:34 EDT 2015
+Date: Fri Oct 30 14:21:03 EDT 2015
 
 ```
 PHPUnit 5.0.8 by Sebastian Bergmann and contributors.
 
-........                                                            8 / 8 (100%)
+..........                                                        10 / 10 (100%)
 
-Time: 289 ms, Memory: 4.00Mb
+Time: 22 ms, Memory: 4.00Mb
 
-OK (8 tests, 4 assertions)
+OK (10 tests, 12 assertions)
 ```
