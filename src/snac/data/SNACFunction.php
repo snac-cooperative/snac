@@ -52,7 +52,92 @@ class SNACFunction {
      * @var string Vocabulary source for the function
      */
     private $vocabularySource;
+    
+    /**
+     * Constructor
+     *
+     * @param string[][] $data optional Associative array of data to fill this
+     *                                  object with.
+     */
+    public function __construct($data = null) {
+        if ($data != null && is_array($data))
+            $this->fromArray($data);
+    }
 
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "SNACFunction",
+            "term" => $this->term,
+            "type" => $this->type,
+            "dates" => $this->dates->toArray(),
+            "vocabularySource" => $this->vocabularySource,
+            "note" => $this->note
+        );
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "SNACFunction")
+            return false;
+
+        if (isset($data["term"]))
+            $this->term = $data["term"];
+        else
+            $this->term = null;
+
+        if (isset($data["type"]))
+            $this->type = $data["type"];
+        else
+            $this->type = null;
+
+        if (isset($data["dates"]))
+            $this->dates = new SNACDate($data["dates"]);
+        else
+            $this->dates = null;
+
+        if (isset($data["vocabularySource"]))
+            $this->vocabularySource = $data["vocabularySource"];
+        else
+            $this->vocabularySource = null;
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
+
+    }
+
+    /**
+     * Convert this object to JSON
+     *
+     * @return string JSON encoding of this object
+     */
+    public function toJSON() {
+        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+    } 
+
+    /**
+     * Prepopulate this object from the given JSON
+     *
+     * @param string $json JSON encoding of this object
+     * @return boolean true on success, false on failure
+     */
+    public function fromJSON($json) {
+        return $this->fromArray(json_decode($json));
+    } 
     /**
      * Set the term of this function (controlled vocabulary)
      * 
