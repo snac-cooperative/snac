@@ -84,7 +84,124 @@ class SNACDate {
      * @var string Note about this date
      */
     private $note;
-    
+
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    private function toArray() {
+        $return = array(
+            "dataType" => "SNACDate",
+            "fromDate" => $this->fromDate,
+            "fromDateOriginal" => $this->fromDateOriginal,
+            "fromType" => $this->fromType,
+            "fromBC" => $this->fromBC,
+            "fromRange" => $this->fromRange,
+            "toDate" => $this->toDate,
+            "toDateOriginal" => $this->toDateOriginal,
+            "toType" => $this->toType,
+            "toBC" => $this->toBC,
+            "toRange" => $this->toRange,
+            "isRange" => $this->isRange,
+            "note" => $this->note
+        );
+        return $return;
+    }
+
+    /**
+     * Convert this object to JSON
+     *
+     * @return string JSON encoding of this object
+     */
+    public function toJSON() {
+        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+    } 
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    private function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
+            return false;
+
+        if (isset($data["fromDate"]))
+            $this->fromDate = $data["fromDate"];
+        else
+            $this->fromDate = null;
+
+        if (isset($data["fromDateOriginal"]))
+            $this->fromDateOriginal = $data["fromDateOriginal"];
+        else
+            $this->fromDateOriginal = null;
+
+        if (isset($data["fromType"]))
+            $this->fromType = $data["fromType"];
+        else
+            $this->fromType = null;
+
+        if (isset($data["fromBC"]))
+            $this->fromBC = $data["fromBC"];
+        else
+            $this->fromBC = null;
+
+        if (isset($data["fromRange"]))
+            $this->fromRange = $data["fromRange"];
+        else
+            $this->fromRange = null;
+
+        if (isset($data["toDate"]))
+            $this->toDate = $data["toDate"];
+        else
+            $this->toDate = null;
+
+        if (isset($data["toDateOriginal"]))
+            $this->toDateOriginal = $data["toDateOriginal"];
+        else
+            $this->toDateOriginal = null;
+
+        if (isset($data["toType"]))
+            $this->toType = $data["toType"];
+        else
+            $this->toType = null;
+
+        if (isset($data["toBC"]))
+            $this->toBC = $data["toBC"];
+        else
+            $this->toBC = null;
+
+        if (isset($data["toRange"]))
+            $this->toRange = $data["toRange"];
+        else
+            $this->toRange = null;
+
+        if (isset($data["isRange"]))
+            $this->isRange = $data["isRange"];
+        else
+            $this->isRange = null;
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
+
+    }
+
+    /**
+     * Prepopulate this object from the given JSON
+     *
+     * @param string $json JSON encoding of this object
+     * @return boolean true on success, false on failure
+     */
+    public function fromJSON($json) {
+        return $this->fromArray(json_decode($json));
+    } 
+
     /**
      * Set whether or not this is a date range.
      * 
