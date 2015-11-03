@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <control>
+      <recordId>FRAN_NP_050744</recordId>
+      <maintenanceStatus>new</maintenanceStatus>
+      <maintenanceAgency>
+         <agencyName>Archives nationales de France</agencyName>
+      </maintenanceAgency>
+      <languageDeclaration>
+         <language languageCode="fre">Français</language>
+         <script scriptCode="Latn"/>
+      </languageDeclaration>
+      <conventionDeclaration>
+         <citation> Notice établie conformément à la norme ICA-ISAAR (CPF) 2004, aux normes ISO 8601 pour le système de normalisation des dates utilisé, ainsi que AFNOR NF Z44-061 juin 1986 Catalogage : forme et structure des vedettes noms de personne, des vedettes titres, des rubriques de classement et des titres forgés et NF Z 44-060, décembre 1996 Catalogue d'auteurs et d'anonymes – Forme et structure des vedettes de collectivités-auteurs. </citation>
+      </conventionDeclaration>
+      
+      <maintenanceHistory>
+         <maintenanceEvent>
+            <eventType>created</eventType>
+            <eventDateTime>2014-03-20</eventDateTime>
+            <agentType>human</agentType>
+            <agent>Florence CLAVAUD</agent>
+            <eventDescription>F. Clavaud, 4 mars 2014 : création</eventDescription>
+         </maintenanceEvent>
+      <maintenanceEvent><eventType>revised</eventType><eventDateTime>2015-10-05</eventDateTime><agentType>machine</agentType><agent>cpf_norm.pl</agent></maintenanceEvent></maintenanceHistory>
+      <sources>
+         <source>
+            <descriptiveNote>
+               <p>même problèmes que dans autres champs de type texte</p>
+               <p>Nota : champ ancien identifiant pas accessible</p>
+               <p>Une seule langue ? si nom en anglais par ex. ?</p>
+            </descriptiveNote>
+         </source>
+      </sources>
+   </control>
+   <cpfDescription>
+      <identity>
+         <entityId>Un seul identifiant</entityId>
+         <entityType>corporateBody</entityType>
+         <nameEntry scriptCode="Latn" xml:lang="fre">
+            <part>Notice Test Collectivité</part>
+         <authorizedForm>ANF</authorizedForm></nameEntry>
+         <nameEntry>
+            <part>Test Collectivité</part>
+            <useDates>
+               <dateRange>
+                  <fromDate standardDate="2012-01-01">2012</fromDate>
+                  <toDate standardDate="2014-03-03">03/03/2014</toDate>
+               </dateRange>
+            </useDates>
+         </nameEntry>
+         <nameEntry>
+            <part>Collectivité test</part>
+            <useDates>
+               <dateRange>
+                  <fromDate standardDate="2003-01-01">2003</fromDate>
+               </dateRange>
+            </useDates>
+         </nameEntry>
+      </identity>
+      <description>
+         <existDates>
+            <dateRange>
+               <fromDate standardDate="2003-01-01">2003</fromDate>
+            </dateRange>
+            <descriptiveNote>
+               <p>Date de création incertaine.</p>
+            </descriptiveNote>
+         </existDates>
+         
+         
+         
+         
+         
+         <structureOrGenealogy>
+            <p>idem</p>
+         </structureOrGenealogy>
+         <generalContext>
+            <p>idem</p>
+         </generalContext>
+         <occupation>
+               <term vocabularySource="d699msirr1g-3naumnfaswc">archiviste</term>
+            </occupation><place>
+               <placeRole>Lieu général</placeRole>
+               <placeEntry localType="nomLieu">Pierrefitte-sur-Seine</placeEntry>
+               <placeEntry localType="lieu" vocabularySource="d3ntxf5186--sga9u2l9iboc">Pierrefitte-sur-Seine (Seine-Saint-Denis)</placeEntry>
+               <dateRange>
+                  <fromDate standardDate="2012-01-01">2012</fromDate>
+               </dateRange>
+               <descriptiveNote>
+                  <p>blskjfkrjgkfjgfiooooooooooooooooooooooooooooooooooooooooooooooooojdijfisdjfojjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjj</p>
+               </descriptiveNote>
+            </place><place>
+               <placeRole>Lieu de Paris</placeRole>
+               <placeEntry localType="nomLieu">Paris, Archives nationales</placeEntry>
+               <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv8gloo-1mqax06e8pe1d">03e arrondissement</placeEntry>
+               <placeEntry localType="voie" vocabularySource="d3nzaj2p6v--hrd7lqok52tn">Francs-Bourgeois (rue des)</placeEntry>
+               <dateRange>
+                  <fromDate standardDate="2003-01-01">2003</fromDate>
+                  <toDate standardDate="2012-12-31">2012</toDate>
+               </dateRange>
+               <descriptiveNote>
+                  <p>AN quadrilatère du Marais etc</p>
+               </descriptiveNote>
+            </place><function>
+               <term vocabularySource="d5bhviikk9--y6te63k761ib">culture</term>
+            </function><legalStatus>
+               <term>établissement public à caractère scientifique, culturel et professionnel</term>
+            </legalStatus><mandate>
+               <descriptiveNote>
+                  <p>Mêmes possibilités que pour champ précédent</p>
+               </descriptiveNote>
+            </mandate><biogHist>
+            <p>Cet 
+     <span style="underline">organisme fictif</span> est créé pour faire des 
+     <span style="bold">tests aux Archives nationales</span>. 
+    </p>
+            <p>Insertion de 
+     <span style="italic">caractères spéciaux</span> : « blah » 
+    </p>
+            <p>Pas possible de mettre un lien hypertexte ici.</p>
+            <p>Caractères en exposant ?</p>
+            <p>Liste</p>
+            <list>
+               <item>item 1</item>
+               <item>item 2</item>
+            </list>
+         <citation>Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)</citation></biogHist>
+      </description>
+      <relations>
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="hierarchical-parent" xlink:type="simple" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#hasParent" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody">
+            <relationEntry>Service interministériel des archives de France</relationEntry>
+            <dateRange>
+               <fromDate standardDate="2010-01-01">2010</fromDate>
+            </dateRange>
+            <descriptiveNote>
+               <p>test sur un lien hiérarchique</p>
+            <p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_005568</span></p></descriptiveNote>
+         </cpfRelation>
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:type="simple" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person">
+            <relationEntry>Rocard, Michel</relationEntry>
+            <dateRange>
+               <fromDate standardDate="2003-01-01">2003</fromDate>
+            </dateRange>
+         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010089</span></p></descriptiveNote></cpfRelation>
+         <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/producteur/consultationProducteur.action?notProdId=FRAN_NP_050744" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:arcrole="http://www.w3.org/2002/07/owl#sameAs" xlink:type="simple"><relationEntry>Notice Test Collectivité</relationEntry></cpfRelation><cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://isni.org/isni/Unseulidentifiant" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:arcrole="http://www.w3.org/2002/07/owl#sameAs" xlink:type="simple"><relationEntry>Notice Test Collectivité</relationEntry></cpfRelation><resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_027886#d_1" xlink:type="simple" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource">
+            <relationEntry localType="archival">Ministère de l'Intérieur. Administration départementale. Logement des préfets, sous-préfets, Costumes des fonctionnaires, Compatibilité des fonctions# Logement des préfets et des sous-préfets. #F/2(I)/106/13</relationEntry>
+            <descriptiveNote>
+               <p>créateur</p>
+            </descriptiveNote>
+         </resourceRelation>
+         <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_043100" xlink:type="simple" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource">
+            <relationEntry localType="archival">Minutes et répertoires du notaire Albert Louis MOREL d'ARLEUX, 12 août 1891 - décembre 1903 (étude CI)</relationEntry>
+         </resourceRelation>
+         <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_041062" xlink:type="simple" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource">
+            <relationEntry localType="archival">Grâces accordées</relationEntry>
+         </resourceRelation>
+      </relations>
+   </cpfDescription>
+</eac-cpf>
