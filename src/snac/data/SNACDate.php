@@ -86,11 +86,22 @@ class SNACDate {
     private $note;
 
     /**
+     * Constructor
+     *
+     * @param string[][] $data optional Associative array of data to fill this
+     *                                  object with.
+     */
+    public function __construct($data = null) {
+        if ($data != null && is_array($data))
+            $this->fromArray($data);
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @return string[][] This objects data in array form
      */
-    private function toArray() {
+    public function toArray() {
         $return = array(
             "dataType" => "SNACDate",
             "fromDate" => $this->fromDate,
@@ -124,7 +135,7 @@ class SNACDate {
      * @param string[][] $data This objects data in array form
      * @return boolean true on success, false on failure
      */
-    private function fromArray($data) {
+    public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
 
