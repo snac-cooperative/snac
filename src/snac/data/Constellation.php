@@ -24,9 +24,9 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class Constellation {
+class Constellation extends AbstractData {
 
-    /**
+    /*
      *
      * @var string ARK identifier
      */
@@ -208,21 +208,274 @@ class Constellation {
      *
      * Initializes arrays.
      */
-    public function __construct() {
+    public function __construct($data = null) {
 
-        $this->otherRecordIDs = array ();
-        $this->sources = array ();
-        $this->maintenanceEvents = array ();
-        $this->nameEntries = array ();
-        $this->biogHists = array ();
-        $this->occupations = array ();
-        $this->relations = array ();
-        $this->resourceRelations = array ();
-        $this->existDates = array ();
-        $this->functions = array ();
-        $this->places = array ();
-        $this->subjects = array();
-        $this->legalStatuses = array();
+        if ($data == null) {
+            $this->otherRecordIDs = array ();
+            $this->sources = array ();
+            $this->maintenanceEvents = array ();
+            $this->nameEntries = array ();
+            $this->biogHists = array ();
+            $this->occupations = array ();
+            $this->relations = array ();
+            $this->resourceRelations = array ();
+            $this->existDates = array ();
+            $this->functions = array ();
+            $this->places = array ();
+            $this->subjects = array();
+            $this->legalStatuses = array();
+        } else
+            parent::__construct($data);
+    }
+
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "Constellation",
+            "ark" => $this->ark,
+            "entityType" => $this->entityType,
+            "otherRecordIDs" => $this->otherRecordIDs,
+            "maintenanceStatus" => $this->maintenanceStatus,
+            "maintenanceAgency" => $this->maintenanceAgency,
+            "maintenanceEvents" => array(),
+            "sources" => $this->sources,
+            "legalStatuses" => $this->legalStatuses,
+            "conventionDeclaration" => $this->conventionDeclaration,
+            "constellationLanguage" => $this->constellationLanguage,
+            "constellationLanguageCode" => $this->constellationLanguageCode,
+            "constellationScript" => $this->constellationScript,
+            "constellationScriptCode" => $this->constellationScriptCode,
+            "language" => $this->language,
+            "languageCode" => $this->languageCode,
+            "script" => $this->script,
+            "scriptCode" => $this->scriptCode,
+            "nameEntries" => array(),
+            "occupations" => array(),
+            "biogHists" => $this->biogHists,
+            "existDates" => array(),
+            "existDatesNote" => $this->existDatesNote,
+            "relations" => array(),
+            "resourceRelations" => array(),
+            "functions" => array(),
+            "places" => array(),
+            "subjects" => $this->subjects,
+            "nationality" => $this->nationality,
+            "gender" => $this->gender,
+            "generalContext" => $this->generalContext,
+            "structureOrGenealogy" => $this->structureOrGenealogy,
+            "mandate" => $this->mandate
+        );
+
+        foreach ($this->maintenanceEvents as $i => $v)
+            $return["maintenanceEvents"][$i] = $v->toArray();
+
+        foreach ($this->nameEntries as $i => $v)
+            $return["nameEntries"][$i] = $v->toArray();
+
+        foreach ($this->occupations as $i => $v)
+            $return["occupations"][$i] = $v->toArray();
+
+        foreach ($this->existDates as $i => $v)
+            $return["existDates"][$i] = $v->toArray();
+
+        foreach ($this->relations as $i => $v)
+            $return["relations"][$i] = $v->toArray();
+
+        foreach ($this->resourceRelations as $i => $v)
+            $return["resourceRelations"][$i] = $v->toArray();
+
+        foreach ($this->functions as $i => $v)
+            $return["functions"][$i] = $v->toArray();
+
+        foreach ($this->places as $i => $v)
+            $return["places"][$i] = $v->toArray();
+
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
+            return false;
+
+        if (isset($data["ark"]))
+            $this->ark = $data["ark"];
+        else
+            $this->ark = null;
+
+        if (isset($data["entityType"]))
+            $this->entityType = $data["entityType"];
+        else
+            $this->entityType = null;
+
+        if (isset($data["otherRecordIDs"]))
+            $this->otherRecordIDs = $data["otherRecordIDs"];
+        else
+            $this->otherRecordIDs = array();
+
+        if (isset($data["maintenanceStatus"]))
+            $this->maintenanceStatus = $data["maintenanceStatus"];
+        else
+            $this->maintenanceStatus = null;
+
+        if (isset($data["maintenanceAgency"]))
+            $this->maintenanceAgency = $data["maintenanceAgency"];
+        else
+            $this->maintenanceAgency = null;
+
+        if (isset($data["sources"]))
+            $this->sources = $data["sources"];
+        else
+            $this->sources = array();
+
+        if (isset($data["legalStatuses"]))
+            $this->legalStatuses = $data["legalStatuses"];
+        else
+            $this->legalStatuses = array();
+
+        if (isset($data["conventionDeclaration"]))
+            $this->conventionDeclaration = $data["conventionDeclaration"];
+        else
+            $this->conventionDeclaration = null;
+
+        if (isset($data["constellationLanguage"]))
+            $this->constellationLanguage = $data["constellationLanguage"];
+        else
+            $this->constellationLanguage = null;
+
+        if (isset($data["constellationLanguageCode"]))
+            $this->constellationLanguageCode = $data["constellationLanguageCode"];
+        else
+            $this->constellationLanguageCode = null;
+
+        if (isset($data["constellationScript"]))
+            $this->constellationScript = $data["constellationScript"];
+        else
+            $this->constellationScript = null;
+
+        if (isset($data["constellationScriptCode"]))
+            $this->constellationScriptCode = $data["constellationScriptCode"];
+        else
+            $this->constellationScriptCode = null;
+
+        if (isset($data["language"]))
+            $this->language = $data["language"];
+        else
+            $this->language = null;
+
+        if (isset($data["languageCode"]))
+            $this->languageCode = $data["languageCode"];
+        else
+            $this->languageCode = null;
+
+        if (isset($data["script"]))
+            $this->script = $data["script"];
+        else
+            $this->script = null;
+
+        if (isset($data["scriptCode"]))
+            $this->scriptCode = $data["scriptCode"];
+        else
+            $this->scriptCode = null;
+
+        if (isset($data["biogHists"]))
+            $this->biogHists = $data["biogHists"];
+        else
+            $this->biogHists = array();
+
+        if (isset($data["existDatesNote"]))
+            $this->existDatesNote = $data["existDatesNote"];
+        else
+            $this->existDatesNote = null;
+
+        if (isset($data["subjects"]))
+            $this->subjects = $data["subjects"];
+        else
+            $this->subjects = array();
+
+        if (isset($data["nationality"]))
+            $this->nationality = $data["nationality"];
+        else
+            $this->nationality = null;
+
+        if (isset($data["gender"]))
+            $this->gender = $data["gender"];
+        else
+            $this->gender = null;
+
+        if (isset($data["generalContext"]))
+            $this->generalContext = $data["generalContext"];
+        else
+            $this->generalContext = null;
+
+        if (isset($data["structureOrGenealogy"]))
+            $this->structureOrGenealogy = $data["structureOrGenealogy"];
+        else
+            $this->structureOrGenealogy = null;
+
+        if (isset($data["mandate"]))
+            $this->mandate = $data["mandate"];
+        else
+            $this->mandate = null;
+
+        $this->maintenanceEvents = array();
+        if (isset($data["maintenanceEvents"])) {
+            foreach ($data["maintenanceEvents"] as $i => $entry)
+                $this->maintenanceEvents[$i] = new MaintenanceEvent($entry);
+        }
+
+        $this->nameEntries = array();
+        if (isset($data["nameEntries"])) {
+            foreach ($data["nameEntries"] as $i => $entry)
+                $this->nameEntries[$i] = new NameEntry($entry);
+        }
+
+        $this->occupations = array();
+        if (isset($data["occupations"])) {
+            foreach ($data["occupations"] as $i => $entry)
+                $this->occupations[$i] = new Occupation($entry);
+        }
+
+        $this->existDates = array();
+        if (isset($data["existDates"])) {
+            foreach ($data["existDates"] as $i => $entry)
+                $this->existDates[$i] = new SNACDate($entry);
+        }
+
+        $this->relations = array();
+        if (isset($data["relations"])) {
+            foreach ($data["relations"] as $i => $entry)
+                $this->relations[$i] = new ConstellationRelation($entry);
+        }
+
+        $this->resourceRelations = array();
+        if (isset($data["resourceRelations"])) {
+            foreach ($data["resourceRelations"] as $i => $entry)
+                $this->resourceRelations[$i] = new ResourceRelation($entry);
+        }
+
+        $this->functions = array();
+        if (isset($data["functions"])) {
+            foreach ($data["functions"] as $i => $entry)
+                $this->functions[$i] = new SNACFunction($entry);
+        }
+
+        $this->places = array();
+        if (isset($data["places"])) {
+            foreach ($data["places"] as $i => $entry)
+                $this->places[$i] = new Place($entry);
+        }
+
+        return true;
     }
 
     /**

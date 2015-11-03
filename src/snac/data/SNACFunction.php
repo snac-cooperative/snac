@@ -21,7 +21,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class SNACFunction {
+class SNACFunction extends AbstractData {
 
     /**
      *
@@ -54,17 +54,6 @@ class SNACFunction {
     private $vocabularySource;
     
     /**
-     * Constructor
-     *
-     * @param string[][] $data optional Associative array of data to fill this
-     *                                  object with.
-     */
-    public function __construct($data = null) {
-        if ($data != null && is_array($data))
-            $this->fromArray($data);
-    }
-
-    /**
      * Returns this object's data as an associative array
      *
      * @return string[][] This objects data in array form
@@ -74,7 +63,7 @@ class SNACFunction {
             "dataType" => "SNACFunction",
             "term" => $this->term,
             "type" => $this->type,
-            "dates" => $this->dates->toArray(),
+            "dates" => $this->dates == null ? null : $this->dates->toArray(),
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
         );
@@ -120,24 +109,6 @@ class SNACFunction {
 
     }
 
-    /**
-     * Convert this object to JSON
-     *
-     * @return string JSON encoding of this object
-     */
-    public function toJSON() {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
-    } 
-
-    /**
-     * Prepopulate this object from the given JSON
-     *
-     * @param string $json JSON encoding of this object
-     * @return boolean true on success, false on failure
-     */
-    public function fromJSON($json) {
-        return $this->fromArray(json_decode($json));
-    } 
     /**
      * Set the term of this function (controlled vocabulary)
      * 

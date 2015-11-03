@@ -23,7 +23,7 @@ namespace snac\data;
  * @author Robbie Hott
  *
  */
-class SNACDate {
+class SNACDate extends AbstractData {
 
     /**
      * @var string Begin date (if range)
@@ -86,17 +86,6 @@ class SNACDate {
     private $note;
 
     /**
-     * Constructor
-     *
-     * @param string[][] $data optional Associative array of data to fill this
-     *                                  object with.
-     */
-    public function __construct($data = null) {
-        if ($data != null && is_array($data))
-            $this->fromArray($data);
-    }
-
-    /**
      * Returns this object's data as an associative array
      *
      * @return string[][] This objects data in array form
@@ -119,15 +108,6 @@ class SNACDate {
         );
         return $return;
     }
-
-    /**
-     * Convert this object to JSON
-     *
-     * @return string JSON encoding of this object
-     */
-    public function toJSON() {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
-    } 
 
     /**
      * Replaces this object's data with the given associative array
@@ -202,16 +182,6 @@ class SNACDate {
         return true;
 
     }
-
-    /**
-     * Prepopulate this object from the given JSON
-     *
-     * @param string $json JSON encoding of this object
-     * @return boolean true on success, false on failure
-     */
-    public function fromJSON($json) {
-        return $this->fromArray(json_decode($json));
-    } 
 
     /**
      * Set whether or not this is a date range.

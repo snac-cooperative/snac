@@ -22,7 +22,7 @@ namespace snac\data;
  * @author Robbie Hott
  *
  */
-class Occupation {
+class Occupation extends AbstractData {
     
     /**
      * @var string Occupation controlled vocabulary term
@@ -40,6 +40,55 @@ class Occupation {
      * @var string Note attached to occupation
      */
     private $note = null;
+    
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "Occupation",
+            "term" => $this->term,
+            "vocabularySource" => $this->vocabularySource,
+            "dates" => $this->dates == null ? null : $this->dates->toArray(),
+            "note" => $this->note
+        );
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "Occupation")
+            return false;
+
+        if (isset($data["term"]))
+            $this->term = $data["term"];
+        else
+            $this->term = null;
+
+        if (isset($data["vocabularySource"]))
+            $this->vocabularySource = $data["vocabularySource"];
+        else
+            $this->vocabularySource = null;
+
+        if (isset($data["dates"]))
+            $this->dates = new SNACDate($data["dates"]);
+        else
+            $this->dates = null;
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
+    }
     
     /**
      * Set the occupation controlled vocabulary name
