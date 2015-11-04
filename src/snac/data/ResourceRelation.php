@@ -26,49 +26,50 @@ namespace snac\data;
 class ResourceRelation extends AbstractData {
 
     /**
-     *
+     * resourceRelation/@role
      * @var string Document type
      */
     private $documentType = null;
 
     /**
-     *
+     * resourceRelation/@type
      * @var string Link type
      */
     private $linkType = null;
     
     /**
+     * resourceRelation/relationEntry/@localType
      * @var string Relation entry type
      * 
      */
     private $entryType = null;
 
     /**
-     *
+     * resourceRelation/@href
      * @var string Link to external resource
      */
     private $link = null;
 
     /**
-     *
+     * resourceRelation/@arcrole
      * @var string Role in of the relation
      */
     private $role = null;
 
     /**
-     *
+     * resourceRelation/resourceEntry
      * @var string Content in the relation
      */
     private $content = null;
 
     /**
-     *
+     * resourceRelation/objectXMLWrap
      * @var string XML source of the resource relation
      */
     private $source = null;
 
     /**
-     *
+     * resourceRelation/descriptiveNote
      * @var string Note attached to relation
      */
     private $note = null;

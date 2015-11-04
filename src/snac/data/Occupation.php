@@ -25,18 +25,25 @@ namespace snac\data;
 class Occupation extends AbstractData {
     
     /**
+     * occupation/term
      * @var string Occupation controlled vocabulary term
      */
     private $term = null;
+
     /**
+     * occupation/term/@vocabularySource
      * @var string Vocabulary source for the occupation
      */
     private $vocabularySource = null;
+
     /**
+     * occupation/dateRange
      * @var \snac\data\SNACDate Date range for the occupation
      */
     private $dates = null;
+
     /**
+     * occupation/descriptiveNote
      * @var string Note attached to occupation
      */
     private $note = null;

@@ -25,66 +25,68 @@ namespace snac\data;
 class ConstellationRelation extends AbstractData {
 
     /**
-     *
+     * Postgres ID (source)
      * @var int Source constellation ID
      */
     private $sourceConstellation = null;
 
     /**
-     *
+     * Postgres ID (target)
      * @var int Target constellation ID
      */
     private $targetConstellation = null;
 
     /**
-     *
+     * ArkID of source
      * @var string Source constellation ARK ID
      */
     private $sourceArkID = null;
 
     /**
-     *
+     * cpfRelation/@href
      * @var string Target constellation ARK ID
      */
     private $targetArkID = null;
     
     /**
-     * 
+     * cpfRelation/@role
      * @var string Target entity type
      */
     private $targetEntityType = null;
 
     /**
-     *
+     * cpfRelation/@arcrole
      * @var string Type of the constellation
      */
     private $type = null;
 
     /**
-     *
+     * cpfRelation/@type
      * @var string Alternate type
      */
     private $altType = null;
     
     /**
-     * 
+     * cpfRelation/@cpfRelationType
      * @var string CPF Relation Type
      */
     private $cpfRelationType = null;
 
     /**
-     *
+     * cpfRelation/relationEntry
      * @var string Content of the relation
      */
     private $content = null;
     
     /**
+     * cpfRelation/date/*
+     * cpfRelation/dateRange/*
      * @var \snac\data\SNACDate Dates of thie relationship
      */
     private $dates = null;    
     
     /**
-     *
+     * cpfRelation/descriptiveNote
      * @var string Note attached to relation
      */
     private $note = null;

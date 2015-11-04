@@ -24,31 +24,32 @@ namespace snac\data;
 class Place extends AbstractData {
 
     /**
-     *
+     * place/date/*
+     * place/dateRange/*
      * @var \snac\data\SNACDate Date range the place is valid
      */
     private $dates;
 
     /**
-     *
+     * place/descriptiveNote
      * @var string Descriptive note
      */
     private $note;
 
     /**
-     *
+     * place/@localType
      * @var string Type of the place
      */
     private $type;
 
     /**
-     *
+     * place/placeRole
      * @var string Place role
      */
     private $role;
 
     /**
-     *
+     * place/placeEntry/*
      * @var \snac\data\PlaceEntry[] Place entries contained in this place
      */
     private $entries;

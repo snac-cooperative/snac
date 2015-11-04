@@ -24,31 +24,31 @@ namespace snac\data;
 class SNACFunction extends AbstractData {
 
     /**
-     *
+     * function/term
      * @var string Function controlled vocabulary term
      */
     private $term;
 
     /**
-     *
+     * function/@localType
      * @var string Type of the function
      */
     private $type;
 
     /**
-     *
+     * function/dateRange
      * @var \snac\data\SNACDate Date range of the function
      */
     private $dates;
 
     /**
-     *
+     * function/descriptiveNote
      * @var string Descriptive note for the function
      */
     private $note;
 
     /**
-     *
+     * function/term/@vocabularySource
      * @var string Vocabulary source for the function
      */
     private $vocabularySource;

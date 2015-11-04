@@ -26,61 +26,83 @@ namespace snac\data;
 class SNACDate extends AbstractData {
 
     /**
+     * dateRange/fromDate/@standardDate
+     * date/@standardDate
      * @var string Begin date (if range)
      */
     private $fromDate;
 
     /**
+     * dateRange/fromDate/
+     * date/
      * @var string Original string given for the from date
      */
     private $fromDateOriginal;
 
     /**
+     * dateRange/fromDate/@localType
+     * date/@localType
      * @var string Type of the from date
      */
     private $fromType;
 
     /**
+     * dateRange/fromDate/@standardDate (if negative)
+     * date/@standardDate (if negative)
      * @var boolean If the from date is BC
      */
     private $fromBC;
     
     /**
+     * dateRange/fromDate/@notBefore
+     * dateRange/fromDate/@notAfter
+     * date/@notBefore
+     * date/@notAfter
      * $var string[] From date range
      */
     private $fromRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
+     * dateRange/toDate/@standardDate
      * @var string End date (if range)
      */
     private $toDate;
 
     /**
+     * dateRange/toDate/
      * @var string Original string given for the to date
      */
     private $toDateOriginal;
 
     /**
+     * dateRange/toDate/@localType
      * @var string Type of the to date
      */
     private $toType;
 
     /**
+     * dateRange/toDate/@standardDate (if negative)
      * @var boolean If the to date is BC
      */
     private $toBC;
 
     /**
+     * dateRange/toDate/@notBefore
+     * dateRange/toDate/@notAfter
      * $var string[] To date range
      */
     private $toRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
+     * If this is a dateRange or just a date
      * @var boolean If this SNACDate object contains a range or a single date
      */
     private $isRange;
 
     /**
+     * dateRange/descriptiveNote
+     * date/descriptiveNote
+     * (currently not used)
      * @var string Note about this date
      */
     private $note;

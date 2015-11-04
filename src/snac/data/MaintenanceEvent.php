@@ -26,37 +26,38 @@ namespace snac\data;
 class MaintenanceEvent extends AbstractData {
 
     /*
-     *
+     * maintenanceEvent/eventType 
      * @var string Event type
      */
     private $eventType;
 
     /**
-     *
+     * maintenanceEvent/eventDateTime
      * @var string Date and Time string of the event
      */
     private $eventDateTime;
 
     /**
+     * maintenanceEvent/eventDateTime/@standardDateTime
      * @var string Standardized date time of the event
      * 
      */
     private $standardDateTime;
     
     /**
-     *
+     * maintenanceEvent/agentType
      * @var string Type of the agent performing the event
      */
     private $agentType;
 
     /**
-     *
+     * maintenanceEvent/agent
      * @var string Agent that performed the event
      */
     private $agent;
 
     /**
-     *
+     * maintenanceEvent/eventDescription
      * @var string Description of the event
      */
     private $eventDescription;

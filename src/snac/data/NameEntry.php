@@ -25,34 +25,39 @@ namespace snac\data;
 class NameEntry extends AbstractData {
 
     /**
-     *
+     * nameEntry/part
      * @var string Original name given in this entry
      */
     private $original;
 
     /**
-     *
+     * nameEntry/@preferenceScore
      * @var float Preference score given to this entry
      */
     private $preferenceScore;
 
     /**
-     *
+     * nameEntry/alternativeForm
+     * nameEntry/authorizedForm
+     * [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ] 
      * @var string[][] Contributors providing this name entry including their type for this name entry
      */
     private $contributors;
     
     /**
+     * nameEntry/@lang
      * @var string Language of the entry
      */
     private $language;
     
     /**
+     * nameEntry/@scriptcode
      * @var string Script code of the entry
      */
     private $scriptCode;
     
     /**
+     * nameEntry/useDates
      * @var \snac\data\SNACDate Use dates of the name entry
      */
     private $useDates;
