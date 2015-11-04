@@ -69,7 +69,10 @@ abstract class AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromJSON($json) {
-        return $this->fromArray(json_decode($json, true));
+        $data = json_decode($json, true);
+        $return = $this->fromArray($data);
+        unset($data);
+        return $return;
     } 
     
 

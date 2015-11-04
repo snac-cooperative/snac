@@ -307,168 +307,200 @@ class Constellation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
 
+        unset($this->ark);
         if (isset($data["ark"]))
             $this->ark = $data["ark"];
         else
             $this->ark = null;
 
+        unset($this->entityType);
         if (isset($data["entityType"]))
             $this->entityType = $data["entityType"];
         else
             $this->entityType = null;
 
+        unset($this->otherRecordIDs);
         if (isset($data["otherRecordIDs"]))
             $this->otherRecordIDs = $data["otherRecordIDs"];
         else
             $this->otherRecordIDs = array();
 
+        unset($this->maintenanceStatus);
         if (isset($data["maintenanceStatus"]))
             $this->maintenanceStatus = $data["maintenanceStatus"];
         else
             $this->maintenanceStatus = null;
 
+        unset($this->maintenanceAgency);
         if (isset($data["maintenanceAgency"]))
             $this->maintenanceAgency = $data["maintenanceAgency"];
         else
             $this->maintenanceAgency = null;
 
+        unset($this->sources);
         if (isset($data["sources"]))
             $this->sources = $data["sources"];
         else
             $this->sources = array();
 
+        unset($this->legalStatuses);
         if (isset($data["legalStatuses"]))
             $this->legalStatuses = $data["legalStatuses"];
         else
             $this->legalStatuses = array();
 
+        unset($this->conventionDeclaration);
         if (isset($data["conventionDeclaration"]))
             $this->conventionDeclaration = $data["conventionDeclaration"];
         else
             $this->conventionDeclaration = null;
 
+        unset($this->constellationLanguage);
         if (isset($data["constellationLanguage"]))
             $this->constellationLanguage = $data["constellationLanguage"];
         else
             $this->constellationLanguage = null;
 
+        unset($this->constellationLanguageCode);
         if (isset($data["constellationLanguageCode"]))
             $this->constellationLanguageCode = $data["constellationLanguageCode"];
         else
             $this->constellationLanguageCode = null;
 
+        unset($this->constellationScript);
         if (isset($data["constellationScript"]))
             $this->constellationScript = $data["constellationScript"];
         else
             $this->constellationScript = null;
 
+        unset($this->constellationScriptCode);
         if (isset($data["constellationScriptCode"]))
             $this->constellationScriptCode = $data["constellationScriptCode"];
         else
             $this->constellationScriptCode = null;
 
+        unset($this->language);
         if (isset($data["language"]))
             $this->language = $data["language"];
         else
             $this->language = null;
 
+        unset($this->languageCode);
         if (isset($data["languageCode"]))
             $this->languageCode = $data["languageCode"];
         else
             $this->languageCode = null;
 
+        unset($this->script);
         if (isset($data["script"]))
             $this->script = $data["script"];
         else
             $this->script = null;
 
+        unset($this->scriptCode);
         if (isset($data["scriptCode"]))
             $this->scriptCode = $data["scriptCode"];
         else
             $this->scriptCode = null;
 
+        unset($this->biogHists);
         if (isset($data["biogHists"]))
             $this->biogHists = $data["biogHists"];
         else
             $this->biogHists = array();
 
+        unset($this->existDatesNote);
         if (isset($data["existDatesNote"]))
             $this->existDatesNote = $data["existDatesNote"];
         else
             $this->existDatesNote = null;
 
+        unset($this->subjects);
         if (isset($data["subjects"]))
             $this->subjects = $data["subjects"];
         else
             $this->subjects = array();
 
+        unset($this->nationality);
         if (isset($data["nationality"]))
             $this->nationality = $data["nationality"];
         else
             $this->nationality = null;
 
+        unset($this->gender);
         if (isset($data["gender"]))
             $this->gender = $data["gender"];
         else
             $this->gender = null;
 
+        unset($this->generalContext);
         if (isset($data["generalContext"]))
             $this->generalContext = $data["generalContext"];
         else
             $this->generalContext = null;
 
+        unset($this->structureOrGenealogy);
         if (isset($data["structureOrGenealogy"]))
             $this->structureOrGenealogy = $data["structureOrGenealogy"];
         else
             $this->structureOrGenealogy = null;
 
+        unset($this->mandate);
         if (isset($data["mandate"]))
             $this->mandate = $data["mandate"];
         else
             $this->mandate = null;
 
+        unset($this->maintenanceEvents);
         $this->maintenanceEvents = array();
         if (isset($data["maintenanceEvents"])) {
             foreach ($data["maintenanceEvents"] as $i => $entry)
                 $this->maintenanceEvents[$i] = new MaintenanceEvent($entry);
         }
 
+        unset($this->nameEntries);
         $this->nameEntries = array();
         if (isset($data["nameEntries"])) {
             foreach ($data["nameEntries"] as $i => $entry)
                 $this->nameEntries[$i] = new NameEntry($entry);
         }
 
+        unset($this->occupations);
         $this->occupations = array();
         if (isset($data["occupations"])) {
             foreach ($data["occupations"] as $i => $entry)
                 $this->occupations[$i] = new Occupation($entry);
         }
 
+        unset($this->existDates);
         $this->existDates = array();
         if (isset($data["existDates"])) {
             foreach ($data["existDates"] as $i => $entry)
                 $this->existDates[$i] = new SNACDate($entry);
         }
 
+        unset($this->relations);
         $this->relations = array();
         if (isset($data["relations"])) {
             foreach ($data["relations"] as $i => $entry)
                 $this->relations[$i] = new ConstellationRelation($entry);
         }
 
+        unset($this->resourceRelations);
         $this->resourceRelations = array();
         if (isset($data["resourceRelations"])) {
             foreach ($data["resourceRelations"] as $i => $entry)
                 $this->resourceRelations[$i] = new ResourceRelation($entry);
         }
 
+        unset($this->functions);
         $this->functions = array();
         if (isset($data["functions"])) {
             foreach ($data["functions"] as $i => $entry)
                 $this->functions[$i] = new SNACFunction($entry);
         }
 
+        unset($this->places);
         $this->places = array();
         if (isset($data["places"])) {
             foreach ($data["places"] as $i => $entry)
