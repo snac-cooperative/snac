@@ -24,31 +24,46 @@ namespace snac\data;
 class SNACFunction extends AbstractData {
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * function/term
+     * 
      * @var string Function controlled vocabulary term
      */
     private $term;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * function/@localType
+     * 
      * @var string Type of the function
      */
     private $type;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * function/dateRange
+     * 
      * @var \snac\data\SNACDate Date range of the function
      */
     private $dates;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * function/descriptiveNote
+     * 
      * @var string Descriptive note for the function
      */
     private $note;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * function/term/@vocabularySource
+     * 
      * @var string Vocabulary source for the function
      */
     private $vocabularySource;

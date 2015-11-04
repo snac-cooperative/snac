@@ -25,66 +25,95 @@ namespace snac\data;
 class ConstellationRelation extends AbstractData {
 
     /**
-     *
+     * Postgres ID (source)
+     * 
      * @var int Source constellation ID
      */
     private $sourceConstellation = null;
 
     /**
-     *
+     * Postgres ID (target)
+     * 
      * @var int Target constellation ID
      */
     private $targetConstellation = null;
 
     /**
-     *
+     * ArkID of source
+     * 
      * @var string Source constellation ARK ID
      */
     private $sourceArkID = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/@href
+     * 
      * @var string Target constellation ARK ID
      */
     private $targetArkID = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/@role
      * 
      * @var string Target entity type
      */
     private $targetEntityType = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/@arcrole
+     * 
      * @var string Type of the constellation
      */
     private $type = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/@type
+     * 
      * @var string Alternate type
      */
     private $altType = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/@cpfRelationType
      * 
      * @var string CPF Relation Type
      */
     private $cpfRelationType = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/relationEntry
+     * 
      * @var string Content of the relation
      */
     private $content = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/date/*
+     * * cpfRelation/dateRange/*
+     * 
      * @var \snac\data\SNACDate Dates of thie relationship
      */
     private $dates = null;    
     
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * cpfRelation/descriptiveNote
+     * 
      * @var string Note attached to relation
      */
     private $note = null;

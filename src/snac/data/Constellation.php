@@ -26,179 +26,306 @@ namespace snac\data;
  */
 class Constellation extends AbstractData {
 
-    /*
-     *
+    /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/recordId
+     * 
      * @var string ARK identifier
      */
     private $ark = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/identity/entityType
+     * 
      * @var string Entity type
      */
     private $entityType = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/otherRecordId
+     * * eac-cpf/cpfDescription/identity/entityID
+     * 
      * @var string[] Other record IDs by which this constellation may be known
      */
     private $otherRecordIDs = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/maintenanceStatus
+     * 
      * @var string Current maintenance status
      */
     private $maintenanceStatus = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/maintenanceAgency/agencyName
+     * 
      * @var string Latest maintenance agency
      */
     private $maintenanceAgency = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/maintenanceHistory/maintenanceEvent/*
+     * 
      * @var \snac\data\MaintenanceEvent[] List of maintenance events performed on this constellation
      */
     private $maintenanceEvents = null;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * /eac-cpf/control/sources/source/@type
+     * * /eac-cpf/control/sources/source/@href
+     * 
+     * Stored as:
+     * ```
+     * [ [ "type"=> type, "href"=> href ], ... ]
+     * ```
      *
      * @var string[][] List of sources, each source is an array of type,value entries
      */
     private $sources = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/legalStatus/term
+     * * eac-cpf/cpfDescription/description/legalStatus/@vocabularySource
+     * 
+     * Stored as:
+     * ```
+     * [ ["term" => term, "vocabularySource" => vocSrc], ... ]
+     * ```
+     *
      * @var string[][] List of legal status, each status as an array of term,vocabularySource entries
      */
     private $legalStatuses = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/conventionDeclaration
+     * 
      * @var string Convention declaration
      */
     private $conventionDeclaration = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/languageDeclaration/language
+     * 
      * @var string Language used for Constellation Record
      */
     private $constellationLanguage = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/languageDeclaration/language/@languageCode
+     * 
      * @var string Language code used for Constellation Record
      */
     private $constellationLanguageCode = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/languageDeclaration/script
+     * 
      * @var string Script used for Constellation Record
      */
     private $constellationScript = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/control/languageDeclaration/script/@scriptCode
+     * 
      * @var string Script code used for Constellation Record
      */
     private $constellationScriptCode = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/languageUsed/language
+     * 
      * @var string Language used by the identity described
      */
     private $language = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/languageUsed/language/@languageCode
+     * 
      * @var string Language code used by the identity described
      */
     private $languageCode = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/languageUsed/script
+     * 
      * @var string Script used by the identity described
      */
     private $script = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/languageUsed/script/@scriptCode
+     * 
      * @var string Script code used by the identity described
      */
     private $scriptCode = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/identity/nameEntry
+     * 
      * @var \snac\data\NameEntry[] List of name entries for this constellation
      */
     private $nameEntries = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/occupation/*
+     * 
      * @var \snac\data\Occupation[] List of occupations
      */
     private $occupations = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/biogHist
+     * 
      * @var string[] BiogHist entries for this constellation (in XML strings)
      */
     private $biogHists = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/existDates/dateSet/dateRange/*
+     * * eac-cpf/cpfDescription/description/existDates/dateSet/date/*
+     * * eac-cpf/cpfDescription/description/existDates/dateRange/*
+     * * eac-cpf/cpfDescription/description/existDates/date/*
+     * 
      * @var \snac\data\SNACDate[] Exist dates for the entity
      */
     private $existDates = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/existDates/descriptiveNote
+     * 
      * @var string Note about the exist dates
      */
     private $existDatesNote = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/relations/cpfRelation/*
+     * 
      * @var \snac\data\ConstellationRelation[] Constellation relations
      */
     private $relations = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/relations/resourceRelation/*
+     * 
      * @var \snac\data\ResourceRelation[] Resource relations
      */
     private $resourceRelations = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/function/*
+     * 
      * @var \snac\data\SNACFunction Functions
      */
     private $functions = null;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/place/*
+     * 
      * @var \snac\data\Place[] Places
      */
     private $places = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
+     * 
      * @var string[] Subjects
      */
     private $subjects = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=nationalityOfEntity/term
+     * 
      * @var string nationality
      */
     private $nationality = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
+     * 
      * @var string Gender
      */
     private $gender = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/generalContext
+     * 
      * @var string General Context
      */
     private $generalContext = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/structureOrGenealogy
+     * 
      * @var string Structure Or Genealogy information
      */
     private $structureOrGenealogy = null;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/description/mandate
+     * 
      * @var string Mandate
      */
     private $mandate = null;

@@ -25,38 +25,57 @@ namespace snac\data;
  */
 class MaintenanceEvent extends AbstractData {
 
-    /*
-     *
+    /**
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/eventType 
+     * 
      * @var string Event type
      */
     private $eventType;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/eventDateTime
+     * 
      * @var string Date and Time string of the event
      */
     private $eventDateTime;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/eventDateTime/@standardDateTime
+     * 
      * @var string Standardized date time of the event
      * 
      */
     private $standardDateTime;
     
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/agentType
+     * 
      * @var string Type of the agent performing the event
      */
     private $agentType;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/agent
+     * 
      * @var string Agent that performed the event
      */
     private $agent;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * maintenanceEvent/eventDescription
+     * 
      * @var string Description of the event
      */
     private $eventDescription;

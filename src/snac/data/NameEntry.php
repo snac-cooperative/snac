@@ -25,34 +25,60 @@ namespace snac\data;
 class NameEntry extends AbstractData {
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/part
      *
      * @var string Original name given in this entry
      */
     private $original;
 
     /**
-     *
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/@preferenceScore
+     * 
      * @var float Preference score given to this entry
      */
     private $preferenceScore;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/alternativeForm
+     * * nameEntry/authorizedForm
      *
+     * Stored as:
+     * ```
+     * [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ] 
+     * ```
      * @var string[][] Contributors providing this name entry including their type for this name entry
      */
     private $contributors;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/@lang
+     * 
      * @var string Language of the entry
      */
     private $language;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/@scriptcode
+     * 
      * @var string Script code of the entry
      */
     private $scriptCode;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * nameEntry/useDates
+     * 
      * @var \snac\data\SNACDate Use dates of the name entry
      */
     private $useDates;

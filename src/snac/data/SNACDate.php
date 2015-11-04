@@ -26,61 +26,118 @@ namespace snac\data;
 class SNACDate extends AbstractData {
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/fromDate/@standardDate
+     * * date/@standardDate
+     * 
      * @var string Begin date (if range)
      */
     private $fromDate;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/fromDate/
+     * * date/
+     * 
      * @var string Original string given for the from date
      */
     private $fromDateOriginal;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/fromDate/@localType
+     * * date/@localType
+     * 
      * @var string Type of the from date
      */
     private $fromType;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/fromDate/@standardDate (if negative)
+     * * date/@standardDate (if negative)
+     * 
      * @var boolean If the from date is BC
      */
     private $fromBC;
     
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/fromDate/@notBefore
+     * * dateRange/fromDate/@notAfter
+     * * date/@notBefore
+     * * date/@notAfter
+     * 
      * $var string[] From date range
      */
     private $fromRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/toDate/@standardDate
+     * 
      * @var string End date (if range)
      */
     private $toDate;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/toDate/
+     * 
      * @var string Original string given for the to date
      */
     private $toDateOriginal;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/toDate/@localType
+     * 
      * @var string Type of the to date
      */
     private $toType;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/toDate/@standardDate (if negative)
+     *  
      * @var boolean If the to date is BC
      */
     private $toBC;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/toDate/@notBefore
+     * * dateRange/toDate/@notAfter
+     * 
      * $var string[] To date range
      */
     private $toRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
+     * If this is a dateRange or just a date
+     * 
      * @var boolean If this SNACDate object contains a range or a single date
      */
     private $isRange;
 
     /**
+     * From EAC-CPF tag(s):
+     * 
+     * * dateRange/descriptiveNote
+     * * date/descriptiveNote
+     * 
+     * (currently not used)
+     * 
      * @var string Note about this date
      */
     private $note;
