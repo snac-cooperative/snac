@@ -25,25 +25,37 @@ namespace snac\data;
 class Occupation extends AbstractData {
     
     /**
-     * occupation/term
+     * From EAC-CPF tag(s):
+     * 
+     * * occupation/term
+     * 
      * @var string Occupation controlled vocabulary term
      */
     private $term = null;
 
     /**
-     * occupation/term/@vocabularySource
+     * From EAC-CPF tag(s):
+     * 
+     * * occupation/term/@vocabularySource
+     * 
      * @var string Vocabulary source for the occupation
      */
     private $vocabularySource = null;
 
     /**
-     * occupation/dateRange
+     * From EAC-CPF tag(s):
+     * 
+     * * occupation/dateRange
+     * 
      * @var \snac\data\SNACDate Date range for the occupation
      */
     private $dates = null;
 
     /**
-     * occupation/descriptiveNote
+     * From EAC-CPF tag(s):
+     * 
+     * * occupation/descriptiveNote
+     * 
      * @var string Note attached to occupation
      */
     private $note = null;

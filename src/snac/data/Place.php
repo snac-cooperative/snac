@@ -24,32 +24,47 @@ namespace snac\data;
 class Place extends AbstractData {
 
     /**
-     * place/date/*
-     * place/dateRange/*
+     * From EAC-CPF tag(s):
+     * 
+     * * place/date/*
+     * * place/dateRange/*
+     * 
      * @var \snac\data\SNACDate Date range the place is valid
      */
     private $dates;
 
     /**
-     * place/descriptiveNote
+     * From EAC-CPF tag(s):
+     * 
+     * * place/descriptiveNote
+     * 
      * @var string Descriptive note
      */
     private $note;
 
     /**
-     * place/@localType
+     * From EAC-CPF tag(s):
+     * 
+     * * place/@localType
+     * 
      * @var string Type of the place
      */
     private $type;
 
     /**
-     * place/placeRole
+     * From EAC-CPF tag(s):
+     * 
+     * * place/placeRole
+     * 
      * @var string Place role
      */
     private $role;
 
     /**
-     * place/placeEntry/*
+     * From EAC-CPF tag(s):
+     * 
+     * * place/placeEntry/*
+     * 
      * @var \snac\data\PlaceEntry[] Place entries contained in this place
      */
     private $entries;

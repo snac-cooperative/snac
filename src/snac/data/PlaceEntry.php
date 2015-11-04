@@ -24,63 +24,93 @@ namespace snac\data;
 class PlaceEntry extends AbstractData {
 
     /**
-     * placeEntry/@latitude
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@latitude
+     * 
      * @var float Latitude
      */
     private $latitude;
 
     /**
-     * placeEntry/@longitude
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@longitude
+     * 
      * @var float Longitude
      */
     private $longitude;
 
     /**
-     * placeEntry/@administrationCode
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@administrationCode
+     * 
      * @var string administration code
      */
     private $administrationCode;
 
     /**
-     * placeEntry/@countryCode
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@countryCode
+     * 
      * @var string country code
      */
     private $countryCode;
 
     /**
-     * placeEntry/@vocabularySource
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@vocabularySource
+     * 
      * @var string vocabulary source (href)
      */
     private $vocabularySource;
 
     /**
-     * placeEntry/@certaintyScore
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@certaintyScore
+     * 
      * @var float certainty score of this entry
      */
     private $certaintyScore;
 
     /**
-     * placeEntry/
-     * snac:placeEntry/placeEntry
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/
+     * * snac:placeEntry/placeEntry
+     * 
      * @var string original text within this entry
      */
     private $original;
 
     /**
-     * snac:placeEntry/placeEntryBestMaybeSame
-     * snac:placeEntry/placeEntryLikelySame
+     * From EAC-CPF tag(s):
+     * 
+     * * snac:placeEntry/placeEntryBestMaybeSame
+     * * snac:placeEntry/placeEntryLikelySame
+     * 
      * @var \snac\data\PlaceEntry Best match for this place entry (BestMaybeSame or LikelySame)
      */
     private $bestMatch;
 
     /**
-     * snac:placeEntry/placeEntryMaybeSame
+     * From EAC-CPF tag(s):
+     * 
+     * * snac:placeEntry/placeEntryMaybeSame
+     * 
      * @var \snac\data\PlaceEntry[] Alternate matches for this place entry
      */
     private $maybeSame;
 
     /**
-     * placeEntry/@localType
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/@localType
+     * 
      * @var string type of the place entry
      */
     private $type;

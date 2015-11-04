@@ -26,50 +26,74 @@ namespace snac\data;
 class ResourceRelation extends AbstractData {
 
     /**
-     * resourceRelation/@role
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/@role
+     * 
      * @var string Document type
      */
     private $documentType = null;
 
     /**
-     * resourceRelation/@type
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/@type
+     * 
      * @var string Link type
      */
     private $linkType = null;
     
     /**
-     * resourceRelation/relationEntry/@localType
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/relationEntry/@localType
+     * 
      * @var string Relation entry type
      * 
      */
     private $entryType = null;
 
     /**
-     * resourceRelation/@href
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/@href
+     * 
      * @var string Link to external resource
      */
     private $link = null;
 
     /**
-     * resourceRelation/@arcrole
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/@arcrole
+     * 
      * @var string Role in of the relation
      */
     private $role = null;
 
     /**
-     * resourceRelation/resourceEntry
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/resourceEntry
+     * 
      * @var string Content in the relation
      */
     private $content = null;
 
     /**
-     * resourceRelation/objectXMLWrap
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/objectXMLWrap
+     * 
      * @var string XML source of the resource relation
      */
     private $source = null;
 
     /**
-     * resourceRelation/descriptiveNote
+     * From EAC-CPF tag(s):
+     * 
+     * * resourceRelation/descriptiveNote
+     * 
      * @var string Note attached to relation
      */
     private $note = null;
