@@ -21,7 +21,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class PlaceEntry {
+class PlaceEntry extends AbstractData {
 
     /**
      *
@@ -73,7 +73,7 @@ class PlaceEntry {
 
     /**
      *
-     * @var \snac\data\PlaceEntry Alternate matches for this place entry
+     * @var \snac\data\PlaceEntry[] Alternate matches for this place entry
      */
     private $maybeSame;
 
@@ -86,9 +86,104 @@ class PlaceEntry {
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct($data = null) {
 
         $this->maybeSame = array ();
+        parent::__construct($data);
+    }
+    
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "PlaceEntry",
+            "latitude" => $this->latitude,
+            "longitude" => $this->longitude,
+            "administrationCode" => $this->administrationCode,
+            "countryCode" => $this->countryCode,
+            "vocabularySource" => $this->vocabularySource,
+            "certaintyScore" => $this->certaintyScore,
+            "original" => $this->original,
+            "bestMatch" => $this->bestMatch == null ? null : $this->bestMatch->toArray(),
+            "maybeSame" => array(),
+            "type" => $this->type
+        );
+        foreach ($this->maybeSame as $i => $placeEntry)
+            $return["maybeSame"][$i] = $placeEntry->toArray();
+
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "PlaceEntry")
+            return false;
+
+        if (isset($data["latitude"]))
+            $this->latitude = $data["latitude"];
+        else
+            $this->latitude = null;
+
+        if (isset($data["longitude"]))
+            $this->longitude = $data["longitude"];
+        else
+            $this->longitude = null;
+
+        if (isset($data["administrationCode"]))
+            $this->administrationCode = $data["administrationCode"];
+        else
+            $this->administrationCode = null;
+
+        if (isset($data["countryCode"]))
+            $this->countryCode = $data["countryCode"];
+        else
+            $this->countryCode = null;
+
+        if (isset($data["vocabularySource"]))
+            $this->vocabularySource = $data["vocabularySource"];
+        else
+            $this->vocabularySource = null;
+
+        if (isset($data["certaintyScore"]))
+            $this->certaintyScore = $data["certaintyScore"];
+        else
+            $this->certaintyScore = null;
+
+        if (isset($data["original"]))
+            $this->original = $data["original"];
+        else
+            $this->original = null;
+
+        if (isset($data["bestMatch"]))
+            $this->bestMatch = new PlaceEntry($data["bestMatch"]);
+        else
+            $this->bestMatch = null;
+
+        if (isset($data["type"]))
+            $this->type = $data["type"];
+        else
+            $this->type = null;
+
+        $this->maybeSame = array();
+        if (isset($data["maybeSame"])) {
+            foreach ($data["maybeSame"] as $i => $entry)
+                $this->maybeSame[$i] = new PlaceEntry($entry);
+        }
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
     }
 
     /**

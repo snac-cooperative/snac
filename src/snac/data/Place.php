@@ -21,7 +21,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class Place {
+class Place extends AbstractData {
 
     /**
      *
@@ -56,9 +56,70 @@ class Place {
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct($data = null) {
 
         $this->entries = array ();
+        parent::__construct($data);
+    }
+    
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "Place",
+            "dates" => $this->dates == null ? null : $this->dates->toArray(),
+            "type" => $this->type,
+            "role" => $this->role,
+            "entries" => array(),
+            "note" => $this->note
+        );
+
+        foreach ($this->entries as $i => $entry) 
+            $return["entries"][$i] = $entry->toArray();
+        
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "Place")
+            return false;
+
+        if (isset($data["dates"]))
+            $this->dates = new SNACDate($data["dates"]);
+        else
+            $this->dates = null;
+
+        if (isset($data["type"]))
+            $this->type = $data["type"];
+        else
+            $this->type = null;
+
+        if (isset($data["role"]))
+            $this->role = $data["role"];
+        else
+            $this->role = null;
+
+        $this->entries = array();
+        if (isset($data["entries"])) {
+            foreach ($data["entries"] as $i => $entry)
+                $this->entries[$i] = new PlaceEntry($entry);
+        }
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
     }
 
     /**

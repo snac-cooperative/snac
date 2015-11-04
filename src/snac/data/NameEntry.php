@@ -22,7 +22,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class NameEntry {
+class NameEntry extends AbstractData {
 
     /**
      *
@@ -60,9 +60,73 @@ class NameEntry {
     /**
      * Constructor
      */
-    public function __construct() {
+    public function __construct($data = null) {
 
         $this->contributors = array ();
+        parent::__construct($data);
+    }
+    
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "NameEntry",
+            "original" => $this->original,
+            "preferenceScore" => $this->preferenceScore,
+            "contributors" => $this->contributors,      // already an array
+            "language" => $this->language,
+            "scriptCode" => $this->scriptCode,
+            "useDates" => $this->useDates == null ? null : $this->useDates->toArray()
+        );
+
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
+            return false;
+
+        if (isset($data["original"]))
+            $this->original = $data["original"];
+        else
+            $this->original = null;
+
+        if (isset($data["preferenceScore"]))
+            $this->preferenceScore = $data["preferenceScore"];
+        else
+            $this->preferenceScore = null;
+
+        if (isset($data["contributors"]))
+            $this->contributors = $data["contributors"];
+        else
+            $this->contributors = null;
+
+        if (isset($data["language"]))
+            $this->language = $data["language"];
+        else
+            $this->language = null;
+
+        if (isset($data["scriptCode"]))
+            $this->scriptCode = $data["scriptCode"];
+        else
+            $this->scriptCode = null;
+
+        if (isset($data["useDates"]))
+            $this->useDates = new SNACDate($data["useDates"]);
+        else
+            $this->useDates = null;
+
+
+        return true;
     }
 
     /**

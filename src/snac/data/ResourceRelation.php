@@ -23,7 +23,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class ResourceRelation {
+class ResourceRelation extends AbstractData {
 
     /**
      *
@@ -72,6 +72,80 @@ class ResourceRelation {
      * @var string Note attached to relation
      */
     private $note = null;
+
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "ResourceRelation",
+            "documentType" => $this->documentType,
+            "linkType" => $this->linkType,
+            "entryType" => $this->entryType,
+            "link" => $this->link,
+            "role" => $this->role,
+            "content" => $this->content,
+            "source" => $this->source,
+            "note" => $this->note
+        );
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "ResourceRelation")
+            return false;
+
+        if (isset($data["documentType"]))
+            $this->documentType = $data["documentType"];
+        else
+            $this->documentType = null;
+
+        if (isset($data["linkType"]))
+            $this->linkType = $data["linkType"];
+        else
+            $this->linkType = null;
+
+        if (isset($data["entryType"]))
+            $this->entryType = $data["entryType"];
+        else
+            $this->entryType = null;
+
+        if (isset($data["link"]))
+            $this->link = $data["link"];
+        else
+            $this->link = null;
+
+        if (isset($data["role"]))
+            $this->role = $data["role"];
+        else
+            $this->role = null;
+
+        if (isset($data["content"]))
+            $this->content = $data["content"];
+        else
+            $this->content = null;
+
+        if (isset($data["source"]))
+            $this->source = $data["source"];
+        else
+            $this->source = null;
+
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
+        return true;
+    }
+
 
     /**
      * Set the document type for this relation

@@ -1,0 +1,20 @@
+{
+    "dataType": "Constellation",
+    "nameEntries": [
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, 1743-1826.",
+            "preferenceScore": "99",
+            "contributors": [
+                {
+                    "type": "authorizedForm",
+                    "contributor": "VIAF"
+                }
+            ],
+            "language": null,
+            "scriptCode": null,
+            "useDates": null
+        }
+    ]
+}
+

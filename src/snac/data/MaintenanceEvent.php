@@ -23,9 +23,9 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class MaintenanceEvent {
+class MaintenanceEvent extends AbstractData {
 
-    /**
+    /*
      *
      * @var string Event type
      */
@@ -60,6 +60,67 @@ class MaintenanceEvent {
      * @var string Description of the event
      */
     private $eventDescription;
+    
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @return string[][] This objects data in array form
+     */
+    public function toArray() {
+        $return = array(
+            "dataType" => "MaintenanceEvent",
+            "eventType" => $this->eventType,
+            "eventDateTime" => $this->eventDateTime,
+            "standardDateTime" => $this->standardDateTime,
+            "agentType" => $this->agentType,
+            "agent" => $this->agent,
+            "eventDescription" => $this->eventDescription
+        );
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+        if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
+            return false;
+
+        if (isset($data["eventType"]))
+            $this->eventType = $data["eventType"];
+        else
+            $this->eventType = null;
+
+        if (isset($data["eventDateTime"]))
+            $this->eventDateTime = $data["eventDateTime"];
+        else
+            $this->eventDateTime = null;
+
+        if (isset($data["standardDateTime"]))
+            $this->standardDateTime = $data["standardDateTime"];
+        else
+            $this->standardDateTime = null;
+
+        if (isset($data["agent"]))
+            $this->agent = $data["agent"];
+        else
+            $this->agent = null;
+
+        if (isset($data["agentType"]))
+            $this->agentType = $data["agentType"];
+        else
+            $this->agentType = null;
+
+        if (isset($data["eventDescription"]))
+            $this->eventDescription = $data["eventDescription"];
+        else
+            $this->eventDescription = null;
+
+        return true;
+    }
 
     /**
      * Set the event type.
