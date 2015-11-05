@@ -101,9 +101,10 @@ class ResourceRelation extends AbstractData {
     /**
      * Returns this object's data as an associative array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
-    public function toArray() {
+    public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ResourceRelation",
             "documentType" => $this->documentType,
@@ -115,6 +116,17 @@ class ResourceRelation extends AbstractData {
             "source" => $this->source,
             "note" => $this->note
         );
+
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
         return $return;
     }
 

@@ -81,12 +81,13 @@ class Place extends AbstractData {
     /**
      * Returns this object's data as an associative array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
-    public function toArray() {
+    public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Place",
-            "dates" => $this->dates == null ? null : $this->dates->toArray(),
+            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "type" => $this->type,
             "role" => $this->role,
             "entries" => array(),
@@ -94,7 +95,18 @@ class Place extends AbstractData {
         );
 
         foreach ($this->entries as $i => $entry) 
-            $return["entries"][$i] = $entry->toArray();
+            $return["entries"][$i] = $entry->toArray($shorten);
+
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
         
         return $return;
     }

@@ -127,9 +127,10 @@ class PlaceEntry extends AbstractData {
     /**
      * Returns this object's data as an associative array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
-    public function toArray() {
+    public function toArray($shorten = true) {
         $return = array(
             "dataType" => "PlaceEntry",
             "latitude" => $this->latitude,
@@ -139,12 +140,23 @@ class PlaceEntry extends AbstractData {
             "vocabularySource" => $this->vocabularySource,
             "certaintyScore" => $this->certaintyScore,
             "original" => $this->original,
-            "bestMatch" => $this->bestMatch == null ? null : $this->bestMatch->toArray(),
+            "bestMatch" => $this->bestMatch == null ? null : $this->bestMatch->toArray($shorten),
             "maybeSame" => array(),
             "type" => $this->type
         );
         foreach ($this->maybeSame as $i => $placeEntry)
-            $return["maybeSame"][$i] = $placeEntry->toArray();
+            $return["maybeSame"][$i] = $placeEntry->toArray($shorten);
+
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
 
         return $return;
     }
