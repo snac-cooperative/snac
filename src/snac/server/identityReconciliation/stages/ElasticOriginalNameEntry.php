@@ -9,7 +9,7 @@ namespace snac\server\identityReconciliation\stages;
  *
  * @author Robbie Hott
  */
-class ElasticOriginalNameEntry extends helpers\elastic {
+class ElasticOriginalNameEntry extends helpers\Elastic {
 
     /**
      * @var string Name
@@ -22,7 +22,7 @@ class ElasticOriginalNameEntry extends helpers\elastic {
      * @param \identity $search The identity to parse
      * @return string The search string;
      */
-    protected function get_search_string($search) {
+    protected function getSearchString($search) {
         return $search->original_string;
     }
 }

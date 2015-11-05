@@ -13,7 +13,7 @@ namespace snac\server\identityReconciliation\weights\helper;
  * 
  * @author Robbie Hott
  */
-interface weight {
+interface Weight {
 
     /** 
      * Function that computes the strength/score of a vector by providing

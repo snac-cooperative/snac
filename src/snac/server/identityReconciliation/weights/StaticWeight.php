@@ -9,7 +9,7 @@ namespace snac\server\identityReconciliation\weights;
  * 
  * @author Robbie Hott
  */
-class static_weight implements helpers\weight {
+class StaticWeight implements helpers\Weight {
 
     /**
      * Implements the compute method in the weight interface.

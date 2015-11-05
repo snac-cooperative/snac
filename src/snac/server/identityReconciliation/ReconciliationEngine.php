@@ -1,6 +1,6 @@
 <?php
 /**
- * Idenitty Reconciliation Engine  File
+ * Identity Reconciliation Engine  File
  *
  * Contains the main identity reconciliation engine code 
  *
@@ -15,7 +15,7 @@
 namespace snac\server\identityReconciliation;
 
 /**
- * Name Reconciliation Engine (Main Class)
+ * Identity Reconciliation Engine (Main Class)
  *
  * This class provides the meat of the reconciliation engine. To run the
  * reconciliation engine, create an instance of this class and call the
@@ -29,7 +29,7 @@ class ReconciliationEngine {
      * @var array Raw test results directly from the tests.  This is going to be per
      * test, then per ID.  Later, they will be parsed into a per ID, per test.
      */
-    private $raw_results;
+    private $rawResults;
 
     /**
      * @var array Array of tests to perform on the string.  These will have a listing in
@@ -52,7 +52,7 @@ class ReconciliationEngine {
     /**
      * @var number Number of results to return
      */
-    private $num_results = 25;
+    private $numResults = 25;
 
     /**
      * Constructor
@@ -61,7 +61,7 @@ class ReconciliationEngine {
         $this->raw_results = array();
         $this->tests = array();
         $this->results = array();
-        $this->weight = new weights\static_weight();
+        $this->weight = new weights\StaticWeight();
         return;
     }
 
@@ -79,7 +79,7 @@ class ReconciliationEngine {
      *
      * @param string $stage name of the stage to include
      */
-    public function add_stage($stage) {
+    public function addStage($stage) {
         // Load the class as a reflection
         $class = new \ReflectionClass("snac\server\identityReconciliation\stages\\".$stage);
         
@@ -105,33 +105,33 @@ class ReconciliationEngine {
      * This function does the reconciliation and returns the top identity from
      * the engine.  Other top identities and their corresponding score vectors
      * may be obtained by other functions within this class.  
-     * @param identity $identity The identity to be searched. This identity 
+     * @param \snac\data\Constellation $identity The constellation to be searched. This identity 
      * must be in the proper form 
      * @return identity The top identity by the reconciliation
      * engine
      */
     public function reconcile($identity) {
-	unset($this->raw_results);
-	unset($this->results);
-        $this->raw_results = array();
+        unset($this->rawResults);
+        unset($this->results);
+        $this->rawResults = array();
         $this->results = array();
-        $this->weight = new weights\static_weight();
+        $this->weight = new weights\StaticWeight();
         // Run the tests and collect the results
         foreach ($this->tests as $test) {
-            $this->raw_results[$test->get_name()] = $test->run($identity, null);
+            $this->rawResults[$test->getName()] = $test->run($identity, null);
         }
 
         // Fix up the results by organizing them by name, then by test
-        $this->collate_results();
+        $this->collateResults();
 
         // Generate all the scores
-        $this->generate_scores();
+        $this->generateScores();
 
         // Sort by score
-        $this->sort_results();
+        $this->sortResults();
 
         // Return the top result from the list
-        return $this->top_result();
+        return $this->topResult();
     }
 
     /**
@@ -141,7 +141,7 @@ class ReconciliationEngine {
      *
      * @return identity The top identity by the reconciliation engine
      */
-    public function top_result() {
+    public function topResult() {
         if (count($this->results) > 0)
             return $this->results[0]["identity"];
         else
@@ -155,7 +155,7 @@ class ReconciliationEngine {
      *
      * @return array The result vector for the top result
      */
-    public function top_vector() {
+    public function topVector() {
         if (count($this->results) > 0) 
             return $this->results[0]["vector"];
         else
@@ -169,8 +169,8 @@ class ReconciliationEngine {
      *
      * @return float The numerical value for the top result
      */
-    public function top_value() {
-        if ($this->top_vector() != null) 
+    public function topValue() {
+        if ($this->topVector() != null) 
             return $this->results[0]["score"];
         else
             return 0;
@@ -181,7 +181,7 @@ class ReconciliationEngine {
      *
      * Generates all the scores for each vector in the results
      */
-    public function generate_scores() {
+    public function generateScores() {
         foreach ($this->results as $i => $res) {
             $this->results[$i]["score"] = $this->weight->compute($res["vector"]);
         }
@@ -195,11 +195,11 @@ class ReconciliationEngine {
      * Specifically, it takes the results of the per-test values and returns
      * them per-id.
      */
-    public function collate_results() {
+    public function collateResults() {
         $tmp = array();
         $all = array();
-        foreach ($this->raw_results as $test => $res_list) {
-            foreach ($res_list as $res) {
+        foreach ($this->rawResults as $test => $resList) {
+            foreach ($resList as $res) {
                 $k = null;
                 
                 if ($res["id"] == null) {
@@ -235,8 +235,8 @@ class ReconciliationEngine {
      *
      * Sorts the results by score, highest to lowest
      */
-    private function sort_results() {
-        usort($this->results, array("reconciliation_engine\\reconciliation_engine", "results_rsort"));
+    private function sortResults() {
+        usort($this->results, array("\\snac\\server\\identityReconciliation\\ReconciliationEngine", "resultsRsort"));
     }
 
     /**
@@ -244,14 +244,14 @@ class ReconciliationEngine {
      *
      * @return array The full array of results
      */
-    public function get_results() {
-        return array_splice($this->results,0,$this->num_results);
+    public function getResults() {
+        return array_splice($this->results,0,$this->numResults);
     }
     
     /**
      * Reverse sort of results
      */
-    public static function results_rsort($a, $b) {
+    public static function resultsRsort($a, $b) {
          if ($a["score"] == $b["score"])
              return 0;
          return ($a["score"] < $b["score"]) ? 1 : -1;
