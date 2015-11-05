@@ -358,9 +358,10 @@ class Constellation extends AbstractData {
     /**
      * Returns this object's data as an associative array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
-    public function toArray() {
+    public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Constellation",
             "ark" => $this->ark,
@@ -398,28 +399,38 @@ class Constellation extends AbstractData {
         );
 
         foreach ($this->maintenanceEvents as $i => $v)
-            $return["maintenanceEvents"][$i] = $v->toArray();
+            $return["maintenanceEvents"][$i] = $v->toArray($shorten);
 
         foreach ($this->nameEntries as $i => $v)
-            $return["nameEntries"][$i] = $v->toArray();
+            $return["nameEntries"][$i] = $v->toArray($shorten);
 
         foreach ($this->occupations as $i => $v)
-            $return["occupations"][$i] = $v->toArray();
+            $return["occupations"][$i] = $v->toArray($shorten);
 
         foreach ($this->existDates as $i => $v)
-            $return["existDates"][$i] = $v->toArray();
+            $return["existDates"][$i] = $v->toArray($shorten);
 
         foreach ($this->relations as $i => $v)
-            $return["relations"][$i] = $v->toArray();
+            $return["relations"][$i] = $v->toArray($shorten);
 
         foreach ($this->resourceRelations as $i => $v)
-            $return["resourceRelations"][$i] = $v->toArray();
+            $return["resourceRelations"][$i] = $v->toArray($shorten);
 
         foreach ($this->functions as $i => $v)
-            $return["functions"][$i] = $v->toArray();
+            $return["functions"][$i] = $v->toArray($shorten);
 
         foreach ($this->places as $i => $v)
-            $return["places"][$i] = $v->toArray();
+            $return["places"][$i] = $v->toArray($shorten);
+
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
 
         return $return;
     }

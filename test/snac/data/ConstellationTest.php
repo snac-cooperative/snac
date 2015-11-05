@@ -54,7 +54,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
 
         $identity->fromJSON($jsonIn);
 
-        $this->assertEquals($jsonIn, $identity->toJSON());
+        $this->assertEquals($jsonIn, $identity->toJSON(false));
     }
     
     /**
@@ -67,7 +67,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
         $identity->fromJSON($jsonIn);
 
         unset($jsonIn);
-        $arrayOut = json_decode($identity->toJSON(), true);
+        $arrayOut = json_decode($identity->toJSON(false), true);
 
         $this->assertEquals($arrayIn, $arrayOut);
     }
@@ -99,7 +99,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
             $identity->fromJSON($jsonIn);
             $arrayIn = json_decode($jsonIn, true);
             unset($jsonIn);
-            $this->assertEquals($arrayIn, $identity->toArray());
+            $this->assertEquals($arrayIn, $identity->toArray(false));
             unset($identity);
             unset($arrayIn);
         }
@@ -115,7 +115,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
         $identity->fromJSON($jsonIn);
 
         $arrayIn = json_decode($jsonIn, true);
-        $idArray = $identity->toArray();
+        $idArray = $identity->toArray(false);
 
         $this->assertEquals($arrayIn["nameEntries"], $idArray["nameEntries"]);
     }

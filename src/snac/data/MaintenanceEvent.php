@@ -83,9 +83,10 @@ class MaintenanceEvent extends AbstractData {
     /**
      * Returns this object's data as an associative array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
-    public function toArray() {
+    public function toArray($shorten = true) {
         $return = array(
             "dataType" => "MaintenanceEvent",
             "eventType" => $this->eventType,
@@ -95,6 +96,17 @@ class MaintenanceEvent extends AbstractData {
             "agent" => $this->agent,
             "eventDescription" => $this->eventDescription
         );
+
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
         return $return;
     }
 

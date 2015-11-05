@@ -42,9 +42,10 @@ abstract class AbstractData {
     /**
      * Required method to convert this data object to an array
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This object as an associative array
      */
-    public abstract function toArray();
+    public abstract function toArray($shorten = true);
 
     /**
      * Required method to import an array into this data object
@@ -56,10 +57,11 @@ abstract class AbstractData {
     /**
      * Convert this object to JSON
      *
+     * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string JSON encoding of this object
      */
-    public function toJSON() {
-        return json_encode($this->toArray(), JSON_PRETTY_PRINT);
+    public function toJSON($shorten = true) {
+        return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
     } 
 
     /**
