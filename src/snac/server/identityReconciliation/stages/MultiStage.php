@@ -63,8 +63,8 @@ class MultiStage implements helpers\Stage {
      * stage, each subsequent stage is given the former stage's result set as
      * the list.
      *
-     * @param \identity $search The identity to be evaluated.
-     * @param \identity[] $list A list of identities to evaluate against.  This
+     * @param \snac\data\Constellation $search The constellation to be evaluated.
+     * @param \snac\data\Constellation[] $list A list of constellations to evaluate against.  This
      * may be null.  
      * @return array An array of results from the final stage that has been
      * run or an empty array.

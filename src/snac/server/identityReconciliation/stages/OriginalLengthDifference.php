@@ -34,8 +34,8 @@ class OriginalLengthDifference implements helpers\Stage {
      *
      * `result = -1 * ln( abs( len(search) - len(other) ) )`
      *
-     * @param \identity $search The identity to be evaluated.
-     * @param \identity[] $list A list of identities to evaluate against.  This
+     * @param \snac\data\Constellation $search The constellation to be evaluated.
+     * @param \snac\data\Constellation[] $list A list of constellation to evaluate against.  This
      * may be null.  
      * @return array An array of results.  On error, it must at least
      * return an empty array. It may not return null.
@@ -50,7 +50,7 @@ class OriginalLengthDifference implements helpers\Stage {
 
         foreach ($list as $id) {
             // Compute the strength value
-            $diff = strlen($search->original_string) - strlen($id->original_string);
+            $diff = strlen($search->getPreferredNameEntry()) - strlen($id->getPreferredNameEntry());
             $diff = abs($diff);
             $result = 0;
             if ($diff > 0)

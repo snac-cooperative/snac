@@ -52,8 +52,8 @@ abstract class Elastic implements Stage {
      *
      * Performs the body of the stage
      *
-     * @param \identity $search The identity to be evaluated.
-     * @param \identity[] $list A list of identities to evaluate against.  This
+     * @param \snac\data\Constellation $search The identity to be evaluated.
+     * @param \snac\data\Constellation[] $list A list of identities to evaluate against.  This
      * may be null.  
      * @return array An array of matches and strengths,
      * `{"id":identity, "strength":float}`.
@@ -75,12 +75,12 @@ abstract class Elastic implements Stage {
         $searchParams['index'] = 'snac';
         $searchParams['type']  = 'name_and_rels';
         $searchParams['body']['query']['match'][$this->field]["query"] = $search_string;
-        if ($this->min_match != null)
-            $searchParams['body']['query']['match'][$this->field]['minimum_should_match'] = $this->min_match;
+        if ($this->minMatch != null)
+            $searchParams['body']['query']['match'][$this->field]['minimum_should_match'] = $this->minMatch;
         if ($this->operator != null)
             $searchParams['body']['query']['match'][$this->field]['operator'] = $this->operator;
-        if ($this->num_results != null)
-            $searchParams['body']['size'] = $this->num_results;
+        if ($this->numResults != null)
+            $searchParams['body']['size'] = $this->numResults;
 
         // Run the query
         $queryResponse = $client->search($searchParams);
@@ -88,10 +88,15 @@ abstract class Elastic implements Stage {
         // Return the results
         $results = array();
         foreach($queryResponse["hits"]["hits"] as $hit) {
-            $id = new \reconciliation_engine\identity\identity($hit["_source"]["official"]);
-            $id->cpf_postgres_id = $hit["_source"]["cpf_id"];
-            $id->cpf_ark_id = $hit["_source"]["ark_id"];
-            $id->publicity = $hit["_source"]["num_relations"]; 
+            $id = new \snac\data\Constellation();
+            $name = new \snac\data\NameEntry();
+            $name->setOriginal($hit["_source"]["official"]);
+            $id->addNameEntry($name);
+            $id->setArkID($hit["_source"]["ark_id"]);
+            // TODO: later, we can just ask postgres for the whole constellation
+            // but for now, we must just generate one on the fly
+            $id->setNumberOfRelations($hit["_source"]["num_relations"]);
+
             array_push($results, 
                 array("id"=> $id, "strength"=> $hit["_score"]));
         }

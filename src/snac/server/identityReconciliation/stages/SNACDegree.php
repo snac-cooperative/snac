@@ -29,8 +29,8 @@ class SNACDegree implements helpers\Stage {
      * Calculates the natural log of the original_string and returns it as a
      * global modifier to all results.
      *
-     * @param \identity $search The identity to be evaluated.
-     * @param \identity[] $list A list of identities to evaluate against.  This
+     * @param \snac\data\Constellation $search The constellation to be evaluated.
+     * @param \snac\data\Constellation[] $list A list of constellations to evaluate against.  This
      * may be null.  
      * @return array 
      *      
@@ -41,8 +41,9 @@ class SNACDegree implements helpers\Stage {
 
         foreach ($list as $id) {
             $result = 0;
-            if ($id->snacDegree != null && $id->snacDegree > 0)
-                $result = 5 * log($id->snacDegree);
+            $degree = $id->getNumberOfRelations();
+            if ($degree != null && $degree > 0)
+                $result = 5 * log($degree);
             if (is_nan($result) || is_infinite($result))
                 $result = 0;
 

@@ -176,6 +176,16 @@ class NameEntry extends AbstractData {
 
         $this->original = $original;
     }
+
+    /**
+     * Get the original name.
+     * 
+     * @return string Original name
+     */
+    public function getOriginal() {
+
+        return $this->original;
+    }
     
     /**
      * Set the language

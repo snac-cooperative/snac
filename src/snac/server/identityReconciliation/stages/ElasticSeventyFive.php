@@ -25,10 +25,10 @@ class ElasticSeventyFive extends helpers\Elastic {
     /**
      * Choose what parts to search
      *
-     * @param \identity $search The identity to parse
+     * @param \snac\data\Constellation $search The constellation to parse
      * @return string The search string;
      */
     protected function getSearchString($search) {
-        return $search->original_string;
+        return $search->getPreferredNameEntry();
     }
 }

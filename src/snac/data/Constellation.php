@@ -241,11 +241,17 @@ class Constellation extends AbstractData {
     private $existDatesNote = null;
 
     /**
-     * From EAC-CPF tag(s):
      * 
-     * * eac-cpf/cpfDescription/relations/cpfRelation/*
+     * @var int number of relations (used to store partial Constellations) 
+     */
+    private $numberOfRelations = null;
+
+    /**
+     * from eac-cpf tag(s):
      * 
-     * @var \snac\data\ConstellationRelation[] Constellation relations
+     * * eac-cpf/cpfdescription/relations/cpfrelation/*
+     * 
+     * @var \snac\data\constellationrelation[] constellation relations
      */
     private $relations = null;
 
@@ -659,6 +665,16 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get the ARK ID
+     *
+     * @return string Ark ID for this constellation
+     */
+    public function getArkID() {
+
+        return $this->ark;
+    }
+
+    /**
      * Set Entity type
      *
      * @param string $type Entity type
@@ -879,6 +895,25 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Set the number of Constellation Relations attributed 
+     *
+     * @param int $num number of relations
+     */
+    public function setNumberOfRelations($num) {
+        $this->numberOfRelations = $num;
+    }
+
+    /**
+     * Get the number of Constellation Relations attributed 
+     *
+     * @return int number of relations
+     */
+    public function getNumberOfRelations() {
+        return $this->numberOfRelations != null ? 
+            $this->numberOfRelations : count($this->relations);
+    }
+
+    /**
      * Add relation to a resource
      *
      * @param \snac\data\ResourceRelation $relation Relation object defining the relationship
@@ -933,5 +968,30 @@ class Constellation extends AbstractData {
      */
     public function setMandate($mandate) {
         $this->mandate = $mandate;
+    }
+
+    /**
+     * Gets the preferred name entry string
+     *
+     * @return string preferred name entry string
+     */
+    public function getPreferredNameEntry() {
+        if (isset($this->nameEntries[0]))
+            return $this->nameEntries[0]->getOriginal();
+        else
+            return "";
+    }
+
+    /**
+     * Gets the preferred name entry string (name only)
+     *
+     * @return string preferred name entry string
+     */
+    public function getPreferredNameOnly() {
+        // TODO: fix this
+        if (isset($this->nameEntries[0]))
+            return $this->nameEntries[0]->getOriginal();
+        else
+            return "";
     }
 }

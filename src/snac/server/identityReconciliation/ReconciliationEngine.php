@@ -81,7 +81,7 @@ class ReconciliationEngine {
      */
     public function addStage($stage) {
         // Load the class as a reflection
-        $class = new \ReflectionClass("snac\server\identityReconciliation\stages\\".$stage);
+        $class = new \ReflectionClass("\\snac\\server\\identityReconciliation\\stages\\".$stage);
         
         if (func_num_args() < 2) {
             // If only one argument, then create with no params
@@ -207,7 +207,7 @@ class ReconciliationEngine {
                     $all[$test] = $res["strength"];
                 } else {
                     // Get Unique ID for this identity
-                    $k = $res["id"]->unique_id();
+                    $k = $res["id"]->getArkID();
                     // Create entry in the array if it doesn't exist
                     if (!array_key_exists($k, $tmp)) {
                         $tmp[$k] = array("identity"=>$res["id"],

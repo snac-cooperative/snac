@@ -1,5 +1,5 @@
 <?php
-namespace snac\server\identityReconciliation\weights\helper;
+namespace snac\server\identityReconciliation\weights\helpers;
 
 /**
  * Weight Interface 
