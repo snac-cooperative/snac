@@ -740,14 +740,18 @@ class EACCPFParser {
                                         $relation->setTargetArkID($ratts['href']);
                                         $relation->setTargetType($ratts['role']);
                                         $relation->setAltType($ratts["type"]);
-                                        $relation->setCPFRelationType($ratts['cpfRelationType']);
+                                        if (isset($ratts['cpfRelationType'])) {
+                                            $relation->setCPFRelationType($ratts['cpfRelationType']);
+                                        }
                                         unset($ratts["arcrole"]);
                                         unset($ratts["href"]);
                                         unset($ratts["role"]);
                                         unset($ratts["type"]);
                                         unset($ratts["cpfRelationType"]);
                                         $children = $this->getChildren($rel);
-                                        $relation->setContent((string) $children[0]);
+                                        if (! empty($children)) {
+                                            $relation->setContent((string) $children[0]);
+                                        }
                                         foreach ($children as $child) {
                                             switch ($child->getName()) {
                                                 case "relationEntry":
