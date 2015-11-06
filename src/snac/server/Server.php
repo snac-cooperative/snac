@@ -39,7 +39,13 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     private $responseHeaders = array (
             "Content-Type: application/json"
-    );
+        );
+
+    /**
+     * Response Array
+     * @var string[] Response
+     */
+    private $response = array();
 
     /**
      *
@@ -58,6 +64,9 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $this->input = $input;
         $this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
+        $this->response = array(
+                "request" => $this->input,
+        );
     }
 
     /**
@@ -66,6 +75,24 @@ class Server implements \snac\interfaces\ServerInterface {
      * Starts the server
      */
     public function run() {
+
+        // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
+
+        switch ($this->input["command"]) {
+
+            case "reconcile":
+
+                break;
+            case "edit":
+                // Create new parser for this file and parse it
+                $parser = new \snac\util\EACCPFParser();
+                $id = $parser->parseFile("http://socialarchive.iath.virginia.edu/snac/data/99166-w6v1266v.xml");
+                $this->response["constellation"] = $id->toArray();
+                break;
+            default:
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);    
+
+        }
 
         return;
     }
@@ -96,11 +123,7 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function getResponse() {
         // TODO: Fill in body
-        $response = array (
-                "message" => "Successfully Queried",
-                "request" => $this->input,
-                "timing" => round((microtime(true) - $this->timing) * 1000, 2)
-        );
-        return json_encode($response, JSON_PRETTY_PRINT);
+        $this->response["timing"] =round((microtime(true) - $this->timing) * 1000, 2);
+        return json_encode($this->response, JSON_PRETTY_PRINT);
     }
 }
