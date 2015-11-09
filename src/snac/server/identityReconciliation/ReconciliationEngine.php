@@ -215,6 +215,7 @@ class ReconciliationEngine {
                     }
                     // Store the strength value in the vector
                     $tmp[$k]->setScore($test, $res->getStrength());
+                    $tmp[$k]->setMultipleProperties($res->getAllProperties());
                 }
             }
         }
@@ -253,7 +254,7 @@ class ReconciliationEngine {
     public static function resultsRsort($a, $b) {
          if ($a->getStrength() == $b->getStrength())
              return 0;
-         return ($a->getStrength() < $b->getStrengh()) ? 1 : -1;
+         return ($a->getStrength() < $b->getStrength()) ? 1 : -1;
      }
 
 }

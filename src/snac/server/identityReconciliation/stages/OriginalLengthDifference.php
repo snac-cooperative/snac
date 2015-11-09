@@ -58,7 +58,7 @@ class OriginalLengthDifference implements helpers\Stage {
 
             $result = new \snac\data\ReconciliationResult();
             $result->setIdentity($res->getIdentity());
-            $result->setStrength($resultDiff)
+            $result->setStrength($resultDiff);
             // Save the result
             array_push($results, $result);
         }

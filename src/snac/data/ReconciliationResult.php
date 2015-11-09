@@ -24,11 +24,11 @@ namespace snac\data;
  *
  * @author Robbie Hott
  */
-abstract class ReconciliationResult extends AbstractData {
+class ReconciliationResult extends AbstractData {
 
 
-    private float $strength = 0;
-    private \snac\data\Constellation $identity;
+    private $strength = 0;
+    private $identity;
     private $properties;
     private $vector;
 
@@ -41,13 +41,13 @@ abstract class ReconciliationResult extends AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
-        $this->properties = new array();
-        $this->vector = new array();
+        $this->properties = array();
+        $this->vector = array();
         if ($data != null)
             parent::__construct($data);
     }
 
-    public function setStrength(float $strength) {
+    public function setStrength($strength) {
         $this->strength = $strength;
     }
 
@@ -55,7 +55,7 @@ abstract class ReconciliationResult extends AbstractData {
         return $this->strength;
     }
 
-    public function setIdentity(\snac\data\Constellation $id) {
+    public function setIdentity($id) {
         $this->identity = $id;
     }
 
@@ -63,21 +63,21 @@ abstract class ReconciliationResult extends AbstractData {
         return $this->identity;
     }
 
-    public function setProperty(string $name, $value) {
+    public function setProperty($name, $value) {
         $this->properties[$name] = $value;
     }
 
-    public function getProperty(string $name) {
+    public function getProperty($name) {
         if (isset($this->properties[$name]))
             return $this->properties[$name];
         return null;
     }
 
-    public function addScore(string $test, float $score) {
+    public function setScore($test, $score) {
         $this->vector[$test] = $score;
     }
 
-    public function getScore(string $test) {
+    public function getScore($test) {
         if (isset($this->vector[$test]))
             return $this->vector[$test];
         return 0;
@@ -87,6 +87,13 @@ abstract class ReconciliationResult extends AbstractData {
         return $this->vector;
     }
 
+    public function setMultipleProperties($properties) {
+        $this->properties = array_merge($this->properties, $properties);
+    }
+
+    public function getAllProperties($properties) {
+        return $this->properties;
+    }
     
     /**
      * Required method to convert this data object to an array
@@ -94,8 +101,18 @@ abstract class ReconciliationResult extends AbstractData {
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This object as an associative array
      */
-    public abstract function toArray($shorten = true) {
-        ;
+    public function toArray($shorten = true) {
+        $array = array();
+        $array["strength"] = $this->strength;
+        if ($this->identity != null)
+            $array["identity"] = $this->identity->toArray();
+        else if (!$shorten) 
+            $array["identity"] = null;
+        if ($this->vector != null || !$shorten)
+            $array["vector"] = $this->vector;
+        if ($this->properties != null || !$shorten)
+        $array["properties"] = $this->properties;
+        return $array;
     }
 
     /**
@@ -103,8 +120,11 @@ abstract class ReconciliationResult extends AbstractData {
      *
      * @param string[][] $data The data for this object in an associative array
      */
-    public abstract function fromArray($data) {
-        ;
+    public function fromArray($data) {
+        $this->strength = $data["strength"];
+        $this->identity = new \snac\data\Constellation($data["identity"]);
+        $this->vector = $data["vector"];
+        $this->properties = $data["properties"];
     }
     
 
