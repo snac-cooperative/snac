@@ -27,9 +27,21 @@ namespace snac\data;
 class ReconciliationResult extends AbstractData {
 
 
+    /**
+     * @var float strength of this result
+     */
     private $strength = 0;
+    /**
+     * @var \snac\data\Constellation Identity for this result
+     */
     private $identity;
+    /**
+     * @var string[] List of properties for this result
+     */
     private $properties;
+    /**
+     * @var float[] Score vector for this result
+     */
     private $vector;
 
 
@@ -47,51 +59,102 @@ class ReconciliationResult extends AbstractData {
             parent::__construct($data);
     }
 
+    /**
+     * Set overall strength for this result
+     * @param float $strength strength
+     */
     public function setStrength($strength) {
         $this->strength = $strength;
     }
 
+    /**
+     * Get overall strength for this result
+     * @return float strength
+     */
     public function getStrength() {
         return $this->strength;
     }
 
+    /**
+     * Set the identity constellation for this result
+     * @param \snac\data\Constellation $id Identity constellation
+     */
     public function setIdentity($id) {
         $this->identity = $id;
     }
 
+    /**
+     * Get the constellation associated with this result
+     * @return \snac\data\Constellation Identity constellation
+     */
     public function getIdentity() {
         return $this->identity;
     }
 
+    /**
+     * Set a property value for this result
+     * @param string $name name of the property to set
+     * @param mixed $value value of the property
+     */
     public function setProperty($name, $value) {
         $this->properties[$name] = $value;
     }
 
+    /**
+     * Get a property for this result
+     * @param string $name Property name
+     * @return mixed|NULL Value of the property or null if not found
+     */
     public function getProperty($name) {
         if (isset($this->properties[$name]))
             return $this->properties[$name];
         return null;
     }
 
+    /**
+     * Set the score for one test
+     * @param string $test test name
+     * @param float $score score
+     */
     public function setScore($test, $score) {
         $this->vector[$test] = $score;
     }
 
+    /**
+     * Get the score for one test
+     * 
+     * @param string $test Test to check
+     * @return float The score, or 0 if not run
+     */
     public function getScore($test) {
         if (isset($this->vector[$test]))
             return $this->vector[$test];
         return 0;
     }
 
+    /**
+     * Get the score vector for this result
+     * @return string[] score vector
+     */
     public function getVector() {
         return $this->vector;
     }
 
+    /**
+     * Set multiple properties for this result
+     * @param string[][] $properties List of properties
+     * 
+     */
     public function setMultipleProperties($properties) {
         $this->properties = array_merge($this->properties, $properties);
     }
 
-    public function getAllProperties($properties) {
+    /**
+     * Get all properties for this result
+     * 
+     * @return string[][] List of properties
+     */
+    public function getAllProperties() {
         return $this->properties;
     }
     
