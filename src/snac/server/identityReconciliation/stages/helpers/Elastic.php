@@ -93,9 +93,6 @@ abstract class Elastic implements Stage {
             $name->setOriginal($hit["_source"]["official"]);
             $id->addNameEntry($name);
             $id->setArkID($hit["_source"]["ark_id"]);
-            // TODO: later, we can just ask postgres for the whole constellation
-            // but for now, we must just generate one on the fly
-            $id->setNumberOfRelations($hit["_source"]["num_relations"]);
 
             $result = new \snac\data\ReconciliationResult();
             $result->setIdentity($id);
