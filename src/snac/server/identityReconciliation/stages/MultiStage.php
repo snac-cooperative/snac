@@ -64,7 +64,7 @@ class MultiStage implements helpers\Stage {
      * the list.
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
-     * @param \snac\data\Constellation[] $list A list of constellations to evaluate against.  This
+     * @param \snac\data\ReconiciliationResult[] $list A list of results to evaluate against.  This
      * may be null.  
      * @return array An array of results from the final stage that has been
      * run or an empty array.
@@ -78,10 +78,7 @@ class MultiStage implements helpers\Stage {
             $results = $stage->run($search, $nextList);
 
             // Empty out the list of next ids
-            $nextList = array();
-            foreach ($results as $result)
-                if ($result["id"] != null)
-                    array_push($nextList, $result["id"]);
+            $nextList = $results;
         } 
         
         return $results;

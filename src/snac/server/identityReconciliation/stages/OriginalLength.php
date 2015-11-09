@@ -41,8 +41,10 @@ class OriginalLength implements helpers\Stage {
      */
     public function run($search, $list) {
         $string = $search->getPreferredNameEntry();
-        
-        return array(array("id"=> null, "strength"=> log(strlen($string))));
+        $result = new \snac\data\ReconciliationResult();
+        $result->setStrength( log(strlen($string)));
+
+        return array($result);
     }
 
 }

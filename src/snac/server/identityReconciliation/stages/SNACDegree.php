@@ -30,7 +30,7 @@ class SNACDegree implements helpers\Stage {
      * global modifier to all results.
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
-     * @param \snac\data\Constellation[] $list A list of constellations to evaluate against.  This
+     * @param \snac\data\ReconciliationResult[] $list A list of resultss to evaluate against.  This
      * may be null.  
      * @return array 
      *      
@@ -39,15 +39,19 @@ class SNACDegree implements helpers\Stage {
 
         $results = array();
 
-        foreach ($list as $id) {
+        foreach ($list as $res) {
+            $id = $res->getIdentity();
             $result = 0;
-            $degree = $id->getNumberOfRelations();
+            $degree = $res->getProperty("degree");
             if ($degree != null && $degree > 0)
-                $result = 5 * log($degree);
-            if (is_nan($result) || is_infinite($result))
-                $result = 0;
+                $resultDeg = 5 * log($degree);
+            if (is_nan($resultDeg) || is_infinite($resultDeg))
+                $resultDeg = 0;
 
-            array_push($results, array("id"=>$id, "strength"=>$result));
+            $result = new \snac\data\ReconciliationResult();
+            $result->setIdentity($id);
+            $result->setStrength($resultDeg);
+            array_push($results,$result);
         }
 
         return ($results);

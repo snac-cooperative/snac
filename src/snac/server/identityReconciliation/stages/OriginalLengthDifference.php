@@ -48,16 +48,19 @@ class OriginalLengthDifference implements helpers\Stage {
 
         $results = array();
 
-        foreach ($list as $id) {
+        foreach ($list as $res) {
             // Compute the strength value
-            $diff = strlen($search->getPreferredNameEntry()) - strlen($id->getPreferredNameEntry());
+            $diff = strlen($search->getPreferredNameEntry()) - strlen($res->getIdentity()->getPreferredNameEntry());
             $diff = abs($diff);
-            $result = 0;
+            $resultDiff = 0;
             if ($diff > 0)
-                $result = -4 * log($diff);
+                $resultDiff = -4 * log($diff);
 
+            $result = new \snac\data\ReconciliationResult();
+            $result->setIdentity($res->getIdentity());
+            $result->setStrength($resultDiff)
             // Save the result
-            array_push($results, array("id"=>$id, "strength"=>$result));
+            array_push($results, $result);
         }
 
         return $results;

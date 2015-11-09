@@ -97,8 +97,11 @@ abstract class Elastic implements Stage {
             // but for now, we must just generate one on the fly
             $id->setNumberOfRelations($hit["_source"]["num_relations"]);
 
-            array_push($results, 
-                array("id"=> $id, "strength"=> $hit["_score"]));
+            $result = new \snac\data\ReconciliationResult();
+            $result->setIdentity($id);
+            $result->setStrength($hit["_score"]);
+            $result->setProperty("degree", $hit["_source"]["num_relations"]);
+            array_push($results, $result);
         }
         return $results;
 

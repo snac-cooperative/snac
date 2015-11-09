@@ -39,7 +39,7 @@ class ReconciliationEngine {
     private $tests;
 
     /**
-     * @var array Full test results per id
+     * @var \snac\data\ReconciliationResult[] Full test results per id
      */
     private $results;
 
@@ -143,7 +143,7 @@ class ReconciliationEngine {
      */
     public function topResult() {
         if (count($this->results) > 0)
-            return $this->results[0]["identity"];
+            return $this->results[0]->getIdentity();
         else
             return null;
     }
@@ -157,7 +157,7 @@ class ReconciliationEngine {
      */
     public function topVector() {
         if (count($this->results) > 0) 
-            return $this->results[0]["vector"];
+            return $this->results[0]->getVector();
         else
             return null;
     }
@@ -171,7 +171,7 @@ class ReconciliationEngine {
      */
     public function topValue() {
         if ($this->topVector() != null) 
-            return $this->results[0]["score"];
+            return $this->results[0]->getStrength();
         else
             return 0;
     }
@@ -183,7 +183,7 @@ class ReconciliationEngine {
      */
     public function generateScores() {
         foreach ($this->results as $i => $res) {
-            $this->results[$i]["score"] = $this->weight->compute($res["vector"]);
+            $this->results[$i]->setStrength($this->weight->compute($res->getVector()));
         }
     }
 
@@ -202,27 +202,26 @@ class ReconciliationEngine {
             foreach ($resList as $res) {
                 $k = null;
                 
-                if ($res["id"] == null) {
+                if ($res->getIdentity() == null) {
                     // If the identity is null, this should apply to all results
-                    $all[$test] = $res["strength"];
+                    $all[$test] = $res->getStrength();
                 } else {
                     // Get Unique ID for this identity
-                    $k = $res["id"]->getArkID();
+                    $k = $res->getIdentity()->getArkID();
                     // Create entry in the array if it doesn't exist
                     if (!array_key_exists($k, $tmp)) {
-                        $tmp[$k] = array("identity"=>$res["id"],
-                                         "score" => 0,
-                                         "vector" => array());
+                        $tmp[$k] = new \snac\data\ReconciliationResult();
+                        $tmp[$k]->setIdentity($res->getIdentity());
                     }
                     // Store the strength value in the vector
-                    $tmp[$k]["vector"][$test] = $res["strength"];
+                    $tmp[$k]->setScore($test, $res->getStrength());
                 }
             }
         }
         // Add any global results to every id's vector
         foreach ($tmp as $k => $v) {
             foreach ($all as $test => $result)
-                $tmp[$k]["vector"][$test] = $result;
+                $tmp[$k]->setScore($test, $result);
         }
 
         // Push the results on the result array
@@ -242,7 +241,7 @@ class ReconciliationEngine {
     /**
      * Get all results
      *
-     * @return array The full array of results
+     * @return \snac\data\ReconciliationResult[] The full array of results
      */
     public function getResults() {
         return array_splice($this->results,0,$this->numResults);
@@ -252,9 +251,9 @@ class ReconciliationEngine {
      * Reverse sort of results
      */
     public static function resultsRsort($a, $b) {
-         if ($a["score"] == $b["score"])
+         if ($a->getStrength() == $b->getStrength())
              return 0;
-         return ($a["score"] < $b["score"]) ? 1 : -1;
+         return ($a->getStrength() < $b->getStrengh()) ? 1 : -1;
      }
 
 }

@@ -38,8 +38,8 @@ interface Stage {
      * for a stage that impacts all match quality, such as a search string
      * strength calculation.
      *
-     * @param \identity $search The identity to be evaluated.
-     * @param \identity[] $list A list of identities to evaluate against.  This
+     * @param \snac\data\Constellation $search The identity to be evaluated.
+     * @param \snac\data\ReconciliationResult[] $list A list of results to evaluate against.  This
      * may be null.  
      * @return array An array of matches and strength pairs, ie an array of
      * `array("id":identity, "strength":float)`. On error, it must at least
