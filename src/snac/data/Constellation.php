@@ -241,12 +241,6 @@ class Constellation extends AbstractData {
     private $existDatesNote = null;
 
     /**
-     * 
-     * @var int number of relations (used to store partial Constellations) 
-     */
-    private $numberOfRelations = null;
-
-    /**
      * from eac-cpf tag(s):
      * 
      * * eac-cpf/cpfdescription/relations/cpfrelation/*
@@ -894,24 +888,6 @@ class Constellation extends AbstractData {
         array_push($this->relations, $relation);
     }
 
-    /**
-     * Set the number of Constellation Relations attributed 
-     *
-     * @param int $num number of relations
-     */
-    public function setNumberOfRelations($num) {
-        $this->numberOfRelations = $num;
-    }
-
-    /**
-     * Get the number of Constellation Relations attributed 
-     *
-     * @return int number of relations
-     */
-    public function getNumberOfRelations() {
-        return $this->numberOfRelations != null ? 
-            $this->numberOfRelations : count($this->relations);
-    }
 
     /**
      * Add relation to a resource
