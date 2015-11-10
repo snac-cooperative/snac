@@ -44,7 +44,7 @@ class SQL
         // select id from appuser where userid=$userid
         $this->sdb->prepare('query', 'select id from appuser where userid=$1');
         $cursor = $this->sdb->execute('query', array($userid));
-        $row = $db->fetchrow($cursor);
+        $row = $this->sdb->fetchrow($cursor);
         return $row['id'];
     }
 
