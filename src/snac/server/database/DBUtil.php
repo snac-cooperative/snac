@@ -36,18 +36,17 @@ namespace snac\server\database;
 
 class DBUtil
 {
-    private $sql = $this->$sql;
-
     public function __construct($db) 
     {
         $db = new \snac\server\database\DatabaseConnector();
-        $sql = new SQL($db);
+        $this->sql = new SQL($db);
+        init_local_vars($sql);
     }
     
     // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
     function getAppUserID($userid)
     {
-        $appUserID = $sql->getAppUserID($userid);
+        $appUserID = $this->sql->getAppUserID($userid);
     }
     
     // is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
@@ -70,7 +69,7 @@ class DBUtil
         // not fatal.
         
         // vh_info: version_history.id, version, main_id, ark_id?
-        $vh_info = $sql->insertVersionHistory();
+        $vh_info = $this->sql->insertVersionHistory();
 
         $cdata = $id->toArray(false);
         if (count($cdata['biogHist']) > 1)
@@ -87,17 +86,17 @@ class DBUtil
             quick_stderr($msg);
         }
 
-        $sql->insertNrd($vh_info, $cdata['ark'], $cdata['entityType'], $cdata['biogHist'][0]);
+        $this->sql->insertNrd($vh_info, $cdata['ark'], $cdata['entityType'], $cdata['biogHist'][0]);
 
         foreach ($cdata['otherRecordIDs'] as $otherID)
         {
-            $sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
+            $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
         }
 
         foreach ($cdata['nameEntries'] as $nameEntry)
         {
             $ndata = $nameEntry->toArray(false);
-            $name_id = $sql->insertName($vh_info, 
+            $name_id = $this->sql->insertName($vh_info, 
                                         $ndata['original'],
                                         $ndata['preferenceScore'],
                                         $ndata['contributors'], // list of type/contributor values
