@@ -40,7 +40,6 @@ class DBUtil
     {
         $db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($db);
-        init_local_vars($sql);
     }
     
     // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
