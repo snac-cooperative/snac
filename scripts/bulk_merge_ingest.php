@@ -40,7 +40,11 @@ function foo_main ()
 {
     global $argc, $argv, $config, $db;
 
+    // U for Util.
     $dbu = new snac\server\database\DBUtil($db);
+
+    $appUserID = $dbu->getAppUserID('twl8n');
+    printf("appUserID is %s\n", $appUserID);
     
     // Works
     // printf("userid: %s\n", snac\Config::$userid);
@@ -114,7 +118,7 @@ function foo_main ()
         $unparsedTags = $eparser->getMissing();
         if (empty($unparsedTags))
         {
-            quick_stderr("File $file ok"); // do not send a \n terminated message
+            quick_stderr("File $file ok"); // no terminal \n, the code will add that later
             check_vocabulary($id);
             // echo $id->toJSON();
         }
@@ -201,7 +205,7 @@ function quick_stderr ($message)
     $stderr = fopen('php://stderr', 'w');
     fwrite($stderr,"  $message\n");
     fclose($stderr); 
- }
+}
 
 function load_vocab()
 {
