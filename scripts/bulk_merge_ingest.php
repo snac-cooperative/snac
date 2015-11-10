@@ -40,7 +40,7 @@ function foo_main ()
 {
     global $argc, $argv, $config, $db;
 
-    $dbu = new DBUtil($db);
+    $dbu = new snac\server\database\DBUtil($db);
     
     // Works
     // printf("userid: %s\n", snac\Config::$userid);
