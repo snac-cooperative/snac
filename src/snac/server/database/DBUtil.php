@@ -36,6 +36,7 @@ namespace snac\server\database;
 
 class DBUtil
 {
+    private $sql = null;
     public function __construct($db) 
     {
         $db = new \snac\server\database\DatabaseConnector();
