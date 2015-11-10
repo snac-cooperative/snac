@@ -42,9 +42,18 @@ class SQL
         $this->sdb = $db;
     }
 
-    public function insertVersionHistory()
+    function getAppUserID($userid)
     {
-        
+        // select id from appuser where userid=$userid
+        $sdb->prepare('query', 'select id from appuser where userid=$1');
+        $cursor = $sdb->execute('query', array($userid));
+        $row = $db->fetchrow($cursor);
+        return $row['id'];
+    }
+
+    public function insertVersionHistory($userid, $role, $icstatus, $msg)
+    {
+        // insert into version_history (default, default, $user_id, $role_id, default, $icstatus, false, $msg);
         return $vh_info;
     }
     
@@ -53,9 +62,14 @@ class SQL
 
     }
 
-    public function insertOtherID($vh_info, $otherID)
+    public function insertOtherID($vh_info, $type, $href)
     {
-
+        /* 
+         * insert into otherid
+         * (version, main_id, other_id, link_type)
+         * values
+         * ($version, $main_id, $otherid, select id from vocabulary where type='record_type' and value='MergedRecord');
+         */
     }
 
     public function insertName($vh_info, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
