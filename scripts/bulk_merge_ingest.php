@@ -45,6 +45,7 @@ function foo_main ()
 
     $appUserID = $dbu->getAppUserID('twl8n');
     printf("appUserID is %s\n", $appUserID);
+    exit();
     
     // Works
     // printf("userid: %s\n", snac\Config::$userid);
