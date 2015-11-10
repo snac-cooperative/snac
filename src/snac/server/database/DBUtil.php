@@ -38,7 +38,7 @@ class DBUtil
 {
     public function __construct($db) 
     {
-        $sql = new snac\server\database\SQL($db);
+        $sql = new SQL($db);
     }
     
     // is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
