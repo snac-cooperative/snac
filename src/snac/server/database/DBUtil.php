@@ -38,35 +38,70 @@ class DBUtil
 {
     public function __construct($db) 
     {
+        $db = new \snac\server\database\DatabaseConnector();
         $sql = new SQL($db);
+    }
+    
+    // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
+    function getAppUserID($userid)
+    {
+        $appUserID = $sql->getAppUserID($userid);
     }
     
     // is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
     // $id is a Constellation object
+    
+    // Put this in some util class.
+    // None too efficient since it opens and closes the stream constantly.
+    function quick_stderr ($message)
+    {
+        $stderr = fopen('php://stderr', 'w');
+        fwrite($stderr,"  $message\n");
+        fclose($stderr); 
+    }
 
     public function insertConstellation($id)
     {
         // This is proabably a good place to start using named args to methods, esp in class SQL.
+
+        // Move those sanity checks up here, and decide what kind of exception to throw, or message to log if
+        // not fatal.
         
         // vh_info: version_history.id, version, main_id, ark_id?
         $vh_info = $sql->insertVersionHistory();
 
-        $sql->insertNrd($vh_info, $id->getARK(), $id->getEntityType(), $id->getBiogHist);
-
-        foreach ($id->getOtherRecordID() as $otherID)
+        $cdata = $id->toArray(false);
+        if (count($cdata['biogHist']) > 1)
         {
-            $sql->insertOtherID($vh_info, $id->getOtherID());
+            $msg = sprintf("Warning: multiple biogHist (%s)\n", count($cdata['biogHist']));
+            quick_stderr($msg);
         }
         
-        foreach ($id->getNameEntries() as $nameEntry)
+        if ($otherID['type'] != 'MergedRecord')
         {
+            $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
+                           $otherID['type'],
+                           $cdata['ark']);
+            quick_stderr($msg);
+        }
+
+        $sql->insertNrd($vh_info, $cdata['ark'], $cdata['entityType'], $cdata['biogHist'][0]);
+
+        foreach ($cdata['otherRecordIDs'] as $otherID)
+        {
+            $sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
+        }
+
+        foreach ($cdata['nameEntries'] as $nameEntry)
+        {
+            $ndata = $nameEntry->toArray(false);
             $name_id = $sql->insertName($vh_info, 
-                                        $nameEntry->getOriginal(), 
-                                        $nameEntry->getPreferenceScore(),
-                                        $nameEntry->getContributors(), // list of type/contributor values
-                                        $nameEntry->getLanguage(),
-                                        $nameEntry->getScriptCode(),
-                                        $nameEntry->getUseDates());
+                                        $ndata['original'],
+                                        $ndata['preferenceScore'],
+                                        $ndata['contributors'], // list of type/contributor values
+                                        $ndata['language'],
+                                        $ndata['scriptCode'],
+                                        $ndata['useDates']);
         }
     }
 }
