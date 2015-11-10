@@ -34,9 +34,6 @@ namespace snac\server\database;
 
 class SQL
 {
-    // Copy global $db into local $sdb because I don't like local and globals vars of the same name.
-
-    private $sdb; 
     public function __construct($db)
     {
         $this->sdb = $db;
@@ -45,8 +42,8 @@ class SQL
     function getAppUserID($userid)
     {
         // select id from appuser where userid=$userid
-        $sdb->prepare('query', 'select id from appuser where userid=$1');
-        $cursor = $sdb->execute('query', array($userid));
+        $this->sdb->prepare('query', 'select id from appuser where userid=$1');
+        $cursor = $this->sdb->execute('query', array($userid));
         $row = $db->fetchrow($cursor);
         return $row['id'];
     }
