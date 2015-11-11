@@ -43,9 +43,8 @@ function foo_main ()
     // U for Util.
     $dbu = new snac\server\database\DBUtil($db);
 
-    $appUserID = $dbu->getAppUserID('twl8n');
-    printf("appUserID is %s\n", $appUserID);
-    exit();
+    list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
+    printf("appUserID: %s role: %s\n", $appUserID, $role);
     
     // Works
     // printf("userid: %s\n", snac\Config::$userid);
@@ -89,7 +88,7 @@ function foo_main ()
 
     // foreach ($file_list as $short_file)
 
-    // Doesn't work:
+    // Doesn't work, seems to be an issue with nested function calls.
     // while ($short_file = readdir(opendir($argv[1])))
 
     printf("Opening dir: $argv[1]\n");
@@ -115,13 +114,15 @@ function foo_main ()
         // Create new parser for this file and parse it
         $eparser = new \snac\util\EACCPFParser();
         $id = $eparser->parseFile($file);
+
         
         $unparsedTags = $eparser->getMissing();
         if (empty($unparsedTags))
         {
-            quick_stderr("File $file ok"); // no terminal \n, the code will add that later
+            $vh_info = $dbu->insertConstellation($id, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
             check_vocabulary($id);
-            // echo $id->toJSON();
+            $msg = sprintf("File $file ok. vh_info: %s", var_export($vh_info, 1));
+            quick_stderr($msg); // no terminal \n, the code will add that later
         }
         else
         {
