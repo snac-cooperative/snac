@@ -138,7 +138,20 @@ class DatabaseConnector {
         $this->prepare("", $query);
         return $this->execute("", $values);
     }
-    
+
+
+    /*
+     * Need to add some docs and perhaps throw an exception if the query exists and can't be deallocated. If
+     * the query doesn't exist we don't particularly care.
+     */
+
+    public function deallocate($query) {
+        if (! pg_query($this->dbHandle, "deallocate $query"))
+        {
+            printf("deaollcate failed: %s\n", pg_last_error($cnx));
+        }
+    }
+
     /**
      * Fetch the next row
      * 
