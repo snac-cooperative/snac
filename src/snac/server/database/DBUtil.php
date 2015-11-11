@@ -43,9 +43,11 @@ class DBUtil
     }
     
     // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
-    function getAppUserID($userid)
+    function getAppUserInfo($userid)
     {
-        $appUserID = $this->sql->getAppUserID($userid);
+        // $uInfo is array($row['id'], $row['role'])
+        $uInfo = $this->sql->getAppUserInfo($userid);
+        return $uInfo;
     }
     
     // is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
@@ -60,7 +62,7 @@ class DBUtil
         fclose($stderr); 
     }
 
-    public function insertConstellation($id)
+    public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
         // This is proabably a good place to start using named args to methods, esp in class SQL.
 
@@ -68,7 +70,9 @@ class DBUtil
         // not fatal.
         
         // vh_info: version_history.id, version, main_id, ark_id?
-        $vh_info = $this->sql->insertVersionHistory();
+        $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
+
+        return $vh_info;
 
         $cdata = $id->toArray(false);
         if (count($cdata['biogHist']) > 1)
