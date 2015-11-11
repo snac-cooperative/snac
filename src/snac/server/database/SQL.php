@@ -39,18 +39,38 @@ class SQL
         $this->sdb = $db;
     }
 
-    function getAppUserID($userid)
+    function getAppUserInfo($userid)
     {
         // select id from appuser where userid=$userid
-        $this->sdb->prepare('query', 'select id from appuser where userid=$1');
-        $cursor = $this->sdb->execute('query', array($userid));
-        $row = $this->sdb->fetchrow($cursor);
-        return $row['id'];
+        $this->sdb->prepare('query', 
+                            'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
+                            where 
+                            appuser.userid=$1
+                            and appuser.id=appuser_role_link.uid
+                            and role.id = appuser_role_link.rid
+                            and appuser_role_link.is_primary=true');
+    
+        // $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
+        // used.
+        $result = $this->sdb->execute('query', array($userid));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate('query');
+        return array($row['id'], $row['role']);
     }
 
-    public function insertVersionHistory($userid, $role, $icstatus, $msg)
+    public function insertVersionHistory($userid, $role, $status, $note)
     {
-        // insert into version_history (default, default, $user_id, $role_id, default, $icstatus, false, $msg);
+        // We need version_history.id and version_history.main_id returned.
+        $this->sdb->prepare('query', 
+                            'insert into version_history 
+                            (user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5)
+                            returning id, main_id;');
+        $result = $this->sdb->execute('query', array($userid, $role, $status, true, $note));
+        printf("vh execute result:\n%s\n", var_export($result, 1));
+        $vh_info = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate('query');
         return $vh_info;
     }
     
