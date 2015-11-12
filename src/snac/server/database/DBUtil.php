@@ -72,8 +72,6 @@ class DBUtil
         // vh_info: version_history.id, version, main_id, ark_id?
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
-        return $vh_info;
-
         $cdata = $id->toArray(false);
         if (count($cdata['biogHist']) > 1)
         {
@@ -107,5 +105,6 @@ class DBUtil
                                         $ndata['scriptCode'],
                                         $ndata['useDates']);
         }
+        return $vh_info;
     }
 }
