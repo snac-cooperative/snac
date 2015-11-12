@@ -57,7 +57,7 @@ class SQL
         $this->sdb->deallocate('query');
         return array($row['id'], $row['role']);
     }
-
+    
     public function insertVersionHistory($userid, $role, $status, $note)
     {
         // We need version_history.id and version_history.main_id returned.
@@ -76,22 +76,77 @@ class SQL
     
     public function insertNrd($vh_info, $ark, $entityType, $biogHist)
     {
-
+        $this->sdb->prepare('query', 
+                            'insert into nrd
+                            (version, main_id, ark_id, entity_type, biog_hist)
+                            values
+                            ($1, $2, $3, $4, $5)');
+ 
+       $result = $this->sdb->execute('query',
+                                     array($vh_info['id'], $vh_info['main_id'], $cdata['ark'], $cdata['entityType'], $cdata['biogHists']));
+       printf("vh execute result:\n%s\n", var_export($result, 1));
+       $vh_info = $this->sdb->fetchrow($result);
+       $this->sdb->deallocate('query');
+       return $vh_info;
     }
 
     public function insertOtherID($vh_info, $type, $href)
     {
-        /* 
-         * insert into otherid
-         * (version, main_id, other_id, link_type)
-         * values
-         * ($version, $main_id, $otherid, select id from vocabulary where type='record_type' and value='MergedRecord');
-         */
+        $this->sdb->prepare('query',
+                            'insert into otherid
+                            (version, main_id, other_id, link_type)
+                            values
+                            ($1, $2, $3, (select id from vocabulary where type='record_type' and value='MergedRecord')');
+        
+        $result = $this->sdb->execute('query',
+                                      array($vh_info['id'], $vh_info['main_id'], $otherid));
+        $this->sdb->deallocate('query');
     }
-
+    
+    // Need to return the name.id so we can used it as fk for inserting related records
     public function insertName($vh_info, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
+        $this->sdb->prepare('query1',
+                            'insert into name
+                            (version, main_id, original, preference, language, script_code)
+                            values
+                            ($1, $2, $3, $4,
+                            (select id from vocabulary where type='language' and value=$5),
+                            (select id from vocabulary where type='scriptCode' and value=$6)
+                            returning id');
         
+        $result = $this->sdb->execute('query1',
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $original
+                                            $preferenceScore,
+                                            $language,
+                                            $scriptCode));
+        $name_id = $this->sdb->fetchrow($result);
+        
+        // Contributor has issues. See comments in schema.sql. This will work for now.
+
+        $this->sdb->prepare('query2',
+                            'insert into name_contributor
+                            (version, main_id, name_id, short_name, name_type)
+                            values
+                            ($1, $2, $3, $4,
+                            (select id from vocabulary where type='name_type' and value=$5))');
+
+        // foreach over $contributors executing the insert query on each.
+        foreach ($contributors as $contrib)
+        {
+            $this->sdb->execute('query2',
+                                array($vh_info['id'],
+                                      $vh_info['main_id'],
+                                      $name_id
+                                      $contrib['contributor'],
+                                      $contrib['type']));
+        }
+
+        $this->sdb->deallocate('query1');
+        $this->sdb->deallocate('query2');
+        return $vh_info;
     }
     
 }
