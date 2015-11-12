@@ -80,7 +80,7 @@ class SQL
                             'insert into nrd
                             (version, main_id, ark_id, entity_type, biog_hist)
                             values
-                            ($1, $2, $3, $4, $5)');
+                            ($1, $2, $3, (select id from vocabulary where type=\'entity_type\' and value=$4), $5)');
  
        $result = $this->sdb->execute('query',
                                      array($vh_info['id'],
