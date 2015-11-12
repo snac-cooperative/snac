@@ -111,8 +111,8 @@ class SQL
                             (version, main_id, original, preference, language, script_code)
                             values
                             ($1, $2, $3, $4,
-                            (select id from vocabulary where type='language' and value=$5),
-                            (select id from vocabulary where type='scriptCode' and value=$6)
+                            (select id from vocabulary where type=\'language\' and value=$5),
+                            (select id from vocabulary where type=\'scriptCode\' and value=$6))
                             returning id');
         
         $result = $this->sdb->execute('query1',
