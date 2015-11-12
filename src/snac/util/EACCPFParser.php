@@ -746,7 +746,7 @@ class EACCPFParser {
                                 // We want 'href' to always exist. If it doesn't, warn, and set it to the empty string.
                                 if ( ! isset($ratts['href']))
                                 {
-                                    $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID']);
+                                    $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID);
                                     $stderr = fopen('php://stderr', 'w');
                                     fwrite($stderr,"  $message\n");
                                     fclose($stderr); 
