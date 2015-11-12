@@ -398,6 +398,8 @@ class Constellation extends AbstractData {
             "mandate" => $this->mandate
         );
 
+        print "name entries toArray got here\n";
+
         foreach ($this->maintenanceEvents as $i => $v)
             $return["maintenanceEvents"][$i] = $v->toArray($shorten);
 
