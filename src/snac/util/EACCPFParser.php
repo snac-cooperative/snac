@@ -1094,24 +1094,40 @@ class EACCPFParser {
             // Handle the single date that appears
             $date->setRange(false);
             $dateAtts = $this->getAttributes($dateElement);
-            $date->setDate((string) $dateElement, $dateAtts["standardDate"], $dateAtts["localType"]);
-            $notBefore = null;
-            $notAfter = null;
-            if (isset($dateAtts["notBefore"]))
-                $notBefore = $dateAtts["notBefore"];
-            if (isset($dateAtts["notAfter"]))
-                $notAfter = $dateAtts["notAfter"];
-            $date->setDateRange($notBefore, $notAfter);
-            
-            unset($dateAtts["notBefore"]);
-            unset($dateAtts["notAfter"]);
-            unset($dateAtts["standardDate"]);
-            unset($dateAtts["localType"]);
-            $this->markUnknownAtt(
+
+            // Sanity check standardDate. Unclear what should happen if we don't have a standardDate
+            // value. Leaving $date unchanged, and hoping that the initialization was sane.
+
+            if (isset($dateAtts["standardDate"]))
+            {
+                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $dateAtts["localType"]);
+                $notBefore = null;
+                $notAfter = null;
+                if (isset($dateAtts["notBefore"]))
+                    $notBefore = $dateAtts["notBefore"];
+                if (isset($dateAtts["notAfter"]))
+                    $notAfter = $dateAtts["notAfter"];
+                $date->setDateRange($notBefore, $notAfter);
+                
+                unset($dateAtts["notBefore"]);
+                unset($dateAtts["notAfter"]);
+                unset($dateAtts["standardDate"]);
+                unset($dateAtts["localType"]);
+                $this->markUnknownAtt(
                     array_merge($xpath, 
-                            array (
+                                array (
                                     $dateElement->getName()
-                            )), $dateAtts);
+                                    )), $dateAtts);
+                
+            }
+            else
+            {
+                $message = sprintf("Warning: empty standardDate in date for: %s\n", $identity->toArray()['ark']);
+                $stderr = fopen('php://stderr', 'w');
+                fwrite($stderr,"  $message\n");
+                fclose($stderr); 
+                $ratts['href'] = "";
+            }
         }
         return $date;
     }
