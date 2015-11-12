@@ -94,7 +94,7 @@ class DBUtil
             $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
         }
 
-            var_export($nameEntries);
+            var_export($cdata['nameEntries']);
         foreach ($cdata['nameEntries'] as $nameEntry)
         {
             $ndata = $nameEntry->toArray(false);
