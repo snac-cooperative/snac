@@ -96,6 +96,7 @@ class DBUtil
 
         foreach ($cdata['nameEntries'] as $nameEntry)
         {
+            var_export($nameEntry);
             $ndata = $nameEntry->toArray(false);
             $name_id = $this->sql->insertName($vh_info, 
                                         $ndata['original'],
