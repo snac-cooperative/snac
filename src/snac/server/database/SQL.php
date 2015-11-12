@@ -129,9 +129,9 @@ class SQL
                                             $preferenceScore,
                                             $language,
                                             $scriptCode));
-        $name_id = "";
-        list($name_id) = $this->sdb->fetchrow($result);
-        
+        $row = $this->sdb->fetchrow($result);
+        $name_id = $row['id'];
+
         // Contributor has issues. See comments in schema.sql. This will work for now.
 
         $this->sdb->prepare('query2',
