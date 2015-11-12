@@ -118,7 +118,7 @@ class SQL
         $result = $this->sdb->execute('query1',
                                       array($vh_info['id'],
                                             $vh_info['main_id'],
-                                            $original
+                                            $original,
                                             $preferenceScore,
                                             $language,
                                             $scriptCode));
@@ -131,7 +131,7 @@ class SQL
                             (version, main_id, name_id, short_name, name_type)
                             values
                             ($1, $2, $3, $4,
-                            (select id from vocabulary where type='name_type' and value=$5))');
+                            (select id from vocabulary where type=\'name_type\' and value=$5))');
 
         // foreach over $contributors executing the insert query on each.
         foreach ($contributors as $contrib)
