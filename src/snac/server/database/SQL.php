@@ -100,10 +100,13 @@ class SQL
                             'insert into otherid
                             (version, main_id, other_id, link_type)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=\'MergedRecord\'))');
+                            ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=$4))');
         
         $result = $this->sdb->execute('query',
-                                      array($vh_info['id'], $vh_info['main_id'], $otherid));
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $href,
+                                            $type));
         $this->sdb->deallocate('query');
     }
     
