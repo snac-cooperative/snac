@@ -94,10 +94,9 @@ class DBUtil
             $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
         }
 
-            var_export($cdata['nameEntries']);
-        foreach ($cdata['nameEntries'] as $nameEntry)
+        // Constellation name entry data is already an array of name entry data. 
+        foreach ($cdata['nameEntries'] as $ndata)
         {
-            $ndata = $nameEntry->toArray(false);
             $name_id = $this->sql->insertName($vh_info, 
                                         $ndata['original'],
                                         $ndata['preferenceScore'],
