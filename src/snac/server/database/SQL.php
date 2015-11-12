@@ -139,7 +139,7 @@ class SQL
             $this->sdb->execute('query2',
                                 array($vh_info['id'],
                                       $vh_info['main_id'],
-                                      $name_id
+                                      $name_id,
                                       $contrib['contributor'],
                                       $contrib['type']));
         }
