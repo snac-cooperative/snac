@@ -733,6 +733,15 @@ class EACCPFParser {
                         case "relations":
                             foreach ($this->getChildren($desc) as $rel) {
                                 $ratts = $this->getAttributes($rel);
+                                // We want 'href' to always exist. If it doesn't, warn, and set it to the empty string.
+                                if ( ! isset($ratts['href']))
+                                {
+                                    $message = sprintf("Warning: empty href in relations for: %s\n", $identity->getArkID());
+                                    $stderr = fopen('php://stderr', 'w');
+                                    fwrite($stderr,"  $message\n");
+                                    fclose($stderr); 
+                                    $ratts['href'] = "";
+                                }
                                 switch ($rel->getName()) {
                                     case "cpfRelation":
                                         $relation = new \snac\data\ConstellationRelation();
