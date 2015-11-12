@@ -83,7 +83,11 @@ class SQL
                             ($1, $2, $3, $4, $5)');
  
        $result = $this->sdb->execute('query',
-                                     array($vh_info['id'], $vh_info['main_id'], $cdata['ark'], $cdata['entityType'], $cdata['biogHists']));
+                                     array($vh_info['id'],
+                                           $vh_info['main_id'],
+                                           $ark,
+                                           $entityType,
+                                           $biogHist));
        printf("vh execute result:\n%s\n", var_export($result, 1));
        $vh_info = $this->sdb->fetchrow($result);
        $this->sdb->deallocate('query');
