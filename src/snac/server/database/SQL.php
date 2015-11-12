@@ -115,7 +115,7 @@ class SQL
     {
         $this->sdb->prepare('query1',
                             'insert into name
-                            (version, main_id, original, preference, language, script_code)
+                            (version, main_id, original, preference_score, language, script_code)
                             values
                             ($1, $2, $3, $4,
                             (select id from vocabulary where type=\'language\' and value=$5),
