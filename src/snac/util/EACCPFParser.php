@@ -28,6 +28,15 @@ namespace snac\util;
  */
 class EACCPFParser {
 
+
+
+    /**
+     *
+     * @var string[] ARK ID used for warnings and error messages. Set after parsing begins. See setArkID();
+     */
+    private $arkID = "";
+
+
     /**
      *
      * @var string[] The list of namespaces in the document
@@ -66,7 +75,7 @@ class EACCPFParser {
         $xml = simplexml_load_string($xmlText);
         
         $identity = new \snac\data\Constellation();
-        
+      
         $this->unknowns = array ();
         $this->namespaces = $xml->getNamespaces(true);
         
@@ -78,6 +87,7 @@ class EACCPFParser {
                     switch ($control->getName()) {
                         case "recordId":
                             $identity->setArkID((string) $control);
+                            $this->arkID = $identity->toArray()['ark']; // Yes, toArray() and an index key all on one line.
                             $this->markUnknownAtt(
                                     array (
                                             $node->getName(),
@@ -736,7 +746,7 @@ class EACCPFParser {
                                 // We want 'href' to always exist. If it doesn't, warn, and set it to the empty string.
                                 if ( ! isset($ratts['href']))
                                 {
-                                    $message = sprintf("Warning: empty href in relations for: %s\n", $identity->toArray()['ark']);
+                                    $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID']);
                                     $stderr = fopen('php://stderr', 'w');
                                     fwrite($stderr,"  $message\n");
                                     fclose($stderr); 
@@ -1122,7 +1132,7 @@ class EACCPFParser {
             }
             else
             {
-                $message = sprintf("Warning: empty standardDate in date for: %s\n", $identity->toArray()['ark']);
+                $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
                 $stderr = fopen('php://stderr', 'w');
                 fwrite($stderr,"  $message\n");
                 fclose($stderr); 
