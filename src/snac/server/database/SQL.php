@@ -180,6 +180,7 @@ class SQL
        return $row['id'];
     }
     
+    // biogHist is a string, not array. 
     public function insertNrd($vh_info, $ark, $entityType, $biogHist, $existDates)
     {
         $qq = 'insert_nrd';
@@ -224,8 +225,8 @@ class SQL
     // Need to return the name.id so we can used it as fk for inserting related records
     public function insertName($vh_info, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
-        $qq_1 = 'insertName';
-        $qq_2 = 'insertContributor';
+        $qq_1 = 'insert_name';
+        $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_1,
                             'insert into name
                             (version, main_id, original, preference_score, language, script_code)

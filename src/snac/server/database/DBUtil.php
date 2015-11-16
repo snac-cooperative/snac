@@ -76,7 +76,7 @@ class DBUtil
         $cdata = $id->toArray(false);
         if (count($cdata['biogHists']) > 1)
         {
-            $msg = sprintf("Warning: multiple biogHist (%s)\n", count($cdata['biogHists']));
+            $msg = sprintf("Warning: multiple biogHists (%s)\n", count($cdata['biogHists']));
             quick_stderr($msg);
         }
         
@@ -88,13 +88,18 @@ class DBUtil
                            $cdata['ark']);
             quick_stderr($msg);
         }
+        // biogHists can be zero or more array elements. Apparently there will always only be zero or 1. Deal
+        // with all eventualitites.
+        $biogHist_str = '';
+        foreach ($cdata['biogHists'] as $var)
+        {
+            $biogHist .= $var;
+        }
         $this->sql->insertNrd($vh_info,
                               $cdata['ark'],
                               $cdata['entityType'],
-                              $cdata['biogHists'][0],
+                              $biogHist,
                               $cdata['existDates']);
-
-
 
         foreach ($cdata['otherRecordIDs'] as $otherID)
         {
