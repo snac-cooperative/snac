@@ -151,7 +151,7 @@ class SQL
                             missing_to, to_date, to_type, to_bc, to_not_before, to_not_after, to_present, original, fk_table, fk_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9,
-                            $10, $11, $12, $13, $14, $15, $16, $17)
+                            $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
                             returning id');
  
        $result = $this->sdb->execute($qq,
