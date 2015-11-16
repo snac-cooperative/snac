@@ -111,9 +111,9 @@ class SQL
                             ($1, $2, $3, $4, $5)
                             returning id, main_id;');
 
-        $eresult = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
+        $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
 
-        if ($eresult == NULL)
+        if ($result == NULL)
         {
             printf("er seems to be null\n");
         }
@@ -121,11 +121,16 @@ class SQL
         {
             printf(" er apparently is not null\n");
         }
-        var_dump($eresult);
-        printf("vh execute eresult:\n%s\n", var_export($eresult, true));
-        printf("json execute eresult:\n%s\n", json_encode($eresult, JSON_PRETTY_PRINT, 10));
+        
+        // I'm pretty sure php used to be able to var_export() on $result. No longer.
 
-        $vh_info = $this->sdb->fetchrow($eresult);
+        /* 
+         * var_dump($result);
+         * printf("vh execute result:\n%s\n", var_export($result, true));
+         * printf("json execute result:\n%s\n", json_encode($result, JSON_PRETTY_PRINT, 10));
+         */
+
+        $vh_info = $this->sdb->fetchrow($result);
 
         printf("vh: \n%s\n", var_export($vh_info, 1));
 
