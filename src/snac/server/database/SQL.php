@@ -80,7 +80,7 @@ class SQL
 
     function getAppUserInfo($userid)
     {
-        $qq = 'getAppUserInfo';
+        $qq = 'get_app_user_info';
         // select id from appuser where userid=$userid
         $this->sdb->prepare($qq, 
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
