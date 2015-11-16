@@ -110,9 +110,15 @@ class SQL
                             values 
                             ($1, $2, $3, $4, $5)
                             returning id, main_id;');
+
         $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
+
         printf("vh execute result:\n%s\n", var_export($result, 1));
+
         $vh_info = $this->sdb->fetchrow($result);
+
+        printf("vh: \n%s\n", var_export($vh_info, 1));
+
         $this->sdb->deallocate('insert_version_history');
         return $vh_info;
     }
