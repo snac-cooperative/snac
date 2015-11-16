@@ -81,10 +81,10 @@ class DBUtil
         }
         
         // Sanity check existDates. Only 1 allowed here
-        if (count($cdata['existsDates']) > 1)
+        if (count($cdata['existDates']) > 1)
         {
-            $msg = sprintf("Warning: more than 1 existsDates: %s for ark: %s\n",
-                           $count($cdata['existsDates']),
+            $msg = sprintf("Warning: more than 1 existDates: %s for ark: %s\n",
+                           $count($cdata['existDates']),
                            $cdata['ark']);
             quick_stderr($msg);
         }
@@ -92,7 +92,7 @@ class DBUtil
                               $cdata['ark'],
                               $cdata['entityType'],
                               $cdata['biogHist'][0],
-                              $cdata['existsDates']);
+                              $cdata['existDates']);
 
 
 
