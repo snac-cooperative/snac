@@ -212,8 +212,9 @@ function quick_stderr ($message)
 function load_vocab()
 {
     global $db;
-    $db->prepare('check_vocab', 'select * from vocabulary');
-    $res = $db->execute('check_vocab', array());
+    $qq = 'check_vocab';
+    $db->prepare($qq, 'select * from vocabulary');
+    $res = $db->execute($qq, array());
     print "Execute done\n";
     
     $all_vocab = array();
