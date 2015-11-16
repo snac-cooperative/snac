@@ -113,7 +113,7 @@ class SQL
 
         $eresult = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
 
-        if ($eresult = NULL)
+        if ($eresult == NULL)
         {
             printf("er seems to be null\n");
         }
