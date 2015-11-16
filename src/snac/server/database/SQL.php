@@ -113,15 +113,6 @@ class SQL
 
         $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
 
-        if ($result == NULL)
-        {
-            printf("er seems to be null\n");
-        }
-        else
-        {
-            printf(" er apparently is not null\n");
-        }
-        
         // I'm pretty sure php used to be able to var_export() on $result. No longer.
 
         /* 

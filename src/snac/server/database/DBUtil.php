@@ -88,6 +88,7 @@ class DBUtil
                            $cdata['ark']);
             quick_stderr($msg);
         }
+
         // biogHists can be zero or more array elements. Apparently there will always only be zero or 1. Deal
         // with all eventualitites.
         $biogHist_str = '';
