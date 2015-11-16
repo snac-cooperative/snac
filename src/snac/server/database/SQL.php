@@ -39,10 +39,50 @@ class SQL
         $this->sdb = $db;
     }
 
+    public function insertSource($vh_info, $href)
+    {
+        $qq = 'insertSource';
+        $this->sdb->prepare($qq, 
+                            'insert into source 
+                            (version, main_id, href)
+                            values 
+                            ($1, $2, $3)');
+        $this->sdb->execute($qq,
+                            array($vh_info['version'],
+                                  $vh_info['main_id'],
+                                  $href));
+        $this->sdb->deallocate($qq);
+    }
+
+    public function insertOccupation($vh_info, $term, $vocabularySource, $dates, $note)
+    {
+        $qq = 'insertOccupation';
+        $this->sdb->prepare($qq, 
+                            'insert into occupation
+                            (version, main_id, occupation_id, note)
+                            values 
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=$3), $4)
+                            returning id');
+        $result = $this->sdb->execute($qq,
+                                      array($vh_info['version'],
+                                            $vh_info['main_id'],
+                                            $term,
+                                            $note));
+        $id = $this->sdb->fetchrow($result)['id'];
+        $this->sdb->deallocate($qq);
+        foreach ($dates as $single_date)
+        {
+            $date_fk = $this->sdb->insertDate($single_date, 'occupation', $id);
+        }
+    }
+
+
+
     function getAppUserInfo($userid)
     {
+        $qq = 'getAppUserInfo';
         // select id from appuser where userid=$userid
-        $this->sdb->prepare('query', 
+        $this->sdb->prepare($qq, 
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
                             where 
                             appuser.userid=$1
@@ -50,70 +90,117 @@ class SQL
                             and role.id = appuser_role_link.rid
                             and appuser_role_link.is_primary=true');
     
-        // $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
-        // used.
-        $result = $this->sdb->execute('query', array($userid));
+        /* 
+         * $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
+         * used.
+         */
+        $result = $this->sdb->execute($qq, array($userid));
         $row = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate('query');
+        $this->sdb->deallocate($qq);
         return array($row['id'], $row['role']);
     }
     
     public function insertVersionHistory($userid, $role, $status, $note)
     {
+        $qq = 'insertVersionHistory';
         // We need version_history.id and version_history.main_id returned.
-        $this->sdb->prepare('query', 
+        $this->sdb->prepare($qq, 
                             'insert into version_history 
                             (user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5)
                             returning id, main_id;');
-        $result = $this->sdb->execute('query', array($userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
         printf("vh execute result:\n%s\n", var_export($result, 1));
         $vh_info = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate('query');
+        $this->sdb->deallocate($qq);
         return $vh_info;
     }
-    
-    public function insertNrd($vh_info, $ark, $entityType, $biogHist)
+
+    /* 
+     * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
+     * database "original" is only the single original string.
+     */
+    public function insertDate($vh_info, $date)
     {
-        $this->sdb->prepare('query', 
+        $qq = 'insertDate';
+        $this->sdb->prepare($qq, 
+                            'insert into date_range
+                            (version, main_id, is_range, missing_from, from_date, from_type, from_bc, from_not_before, from_not_after,
+                            missing_to, to_date, to_type, to_bc, to_not_before, to_not_after, to_present, original)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9,
+                            $10, $11, $12, $13, $14, $15, $16, $17)
+                            returning id');
+ 
+       $result = $this->sdb->execute($qq,
+                                     array($vh_info['id'],
+                                           $vh_info['main_id'],
+                                           $date['is_range'],
+                                           $date['missing_from'],
+                                           $date['from_date'],
+                                           $date['from_type'],
+                                           $date['from_bc'],
+                                           $date['from_not_before'],
+                                           $date['from_not_after'],
+                                           $date['missing_to'],
+                                           $date['to_date'],
+                                           $date['to_type'],
+                                           $date['to_bc'],
+                                           $date['to_not_before'],
+                                           $date['to_not_after'],
+                                           $date['to_present'],
+                                           $date['fromDateOriginal'] . ' - ' . $date['toDateOriginal']));
+
+       $row = $this->sdb->fetchrow($result);
+       $this->sdb->deallocate($qq);
+       return $row['id'];
+    }
+    
+    public function insertNrd($vh_info, $ark, $entityType, $biogHist, $existDates)
+    {
+        $qq = 'insertNrd';
+        $this->sdb->prepare($qq, 
                             'insert into nrd
                             (version, main_id, ark_id, entity_type, biog_hist)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'entity_type\' and value=$4), $5)');
+                            ($1, $2, $3, (select id from vocabulary where type=\'entity_type\' and value=$4), $5)
+                            returning id');
  
-       $result = $this->sdb->execute('query',
+       $result = $this->sdb->execute($qq,
                                      array($vh_info['id'],
                                            $vh_info['main_id'],
                                            $ark,
                                            $entityType,
                                            $biogHist));
-       printf("vh execute result:\n%s\n", var_export($result, 1));
-       $vh_info = $this->sdb->fetchrow($result);
-       $this->sdb->deallocate('query');
-       return $vh_info;
+       $id = $this->sdb->fetchrow($result)['id'];
+       $this->sdb->deallocate($qq);
+       $date_fk = $this->sdb->insertDate($existDates, 'nrd', $id);
     }
 
     public function insertOtherID($vh_info, $type, $href)
     {
-        $this->sdb->prepare('query',
+        $qq = 'insertOtherID';
+        $this->sdb->prepare($qq,
                             'insert into otherid
                             (version, main_id, other_id, link_type)
                             values
                             ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=$4))');
         
-        $result = $this->sdb->execute('query',
+        $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
                                             $vh_info['main_id'],
                                             $href,
                                             $type));
-        $this->sdb->deallocate('query');
+        $this->sdb->deallocate($qq);
     }
     
     // Need to return the name.id so we can used it as fk for inserting related records
     public function insertName($vh_info, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
-        $this->sdb->prepare('query1',
+        $qq_1 = 'insertName';
+        $qq_2 = 'insertContributor';
+        $this->sdb->prepare($qq_1,
                             'insert into name
                             (version, main_id, original, preference_score, language, script_code)
                             values
@@ -122,7 +209,7 @@ class SQL
                             (select id from vocabulary where type=\'scriptCode\' and value=$6))
                             returning id');
         
-        $result = $this->sdb->execute('query1',
+        $result = $this->sdb->execute($qq_1,
                                       array($vh_info['id'],
                                             $vh_info['main_id'],
                                             $original,
@@ -134,7 +221,7 @@ class SQL
 
         // Contributor has issues. See comments in schema.sql. This will work for now.
 
-        $this->sdb->prepare('query2',
+        $this->sdb->prepare($qq_2,
                             'insert into name_contributor
                             (version, main_id, name_id, short_name, name_type)
                             values
@@ -144,7 +231,7 @@ class SQL
         // foreach over $contributors executing the insert query on each.
         foreach ($contributors as $contrib)
         {
-            $this->sdb->execute('query2',
+            $this->sdb->execute($qq_2,
                                 array($vh_info['id'],
                                       $vh_info['main_id'],
                                       $name_id,
@@ -152,9 +239,8 @@ class SQL
                                       $contrib['type']));
         }
 
-        $this->sdb->deallocate('query1');
-        $this->sdb->deallocate('query2');
-        return $vh_info;
+        $this->sdb->deallocate($qq_1);
+        $this->sdb->deallocate($qq_2);
     }
     
 }

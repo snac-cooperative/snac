@@ -72,6 +72,7 @@ class DBUtil
         // vh_info: version_history.id, version, main_id, ark_id?
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
+        // Sanity check bioghist
         $cdata = $id->toArray(false);
         if (count($cdata['biogHist']) > 1)
         {
@@ -79,6 +80,7 @@ class DBUtil
             quick_stderr($msg);
         }
         
+        // Sanity check otherRecordID
         if ($otherID['type'] != 'MergedRecord')
         {
             $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
@@ -87,7 +89,19 @@ class DBUtil
             quick_stderr($msg);
         }
 
-        $this->sql->insertNrd($vh_info, $cdata['ark'], $cdata['entityType'], $cdata['biogHist'][0]);
+        // Sanity check existDates. Only 1 allowed here
+        if (count($cdata['existsDates']) > 1)
+        {
+            $msg = sprintf("Warning: more than 1 existsDates: %s for ark: %s\n",
+                           $count($cdata['existsDates']),
+                           $cdata['ark']);
+            quick_stderr($msg);
+        }
+        $this->sql->insertNrd($vh_info,
+                              $cdata['ark'],
+                              $cdata['entityType'],
+                              $cdata['biogHist'][0],
+                              $cdata['existsDates']);
 
         foreach ($cdata['otherRecordIDs'] as $otherID)
         {
@@ -105,6 +119,30 @@ class DBUtil
                                         $ndata['scriptCode'],
                                         $ndata['useDates']);
         }
+
+        foreach ($cdata['sources'] as $sdata)
+        {
+            // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
+            // validation.
+            $this->sql->insertSource($vh_info,
+                                     $sdata['href']);
+        }
+
+        foreach ($cdata['legalStatuses'] as $sdata)
+        {
+            printf("Need to insert legalStatuses...\n");
+        }
+
+        // fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
+        foreach ($cdata['occupations'] as $fdata)
+        {
+            $this->sql->insertOccupation($vh_info,
+                                         $fdata['term'],
+                                         $fdata['vocabularySource'],
+                                         $fdata['dates'],
+                                         $fdata['note']);
+        }
+
         return $vh_info;
     }
 }
