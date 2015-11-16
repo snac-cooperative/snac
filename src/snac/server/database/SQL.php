@@ -48,7 +48,7 @@ class SQL
                             values 
                             ($1, $2, $3)');
         $this->sdb->execute($qq,
-                            array($vh_info['version'],
+                            array($vh_info['id'],
                                   $vh_info['main_id'],
                                   $href));
         $this->sdb->deallocate($qq);
@@ -64,7 +64,7 @@ class SQL
                             ($1, $2, (select id from vocabulary where type=\'occupation\' and value=$3), $4)
                             returning id');
         $result = $this->sdb->execute($qq,
-                                      array($vh_info['version'],
+                                      array($vh_info['id'],
                                             $vh_info['main_id'],
                                             $term,
                                             $note));
