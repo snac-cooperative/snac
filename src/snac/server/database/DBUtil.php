@@ -91,7 +91,7 @@ class DBUtil
         $this->sql->insertNrd($vh_info,
                               $cdata['ark'],
                               $cdata['entityType'],
-                              $cdata['biogHist'][0],
+                              $cdata['biogHists'][0],
                               $cdata['existDates']);
 
 
