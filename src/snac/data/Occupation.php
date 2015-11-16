@@ -36,7 +36,22 @@ class Occupation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * occupation/term/@vocabularySource
+     * occupation/term/@vocabularySource
+     *
+     * This example for <function> is similar to <occupation>
+     * 
+     * <function>
+     *    <term vocabularySource="d3nyui3o8w--11y7jgy8q3wnt">notaire à paris</term>
+     *    <dateRange>
+     *        <fromDate standardDate="1578-01-01">1er janvier 1578</fromDate>
+     *        <toDate standardDate="1613-10-22">22 octobre 1613</toDate>
+     *    </dateRange>
+     * </function>
+     * 
+     *
+     * The vocabulary source. These values come from a controlled vocabulary, but so far, they are not
+     * well defined. For example: d699msirr1g-3naumnfaswc
+     *
      * 
      * @var string Vocabulary source for the occupation
      */
@@ -140,7 +155,9 @@ class Occupation extends AbstractData {
     }
     
     /**
-     * Set the vocabulary source
+     * Set the vocabulary source. These values come from a controlled vocabulary, but so far, they are not
+     * well defined. For example: d699msirr1g-3naumnfaswc
+     * 
      * @param string $vocab Vocabulary source string
      */
     public function setVocabularySource($vocab) {
