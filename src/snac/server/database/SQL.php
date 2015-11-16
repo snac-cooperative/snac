@@ -121,7 +121,7 @@ class SQL
         {
             printf(" er apparently is not null\n");
         }
-        printf("vh execute eresult:\n%s\n", var_export($eresult, 1));
+        printf("vh execute eresult:\n%s\n", var_export($eresult, true));
 
         $vh_info = $this->sdb->fetchrow($eresult);
 
