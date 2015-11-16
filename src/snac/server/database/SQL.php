@@ -72,7 +72,7 @@ class SQL
         $this->sdb->deallocate($qq);
         foreach ($dates as $single_date)
         {
-            $date_fk = $this->sdb->insertDate($single_date, 'occupation', $id);
+            $date_fk = $this->insertDate($single_date, 'occupation', $id);
         }
     }
 
@@ -175,7 +175,7 @@ class SQL
                                            $biogHist));
        $id = $this->sdb->fetchrow($result)['id'];
        $this->sdb->deallocate($qq);
-       $date_fk = $this->sdb->insertDate($existDates, 'nrd', $id);
+       $date_fk = $this->insertDate($existDates, 'nrd', $id);
     }
 
     public function insertOtherID($vh_info, $type, $href)
