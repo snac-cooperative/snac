@@ -72,6 +72,9 @@ class DBUtil
         // vh_info: version_history.id, version, main_id, ark_id?
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
+        printf("Exiting after insert vh\n");
+        exit();
+
         // Sanity check bioghist
         $cdata = $id->toArray(false);
         if (count($cdata['biogHist']) > 1)
