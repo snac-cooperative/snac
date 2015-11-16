@@ -74,21 +74,12 @@ class DBUtil
 
         // Sanity check bioghist
         $cdata = $id->toArray(false);
-        if (count($cdata['biogHist']) > 1)
+        if (count($cdata['biogHists']) > 1)
         {
-            $msg = sprintf("Warning: multiple biogHist (%s)\n", count($cdata['biogHist']));
+            $msg = sprintf("Warning: multiple biogHist (%s)\n", count($cdata['biogHists']));
             quick_stderr($msg);
         }
         
-        // Sanity check otherRecordID
-        if ($otherID['type'] != 'MergedRecord')
-        {
-            $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
-                           $otherID['type'],
-                           $cdata['ark']);
-            quick_stderr($msg);
-        }
-
         // Sanity check existDates. Only 1 allowed here
         if (count($cdata['existsDates']) > 1)
         {
@@ -103,8 +94,19 @@ class DBUtil
                               $cdata['biogHist'][0],
                               $cdata['existsDates']);
 
+
+
         foreach ($cdata['otherRecordIDs'] as $otherID)
         {
+            // Sanity check otherRecordID
+            if ($otherID['type'] != 'MergedRecord')
+            {
+                $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
+                               $otherID['type'],
+                               $cdata['ark']);
+                quick_stderr($msg);
+            }
+
             $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
         }
 
