@@ -93,12 +93,12 @@ class DBUtil
         $biogHist_str = '';
         foreach ($cdata['biogHists'] as $var)
         {
-            $biogHist .= $var;
+            $biogHist_str .= $var;
         }
         $this->sql->insertNrd($vh_info,
                               $cdata['ark'],
                               $cdata['entityType'],
-                              $biogHist,
+                              $biogHist_str,
                               $cdata['existDates']);
 
         foreach ($cdata['otherRecordIDs'] as $otherID)
