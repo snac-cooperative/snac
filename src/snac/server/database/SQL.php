@@ -104,16 +104,16 @@ class SQL
     {
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
-        $this->sdb->prepare($qq, 
+        $this->sdb->prepare('insert_version_history', 
                             'insert into version_history 
                             (user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5)
                             returning id, main_id;');
-        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
+        $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
         printf("vh execute result:\n%s\n", var_export($result, 1));
         $vh_info = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate($qq);
+        $this->sdb->deallocate('insert_version_history');
         return $vh_info;
     }
 
