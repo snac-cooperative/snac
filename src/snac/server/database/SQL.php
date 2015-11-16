@@ -72,7 +72,7 @@ class SQL
         $this->sdb->deallocate($qq);
         foreach ($dates as $single_date)
         {
-            $date_fk = $this->insertDate($single_date, 'occupation', $id);
+            $date_fk = $this->insertDate($vh_info, $single_date, 'occupation', $id);
         }
     }
 
@@ -142,13 +142,13 @@ class SQL
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      */
-    public function insertDate($vh_info, $date)
+    public function insertDate($vh_info, $date, $fk_table, $fk_id)
     {
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
                             (version, main_id, is_range, missing_from, from_date, from_type, from_bc, from_not_before, from_not_after,
-                            missing_to, to_date, to_type, to_bc, to_not_before, to_not_after, to_present, original)
+                            missing_to, to_date, to_type, to_bc, to_not_before, to_not_after, to_present, original, fk_table, fk_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9,
                             $10, $11, $12, $13, $14, $15, $16, $17)
@@ -171,7 +171,9 @@ class SQL
                                            $date['to_not_before'],
                                            $date['to_not_after'],
                                            $date['to_present'],
-                                           $date['fromDateOriginal'] . ' - ' . $date['toDateOriginal']));
+                                           $date['fromDateOriginal'] . ' - ' . $date['toDateOriginal'],
+                                           $fk_table,
+                                           $fk_id));
 
        $row = $this->sdb->fetchrow($result);
        $this->sdb->deallocate($qq);
@@ -196,7 +198,10 @@ class SQL
                                            $biogHist));
        $id = $this->sdb->fetchrow($result)['id'];
        $this->sdb->deallocate($qq);
-       $date_fk = $this->insertDate($existDates, 'nrd', $id);
+       foreach ($existDates as $singleDate)
+       {
+           $date_fk = $this->insertDate($vh_info, $singleDate, 'nrd', $id);
+       }
     }
 
     public function insertOtherID($vh_info, $type, $href)
