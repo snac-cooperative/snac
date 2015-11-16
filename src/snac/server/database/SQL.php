@@ -41,7 +41,7 @@ class SQL
 
     public function insertSource($vh_info, $href)
     {
-        $qq = 'insertSource';
+        $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
                             (version, main_id, href)
@@ -56,7 +56,7 @@ class SQL
 
     public function insertOccupation($vh_info, $term, $vocabularySource, $dates, $note)
     {
-        $qq = 'insertOccupation';
+        $qq = 'insert_occupation';
         $this->sdb->prepare($qq, 
                             'insert into occupation
                             (version, main_id, occupation_id, note)
@@ -102,7 +102,7 @@ class SQL
     
     public function insertVersionHistory($userid, $role, $status, $note)
     {
-        $qq = 'insertVersionHistory';
+        $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
         $this->sdb->prepare($qq, 
                             'insert into version_history 
@@ -123,7 +123,7 @@ class SQL
      */
     public function insertDate($vh_info, $date)
     {
-        $qq = 'insertDate';
+        $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
                             (version, main_id, is_range, missing_from, from_date, from_type, from_bc, from_not_before, from_not_after,
@@ -159,7 +159,7 @@ class SQL
     
     public function insertNrd($vh_info, $ark, $entityType, $biogHist, $existDates)
     {
-        $qq = 'insertNrd';
+        $qq = 'insert_nrd';
         $this->sdb->prepare($qq, 
                             'insert into nrd
                             (version, main_id, ark_id, entity_type, biog_hist)
@@ -180,7 +180,7 @@ class SQL
 
     public function insertOtherID($vh_info, $type, $href)
     {
-        $qq = 'insertOtherID';
+        $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
                             'insert into otherid
                             (version, main_id, other_id, link_type)
