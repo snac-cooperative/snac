@@ -121,6 +121,7 @@ class SQL
         {
             printf(" er apparently is not null\n");
         }
+        var_dump($eresult);
         printf("vh execute eresult:\n%s\n", var_export($eresult, true));
         printf("json execute eresult:\n%s\n", json_encode($eresult, JSON_PRETTY_PRINT, 10));
 
