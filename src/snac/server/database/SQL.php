@@ -111,11 +111,11 @@ class SQL
                             ($1, $2, $3, $4, $5)
                             returning id, main_id;');
 
-        $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
+        $eresult = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
 
-        printf("vh execute result:\n%s\n", var_export($result, 1));
+        printf("vh execute eresult:\n%s\n", var_export($eresult, 1));
 
-        $vh_info = $this->sdb->fetchrow($result);
+        $vh_info = $this->sdb->fetchrow($eresult);
 
         printf("vh: \n%s\n", var_export($vh_info, 1));
 
