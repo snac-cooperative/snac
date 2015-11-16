@@ -144,14 +144,6 @@ class SQL
         // foreach over $contributors executing the insert query on each.
         foreach ($contributors as $contrib)
         {
-            $myarr = array($vh_info['id'],
-                           $vh_info['main_id'],
-                           $name_id,
-                           $contrib['contributor'],
-                           $contrib['type']);
-
-            var_export($myarr);
-
             $this->sdb->execute('query2',
                                 array($vh_info['id'],
                                       $vh_info['main_id'],
