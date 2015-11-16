@@ -113,6 +113,14 @@ class SQL
 
         $eresult = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
 
+        if ($eresult = NULL)
+        {
+            printf("er seems to be null\n");
+        }
+        else
+        {
+            printf(" er apparently is not null\n");
+        }
         printf("vh execute eresult:\n%s\n", var_export($eresult, 1));
 
         $vh_info = $this->sdb->fetchrow($eresult);
