@@ -62,6 +62,7 @@ class DBUtil
         fclose($stderr); 
     }
 
+    // $id class Constallation
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
         // This is proabably a good place to start using named args to methods, esp in class SQL.
@@ -73,43 +74,41 @@ class DBUtil
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
         // Sanity check bioghist
-        $cdata = $id->toArray(false);
-        if (count($cdata['biogHists']) > 1)
-        {
-            $msg = sprintf("Warning: multiple biogHists (%s)\n", count($cdata['biogHists']));
-            quick_stderr($msg);
-        }
+        // $cdata = $id->toArray(false);
+
+        /* 
+         * if (count($cdata['biogHists']) > 1)
+         * {
+         *     $msg = sprintf("Warning: multiple biogHists (%s)\n", count($cdata['biogHists']));
+         *     quick_stderr($msg);
+         * }
+         */
         
         // Sanity check existDates. Only 1 allowed here
-        if (count($cdata['existDates']) > 1)
-        {
-            $msg = sprintf("Warning: more than 1 existDates: %s for ark: %s\n",
-                           $count($cdata['existDates']),
-                           $cdata['ark']);
-            quick_stderr($msg);
-        }
+        /* 
+         * if (count($cdata['existDates']) > 1)
+         * {
+         *     $msg = sprintf("Warning: more than 1 existDates: %s for ark: %s\n",
+         *                    $count($cdata['existDates']),
+         *                    $cdata['ark']);
+         *     quick_stderr($msg);
+         * }
+         */
 
-        // biogHists can be zero or more array elements. Apparently there will always only be zero or 1. Deal
-        // with all eventualitites.
-        $biogHist_str = '';
-        foreach ($cdata['biogHists'] as $var)
-        {
-            $biogHist_str .= $var;
-        }
         $this->sql->insertNrd($vh_info,
-                              $cdata['ark'],
-                              $cdata['entityType'],
-                              $biogHist_str,
-                              $cdata['existDates']);
+                              $id->getArk(),
+                              $id->getEntityType(),
+                              $id->getBiogHists(),
+                              $id->getExistDates());
 
-        foreach ($cdata['otherRecordIDs'] as $otherID)
+        foreach ($id->getOtherRecordIDs() as $otherID)
         {
             // Sanity check otherRecordID
             if ($otherID['type'] != 'MergedRecord')
             {
                 $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
                                $otherID['type'],
-                               $cdata['ark']);
+                               $id->getArk());
                 quick_stderr($msg);
             }
 
@@ -117,18 +116,18 @@ class DBUtil
         }
 
         // Constellation name entry data is already an array of name entry data. 
-        foreach ($cdata['nameEntries'] as $ndata)
+        foreach ($id->getNameEntries() as $ndata)
         {
             $name_id = $this->sql->insertName($vh_info, 
-                                        $ndata['original'],
-                                        $ndata['preferenceScore'],
-                                        $ndata['contributors'], // list of type/contributor values
-                                        $ndata['language'],
-                                        $ndata['scriptCode'],
-                                        $ndata['useDates']);
+                                              $ndata->getOriginal(),
+                                              $ndata->getPreferenceScore(),
+                                              $ndata->getContributors(), // list of type/contributor values
+                                              $ndata->getLanguage(),
+                                              $ndata->getScriptCode(),
+                                              $ndata->getUseDates());
         }
 
-        foreach ($cdata['sources'] as $sdata)
+        foreach ($id->getSources() as $sdata)
         {
             // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
             // validation.
@@ -136,13 +135,13 @@ class DBUtil
                                      $sdata['href']);
         }
 
-        foreach ($cdata['legalStatuses'] as $sdata)
+        foreach ($id->getLegalStatuses() as $sdata)
         {
             printf("Need to insert legalStatuses...\n");
         }
 
         // fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
-        foreach ($cdata['occupations'] as $fdata)
+        foreach ($id->getOccupations() as $fdata)
         {
             $this->sql->insertOccupation($vh_info,
                                          $fdata['term'],
