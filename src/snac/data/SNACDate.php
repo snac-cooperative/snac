@@ -142,6 +142,68 @@ class SNACDate extends AbstractData {
      */
     private $note;
 
+    function getFromDate()
+    {
+        return $this->fromDate;
+    }
+
+    function getFromDateOriginal()
+    {
+        return $this->fromDateOriginal;
+    }
+
+    function getFromType()
+    {
+        return $this->fromType;
+    }
+
+    function getFromBC()
+    {
+        return $this->fromBC;
+    }
+
+    function getFromRange()
+    {
+        return $this->fromRange();
+    }
+
+    function getToDate()
+    {
+        return $this->toDate;
+    }
+
+    function getToDateOriginal()
+    {
+        return $this->toDateOriginal;
+    }
+
+    function getToType()
+    {
+        return $this->toType;
+    }
+
+    function getToBC()
+    {
+        return $this->toBC;
+    }
+
+    function getToRange()
+    {
+        return $this->toRange()
+    }
+
+    function getIsRange()
+    {
+        return $this->isRange;
+    }
+
+    function getNote()
+    {
+        return $this->note;
+    }
+
+    
+
     /**
      * Returns this object's data as an associative array
      *
