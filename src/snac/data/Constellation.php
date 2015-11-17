@@ -355,6 +355,168 @@ class Constellation extends AbstractData {
             parent::__construct($data);
     }
 
+    function getArk()
+    {
+        return $this->ark;
+    }
+
+    function getEntityType()
+    {
+        return $this->entityType;
+    }
+
+    function getOtherRecordIDs()
+    {
+        return $this->OtherRecordIDs;
+    }
+
+    function getMaintenanceStatus()
+    {
+        return $this->MaintenanceStatus;
+    }
+
+    function getMaintenanceAgency()
+    {
+        return $this->MaintenanceAgency;
+    }
+
+    function getMaintenanceEvents()
+    {
+        return $this->MaintenanceEvents;
+    }
+
+    function getSources()
+    {
+        return $this->Sources;
+    }
+
+    function getLegalStatuses()
+    {
+        return $this->LegalStatuses;
+    }
+
+    function getConventionDeclaration()
+    {
+        return $this->ConventionDeclaration;
+    }
+
+    function getConstellationLanguage()
+    {
+        return $this->ConstellationLanguage;
+    }
+
+    function getConstellationLanguageCode()
+    {
+        return $this->ConstellationLanguageCode;
+    }
+
+    function getConstellationScript()
+    {
+        return $this->ConstellationScript;
+    }
+
+    function getConstellationScriptCode()
+    {
+        return $this->ConstellationScriptCode;
+    }
+
+    function getLanguage()
+    {
+        return $this->Language;
+    }
+
+    function getLanguageCode()
+    {
+        return $this->LanguageCode;
+    }
+
+    function getScript()
+    {
+        return $this->Script;
+    }
+
+    function getScriptCode()
+    {
+        return $this->ScriptCode;
+    }
+
+    function getNameEntries()
+    {
+        return $this->NameEntries;
+    }
+
+    function getOccupations()
+    {
+        return $this->Occupations;
+    }
+
+    function getBiogHists()
+    {
+        return $this->BiogHists;
+    }
+
+    function getExistDates()
+    {
+        return $this->ExistDates;
+    }
+
+    function getExistDatesNote()
+    {
+        return $this->ExistDatesNote;
+    }
+
+    function getRelations()
+    {
+        return $this->Relations;
+    }
+
+    function getResourceRelations()
+    {
+        return $this->ResourceRelations;
+    }
+
+    function getFunctions()
+    {
+        return $this->Functions;
+    }
+
+    function getPlaces()
+    {
+        return $this->Places;
+    }
+
+    function getSubjects()
+    {
+        return $this->Subjects;
+    }
+
+    function getNationality()
+    {
+        return $this->Nationality;
+    }
+
+    function getGender()
+    {
+        return $this->Gender;
+    }
+
+    function getGeneralContext()
+    {
+        return $this->GeneralContext;
+    }
+
+    function getStructureOrGenealogy()
+    {
+        return $this->StructureOrGenealogy;
+    }
+
+    function getMandate()
+    {
+        return $this->Mandate;
+    }
+
+
+
     /**
      * Returns this object's data as an associative array
      *
