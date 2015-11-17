@@ -164,7 +164,7 @@ class SNACDate extends AbstractData {
 
     function getFromRange()
     {
-        return $this->fromRange();
+        return $this->fromRange;
     }
 
     function getToDate()
@@ -189,7 +189,7 @@ class SNACDate extends AbstractData {
 
     function getToRange()
     {
-        return $this->toRange()
+        return $this->toRange;
     }
 
     function getIsRange()
