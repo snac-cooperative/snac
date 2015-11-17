@@ -132,37 +132,45 @@ class SQL
     /* 
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
+     *
+     * Need to add later:
+     * 
+     *  $date->getMissingFrom(),
+     *  $date->getMissingTo(),
+     *  $date->getToPresent(),
+     *
+     *
      */
     public function insertDate($vh_info, $date, $fk_table, $fk_id)
     {
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
-                            (version, main_id, is_range, missing_from, from_date, from_type, from_bc, from_not_before, from_not_after,
-                            missing_to, to_date, to_type, to_bc, to_not_before, to_not_after, to_present, original, fk_table, fk_id)
+                            (version, main_id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
+                            to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9,
-                            $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+                            ($1, $2, $3, $4, 
+                            (select id from vocabulary where type=\'date_type\' and value=$5),
+                            $6, $7, $8, $9,
+                            (select id from vocabulary where type=\'date_type\' and value=$10),
+                            $11, $12, $13, $14, $15, $16)
                             returning id');
- 
+
        $result = $this->sdb->execute($qq,
-                                     array($vh_info['id'],
+                                     array($vh_info['id'], 
                                            $vh_info['main_id'],
-                                           $date['is_range'],
-                                           $date['missing_from'],
-                                           $date['from_date'],
-                                           $date['from_type'],
-                                           $date['from_bc'],
-                                           $date['from_not_before'],
-                                           $date['from_not_after'],
-                                           $date['missing_to'],
-                                           $date['to_date'],
-                                           $date['to_type'],
-                                           $date['to_bc'],
-                                           $date['to_not_before'],
-                                           $date['to_not_after'],
-                                           $date['to_present'],
-                                           $date['fromDateOriginal'] . ' - ' . $date['toDateOriginal'],
+                                           $this->sdb->boolToPg($date->getIsRange()),
+                                           $date->getFromDate(),
+                                           $date->getFromType(),
+                                           $this->sdb->boolToPg($date->getFromBc()),
+                                           $date->getFromRange()['notBefore'],
+                                           $date->getFromRange()['notAfter'],
+                                           $date->getToDate(),
+                                           $date->getToType(),
+                                           $this->sdb->boolToPg($date->getToBc()),
+                                           $date->getToRange()['notBefore'],
+                                           $date->getToRange()['notAfter'],
+                                           $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
                                            $fk_table,
                                            $fk_id));
 
