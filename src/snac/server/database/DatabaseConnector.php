@@ -35,6 +35,21 @@ class DatabaseConnector {
      */
     private $dbHandle = null;
     
+    // pg_execute() doesn't know to convert boolean to 't' and 'f' as required by Postgres. We can do it
+    // ourselves.  Interestingly, the return value is a single character string containing t or f. In SQL it
+    // would be literally 't'.
+    public static function boolToPg($arg)
+    {
+        if ($arg)
+        {
+            return 't';
+        }
+        else
+        {
+            return 'f';
+        }
+    }
+
     /**
      * Constructor
      * 
