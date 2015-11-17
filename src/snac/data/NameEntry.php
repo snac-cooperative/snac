@@ -92,6 +92,38 @@ class NameEntry extends AbstractData {
         parent::__construct($data);
     }
     
+    function getOriginal()
+    {
+        return $this->original;
+    }
+
+    function getPreferenceScore()
+    {
+        return $this->preferenceScore;
+    }
+
+    function getContributors()
+    {
+        return $this->contributors;
+    }
+
+    function getLanguage()
+    {
+        return $this->language;
+    }
+
+    function getScriptCode()
+    {
+        return $this->scriptCode;
+    }
+
+    function getUseDates()
+    {
+        return $this->useDates;
+    }
+
+
+
     /**
      * Returns this object's data as an associative array
      *
