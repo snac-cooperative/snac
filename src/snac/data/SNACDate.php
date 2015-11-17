@@ -159,7 +159,17 @@ class SNACDate extends AbstractData {
 
     function getFromBC()
     {
-        return $this->fromBC;
+        if ($this->fromBC)
+        {
+            printf("from bc true\n");
+            exit();
+            return true;
+        }
+        else
+        {
+            printf("from bc false: %s\n", $this->fromBC);
+            return false;
+        }
     }
 
     function getFromRange()
@@ -184,7 +194,14 @@ class SNACDate extends AbstractData {
 
     function getToBC()
     {
-        return $this->toBC;
+        if ($this->toBC)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     function getToRange()
@@ -194,7 +211,14 @@ class SNACDate extends AbstractData {
 
     function getIsRange()
     {
-        return $this->isRange;
+        if ($this->isRange)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     function getNote()
