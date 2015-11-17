@@ -367,152 +367,152 @@ class Constellation extends AbstractData {
 
     function getOtherRecordIDs()
     {
-        return $this->OtherRecordIDs;
+        return $this->otherRecordIDs;
     }
 
     function getMaintenanceStatus()
     {
-        return $this->MaintenanceStatus;
+        return $this->maintenanceStatus;
     }
 
     function getMaintenanceAgency()
     {
-        return $this->MaintenanceAgency;
+        return $this->maintenanceAgency;
     }
 
     function getMaintenanceEvents()
     {
-        return $this->MaintenanceEvents;
+        return $this->maintenanceEvents;
     }
 
     function getSources()
     {
-        return $this->Sources;
+        return $this->sources;
     }
 
     function getLegalStatuses()
     {
-        return $this->LegalStatuses;
+        return $this->legalStatuses;
     }
 
     function getConventionDeclaration()
     {
-        return $this->ConventionDeclaration;
+        return $this->conventionDeclaration;
     }
 
     function getConstellationLanguage()
     {
-        return $this->ConstellationLanguage;
+        return $this->constellationLanguage;
     }
 
     function getConstellationLanguageCode()
     {
-        return $this->ConstellationLanguageCode;
+        return $this->constellationLanguageCode;
     }
 
     function getConstellationScript()
     {
-        return $this->ConstellationScript;
+        return $this->constellationScript;
     }
 
     function getConstellationScriptCode()
     {
-        return $this->ConstellationScriptCode;
+        return $this->constellationScriptCode;
     }
 
     function getLanguage()
     {
-        return $this->Language;
+        return $this->language;
     }
 
     function getLanguageCode()
     {
-        return $this->LanguageCode;
+        return $this->languageCode;
     }
 
     function getScript()
     {
-        return $this->Script;
+        return $this->script;
     }
 
     function getScriptCode()
     {
-        return $this->ScriptCode;
+        return $this->scriptCode;
     }
 
     function getNameEntries()
     {
-        return $this->NameEntries;
+        return $this->nameEntries;
     }
 
     function getOccupations()
     {
-        return $this->Occupations;
+        return $this->occupations;
     }
 
     function getBiogHists()
     {
-        return $this->BiogHists;
+        return $this->biogHists;
     }
 
     function getExistDates()
     {
-        return $this->ExistDates;
+        return $this->existDates;
     }
 
     function getExistDatesNote()
     {
-        return $this->ExistDatesNote;
+        return $this->existDatesNote;
     }
 
     function getRelations()
     {
-        return $this->Relations;
+        return $this->relations;
     }
 
     function getResourceRelations()
     {
-        return $this->ResourceRelations;
+        return $this->resourceRelations;
     }
 
     function getFunctions()
     {
-        return $this->Functions;
+        return $this->functions;
     }
 
     function getPlaces()
     {
-        return $this->Places;
+        return $this->places;
     }
 
     function getSubjects()
     {
-        return $this->Subjects;
+        return $this->subjects;
     }
 
     function getNationality()
     {
-        return $this->Nationality;
+        return $this->nationality;
     }
 
     function getGender()
     {
-        return $this->Gender;
+        return $this->gender;
     }
 
     function getGeneralContext()
     {
-        return $this->GeneralContext;
+        return $this->generalContext;
     }
 
     function getStructureOrGenealogy()
     {
-        return $this->StructureOrGenealogy;
+        return $this->structureOrGenealogy;
     }
 
     function getMandate()
     {
-        return $this->Mandate;
+        return $this->mandate;
     }
 
 
