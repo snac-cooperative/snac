@@ -746,10 +746,13 @@ class EACCPFParser {
                                 // We want 'href' to always exist. If it doesn't, warn, and set it to the empty string.
                                 if ( ! isset($ratts['href']))
                                 {
-                                    $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID);
-                                    $stderr = fopen('php://stderr', 'w');
-                                    fwrite($stderr,"  $message\n");
-                                    fclose($stderr); 
+                                    // In retrospect, we can silently just make this an empty string, probably.
+                                    /* 
+                                     * $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID);
+                                     * $stderr = fopen('php://stderr', 'w');
+                                     * fwrite($stderr,"  $message\n");
+                                     * fclose($stderr); 
+                                     */
                                     $ratts['href'] = "";
                                 }
                                 switch ($rel->getName()) {
@@ -1132,11 +1135,14 @@ class EACCPFParser {
             }
             else
             {
-                $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
-                $stderr = fopen('php://stderr', 'w');
-                fwrite($stderr,"  $message\n");
-                fclose($stderr); 
-                $ratts['href'] = "";
+                // Silently make dates with no standard date only partial complete.
+                /* 
+                 * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
+                 * $stderr = fopen('php://stderr', 'w');
+                 * fwrite($stderr,"  $message\n");
+                 * fclose($stderr); 
+                 */
+                $date->setDate((string) $dateElement, '', '');
             }
         }
         return $date;
