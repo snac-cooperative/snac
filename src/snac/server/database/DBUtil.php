@@ -100,12 +100,26 @@ class DBUtil
          *     quick_stderr($msg);
          * }
          */
-
+        
+        // $id->getLanguage(),
+        // $id->getLanguageCode(),
+        // $id->getScript(),
+        // $id->getScriptCode()
         $this->sql->insertNrd($vh_info,
-                              $id->getArk(),
-                              $id->getEntityType(),
-                              $id->getBiogHists(),
-                              $id->getExistDates());
+                              $id->getExistDates(),
+                              array($id->getArk(),
+                                    $id->getEntityType(),
+                                    $id->getBiogHists(),
+                                    $id->getNationality(),
+                                    $id->getGender(),
+                                    $id->getGeneralContext(),
+                                    $id->getStructureOrGenealogy(),
+                                    $id->getMandate(),
+                                    $id->getConventionDeclaration(),
+                                    $id->getConstellationLanguage(),
+                                    $id->getConstellationLanguageCode(),
+                                    $id->getConstellationScript(),
+                                    $id->getConstellationScriptCode()));
         // printf("insertNRD done\n");
 
         foreach ($id->getOtherRecordIDs() as $otherID)
@@ -136,8 +150,6 @@ class DBUtil
                                               stripNS($ndata->getLanguage()),
                                               stripNS($ndata->getScriptCode()),
                                               $ndata->getUseDates());
-            // printf("insertName done\n");
-
         }
 
         foreach ($id->getSources() as $sdata)
@@ -146,8 +158,6 @@ class DBUtil
             // validation.
             $this->sql->insertSource($vh_info,
                                      $sdata['href']);
-            // printf("insertSource done\n");
-
         }
 
         foreach ($id->getLegalStatuses() as $sdata)
@@ -159,12 +169,25 @@ class DBUtil
         foreach ($id->getOccupations() as $fdata)
         {
             $this->sql->insertOccupation($vh_info,
-                                         $fdata['term'],
-                                         $fdata['vocabularySource'],
-                                         $fdata['dates'],
-                                         $fdata['note']);
-            // printf("insertOccupation done\n");
+                                         $fdata->getTerm(),
+                                         $fdata->getVocabularySource(),
+                                         $fdata->getDates(),
+                                         $fdata->getNote());
+        }
 
+        foreach ($id->getFunctions() as $fdata)
+        {
+            $this->sql->insertFunction($vh_info,
+                                       $fdata->getTerm(),
+                                       $fdata->getVocabularySource(),
+                                       $fdata->getDates(),
+                                       $fdata->getNote());
+        }
+
+        foreach ($id->getSubjects() as $term)
+        {
+            $this->sql->insertSubject($vh_info,
+                                       $term);
         }
 
         return $vh_info;
