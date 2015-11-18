@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Editing {{ ark }}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'#biogHist', plugins:'code', min_height: 300});</script>
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+</style>
+</head>
+<body role="document">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">SNAC</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="?">Home</a></li>
+                <li><a href="?command=dashboard">Dashboard</a></li>
+            </ul>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Robbie Hott <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Action</a></li>
+                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">User Options</li>
+                        <li><a href="#">Settings</a></li>
+                        <li><a href="#">Logout</a></li>
+                    </ul>
+                    </li>
+                </ul>
+            </div>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>  
+
+
+<div class="container snac" role="main">
+
+    <form class="form-horizontal">
+        <h1>Editing Constellation</h1>
+        <div class="row">
+            <div class="col-md-8">
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="active"><a href="#nrd" role="tab" data-toggle="tab">NRD</a></li>
+                    <li><a href="#nameEntries" role="tab" data-toggle="tab">Name Entries</a></li>
+                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
+                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
+                    <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
+                    <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
+
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#sameAs" role="tab" data-toggle="tab">External Same As</a></li>
+                        <li><a href="#constellationRelations" role="tab" data-toggle="tab">Constellation Relations</a></li>
+                        <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
+                    </ul>
+                    </li>
+
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane active" id="nrd">
+                        <h2>NRD Information</h2>
+                        <!--
+                        <div class="form-group">
+                            <label for="ark" class="control-label col-xs-2">
+                                Ark ID
+                            </label>
+                            <div class="col-xs-10">
+                                <input id="ark" name="ark" type="text" class="form-control"  value="{{ ark }}" disabled="disabled"/>
+                            </div>
+                        </div>
+                        -->
+
+                        <!-- Sample text input
+                        <div class="form-group">
+                            <label for="entityType" class="control-label col-xs-2">
+                                Entity Type
+                            </label>
+                            <div class="col-xs-10">
+                                <input id="entityType" name="entityType" type="text" class="form-control" value="{{ entityType }}"/>
+                            </div>
+                        </div>
+                        -->
+
+                        <div class="form-group">
+                            <label for="entityType" class="control-label col-xs-2">
+                                Entity Type
+                            </label>
+                            <div class="col-xs-10">
+                                <select id="entityType" name="entityType" class="form-control selectpicker">
+                                    <option value="person" {{ entityType == 'person' ? 'selected' }}>Person</option>
+                                    <option value="corporateBody" {{ entityType == 'corporateBody' ? 'selected' }}>Corporate Body</option>
+                                    <option value="family" {{ entityType == 'family' ? 'selected' }}>Family</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="gender" class="control-label col-xs-2">
+                                Gender
+                            </label>
+                            <div class="col-xs-10">
+                                <select id="gender" name="gender" class="form-control selectpicker">
+                                    <option value="female" {{ gender == 'female' ? 'selected' }}>Female</option>
+                                    <option value="male" {{ gender == 'male' ? 'selected' }}>Male</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane" id="nameEntries">
+                        <h2>Name Entries</h2>
+                        {% set i = 0 %}
+                        {% for nameEntry in nameEntries %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="nameEntry_original_{{ i }}" class="control-label col-xs-2">
+                                        Original
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="text" class="form-control" value="{{ nameEntry.original }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="biogHists">
+                        <h2>Biographical History</h2>
+
+                        <p><textarea id="biogHist" name="biogHist">{{ biogHists[0]|e }}</textarea></p>
+
+                    </div>
+
+                    <div class="tab-pane" id="sameAs">
+                        <h2>Same As</h2>
+
+                        {% set i = 0 %}
+                        {% for other in otherRecordIDs %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="otherID_type_{{ i }}" class="control-label col-xs-2">
+                                        Type
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="otherID_type_{{i}}" name="otherID_type_{{i}}" type="text" class="form-control" value="{{ other.type }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="otherID_href_{{ i }}" class="control-label col-xs-2">
+                                        Link
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="otherID_href_{{i}}" name="otherID_href_{{i}}" type="text" class="form-control" value="{{ other.href }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="sources">
+                        <h2>Sources</h2>
+
+                        {% set i = 0 %}
+                        {% for source in sources %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="source_href_{{ i }}" class="control-label col-xs-2">
+                                        Link
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="source_href_{{i}}" name="source_href_{{i}}" type="text" class="form-control" value="{{ source.href }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="resourceRelations">
+                        <h2>Resource Relations</h2>
+
+                        {% set i = 0 %}
+                        {% for relation in resourceRelations %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-2">
+                                        Relation Text
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-2">
+                                        Role
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-2">
+                                        Link
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-2">
+                                        Document Type
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-2">
+                                        Source
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control">{{ relation.source }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="constellationRelations">
+                        <h2>Constellation Relations</h2>
+
+                        {% set i = 0 %}
+                        {% for relation in relations %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-2">
+                                        Relation Text
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_targetArkID_{{ i }}" class="control-label col-xs-2">
+                                        Target ArkID
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="text" class="form-control" value="{{ relation.targetArkID }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_targetEntityType_{{ i }}" class="control-label col-xs-2">
+                                        Target Entity Type
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="text" class="form-control" value="{{ relation.targetEntityType }}" disabled="disabled"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-2">
+                                        Type
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="constellationRelation_type_{{i}}" name="constellationRelation_type_{{i}}" type="text" class="form-control" value="{{ relation.type }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="subjects">
+                        <h2>Subjects</h2>
+
+                        {% set i = 0 %}
+                        {% for subject in subjects %}
+                        <div class="form-group">
+                            <div class="col-xs-10">
+                                <input id="subject_{{i}}" name="subject_{{i}}" type="text" class="form-control" value="{{ subject }}"/>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">User Actions</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>You may perform any of the following actions on this constellation.</p>
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-info">Save &amp; Continue</a>
+                            <a href="?command=dashboard" class="list-group-item list-group-item-info">Save &amp; Dashboard</a>
+                            <a href="#" class="list-group-item list-group-item-success">Save &amp; Submit</a>
+                            <a href="#" class="list-group-item list-group-item-danger">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Constellation Info</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <label for="ark" class="control-label col-xs-2">
+                                Ark
+                            </label>
+                            <div class="col-xs-10">
+                                <p class="form-control-static">{{ ark }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </form>
+</div>
+</body>
+</html>
