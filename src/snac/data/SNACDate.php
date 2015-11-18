@@ -157,19 +157,12 @@ class SNACDate extends AbstractData {
         return $this->fromType;
     }
 
+    // This works as expected. A boolean is returns (in as much as php vars have a type). However, Postgres
+    // expects bools to be 't' or 'f' and pg_execute() doesn't mogrify boolean that way. We transform boolean
+    // ourselves with DatabaseConnector->boolToPg().
     function getFromBC()
     {
-        if ($this->fromBC)
-        {
-            printf("from bc true\n");
-            exit();
-            return true;
-        }
-        else
-        {
-            printf("from bc false: %s\n", $this->fromBC);
-            return false;
-        }
+        return $this->fromBC;
     }
 
     function getFromRange()
