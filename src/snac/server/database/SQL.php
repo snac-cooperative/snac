@@ -123,7 +123,7 @@ class SQL
 
         $vh_info = $this->sdb->fetchrow($result);
 
-        printf("vh: \n%s\n", var_export($vh_info, 1));
+        // printf("vh: \n%s\n", var_export($vh_info, 1));
 
         $this->sdb->deallocate('insert_version_history');
         return $vh_info;
@@ -189,19 +189,22 @@ class SQL
                             values
                             ($1, $2, $3, (select id from vocabulary where type=\'entity_type\' and value=$4), $5)
                             returning id');
- 
-       $result = $this->sdb->execute($qq,
-                                     array($vh_info['id'],
-                                           $vh_info['main_id'],
-                                           $ark,
-                                           $entityType,
-                                           $biogHist));
-       $id = $this->sdb->fetchrow($result)['id'];
-       $this->sdb->deallocate($qq);
-       foreach ($existDates as $singleDate)
-       {
-           $date_fk = $this->insertDate($vh_info, $singleDate, 'nrd', $id);
-       }
+        
+        // printf("biogHist type: %s\n", gettype($biogHist));
+        $result = $this->sdb->execute($qq,
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $ark,
+                                            $entityType,
+                                            $biogHist));
+        // printf("execute nrd done\n");
+        $id = $this->sdb->fetchrow($result)['id'];
+        $this->sdb->deallocate($qq);
+        foreach ($existDates as $singleDate)
+        {
+            $date_fk = $this->insertDate($vh_info, $singleDate, 'nrd', $id);
+            // printf("execute insertDate done\n");
+        }
     }
 
     public function insertOtherID($vh_info, $type, $href)
