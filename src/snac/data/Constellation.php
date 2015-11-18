@@ -450,9 +450,16 @@ class Constellation extends AbstractData {
         return $this->occupations;
     }
 
+    // All the other code expects biogHist to be a single string. On the off chance that the array of
+    // biogHists has more than one, concat all them into a single string and return that string.
     function getBiogHists()
     {
-        return $this->biogHists;
+        $normativeBiogHist = '';
+        foreach ($this->biogHists as $singleBiogHist)
+        {
+            $normativeBiogHist .= $singleBiogHist;
+        }
+        return $normativeBiogHist;
     }
 
     function getExistDates()
