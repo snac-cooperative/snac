@@ -21,6 +21,12 @@
 
 namespace snac\server\database;
 
+function stripNS($arg)
+{
+    $arg = preg_replace('/^.*#(.*)$/', '$1', $arg );
+    return $arg;
+}
+
 /**
  * High level database class. This is what the rest of the server sees as an interface to the database. There
  * is no SQL here. This knows about data structure from two points of view: constellation php data, and tables in the
@@ -41,7 +47,7 @@ class DBUtil
         $db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($db);
     }
-    
+
     // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
     function getAppUserInfo($userid)
     {
@@ -100,11 +106,14 @@ class DBUtil
                               $id->getEntityType(),
                               $id->getBiogHists(),
                               $id->getExistDates());
+        // printf("insertNRD done\n");
 
         foreach ($id->getOtherRecordIDs() as $otherID)
         {
+            $otherID['type'] = stripNS($otherID['type']);
             // Sanity check otherRecordID
-            if ($otherID['type'] != 'MergedRecord')
+            if ($otherID['type'] != 'MergedRecord' and
+                $otherID['type'] != 'viafID')
             {
                 $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
                                $otherID['type'],
@@ -113,6 +122,8 @@ class DBUtil
             }
 
             $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
+            // printf("insertOtherID done\n");
+
         }
 
         // Constellation name entry data is already an array of name entry data. 
@@ -122,9 +133,11 @@ class DBUtil
                                               $ndata->getOriginal(),
                                               $ndata->getPreferenceScore(),
                                               $ndata->getContributors(), // list of type/contributor values
-                                              $ndata->getLanguage(),
-                                              $ndata->getScriptCode(),
+                                              stripNS($ndata->getLanguage()),
+                                              stripNS($ndata->getScriptCode()),
                                               $ndata->getUseDates());
+            // printf("insertName done\n");
+
         }
 
         foreach ($id->getSources() as $sdata)
@@ -133,6 +146,8 @@ class DBUtil
             // validation.
             $this->sql->insertSource($vh_info,
                                      $sdata['href']);
+            // printf("insertSource done\n");
+
         }
 
         foreach ($id->getLegalStatuses() as $sdata)
@@ -148,6 +163,8 @@ class DBUtil
                                          $fdata['vocabularySource'],
                                          $fdata['dates'],
                                          $fdata['note']);
+            // printf("insertOccupation done\n");
+
         }
 
         return $vh_info;
