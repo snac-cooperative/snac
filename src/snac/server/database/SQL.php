@@ -327,6 +327,23 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
+    public function insertRelation($vh_info, $arg_list)
+    {
+        $qq = 'insert_subject';
+        $this->sdb->prepare($qq,
+                            'insert into subject
+                            (version, main_id, subject_id)
+                            values
+                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=$3))');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $term));
+        $this->sdb->deallocate($qq);
+    }
+
+
 
 }
 
