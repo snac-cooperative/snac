@@ -63,10 +63,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $connect = new ServerConnect();
         
         $serverResponse = $connect->query($this->input);
-        
-        $this->response = "<html><body><h1>Server Response</h1><pre>" . print_r($serverResponse, true) .
-                 "</pre></body></html>";
-        
+
+        $display = new display\Display();
+        if ($this->input["command"] == "edit") {
+            $display->setTemplate("edit_page");
+            if (isset($serverResponse["constellation"]))
+                $display->setData($serverResponse["constellation"]);
+        } else if ($this->input["command"] == "dashboard") {
+            $display->setTemplate("dashboard");
+        } else {
+            $display->setTemplate("landing_page");
+        }
+        $this->response = $display->getDisplay();
+
         return;
     }
 
