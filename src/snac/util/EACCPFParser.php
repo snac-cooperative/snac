@@ -85,7 +85,7 @@ class EACCPFParser {
                                     ), $catts);
                             break;
                         case "otherRecordId":
-                            $identity->addOtherRecordID($catts["localType"], (string) $control);
+                            $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
                             break;
                         case "maintenanceStatus":
                             $identity->setMaintenanceStatus((string) $control);
@@ -230,7 +230,7 @@ class EACCPFParser {
                         case "sources":
                             foreach ($this->getChildren($control) as $source) {
                                 $satts = $this->getAttributes($source);
-                                $identity->addSource($satts['type'], $satts['href']);
+                                $identity->addSource($this->getValue($satts['type']), $satts['href']);
                                 // TODO Need to handle the ObjectXMLWrap
                             }
                             break;
@@ -416,7 +416,7 @@ class EACCPFParser {
                                         $place = new \snac\data\Place();
                                         $platts = $this->getAttributes($desc2);
                                         if (isset($platts["localType"])) {
-                                            $place->setType($platts["localType"]);
+                                            $place->setType($this->getValue($platts["localType"]));
                                             unset($platts["localType"]);
                                         }
                                         foreach ($this->getChildren($desc2) as $placePart) {
@@ -503,7 +503,7 @@ class EACCPFParser {
                                                 $identity->setNationality((string) $subTag);
                                                 break;
                                             case "http://viaf.org/viaf/terms#gender":
-                                                $identity->setGender((string) $subTag);
+                                                $identity->setGender($this->getValue((string) $subTag));
                                                 break;
                                             default:
                                                 $this->markUnknownTag(
@@ -736,10 +736,10 @@ class EACCPFParser {
                                 switch ($rel->getName()) {
                                     case "cpfRelation":
                                         $relation = new \snac\data\ConstellationRelation();
-                                        $relation->setType($ratts["arcrole"]);
+                                        $relation->setType($this->getValue($ratts["arcrole"]));
                                         $relation->setTargetArkID($ratts['href']);
-                                        $relation->setTargetType($ratts['role']);
-                                        $relation->setAltType($ratts["type"]);
+                                        $relation->setTargetType($this->getValue($ratts['role']));
+                                        $relation->setAltType($this->getValue($ratts["type"]));
                                         $relation->setCPFRelationType($ratts['cpfRelationType']);
                                         unset($ratts["arcrole"]);
                                         unset($ratts["href"]);
@@ -795,17 +795,17 @@ class EACCPFParser {
                                         break;
                                     case "resourceRelation":
                                         $relation = new \snac\data\ResourceRelation();
-                                        $relation->setDocumentType($ratts["role"]);
+                                        $relation->setDocumentType($this->getValue($ratts["role"]));
                                         $relation->setLink($ratts['href']);
-                                        $relation->setLinkType($ratts['type']);
-                                        $relation->setRole($ratts['arcrole']);
+                                        $relation->setLinkType($this->getValue($ratts['type']));
+                                        $relation->setRole($this->getValue($ratts['arcrole']));
                                         foreach ($this->getChildren($rel) as $relItem) {
                                             switch ($relItem->getName()) {
                                                 case "relationEntry":
                                                     $relation->setContent((string) $relItem);
                                                     $relAtts = $this->getAttributes($relItem);
                                                     if (isset($relAtts["localType"])) {
-                                                        $relation->setRelationEntryType($relAtts["localType"]);
+                                                        $relation->setRelationEntryType($this->getValue($relAtts["localType"]));
                                                         unset($relAtts["localType"]);
                                                     }
                                                     $this->markUnknownAtt(
@@ -894,6 +894,24 @@ class EACCPFParser {
     public function getMissing() {
 
         return $this->unknowns;
+    }
+
+    /**
+     * Get the value of the parameter string, stripping off any namespace
+     * portions and returning only the text value.
+     *
+     * Currently, this splits the string based on the pound sign (#) and
+     * returns the end of the string.
+     *
+     * @param string $value Tag/Attribute value to strip the controlled vocab from
+     * @return string Cleaned string, with no namespace text
+     */
+    private function getValue($value) {
+        $parts = explode("#", $value);
+        if (count($parts) == 2)
+            return $parts[1];
+        else
+            return $value;
     }
 
     /**
@@ -1022,7 +1040,7 @@ class EACCPFParser {
                 switch ($dateTag->getName()) {
                     case "fromDate":
                         if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
+                            $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
                             $notBefore = null;
                             $notAfter = null;
                             if (isset($dateAtts["notBefore"]))
@@ -1045,7 +1063,7 @@ class EACCPFParser {
                         break;
                     case "toDate":
                         if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $dateAtts["localType"]);
+                            $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
                             $notBefore = null;
                             $notAfter = null;
                             if (isset($dateAtts["notBefore"]))
@@ -1081,7 +1099,7 @@ class EACCPFParser {
             // Handle the single date that appears
             $date->setRange(false);
             $dateAtts = $this->getAttributes($dateElement);
-            $date->setDate((string) $dateElement, $dateAtts["standardDate"], $dateAtts["localType"]);
+            $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
             $notBefore = null;
             $notAfter = null;
             if (isset($dateAtts["notBefore"]))
