@@ -180,30 +180,44 @@ class SQL
     }
     
     // biogHist is a string, not array. 
-    public function insertNrd($vh_info, $ark, $entityType, $biogHist, $existDates)
+
+    //  language, languageCode, script, scriptCode
+
+    public function insertNrd($vh_info, $existDates, $arg_list)
     {
         $qq = 'insert_nrd';
         $this->sdb->prepare($qq, 
                             'insert into nrd
-                            (version, main_id, ark_id, entity_type, biog_hist)
+                            (version, main_id, ark_id, entity_type, biog_hist, nationality, 
+                            gender, general_context, structure_or_genealogy, mandate, convention_declaration,
+                            language, language_code, script, script_code)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'entity_type\' and value=$4), $5)
+                            ($1, $2, $3,
+                            (select id from vocabulary where type=\'entity_type\' and value=$4),
+                            $5,
+                            (select id from vocabulary where type=\'nationality\' and value=$6),
+                            (select id from vocabulary where type=\'gender\' and value=$7),
+                            $8, $9, $10, $11, $12,
+                            (select id from vocabulary where type=\'language_code\' and value=$13),
+                            $14,
+                            (select id from vocabulary where type=\'script_code\' and value=$15))
                             returning id');
         
-        // printf("biogHist type: %s\n", gettype($biogHist));
-        $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
-                                            $ark,
-                                            $entityType,
-                                            $biogHist));
-        // printf("execute nrd done\n");
+        // Combine vh_info and the remaining args into a big array for execute().
+        $execList = array($vh_info['id'], $vh_info['main_id']);
+
+        foreach ($arg_list as $arg)
+        {
+            array_push($execList, $arg);
+        }
+                                                                
+        $result = $this->sdb->execute($qq, $execList);
+
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
         foreach ($existDates as $singleDate)
         {
             $date_fk = $this->insertDate($vh_info, $singleDate, 'nrd', $id);
-            // printf("execute insertDate done\n");
         }
     }
 
@@ -272,5 +286,47 @@ class SQL
         $this->sdb->deallocate($qq_2);
     }
     
+    
+    // Function uses the same vocabulary terms as occupation.
+    public function insertFunction($vh_info, $term, $vocabularySource, $dates, $note)
+    {
+        $qq = 'insert_function';
+        $this->sdb->prepare($qq,
+                            'insert into function
+                            (version, main_id, function_id, note)
+                            values
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=$3), $4)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $term,
+                                            $note));
+        $id = $this->sdb->fetchrow($result)['id'];
+        $this->sdb->deallocate($qq);
+        foreach ($dates as $single_date)
+        {
+            $date_fk = $this->insertDate($vh_info, $single_date, 'function', $id);
+        }
+    }
+
+    
+    public function insertSubject($vh_info, $term)
+    {
+        $qq = 'insert_subject';
+        $this->sdb->prepare($qq,
+                            'insert into subject
+                            (version, main_id, subject_id)
+                            values
+                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=$3))');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vh_info['id'],
+                                            $vh_info['main_id'],
+                                            $term));
+        $this->sdb->deallocate($qq);
+    }
+
+
 }
 
