@@ -117,7 +117,63 @@ class ConstellationRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+
+    function getSourceConstellation()
+    {
+        $this->sourceConstellation;
+    }
+        
+    function getTargetConstellation()
+    {
+        $this->targetConstellation;
+    }
+            
+    function getSourceArkID()
+    {
+        $this->sourceArkID;
+    }
     
+    function getTargetArkID()
+    {
+        $this->targetArkID;
+    }
+
+    function getTargetEntityType()
+    {
+        $this->targetEntityType;
+    }
+
+    function getType()
+    {
+        $this->type;
+    }
+
+    function getAltType()
+    {
+        $this->altType;
+    }
+
+    function getCpfRelationType()
+    {
+        $this->cpfRelationType;
+    }
+
+    function getContent()
+    {
+        $this->content;
+    }
+
+    function getDates()
+    {
+        $this->dates;
+    }
+
+    function getNote()
+    {
+        $this->note;
+    }
+
+
     /**
      * Returns this object's data as an associative array
      *
