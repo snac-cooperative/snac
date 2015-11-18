@@ -76,7 +76,7 @@ class DBUtil
         // Move those sanity checks up here, and decide what kind of exception to throw, or message to log if
         // not fatal.
         
-        // vh_info: version_history.id, version, main_id, ark_id?
+        // vh_info: version_history.id, version_history.main_id,
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
         // Sanity check bioghist
@@ -188,6 +188,39 @@ class DBUtil
         {
             $this->sql->insertSubject($vh_info,
                                        $term);
+        }
+
+        foreach ($id-getRelations() as $fdata)
+        {
+            // ignored: we know our own id value: sourceConstellation, // id fk
+            // ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
+
+            /* 
+               | php                 | what                                     | sql              |
+               |---------------------+------------------------------------------+------------------|
+               | targetConstellation | id fk to version_history                 | .related_id      |
+               | targetArkID         | ark                                      | .related_ark     |
+               | targetEntityType    | @xlink:role, fk id to vocab              | .role            |
+               | type                | cpfRelation@xlink:arcrole                | .arcrole         |
+               | altType             | cpfRelation@xlink:type                   | .type            |
+               | cpfRelationType     | AnF only, so far                         | .relation_type   |
+               | content             | cpfRelation/relationEntry, usuall a name | .relation_entry  |
+               | dates               | cpfRelation/date (or dateRange)          | .date            |
+               | note                | cpfRelation/descriptiveNote              | .descriptiveNote |
+               
+            */
+
+            $this->sql->insertRelations($vh_info
+                                        array($fdata->getTargetConstellation(),
+                                              $fdata->getTargetArkID(),
+                                              $fdata->getTargetEntityType(),
+                                              $fdata->getType(),
+                                              $fdata->getAltType(),
+                                              $fdata->getCpfRelationType(),
+                                              $fdata->getContent(),
+                                              $fdata->getDates(),
+                                              $fdata->getNote()));
+            );
         }
 
         return $vh_info;
