@@ -66,8 +66,35 @@ class SNACFunction extends AbstractData {
      * 
      * @var string Vocabulary source for the function
      */
-    private $vocabularySource;
+    private $vocabularySource = '';
+
+    function getTerm()
+    {
+        $this->term;
+    }
     
+    function getType()
+    {
+        $this->type;
+    }
+
+    function getDates()
+    {
+        $this->dates;
+    }
+
+    function getNote()
+    {
+        $this->note;
+    }
+
+    function getVocabularySource()
+    {
+        $this->vocabularySource;
+    }
+
+
+
     /**
      * Returns this object's data as an associative array
      *
