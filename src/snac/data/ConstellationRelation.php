@@ -168,7 +168,17 @@ class ConstellationRelation extends AbstractData {
 
     function getDates()
     {
-        $this->dates;
+        // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
+        // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
+        // this universe.
+        if ($this->dates)
+        {
+            $this->dates;
+        }
+        else
+        {
+            return array();
+        }
     }
 
     function getNote()
