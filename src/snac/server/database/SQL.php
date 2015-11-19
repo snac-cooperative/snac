@@ -376,7 +376,7 @@ class SQL
                             (select id from vocabulary where type=\'document_type\' and value=$3),
                             $4, $5,
                             (select id from vocabulary where type=\'document_role\' and value=$6),
-                            $7, $8, $9));
+                            $7, $8, $9)');
 
         // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
         // first two elements of the array with id and main_id from vh_info.
