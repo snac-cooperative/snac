@@ -358,6 +358,8 @@ class SQL
         $relationId = $row['id'];
         $this->sdb->deallocate($qq);
 
+        printf("typeof dates: %s\n", gettype($dates));
+
         foreach ($dates as $singleDate)
         {
             $date_fk = $this->insertDate($vh_info, $singleDate, 'related_identity', $relationId);
