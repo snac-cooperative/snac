@@ -173,7 +173,7 @@ class ConstellationRelation extends AbstractData {
         // this universe.
         if ($this->dates)
         {
-            $this->dates;
+            return $this->dates;
         }
         else
         {
