@@ -215,7 +215,7 @@ class DBUtil
 
         foreach ($id->getRelations() as $fdata)
         {
-            $this->sql->insertRelations($vh_info,
+            $this->sql->insertRelation($vh_info,
                                         $fdata->getDates(),
                                         array($fdata->getTargetConstellation(),
                                               $fdata->getTargetArkID(),
