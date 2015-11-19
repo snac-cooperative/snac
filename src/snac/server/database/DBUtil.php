@@ -248,13 +248,13 @@ class DBUtil
 
         foreach ($id->getResourceRelations() as $fdata)
         {
-            $this->sql->insertRelation($vh_info,
-                                        array($fdata->getDocumentType(),
-                                              $fdata->getEntryType(),
-                                              $fdata->getLink(),
-                                              $fdata->getRole(),
-                                              $fdata->getContent(),
-                                              $fdata->getSource()));
+            $this->sql->insertResourceRelation($vh_info,
+                                               array($fdata->getDocumentType(),
+                                                     $fdata->getEntryType(),
+                                                     $fdata->getLink(),
+                                                     $fdata->getRole(),
+                                                     $fdata->getContent(),
+                                                     $fdata->getSource()));
         }
 
 
