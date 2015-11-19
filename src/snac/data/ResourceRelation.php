@@ -36,8 +36,14 @@ class ResourceRelation extends AbstractData {
 
     /**
      * From EAC-CPF tag(s):
-     * 
-     * * resourceRelation/@type
+     *
+     * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
+     * in the export template.
+     *
+     * (old comment:) resourceRelation/@type
+     * Actually: resourceRelation@xlink:type
+     *
+     * 'linkType' => 'simple',
      * 
      * @var string Link type
      */
@@ -97,6 +103,46 @@ class ResourceRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+
+    function getDocumentType()
+    {
+        return $this->documentType;
+    }
+
+    function getLinkType()
+    {
+        return $this->linkType;
+    }
+
+    function getEntryType()
+    {
+        return $this->entryType;
+    }
+
+    function getLink()
+    {
+        return $this->link;
+    }
+
+    function getRole()
+    {
+        return $this->role;
+    }
+
+    function getContent()
+    {
+        return $this->content;
+    }
+
+    function getSource()
+    {
+        return $this->source;
+    }
+
+    function getNote()
+    {
+        return $this->note;
+    }
 
     /**
      * Returns this object's data as an associative array
