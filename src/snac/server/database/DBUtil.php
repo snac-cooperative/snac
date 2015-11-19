@@ -190,37 +190,31 @@ class DBUtil
                                        $term);
         }
 
+        /*
+          ignored: we know our own id value: sourceConstellation, // id fk
+          ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
+          ignored: always 'simple', altType, cpfRelation@xlink:type vocab source_type, .type
+
+          | placeholder | php                 | what                                          | sql               |
+          |-------------+---------------------+-----------------------------------------------+-------------------|
+          |           1 | $vh_info['id']      |                                               | version           |
+          |           2 | $vh_info['main_id'] |                                               | main_id           |
+          |           3 | targetConstellation | id fk to version_history                      | .related_id       |
+          |           4 | targetArkID         | ark                                           | .related_ark      |
+          |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type     | .role             |
+          |           6 | type                | cpfRelation@xlink:arcrole vocab relation_type | .arcrole          |
+          |           7 | cpfRelationType     | AnF only, so far                              | .relation_type    |
+          |           8 | content             | cpfRelation/relationEntry, usually a name     | .relation_entry   |
+          |           9 | dates               | cpfRelation/date (or dateRange)               | .date             |
+          |          10 | note                | cpfRelation/descriptiveNote                   | .descriptive_note |
+
+          New convention: when there are dates, make them the second arg. Final arg is a list of all the
+          scalar values that will eventually be passed to execute() in the SQL function. This convention
+          is already in use in a couple of places, but needs to be done for some existing functions.
+        */
+
         foreach ($id-getRelations() as $fdata)
         {
-            // ignored: we know our own id value: sourceConstellation, // id fk
-            // ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
-
-            /* 
-               |    | php                 | what                                          | sql               |
-               |----+---------------------+-----------------------------------------------+-------------------|
-               |  1 | $vh_info['id']      |                                               | version           |
-               |  2 | $vh_info['main_id'] |                                               | main_id           |
-               |  3 | targetConstellation | id fk to version_history                      | .related_id       |
-               |  4 | targetArkID         | ark                                           | .related_ark      |
-               |  5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type     | .role             |
-               |  6 | type                | cpfRelation@xlink:arcrole vocab relation_type | .arcrole          |
-               |  7 | cpfRelationType     | AnF only, so far                              | .relation_type    |
-               |  8 | content             | cpfRelation/relationEntry, usually a name     | .relation_entry   |
-               |  9 | dates               | cpfRelation/date (or dateRange)               | .date             |
-               | 10 | note                | cpfRelation/descriptiveNote                   | .descriptive_note |
-
-
-               |  7 | altType (ignored)   | cpfRelation@xlink:type vocab source_type      | .type             |
-                                              $fdata->getAltType(),
-               
-            */
-
-            /*
-              New convention: when there are dates, make them the second arg. Final arg is a list of all the
-              scalar values that will eventually be passed to execute() in the SQL function. This convention
-              is already in use in a couple of places, but needs to be done for some existing functions.
-             */
-
             $this->sql->insertRelations($vh_info,
                                         $fdata->getDates(),
                                         array($fdata->getTargetConstellation(),
