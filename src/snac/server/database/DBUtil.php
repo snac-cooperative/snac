@@ -68,6 +68,19 @@ class DBUtil
         fclose($stderr); 
     }
 
+    public function selectConstellation($id, $userid)
+    {
+        // Build a big assoc array
+
+        // subclasses: otherRecordsIDs, sources, legalStatuses, biogHists, subjects,
+        // maintenanceEvents, nameEntries, occupations, existDates, relations, resourceRelations, functions, places.
+
+        // scalars: 'dataType' = "Constellation", ark, entityType, maintenanceStatus, maintenanceAgency,
+        // conventionDeclaration, constellationLanguage, constellationLanguageCode, constellationScript,
+        // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
+        // gender, generalContext, structureOrGenealogy, mandate
+    }
+
     // $id class Constallation
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
