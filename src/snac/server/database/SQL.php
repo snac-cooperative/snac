@@ -327,20 +327,42 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
-    public function insertRelation($vh_info, $arg_list)
+    public function insertRelation($vh_info, $dates, $argList)
     {
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
-                            'insert into subject
-                            (version, main_id, subject_id)
+                            'insert into related_identity
+                            (version, main_id, related_id, related_ark, role, arcrole, relation_type, relation_entry, descriptive_note)
                             values
-                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=$3))');
+                            ($1, $2, $3, $4,
+                            (select id from vocabulary where type=\'entity_type\' and value=$5),
+                            (select id from vocabulary where type=\'relation_type\' and value=$6),
+                            $7, $8, $9)
+                            returning id');
+
+        // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
+        // first two elements of the array with id and main_id from vh_info.
+        $execList = array($vh_info['id'], $vh_info['main_id']);
+        foreach ($argList as $arg)
+        {
+            array_push($execList, $arg);
+        }
         
-        $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
-                                            $term));
+        $result = $this->sdb->execute($qq, $execList);
+        $row = $this->sdb->fetchrow($result);
+
+        // Nov 19 2015 Use a unique var name for the returned id. It is more typing, but should preclude using
+        // some variable of the same name that happens to be in scope. It also makes the intention absolutely
+        // clear. Might use $row['id'] in the one place below we need the variable. Hmmm.
+
+        $relationId = $row['id'];
         $this->sdb->deallocate($qq);
+
+        foreach ($dates as $singleDate)
+        {
+            $date_fk = $this->insertDate($vh_info, $singleDate, 'related_identity', $relationId);
+        }
+
     }
 
 

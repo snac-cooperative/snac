@@ -196,29 +196,39 @@ class DBUtil
             // ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
 
             /* 
-               | php                 | what                                     | sql              |
-               |---------------------+------------------------------------------+------------------|
-               | targetConstellation | id fk to version_history                 | .related_id      |
-               | targetArkID         | ark                                      | .related_ark     |
-               | targetEntityType    | @xlink:role, fk id to vocab              | .role            |
-               | type                | cpfRelation@xlink:arcrole                | .arcrole         |
-               | altType             | cpfRelation@xlink:type                   | .type            |
-               | cpfRelationType     | AnF only, so far                         | .relation_type   |
-               | content             | cpfRelation/relationEntry, usuall a name | .relation_entry  |
-               | dates               | cpfRelation/date (or dateRange)          | .date            |
-               | note                | cpfRelation/descriptiveNote              | .descriptiveNote |
+               |    | php                 | what                                          | sql               |
+               |----+---------------------+-----------------------------------------------+-------------------|
+               |  1 | $vh_info['id']      |                                               | version           |
+               |  2 | $vh_info['main_id'] |                                               | main_id           |
+               |  3 | targetConstellation | id fk to version_history                      | .related_id       |
+               |  4 | targetArkID         | ark                                           | .related_ark      |
+               |  5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type     | .role             |
+               |  6 | type                | cpfRelation@xlink:arcrole vocab relation_type | .arcrole          |
+               |  7 | cpfRelationType     | AnF only, so far                              | .relation_type    |
+               |  8 | content             | cpfRelation/relationEntry, usually a name     | .relation_entry   |
+               |  9 | dates               | cpfRelation/date (or dateRange)               | .date             |
+               | 10 | note                | cpfRelation/descriptiveNote                   | .descriptive_note |
+
+
+               |  7 | altType (ignored)   | cpfRelation@xlink:type vocab source_type      | .type             |
+                                              $fdata->getAltType(),
                
             */
 
-            $this->sql->insertRelations($vh_info
+            /*
+              New convention: when there are dates, make them the second arg. Final arg is a list of all the
+              scalar values that will eventually be passed to execute() in the SQL function. This convention
+              is already in use in a couple of places, but needs to be done for some existing functions.
+             */
+
+            $this->sql->insertRelations($vh_info,
+                                        $fdata->getDates(),
                                         array($fdata->getTargetConstellation(),
                                               $fdata->getTargetArkID(),
                                               $fdata->getTargetEntityType(),
                                               $fdata->getType(),
-                                              $fdata->getAltType(),
                                               $fdata->getCpfRelationType(),
                                               $fdata->getContent(),
-                                              $fdata->getDates(),
                                               $fdata->getNote()));
             );
         }
