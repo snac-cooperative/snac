@@ -75,7 +75,10 @@ class ConstellationRelation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * cpfRelation/@type
+     * * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
      * 
      * @var string Alternate type
      */
