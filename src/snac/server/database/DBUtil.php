@@ -230,7 +230,6 @@ class DBUtil
                                               $fdata->getCpfRelationType(),
                                               $fdata->getContent(),
                                               $fdata->getNote()));
-            );
         }
 
         return $vh_info;
