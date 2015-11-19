@@ -369,7 +369,7 @@ class SQL
     {
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
-                            'insert into resource_relation
+                            'insert into related_resource
                             (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, object_xml_wrap, descriptive_note)
                             values
                             ($1, $2,
