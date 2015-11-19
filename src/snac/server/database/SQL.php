@@ -329,7 +329,7 @@ class SQL
 
     public function insertRelation($vh_info, $dates, $argList)
     {
-        $qq = 'insert_subject';
+        $qq = 'insert_related_identity';
         $this->sdb->prepare($qq,
                             'insert into related_identity
                             (version, main_id, related_id, related_ark, role, arcrole, relation_type, relation_entry, descriptive_note)
@@ -363,6 +363,31 @@ class SQL
             $date_fk = $this->insertDate($vh_info, $singleDate, 'related_identity', $relationId);
         }
 
+    }
+
+    public function insertResourceRelation($vh_info, $argList)
+    {
+        $qq = 'insert_resource_relation';
+        $this->sdb->prepare($qq,
+                            'insert into resource_relation
+                            (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, object_xml_wrap, descriptive_note)
+                            values
+                            ($1, $2,
+                            (select id from vocabulary where type=\'document_type\' and value=$3),
+                            $4, $5,
+                            (select id from vocabulary where type=\'document_role\' and value=$6),
+                            $7, $8, $9));
+
+        // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
+        // first two elements of the array with id and main_id from vh_info.
+        $execList = array($vh_info['id'], $vh_info['main_id']);
+        foreach ($argList as $arg)
+        {
+            array_push($execList, $arg);
+        }
+        
+        $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
     }
 
 

@@ -226,6 +226,38 @@ class DBUtil
                                               $fdata->getNote()));
         }
 
+        /*
+          ignored: $this->linkType, @xlink:type always 'simple', vocab source_type, .type
+
+          | placeholder | php                 | what                                             | sql                  |
+          |-------------+---------------------+--------------------------------------------------+----------------------|
+          |           1 | $vh_info['id']      |                                                  | .version             |
+          |           2 | $vh_info['main_id'] |                                                  | .main_id             |
+          |           3 | documentType        | @xlink:role id fk to vocab document_type         | .role                |
+          |           4 | entryType           | relationEntry@localType, AnF, always 'archival'? | .relation_entry_type |
+          |           5 | link                | @xlink:href                                      | .href                |
+          |           6 | role                | @xlink:arcrole vocab document_role               | .arcrole             |
+          |           7 | content             | relationEntry, usually a name                    | .relation_entry      |
+          |           8 | source              | objectXMLWrap                                    | .object_xml_wrap     |
+          |           9 | note                | descriptiveNote                                  | .descriptive_note    |
+
+          Final arg is a list of all the scalar values that will eventually be passed to execute() in the SQL
+          function. This convention is already in use in a couple of places, but needs to be done for some
+          existing functions.  
+          */
+
+        foreach ($id->getResourceRelations() as $fdata)
+        {
+            $this->sql->insertRelation($vh_info,
+                                        array($fdata->getDocumentType(),
+                                              $fdata->getEntryType(),
+                                              $fdata->getLink(),
+                                              $fdata->getRole(),
+                                              $fdata->getContent(),
+                                              $fdata->getSource()));
+        }
+
+
         return $vh_info;
     }
 }
