@@ -254,7 +254,8 @@ class DBUtil
                                                      $fdata->getLink(),
                                                      $fdata->getRole(),
                                                      $fdata->getContent(),
-                                                     $fdata->getSource()));
+                                                     $fdata->getSource(),
+                                                     $fdata->getNote()));
         }
 
 
