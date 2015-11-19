@@ -213,7 +213,7 @@ class DBUtil
           is already in use in a couple of places, but needs to be done for some existing functions.
         */
 
-        foreach ($id-getRelations() as $fdata)
+        foreach ($id->getRelations() as $fdata)
         {
             $this->sql->insertRelations($vh_info,
                                         $fdata->getDates(),
