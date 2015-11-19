@@ -467,7 +467,7 @@ class Constellation extends AbstractData {
         // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
         // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
         // this universe.
-        if ($this->existDates)
+        if ($this->existates)
         {
             return $this->existDates;
         }
@@ -617,6 +617,9 @@ class Constellation extends AbstractData {
     /**
      * Replaces this object's data with the given associative array
      *
+     * Need docs about the keys in the array passed to this. This is called by the AbstractData class
+     * constructor which was called by this class' constructor via parent::__construct($data);
+     * 
      * @param string[][] $data This objects data in array form
      * @return boolean true on success, false on failure
      */
