@@ -404,11 +404,13 @@ class SQL
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
-                            'select id,version,main_id,biog_hist,general_context,structure_or_genealogy, mandate, convention_declaration,
+                            'select
+                            id,version,main_id,biog_hist,general_context,structure_or_genealogy, mandate, convention_declaration,
+                            ark_id,language,script,
                             (select value from vocabulary where vocabulary.id=entity_type) as entity_type,
                             (select value from vocabulary where vocabulary.id=nationality) as nationality,
                             (select value from vocabulary where vocabulary.id=gender) as gender,
-                            (select value from vocabulary where vocabulary.id=language_code) as langauge_code,
+                            (select value from vocabulary where vocabulary.id=language_code) as language_code,
                             (select value from vocabulary where vocabulary.id=script_code) as script_code
                             from nrd
                             where
