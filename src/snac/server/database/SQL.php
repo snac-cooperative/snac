@@ -193,7 +193,7 @@ class SQL
                             to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id,
                             (select value from vocabulary where id=from_type) as from_type,
                             (select value from vocabulary where id=to_type) as to_type
-                            from date_range where id=$1');
+                            from date_range where fk_id=$1');
 
 
         $result = $this->sdb->execute($qq, array($did));
@@ -447,11 +447,13 @@ class SQL
         return $row;
     }
 
+    // For the purposes of testing, get a record that has a date_range record.
+
     public function randomConstellationID()
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select id from nrd where exist_date is not null limit 1');
+                            'select nrd.id from nrd,date_range where nrd.id=fk_id limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
