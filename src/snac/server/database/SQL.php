@@ -457,15 +457,18 @@ class SQL
         return $row;
     }
 
-    // return a list of otherid rows
-    // Assume unique id in vocab, so don't need extra constraint type='record_type'
-    public function selectOtherRecordIDs($version, $main_id)
+    // return flat list of distinct id values meeting the version and main_id constraint Specifically a helper
+    // function fro selectOtherRecordIDs() This deals with the possibility that a given id may have several
+    // versions while other id values are other (and single) versions.
+
+    public function matchORID($version, $main_id)
     {
-        $qq = 'sorid';
+        // $matchingIDs = matchORID($version, $main_id);
+
+        $qq = 'morid';
         $this->sdb->prepare($qq, 
                             'select
-                            version, main_id, other_id,
-                            (select value from vocabulary where id=link_type) as link_type
+                            distinct(id)
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
@@ -475,9 +478,39 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            array_push($all, $row['id']);
         }
         $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    // return a list of otherid rows
+    // Assume unique id in vocab, so don't need extra constraint type='record_type'
+    public function selectOtherRecordIDs($version, $main_id)
+    {
+        $matchingIDs = $this->matchORID($version, $main_id);
+
+        $qq = 'sorid';
+        $this->sdb->prepare($qq, 
+                            'select
+                            id, version, main_id, other_id,
+                            (select value from vocabulary where id=link_type) as link_type
+                            from otherid
+                            where
+                            version=(select max(version) from otherid where version<=$1)
+                            and main_id=$2 and id=$3');
+
+        foreach ($matchingIDs as $orid)
+        {
+            $result = $this->sdb->execute($qq, array($version, $main_id, $orid));
+            $all = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+            $this->sdb->deallocate($qq);
+        }
         return $all;
     }
 
