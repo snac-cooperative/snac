@@ -96,7 +96,7 @@ class DBUtil
           | setLanguageUsed('language_used_code', 'language_used') | language_used          |
           | setScriptUsed('script_used_code', 'script_used')       | script_used            |
           | setNationality                                         | nationality            |
-          | addBiogHists                                           | biog_hist              |
+          | addBiogHist                                            | biog_hist              |
           | addExistDates                                          | exist_date             |
           | setGeneralContext                                      | general_context        |
           | setStructureOrGenealogy                                | structure_or_genealogy |
@@ -122,7 +122,7 @@ class DBUtil
         $cObj->setLanguageUsed('', '');
         $cObj->setScriptUsed('', '');
         $cObj->setNationality($row['nationality']);
-        $cObj->addBiogHists($row['biog_hist']);
+        $cObj->addBiogHist($row['biog_hist']);
         $cObj->setGeneralContext($row['general_context']);
         $cObj->setStructureOrGenealogy($row['stricture_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
