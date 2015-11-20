@@ -137,7 +137,8 @@ class DBUtil
          * }
          */
 
-        printf("Filled const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
+        printf("Filled const: %s\nark: %s", json_encode($cObj, JSON_PRETTY_PRINT),
+            $cObj->getArk);
 
     }
 
