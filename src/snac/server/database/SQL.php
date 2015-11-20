@@ -464,7 +464,7 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select
                             version, main_id, other_id,
-                            (select id from vocabulary where type=\'link_type\' and value=link_type) as link_type
+                            (select value from vocabulary where type=\'link_type\' and id=link_type) as link_type
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
