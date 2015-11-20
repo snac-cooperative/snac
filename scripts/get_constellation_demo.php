@@ -55,7 +55,7 @@ function foo_main ()
     // load_vocab();
 
     $xx = 0;
-    $dbu->selectConstellation('', $userid);
+    $dbu->selectConstellation('', $appUserID);
 
     if (0)
     {
