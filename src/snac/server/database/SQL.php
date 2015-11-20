@@ -416,7 +416,7 @@ class SQL
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select * from nrd where limit 1');
+                            'select * from nrd limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
