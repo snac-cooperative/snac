@@ -124,7 +124,7 @@ class DBUtil
         $cObj->setNationality($row['nationality']);
         $cObj->addBiogHist($row['biog_hist']);
         $cObj->setGeneralContext($row['general_context']);
-        $cObj->setStructureOrGenealogy($row['stricture_or_genealogy']);
+        $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
