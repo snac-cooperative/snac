@@ -68,8 +68,15 @@ class DBUtil
         fclose($stderr); 
     }
 
+    
+        
+    public function demoConstellation()
+    {
+        list($cid, $version, $main_id) = $this->sql->randomConstellationID();
+        return array($version, $main_id);
+    }
 
-    public function selectConstellation($id, $appUserID)
+    public function selectConstellation($version, $main_id, $appUserID)
     {
         // Create an empty constellation by calling the constructor with no args. Then used the setters to add
         // individual properties of the class(es).
@@ -109,9 +116,6 @@ class DBUtil
         $cObj = new \snac\data\Constellation();
         printf("Created an empty const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
 
-        
-
-        list($cid, $version, $main_id) = $this->sql->randomConstellationID();
         $row = $this->sql->selectConstellation($version, $main_id);
 
         $cObj->setArkID($row['ark_id']);
