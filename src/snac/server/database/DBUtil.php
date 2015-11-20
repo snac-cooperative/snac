@@ -111,6 +111,9 @@ class DBUtil
 
         $cid = $this->sql->randomConstellationID();
         $row = $this->sql->selectConstellation($cid);
+
+        printf("Row: %s\n", json_encode($row, JSON_PRETTY_PRINT));
+
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($row['entity_type']);
         $cObj->setGender($row['gender']);
