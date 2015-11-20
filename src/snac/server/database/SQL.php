@@ -143,6 +143,7 @@ class SQL
      */
     public function insertDate($vh_info, $date, $fk_table, $fk_id)
     {
+        printf("from_type: $from_type to_type: $to_type\n");
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range

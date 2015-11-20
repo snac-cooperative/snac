@@ -133,11 +133,12 @@ class DBUtil
         {
             $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
-            $dateObj->setFromDate('orig:'. $singleDate['from_date'],
+            // No setter for fromType, fromBC, fromDateOriginal
+            $dateObj->setFromDate($singleDate['from_date'],
                                   $singleDate['from_date'],
                                   $singleDate['from_type'] ); // $original, $standardDate, $type);
             $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); //$notBefore, $notAfter);
-            $dateObj->setToDate('orig:'.$singleDate['to_date'],
+            $dateObj->setToDate($singleDate['to_date'],
                                 $singleDate['to_date'],
                                 $singleDate['to_type']); // $original, $standardDate, $type);
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);// $notBefore, $notAfter);
