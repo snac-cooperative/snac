@@ -508,7 +508,6 @@ class SQL
             while($row = $this->sdb->fetchrow($result))
             {
                 array_push($all, $row);
-        
             }
         }
         $this->sdb->deallocate($qq);
