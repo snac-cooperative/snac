@@ -81,7 +81,7 @@ class DBUtil
         // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
         // gender, generalContext, structureOrGenealogy, mandate
         $id = new \snac\data\Constellation();
-        printf("Created an empty const: %s\n", $id);
+        printf("Created an empty const: %s\n", json_encode($id, JSON_PRETTY_PRINT));
     }
 
     // $id class Constallation
