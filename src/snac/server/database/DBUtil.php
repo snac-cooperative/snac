@@ -70,7 +70,8 @@ class DBUtil
 
     public function selectConstellation($id, $userid)
     {
-        // Build a big assoc array
+        // Create an empty constellation by calling the constructor with no args. Then used the setters to add
+        // individual properties of the class(es).
 
         // subclasses: otherRecordsIDs, sources, legalStatuses, biogHists, subjects,
         // maintenanceEvents, nameEntries, occupations, existDates, relations, resourceRelations, functions, places.
@@ -79,6 +80,8 @@ class DBUtil
         // conventionDeclaration, constellationLanguage, constellationLanguageCode, constellationScript,
         // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
         // gender, generalContext, structureOrGenealogy, mandate
+        $id = new snac\data\Constellation();
+        printf("Created an empty const: %s\n", $id);
     }
 
     // $id class Constallation
