@@ -112,7 +112,7 @@ class DBUtil
         
 
         list($cid, $version, $main_id) = $this->sql->randomConstellationID();
-        $row = $this->sql->selectConstellation($version, main_id);
+        $row = $this->sql->selectConstellation($version, $main_id);
 
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($row['entity_type']);
