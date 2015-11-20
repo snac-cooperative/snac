@@ -478,7 +478,6 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            printf("matchORID: %s\n", $row['id']);
             array_push($all, $row['id']);
         }
         $this->sdb->deallocate($qq);
@@ -508,6 +507,7 @@ class SQL
             $all = array();
             while($row = $this->sdb->fetchrow($result))
             {
+                printf("fetching from: %s\n", $orid);
                 array_push($all, $row);
             }
         }
