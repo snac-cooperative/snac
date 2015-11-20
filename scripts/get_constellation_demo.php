@@ -58,6 +58,7 @@ function foo_main ()
     if ($argc>1)
     {
         
+        printf("Using version: %s main_id: %s\n", $argv[1], $argv[2]);
         $dbu->selectConstellation($argv[1], $argv[2], $appUserID);
     }
     else
