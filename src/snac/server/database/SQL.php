@@ -434,7 +434,7 @@ class SQL
      * 
      */
     
-    public function selectConstellation($cid)
+    public function selectConstellation($version, $main_id)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
@@ -448,10 +448,11 @@ class SQL
                             (select value from vocabulary where vocabulary.id=script_code) as script_code
                             from nrd
                             where
-                            version=(select max(version) from nrd where id=$1)
+                            version=(select max(version) from nrd where version<=$1)
+                            and main_id=$2
                             limit 1');
 
-        $result = $this->sdb->execute($qq, array($cid));
+        $result = $this->sdb->execute($qq, array($version, $main_id));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -471,7 +472,7 @@ class SQL
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
-        return $row;
+        return array($row['id'], $row['version'], $row['main_id']);
     }
 
 
