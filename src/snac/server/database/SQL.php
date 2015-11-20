@@ -458,13 +458,14 @@ class SQL
     }
 
     // return a list of otherid rows
+    // Assume unique id in vocab, so don't need extra constraint type='record_type'
     public function selectOtherRecordIDs($version, $main_id)
     {
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
                             'select
                             version, main_id, other_id,
-                            (select value from vocabulary where type=\'link_type\' and id=link_type) as link_type
+                            (select value from vocabulary where id=link_type) as link_type
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
