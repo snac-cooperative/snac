@@ -131,7 +131,7 @@ class DBUtil
         $dateRows = $this->sql->selectDate($row['id']);
         foreach ($dateRows as $singleDate)
         {
-            $dateObj = new snac\data\SNACDate();
+            $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
             $dateObj->setFromDate('orig:'. $singleDate['from_date'],
                                   $singleDate['from_date'],
