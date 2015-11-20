@@ -61,7 +61,7 @@ class SQL
                             'insert into occupation
                             (version, main_id, occupation_id, note)
                             values 
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=$3), $4)
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, '^.*#', '')), $4)
                             returning id');
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
@@ -155,9 +155,9 @@ class SQL
                             to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
                             values
                             ($1, $2, $3, $4, 
-                            (select id from vocabulary where type=\'date_type\' and value=$5),
+                            (select id from vocabulary where type=\'date_type\' and value=regexp_replace($5, '^.*#', '')),
                             $6, $7, $8, $9,
-                            (select id from vocabulary where type=\'date_type\' and value=$10),
+                            (select id from vocabulary where type=\'date_type\' and value=regexp_replace($10, '^.*#', '')),
                             $11, $12, $13, $14, $15, $16)
                             returning id');
 
@@ -227,14 +227,14 @@ class SQL
                             language, language_code, script, script_code)
                             values
                             ($1, $2, $3,
-                            (select id from vocabulary where type=\'entity_type\' and value=$4),
+                            (select id from vocabulary where type=\'entity_type\' and value=regexp_replace($4, '^.*#', '')),
                             $5,
-                            (select id from vocabulary where type=\'nationality\' and value=$6),
-                            (select id from vocabulary where type=\'gender\' and value=$7),
+                            (select id from vocabulary where type=\'nationality\' and value=regexp_replace($6, '^.*#', '')),
+                            (select id from vocabulary where type=\'gender\' and value=regexp_replace($7, '^.*#', '')),
                             $8, $9, $10, $11, $12,
-                            (select id from vocabulary where type=\'language_code\' and value=$13),
+                            (select id from vocabulary where type=\'language_code\' and value=regexp_replace($13, '^.*#', '')),
                             $14,
-                            (select id from vocabulary where type=\'script_code\' and value=$15))
+                            (select id from vocabulary where type=\'script_code\' and value=regexp_replace($15, '^.*#', '')))
                             returning id');
         
         // Combine vh_info and the remaining args into a big array for execute().
@@ -262,7 +262,7 @@ class SQL
                             'insert into otherid
                             (version, main_id, other_id, link_type)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=$4))');
+                            ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=regexp_replace($4, '^.*#', '')))');
         
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
@@ -282,8 +282,8 @@ class SQL
                             (version, main_id, original, preference_score, language, script_code)
                             values
                             ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'language\' and value=$5),
-                            (select id from vocabulary where type=\'scriptCode\' and value=$6))
+                            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, '^.*#', '')),
+                            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, '^.*#', '')))
                             returning id');
         
         $result = $this->sdb->execute($qq_1,
@@ -303,7 +303,7 @@ class SQL
                             (version, main_id, name_id, short_name, name_type)
                             values
                             ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'name_type\' and value=$5))');
+                            (select id from vocabulary where type=\'name_type\' and value=regexp_replace($5, '^.*#', '')))');
 
         // foreach over $contributors executing the insert query on each.
         foreach ($contributors as $contrib)
@@ -329,7 +329,7 @@ class SQL
                             'insert into function
                             (version, main_id, function_id, note)
                             values
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=$3), $4)');
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, '^.*#', '')), $4)');
         
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
@@ -352,7 +352,7 @@ class SQL
                             'insert into subject
                             (version, main_id, subject_id)
                             values
-                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=$3))');
+                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=regexp_replace($3, '^.*#', '')))');
         
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
@@ -369,8 +369,8 @@ class SQL
                             (version, main_id, related_id, related_ark, role, arcrole, relation_type, relation_entry, descriptive_note)
                             values
                             ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'entity_type\' and value=$5),
-                            (select id from vocabulary where type=\'relation_type\' and value=$6),
+                            (select id from vocabulary where type=\'entity_type\' and value=regexp_replace($5, '^.*#', '')),
+                            (select id from vocabulary where type=\'relation_type\' and value=regexp_replace($6, '^.*#', '')),
                             $7, $8, $9)
                             returning id');
 
@@ -407,9 +407,9 @@ class SQL
                             (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, object_xml_wrap, descriptive_note)
                             values
                             ($1, $2,
-                            (select id from vocabulary where type=\'document_type\' and value=$3),
+                            (select id from vocabulary where type=\'document_type\' and value=regexp_replace($3, '^.*#', '')),
                             $4, $5,
-                            (select id from vocabulary where type=\'document_role\' and value=$6),
+                            (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, '^.*#', '')),
                             $7, $8, $9)');
 
         // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
