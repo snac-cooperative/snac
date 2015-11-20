@@ -197,9 +197,14 @@ class SQL
 
 
         $result = $this->sdb->execute($qq, array($did));
-        $row = $this->sdb->fetchrow($result);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
         $this->sdb->deallocate($qq);
-        return $row;
+        return $all;
     }
 
     
