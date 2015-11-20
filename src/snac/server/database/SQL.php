@@ -501,14 +501,14 @@ class SQL
                             version=(select max(version) from otherid where version<=$1)
                             and main_id=$2 and id=$3');
 
+        $all = array();
         foreach ($matchingIDs as $orid)
         {
             $result = $this->sdb->execute($qq, array($version, $main_id, $orid));
-            $all = array();
             while($row = $this->sdb->fetchrow($result))
             {
-                printf("fetching from: %s\n", $orid);
                 array_push($all, $row);
+        
             }
         }
         $this->sdb->deallocate($qq);
