@@ -128,12 +128,14 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
-        $dateRows = selectDate($id);
-        foreach ($dateRows as $singleDate)
-        {
-            $dateObj = new ExistDates($singleDate);
-            $cObj->addExistDates($dateObj);
-        }
+        /* 
+         * $dateRows = selectDate($id);
+         * foreach ($dateRows as $singleDate)
+         * {
+         *     $dateObj = new ExistDates($singleDate);
+         *     $cObj->addExistDates($dateObj);
+         * }
+         */
 
         printf("Filled const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
 
