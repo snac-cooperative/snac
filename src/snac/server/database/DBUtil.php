@@ -159,8 +159,10 @@ class DBUtil
         }
 
         $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id);
-        printf("oridRows: %s\n", json_encode($oridRows,  JSON_PRETTY_PRINT));
-        
+        foreach ($oridRows as $list)
+        {
+            printf("oridRows list: %s\n", json_encode($list,  JSON_PRETTY_PRINT));
+        }
         
         printf("Filled const: %s\n", $cObj->toJSON());
 

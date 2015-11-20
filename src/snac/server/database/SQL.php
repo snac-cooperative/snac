@@ -471,7 +471,7 @@ class SQL
                             distinct(id)
                             from otherid
                             where
-                            version=(select max(version) from otherid where version<=$1)
+                            version=(select max(version) from otherid where version<=$1 and main_id=$2)
                             and main_id=$2');
 
         $result = $this->sdb->execute($qq, array($version, $main_id));
