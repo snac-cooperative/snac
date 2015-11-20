@@ -190,7 +190,7 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select 
                             id, version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
-                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id
+                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id,
                             (select value from vocabulary where id=from_type) as from_type,
                             (select value from vocabulary where id=to_type) as to_type
                             from date_range where id=$1');
