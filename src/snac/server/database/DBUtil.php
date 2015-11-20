@@ -126,7 +126,7 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
-        printf("Pre-date const: %s\n", $cObj->toJSON());
+        printf("Pre-date const: %s\nrow: %s\n", $cObj->toJSON(), var_export($row, 1));
 
 
         $dateRows = $this->sql->selectDate($row['id']);
