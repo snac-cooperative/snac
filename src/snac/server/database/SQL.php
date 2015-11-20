@@ -449,13 +449,35 @@ class SQL
                             from nrd
                             where
                             version=(select max(version) from nrd where version<=$1)
-                            and main_id=$2
-                            limit 1');
+                            and main_id=$2');
 
         $result = $this->sdb->execute($qq, array($version, $main_id));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
+    }
+
+    // return a list of otherid rows
+    public function selectOtherRecordID($version, $main_id)
+    {
+        $qq = 'sorid';
+        $this->sdb->prepare($qq, 
+                            'select
+                            version, main_id, other_id,
+                            (select id from vocabulary where type=\'link_type\' and value=link_type) as link_type
+                            from otherid
+                            where
+                            version=(select max(version) from otherid where version<=$1)
+                            and main_id=$2');
+
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        my $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
     }
 
     // For the purposes of testing, get a record that has a date_range record.

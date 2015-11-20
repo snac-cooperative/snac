@@ -154,7 +154,8 @@ class DBUtil
             $cObj->addExistDates($dateObj);
         }
 
-        // $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id, $row['id']);
+        $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id,);
+        printf("oridRows: %s\n", json_encode($oridRows,  JSON_PRETTY_PRINT));
 
         
         printf("Filled const: %s\n", $cObj->toJSON());
