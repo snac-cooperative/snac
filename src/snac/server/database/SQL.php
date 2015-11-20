@@ -178,6 +178,30 @@ class SQL
        $this->sdb->deallocate($qq);
        return $row['id'];
     }
+
+
+    // This date select relies on the date.id being in the original table.
+    // 
+    // The other date select function would be by original.id=date.fk_id. Maybe we only need by date.fk_id.
+
+    public function selectDate($did)
+    {
+        $qq = 'select_date';
+        $this->sdb->prepare($qq, 
+                            'select 
+                            id, version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
+                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id
+                            (select value from vocabulary where id=from_type) as from_type,
+                            (select value from vocabulary where id=to_type) as to_type
+                            from date_range where id=$1');
+
+
+        $result = $this->sdb->execute($qq, array($did));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
     
     // biogHist is a string, not array. 
 
