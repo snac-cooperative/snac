@@ -459,16 +459,19 @@ class SQL
 
     // For the purposes of testing, get a record that has a date_range record.
 
+    // return array(id, version, main_id) for a record that has a date_range
     public function randomConstellationID()
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select nrd.id from nrd,date_range where nrd.id=fk_id limit 1');
+                            'select nrd.id, version_history.id as version, version_history.main_id
+                            from nrd,date_range, version_history
+                            where nrd.id=fk_id and nrd.main_id=version_history.main_id and nrd.version=version_history.id limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
-        return $row['id'];
+        return $row;
     }
 
 

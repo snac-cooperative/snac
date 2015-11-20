@@ -74,13 +74,13 @@ class DBUtil
         // Create an empty constellation by calling the constructor with no args. Then used the setters to add
         // individual properties of the class(es).
 
-        // subclasses: otherRecordsIDs, sources, legalStatuses, biogHists, subjects,
+        // subclasses: otherRecordsIDs, sources, legalStatuses, subjects,
         // maintenanceEvents, nameEntries, occupations, existDates, relations, resourceRelations, functions, places.
 
         // scalars: 'dataType' = "Constellation", ark, entityType, maintenanceStatus, maintenanceAgency,
         // conventionDeclaration, constellationLanguage, constellationLanguageCode, constellationScript,
         // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
-        // gender, generalContext, structureOrGenealogy, mandate
+        // gender, generalContext, structureOrGenealogy, mandate, biogHists
 
         /*
 
@@ -109,6 +109,8 @@ class DBUtil
         $cObj = new \snac\data\Constellation();
         printf("Created an empty const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
 
+        
+
         $cid = $this->sql->randomConstellationID();
         $row = $this->sql->selectConstellation($cid);
 
@@ -126,14 +128,14 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
-        printf("Pre-date const: %s\nrow: %s\n", $cObj->toJSON(), json_encode($row,JSON_PRETTY_PRINT));
+        // printf("Pre-date const: %s\nrow: %s\n", $cObj->toJSON(), json_encode($row,JSON_PRETTY_PRINT));
 
         $dateRows = $this->sql->selectDate($row['id']);
         foreach ($dateRows as $singleDate)
         {
             $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
-            // No setter for fromType, fromBC, fromDateOriginal
+            // No separate setter for fromType, fromBC, fromDateOriginal
             $dateObj->setFromDate($singleDate['from_date'],
                                   $singleDate['from_date'],
                                   $singleDate['from_type'] ); // $original, $standardDate, $type);
@@ -151,6 +153,9 @@ class DBUtil
 
             $cObj->addExistDates($dateObj);
         }
+
+        // $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id, $row['id']);
+
         
         printf("Filled const: %s\n", $cObj->toJSON());
 
