@@ -114,7 +114,7 @@ class DBUtil
 
         printf("Row: %s\n", json_encode($row, JSON_PRETTY_PRINT));
 
-        $cObj->setArkID($row['ark']);
+        $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($row['entity_type']);
         $cObj->setGender($row['gender']);
         $cObj->setLanguage($row['language_code'], $row['language']);
