@@ -401,7 +401,7 @@ class SQL
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
-                            'select id from nrd
+                            'select * from nrd
                             where
                             version=(select max(version) from nrd where id=$1)
                             limit 1');
@@ -416,7 +416,7 @@ class SQL
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select * from nrd limit 1');
+                            'select id from nrd limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
