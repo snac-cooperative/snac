@@ -390,20 +390,38 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
-    public function selectRandomConstellationID($appUserID)
-    {
-        $qq = 'rc';
-        $this->sdb->prepare($qq, 
-                            'select * from nrd where appuser.userid=$1 limit 1');
+
+    /*
+     *
+     * pull back the most recent version row from nrd (and eventually other tables?) using a known id.
+     *
+     */
     
-        /* 
-         * $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
-         * used.
-         */
-        $result = $this->sdb->execute($qq, array($appUserID));
+    public function selectConstellation($cid)
+    {
+        $qq = 'sc';
+        $this->sdb->prepare($qq, 
+                            'select id from nrd
+                            where
+                            version=(select max(version) from nrd where id=$1)
+                            limit 1');
+
+        $result = $this->sdb->execute($qq, array($cid));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
+    }
+
+    public function randomConstellationID()
+    {
+        $qq = 'rcid';
+        $this->sdb->prepare($qq, 
+                            'select * from nrd where limit 1');
+    
+        $result = $this->sdb->execute($qq, array());
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row['id'];
     }
 
 
