@@ -393,15 +393,24 @@ class SQL
 
     /*
      *
-     * pull back the most recent version row from nrd (and eventually other tables?) using a known id.
+     * Pull back the most recent version row from nrd (and eventually other tables?) using a known id.
      *
+     * It is intentional that the fields are not retrieved in any particular order because the row will be
+     * saved as an associative list. That allows us to write the sql query in a more legible format.
+     * 
      */
     
     public function selectConstellation($cid)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
-                            'select * from nrd
+                            'select id,version,main_id,biog_hist,general_context,structure_or_genealogy, mandate, convention_declaration,
+                            (select value from vocabulary where vocabulary.id=entity_type) as 'entity_type',
+                            (select value from vocabulary where vocabulary.id=nationality) as 'nationality',
+                            (select value from vocabulary where vocabulary.id=gender) as 'gender',
+                            (select value from vocabulary where vocabulary.id=language_code) as 'langauge_code',
+                            (select value from vocabulary where vocabulary.id=script_code) as 'script_code',
+                            from nrd
                             where
                             version=(select max(version) from nrd where id=$1)
                             limit 1');
