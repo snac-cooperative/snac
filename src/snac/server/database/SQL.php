@@ -509,8 +509,8 @@ class SQL
             {
                 array_push($all, $row);
             }
-            $this->sdb->deallocate($qq);
         }
+        $this->sdb->deallocate($qq);
         return $all;
     }
 
