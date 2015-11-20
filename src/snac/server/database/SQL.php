@@ -471,7 +471,7 @@ class SQL
                             and main_id=$2');
 
         $result = $this->sdb->execute($qq, array($version, $main_id));
-        my $all = array();
+        $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
