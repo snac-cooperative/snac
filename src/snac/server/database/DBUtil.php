@@ -68,7 +68,8 @@ class DBUtil
         fclose($stderr); 
     }
 
-    public function selectConstellation($id, $userid)
+
+    public function selectConstellation($id, $appUserID)
     {
         // Create an empty constellation by calling the constructor with no args. Then used the setters to add
         // individual properties of the class(es).
@@ -80,8 +81,58 @@ class DBUtil
         // conventionDeclaration, constellationLanguage, constellationLanguageCode, constellationScript,
         // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
         // gender, generalContext, structureOrGenealogy, mandate
-        $id = new \snac\data\Constellation();
-        printf("Created an empty const: %s\n", json_encode($id, JSON_PRETTY_PRINT));
+
+        /*
+
+          | php                                                    | sql                    |
+          |--------------------------------------------------------+------------------------|
+          | setArkID                                               | ark_id                 |
+          | setEntityType                                          | entity_type            |
+          | setGender                                              | gender                 |
+          | setLanguage('language_code','language')                | language               |
+          | setLanguage('language_code','language')                | language_code          |
+          | setScript('script_code', 'script')                     | script                 |
+          | setScript('script_code', 'script')                     | script_code            |
+          | setLanguageUsed('language_used_code', 'language_used') | language_used          |
+          | setScriptUsed('script_used_code', 'script_used')       | script_used            |
+          | setNationality                                         | nationality            |
+          | addBiogHists                                           | biog_hist              |
+          | addExistDates                                          | exist_date             |
+          | setGeneralContext                                      | general_context        |
+          | setStructureOrGenealogy                                | structure_or_genealogy |
+          | setConventionDeclaration                               | convention_declaration |
+          | setMandate                                             | mandate                |
+          |                                                        |                        |
+
+         */
+
+        $cObj = new \snac\data\Constellation();
+        printf("Created an empty const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
+
+        $row = $this->sql->selectRandomConstellationID($appUserID);
+        $cObj->setArkID($row['ark_id']);
+        $cObj->setEntityType($row['entity_type']);
+        $cObj->setGender($row['gender']);
+        $cObj->setLanguage($row['language_code'], $row['language']);
+        $cObj->setScript($row['script_code'], $row['script']);
+        $cObj->setLanguageUsed('', '');
+        $cObj->setScriptUsed('', '');
+        $cObj->setNationality($row['nationality']);
+        $cObj->addBiogHists($row['biog_hist']);
+        $cObj->setGeneralContext($row['general_context']);
+        $cObj->setStructureOrGenealogy($row['stricture_or_genealogy']);
+        $cObj->setConventionDeclaration($row['convention_declaration']);
+        $cObj->setMandate($row['mandate']);
+        
+        $dateRows = selectDate($id);
+        foreach ($dateRows as $singleDate)
+        {
+            $dateObj = new ExistDates($singleDate);
+            $cObj->addExistDates($dateObj);
+        }
+
+        printf("Filled const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
+
     }
 
     // $id class Constallation

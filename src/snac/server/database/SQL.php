@@ -390,6 +390,22 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
+    public function selectRandomConstellationID($appUserID)
+    {
+        $qq = 'rc';
+        $this->sdb->prepare($qq, 
+                            'select * from nrd where appuser.userid=$1 limit 1');
+    
+        /* 
+         * $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
+         * used.
+         */
+        $result = $this->sdb->execute($qq, array($appUserID));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
 
 
 }
