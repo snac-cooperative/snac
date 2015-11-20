@@ -112,8 +112,6 @@ class DBUtil
         $cid = $this->sql->randomConstellationID();
         $row = $this->sql->selectConstellation($cid);
 
-        printf("Row: %s\n", json_encode($row, JSON_PRETTY_PRINT));
-
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($row['entity_type']);
         $cObj->setGender($row['gender']);
@@ -128,14 +126,28 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
-        /* 
-         * $dateRows = selectDate($id);
-         * foreach ($dateRows as $singleDate)
-         * {
-         *     $dateObj = new ExistDates($singleDate);
-         *     $cObj->addExistDates($dateObj);
-         * }
-         */
+        $dateRows = $this->sql->selectDate($row['id']);
+        foreach ($dateRows as $singleDate)
+        {
+            $dateObj = new snac\data\SNACDate();
+            $dateObj->setRange($singleDate['is_range']);
+            $dateObj->setFromDate('orig:'. $singleDate['from_date'],
+                                  $singleDate['from_date'],
+                                  $singleDate['from_type'] ); // $original, $standardDate, $type);
+            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); //$notBefore, $notAfter);
+            $dateObj->setToDate('orig:'.$singleDate['to_date'],
+                                $singleDate['to_date'],
+                                $singleDate['to_type']); // $original, $standardDate, $type);
+            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);// $notBefore, $notAfter);
+            // I thought everything is a date range. Why these two setters?
+            // $dateObj->setDate($original, $standardDate, $type);
+            // $dateObj->setDateRange($notBefore, $notAfter);
+            
+            // What is a note? We don't have a field for it in the db, yet.
+            // $dateObj->setNote($singleDate['note']); // $note);
+
+            $cObj->addExistDates($dateObj);
+        }
         
         printf("Filled const: %s\n", $cObj->toJSON());
 

@@ -427,7 +427,7 @@ class SQL
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select id from nrd limit 1');
+                            'select id from nrd where exist_date is not null limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
