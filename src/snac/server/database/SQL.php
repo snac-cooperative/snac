@@ -458,7 +458,7 @@ class SQL
     }
 
     // return a list of otherid rows
-    public function selectOtherRecordID($version, $main_id)
+    public function selectOtherRecordIDs($version, $main_id)
     {
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
