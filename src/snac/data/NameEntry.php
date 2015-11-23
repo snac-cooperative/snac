@@ -44,9 +44,11 @@ class NameEntry extends AbstractData {
 
     /**
      * From EAC-CPF tag(s):
-     * 
+     *'type' as a string:  
      * * nameEntry/alternativeForm
      * * nameEntry/authorizedForm
+     *
+     * 'contributor' name value as a string
      *
      * Stored as:
      * ```
