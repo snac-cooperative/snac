@@ -47,6 +47,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
     public function __construct($input) {
 
         $this->input = $input;
+        if (!isset($this->input["command"]))
+            $this->input["command"] = "";
         return;
     }
 
@@ -63,14 +65,91 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $connect = new ServerConnect();
         
         $serverResponse = $connect->query($this->input);
+        
+        // Start the session
+        session_name("SNACWebUI");
+        session_start();
 
+        
+        // Create the display for local templates
         $display = new display\Display();
+        
+        // Replace these with your token settings
+        // Create a project at https://console.developers.google.com/
+        $clientId     = '637211524599-1kqbnunctjna2s70i5j971g08p1ioakp.apps.googleusercontent.com';
+        $clientSecret = '6q-4PaGb9lNHZdCGkmJjnHsK';
+        // Change this if you are not using the built-in PHP server
+        $redirectUri  = 'http://shannonvm.village.virginia.edu/~jh2jf/snac_server/www/?command=login2';
+        // Initialize the provider
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        $_SESSION['oauth2state'] = $provider->getState();
+
+        // If the user is not logged in, send to the home screen
+        if (empty($_SESSION['token'])) {
+            // If the user wants to do something, but hasn't logged in, then
+            // send them to the home page.
+            if (!empty($this->input["command"]) && 
+                ($this->input["command"] != "login" && $this->input["command"] != "login2"))
+                $this->input["command"] = "";
+
+        } else {
+            $token = unserialize($_SESSION['token']);
+            $ownerDetails = unserialize($_SESSION['user_details']);
+            $user = array (
+                "first" => $ownerDetails->getFirstName(),
+                "last" => $ownerDetails->getLastName(),
+                "name" => $ownerDetails->getName(),
+                "avatar" => $ownerDetails->getAvatar(),
+                "email" => $ownerDetails->getEmail()
+            );
+            $display->setUserData($user);
+        }
+
+
+        // Display the current information
         if ($this->input["command"] == "edit") {
             $display->setTemplate("edit_page");
             if (isset($serverResponse["constellation"]))
                 $display->setData($serverResponse["constellation"]);
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
+        } else if ($this->input["command"] == "login") {
+            // Destroy the old session
+            session_destroy();
+            // Restart the session
+            session_name("SNACWebUI");
+            session_start();
+            
+            // if the user wants to log in, then send them to the login server
+            $authUrl = $provider->getAuthorizationUrl();
+            header('Location: ' . $authUrl);
+        } else if ($this->input["command"] == "login2") {
+
+            // OAuth Stuff //
+
+            // Try to get an access token (using the authorization code grant)
+            $token = $provider->getAccessToken('authorization_code',
+                array('code' => $_GET['code']));
+            // Set the token in session variable
+            $_SESSION['token'] = serialize($token);
+            
+            // We got an access token, let's now get the owner details
+            $ownerDetails = $provider->getResourceOwner($token);
+
+            // Set the user details in the session
+            $_SESSION['user_details'] = serialize($ownerDetails);
+            
+            // Go directly to the Dashboard, do not pass Go, do not collect $200
+            header('Location: index.php?command=dashboard');
+        } else if ($this->input["command"] == "logout") {
+            // Destroy the old session
+            session_destroy();
+            // Restart the session
+            session_name("SNACWebUI");
+            session_start();
+
+            // Go to the homepage 
+            header('Location: index.php');
         } else {
             $display->setTemplate("landing_page");
         }

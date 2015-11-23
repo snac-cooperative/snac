@@ -67,16 +67,16 @@ body {
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Robbie Hott <span class="caret"></span>
+                        <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.name }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">{{ user.email }}</a></li>
+                        <li><a href="#">action</a></li>
                         <li><a href="#">Something else here</a></li>
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
                         <li><a href="#">Settings</a></li>
-                        <li><a href="#">Logout</a></li>
+                        <li><a href="?command=logout">Logout</a></li>
                     </ul>
                     </li>
                 </ul>
@@ -145,9 +145,9 @@ body {
                             </label>
                             <div class="col-xs-10">
                                 <select id="entityType" name="entityType" class="form-control selectpicker">
-                                    <option value="person" {{ entityType == 'person' ? 'selected' }}>Person</option>
-                                    <option value="corporateBody" {{ entityType == 'corporateBody' ? 'selected' }}>Corporate Body</option>
-                                    <option value="family" {{ entityType == 'family' ? 'selected' }}>Family</option>
+                                    <option value="person" {{ data.entityType == 'person' ? 'selected' }}>Person</option>
+                                    <option value="corporateBody" {{ data.entityType == 'corporateBody' ? 'selected' }}>Corporate Body</option>
+                                    <option value="family" {{ data.entityType == 'family' ? 'selected' }}>Family</option>
                                 </select>
                             </div>
                         </div>
@@ -158,8 +158,8 @@ body {
                             </label>
                             <div class="col-xs-10">
                                 <select id="gender" name="gender" class="form-control selectpicker">
-                                    <option value="female" {{ gender == 'female' ? 'selected' }}>Female</option>
-                                    <option value="male" {{ gender == 'male' ? 'selected' }}>Male</option>
+                                    <option value="female" {{ data.gender == 'female' ? 'selected' }}>Female</option>
+                                    <option value="male" {{ data.gender == 'male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
                         </div>
@@ -168,7 +168,7 @@ body {
                     <div class="tab-pane" id="nameEntries">
                         <h2>Name Entries</h2>
                         {% set i = 0 %}
-                        {% for nameEntry in nameEntries %}
+                        {% for nameEntry in data.nameEntries %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="form-group">
@@ -197,7 +197,7 @@ body {
                         <h2>Same As</h2>
 
                         {% set i = 0 %}
-                        {% for other in otherRecordIDs %}
+                        {% for other in data.otherRecordIDs %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="form-group">
@@ -227,7 +227,7 @@ body {
                         <h2>Sources</h2>
 
                         {% set i = 0 %}
-                        {% for source in sources %}
+                        {% for source in data.sources %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="form-group">
@@ -249,7 +249,7 @@ body {
                         <h2>Resource Relations</h2>
 
                         {% set i = 0 %}
-                        {% for relation in resourceRelations %}
+                        {% for relation in data.resourceRelations %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="form-group">
@@ -303,7 +303,7 @@ body {
                         <h2>Constellation Relations</h2>
 
                         {% set i = 0 %}
-                        {% for relation in relations %}
+                        {% for relation in data.relations %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="form-group">
@@ -349,7 +349,7 @@ body {
                         <h2>Subjects</h2>
 
                         {% set i = 0 %}
-                        {% for subject in subjects %}
+                        {% for subject in data.subjects %}
                         <div class="form-group">
                             <div class="col-xs-10">
                                 <input id="subject_{{i}}" name="subject_{{i}}" type="text" class="form-control" value="{{ subject }}"/>
@@ -370,8 +370,8 @@ body {
                         <p>You may perform any of the following actions on this constellation.</p>
                         <div class="list-group">
                             <a href="#" class="list-group-item list-group-item-info">Save &amp; Continue</a>
-                            <a href="?command=dashboard" class="list-group-item list-group-item-info">Save &amp; Dashboard</a>
-                            <a href="#" class="list-group-item list-group-item-success">Save &amp; Submit</a>
+                            <a href="?command=dashboard" class="list-group-item list-group-item-success">Save &amp; Dashboard</a>
+                            <a href="#" class="list-group-item list-group-item-warning">Save &amp; Submit</a>
                             <a href="#" class="list-group-item list-group-item-danger">Cancel</a>
                         </div>
                     </div>
@@ -386,7 +386,7 @@ body {
                                 Ark
                             </label>
                             <div class="col-xs-10">
-                                <p class="form-control-static">{{ ark }}</p>
+                                <p class="form-control-static">{{ data.ark }}</p>
                             </div>
                         </div>
                     </div>

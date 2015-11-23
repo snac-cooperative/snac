@@ -68,16 +68,16 @@ body {
                 <ul class="nav navbar-nav">
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-                        <span class="glyphicon glyphicon-user" aria-hidden="true"></span> Robbie Hott <span class="caret"></span>
+                        <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.name }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">Action</a></li>
-                        <li><a href="#">Another action</a></li>
+                        <li><a href="#">{{ user.email }}</a></li>
+                        <li><a href="#">action</a></li>
                         <li><a href="#">Something else here</a></li>
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
                         <li><a href="#">Settings</a></li>
-                        <li><a href="#">Logout</a></li>
+                        <li><a href="?command=logout">Logout</a></li>
                     </ul>
                     </li>
                 </ul>
@@ -90,7 +90,7 @@ body {
 
 <div class="container snac" role="main">
 
-    <h1>Welcome, Robbie!</h1>
+    <h1>Welcome, {{ user.first }}!</h1>
 
     <p>Short snippet of interesting text to welcome the user to the site.  Should be witty and engaging.</p>
 

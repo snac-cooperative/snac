@@ -15,6 +15,7 @@ include ("../../../vendor/autoload.php");
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
 
+
 // Use the GET variables as input
 $input = $_GET;
 

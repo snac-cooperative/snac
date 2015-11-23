@@ -38,7 +38,11 @@ class Display {
     }
 
     public function setData($data) {
-        $this->data = $data;
+        $this->data["data"] = $data;
+    }
+
+    public function setUserData($data) {
+        $this->data["user"] = $data;
     }
 
     public function setTemplate($template) {
