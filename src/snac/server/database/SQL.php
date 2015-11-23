@@ -457,8 +457,10 @@ class SQL
         return $row;
     }
 
+    // Nov 23 2015: see multi-version join with sub query below in selectSubjects().
+
     // return flat list of distinct id values meeting the version and main_id constraint Specifically a helper
-    // function fro selectOtherRecordIDs() This deals with the possibility that a given id may have several
+    // function for selectOtherRecordIDs() This deals with the possibility that a given id may have several
     // versions while other id values are other (and single) versions.
 
     public function matchORID($version, $main_id)
@@ -487,6 +489,7 @@ class SQL
 
     // return a list of otherid rows
     // Assume unique id in vocab, so don't need extra constraint type='record_type'
+    // Nov 23 2015: see multi-version join with sub query below in selectSubjects()
     public function selectOtherRecordIDs($version, $main_id)
     {
         $matchingIDs = $this->matchORID($version, $main_id);
@@ -513,6 +516,86 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+    // Solve the multi-version problem by joining to a subquery. 
+
+    public function selectSubjects($version, $main_id)
+    {
+        $qq = 'ssubj';
+        $this->sdb->prepare($qq, 
+                            'select
+                            subject.id, subject.version, subject.main_id,
+                            (select value from vocabulary where id=subject_id) as subject_id
+                            from subject,
+                            (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as aa
+                            where
+                            subject.id=aa.id
+                            and subject.version=aa.version');
+        $all = array();
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    // return array('original'=>"", 'language'=>"", 'script_code'=>"", 'preference_score'=>"", 'contributors' =>  array('name_type'=>"", 'short_name'=>""))
+    public function selectNameEntries($version, $main_id)
+    {
+        $qq_1 = 'selname';
+        $qq_2 = 'selcontributor';
+        $this->sdb->prepare($qq_1,
+                            'select
+                            name.id,name.version, main_id, original, preference_score,
+                            (select value from vocabulary where id=language) as language,
+                            (select value from vocabulary where id=script_code) as script_code
+                            from name,
+                            (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
+                            where
+                            name.id=aa.id
+                            and name.version=aa.version');
+        
+        $this->sdb->prepare($qq_2,
+                            'select 
+                            name_contributor.id,name_contributor.version, main_id, name_id, short_name,
+                            (select value from vocabulary where id=name_type) as name_type
+                            from  name_contributor,
+                            (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as aa
+                            where
+                            name_contributor.id=aa.id
+                            and name_contributor.version=aa.version
+                            and name_contributor.name_id=$3');
+        
+        $name_result = $this->sdb->execute($qq_1,
+                                           array($version,
+                                                 $main_id));
+        
+        // Contributor has issues. See comments in schema.sql. This will work for now.
+        // Get each name, and for each name get each contributor.
+        $all = array();
+        while($name_row = $this->sdb->fetchrow($name_result))
+        {
+            $name_row['contributors'] = array();
+            $contributor_result = $this->sdb->execute($qq_2,
+                                                      array($version,
+                                                            $main_id,
+                                                            $name_row['id']));
+            $name_row['contributors'] = array();
+            while($contributor_row = $this->sdb->fetchrow($contributor_result))
+            {
+                array_push($name_row['contributors'], $contributor_row);
+            }
+            array_push($all, $name_row);
+        }
+        $this->sdb->deallocate($qq_1);
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
+
 
     // For the purposes of testing, get a record that has a date_range record.
 
