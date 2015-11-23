@@ -159,10 +159,87 @@ class DBUtil
         }
 
         $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id);
-        foreach ($oridRows as $list)
+
+        /* 
+         * Keys are the same as the database field names.
+         *
+         * "other_id": "nypl\/mss18809.r17075"
+         * "link_type": "MergedRecord"
+         *
+         *  addOtherRecordID($type, $link)
+         * @param string $type Type of the alternate id
+         * @param string $link Href or other link for the alternate id
+         * 
+         */
+
+        foreach ($oridRows as $singleOrid)
         {
-            printf("oridRows list: %s\n", json_encode($list,  JSON_PRETTY_PRINT));
+            $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
         }
+        
+        /* 
+         * subjects
+         * test with: scripts/get_constellation_demo.php 5 44
+         * @param string $subject Subject to add.
+         * addSubject($subject)
+         *
+         * returns array with keys: id, version, main_id, subject_id
+         * 
+         */
+
+        $subjRows = $this->sql->selectSubjects($version, $main_id);
+        foreach ($subjRows as $singleSubj)
+        {
+            $cObj->addSubject($singleSubj['subject_id']);
+        }
+
+
+        /* 
+         * nameEntries
+         *
+         * test with: scripts/get_constellation_demo.php 2 10
+         *
+         * That constellation has 3 name contributors.
+         * 
+         * | php                                        | sql table name   |
+         * |--------------------------------------------+------------------|
+         * | setOriginal                                | original         |
+         * | setPreferenceScore                         | preference_score |
+         * | setLanguage                                | language         |
+         * | setScriptCode                              | script_code      |
+         * | addContributor(string $type, string $name) |                  |
+         * 
+         * | php                              | sql table name_contributor |
+         * |----------------------------------+----------------------------|
+         * |                                  | name_id                    |
+         * | getContributors()['contributor'] | short_name                 |
+         * | getContributors()['type']        | name_type                  |
+         * |                                  |                            |
+         * 
+         * 
+         */
+
+        $neRows = $this->sql->selectNameEntries($version, $main_id);
+        foreach ($neRows as $oneName)
+        {
+            $neObj = new \snac\data\NameEntry();
+            $neObj->setOriginal($oneName['original']);
+            $neObj->setLanguage($oneName['language']);
+            $neObj->setScriptCode($oneName['script_code']);
+            // setUseDates($date);
+            $neObj->setPreferenceScore($oneName['preference_score']);
+            foreach ($oneName['contributors'] as $contrib)
+            {
+                $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
+            }
+            
+            $cObj->addNameEntry($neObj);
+        }
+
+
+        // occupations, existDates, relations, resourceRelations, functions, places.
+        
+        // todo: maintenanceEvents, 
         
         printf("Filled const: %s\n", $cObj->toJSON());
 
