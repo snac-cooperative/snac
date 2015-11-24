@@ -356,11 +356,12 @@ class DBUtil
         foreach ($funcRows as $oneFunc)
         {
             $fObj = new \snac\data\SNACFunction();
-            $fObj->setTerm($oneFunc['term']);
+            $fObj->setType($oneFunc['function_type']);
+            $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
+            $fObj->setNote($oneFunc['note']);
             $fDate = $this->buildDate($oneFunc['date']);
             $fObj->setDateRange($fDate);
-            $fObj->setNote($oneFunc['descriptive_note']);
             $cObj->addFunction($fObj);
         }
 

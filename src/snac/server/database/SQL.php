@@ -329,8 +329,6 @@ class SQL
                                    $vocabularySource,
                                    $note)
     {
-        printf("function term: $term\n");
-
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
@@ -668,8 +666,7 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $relationId = $row['id'];
-            $dateList = $this->selectDate($relationId);
+            $dateList = $this->selectDate($row['id']);
             $row['date'] = array();
             if (count($dateList)>=1)
             {
