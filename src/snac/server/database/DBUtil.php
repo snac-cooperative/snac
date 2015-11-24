@@ -315,7 +315,7 @@ class DBUtil
             $relatedObj->setCPFRelationType($oneRel['relation_type']);
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
-            $relatedObj->setNote($oneRel['descriptive_node']);
+            $relatedObj->setNote($oneRel['descriptive_note']);
             $cObj->addRelation($relatedObj);
         }
 
