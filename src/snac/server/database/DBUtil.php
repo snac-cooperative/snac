@@ -68,7 +68,27 @@ class DBUtil
         fclose($stderr); 
     }
 
-    
+    public static function buildDate($singleDate)
+    {
+        $dateObj = new \snac\data\SNACDate();
+        $dateObj->setRange($singleDate['is_range']);
+        // No separate setter for fromType, fromBC, fromDateOriginal
+        $dateObj->setFromDate($singleDate['from_date'],
+                              $singleDate['from_date'],
+                              $singleDate['from_type'] ); // $original, $standardDate, $type);
+        $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); //$notBefore, $notAfter);
+        $dateObj->setToDate($singleDate['to_date'],
+                            $singleDate['to_date'],
+                            $singleDate['to_type']); // $original, $standardDate, $type);
+        $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);// $notBefore, $notAfter);
+        // I thought everything is a date range. Why these two setters?
+        // $dateObj->setDate($original, $standardDate, $type);
+        // $dateObj->setDateRange($notBefore, $notAfter);
+            
+        // What is a note? We don't have a field for it in the db, yet.
+        // $dateObj->setNote($singleDate['note']); // $note);
+        return $dateObj;
+    }    
         
     public function demoConstellation()
     {
@@ -331,8 +351,30 @@ class DBUtil
             $cObj->addResourceRelation($rrObj);
         }
 
+        // functions
+        $funcRows = $this->sql->selectFunctions($version, $main_id);
+        foreach ($funcRows as $oneFunc)
+        {
+            $fObj = new \snac\data\SNACFunction();
+            $fObj->setTerm($oneFunc['term']);
+            $fObj->setVocabularySource($oneFunc['vocabulary_source']);
+            $fDate = $this->buildDate($oneFunc['date']);
+            $fObj->setDateRange($fDate);
+            $fObj->setNote($oneFunc['descriptive_note']);
+            $cObj->addFunction($fObj);
+        }
 
-        // functions, places.
+        /* 
+         * foreach ($id->getFunctions() as $fdata)
+         * {
+         *     $this->sql->insertFunction($vh_info,
+         *                                $fdata->getTerm(),
+         *                                $fdata->getVocabularySource(),
+         *                                $fdata->getDates(),
+         *                                $fdata->getNote());
+         */
+
+        //places.
         
         // todo: maintenanceEvents, 
         
