@@ -374,8 +374,6 @@ class SQL
                             $7, $8, $9)
                             returning id');
 
-        printf("ir: %s\n", json_encode($argList));
-
         // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
         // first two elements of the array with id and main_id from vh_info.
         $execList = array($vh_info['id'], $vh_info['main_id']);

@@ -453,6 +453,10 @@ class DBUtil
 
         foreach ($id->getRelations() as $fdata)
         {
+
+            printf("ir: %s\n", toJSON($fdata));
+
+
             $this->sql->insertRelation($vh_info,
                                         $fdata->getDates(),
                                         array($fdata->getTargetConstellation(),
