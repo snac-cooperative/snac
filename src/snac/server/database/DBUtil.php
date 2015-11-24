@@ -236,8 +236,33 @@ class DBUtil
             $cObj->addNameEntry($neObj);
         }
 
+        // occupations
+        // Need to add date range
+        // Need to add vocabulary source
 
-        // occupations, existDates, relations, resourceRelations, functions, places.
+        /* 
+         * | php                 | sql               |
+         * |---------------------+-------------------|
+         * |                     | id                |
+         * |                     | version           |
+         * |                     | main_id           |
+         * | setTerm             | occupation_id     |
+         * | setNote             | note              |
+         * | setVocabularySource | vocabulary_source |
+         */
+
+        $occRows = $this->sql-selectOccupations($version, $main_id);
+        foreach ($occRows as $oneOcc)
+        {
+            $occObj = new \snac\data\Occupation();
+            $occObj->setTerm($oneOcc['occupation_id']);
+            // $occObj->setDateRange(new \snac\data\SNACDate());
+            $occObj->setVocabularySource($oneOcc['vocabulary_source']);
+            $occObj->setNote($oneOcc['note']);
+            $cObj->addOccupation($occObj);
+        }
+
+        // existDates, relations, resourceRelations, functions, places.
         
         // todo: maintenanceEvents, 
         

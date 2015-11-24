@@ -542,6 +542,29 @@ class SQL
     }
 
 
+    public function selectOccupations($version, $main_id)
+    {
+        $qq = 'socc';
+        $this->sdb->prepare($qq, 
+                            'select
+                            occupation.id, occupation.version, occupation.main_id, occupation.note
+                            (select value from vocabulary where id=occupation_id) as occupation_id
+                            from occupation,
+                            (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as aa
+                            where
+                            subject.id=aa.id
+                            and subject.version=aa.version');
+        $all = array();
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
     // return array('original'=>"", 'language'=>"", 'script_code'=>"", 'preference_score'=>"", 'contributors' =>  array('name_type'=>"", 'short_name'=>""))
     public function selectNameEntries($version, $main_id)
     {
