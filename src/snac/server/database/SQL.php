@@ -337,7 +337,7 @@ class SQL
                             (version, main_id, function_type, vocabulary_source, note, function_id)
                             values
                             ($1, $2, $3, $4, $5,
-                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')), $4)');
+                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
