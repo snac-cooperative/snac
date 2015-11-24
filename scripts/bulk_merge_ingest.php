@@ -24,7 +24,9 @@ include "src/snac/Config.php";
  */
 
 global $argc, $argv;
-global $limit = 1000;
+global $limit;
+
+$limit = 1000;
 
 $db = new \snac\server\database\DatabaseConnector();
 $config = new snac\Config();
@@ -39,7 +41,7 @@ exit();
 
 function foo_main () 
 {
-    global $argc, $argv, $config, $db;
+    global $argc, $argv, $config, $db, $limit;
 
     // U for Util.
     $dbu = new snac\server\database\DBUtil($db);
