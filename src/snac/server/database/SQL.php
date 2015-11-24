@@ -322,25 +322,45 @@ class SQL
     
     
     // Function uses the same vocabulary terms as occupation.
-    public function insertFunction($vh_info, $term, $vocabularySource, $dates, $note)
+    public function insertFunction($vh_info,
+                                   $dates,
+                                   $type,
+                                   $term,
+                                   $vocabularySource,
+                                   $note)
     {
+        printf("function term: $term\n");
+
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
-                            (version, main_id, function_id, note)
+                            (version, main_id, function_type, vocabulary_source, note, function_id)
                             values
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4)');
+                            ($1, $2, $3, $4, $5,
+                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')), $4)');
         
         $result = $this->sdb->execute($qq,
                                       array($vh_info['id'],
                                             $vh_info['main_id'],
-                                            $term,
-                                            $note));
+                                            $type,
+                                            $vocabularySource,
+                                            $note,
+                                            $term));
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
-        foreach ($dates as $single_date)
+
+        /* 
+         * This would be a lot more robust if foreach() silently ignored nulls and any non-array
+         * args. Oh well. Feel free to add more sanity checks. Maybe gettype() array, and check get_class() on
+         * each array element. We need a date list wrapper function that we can call everywhere.
+         */
+
+        if ($dates and count($dates)>=1)
         {
-            $date_fk = $this->insertDate($vh_info, $single_date, 'function', $id);
+            foreach ($dates as $single_date)
+            {
+                $date_fk = $this->insertDate($vh_info, $single_date, 'function', $id);
+            }
         }
     }
 
@@ -636,7 +656,7 @@ class SQL
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.note,
+                            aa.id, aa.version, aa.main_id, aa.function_type, aa.vocabulary_source, aa.note,
                             (select value from vocabulary where id=aa.function_id) as function_id
                             from function as aa,
                             (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb

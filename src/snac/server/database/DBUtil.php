@@ -364,16 +364,6 @@ class DBUtil
             $cObj->addFunction($fObj);
         }
 
-        /* 
-         * foreach ($id->getFunctions() as $fdata)
-         * {
-         *     $this->sql->insertFunction($vh_info,
-         *                                $fdata->getTerm(),
-         *                                $fdata->getVocabularySource(),
-         *                                $fdata->getDates(),
-         *                                $fdata->getNote());
-         */
-
         //places.
         
         // todo: maintenanceEvents, 
@@ -489,12 +479,30 @@ class DBUtil
                                          $fdata->getNote());
         }
 
+
+        /* 
+         * This seems confusing.
+         * vocabularySource is 
+         * note is function/descriptiveNote
+         * 
+         * 
+         *  | php                 | sql               | cpf                             |
+         *  |---------------------+-------------------+---------------------------------|
+         *  | getType             | function_type     | function/@localType             |
+         *  | getTerm             | function_id       | function/term                   |
+         *  | getVocabularySource | vocabulary_source | function/term/@vocabularySource |
+         *  | getNote             | note              | function/descriptiveNote        |
+         *  | getDates            | table date_range  | function/dateRange                                |
+         */
+        
+
         foreach ($id->getFunctions() as $fdata)
         {
             $this->sql->insertFunction($vh_info,
+                                       $fdata->getDates(),
+                                       $fdata->getType(),
                                        $fdata->getTerm(),
                                        $fdata->getVocabularySource(),
-                                       $fdata->getDates(),
                                        $fdata->getNote());
         }
 
