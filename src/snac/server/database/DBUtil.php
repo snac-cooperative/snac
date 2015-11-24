@@ -251,7 +251,7 @@ class DBUtil
          * | setVocabularySource | vocabulary_source |
          */
 
-        $occRows = $this->sql-selectOccupations($version, $main_id);
+        $occRows = $this->sql->selectOccupations($version, $main_id);
         foreach ($occRows as $oneOcc)
         {
             $occObj = new \snac\data\Occupation();
