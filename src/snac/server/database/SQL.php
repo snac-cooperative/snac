@@ -579,7 +579,7 @@ class SQL
                             (select value from vocabulary where id=aa.role) as role,
                             (select value from vocabulary where id=aa.arcrole) as arcrole
                             from related_identity as aa,
-                            (select id, max(version) as version from aa where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from related_identity where version<=$1 and main_id=$2 group by id) as bb
                             where
                             aa.id=bb.id
                             and aa.version=bb.version');
