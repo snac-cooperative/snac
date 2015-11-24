@@ -547,7 +547,7 @@ class SQL
         $qq = 'socc';
         $this->sdb->prepare($qq, 
                             'select
-                            occupation.id, occupation.version, occupation.main_id, occupation.note,
+                            occupation.id, occupation.version, occupation.main_id, occupation.note, occupation.vocabulary_source,
                             (select value from vocabulary where id=occupation_id) as occupation_id
                             from occupation,
                             (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as aa
