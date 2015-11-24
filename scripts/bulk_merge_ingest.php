@@ -24,6 +24,7 @@ include "src/snac/Config.php";
  */
 
 global $argc, $argv;
+global $limit = 1000;
 
 $db = new \snac\server\database\DatabaseConnector();
 $config = new snac\Config();
@@ -103,7 +104,7 @@ function foo_main ()
             continue;
         }
         $xx++;
-        if ($xx > 10)
+        if ($xx > $limit)
         {
             exit();
         }
