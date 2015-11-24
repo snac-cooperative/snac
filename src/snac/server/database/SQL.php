@@ -574,7 +574,7 @@ class SQL
         $qq = 'selectrelatedidentity';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id aa.version, aa.main_id, aa.related_id, aa.related_ark,
+                            aa.id, aa.version, aa.main_id, aa.related_id, aa.related_ark,
                             aa.arcrole, aa.relation_entry, aa.descriptive_note, aa.relation_type,
                             (select value from vocabulary where id=aa.role) as role,
                             (select value from vocabulary where id=aa.arcrole) as arcrole
