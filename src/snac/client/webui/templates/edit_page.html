@@ -44,9 +44,22 @@ body {
 .snac .navbar .container {
     width: auto;
 }
+.tab-pane {
+
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0px 0px 5px 5px;
+    padding: 10px;
+}
+
+.nav-tabs {
+    margin-bottom: 0;
+}
 </style>
 </head>
 <body role="document">
+{% from 'date_entry.html' import dateEntry %}
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -89,19 +102,24 @@ body {
 <div class="container snac" role="main">
 
     <form class="form-horizontal">
-        <h1>Editing Constellation</h1>
+        <h1>Editing Constellation: {{data.nameEntries.0.original}}</h1>
         <div class="row">
             <div class="col-md-8">
 
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#nrd" role="tab" data-toggle="tab">NRD</a></li>
+                    <li class="active"><a href="#nrd" role="tab" data-toggle="tab">Basic Info</a></li>
                     <li><a href="#nameEntries" role="tab" data-toggle="tab">Name Entries</a></li>
                     <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
-                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
-                    <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
                     <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
-
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Controlled Vocabs <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
+                        <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
+                        <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
+                    </ul>
+                    </li>
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
                     <ul class="dropdown-menu">
@@ -110,13 +128,14 @@ body {
                         <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
                     </ul>
                     </li>
+                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
 
                 </ul>
 
                 <div class="tab-content">
 
                     <div class="tab-pane active" id="nrd">
-                        <h2>NRD Information</h2>
+                        <h2>Non-Repeating Data</h2>
                         <!--
                         <div class="form-group">
                             <label for="ark" class="control-label col-xs-2">
@@ -158,11 +177,45 @@ body {
                             </label>
                             <div class="col-xs-10">
                                 <select id="gender" name="gender" class="form-control selectpicker">
+                                    <option></option>
                                     <option value="female" {{ data.gender == 'female' ? 'selected' }}>Female</option>
                                     <option value="male" {{ data.gender == 'male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="nationality" class="control-label col-xs-2">
+                                Nationality
+                            </label>
+                            <div class="col-xs-10">
+                                <input id="nationality" name="nationality" type="text" class="form-control" value="{{ data.nationality }}"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="languageCode" class="control-label col-xs-2">
+                                Language
+                            </label>
+                            <div class="col-xs-10">
+                                <select id="languageCode" name="languageCode" class="form-control selectpicker">
+                                    <option></option>
+                                    <option value="eng" {{ data.languageCode == 'eng' ? 'selected' }}>English</option>
+                                    <option value="fre" {{ data.languageCode == 'fre' ? 'selected' }}>French</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="scriptCode" class="control-label col-xs-2">
+                                Script
+                            </label>
+                            <div class="col-xs-10">
+                                <select id="scriptCode" name="scriptCode" class="form-control selectpicker">
+                                    <option></option>
+                                    <option value="Latn" {{ data.scriptCode == 'Latn' ? 'selected' }}>Latin Alphabet</option>
+                                    <option value="Zyyy" {{ data.scriptCode == 'Zyyy' ? 'selected' }}>Unknown Script</option>
+                                </select>
+                            </div>
+                        </div>
+                        {{ dateEntry('Exist Dates', 'exist', data.existDates.0) }}
                     </div>
 
                     <div class="tab-pane" id="nameEntries">
@@ -359,10 +412,70 @@ body {
                         {% endfor %}
 
                     </div>
+                    
+                    <div class="tab-pane" id="functions">
+                        <h2>Functions</h2>
+
+                        {% set i = 0 %}
+                        {% for function in data.functions %}
+                        <div class="form-group">
+                            <div class="col-xs-10">
+                                <input id="function_{{i}}" name="function_{{i}}" type="text" class="form-control" value="{{ function }}"/>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+                    
+                    <div class="tab-pane" id="occupations">
+                        <h2>Occupations</h2>
+
+                        {% set i = 0 %}
+                        {% for occupation in data.occupations %}
+                        <div class="form-group">
+                            <div class="col-xs-10">
+                                <input id="occupation_{{i}}" name="occupation_{{i}}" type="text" class="form-control" value="{{ occupation.term }}"/>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="tab-pane" id="places">
+                        <h2>Places</h2>
+
+                        {% set i = 0 %}
+                        {% for place in data.places %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="place_original_{{ i }}" class="control-label col-xs-2">
+                                        Original
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.entries.0.original }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
+                                        Geonames
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.entries.0.bestMatch.original }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="panel panel-default">
+                <div class="panel panel-primary">
                     <div class="panel-heading">
                         <h3 class="panel-title">User Actions</h3>
                     </div>
@@ -376,7 +489,7 @@ body {
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
+                <div class="panel panel-primary">
                     <div class="panel-heading">
                         <h3 class="panel-title">Constellation Info</h3>
                     </div>
@@ -395,6 +508,12 @@ body {
             </div>
         </div>
     </form>
+                        
+    
+    
+
+
+
 </div>
 </body>
 </html>

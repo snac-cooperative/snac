@@ -1,0 +1,70 @@
+    {% macro dateEntry(name, short, snacDate) %}
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                {{ name }}
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="{{short}}_start" class="control-label col-xs-2">
+                                        Start
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="{{short}}_start" name="{{short}}_start" type="text" class="form-control" value="{{ snacDate.fromDate }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_start_type" class="control-label col-xs-2">
+                                        Start Type 
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="{{short}}_start_type" name="{{short}}_start_type" type="text" class="form-control" value="{{ snacDate.fromType }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_start_type" class="control-label col-xs-2">
+                                        Start Range 
+                                    </label>
+                                    <div class="col-xs-4">
+                                        <input id="{{short}}_start_notBefore" name="{{short}}_start_notBefore" type="text" class="form-control" value="{{ snacDate.fromRange.notBefore }}"/>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        - 
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input id="{{short}}_start_notAfter" name="{{short}}_start_notAfter" type="text" class="form-control" value="{{ snacDate.fromRange.notAfter }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_end" class="control-label col-xs-2">
+                                        End
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="{{short}}_end" name="{{short}}_end" type="text" class="form-control" value="{{ snacDate.toDate }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_end_type" class="control-label col-xs-2">
+                                        End Type 
+                                    </label>
+                                    <div class="col-xs-10">
+                                        <input id="{{short}}_end_type" name="{{short}}_end_type" type="text" class="form-control" value="{{ snacDate.toType }}"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_end_type" class="control-label col-xs-2">
+                                        End Range 
+                                    </label>
+                                    <div class="col-xs-4">
+                                        <input id="{{short}}_end_notBefore" name="{{short}}_end_notBefore" type="text" class="form-control" value="{{ snacDate.toRange.notBefore }}"/>
+                                    </div>
+                                    <div class="col-xs-2 text-center">
+                                        - 
+                                    </div>
+                                    <div class="col-xs-4">
+                                        <input id="{{short}}_end_notAfter" name="{{short}}_end_notAfter" type="text" class="form-control" value="{{ snacDate.toRange.notAfter }}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endmacro %}
+
