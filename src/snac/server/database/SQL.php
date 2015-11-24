@@ -569,7 +569,44 @@ class SQL
     }
 
 
-    // return array('original'=>"", 'language'=>"", 'script_code'=>"", 'preference_score'=>"", 'contributors' =>  array('name_type'=>"", 'short_name'=>""))
+    public function selectRelation($version, $main_id)
+    {
+        $qq = 'selectrelatedidentity';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id aa.version, aa.main_id, aa.related_id, aa.related_ark,
+                            aa.arcrole, aa.relation_entry, aa.descriptive_note, aa.relation_type,
+                            (select value from vocabulary where id=aa.role) as role,
+                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            from related_identity as aa,
+                            (select id, max(version) as version from aa where version<=$1 and main_id=$2 group by id) as bb
+                            where
+                            aa.id=bb.id
+                            and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            $relationId = $row['id'];
+            $dateList = $this->selectDate($relationId);
+            $all['date'] = $dateList[0];
+            if (count($dateList)>1)
+            {
+                printf("Warning: more than one date for a related identity. count: %s\n", count($dateList));
+            }
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+     /* 
+      * return array('original'=>"",
+      * 		     'language'=>"",
+      *              'script_code'=>"",
+      *              'preference_score'=>"",
+      *              'contributors' =>  array('name_type'=>"", 'short_name'=>""))
+      */
     public function selectNameEntries($version, $main_id)
     {
         $qq_1 = 'selname';

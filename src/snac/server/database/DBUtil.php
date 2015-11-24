@@ -133,6 +133,8 @@ class DBUtil
         $cObj->setMandate($row['mandate']);
         
         // printf("Pre-date const: %s\nrow: %s\n", $cObj->toJSON(), json_encode($row,JSON_PRETTY_PRINT));
+        
+        // existDates
 
         $dateRows = $this->sql->selectDate($row['id']);
         foreach ($dateRows as $singleDate)
@@ -262,7 +264,41 @@ class DBUtil
             $cObj->addOccupation($occObj);
         }
 
-        // existDates, relations, resourceRelations, functions, places.
+        // relations
+        
+        /* 
+         * | php                                 | sql               |
+         * |-------------------------------------+-------------------|
+         * |                                     | id                |
+         * | $vh_info['id']                      | version           |
+         * | $vh_info['main_id']                 | main_id           |
+         * | setTargetConstellation              | related_id       |
+         * | setTargetArkID                      | related_ark      |
+         * | setTargetType  aka targetEntityType | role             |
+         * | setType                             | arcrole          |
+         * | setCPFRelationType                  | relation_type    |
+         * | setContent                          | relation_entry   |
+         * | setDates                            | date             |
+         * | setNote                             | descriptive_note |
+         * 
+         */
+
+        $relRows = $this->sql->selectRelated($version, $main_id);
+        foreach ($relRows as $oneRel)
+        {
+            $relatedObj = new \snac\data\ConstellationRelation();
+            $relatedObj->setTargetConstellation($oneRel['related_id']);
+            $relatedObj->setTargetArkID($oneRel['related_ark']);
+            $relatedObj->setTargetType($oneRel['role']);
+            $relatedObj->setType($oneRel['arcrole']);
+            $relatedObj->setCPFRelationType($oneRel['relation_type']);
+            $relatedObj->setContent($oneRel['relation_entry']);
+            $relatedObj->setDates($oneRel['date']);
+            $relatedObj->setNote($oneRel['descriptive_node']);
+            $cObj->addRelation($relatedObj);
+        }
+
+        // resourceRelations, functions, places.
         
         // todo: maintenanceEvents, 
         
