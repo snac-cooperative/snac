@@ -553,7 +553,7 @@ class SQL
                             'select
                             aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source,
                             (select value from vocabulary where id=aa.occupation_id) as occupation_id
-                            from occupation as aa
+                            from occupation as aa,
                             (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
                             where
                             aa.id=bb.id
