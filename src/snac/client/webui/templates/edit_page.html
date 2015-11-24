@@ -24,7 +24,14 @@ $('.selectpicker').selectpicker();
 
 <!-- Tiny MCE text editor -->
 <script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
-<script>tinymce.init({selector:'#biogHist', plugins:'code', min_height: 300});</script>
+<script>
+//tinymce.init({selector:'#biogHist', plugins:'code', min_height: 300});
+</script>
+
+<!-- CodeMirror XML editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
 <style>
 body {
     padding-top: 70px;
@@ -239,10 +246,10 @@ body {
 
                     </div>
 
-                    <div class="tab-pane" id="biogHists">
+                    <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
 
-                        <p><textarea id="biogHist" name="biogHist">{{ biogHists[0]|e }}</textarea></p>
+                        <p><textarea id="biogHist" name="biogHist" style="height: auto">{{ data.biogHists[0]|e }}</textarea></p>
 
                     </div>
 
@@ -515,5 +522,13 @@ body {
 
 
 </div>
+<script>
+  var editor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
+              lineNumbers: true,
+              lineWrapping: true,
+              viewportMargin: Infinity,
+              mode: {name: "xml"}
+              });
+</script>
 </body>
 </html>
