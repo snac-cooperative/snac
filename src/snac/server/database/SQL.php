@@ -648,13 +648,22 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
+            $relationId = $row['id'];
+            $dateList = $this->selectDate($relationId);
+            $row['date'] = array();
+            if (count($dateList)>=1)
+            {
+                $row['date'] = $dateList[0];
+            }
+            if (count($dateList)>1)
+            {
+                printf("Warning: more than one date for a function. count: %s\n", count($dateList));
+            }
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
         return $all;
     }
-
-
 
 
      /* 
