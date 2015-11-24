@@ -74,6 +74,28 @@ class Occupation extends AbstractData {
      * @var string Note attached to occupation
      */
     private $note = null;
+
+    public function getTerm()
+    {
+        return $this->term;
+    }
+
+    public function getVocabularySource()
+    {
+        return $this->vocabularySource;
+    }
+
+    public function getDates()
+    {
+        return $this->dates;
+    }
+
+    public function getNote()
+    {
+        return $this->note;
+    }
+
+
     
     /**
      * Returns this object's data as an associative array
