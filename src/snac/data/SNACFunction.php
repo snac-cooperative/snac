@@ -70,27 +70,27 @@ class SNACFunction extends AbstractData {
 
     function getTerm()
     {
-        $this->term;
+        return $this->term;
     }
     
     function getType()
     {
-        $this->type;
+        return $this->type;
     }
 
     function getDates()
     {
-        $this->dates;
+        return $this->dates;
     }
 
     function getNote()
     {
-        $this->note;
+        return $this->note;
     }
 
     function getVocabularySource()
     {
-        $this->vocabularySource;
+        return $this->vocabularySource;
     }
 
 
