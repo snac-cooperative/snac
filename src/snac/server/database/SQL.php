@@ -542,18 +542,22 @@ class SQL
     }
 
 
+    // Noc 24 2015 New convention: the table we're working on is 'aa', and the subquery is 'bb'. This makes
+    // the query more of a standard template.  Assuming this works and is a good idea, we should port this to
+    // all the other select queries.
+
     public function selectOccupations($version, $main_id)
     {
         $qq = 'socc';
         $this->sdb->prepare($qq, 
                             'select
-                            occupation.id, occupation.version, occupation.main_id, occupation.note, occupation.vocabulary_source,
-                            (select value from vocabulary where id=occupation_id) as occupation_id
-                            from occupation,
-                            (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as aa
+                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source,
+                            (select value from vocabulary where id=aa.occupation_id) as occupation_id
+                            from occupation as aa
+                            (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
                             where
-                            subject.id=aa.id
-                            and subject.version=aa.version');
+                            aa.id=bb.id
+                            and aa.version=bb.version');
         $all = array();
         $result = $this->sdb->execute($qq, array($version, $main_id));
         while($row = $this->sdb->fetchrow($result))
