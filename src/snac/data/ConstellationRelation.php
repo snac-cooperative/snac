@@ -291,6 +291,16 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
+     * Set the target constellation numeric id
+     *
+     * @param int $targetConstellation target constellation database record id number
+     */
+    public function setTargetConstellation($targetConstellation)
+    {
+        $this->targetConstellation = $targetConstellation;
+    }
+
+    /**
      * Set the target ARK ID
      *
      * @param string $ark Target ARK ID
