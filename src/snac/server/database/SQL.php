@@ -590,15 +590,16 @@ class SQL
         {
             $relationId = $row['id'];
             $dateList = $this->selectDate($relationId);
-            $all['date'] = array();
-            if ($dateList[0])
+            $row['date'] = array();
+            if (count($dateList)>=1)
             {
-                $all['date'] = $dateList[0];
+                $row['date'] = $dateList[0];
             }
             if (count($dateList)>1)
             {
                 printf("Warning: more than one date for a related identity. count: %s\n", count($dateList));
             }
+            array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
         return $all;
