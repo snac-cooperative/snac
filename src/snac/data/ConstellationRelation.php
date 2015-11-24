@@ -123,47 +123,47 @@ class ConstellationRelation extends AbstractData {
 
     function getSourceConstellation()
     {
-        $this->sourceConstellation;
+        return $this->sourceConstellation;
     }
         
     function getTargetConstellation()
     {
-        $this->targetConstellation;
+        return $this->targetConstellation;
     }
             
     function getSourceArkID()
     {
-        $this->sourceArkID;
+        return $this->sourceArkID;
     }
     
     function getTargetArkID()
     {
-        $this->targetArkID;
+        return $this->targetArkID;
     }
 
     function getTargetEntityType()
     {
-        $this->targetEntityType;
+        return $this->targetEntityType;
     }
 
     function getType()
     {
-        $this->type;
+        return $this->type;
     }
 
     function getAltType()
     {
-        $this->altType;
+        return $this->altType;
     }
 
     function getCpfRelationType()
     {
-        $this->cpfRelationType;
+        return $this->cpfRelationType;
     }
 
     function getContent()
     {
-        $this->content;
+        return $this->content;
     }
 
     function getDates()
@@ -183,7 +183,7 @@ class ConstellationRelation extends AbstractData {
 
     function getNote()
     {
-        $this->note;
+        return $this->note;
     }
 
 
