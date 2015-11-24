@@ -87,7 +87,14 @@ class Occupation extends AbstractData {
 
     public function getDates()
     {
-        return $this->dates;
+        if ($this->dates)
+        {
+            return $this->dates;
+        }
+        else
+        {
+            return array();
+        }
     }
 
     public function getNote()
@@ -168,12 +175,21 @@ class Occupation extends AbstractData {
     }
     
     /**
-     * Set the date range
+     * Set the date range. If the supplied arg is false for any reason (and any definition of 'false'), then
+     * set the private var to an empty SNACDate. Try checking get_class().
+     *
+     * 
      * @param \snac\data\SNACDate $date Date object for the range
      */
     public function setDateRange($date) {
-        $this->dates = $date;
-        
+        if (! $date or get_class($date) != 'SNACDate')
+        {
+            $this->dates = new \snac\data\SNACDate();
+        }
+        else
+        {
+            $this->dates = $date;
+        }
     }
     
     /**
