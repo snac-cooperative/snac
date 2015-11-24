@@ -454,7 +454,7 @@ class DBUtil
         foreach ($id->getRelations() as $fdata)
         {
 
-            printf("ir: %s\n", toJSON($fdata));
+            printf("ir: %s\n", $fdata->toJSON());
 
 
             $this->sql->insertRelation($vh_info,
