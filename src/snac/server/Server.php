@@ -84,10 +84,23 @@ class Server implements \snac\interfaces\ServerInterface {
 
                 break;
             case "edit":
-                // Create new parser for this file and parse it
-                $parser = new \snac\util\EACCPFParser();
-                $id = $parser->parseFile("http://socialarchive.iath.virginia.edu/snac/data/99166-w6v1266v.xml");
-                $this->response["constellation"] = $id->toArray();
+                // Editing the given ark id
+                if (isset($this->input["arkid"])) {
+                    // split on ark:/
+                    $tmp = explode("ark:/", $this->input["arkid"]);
+                    if (isset($tmp[1])) {
+                        $pieces = explode("/", $tmp[1]);
+                        if (count($pieces) == 2) {
+                            $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
+                            // Create new parser for this file and parse it
+                            $parser = new \snac\util\EACCPFParser();
+                            $id = $parser->parseFile($filename);
+                            $this->response["constellation"] = $id->toArray();
+                            return;
+                        }
+                    }
+                }
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"] . ", ArkID: ". $this->input["arkid"]);    
                 break;
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);    
