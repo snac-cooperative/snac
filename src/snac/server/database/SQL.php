@@ -631,6 +631,30 @@ class SQL
     }
 
 
+    public function selectFunctions($version, $main_id)
+    {
+        $qq = 'select_related_resource';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.main_id, aa.note,
+                            (select value from vocabulary where id=aa.function_id) as function_id
+                            from function as aa,
+                            (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb
+                            where
+                            aa.id=bb.id
+                            and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
 
 
      /* 
