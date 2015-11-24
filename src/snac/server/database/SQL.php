@@ -605,6 +605,34 @@ class SQL
         return $all;
     }
 
+    public function selectRelatedResources($version, $main_id)
+    {
+        $qq = 'select_related_resource';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.main_id,
+                            aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
+                            (select value from vocabulary where id=aa.role) as role,
+                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            from related_resource as aa,
+                            (select id, max(version) as version from related_resource where version<=$1 and main_id=$2 group by id) as bb
+                            where
+                            aa.id=bb.id
+                            and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+
+
      /* 
       * return array('original'=>"",
       * 		     'language'=>"",

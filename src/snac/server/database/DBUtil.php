@@ -265,13 +265,14 @@ class DBUtil
         }
 
         // relations
+        // test with: scripts/get_constellation_demo.php 2 10
         
         /* 
-         * | php                                 | sql               |
-         * |-------------------------------------+-------------------|
-         * |                                     | id                |
-         * | $vh_info['id']                      | version           |
-         * | $vh_info['main_id']                 | main_id           |
+         * | php                                 | sql              |
+         * |-------------------------------------+------------------|
+         * |                                     | id               |
+         * | $vh_info['id']                      | version          |
+         * | $vh_info['main_id']                 | main_id          |
          * | setTargetConstellation              | related_id       |
          * | setTargetArkID                      | related_ark      |
          * | setTargetType  aka targetEntityType | role             |
@@ -298,7 +299,40 @@ class DBUtil
             $cObj->addRelation($relatedObj);
         }
 
-        // resourceRelations, functions, places.
+        // resourceRelations
+        
+        /* 
+         * | php                  | sql                 |
+         * |----------------------+---------------------|
+         * |                      | id                  |
+         * | $vh_info['id']       | version             |
+         * | $vh_info['main_id']  | main_id             |
+         * | setDocumentType      | role                |
+         * | setRelationEntryType | relation_entry_type |
+         * | setLink              | href                |
+         * | setRole              | arcrole             |
+         * | setContent           | relation_entry      |
+         * | setSource            | object_xml_wrap     |
+         * | setNote              | descriptive_note    |
+         */
+
+        $rrRows = $this->sql->selectRelatedResources($version, $main_id);
+
+        foreach ($rrRows as $oneRes)
+        {
+            $rrObj = new \snac\data\ResourceRelation();
+            $rrObj->setDocumentType($oneRes['role']);
+            $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
+            $rrObj->setLink($oneRes['href']);
+            $rrObj->setRole($oneRes['arcrole']);
+            $rrObj->setContent($oneRes['relation_entry']);
+            $rrObj->setSource($oneRes['object_xml_wrap']);
+            $rrObj->setNote($oneRes['descriptive_note']);
+            $cObj->addResourceRelation($rrObj);
+        }
+
+
+        // functions, places.
         
         // todo: maintenanceEvents, 
         
