@@ -283,7 +283,7 @@ class DBUtil
          * 
          */
 
-        $relRows = $this->sql->selectRelated($version, $main_id);
+        $relRows = $this->sql->selectRelation($version, $main_id);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
