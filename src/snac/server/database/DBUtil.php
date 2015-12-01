@@ -21,10 +21,33 @@
 
 namespace snac\server\database;
 
+
+
+/* 
+ * Util function to strip namespace text from vocabulary terms.
+ * 
+ * @param string $arg the string to strip the namespace from
+ * @return string without the namespace
+ */
 function stripNS($arg)
 {
     $arg = preg_replace('/^.*#(.*)$/', '$1', $arg );
     return $arg;
+}
+
+
+/* 
+ * We need utility functions to write stuff to log files, stdout, stderr. Put this in some util class.  This
+ * is none too efficient since it opens and closes the stream on every call.
+ *
+ * @param string $message The message we want printed to stderr. A newline is post-pended.
+ * 
+ */
+function quick_stderr ($message)
+{
+    $stderr = fopen('php://stderr', 'w');
+    fwrite($stderr,"  $message\n");
+    fclose($stderr); 
 }
 
 /**
@@ -42,13 +65,27 @@ function stripNS($arg)
 
 class DBUtil
 {
-    public function __construct($db) 
+
+    /* 
+     * The constructor for the DBUtil class. Originally, the idea was to call the constructor with an existing
+     * DatabaseConnectory object, but the calling code doesn't need to know that or do anything dabase
+     * related. That is the concern of the DBUtil class.
+     * 
+     * @return No return value, but sets the private var $sql to be a new SQL object.
+     */
+    public function __construct() 
     {
-        $db = new \snac\server\database\DatabaseConnector();
+        // $db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($db);
     }
 
-    // This needs to access some system-wide authentication and/or current user info. Hard coded for now.
+    
+    /* 
+     * Access some system-wide authentication and/or current user info. Hard coded for now.
+     *
+     *
+     * @return string[] Associative list of user info data.
+     */
     function getAppUserInfo($userid)
     {
         // $uInfo is array($row['id'], $row['role'])
@@ -56,18 +93,16 @@ class DBUtil
         return $uInfo;
     }
     
-    // is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
-    // $id is a Constellation object
-    
-    // Put this in some util class.
-    // None too efficient since it opens and closes the stream constantly.
-    function quick_stderr ($message)
-    {
-        $stderr = fopen('php://stderr', 'w');
-        fwrite($stderr,"  $message\n");
-        fclose($stderr); 
-    }
-
+    /* 
+     * Utility function to create a SNACDate object from associative list of date data.
+     * 
+     * Is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
+     * $id is a Constellation object
+     * 
+     * @param string[] Associative list of s single date's data
+     * 
+     * @return SNACDate
+     */
     public static function buildDate($singleDate)
     {
         $dateObj = new \snac\data\SNACDate();
