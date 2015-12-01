@@ -28,7 +28,7 @@ global $limit;
 
 $limit = 1000;
 
-$db = new \snac\server\database\DatabaseConnector();
+// $db = new \snac\server\database\DatabaseConnector();
 $config = new snac\Config();
 
 /* unbuffer stdin, stdout? Or something. */
@@ -44,6 +44,7 @@ function foo_main ()
     global $argc, $argv, $config, $db, $limit;
 
     // U for Util.
+    // $dbu = new snac\server\database\DBUtil($db);
     $dbu = new snac\server\database\DBUtil($db);
 
     list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
