@@ -125,12 +125,31 @@ class DBUtil
         return $dateObj;
     }    
         
+    /*
+     * A helper function to get a constellation from the db for testing purposes
+     *
+     * @return string[] Associate list with the constellation's version and main_id.
+     * 
+     */
     public function demoConstellation()
     {
         list($cid, $version, $main_id) = $this->sql->randomConstellationID();
         return array($version, $main_id);
     }
 
+    /*
+     * Select a given constellation from the database based on version and main_id.
+     *
+     * @param string $version The version you want. Note that constellation component version numbers are the max() <= version requested.
+     *
+     * @param string $main_id The constellation main_id. This is the unique id across all tables in this
+     * constellation. This is not the nrd.id, but is version_history.main_id which is also nrd.main_id, etc.
+     *
+     * @param string $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     *
+     * @return \snac\data\Constellation $cObj A PHP constellation object.
+     * 
+     */
     public function selectConstellation($version, $main_id, $appUserID)
     {
         // Create an empty constellation by calling the constructor with no args. Then used the setters to add
@@ -405,10 +424,28 @@ class DBUtil
         // todo: maintenanceEvents, 
         
         printf("Filled const: %s\n", $cObj->toJSON());
-
+        return $cObj;
     }
 
-    // $id class Constallation
+    /*
+     * Write a PHP Constellation object to the database.
+     *  
+     * @param Constallation $id A PHP Constellation object.
+     *
+     * @param string $userid The user's appuser.id value from the db. 
+     *
+     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     *
+     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
+     *
+     * @param string $note A user-created note for what was done to the constellation. A check-in note.
+     *
+     * @return array $vh_info An associative list with keys 'version', 'main_id'. There might be a more useful
+     * return value such as true for success, and false for failure. This function might need to call into the
+     * system-wide user message class that we haven't written yet.
+     * 
+     */
+
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
         // This is proabably a good place to start using named args to methods, esp in class SQL.
@@ -615,7 +652,6 @@ class DBUtil
                                                      $fdata->getSource(),
                                                      $fdata->getNote()));
         }
-
 
         return $vh_info;
     }
