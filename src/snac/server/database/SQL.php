@@ -34,10 +34,33 @@ namespace snac\server\database;
 
 class SQL
 {
+
+    /*
+     * The constructor makes the outside $db a local variable. I did this out of a general sense of avoiding
+     * globals, but I'm unclear if this is really any better than using a globale $db variable. $db is
+     * critical to the application, and is read-only after intialization. Breaking it or changing it in any
+     * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
+     * any clear need.
+     *
+     * Interesting that $this->sdb simply auto-vivifies a private variable.
+     *
+     * @param DatabaseConnector $db A working, initialized DatabaseConnector object.
+     *
+     * 
+    */
+
     public function __construct($db)
     {
         $this->sdb = $db;
     }
+
+    /*
+     * Insert a record into table source.
+     *
+     * @param 
+     *
+     * 
+     */
 
     public function insertSource($vh_info, $href)
     {
@@ -112,19 +135,7 @@ class SQL
                             returning id, main_id;');
 
         $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
-
-        // I'm pretty sure php used to be able to var_export() on $result. No longer.
-
-        /* 
-         * var_dump($result);
-         * printf("vh execute result:\n%s\n", var_export($result, true));
-         * printf("json execute result:\n%s\n", json_encode($result, JSON_PRETTY_PRINT, 10));
-         */
-
         $vh_info = $this->sdb->fetchrow($result);
-
-        // printf("vh: \n%s\n", var_export($vh_info, 1));
-
         $this->sdb->deallocate('insert_version_history');
         return $vh_info;
     }
@@ -452,7 +463,7 @@ class SQL
      * 
      */
     
-    public function selectConstellation($version, $main_id)
+    public function selectConstellation($vhInfo) // $version, $main_id)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
@@ -469,7 +480,7 @@ class SQL
                             version=(select max(version) from nrd where version<=$1)
                             and main_id=$2');
 
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -481,7 +492,7 @@ class SQL
     // function for selectOtherRecordIDs() This deals with the possibility that a given id may have several
     // versions while other id values are other (and single) versions.
 
-    public function matchORID($version, $main_id)
+    public function matchORID($vhInfo) // $version, $main_id)
     {
         // $matchingIDs = matchORID($version, $main_id);
 
@@ -494,7 +505,7 @@ class SQL
                             version=(select max(version) from otherid where version<=$1 and main_id=$2)
                             and main_id=$2');
 
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -508,9 +519,9 @@ class SQL
     // return a list of otherid rows
     // Assume unique id in vocab, so don't need extra constraint type='record_type'
     // Nov 23 2015: see multi-version join with sub query below in selectSubjects()
-    public function selectOtherRecordIDs($version, $main_id)
+    public function selectOtherRecordIDs($vhInfo) // $version, $main_id)
     {
-        $matchingIDs = $this->matchORID($version, $main_id);
+        $matchingIDs = $this->matchORID($vhInfo); // $version, $main_id);
 
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
@@ -525,7 +536,7 @@ class SQL
         $all = array();
         foreach ($matchingIDs as $orid)
         {
-            $result = $this->sdb->execute($qq, array($version, $main_id, $orid));
+            $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id'], $orid));
             while($row = $this->sdb->fetchrow($result))
             {
                 array_push($all, $row);
@@ -537,7 +548,7 @@ class SQL
 
     // Solve the multi-version problem by joining to a subquery. 
 
-    public function selectSubjects($version, $main_id)
+    public function selectSubjects($vhInfo) // $version, $main_id)
     {
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
@@ -550,7 +561,7 @@ class SQL
                             subject.id=aa.id
                             and subject.version=aa.version');
         $all = array();
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -564,7 +575,7 @@ class SQL
     // the query more of a standard template.  Assuming this works and is a good idea, we should port this to
     // all the other select queries.
 
-    public function selectOccupations($version, $main_id)
+    public function selectOccupations($vhInfo) // $version, $main_id)
     {
         $qq = 'socc';
         $this->sdb->prepare($qq, 
@@ -577,7 +588,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
         $all = array();
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -587,7 +598,7 @@ class SQL
     }
 
 
-    public function selectRelation($version, $main_id)
+    public function selectRelation($vhInfo) // $version, $main_id)
     {
         $qq = 'selectrelatedidentity';
         $this->sdb->prepare($qq,
@@ -602,7 +613,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -623,7 +634,7 @@ class SQL
         return $all;
     }
 
-    public function selectRelatedResources($version, $main_id)
+    public function selectRelatedResources($vhInfo) // $version, $main_id)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -638,7 +649,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -649,7 +660,7 @@ class SQL
     }
 
 
-    public function selectFunctions($version, $main_id)
+    public function selectFunctions($vhInfo) // $version, $main_id)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -662,7 +673,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -690,7 +701,7 @@ class SQL
       *              'preference_score'=>"",
       *              'contributors' =>  array('name_type'=>"", 'short_name'=>""))
       */
-    public function selectNameEntries($version, $main_id)
+    public function selectNameEntries($vhInfo) // $version, $main_id)
     {
         $qq_1 = 'selname';
         $qq_2 = 'selcontributor';
@@ -716,9 +727,7 @@ class SQL
                             and name_contributor.version=aa.version
                             and name_contributor.name_id=$3');
         
-        $name_result = $this->sdb->execute($qq_1,
-                                           array($version,
-                                                 $main_id));
+        $name_result = $this->sdb->execute($qq_1, $vhInfo); // array($version,$main_id));
         
         // Contributor has issues. See comments in schema.sql. This will work for now.
         // Get each name, and for each name get each contributor.
@@ -727,8 +736,8 @@ class SQL
         {
             $name_row['contributors'] = array();
             $contributor_result = $this->sdb->execute($qq_2,
-                                                      array($version,
-                                                            $main_id,
+                                                      array($vhInfo['version'],
+                                                            $vhInfo['main_id'],
                                                             $name_row['id']));
             $name_row['contributors'] = array();
             while($contributor_row = $this->sdb->fetchrow($contributor_result))

@@ -128,7 +128,7 @@ class DBUtil
     /*
      * A helper function to get a constellation from the db for testing purposes
      *
-     * @return string[] Associate list with the constellation's version and main_id.
+     * @return string[] Standard vh_info associative list with the keys 'version' and 'main_id' from the constellation.
      * 
      */
     public function demoConstellation()
@@ -140,17 +140,17 @@ class DBUtil
     /*
      * Select a given constellation from the database based on version and main_id.
      *
-     * @param string $version The version you want. Note that constellation component version numbers are the max() <= version requested.
-     *
-     * @param string $main_id The constellation main_id. This is the unique id across all tables in this
-     * constellation. This is not the nrd.id, but is version_history.main_id which is also nrd.main_id, etc.
+     * @param array vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
+     * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
+     * the unique id across all tables in this constellation. This is not the nrd.id, but is
+     * version_history.main_id which is also nrd.main_id, etc.
      *
      * @param string $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
      *
      * @return \snac\data\Constellation $cObj A PHP constellation object.
      * 
      */
-    public function selectConstellation($version, $main_id, $appUserID)
+    public function selectConstellation($vhInfo, $appUserID)
     {
         // Create an empty constellation by calling the constructor with no args. Then used the setters to add
         // individual properties of the class(es).
@@ -190,7 +190,7 @@ class DBUtil
         $cObj = new \snac\data\Constellation();
         printf("Created an empty const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
 
-        $row = $this->sql->selectConstellation($version, $main_id);
+        $row = $this->sql->selectConstellation($vhInfo);
 
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($row['entity_type']);
@@ -234,7 +234,7 @@ class DBUtil
             $cObj->addExistDates($dateObj);
         }
 
-        $oridRows = $this->sql->selectOtherRecordIDs($version, $main_id);
+        $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); // $version, $main_id);
 
         /* 
          * Keys are the same as the database field names.
@@ -263,7 +263,7 @@ class DBUtil
          * 
          */
 
-        $subjRows = $this->sql->selectSubjects($version, $main_id);
+        $subjRows = $this->sql->selectSubjects($vhInfo); // $version, $main_id);
         foreach ($subjRows as $singleSubj)
         {
             $cObj->addSubject($singleSubj['subject_id']);
@@ -295,7 +295,7 @@ class DBUtil
          * 
          */
 
-        $neRows = $this->sql->selectNameEntries($version, $main_id);
+        $neRows = $this->sql->selectNameEntries($vhInfo); // $version, $main_id);
         foreach ($neRows as $oneName)
         {
             $neObj = new \snac\data\NameEntry();
@@ -327,7 +327,7 @@ class DBUtil
          * | setVocabularySource | vocabulary_source |
          */
 
-        $occRows = $this->sql->selectOccupations($version, $main_id);
+        $occRows = $this->sql->selectOccupations($vhInfo); // $version, $main_id);
         foreach ($occRows as $oneOcc)
         {
             $occObj = new \snac\data\Occupation();
@@ -358,7 +358,7 @@ class DBUtil
          * 
          */
 
-        $relRows = $this->sql->selectRelation($version, $main_id);
+        $relRows = $this->sql->selectRelation($vhInfo); // $version, $main_id);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
@@ -390,7 +390,7 @@ class DBUtil
          * | setNote              | descriptive_note    |
          */
 
-        $rrRows = $this->sql->selectRelatedResources($version, $main_id);
+        $rrRows = $this->sql->selectRelatedResources($vhInfo); // $version, $main_id);
 
         foreach ($rrRows as $oneRes)
         {
@@ -406,7 +406,7 @@ class DBUtil
         }
 
         // functions
-        $funcRows = $this->sql->selectFunctions($version, $main_id);
+        $funcRows = $this->sql->selectFunctions($vhInfo); // $version, $main_id);
         foreach ($funcRows as $oneFunc)
         {
             $fObj = new \snac\data\SNACFunction();
@@ -450,8 +450,7 @@ class DBUtil
     {
         // This is proabably a good place to start using named args to methods, esp in class SQL.
 
-        // Move those sanity checks up here, and decide what kind of exception to throw, or message to log if
-        // not fatal.
+        // Move those sanity checks up here, and decide what kind of exception to throw, and/or message to log
         
         // vh_info: version_history.id, version_history.main_id,
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);

@@ -63,8 +63,8 @@ function foo_main ()
     }
     else
     {
-        list($version, $main_id) = $dbu->demoConstellation();
-        $dbu->selectConstellation($version, $main_id, $appUserID);
+        $vhInfo = $dbu->demoConstellation();
+        $dbu->selectConstellation($vhInfo, $appUserID);
     }
 
     if (0)
