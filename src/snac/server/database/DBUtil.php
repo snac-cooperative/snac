@@ -135,7 +135,7 @@ class DBUtil
     public function demoConstellation()
     {
         list($cid, $version, $main_id) = $this->sql->randomConstellationID();
-        return array($version, $main_id);
+        return array('version' => $version, 'main_id' => $main_id);
     }
 
     /*
