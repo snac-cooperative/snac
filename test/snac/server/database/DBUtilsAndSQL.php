@@ -23,11 +23,20 @@
 class DBUtilTest extends PHPUnit_Framework_TestCase {
     
     /*
-     * Can we get a random Constellation? 
+     * Can we get a random Constellation?
+     *
+     *
+     * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
+     *
+     * Maybe use @dataProvider to test various records from the db for function, subject, etc.
+     *
+     * Check expected output: $this->expectOutputString()
+     *
+     * 
      */
     public function testRandomConstellation() 
     {
-        printf("Starting DBUtil and SQL tests\n");
+        printf("\nStarting DBUtil and SQL tests\n");
         $dbu = new snac\server\database\DBUtil();
         $this->assertNotNull($dbu);
         // $this->fail("DBUtil object creation failed");
