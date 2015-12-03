@@ -183,7 +183,6 @@ class DBUtil
          */
 
         $cObj = new \snac\data\Constellation();
-        printf("Created an empty const: %s\n", json_encode($cObj, JSON_PRETTY_PRINT));
 
         $row = $this->sql->selectConstellation($vhInfo);
 
