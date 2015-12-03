@@ -487,6 +487,15 @@ class Constellation extends AbstractData {
         return $this->relations;
     }
 
+    /**
+     * See private $resourceRelations. This gets an array of ResourceRelation objects.
+     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/relations/resourceRelation/*
+     * 
+     * @var \snac\data\ResourceRelation[] Resource relations
+     */
     function getResourceRelations()
     {
         return $this->resourceRelations;
