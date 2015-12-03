@@ -28,39 +28,30 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testRandomConstellation() 
     {
         printf("Starting DBUtil and SQL tests\n");
-        try
-        {
-            $dbu = new snac\server\database\DBUtil();
-        }
-        catch (Exception $e)
-        {
-            $this->fail("DBUtil object creation failed");
-        }
-        try
-        {
-            list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
-        }
-        catch (Exception $e)
-        {
-            $this->fail("Failed to get appuser info for 'twl8n'");
-        }
+        $dbu = new snac\server\database\DBUtil();
+        $this->assertNotNull($dbu);
+        // $this->fail("DBUtil object creation failed");
 
-        try
-        {
-            $vhInfo = $dbu->demoConstellation();
-            $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
 
-            $this->assertNotNull(json_decode($server->getResponse()));
+        list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
+        $this-assertNotNull($appUserID);
+        // $this->fail("Failed to get appuser info for 'twl8n'");
 
-            $message = $e->getMessage();
-            $this->assertEquals(
-                "pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^",
-                substr($message, 0));
-        }
-        catch (Exception $e)
-        {
-            $this->fail("Failed to get a demo constellation");
-        }
+
+        $vhInfo = $dbu->demoConstellation();
+        $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
+        $this-assertNotNull($cObj);
+
+        // examples from other code:
+        
+        // $this->assertNotNull(json_decode($server->getResponse()));
+        
+        /* 
+         * $this->assertEquals(
+         *     "pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^",
+         *     substr($message, 0));
+         */
+        // $this->fail("Failed to get a demo constellation");
     }
 
     /*
