@@ -594,9 +594,11 @@ class SQL
      * @return a list of otherid rows
      * 
      */
-    public function selectOtherRecordIDs($vhInfo) // $version, $main_id)
+    public function selectOtherRecordIDs($vhInfo)
     {
-        $matchingIDs = $this->matchORID($vhInfo); // $version, $main_id);
+        printf("sorid vhInfo: %s\n", json_encode($vhInfo));
+
+        $matchingIDs = $this->matchORID($vhInfo);
 
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
