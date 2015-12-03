@@ -62,7 +62,7 @@ class SQL
      * 
      */
 
-    public function insertSource($vh_info, $href)
+    public function insertSource($vhInfo, $href)
     {
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
@@ -71,13 +71,13 @@ class SQL
                             values 
                             ($1, $2, $3)');
         $this->sdb->execute($qq,
-                            array($vh_info['id'],
-                                  $vh_info['main_id'],
+                            array($vhInfo['id'],
+                                  $vhInfo['main_id'],
                                   $href));
         $this->sdb->deallocate($qq);
     }
 
-    public function insertOccupation($vh_info, $term, $vocabularySource, $dates, $note)
+    public function insertOccupation($vhInfo, $term, $vocabularySource, $dates, $note)
     {
         $qq = 'insert_occupation';
         $this->sdb->prepare($qq, 
@@ -87,15 +87,15 @@ class SQL
                             ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4)
                             returning id');
         $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
+                                      array($vhInfo['id'],
+                                            $vhInfo['main_id'],
                                             $term,
                                             $note));
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
         foreach ($dates as $single_date)
         {
-            $date_fk = $this->insertDate($vh_info, $single_date, 'occupation', $id);
+            $date_fk = $this->insertDate($vhInfo, $single_date, 'occupation', $id);
         }
     }
 
@@ -135,9 +135,9 @@ class SQL
                             returning id, main_id;');
 
         $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
-        $vh_info = $this->sdb->fetchrow($result);
+        $vhInfo = $this->sdb->fetchrow($result);
         $this->sdb->deallocate('insert_version_history');
-        return $vh_info;
+        return $vhInfo;
     }
 
     /* 
@@ -152,7 +152,7 @@ class SQL
      *
      *
      */
-    public function insertDate($vh_info, $date, $fk_table, $fk_id)
+    public function insertDate($vhInfo, $date, $fk_table, $fk_id)
     {
         printf("from_type: %s to_type: %s\n%s\n",
                $date->getFromType(),
@@ -173,8 +173,8 @@ class SQL
                             returning id');
 
        $result = $this->sdb->execute($qq,
-                                     array($vh_info['id'], 
-                                           $vh_info['main_id'],
+                                     array($vhInfo['id'], 
+                                           $vhInfo['main_id'],
                                            $this->sdb->boolToPg($date->getIsRange()),
                                            $date->getFromDate(),
                                            $date->getFromType(),
@@ -228,7 +228,7 @@ class SQL
 
     //  language, languageCode, script, scriptCode
 
-    public function insertNrd($vh_info, $existDates, $arg_list)
+    public function insertNrd($vhInfo, $existDates, $arg_list)
     {
         $qq = 'insert_nrd';
         $this->sdb->prepare($qq, 
@@ -248,8 +248,8 @@ class SQL
                             (select id from vocabulary where type=\'script_code\' and value=regexp_replace($15, \'^.*#\', \'\')))
                             returning id');
         
-        // Combine vh_info and the remaining args into a big array for execute().
-        $execList = array($vh_info['id'], $vh_info['main_id']);
+        // Combine vhInfo and the remaining args into a big array for execute().
+        $execList = array($vhInfo['id'], $vhInfo['main_id']);
 
         foreach ($arg_list as $arg)
         {
@@ -262,11 +262,11 @@ class SQL
         $this->sdb->deallocate($qq);
         foreach ($existDates as $singleDate)
         {
-            $date_fk = $this->insertDate($vh_info, $singleDate, 'nrd', $id);
+            $date_fk = $this->insertDate($vhInfo, $singleDate, 'nrd', $id);
         }
     }
 
-    public function insertOtherID($vh_info, $type, $href)
+    public function insertOtherID($vhInfo, $type, $href)
     {
         $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
@@ -276,15 +276,15 @@ class SQL
                             ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=regexp_replace($4, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
+                                      array($vhInfo['id'],
+                                            $vhInfo['main_id'],
                                             $href,
                                             $type));
         $this->sdb->deallocate($qq);
     }
     
     // Need to return the name.id so we can used it as fk for inserting related records
-    public function insertName($vh_info, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
+    public function insertName($vhInfo, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
         $qq_1 = 'insert_name';
         $qq_2 = 'insert_contributor';
@@ -298,8 +298,8 @@ class SQL
                             returning id');
         
         $result = $this->sdb->execute($qq_1,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
+                                      array($vhInfo['id'],
+                                            $vhInfo['main_id'],
                                             $original,
                                             $preferenceScore,
                                             $language,
@@ -320,8 +320,8 @@ class SQL
         foreach ($contributors as $contrib)
         {
             $this->sdb->execute($qq_2,
-                                array($vh_info['id'],
-                                      $vh_info['main_id'],
+                                array($vhInfo['id'],
+                                      $vhInfo['main_id'],
                                       $name_id,
                                       $contrib['contributor'],
                                       $contrib['type']));
@@ -332,13 +332,20 @@ class SQL
     }
     
     
-    // Function uses the same vocabulary terms as occupation.
-    public function insertFunction($vh_info,
-                                   $dates,
-                                   $type,
-                                   $term,
-                                   $vocabularySource,
-                                   $note)
+    /*
+     * Insert into table function. The SQL returns the inserted id which is used when inserting a date into
+     * table date_range. Function uses the same vocabulary terms as occupation.
+     *
+     * @param $vhInfo associative list with keys: version, main_id
+     *
+     * @param $argList list with keys:
+     * 
+     * @param $dates list of list of date keys suitable for insertDate()
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertFunction($vhInfo, $argList, $dates)
     {
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
@@ -346,35 +353,52 @@ class SQL
                             (version, main_id, function_type, vocabulary_source, note, function_id)
                             values
                             ($1, $2, $3, $4, $5,
-                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')))');
+                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')))
+                            returning id');
         
-        $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
-                                            $type,
-                                            $vocabularySource,
-                                            $note,
-                                            $term));
+        /* 
+         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. If you decide to
+         * sanity check $argList, put the checks here, and if you want to change list element order, do that
+         * here too. Keep in mind that our philosophy is for DBUtils to know about php objects and SQL fields,
+         * but not how to do SQL queries. Class SQL is intentionally minimal, knowing only enough to do queries.
+         */
+        $eArgs = $vhInfo;
+        foreach ($argList as $arg)
+        {
+            array_push($eArgs, $arg);
+        }
+        
+        $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
 
         /* 
-         * This would be a lot more robust if foreach() silently ignored nulls and any non-array
-         * args. Oh well. Feel free to add more sanity checks. Maybe gettype() array, and check get_class() on
-         * each array element. We need a date list wrapper function that we can call everywhere.
+         * This would more simpler and robust if foreach() silently ignored nulls and any non-array args. The
+         * surrounding if() wouldn't be necessary. Oh well. Feel free to add more sanity checks to the if()
+         * statement. Maybe gettype() array, and check get_class() on each array element. We need a date list
+         * wrapper function that we can call everywhere.
          */
-
         if ($dates and count($dates)>=1)
         {
             foreach ($dates as $single_date)
             {
-                $date_fk = $this->insertDate($vh_info, $single_date, 'function', $id);
+                $date_fk = $this->insertDate($vhInfo, $single_date, 'function', $id);
             }
         }
     }
 
     
-    public function insertSubject($vh_info, $term)
+    /*
+     * Insert into table subject. Data is currently only a string from the Constellation.
+     *
+     * @param $vhInfo associative list with keys: version, main_id
+     *
+     * @param $term string that is a subject
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertSubject($vhInfo, $term)
     {
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
@@ -384,13 +408,28 @@ class SQL
                             ($1, $2, (select id from vocabulary where type=\'subject\' and value=regexp_replace($3, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
-                                      array($vh_info['id'],
-                                            $vh_info['main_id'],
+                                      array($vhInfo['id'],
+                                            $vhInfo['main_id'],
                                             $term));
         $this->sdb->deallocate($qq);
     }
 
-    public function insertRelation($vh_info, $dates, $argList)
+    /*
+     * Insert a related identity aka table related_identity, aka constellation relation, aka cpf relation, aka
+     * ConstellationRelation object. We first insert into related_identity saving the inserted record
+     * id. After that, we insert date_range records with related via saved related_record.id. See insertDate().
+     *
+     * @param vhInfo associative list with keys: version, main_id
+     * 
+     * @param $dates list of list of date_range keys suitable to pass to insertDate(). Yes, list of list in order to support multiple dates.
+     *
+     * @param $argList list of keys: related_id, related_ark, role, arcrole, relation_type, relation_entry,
+     * descriptive_note. We assume that DBUtils knows the php to sql field translation. Keys must occur in the noted order.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertRelation($vhInfo, $dates, $argList)
     {
         $qq = 'insert_related_identity';
         $this->sdb->prepare($qq,
@@ -403,9 +442,9 @@ class SQL
                             $7, $8, $9)
                             returning id');
 
-        // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
-        // first two elements of the array with id and main_id from vh_info.
-        $execList = array($vh_info['id'], $vh_info['main_id']);
+        // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
+        // first two elements of the array with id and main_id from vhInfo.
+        $execList = array($vhInfo['id'], $vhInfo['main_id']);
         foreach ($argList as $arg)
         {
             array_push($execList, $arg);
@@ -423,12 +462,26 @@ class SQL
 
         foreach ($dates as $singleDate)
         {
-            $date_fk = $this->insertDate($vh_info, $singleDate, 'related_identity', $relationId);
+            $date_fk = $this->insertDate($vhInfo, $singleDate, 'related_identity', $relationId);
         }
 
     }
 
-    public function insertResourceRelation($vh_info, $argList)
+    /*
+     * Insert into table related_resource using data from php ResourceRelation object. It is assumed that the
+     * calling code in DBUtils knows the php to sql fields. Note keys in $argList have a fixed order.
+     *
+     * @param $vhInfo associative list with keys: version, main_id
+     *
+     * @param $argList list with keys: role, relation_entry_type, arcrole, relation_entry, object_xml_wrap,
+     * decriptive_note. These elements must occur in this order, and they are not sanity checked. The foreach
+     * before execute() simply copies all of them into a list to pass to execute(). If there is a problem, but
+     * the sanity check in the foreach loop.
+     *
+     * @return no return values
+     * 
+     */
+    public function insertResourceRelation($vhInfo, $argList)
     {
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
@@ -441,9 +494,9 @@ class SQL
                             (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, \'^.*#\', \'\')),
                             $7, $8, $9)');
 
-        // Combine vh_info and the remaining args into a big array for execute(). Start by initializing the
-        // first two elements of the array with id and main_id from vh_info.
-        $execList = array($vh_info['id'], $vh_info['main_id']);
+        // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
+        // first two elements of the array with id and main_id from vhInfo.
+        $execList = array($vhInfo['id'], $vhInfo['main_id']);
         foreach ($argList as $arg)
         {
             array_push($execList, $arg);
@@ -469,7 +522,6 @@ class SQL
      * 
      * 
      */
-    
     public function selectConstellation($vhInfo) // $version, $main_id)
     {
         $qq = 'sc';
