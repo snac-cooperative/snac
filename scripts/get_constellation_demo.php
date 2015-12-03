@@ -83,7 +83,7 @@ function foo_main ()
     if ($argc>1)
     {
         printf("Using version: %s main_id: %s\n", $argv[1], $argv[2]);
-        $dbu->selectConstellation(array('version' => $argv[1],
+        $cObj = $dbu->selectConstellation(array('version' => $argv[1],
                                         'main_id' =>$argv[2]),
                                   $appUserID);
     }
@@ -96,8 +96,10 @@ function foo_main ()
          * 
          */
         $vhInfo = $dbu->demoConstellation();
-        $dbu->selectConstellation($vhInfo, $appUserID);
+        $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
     }
+    printf("todo: places, maintenanceEvents\n");        
+    printf("Filled const: %s\n", $cObj->toJSON());
 }
 
 /* 
