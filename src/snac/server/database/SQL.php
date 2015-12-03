@@ -881,7 +881,9 @@ class SQL
 
 
     /* 
-     * This is used for testing. Get a record that has a date_range record.
+     * This is used for testing. Not really random. Get a record that has a date_range record. The query
+     * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
+     * criteria somewhat more obvious.
      * 
      * @return array(id, version, main_id) for a record that has a date_range
      */
@@ -891,7 +893,11 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select nrd.id, version_history.id as version, version_history.main_id
                             from nrd,date_range, version_history
-                            where nrd.id=fk_id and nrd.main_id=version_history.main_id and nrd.version=version_history.id limit 1');
+                            where
+                            nrd.id=date_range.fk_id and
+                            nrd.main_id=version_history.main_id and
+                            nrd.version=version_history.id
+                            limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
