@@ -220,9 +220,11 @@ function quick_stderr ($message)
     fclose($stderr); 
 }
 
+// This needs to be moved to SQL.php
 function load_vocab()
 {
-    global $db;
+    $db = new \snac\server\database\DatabaseConnector();
+
     $qq = 'check_vocab';
     $db->prepare($qq, 'select * from vocabulary');
     $res = $db->execute($qq, array());
