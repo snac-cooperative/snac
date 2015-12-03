@@ -570,11 +570,11 @@ class DBUtil
         foreach ($id->getFunctions() as $fdata)
         {
             $this->sql->insertFunction($vh_info,
-                                       $fdata->getDates(),
-                                       $fdata->getType(),
-                                       $fdata->getTerm(),
-                                       $fdata->getVocabularySource(),
-                                       $fdata->getNote());
+                                       array('function_type' => $fdata->getType(),
+                                             'vocabulary_source' => $fdata->getVocabularySource(),
+                                             'note' => $fdata->getNote(),
+                                             'function_id' => $fdata->getTerm()),
+                                       $fdata->getDates());
         }
 
         foreach ($id->getSubjects() as $term)
