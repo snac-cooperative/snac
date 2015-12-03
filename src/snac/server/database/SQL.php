@@ -539,8 +539,6 @@ class SQL
                             version=(select max(version) from nrd where version<=$1)
                             and main_id=$2');
 
-        printf("sc vhinfo: %s\n", json_encode($vhInfo));
-
         $result = $this->sdb->execute($qq, $vhInfo);
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
