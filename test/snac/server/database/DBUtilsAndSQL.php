@@ -20,7 +20,7 @@
  * @author Tom Laudeman
  *
  */
-class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
+class DBUtilTest extends PHPUnit_Framework_TestCase {
     
     /*
      * Can we get a random Constellation? 
