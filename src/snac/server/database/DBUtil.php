@@ -1,27 +1,26 @@
 <?php
 
-/**
- * High level database abstraction layer. 
+  /*
+   * High level database abstraction layer.
+   *
+   * License:
+   *
+   *
+   * @author Tom Laudeman
+   * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+   * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+   *            the Regents of the University of California
+   */
 
- *
- * License:
- *
- *
- * @author Tom Laudeman
- * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
- * @copyright 2015 the Rector and Visitors of the University of Virginia, and
- *            the Regents of the University of California
- */
-
-  // namespace is confusing. Are they path relative? Are they arbitrary? How much of the leading directory
-  // tree can be left out of the namespace? I just based this file's namespace on the parser example below.
-
-  // namespace snac\util;
-  //       src/snac/util/EACCPFParser.php
+  /* 
+   * namespace is confusing. Are they path relative? Are they arbitrary? How much of the leading directory
+   * tree can be left out of the namespace? I just based this file's namespace on the parser example below.
+   * 
+   * namespace snac\util;
+   *       src/snac/util/EACCPFParser.php
+   */
 
 namespace snac\server\database;
-
-
 
 /* 
  * Util function to strip namespace text from vocabulary terms.
@@ -83,6 +82,8 @@ class DBUtil
     /* 
      * Access some system-wide authentication and/or current user info. Hard coded for now.
      *
+     * @param string $userid The text userid, sql table appuser.userid, used to get the appuser.id and the
+     * user's primary role.
      *
      * @return string[] Associative list of user info data.
      */
@@ -152,16 +153,10 @@ class DBUtil
      */
     public function selectConstellation($vhInfo, $appUserID)
     {
-        // Create an empty constellation by calling the constructor with no args. Then used the setters to add
-        // individual properties of the class(es).
-
-        // subclasses: otherRecordsIDs, sources, legalStatuses, subjects,
-        // maintenanceEvents, nameEntries, occupations, existDates, relations, resourceRelations, functions, places.
-
-        // scalars: 'dataType' = "Constellation", ark, entityType, maintenanceStatus, maintenanceAgency,
-        // conventionDeclaration, constellationLanguage, constellationLanguageCode, constellationScript,
-        // constellationScriptCode, language, languageCode, script, scriptCode, existDatesNote, nationality,
-        // gender, generalContext, structureOrGenealogy, mandate, biogHists
+        /* 
+         * Create an empty constellation by calling the constructor with no args. Then used the setters to add
+         * individual properties of the class(es).
+         */
 
         /*
 
@@ -206,9 +201,7 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
         
-        // printf("Pre-date const: %s\nrow: %s\n", $cObj->toJSON(), json_encode($row,JSON_PRETTY_PRINT));
-        
-        // existDates
+        // add the existDates
 
         $dateRows = $this->sql->selectDate($row['id']);
         foreach ($dateRows as $singleDate)
@@ -234,8 +227,6 @@ class DBUtil
             $cObj->addExistDates($dateObj);
         }
 
-        $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); // $version, $main_id);
-
         /* 
          * Keys are the same as the database field names. Function description below is from addOtherRecordID.
          *
@@ -247,22 +238,23 @@ class DBUtil
          * @param string $link Href or other link for the alternate id
          * 
          */
+        $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); 
         foreach ($oridRows as $singleOrid)
         {
             $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
         }
         
         /* 
-         * subjects
-         * test with: scripts/get_constellation_demo.php 5 44
+         * Add subjects.
+         * 
+         * test with: scripts/get_constellation_demo.php 5 49
          * @param string $subject Subject to add.
          * addSubject($subject)
          *
          * returns array with keys: id, version, main_id, subject_id
          * 
          */
-
-        $subjRows = $this->sql->selectSubjects($vhInfo); // $version, $main_id);
+        $subjRows = $this->sql->selectSubjects($vhInfo); 
         foreach ($subjRows as $singleSubj)
         {
             $cObj->addSubject($singleSubj['subject_id']);
@@ -294,7 +286,7 @@ class DBUtil
          * 
          */
 
-        $neRows = $this->sql->selectNameEntries($vhInfo); // $version, $main_id);
+        $neRows = $this->sql->selectNameEntries($vhInfo);
         foreach ($neRows as $oneName)
         {
             $neObj = new \snac\data\NameEntry();
@@ -311,11 +303,12 @@ class DBUtil
             $cObj->addNameEntry($neObj);
         }
 
-        // occupations
-        // Need to add date range
-        // Need to add vocabulary source
-
         /* 
+         * occupations
+         * Need to add date range
+         * Need to add vocabulary source
+         *
+         * 
          * | php                 | sql               |
          * |---------------------+-------------------|
          * |                     | id                |
@@ -326,7 +319,7 @@ class DBUtil
          * | setVocabularySource | vocabulary_source |
          */
 
-        $occRows = $this->sql->selectOccupations($vhInfo); // $version, $main_id);
+        $occRows = $this->sql->selectOccupations($vhInfo);
         foreach ($occRows as $oneOcc)
         {
             $occObj = new \snac\data\Occupation();
@@ -337,10 +330,11 @@ class DBUtil
             $cObj->addOccupation($occObj);
         }
 
-        // relations
-        // test with: scripts/get_constellation_demo.php 2 10
-        
         /* 
+         * relations
+         * test with: scripts/get_constellation_demo.php 2 10
+         *
+         * 
          * | php                                 | sql              |
          * |-------------------------------------+------------------|
          * |                                     | id               |
@@ -357,7 +351,7 @@ class DBUtil
          * 
          */
 
-        $relRows = $this->sql->selectRelation($vhInfo); // $version, $main_id);
+        $relRows = $this->sql->selectRelation($vhInfo);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
@@ -372,9 +366,11 @@ class DBUtil
             $cObj->addRelation($relatedObj);
         }
 
-        // resourceRelations
         
-        /* 
+        /*
+         * resourceRelations
+         *
+         * 
          * | php                  | sql                 |
          * |----------------------+---------------------|
          * |                      | id                  |
@@ -389,7 +385,7 @@ class DBUtil
          * | setNote              | descriptive_note    |
          */
 
-        $rrRows = $this->sql->selectRelatedResources($vhInfo); // $version, $main_id);
+        $rrRows = $this->sql->selectRelatedResources($vhInfo); 
 
         foreach ($rrRows as $oneRes)
         {
@@ -404,8 +400,12 @@ class DBUtil
             $cObj->addResourceRelation($rrObj);
         }
 
-        // functions
-        $funcRows = $this->sql->selectFunctions($vhInfo); // $version, $main_id);
+        /*
+         * functions
+         *
+        */
+
+        $funcRows = $this->sql->selectFunctions($vhInfo);
         foreach ($funcRows as $oneFunc)
         {
             $fObj = new \snac\data\SNACFunction();
@@ -418,13 +418,16 @@ class DBUtil
             $cObj->addFunction($fObj);
         }
 
-        //places.
-        
-        // todo: maintenanceEvents, 
-        
+        /* 
+         * todo: places.
+         * 
+         * todo: maintenanceEvents
+         * 
+         */
+        printf("todo: places, maintenanceEvents\n");        
         printf("Filled const: %s\n", $cObj->toJSON());
         return $cObj;
-    }
+    } // end selectConstellation
 
     /*
      * Write a PHP Constellation object to the database.
@@ -652,5 +655,5 @@ class DBUtil
         }
 
         return $vh_info;
-    }
+    } // end insertConstellation
 }
