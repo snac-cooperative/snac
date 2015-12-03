@@ -424,8 +424,6 @@ class DBUtil
          * todo: maintenanceEvents
          * 
          */
-        printf("todo: places, maintenanceEvents\n");        
-        printf("Filled const: %s\n", $cObj->toJSON());
         return $cObj;
     } // end selectConstellation
 
