@@ -596,8 +596,6 @@ class SQL
      */
     public function selectOtherRecordIDs($vhInfo)
     {
-        printf("sorid vhInfo: %s\n", json_encode($vhInfo));
-
         $matchingIDs = $this->matchORID($vhInfo);
 
         $qq = 'sorid';
