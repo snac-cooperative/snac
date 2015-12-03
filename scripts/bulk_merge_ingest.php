@@ -43,9 +43,15 @@ function foo_main ()
 {
     global $argc, $argv, $config, $db, $limit;
 
-    // U for Util.
-    // $dbu = new snac\server\database\DBUtil($db);
-    $dbu = new snac\server\database\DBUtil($db);
+    /* 
+     * U for Util.
+     * 
+     * $dbu = new snac\server\database\DBUtil($db);
+     * 
+     * Don't create a DatabaseConnector here. DBUtil knows how to do that itself. Leave all the db stuff to
+     * code that needs to manage it.
+     */
+    $dbu = new snac\server\database\DBUtil();
 
     list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
     printf("appUserID: %s role: %s\n", $appUserID, $role);

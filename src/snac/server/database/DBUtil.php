@@ -75,7 +75,7 @@ class DBUtil
      */
     public function __construct() 
     {
-        // $db = new \snac\server\database\DatabaseConnector();
+        $db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($db);
     }
 

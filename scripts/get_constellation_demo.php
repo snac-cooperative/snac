@@ -25,7 +25,8 @@ include "src/snac/Config.php";
 
 global $argc, $argv;
 
-$db = new \snac\server\database\DatabaseConnector();
+// Is this being called so that other code like DBUtil won't need to call it? Seems like there's nothing in
+// the config but the db connection info.
 $config = new snac\Config();
 
 /* unbuffer stdin, stdout? Or something. */
@@ -38,10 +39,15 @@ exit();
 
 function foo_main () 
 {
-    global $argc, $argv, $config, $db;
+    global $argc, $argv, $config;
 
-    // U for Util.
-    $dbu = new snac\server\database\DBUtil($db);
+    /* 
+     * U for Util.
+     * 
+     *  Don't create a DatabaseConnector here. DBUtil knows how to do that itself. Leave all the db stuff to
+     *  code that needs to manage it.
+     */
+    $dbu = new snac\server\database\DBUtil();
 
     list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
     printf("appUserID: %s role: %s\n", $appUserID, $role);
@@ -186,7 +192,9 @@ function quick_stderr ($message)
 
 function load_vocab()
 {
-    global $db;
+
+    $db = new \snac\server\database\DatabaseConnector();
+
     $qq = 'check_vocab';
     $db->prepare($qq, 'select * from vocabulary');
     $res = $db->execute($qq, array());
