@@ -27,7 +27,7 @@ class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
      */
     public function testRandomConstellation() 
     {
-        
+        printf("Starting DBUtil and SQL tests\n");
         try
         {
             $dbu = new snac\server\database\DBUtil();
