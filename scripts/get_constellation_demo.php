@@ -24,6 +24,14 @@
    *
    * Get the example but running a query and looking for a main_id has multiple values for other_id. 
    * select * from otherid;
+   *
+   *
+   * Run a demo with some subjects:
+   *
+   * scripts/get_constellation_demo.php 5 49
+   *
+   * Discovery version 5 and main_id 49 by looking for multi-subject main_id in the query results:
+   * select * from subject limit 10;
    * 
    */
 include "vendor/autoload.php";
