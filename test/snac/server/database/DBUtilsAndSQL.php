@@ -32,7 +32,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         {
             $dbu = new snac\server\database\DBUtil();
         }
-        catch (Exception $ex)
+        catch (Exception $e)
         {
             $this->fail("DBUtil object creation failed");
         }
@@ -40,7 +40,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         {
             list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
         }
-        catch (Exception $ex)
+        catch (Exception $e)
         {
             $this->fail("Failed to get appuser info for 'twl8n'");
         }
@@ -57,7 +57,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                 "pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^",
                 substr($message, 0));
         }
-        catch (Exception $ex)
+        catch (Exception $e)
         {
             $this->fail("Failed to get a demo constellation");
         }
