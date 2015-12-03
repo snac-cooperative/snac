@@ -237,7 +237,7 @@ class DBUtil
         $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); // $version, $main_id);
 
         /* 
-         * Keys are the same as the database field names.
+         * Keys are the same as the database field names. Function description below is from addOtherRecordID.
          *
          * "other_id": "nypl\/mss18809.r17075"
          * "link_type": "MergedRecord"
@@ -247,7 +247,6 @@ class DBUtil
          * @param string $link Href or other link for the alternate id
          * 
          */
-
         foreach ($oridRows as $singleOrid)
         {
             $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);

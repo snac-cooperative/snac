@@ -456,10 +456,17 @@ class SQL
 
     /*
      *
-     * Pull back the most recent version row from nrd (and eventually other tables?) using a known id.
+     * Select from table nrd which is philosophically the central constellation table. In actual
+     * implementation, table version_history is the center of everything.
      *
      * It is intentional that the fields are not retrieved in any particular order because the row will be
      * saved as an associative list. That allows us to write the sql query in a more legible format.
+     *
+     *
+     * @param vhInfo associative list with keys: version, main_id
+     *
+     * @return  
+     * 
      * 
      */
     
@@ -486,12 +493,20 @@ class SQL
         return $row;
     }
 
-    // Nov 23 2015: see multi-version join with sub query below in selectSubjects().
-
-    // return flat list of distinct id values meeting the version and main_id constraint Specifically a helper
-    // function for selectOtherRecordIDs() This deals with the possibility that a given id may have several
-    // versions while other id values are other (and single) versions.
-
+    /* 
+     *
+     * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
+     * helper function for selectOtherRecordIDs(). This deals with the possibility that a given otherid.id may
+     * have several versions while other otherid.id values are different (and single) versions.
+     *
+     * Nov 23 2015: I figured out how to do a multi-version join with sub query. See below in
+     * selectSubjects(). Doing the multi-version sub query probably makes this function obsolete.
+     * 
+     * @param vhInfo associative list with keys: version, main_id
+     *
+     * @return string[] list of record id values meeting the version and main_id constriants.
+     * 
+     */
     public function matchORID($vhInfo) // $version, $main_id)
     {
         // $matchingIDs = matchORID($version, $main_id);
@@ -516,9 +531,17 @@ class SQL
     }
 
 
-    // return a list of otherid rows
-    // Assume unique id in vocab, so don't need extra constraint type='record_type'
-    // Nov 23 2015: see multi-version join with sub query below in selectSubjects()
+    /* 
+     * select other IDs which were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a Constellation object.
+     * 
+     * Assume unique id in vocab, so don't need extra constraint type='record_type'
+     * Nov 23 2015: see multi-version join with sub query below in selectSubjects()
+     *
+     * @param vhInfo associative list with keys: version, main_id
+     *
+     * @return a list of otherid rows
+     * 
+     */
     public function selectOtherRecordIDs($vhInfo) // $version, $main_id)
     {
         $matchingIDs = $this->matchORID($vhInfo); // $version, $main_id);
@@ -546,8 +569,18 @@ class SQL
         return $all;
     }
 
-    // Solve the multi-version problem by joining to a subquery. 
-
+    
+    /*
+     *
+     * Select subjects. DBUtils has code to turn the return values into subjects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param vhInfo associative list with keys: version, main_id
+     *
+     * @return list with keys: id, version, main_id, subject_id 
+     * 
+     */
     public function selectSubjects($vhInfo) // $version, $main_id)
     {
         $qq = 'ssubj';
@@ -571,9 +604,20 @@ class SQL
     }
 
 
-    // Noc 24 2015 New convention: the table we're working on is 'aa', and the subquery is 'bb'. This makes
-    // the query more of a standard template.  Assuming this works and is a good idea, we should port this to
-    // all the other select queries.
+    /* 
+     *
+     * Select occupation, returning a list of lists. Code in DBUtils foreach's over the outer list, turning
+     * each inner list into an Occupation object.
+     *
+     * Nov 24 2015 New convention: the table we're working on is 'aa', and the subquery is 'bb'. This makes
+     * the query more of a standard template.  Assuming this works and is a good idea, we should port this to
+     * all the other select queries.
+     *
+     * @param vhInfo associative list with keys: version, main_id
+     *
+     * @return list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
+     * 
+     */
 
     public function selectOccupations($vhInfo) // $version, $main_id)
     {
@@ -597,14 +641,23 @@ class SQL
         return $all;
     }
 
-
+    /*
+     * Select a related identity (akd cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
+     *
+     * @param $vhInfo associative list with keys: 'version', 'main_id'
+     *
+     * @return list of lists. There may be multiple relations. Each relation has keys: id, version, main_id,
+     * related_id, related_ark, relation_entry, descriptive_node, relation_type, role, arcrole, date. Date is
+     * an associative list with keys from table date_range. See selectDate().
+     * 
+     */ 
     public function selectRelation($vhInfo) // $version, $main_id)
     {
         $qq = 'selectrelatedidentity';
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.main_id, aa.related_id, aa.related_ark,
-                            aa.arcrole, aa.relation_entry, aa.descriptive_note, aa.relation_type,
+                            aa.relation_entry, aa.descriptive_note, aa.relation_type,
                             (select value from vocabulary where id=aa.role) as role,
                             (select value from vocabulary where id=aa.arcrole) as arcrole
                             from related_identity as aa,
@@ -634,6 +687,15 @@ class SQL
         return $all;
     }
 
+    /*
+     * select related archival resources given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
+     * turn the return value into a pgp ResourceRelation object.
+     *
+     * @param array $vhInfo 'version' and 'main_id'.
+     *
+     * @return array Keys: id, version, main_id, relation_entry_type, href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
+     *
+     */ 
     public function selectRelatedResources($vhInfo) // $version, $main_id)
     {
         $qq = 'select_related_resource';
@@ -659,7 +721,15 @@ class SQL
         return $all;
     }
 
-
+    /*
+     * Select all functions for the given version and main_id. Code in DBUtils turns the return value into a
+     * SNACFunction object.
+     *
+     * @param array $vhInfo list with keys 'version', 'main_id'
+     *
+     * @return array('id', 'version', 'main_id', 'function_type', 'note', 'date' => assoc array of date info from selectDate()
+     *
+     */ 
     public function selectFunctions($vhInfo) // $version, $main_id)
     {
         $qq = 'select_related_resource';
@@ -695,7 +765,12 @@ class SQL
 
 
      /* 
-      * return array('original'=>"",
+      * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
+      * NameEntry object.
+      *
+      * @param array $vhInfo with keys version, main_id.
+      *
+      * @return array('original'=>"",
       * 		     'language'=>"",
       *              'script_code'=>"",
       *              'preference_score'=>"",
@@ -753,9 +828,11 @@ class SQL
 
 
 
-    // For the purposes of testing, get a record that has a date_range record.
-
-    // return array(id, version, main_id) for a record that has a date_range
+    /* 
+     * This is used for testing. Get a record that has a date_range record.
+     * 
+     * @return array(id, version, main_id) for a record that has a date_range
+     */
     public function randomConstellationID()
     {
         $qq = 'rcid';
