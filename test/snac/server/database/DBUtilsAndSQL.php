@@ -34,13 +34,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
 
         list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
-        $this-assertNotNull($appUserID);
+        $this->assertNotNull($appUserID);
         // $this->fail("Failed to get appuser info for 'twl8n'");
 
 
         $vhInfo = $dbu->demoConstellation();
         $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
-        $this-assertNotNull($cObj);
+        $this->assertNotNull($cObj);
 
         // examples from other code:
         
