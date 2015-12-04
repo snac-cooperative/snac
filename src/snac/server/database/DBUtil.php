@@ -337,7 +337,7 @@ class DBUtil
          * | php                                 | sql              |
          * |-------------------------------------+------------------|
          * |                                     | id               |
-         * | $vh_info['id']                      | version          |
+         * | $vh_info['verion']                  | version          |
          * | $vh_info['main_id']                 | main_id          |
          * | setTargetConstellation              | related_id       |
          * | setTargetArkID                      | related_ark      |
@@ -373,7 +373,7 @@ class DBUtil
          * | php                  | sql                 |
          * |----------------------+---------------------|
          * |                      | id                  |
-         * | $vh_info['id']       | version             |
+         * | $vh_info['version']  | version             |
          * | $vh_info['main_id']  | main_id             |
          * | setDocumentType      | role                |
          * | setRelationEntryType | relation_entry_type |
@@ -590,7 +590,7 @@ class DBUtil
 
           | placeholder | php                 | what                                          | sql               |
           |-------------+---------------------+-----------------------------------------------+-------------------|
-          |           1 | $vh_info['id']      |                                               | version           |
+          |           1 | $vh_info['version'] |                                               | version           |
           |           2 | $vh_info['main_id'] |                                               | main_id           |
           |           3 | targetConstellation | id fk to version_history                      | .related_id       |
           |           4 | targetArkID         | ark                                           | .related_ark      |
@@ -624,7 +624,7 @@ class DBUtil
 
           | placeholder | php                 | what                                             | sql                  |
           |-------------+---------------------+--------------------------------------------------+----------------------|
-          |           1 | $vh_info['id']      |                                                  | .version             |
+          |           1 | $vh_info['version'] |                                                  | .version             |
           |           2 | $vh_info['main_id'] |                                                  | .main_id             |
           |           3 | documentType        | @xlink:role id fk to vocab document_type         | .role                |
           |           4 | entryType           | relationEntry@localType, AnF, always 'archival'? | .relation_entry_type |

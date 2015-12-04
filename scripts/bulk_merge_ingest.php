@@ -123,15 +123,15 @@ function foo_main ()
 
         // Create new parser for this file and parse it
         $eparser = new \snac\util\EACCPFParser();
-        $id = $eparser->parseFile($file);
+        $constellationObj = $eparser->parseFile($file);
 
         
         $unparsedTags = $eparser->getMissing();
         if (empty($unparsedTags))
         {
-            $vh_info = $dbu->insertConstellation($id, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
-            check_vocabulary($id);
-            // $msg = sprintf("File $file ok. vh_info: %s", var_export($vh_info, 1));
+            $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+            check_vocabulary($constellationObj);
+            // $msg = sprintf("File $file ok. vhInfo: %s", var_export($vhInfo, 1));
             $msg = sprintf("File $file ok.");
             quick_stderr($msg); // no terminal \n, the code will add that later
         }

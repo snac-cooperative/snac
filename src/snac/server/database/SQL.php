@@ -71,7 +71,7 @@ class SQL
                             values 
                             ($1, $2, $3)');
         $this->sdb->execute($qq,
-                            array($vhInfo['id'],
+                            array($vhInfo['version'],
                                   $vhInfo['main_id'],
                                   $href));
         $this->sdb->deallocate($qq);
@@ -87,7 +87,7 @@ class SQL
                             ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4)
                             returning id');
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['id'],
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $term,
                                             $note));
@@ -132,7 +132,7 @@ class SQL
                             (user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5)
-                            returning id, main_id;');
+                            returning id as version, main_id;');
 
         $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
         $vhInfo = $this->sdb->fetchrow($result);
@@ -173,7 +173,7 @@ class SQL
                             returning id');
 
        $result = $this->sdb->execute($qq,
-                                     array($vhInfo['id'], 
+                                     array($vhInfo['version'], 
                                            $vhInfo['main_id'],
                                            $this->sdb->boolToPg($date->getIsRange()),
                                            $date->getFromDate(),
@@ -249,7 +249,7 @@ class SQL
                             returning id');
         
         // Combine vhInfo and the remaining args into a big array for execute().
-        $execList = array($vhInfo['id'], $vhInfo['main_id']);
+        $execList = array($vhInfo['version'], $vhInfo['main_id']);
 
         foreach ($arg_list as $arg)
         {
@@ -276,7 +276,7 @@ class SQL
                             ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=regexp_replace($4, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['id'],
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $href,
                                             $type));
@@ -298,7 +298,7 @@ class SQL
                             returning id');
         
         $result = $this->sdb->execute($qq_1,
-                                      array($vhInfo['id'],
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $original,
                                             $preferenceScore,
@@ -320,7 +320,7 @@ class SQL
         foreach ($contributors as $contrib)
         {
             $this->sdb->execute($qq_2,
-                                array($vhInfo['id'],
+                                array($vhInfo['version'],
                                       $vhInfo['main_id'],
                                       $name_id,
                                       $contrib['contributor'],
@@ -408,7 +408,7 @@ class SQL
                             ($1, $2, (select id from vocabulary where type=\'subject\' and value=regexp_replace($3, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['id'],
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $term));
         $this->sdb->deallocate($qq);
@@ -444,7 +444,7 @@ class SQL
 
         // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
         // first two elements of the array with id and main_id from vhInfo.
-        $execList = array($vhInfo['id'], $vhInfo['main_id']);
+        $execList = array($vhInfo['version'], $vhInfo['main_id']);
         foreach ($argList as $arg)
         {
             array_push($execList, $arg);
@@ -496,7 +496,7 @@ class SQL
 
         // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
         // first two elements of the array with id and main_id from vhInfo.
-        $execList = array($vhInfo['id'], $vhInfo['main_id']);
+        $execList = array($vhInfo['version'], $vhInfo['main_id']);
         foreach ($argList as $arg)
         {
             array_push($execList, $arg);
@@ -559,7 +559,7 @@ class SQL
      * @return string[] list of record id values meeting the version and main_id constriants.
      * 
      */
-    public function matchORID($vhInfo) // $version, $main_id)
+    public function matchORID($vhInfo)
     {
         // $matchingIDs = matchORID($version, $main_id);
 
@@ -572,7 +572,7 @@ class SQL
                             version=(select max(version) from otherid where version<=$1 and main_id=$2)
                             and main_id=$2');
 
-        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -633,7 +633,7 @@ class SQL
      * @return list with keys: id, version, main_id, subject_id 
      * 
      */
-    public function selectSubjects($vhInfo) // $version, $main_id)
+    public function selectSubjects($vhInfo)
     {
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
@@ -671,7 +671,7 @@ class SQL
      * 
      */
 
-    public function selectOccupations($vhInfo) // $version, $main_id)
+    public function selectOccupations($vhInfo)
     {
         $qq = 'socc';
         $this->sdb->prepare($qq, 
@@ -684,7 +684,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
         $all = array();
-        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -703,7 +703,7 @@ class SQL
      * an associative list with keys from table date_range. See selectDate().
      * 
      */ 
-    public function selectRelation($vhInfo) // $version, $main_id)
+    public function selectRelation($vhInfo)
     {
         $qq = 'selectrelatedidentity';
         $this->sdb->prepare($qq,
@@ -748,7 +748,7 @@ class SQL
      * @return array Keys: id, version, main_id, relation_entry_type, href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
-    public function selectRelatedResources($vhInfo) // $version, $main_id)
+    public function selectRelatedResources($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -763,7 +763,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -782,7 +782,7 @@ class SQL
      * @return array('id', 'version', 'main_id', 'function_type', 'note', 'date' => assoc array of date info from selectDate()
      *
      */ 
-    public function selectFunctions($vhInfo) // $version, $main_id)
+    public function selectFunctions($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -795,7 +795,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -828,7 +828,7 @@ class SQL
       *              'preference_score'=>"",
       *              'contributors' =>  array('name_type'=>"", 'short_name'=>""))
       */
-    public function selectNameEntries($vhInfo) // $version, $main_id)
+    public function selectNameEntries($vhInfo)
     {
         $qq_1 = 'selname';
         $qq_2 = 'selcontributor';
@@ -854,7 +854,7 @@ class SQL
                             and name_contributor.version=aa.version
                             and name_contributor.name_id=$3');
         
-        $name_result = $this->sdb->execute($qq_1, $vhInfo); // array($version,$main_id));
+        $name_result = $this->sdb->execute($qq_1, $vhInfo);
         
         // Contributor has issues. See comments in schema.sql. This will work for now.
         // Get each name, and for each name get each contributor.

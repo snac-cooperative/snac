@@ -51,16 +51,29 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($cObj);
 
-        // examples from other code:
-        
-        // $this->assertNotNull(json_decode($server->getResponse()));
-        
+
+        // Parse a file, write the data into the db.
+
+        $eParser = new \snac\util\EACCPFParser();
+        $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
+        $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+
+        $this->assertNotNull($vhInfo);
+
+        // get the constellation that was just inserted. As of Dec 2015, the inserted and selected
+        // constellation won't be identical due to unresolved treatment of place and maintenance data.
+
+        $selectedConstellationObj = $dbu->selectConstellation($vhInfo, $appUserID);
+        $this->assertNotNull($selectedConstellationObj);
+
         /* 
+         * examples from other code:
+         * $this->assertNotNull(json_decode($server->getResponse()));
          * $this->assertEquals(
          *     "pg_prepare(): Query failed: ERROR:  syntax error at or near \"NOT\"\nLINE 1: NOT A POSTGRES STATEMENT;\n        ^",
          *     substr($message, 0));
+         * $this->fail("Failed to get a demo constellation");
          */
-        // $this->fail("Failed to get a demo constellation");
     }
 
     /*
