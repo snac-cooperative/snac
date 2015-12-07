@@ -9,5 +9,5 @@ PHPUnit 5.0.8 by Sebastian Bergmann and contributors.
 
 Time: 16.37 seconds, Memory: 81.14Mb
 
-OK (17 tests, 118 assertions)
+OK (17 tests, 118 assertions) 
 ```
