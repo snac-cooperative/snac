@@ -3,6 +3,7 @@
         "php": "~7.0"
     },
     "require-dev": {
+        "phpdocumentor/phpdocumentor": "2.*",
         "phpunit/phpunit": ">=5.0",
         "phpunit/php-invoker": "*",
         "phpunit/dbunit": ">=1.2",
