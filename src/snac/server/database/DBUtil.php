@@ -1,6 +1,6 @@
 <?php
 
-  /*
+  /**
    * High level database abstraction layer.
    *
    * License:
@@ -12,7 +12,7 @@
    *            the Regents of the University of California
    */
 
-  /* 
+  /** 
    * namespace is confusing. Are they path relative? Are they arbitrary? How much of the leading directory
    * tree can be left out of the namespace? I just based this file's namespace on the parser example below.
    * 
@@ -22,7 +22,7 @@
 
 namespace snac\server\database;
 
-/* 
+/** 
  * Util function to strip namespace text from vocabulary terms.
  * 
  * @param string $arg the string to strip the namespace from
@@ -35,7 +35,7 @@ function stripNS($arg)
 }
 
 
-/* 
+/** 
  * We need utility functions to write stuff to log files, stdout, stderr. Put this in some util class.  This
  * is none too efficient since it opens and closes the stream on every call.
  *
@@ -64,7 +64,7 @@ function quick_stderr ($message)
 class DBUtil
 {
 
-    /* 
+    /** 
      * The constructor for the DBUtil class. Originally, the idea was to call the constructor with an existing
      * DatabaseConnectory object, but the calling code doesn't need to know that or do anything dabase
      * related. That is the concern of the DBUtil class.
@@ -79,6 +79,8 @@ class DBUtil
 
     
     /**
+     * Summary
+     *
      * Access some system-wide authentication and/or current user info.
      *
      * Hard coded for now to return id and role.
@@ -96,7 +98,7 @@ class DBUtil
         return $uInfo;
     }
     
-    /* 
+    /** 
      * Utility function to create a SNACDate object from associative list of date data.
      * 
      * Is there another word for "insert"? SQL uses insert, but this is higher level than the SQL class.
@@ -128,7 +130,7 @@ class DBUtil
         return $dateObj;
     }    
         
-    /*
+    /**
      * A helper function to get a constellation from the db for testing purposes
      *
      * @return string[] Standard vh_info associative list with the keys 'version' and 'main_id' from the constellation.
@@ -140,7 +142,7 @@ class DBUtil
         return array('version' => $version, 'main_id' => $main_id);
     }
 
-    /*
+    /**
      * Select a given constellation from the database based on version and main_id.
      *
      * @param array vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
@@ -155,12 +157,12 @@ class DBUtil
      */
     public function selectConstellation($vhInfo, $appUserID)
     {
-        /* 
+        /** 
          * Create an empty constellation by calling the constructor with no args. Then used the setters to add
          * individual properties of the class(es).
          */
 
-        /*
+        /**
 
           | php                                                    | sql                    |
           |--------------------------------------------------------+------------------------|
@@ -228,7 +230,7 @@ class DBUtil
             $cObj->addExistDates($dateObj);
         }
 
-        /* 
+        /** 
          * Keys are the same as the database field names. Function description below is from addOtherRecordID.
          *
          * "other_id": "nypl\/mss18809.r17075"
@@ -245,7 +247,7 @@ class DBUtil
             $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
         }
         
-        /* 
+        /** 
          * Add subjects.
          * 
          * test with: scripts/get_constellation_demo.php 5 49
@@ -262,7 +264,7 @@ class DBUtil
         }
 
 
-        /* 
+        /** 
          * nameEntries
          *
          * test with: scripts/get_constellation_demo.php 2 10
@@ -428,7 +430,7 @@ class DBUtil
         return $cObj;
     } // end selectConstellation
 
-    /*
+    /**
      * Write a PHP Constellation object to the database.
      *  
      * @param Constallation $id A PHP Constellation object.
