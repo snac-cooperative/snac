@@ -56,12 +56,6 @@ function foo_main ()
     list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
     printf("appUserID: %s role: %s\n", $appUserID, $role);
     
-    // Works
-    // printf("userid: %s\n", snac\Config::$userid);
-
-    // Works also
-    printf("userid: %s\n", $config::$userid);
-
     // If no file was parsed, then print the output that something went wrong
     if ($argc < 2)
     {
