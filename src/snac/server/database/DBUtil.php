@@ -79,7 +79,9 @@ class DBUtil
 
     
     /**
-     * Access some system-wide authentication and/or current user info. Hard coded for now.
+     * Access some system-wide authentication and/or current user info.
+     *
+     * Hard coded for now to return id and role.
      * 
      *
      * @param string $userid The text userid, sql table appuser.userid, used to get the appuser.id and the
