@@ -573,7 +573,7 @@ create table otherid (
     );
 
 
--- Dec 3 2015 Now run some sql to initialize at least one appuser and role.
+-- Initialize the system user
 
-\i extras_initialize.sql
+\i initialize_users.sql
 
