@@ -35,9 +35,15 @@ class DatabaseConnector {
      */
     private $dbHandle = null;
     
-    // pg_execute() doesn't know to convert boolean to 't' and 'f' as required by Postgres. We can do it
-    // ourselves.  Interestingly, the return value is a single character string containing t or f. In SQL it
-    // would be literally 't'.
+    /**
+     * pg_execute() doesn't know to convert boolean to 't' and 'f' as required by Postgres. We can do it
+     * ourselves.  Interestingly, the return value is a single character string containing t or f. In SQL it
+     * would be literally 't'.
+     *
+     * @param string $arg A php boolean of whatever type as long as it will test true or false.
+     *
+     * 
+     */
     public static function boolToPg($arg)
     {
         if ($arg)
@@ -155,9 +161,16 @@ class DatabaseConnector {
     }
 
 
-    /*
+    /**
      * Need to add some docs and perhaps throw an exception if the query exists and can't be deallocated. If
      * the query doesn't exist we don't particularly care.
+     *
+     * @param string $query The name of the query to deallocate. Query names are lower case strings. Things
+     * break with mixed case.
+     *
+     * @return void
+     *
+     * 
      */
 
     public function deallocate($query) {

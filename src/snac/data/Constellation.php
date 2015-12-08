@@ -331,9 +331,14 @@ class Constellation extends AbstractData {
     private $mandate = null;
 
     /**
-     * Constructor
+     * Constructor for the class.
      *
-     * Initializes arrays.
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object. Normal use is to call the
+     * constructor without an argument, get an empty class and use the setters to fill in the properties.
+     *
+     * @return Constellation object
+     * 
      */
     public function __construct($data = null) {
 
