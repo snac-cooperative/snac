@@ -75,11 +75,22 @@ class Occupation extends AbstractData {
      */
     private $note = null;
 
+    /*
+     * Getter for $this->term
+     *
+     * @return string Occupation controlled vocabulary term
+     * 
+     */ 
     public function getTerm()
     {
         return $this->term;
     }
 
+    /*
+     * Getter for $this->vocabularySource.
+     *
+     * @return string Vocabulary source for the occupation
+     */ 
     public function getVocabularySource()
     {
         return $this->vocabularySource;
@@ -91,7 +102,6 @@ class Occupation extends AbstractData {
      * @return SNACDate[] An array of SNAC Date objects.
      *
      */ 
-
     public function getDates()
     {
         if ($this->dates)
@@ -104,11 +114,16 @@ class Occupation extends AbstractData {
         }
     }
 
+    /*
+     * getter for $this->note
+     *
+     * @return string Note attached to occupation
+     *
+     */
     public function getNote()
     {
         return $this->note;
     }
-
 
     
     /**
