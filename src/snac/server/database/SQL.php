@@ -33,7 +33,7 @@ namespace snac\server\database;
 class SQL
 {
 
-    /*
+    /**
      * SQL db object.
      *
      * @var \snac\server\database\DatabaseConnector A working, initialized DatabaseConnector object.
@@ -41,7 +41,7 @@ class SQL
      */ 
     private $sdb = null;
 
-    /*
+    /**
      * The constructor makes the outside $db a local variable. I did this out of a general sense of avoiding
      * globals, but I'm unclear if this is really any better than using a globale $db variable. $db is
      * critical to the application, and is read-only after intialization. Breaking it or changing it in any
@@ -59,7 +59,7 @@ class SQL
         $this->sdb = $db;
     }
 
-    /*
+    /**
      * Insert a record into table source.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -85,7 +85,7 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
-    /*
+    /**
      * Insert a constellation occupation.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -127,7 +127,7 @@ class SQL
 
 
 
-    /*
+    /**
      * Select the id and role for a given appuser. Maybe this should be called selectAppUserInfo() in keeping
      * with naming conventions for the other methods. Also the return values are in a flat array, and might
      * better be return in an assoc list where the keys are based on our usual conventions.
@@ -161,7 +161,7 @@ class SQL
         return array($row['id'], $row['role']);
     }
     
-    /*
+    /**
      * Insert a version_history record. Current this increments the id which is the version number. That needs
      * to not be incremented in some cases.
      *
@@ -198,7 +198,7 @@ class SQL
         return $vhInfo;
     }
 
-    /* 
+    /** 
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      *
@@ -266,7 +266,7 @@ class SQL
     }
 
 
-    /* 
+    /** 
      * Select a date knowing a date id values. selectDate() relies on the date.id being in the original table,
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
@@ -301,7 +301,7 @@ class SQL
     }
 
     
-    /* 
+    /** 
      * Insert the non-repeating parts (non repeading data) of the constellation.
      * 
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -355,7 +355,7 @@ class SQL
         }
     }
 
-    /*
+    /**
      * Insert an ID from records that were merged into this constellation.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -385,7 +385,7 @@ class SQL
         $this->sdb->deallocate($qq);
     }
     
-    /* 
+    /** 
      * Insert a name into the database. This uses a long list of arguments instead of a smaller list of
      * associative lists. The downside is that preparing the array for execute() is not quite a clever.
      * 
@@ -462,7 +462,7 @@ class SQL
     }
     
     
-    /*
+    /**
      * Insert into table function. The SQL returns the inserted id which is used when inserting a date into
      * table date_range. Function uses the same vocabulary terms as occupation.
      *
@@ -518,7 +518,7 @@ class SQL
     }
 
     
-    /*
+    /**
      * Insert into table subject. Data is currently only a string from the Constellation.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -544,7 +544,7 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
-    /*
+    /**
      * Insert a related identity aka table related_identity, aka constellation relation, aka cpf relation, aka
      * ConstellationRelation object. We first insert into related_identity saving the inserted record
      * id. After that, we insert date_range records with related via saved related_record.id. See insertDate().
@@ -597,7 +597,7 @@ class SQL
 
     }
 
-    /*
+    /**
      * Insert into table related_resource using data from php ResourceRelation object. It is assumed that the
      * calling code in DBUtils knows the php to sql fields. Note keys in $argList have a fixed order.
      *
@@ -637,7 +637,7 @@ class SQL
     }
 
 
-    /*
+    /**
      *
      * Select from table nrd which is philosophically the central constellation table. In actual
      * implementation, table version_history is the center of everything. A class DBUtils method also called
@@ -676,7 +676,7 @@ class SQL
         return $row;
     }
 
-    /* 
+    /** 
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
      * helper function for selectOtherRecordIDs(). This deals with the possibility that a given otherid.id may
@@ -714,7 +714,7 @@ class SQL
     }
 
 
-    /* 
+    /** 
      * select other IDs which were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a Constellation object.
      * 
      * Assume unique id in vocab, so don't need extra constraint type='record_type'
@@ -753,7 +753,7 @@ class SQL
     }
 
     
-    /*
+    /**
      *
      * Select subjects. DBUtils has code to turn the return values into subjects in a Constellation object.
      *
@@ -787,7 +787,7 @@ class SQL
     }
 
 
-    /* 
+    /** 
      *
      * Select occupation, returning a list of lists. Code in DBUtils foreach's over the outer list, turning
      * each inner list into an Occupation object.
@@ -823,7 +823,7 @@ class SQL
         return $all;
     }
 
-    /*
+    /**
      * Select a related identity (akd cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -869,7 +869,7 @@ class SQL
         return $all;
     }
 
-    /*
+    /**
      * select related archival resources given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
      * turn the return value into a pgp ResourceRelation object.
      *
@@ -903,7 +903,7 @@ class SQL
         return $all;
     }
 
-    /*
+    /**
      * Select all functions for the given version and main_id. Code in DBUtils turns the return value into a
      * SNACFunction object.
      *
@@ -947,7 +947,7 @@ class SQL
     }
 
 
-     /* 
+     /** 
       * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
       * NameEntry object.
       *
@@ -1011,7 +1011,7 @@ class SQL
 
 
 
-    /* 
+    /** 
      * This is used for testing. Not really random. Get a record that has a date_range record. The query
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
