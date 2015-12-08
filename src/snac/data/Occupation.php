@@ -85,6 +85,13 @@ class Occupation extends AbstractData {
         return $this->vocabularySource;
     }
 
+    /*
+     * Get and return \snac\data\SNACDate Date range for the occupation
+     *
+     * @return SNACDate[] An array of SNAC Date objects.
+     *
+     */ 
+
     public function getDates()
     {
         if ($this->dates)
