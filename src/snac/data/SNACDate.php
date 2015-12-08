@@ -51,7 +51,7 @@ class SNACDate extends AbstractData {
      * * dateRange/fromDate/@localType
      * * date/@localType
      * 
-     * @var string Type of the from date
+     * @var[w string Type of the from date
      */
     private $fromType;
 
@@ -142,49 +142,114 @@ class SNACDate extends AbstractData {
      */
     private $note;
 
+    /**
+     * getter for $this->fromDate
+     *
+     * @return string Begin date (if range)
+     *
+     *
+     */
     function getFromDate()
     {
         return $this->fromDate;
     }
 
+    /**
+     * getter for $this->fromDateOriginal
+     *
+     * @return string Original string given for the from date
+     *
+     *
+     */
     function getFromDateOriginal()
     {
         return $this->fromDateOriginal;
     }
 
+    /**
+     * getter for $this->fromType
+     *
+     * @return string Original string given for the from date
+     *
+     *
+     */
     function getFromType()
     {
         return $this->fromType;
     }
 
-    // This works as expected. A boolean is returns (in as much as php vars have a type). However, Postgres
-    // expects bools to be 't' or 'f' and pg_execute() doesn't mogrify boolean that way. We transform boolean
-    // ourselves with DatabaseConnector->boolToPg().
+
+    /**
+     * getter for $this->fromBC
+     *
+     * This works as expected. A boolean is returns (in as much as php vars have a type). However, Postgres
+     * expects bools to be 't' or 'f' and pg_execute() doesn't mogrify boolean that way. We transform boolean
+     * ourselves with DatabaseConnector->boolToPg().
+     *
+     * @return boolean If the from date is BC
+     *
+     *
+     */
     function getFromBC()
     {
         return $this->fromBC;
     }
 
+    /**
+     * getter for $this->fromRange
+     *
+     * @return string[] From date range, array ("notBefore" => null, "notAfter" => null);
+     *
+     *
+     */
     function getFromRange()
     {
         return $this->fromRange;
     }
 
+    /**
+     * getter for $this->toDate
+     *
+     * @return string End date (if range)
+     *
+     *
+     */
     function getToDate()
     {
         return $this->toDate;
     }
 
+    /**
+     * getter for $this->toDateOriginal
+     *
+     * @return string Original string given for the to date
+     *
+     *
+     */
     function getToDateOriginal()
     {
         return $this->toDateOriginal;
     }
 
+    /**
+     * getter for $this->toType
+     *
+     * @return string Type of the to date
+     *
+     *
+     */
     function getToType()
     {
         return $this->toType;
     }
 
+    /**
+     * getter for $this->toBC
+     *
+     * @return boolean If the to date is BC
+     *
+     *
+     */
     function getToBC()
     {
         if ($this->toBC)
@@ -197,11 +262,25 @@ class SNACDate extends AbstractData {
         }
     }
 
+    /**
+     * getter for $this->toRange
+     *
+     * @return string[] To date range, array ("notBefore" => null, "notAfter" => null);
+     *
+     *
+     */
     function getToRange()
     {
         return $this->toRange;
     }
 
+    /**
+     * getter for $this->isRange
+     *
+     * @return boolean If this SNACDate object contains a range or a single date
+     *
+     *
+     */
     function getIsRange()
     {
         if ($this->isRange)
@@ -214,12 +293,19 @@ class SNACDate extends AbstractData {
         }
     }
 
+    /**
+     * getter for $this->note
+     *
+     * (currently not used)
+     *
+     * @return string Note about this date
+     *
+     *
+     */
     function getNote()
     {
         return $this->note;
     }
-
-    
 
     /**
      * Returns this object's data as an associative array
