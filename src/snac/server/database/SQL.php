@@ -30,10 +30,16 @@ namespace snac\server\database;
  * @author Tom Laudeman
  *        
  */
-
-
 class SQL
 {
+
+    /*
+     * SQL db object.
+     *
+     * @var \snac\server\database\DatabaseConnector A working, initialized DatabaseConnector object.
+     * 
+     */ 
+    private $sdb = null;
 
     /*
      * The constructor makes the outside $db a local variable. I did this out of a general sense of avoiding
@@ -47,8 +53,7 @@ class SQL
      * @param DatabaseConnector $db A working, initialized DatabaseConnector object.
      *
      * 
-    */
-
+     */
     public function __construct($db)
     {
         $this->sdb = $db;
@@ -57,11 +62,14 @@ class SQL
     /*
      * Insert a record into table source.
      *
-     * @param 
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param string $href A string that goes into source.href. Presumably this is a resolvable URI for the
+     * source, but sources are not currenly well defined.
+     *
+     * @return No return value.
      * 
      */
-
     public function insertSource($vhInfo, $href)
     {
         $qq = 'insert_source';
@@ -77,6 +85,24 @@ class SQL
         $this->sdb->deallocate($qq);
     }
 
+    /*
+     * Insert a constellation occupation.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $term Vocabulary term string which will be saved as a vocabulary.id foreign key. This
+     * goes into occupation.occupation_id.
+     *
+     * @param string $vocabularySource Not currently saved. As far as we know, these are specific to
+     * AnF. These probably should be somehow cross-walked to the SNAC vocabularies.
+     *
+     * @param SNACDate[] An array of SNACDate objects. We pass it to insertDate() and get a foreign key
+     * back. Our id is in table date_range, so we don't currently need the returned foreign key.
+     *
+     * @param string $note A note about the occupation.
+     *
+     *
+     */ 
     public function insertOccupation($vhInfo, $term, $vocabularySource, $dates, $note)
     {
         $qq = 'insert_occupation';
@@ -101,7 +127,19 @@ class SQL
 
 
 
-    function getAppUserInfo($userid)
+    /*
+     * Select the id and role for a given appuser. Maybe this should be called selectAppUserInfo() in keeping
+     * with naming conventions for the other methods. Also the return values are in a flat array, and might
+     * better be return in an assoc list where the keys are based on our usual conventions.
+     *
+     * @param string $userid A string value of the users id which is appuser.userid. Once again, the 'id' part
+     * is misleading because this is a string identifier. We really need to go through everything and only use
+     * 'id' where numeric ids are used. This param and field would better be called username.
+     *
+     * @return integer[] A flat list of the appuser.id and related role.id, both are numeric. 
+     *
+     */ 
+    public function getAppUserInfo($userid)
     {
         $qq = 'get_app_user_info';
         // select id from appuser where userid=$userid
@@ -123,6 +161,26 @@ class SQL
         return array($row['id'], $row['role']);
     }
     
+    /*
+     * Insert a version_history record. Current this increments the id which is the version number. That needs
+     * to not be incremented in some cases.
+     *
+     * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
+     *
+     * @param integer $role Foreign key to role.id, the role id value of the current user.
+     *
+     * @param string $status Status value from the enum icstatus. Using an enum from the db is a bit obscure
+     * to all the php code, so maybe best to move icstatus to some util class and have a method to handle
+     * these. Or a method that knows about the db class, but can hide the details from the application
+     * code. Something.
+     *
+     * @param string $note A string the user enters to identify what changed in this version.
+     *
+     * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
+     * returned as 'id', but all the code knows that as the version number, so this code plays nice by
+     * returning it as 'version'. Note the "returning ..." part of the query.
+     *
+     */
     public function insertVersionHistory($userid, $role, $status, $note)
     {
         $qq = 'insert_version_history';
@@ -150,6 +208,18 @@ class SQL
      *  $date->getMissingTo(),
      *  $date->getToPresent(),
      *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param SNACDate $date Contrary to practice elsewhere, this code knows about the internal structure of
+     * SNACDate. This arg needs to be moved up to DBUtils, and wrapped with a function to translate php
+     * objects to sql tables. There shouldn't be any info about objects here, because this file is sql only.
+     *
+     * @param string $fk_table The name of the table to which this date and $fk_id apply.
+     *
+     * @param integer $fk_id The id of the record to which this date applies.
+     *
+     * @return integer date_range record id, in case some other code is interested in what record id was
+     * inserted.
      *
      */
     public function insertDate($vhInfo, $date, $fk_table, $fk_id)
@@ -196,10 +266,17 @@ class SQL
     }
 
 
-    // This date select relies on the date.id being in the original table.
-    // 
-    // The other date select function would be by original.id=date.fk_id. Maybe we only need by date.fk_id.
-
+    /* 
+     * Select a date knowing a date id values. selectDate() relies on the date.id being in the original table,
+     * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
+     * what the other record is.
+     * 
+     * The other date select function would be by original.id=date.fk_id. Maybe we only need by date.fk_id.
+     *
+     * @param integer $did A foreign key to record in another table.
+     *
+     * @return string[] A list of date_range fields/value as list keys matching the database field names.
+     */
     public function selectDate($did)
     {
         $qq = 'select_date';
@@ -224,10 +301,22 @@ class SQL
     }
 
     
-    // biogHist is a string, not array. 
-
-    //  language, languageCode, script, scriptCode
-
+    /* 
+     * Insert the non-repeating parts (non repeading data) of the constellation.
+     * 
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string[][] $existDates list of list of date range key/values. Passed to insertDate() unchanged.
+     *
+     * @param string[] $argList Assoc list with keys matching db fields, currently expected to be in the
+     * order: ark_id, entity_type, biog_hist, nationality, gender, general_context, structure_or_genealogy,
+     * mandate, convention_declaration, language, language_code, script, script_code. biog_hist is a single
+     * string, not a list as it is in the Constallation. Some values are looked up on table vocabulary and
+     * their id values saved in table nrd.
+     *
+     * @returns No return value.
+     * 
+     */
     public function insertNrd($vhInfo, $existDates, $arg_list)
     {
         $qq = 'insert_nrd';
@@ -266,6 +355,19 @@ class SQL
         }
     }
 
+    /*
+     * Insert an ID from records that were merged into this constellation.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $type The vocabulary id for this string into field link_type.
+     *
+     * @param string $href This is the href for the persistent id of the other merged record, if it has
+     * one. Or this might simply be some kind of ID string.
+     *
+     * @return No return value.
+     *
+     */ 
     public function insertOtherID($vhInfo, $type, $href)
     {
         $qq = 'insert_other_id';
@@ -283,7 +385,35 @@ class SQL
         $this->sdb->deallocate($qq);
     }
     
-    // Need to return the name.id so we can used it as fk for inserting related records
+    /* 
+     * Insert a name into the database. This uses a long list of arguments instead of a smaller list of
+     * associative lists. The downside is that preparing the array for execute() is not quite a clever.
+     * 
+     * Need to return the name.id so we can used it as fk for inserting related records
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $original The original name string
+     *
+     * @param float $preference_score The preference score for ranking this as the preferred name. This
+     * concept may not work in a culturally diverse environment
+     *
+     * @param string[][] $contributors List of list with keys 'contributor', 'type'. Inserted into table
+     * name_contributor.
+     *
+     * @param string $language The language of this name. This value will be retrieved from table vocabulary,
+     * and the id saved in table name. This should be in the table vocabulary, however, instead of passing
+     * strings back and forth, we really should be using id values from the database, so this param needs
+     * work.
+     *
+     * @param string $scriptCode The script code of this name. Looked up from table vocabulary and the id saved in table name.
+     *
+     * @param string[][] $useDates Not currently implemented for table name. It needs to be inserted into
+     * table date_range using an existing method as elsewhere in the class.
+     *
+     * @return No return value.
+     * 
+     */
     public function insertName($vhInfo, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
         $qq_1 = 'insert_name';
@@ -336,11 +466,11 @@ class SQL
      * Insert into table function. The SQL returns the inserted id which is used when inserting a date into
      * table date_range. Function uses the same vocabulary terms as occupation.
      *
-     * @param $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param $argList list with keys:
+     * @param string[] $argList list with keys:
      * 
-     * @param $dates list of list of date keys suitable for insertDate()
+     * @param string[][] $dates list of list of date keys suitable for insertDate()
      *
      * @return no return value.
      * 
@@ -391,7 +521,7 @@ class SQL
     /*
      * Insert into table subject. Data is currently only a string from the Constellation.
      *
-     * @param $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param $term string that is a subject
      *
@@ -419,7 +549,7 @@ class SQL
      * ConstellationRelation object. We first insert into related_identity saving the inserted record
      * id. After that, we insert date_range records with related via saved related_record.id. See insertDate().
      *
-     * @param vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      * 
      * @param $dates list of list of date_range keys suitable to pass to insertDate(). Yes, list of list in order to support multiple dates.
      *
@@ -471,7 +601,7 @@ class SQL
      * Insert into table related_resource using data from php ResourceRelation object. It is assumed that the
      * calling code in DBUtils knows the php to sql fields. Note keys in $argList have a fixed order.
      *
-     * @param $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param $argList list with keys: role, relation_entry_type, arcrole, relation_entry, object_xml_wrap,
      * decriptive_note. These elements must occur in this order, and they are not sanity checked. The foreach
@@ -510,19 +640,20 @@ class SQL
     /*
      *
      * Select from table nrd which is philosophically the central constellation table. In actual
-     * implementation, table version_history is the center of everything.
+     * implementation, table version_history is the center of everything. A class DBUtils method also called
+     * selectConstellation() knows all the SQL methods to call to get the full constellation.
      *
      * It is intentional that the fields are not retrieved in any particular order because the row will be
      * saved as an associative list. That allows us to write the sql query in a more legible format.
      *
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param vhInfo associative list with keys: version, main_id
-     *
-     * @return  
+     * @return string[] An associative list with keys: id, version, main_id, biog_hist, general_context,
+     * structure_or_genealogy, mandate, convention_declaration, ark_id, language, script.
      * 
      * 
      */
-    public function selectConstellation($vhInfo) // $version, $main_id)
+    public function selectConstellation($vhInfo)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
@@ -554,7 +685,7 @@ class SQL
      * Nov 23 2015: I figured out how to do a multi-version join with sub query. See below in
      * selectSubjects(). Doing the multi-version sub query probably makes this function obsolete.
      * 
-     * @param vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] list of record id values meeting the version and main_id constriants.
      * 
@@ -589,7 +720,7 @@ class SQL
      * Assume unique id in vocab, so don't need extra constraint type='record_type'
      * Nov 23 2015: see multi-version join with sub query below in selectSubjects()
      *
-     * @param vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return a list of otherid rows
      * 
@@ -628,7 +759,7 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return list with keys: id, version, main_id, subject_id 
      * 
@@ -665,12 +796,11 @@ class SQL
      * the query more of a standard template.  Assuming this works and is a good idea, we should port this to
      * all the other select queries.
      *
-     * @param vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
      * 
      */
-
     public function selectOccupations($vhInfo)
     {
         $qq = 'socc';
@@ -696,7 +826,7 @@ class SQL
     /*
      * Select a related identity (akd cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
      *
-     * @param $vhInfo associative list with keys: 'version', 'main_id'
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return list of lists. There may be multiple relations. Each relation has keys: id, version, main_id,
      * related_id, related_ark, relation_entry, descriptive_node, relation_type, role, arcrole, date. Date is
@@ -743,9 +873,9 @@ class SQL
      * select related archival resources given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
      * turn the return value into a pgp ResourceRelation object.
      *
-     * @param array $vhInfo 'version' and 'main_id'.
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return array Keys: id, version, main_id, relation_entry_type, href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
+     * @return string[] Keys: id, version, main_id, relation_entry_type, href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
     public function selectRelatedResources($vhInfo)
@@ -777,9 +907,10 @@ class SQL
      * Select all functions for the given version and main_id. Code in DBUtils turns the return value into a
      * SNACFunction object.
      *
-     * @param array $vhInfo list with keys 'version', 'main_id'
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return array('id', 'version', 'main_id', 'function_type', 'note', 'date' => assoc array of date info from selectDate()
+     * @return string[] An array('id', 'version', 'main_id', 'function_type', 'note', 'date' => assoc array of
+     * date info from selectDate()
      *
      */ 
     public function selectFunctions($vhInfo)
@@ -885,7 +1016,7 @@ class SQL
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
      * 
-     * @return array(id, version, main_id) for a record that has a date_range
+     * @return string[] An array with keys: id, version, main_id, for a record that has a date_range
      */
     public function randomConstellationID()
     {

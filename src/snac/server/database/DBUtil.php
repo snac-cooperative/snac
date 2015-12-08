@@ -61,7 +61,6 @@ function quick_stderr ($message)
  * @author Tom Laudeman
  *        
  */
-
 class DBUtil
 {
 
