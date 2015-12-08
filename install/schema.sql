@@ -15,44 +15,44 @@
 --      B. Main tables
 --      C. Join/Link tables
 
--- drop tables and sequences that may already exist, and create everything from scratch
+-- drop table if existss and sequences that may already exist, and create everything from scratch
 
-drop table contributor;
-drop table control;
-drop table date_range;
-drop table function;
-drop table geoplace;
-drop table name;
-drop table name_component;
-drop table name_contributor;
-drop table nationality;
-drop table nrd;
-drop table occupation;
-drop table otherid;
-drop table place;
-drop table pre_snac_maintenance_history;
-drop table related;
-drop table related_identity;
-drop table related_resource;
-drop table role;
-drop table appuser;
-drop table source;
-drop table source_link;
-drop table split_merge_history;
-drop table subject;
-drop table appuser_role_link;
-drop table version_history;
+drop table if exists contributor;
+drop table if exists control;
+drop table if exists date_range;
+drop table if exists function;
+drop table if exists geoplace;
+drop table if exists name;
+drop table if exists name_component;
+drop table if exists name_contributor;
+drop table if exists nationality;
+drop table if exists nrd;
+drop table if exists occupation;
+drop table if exists otherid;
+drop table if exists place;
+drop table if exists pre_snac_maintenance_history;
+drop table if exists related;
+drop table if exists related_identity;
+drop table if exists related_resource;
+drop table if exists role;
+drop table if exists appuser;
+drop table if exists source;
+drop table if exists source_link;
+drop table if exists split_merge_history;
+drop table if exists subject;
+drop table if exists appuser_role_link;
+drop table if exists version_history;
 
 -- There is data in table vocabulary. If you really need to drop it, so so manually and reload the data.
--- drop table vocabulary;
+-- drop table if exists vocabulary;
 -- drop sequence vocabulary_id_seq;
 
-drop table vocabulary_use;
-drop sequence version_history_id_seq;
+drop table if exists vocabulary_use;
+drop sequence if exists version_history_id_seq;
 
 -- drop data types after any tables using them have been dropped.
-drop type icstatus;
-drop sequence id_seq;
+drop type if exists icstatus;
+drop sequence if exists id_seq;
 
 --
 -- Sequences
@@ -572,8 +572,4 @@ create table otherid (
         primary    key(id, version)
     );
 
-
--- Initialize the system user
-
-\i initialize_users.sql
 
