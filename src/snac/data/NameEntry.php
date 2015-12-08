@@ -87,6 +87,12 @@ class NameEntry extends AbstractData {
 
     /**
      * Constructor
+     *
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object.
+     *
+     * @return NameEntry object
+     * 
      */
     public function __construct($data = null) {
 
@@ -94,31 +100,70 @@ class NameEntry extends AbstractData {
         parent::__construct($data);
     }
     
+    /**
+     * Getter for $this->original
+     *
+     * @return string Original name given in this entry
+     *
+     *
+     */
     function getOriginal()
     {
         return $this->original;
     }
 
+    /**
+     * Getter for $this->preferenceScore
+     *
+     * @return float Preference score given to this entry
+     *
+     *
+     */ 
     function getPreferenceScore()
     {
         return $this->preferenceScore;
     }
 
+    /**
+     * getter for $this->contributors
+     *
+     * @return string[][] Contributors providing this name entry including their type for this name entry
+     *
+     */
     function getContributors()
     {
         return $this->contributors;
     }
 
+    /**
+     * getter for $this->language
+     *
+     * @return string Language of the entry
+     *
+     */
     function getLanguage()
     {
         return $this->language;
     }
 
+    /**
+     * getter for $this->scriptCode
+     *
+     * @return string Script code of the entry
+     *
+     */
     function getScriptCode()
     {
         return $this->scriptCode;
     }
 
+    /**
+     * getter for $this->useDates
+     *
+     *
+     * @return \snac\data\SNACDate[] Use dates of the name entry, returned as an array of SNACDate objects.
+     *
+     */
     function getUseDates()
     {
         return $this->useDates;
