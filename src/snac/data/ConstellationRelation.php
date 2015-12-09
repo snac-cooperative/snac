@@ -34,7 +34,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Postgres ID (target)
      * 
-     * @var int Target constellation ID
+     * @var int Target constellation ID[w
      */
     private $targetConstellation = null;
 
@@ -121,51 +121,128 @@ class ConstellationRelation extends AbstractData {
      */
     private $note = null;
 
+    /**
+     * getter for $this->sourceConstellation
+     *
+     * @return int Source constellation ID
+     *
+     */
     function getSourceConstellation()
     {
         return $this->sourceConstellation;
     }
         
+    /**
+     * getter for $this->targetConstellation
+     *
+     * @return int Source constellation ID
+     *
+     */
     function getTargetConstellation()
     {
         return $this->targetConstellation;
     }
             
+    /**
+     * getter for $this->sourceArkID
+     *
+     * @return string Source constellation ARK ID
+     *
+     */
     function getSourceArkID()
     {
         return $this->sourceArkID;
     }
     
+    /**
+     * getter for $this->targetArkID
+     *
+     * @return string Target constellation ARK ID
+     *
+     */
     function getTargetArkID()
     {
         return $this->targetArkID;
     }
 
+    /**
+     * getter for $this->targetEntityType
+     *
+     * * cpfRelation/@role
+     *
+     * @return string Target entity type
+     *
+     */
     function getTargetEntityType()
     {
         return $this->targetEntityType;
     }
 
+    /**
+     * getter for $this->type
+     *
+     * * cpfRelation/@arcrole
+     *
+     * @return string Type of the constellation
+     *
+     */
     function getType()
     {
         return $this->type;
     }
 
+    /**
+     * getter for $this->altType
+     *
+     * 
+     * * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
+     * 
+     * @return string Alternate type
+     *
+     */
     function getAltType()
     {
         return $this->altType;
     }
 
+    /**
+     * getter for $this->cpfRelationType
+     *
+     * * cpfRelation/@cpfRelationType
+     * 
+     * @return string CPF Relation Type
+     *
+     */
     function getCpfRelationType()
     {
         return $this->cpfRelationType;
     }
 
+    /**
+     * getter for $this->content
+     *
+     * * cpfRelation/relationEntry
+     * 
+     * @return string Content of the relation
+     *
+     */
     function getContent()
     {
         return $this->content;
     }
 
+    /**
+     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return a
+     *
+     * * cpfRelation/date/*
+     * * cpfRelation/dateRange/*
+     * 
+     * @return \snac\data\SNACDate Dates of thie relationship
+     *
+     */
     function getDates()
     {
         // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
@@ -181,11 +258,18 @@ class ConstellationRelation extends AbstractData {
         }
     }
 
+    /**
+     * getter for $this->note
+     *
+     * * cpfRelation/descriptiveNote
+     * 
+     * @return string Note attached to relation
+     *
+     */
     function getNote()
     {
         return $this->note;
     }
-
 
     /**
      * Returns this object's data as an associative array
