@@ -1,0 +1,12 @@
+before_script:
+  - php composer.phar install
+
+stages:
+  - test
+
+run_test:
+  script:
+    - vendor/bin/phpunit --coverage-text --colors=never
+  stage: test
+  only:
+    - development
