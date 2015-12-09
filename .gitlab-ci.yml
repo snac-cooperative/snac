@@ -1,5 +1,6 @@
 before_script:
   - php composer.phar install
+  - cp ~/Config.php src/snac/Config.php
 
 stages:
   - test
