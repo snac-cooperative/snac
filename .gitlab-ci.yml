@@ -1,0 +1,13 @@
+before_script:
+  - php composer.phar install
+  - cp ~/Config.php src/snac/Config.php
+
+stages:
+  - test
+
+run_test:
+  script:
+    - vendor/bin/phpunit --coverage-text --colors=never
+  stage: test
+  only:
+    - development
