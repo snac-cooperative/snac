@@ -4,10 +4,19 @@ before_script:
 
 stages:
   - test
+  - documentation
 
 run_test:
   script:
     - vendor/bin/phpunit --coverage-text --colors=never
   stage: test
+  only:
+    - development
+
+generate_docs:
+  script:
+    - vendor/bin/phpdoc -d src/ -t doc/ -i src/snac/Config.php
+    - rsync -av doc/ /projects/snac_server/doc/
+  stage: documentation
   only:
     - development
