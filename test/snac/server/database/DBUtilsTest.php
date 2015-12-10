@@ -42,9 +42,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // $this->fail("DBUtil object creation failed");
 
 
-        list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
+        list($appUserID, $role) = $dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
-        // $this->fail("Failed to get appuser info for 'twl8n'");
+        // $this->fail("Failed to get appuser info for 'system'");
 
 
         $vhInfo = $dbu->demoConstellation();
