@@ -12,7 +12,6 @@ drop table occupation;
 drop table otherid;
 drop table place;
 drop table pre_snac_maintenance_history;
-drop table related;
 drop table related_identity;
 drop table related_resource;
 drop table role;
