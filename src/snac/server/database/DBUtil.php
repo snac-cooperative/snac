@@ -1,5 +1,4 @@
 <?php
-
   /**
    * High level database abstraction layer.
    *
@@ -12,42 +11,7 @@
    *            the Regents of the University of California
    */
 
-  /** 
-   * namespace is confusing. Are they path relative? Are they arbitrary? How much of the leading directory
-   * tree can be left out of the namespace? I just based this file's namespace on the parser example below.
-   * 
-   * namespace snac\util;
-   *       src/snac/util/EACCPFParser.php
-   */
-
 namespace snac\server\database;
-
-/** 
- * Util function to strip namespace text from vocabulary terms.
- * 
- * @param string $arg the string to strip the namespace from
- * @return string without the namespace
- */
-function stripNS($arg)
-{
-    $arg = preg_replace('/^.*#(.*)$/', '$1', $arg );
-    return $arg;
-}
-
-
-/** 
- * We need utility functions to write stuff to log files, stdout, stderr. Put this in some util class.  This
- * is none too efficient since it opens and closes the stream on every call.
- *
- * @param string $message The message we want printed to stderr. A newline is post-pended.
- * 
- */
-function quick_stderr ($message)
-{
-    $stderr = fopen('php://stderr', 'w');
-    fwrite($stderr,"  $message\n");
-    fclose($stderr); 
-}
 
 /**
  * High level database class. This is what the rest of the server sees as an interface to the database. There
@@ -451,39 +415,9 @@ class DBUtil
 
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
-        // This is proabably a good place to start using named args to methods, esp in class SQL.
-
-        // Move those sanity checks up here, and decide what kind of exception to throw, and/or message to log
-        
         // vh_info: version_history.id, version_history.main_id,
         $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
-        // Sanity check bioghist
-        // $cdata = $id->toArray(false);
-
-        /* 
-         * if (count($cdata['biogHists']) > 1)
-         * {
-         *     $msg = sprintf("Warning: multiple biogHists (%s)\n", count($cdata['biogHists']));
-         *     quick_stderr($msg);
-         * }
-         */
-        
-        // Sanity check existDates. Only 1 allowed here
-        /* 
-         * if (count($cdata['existDates']) > 1)
-         * {
-         *     $msg = sprintf("Warning: more than 1 existDates: %s for ark: %s\n",
-         *                    $count($cdata['existDates']),
-         *                    $cdata['ark']);
-         *     quick_stderr($msg);
-         * }
-         */
-        
-        // $id->getLanguage(),
-        // $id->getLanguageCode(),
-        // $id->getScript(),
-        // $id->getScriptCode()
         $this->sql->insertNrd($vh_info,
                               $id->getExistDates(),
                               array($id->getArk(),
@@ -499,11 +433,10 @@ class DBUtil
                                     $id->getConstellationLanguageCode(),
                                     $id->getConstellationScript(),
                                     $id->getConstellationScriptCode()));
-        // printf("insertNRD done\n");
 
         foreach ($id->getOtherRecordIDs() as $otherID)
         {
-            $otherID['type'] = stripNS($otherID['type']);
+            $otherID['type'] = $otherID['type'];
             // Sanity check otherRecordID
             if ($otherID['type'] != 'MergedRecord' and
                 $otherID['type'] != 'viafID')
@@ -511,11 +444,10 @@ class DBUtil
                 $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
                                $otherID['type'],
                                $id->getArk());
-                quick_stderr($msg);
+                // TODO: Throw warning or log
             }
 
             $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
-            // printf("insertOtherID done\n");
 
         }
 
@@ -526,8 +458,8 @@ class DBUtil
                                               $ndata->getOriginal(),
                                               $ndata->getPreferenceScore(),
                                               $ndata->getContributors(), // list of type/contributor values
-                                              stripNS($ndata->getLanguage()),
-                                              stripNS($ndata->getScriptCode()),
+                                              $ndata->getLanguage(),
+                                              $ndata->getScriptCode(),
                                               $ndata->getUseDates());
         }
 
@@ -556,12 +488,7 @@ class DBUtil
 
 
         /* 
-         * This seems confusing.
-         * vocabularySource is 
-         * note is function/descriptiveNote
-         * 
-         * 
-         *  | php                 | sql               | cpf                             |
+         *  | php function        | sql               | cpf                             |
          *  |---------------------+-------------------+---------------------------------|
          *  | getType             | function_type     | function/@localType             |
          *  | getTerm             | function_id       | function/term                   |

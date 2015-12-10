@@ -14,15 +14,11 @@
  *            the Regents of the University of California
  */
 
-  // namespace is confusing. Are they path relative? Are they arbitrary? How much of the leading directory
-  // tree can be left out of the namespace? I just based this file's namespace on the parser example below.
-
-  // namespace snac\util;
-  //       src/snac/util/EACCPFParser.php
-
 namespace snac\server\database;
 
 /**
+ * SQL Class
+ *
  * Low level SQL methods. These methods include SQL queries. This is the only place in the code where SQL is
  * allowed (by convention, of course). Ideally, there minimal non-SQL php here. Interact with the database,
  * and nothing more. Send the data up to higher level classes for everything else.
@@ -47,8 +43,6 @@ class SQL
      * critical to the application, and is read-only after intialization. Breaking it or changing it in any
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
      * any clear need.
-     *
-     * Interesting that $this->sdb simply auto-vivifies a private variable.
      *
      * @param DatabaseConnector $db A working, initialized DatabaseConnector object.
      *
@@ -224,11 +218,6 @@ class SQL
      */
     public function insertDate($vhInfo, $date, $fk_table, $fk_id)
     {
-        printf("from_type: %s to_type: %s\n%s\n",
-               $date->getFromType(),
-               $date->getToType(),
-               $date->toJSON());
-
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
@@ -314,7 +303,6 @@ class SQL
      * string, not a list as it is in the Constallation. Some values are looked up on table vocabulary and
      * their id values saved in table nrd.
      *
-     * @returns No return value.
      * 
      */
     public function insertNrd($vhInfo, $existDates, $arg_list)
@@ -365,8 +353,6 @@ class SQL
      * @param string $href This is the href for the persistent id of the other merged record, if it has
      * one. Or this might simply be some kind of ID string.
      *
-     * @return No return value.
-     *
      */ 
     public function insertOtherID($vhInfo, $type, $href)
     {
@@ -386,8 +372,7 @@ class SQL
     }
     
     /** 
-     * Insert a name into the database. This uses a long list of arguments instead of a smaller list of
-     * associative lists. The downside is that preparing the array for execute() is not quite a clever.
+     * Insert a name into the database. 
      * 
      * Need to return the name.id so we can used it as fk for inserting related records
      *
@@ -411,8 +396,6 @@ class SQL
      * @param string[][] $useDates Not currently implemented for table name. It needs to be inserted into
      * table date_range using an existing method as elsewhere in the class.
      *
-     * @return No return value.
-     * 
      */
     public function insertName($vhInfo, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
     {
@@ -471,8 +454,6 @@ class SQL
      * @param string[] $argList list with keys:
      * 
      * @param string[][] $dates list of list of date keys suitable for insertDate()
-     *
-     * @return no return value.
      * 
      */
     public function insertFunction($vhInfo, $argList, $dates)
@@ -502,12 +483,6 @@ class SQL
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
 
-        /* 
-         * This would more simpler and robust if foreach() silently ignored nulls and any non-array args. The
-         * surrounding if() wouldn't be necessary. Oh well. Feel free to add more sanity checks to the if()
-         * statement. Maybe gettype() array, and check get_class() on each array element. We need a date list
-         * wrapper function that we can call everywhere.
-         */
         if ($dates and count($dates)>=1)
         {
             foreach ($dates as $single_date)
@@ -582,10 +557,6 @@ class SQL
         
         $result = $this->sdb->execute($qq, $execList);
         $row = $this->sdb->fetchrow($result);
-
-        // Nov 19 2015 Use a unique var name for the returned id. It is more typing, but should preclude using
-        // some variable of the same name that happens to be in scope. It also makes the intention absolutely
-        // clear. Might use $row['id'] in the one place below we need the variable. Hmmm.
 
         $relationId = $row['id'];
         $this->sdb->deallocate($qq);
@@ -682,9 +653,6 @@ class SQL
      * helper function for selectOtherRecordIDs(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
-     * Nov 23 2015: I figured out how to do a multi-version join with sub query. See below in
-     * selectSubjects(). Doing the multi-version sub query probably makes this function obsolete.
-     * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] list of record id values meeting the version and main_id constriants.
@@ -692,7 +660,6 @@ class SQL
      */
     public function matchORID($vhInfo)
     {
-        // $matchingIDs = matchORID($version, $main_id);
 
         $qq = 'morid';
         $this->sdb->prepare($qq, 
@@ -715,10 +682,10 @@ class SQL
 
 
     /** 
-     * select other IDs which were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a Constellation object.
+     * select other IDs which were originally ID values of merged records. DBUtils has code that 
+     * adds an otherRecordID to a Constellation object.
      * 
      * Assume unique id in vocab, so don't need extra constraint type='record_type'
-     * Nov 23 2015: see multi-version join with sub query below in selectSubjects()
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -824,7 +791,7 @@ class SQL
     }
 
     /**
-     * Select a related identity (akd cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
+     * Select a related identity (aka cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -848,7 +815,7 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo); // array($version, $main_id));
+        $result = $this->sdb->execute($qq, $vhInfo);
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -861,7 +828,7 @@ class SQL
             }
             if (count($dateList)>1)
             {
-                printf("Warning: more than one date for a related identity. count: %s\n", count($dateList));
+                //TODO Throw warning or log 
             }
             array_push($all, $row);
         }
@@ -938,7 +905,7 @@ class SQL
             }
             if (count($dateList)>1)
             {
-                printf("Warning: more than one date for a function. count: %s\n", count($dateList));
+                // TODO: Throw a warning or log
             }
             array_push($all, $row);
         }
