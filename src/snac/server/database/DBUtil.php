@@ -14,7 +14,9 @@
 namespace snac\server\database;
 
 /**
- * High level database class. This is what the rest of the server sees as an interface to the database. There
+ * High level database class. 
+ *
+ * This is what the rest of the server sees as an interface to the database. There
  * is no SQL here. This knows about data structure from two points of view: constellation php data, and tables in the
  * database. Importantly, this code has no idea where the constellation comes from, nor how data gets into the
  * database. Constellation data classes are elsewhere, and SQL is elsewhere.
@@ -27,13 +29,16 @@ namespace snac\server\database;
  */
 class DBUtil
 {
+    /**
+     * SQL object
+     *
+     * @var \snac\server\database\SQL low-level SQL class
+     */
+    private $sql = null;
+
 
     /** 
-     * The constructor for the DBUtil class. Originally, the idea was to call the constructor with an existing
-     * DatabaseConnectory object, but the calling code doesn't need to know that or do anything dabase
-     * related. That is the concern of the DBUtil class.
-     * 
-     * @return No return value, but sets the private var $sql to be a new SQL object.
+     * The constructor for the DBUtil class. 
      */
     public function __construct() 
     {
@@ -43,12 +48,9 @@ class DBUtil
 
     
     /**
-     * Summary
-     *
      * Access some system-wide authentication and/or current user info.
      *
      * Hard coded for now to return id and role.
-     * 
      *
      * @param string $userid The text userid, sql table appuser.userid, used to get the appuser.id and the
      * user's primary role.
@@ -57,7 +59,6 @@ class DBUtil
      */
     function getAppUserInfo($userid)
     {
-        // $uInfo is array($row['id'], $row['role'])
         $uInfo = $this->sql->getAppUserInfo($userid);
         return $uInfo;
     }
@@ -76,21 +77,15 @@ class DBUtil
     {
         $dateObj = new \snac\data\SNACDate();
         $dateObj->setRange($singleDate['is_range']);
-        // No separate setter for fromType, fromBC, fromDateOriginal
         $dateObj->setFromDate($singleDate['from_date'],
                               $singleDate['from_date'],
-                              $singleDate['from_type'] ); // $original, $standardDate, $type);
-        $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); //$notBefore, $notAfter);
+                              $singleDate['from_type'] ); 
+        $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); 
         $dateObj->setToDate($singleDate['to_date'],
                             $singleDate['to_date'],
-                            $singleDate['to_type']); // $original, $standardDate, $type);
-        $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);// $notBefore, $notAfter);
-        // I thought everything is a date range. Why these two setters?
-        // $dateObj->setDate($original, $standardDate, $type);
-        // $dateObj->setDateRange($notBefore, $notAfter);
+                            $singleDate['to_type']); 
+        $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
             
-        // What is a note? We don't have a field for it in the db, yet.
-        // $dateObj->setNote($singleDate['note']); // $note);
         return $dateObj;
     }    
         
@@ -109,14 +104,14 @@ class DBUtil
     /**
      * Select a given constellation from the database based on version and main_id.
      *
-     * @param array vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
+     * @param string[] vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
      * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
      * the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
      *
      * @param string $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
      *
-     * @return \snac\data\Constellation $cObj A PHP constellation object.
+     * @return \snac\data\Constellation A PHP constellation object.
      * 
      */
     public function selectConstellation($vhInfo, $appUserID)
@@ -175,52 +170,24 @@ class DBUtil
         {
             $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
-            // No separate setter for fromType, fromBC, fromDateOriginal
             $dateObj->setFromDate($singleDate['from_date'],
                                   $singleDate['from_date'],
-                                  $singleDate['from_type'] ); // $original, $standardDate, $type);
-            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); //$notBefore, $notAfter);
+                                  $singleDate['from_type'] ); 
+            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); 
             $dateObj->setToDate($singleDate['to_date'],
                                 $singleDate['to_date'],
-                                $singleDate['to_type']); // $original, $standardDate, $type);
-            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);// $notBefore, $notAfter);
-            // I thought everything is a date range. Why these two setters?
-            // $dateObj->setDate($original, $standardDate, $type);
-            // $dateObj->setDateRange($notBefore, $notAfter);
-            
-            // What is a note? We don't have a field for it in the db, yet.
-            // $dateObj->setNote($singleDate['note']); // $note);
+                                $singleDate['to_type']);
+            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
 
             $cObj->addExistDates($dateObj);
         }
 
-        /** 
-         * Keys are the same as the database field names. Function description below is from addOtherRecordID.
-         *
-         * "other_id": "nypl\/mss18809.r17075"
-         * "link_type": "MergedRecord"
-         *
-         *  addOtherRecordID($type, $link)
-         * @param string $type Type of the alternate id
-         * @param string $link Href or other link for the alternate id
-         * 
-         */
         $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); 
         foreach ($oridRows as $singleOrid)
         {
             $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
         }
         
-        /** 
-         * Add subjects.
-         * 
-         * test with: scripts/get_constellation_demo.php 5 49
-         * @param string $subject Subject to add.
-         * addSubject($subject)
-         *
-         * returns array with keys: id, version, main_id, subject_id
-         * 
-         */
         $subjRows = $this->sql->selectSubjects($vhInfo); 
         foreach ($subjRows as $singleSubj)
         {
@@ -260,7 +227,6 @@ class DBUtil
             $neObj->setOriginal($oneName['original']);
             $neObj->setLanguage($oneName['language']);
             $neObj->setScriptCode($oneName['script_code']);
-            // setUseDates($date);
             $neObj->setPreferenceScore($oneName['preference_score']);
             foreach ($oneName['contributors'] as $contrib)
             {
@@ -291,7 +257,6 @@ class DBUtil
         {
             $occObj = new \snac\data\Occupation();
             $occObj->setTerm($oneOcc['occupation_id']);
-            // $occObj->setDateRange(new \snac\data\SNACDate());
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
             $cObj->addOccupation($occObj);
@@ -407,7 +372,7 @@ class DBUtil
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
-     * @return array $vh_info An associative list with keys 'version', 'main_id'. There might be a more useful
+     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
      * return value such as true for success, and false for failure. This function might need to call into the
      * system-wide user message class that we haven't written yet.
      * 
