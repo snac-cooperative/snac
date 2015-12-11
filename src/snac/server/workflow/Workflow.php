@@ -62,8 +62,34 @@ class Workflow
      */
     private $msg = '';
     
+    /**
+     * Verbose output if true.
+     *
+     * @var boolean If true (in any sense of 'true') then do verbose output.
+     */
     private $verbose = 0;
     
+    private $stateStack = array();
+    
+    /**
+     * Push onto the state stack. Probaly used for jump and return.
+     * @var string The state to push
+     */
+    private function pushState($arg)
+    {
+        array_push($stateStack, $arg);
+    }
+    
+    /**
+     * Pop the state stack, return the state.
+     * @return string The popped state.
+     *
+     */
+    private function popState()
+    {
+        return array_pop($stateStack);
+    }
+
     /**
      * Constructor
      * 
@@ -77,7 +103,7 @@ class Workflow
     /*
       Run Method
 
-      Runs the server
+      Runs the workflow engine. Or something.
     */
     public function run() 
     {
@@ -252,7 +278,7 @@ class Workflow
             // $waitNext = '';
             foreach ($table as $hr)
             {
-                if (($hr['edge'] == $currState))
+                if ($hr['edge'] == $currState)
                 {
                     if ((dispatch($hr, 'test')) ||
                         ($hr['test'] == 'true') ||
@@ -276,12 +302,12 @@ class Workflow
                             // what we want.
                             $jumpToState = $matches[1];
                             // Push the state we will transition to when we return.
-                            push_state($hr['next']);
+                            pushState($hr['next']);
                             $currState = $jumpToState;
                         }
                         elseif ((preg_match('/^return[\(\)]*/', $hr['func'])))
                         {
-                            $currState = pop_state();
+                            $currState = popState();
                             // Is $currState really correct for the automatic choice when doing return()? $hr['func']
                             // is not correct, btw.
                             // $choice = $currState
@@ -317,17 +343,17 @@ class Workflow
                             }
                             // Else, the $currState is unchanged, iterate
                         }
-                        }
+                    }
                     elseif ($hr['test'] && $verbose)
                     {
-                        msg("If: $hr['test'] is false,");
+                        msg(sprintf("If: %s is false,", $hr['test']));
                         if ($hr['func'])
                         {
-                            msg("not running func: $hr['func'], ");
+                            msg(sprintf("not running func: %s, ", $hr['func']));
                         }
-                        msg("not going to state: $hr['next']");
+                        msg(sprintf("not going to state: %s", $hr['next']));
                     }
-                    }
+                }
                 else
                 {
                     // msg("$hr['edge'] is not $currState last_flag: $lastFlag");
@@ -336,245 +362,275 @@ class Workflow
                 {
                     last;
                 }
-                }
+            }
             $xx++;
             if ($xx > 30)
             {
                 msg("Error: inf loop catcher!");
                 last;
             }
-            }
-
-
-        my %tresults; // traverse results
-        $tresults{wait_next} = $waitNext;
-        $tresults{msg} = $msg;
-        return %tresults;
         }
-
-
-my @state_stack = [];
-
-sub push_state
-{
-    push(@state_stack, $_[0]);
-}
-
-sub pop_state
-{
-    return pop(@state_stack);
-}
-
-sub table_to_html
-{
-    my $html = "<table border=\"1\">\n";
-    $html .= "<tr bgcolor='lightgray'>\n";
-    foreach my $head ('State', 'Test', 'Func', 'Next-state')
-    {
-        $html .= "<td>$head</td>\n";
+        $tResults = array(); // traverse results
+        $tResults['waitNext']= $waitNext;
+        $tResults['msg'] = $msg;
+        return $tResults;
     }
-    $html .= "</tr>\n";
 
-    foreach my $hr (@table)
+
+    /**
+     * Turn the state table variable into and html representation.
+     *
+     * @return string $html The html fragment that is a table element of the workflow state table.
+     *
+     */
+
+    public function tableToHtml()
     {
-        $html .= "<tr>\n";
-        foreach my $key ('edge', 'test', 'func', 'next')
+        $html = "<table border=\"1\">\n";
+        $html .= "<tr bgcolor='lightgray'>\n";
+        foreach (array('State', 'Test', 'Func', 'Next-state') as  $head)
         {
-            $html .= "<td>$hr['$key']</td>\n";
+            $html .= "<td>$head</td>\n";
         }
         $html .= "</tr>\n";
-    }
-    $html .= "</table>\n";
-}
-
-sub render
-{
-    my ($args) = @_;
-    my $options = $args['options'];
-    my $currState = $args['currState'];
-    my $msg = $args['msg'];
-    my $options_list_str = $args['options_list_str'];
-
-    my $table = table_to_html();
-
-    // print "Content-type: text/plain\n\n";
-    // print "Current state: $currState<br>\n";
-    // print $options;
-
-    my $template = read_file('index.html');
-    $template =~ s/\$options_list_str/$options_list_str/smg;
-    $template =~ s/\$options/$options/smg;
-    $template =~ s/\$currState/$currState/smg;
-    $template =~ s/\$msg/$msg/smg;
-    $template =~ s/\$table/$table/smg;
-    
-    print "Content-type: text/html\n\n";
-    print $template;
-
-}
-
-// Quick shortcut to check if- functions from the CGI input. If the CGI key exists and is true, then return
-// true, else return false
-
-sub checkDemoCGI
-{
-    my $key = $_[0];
-    my %opts;
-    foreach my $opt (split("\0", $ch{options}))
-    {
-        $opts{$opt} = 1;
-    }
-
-    my $not_complement_key = $key;
-    $not_complement_key =~ s/if\-not\-(.*)/if-$1/;
-    
-    if ($key =~ m/^if\-not\-/)
-    {
-        if ($opts{$not_complement_key})
+        
+        foreach ($table as $hr)
         {
-            return 0;
+            $html .= "<tr>\n";
+            foreach (array('edge', 'test', 'func', 'next') as $key)
+            {
+                $html .= sprintf("<td>%s</td>\n", $hr['$key']);
+            }
+            $html .= "</tr>\n";
         }
-        else
+        $html .= "</table>\n";
+        return $html;
+    }
+
+    /**
+     * This is a simply regex html substitution template function. If it needs anything more interesting than
+     * this, we should migrate is to a real template system like twig.
+     *
+     * @param string $options Options as html checkboxes
+     *
+     * @param string $currState The name of the current state
+     *
+     * @param string $msg A message for the user giving the status of the state machine
+     *
+     * @param $optionListStr A list of options as a string.
+     *
+     */
+
+    public function render($options, $currState, $msg, $optionsListStr)
+    {
+        $table = table_to_html();
+        
+        // print "Content-type: text/plain\n\n";
+        // print "Current state: $currState<br>\n";
+        // print $options;
+        
+        $template = read_file('index.html');
+        preg_replace('/\$optionsListStr/smg', '$optionsListStr', $template);
+        preg_replace('/\$options/smg', '$options', $template);
+        preg_replace('/\$currState/smg', '$currState', $template);
+        preg_replace('/\$msg/smg', '$msg', $template);
+        preg_replace('/\$table/smg', '$table', $template);
+        
+        print "Content-type: text/html\n\n";
+        print $template;
+    }
+    
+    /* 
+     * Quick shortcut to check if- functions from the CGI input. If the CGI key exists and is true, then return
+     * true, else return false
+     *
+     *
+     * @param string $key The key we are checking against the CGI params
+     *
+     * @return boolean True or false, depending on whether the key was found.
+     */
+    
+    public function checkDemoCGI($key)
+    {
+        // I think these are CGI params. Pull them out using the standard php idiom.
+        $opts = array();
+        /* 
+         * foreach my $opt (split("\0", $ch{options}))
+         * {
+         *     $opts{$opt} = 1;
+         * }
+         */
+        
+        $notComplementKey = $key;
+        preg_replace('/if\-not\-(.*)/', 'if-$1', $notComplementKey);
+        
+        if ((preg_match('/^if\-not\-/', $key)))
+        {
+            if ($opts[$notComplementKey])
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        elseif ((preg_match('/^if\-/', $key)) && $opts[$key])
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     *
+     * Dispatch a function. This calls the functions that do work specified by the workflow.
+     *
+     *
+     *
+     *
+     */
+    private function dispatch($hr, $key)
+    {
+        // Sanity check and default
+        if ($key != 'func' && $key != 'test')
+        {
+            $key = 'func';
+        }
+        
+        /* 
+         * The state value true is always true, empty (no test/function) is true as well because empty is
+         * considered a "this is a default" or something. State table functions return explicit true or false,
+         * and not having a function is assumed to be true. Put another way, if you don't have a function,
+         * then you expected the state to transtion.
+         */
+        if ($hr['$key'] == 'true' || $hr['$key'] == '')
         {
             return 1;
         }
-    }
-    elseif ($key =~ m/^if\-/ && $opts{$key})
-    {
-        return 1;
-    }
-    return 0;
-}
 
-sub dispatch
-{
-    my $hr = $_[0];
-    my $key = $_[1];
+        // auto-clear some options based one the function 'logout' or any if-do-x test option.
 
-    // Sanity check and default
-    if ($key ne 'func' && $key ne 'test')
-    {
-        $key = 'func';
-    }
-
-    // true is always true, empty (no test/function) is true as well.
-    if ($hr['$key'] == 'true' || $hr['$key'] == '')
-    {
-        return 1;
-    }
-
-    // auto-clear some options based one the function 'logout' or any if-do-x test option.
-
-    if ($hr['$key'] == 'logout')
-    {
-        // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
-        $ch{options} =~ s/if\-logged\-in//;
-        // msg("logout options: $ch{options}");
-    }
-
-    // Auto clear if-go-x and if-do-x, search auto-cleared in this file.
-
-    // Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
-
-    if ($key == 'test')
-    {
-        my $val = checkDemoCGI($hr['$key']);
-        my $val_text = 'false';
-        if ($val)
+        if ($hr['$key'] == 'logout')
         {
-            $val_text = 'true';
+            // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
+            // $ch{options} =~ s/if\-logged\-in//;
+            preg_replace('/if\-logged\-in/', '', $ch{options});
+            // msg("logout options: $ch{options}");
         }
-        msg("checking: $hr['$key'] result: $val_text<br>\n");
-        return $val;
-    }
-    else
-    {
-        return 1;
-    }
-}
-
-
-sub read_state_data
-{
-    my $data_file = shift(@_);
-    my @va = @_; // remaining args are column names, va mnemonic for variables.
-
-    // print "Reading state data file: $data_file\n";
-    my($temp);
-    my @fields;
-    
-    my $log_flag = 0;
-
-    if (! open(IN, "<",  $data_file))
-    {
-        if (! $log_flag)
+        
+        // Auto clear if-go-x and if-do-x, search auto-cleared in this file.
+        
+        // Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
+        
+        if ($key == 'test')
         {
-            print ("Error: Can't open $data_file for reading\n");
-            $log_flag = 1;
+            $val = checkDemoCGI($hr['$key']);
+            $val_text = 'false';
+            if ($val)
+            {
+                $val_text = 'true';
+            }
+            msg(sprintf("checking: %s result: $val_text<br>\n", $hr['$key'] ));
+            return $val;
+        }
+        else
+        {
+            return true;
         }
     }
-    else
+
+
+    /**
+     *
+     * This needs to be upgraded. The constructor should call this.
+     *
+     */
+    private function readStateData($dataFile)
     {
-        my $ignore_first_line = <IN>;
-        while ($temp = <IN>)
+        // column names, va mnemonic for variables.
+        va = array('edge', 'test', 'func', 'next');
+        
+        $fields = array();
+        
+        my $log_flag = 0;
+        
+        if (! $fd = fopen($dataFile, 'r'))
         {
-            my $new_hr;
-
-            // Remove the leading | and optional whitespace. 
-            $temp =~ s/^\|\s*//;
-
-            if ($temp =~ m/^\s*#/)
+            if (! $log_flag)
             {
-                // We have a comment, ignore this line.
-                next;
+                print ("Error: Can't open $dataFile for reading\n");
+                $log_flag = 1;
             }
-
-            if ($temp =~ m/^\-\-/)
+        }
+        else
+        {
+            fgets($fd);
+            while (($temp = fgets($fs)))
             {
-                // We have a separator line, ignore.
-                next;
-            }
-
-            // Don't use split because Perl will truncate the returned array due to an undersireable feature
-            // where arrays returned and assigned have null elements truncated.
-
-            // Also, make sure there is a terminal \n which makes the regex both simpler and more robust.
-
-            if ($temp !~ m/\n$/)
-            {
-                $temp .= "\n";
-            }
-
-            // Get all the fields before we start so the code below is cleaner, and we want all the line
-            // splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
-            // whatever.
-
-            my $has_values = 0;
-            my @fields;
-            while ($temp =~ s/^(.*?)(?:\s*\|\s+|\n)//smg)
-            {
-                // Clean up "$var" and "func()" to be "var" and "func".
-                my $raw = $1;
-                $raw =~ s/\(\)//;
-                $raw =~ s/^\$//;
-
+                $newList = array();
+                
+                // Remove the leading | and optional whitespace. 
+                preg_replace('/^\|\s*/', '', $temp);
+                
+                if ((preg_match('/^\s*#/', $temp)))
+                {
+                    // We have a comment, ignore this line.
+                    next;
+                }
+                
+                if ((preg_match('/^\-\-/', $temp)))
+                {
+                    // We have a separator line, ignore.
+                    next;
+                }
+                
+                // Make sure there is a terminal \n which makes the regex both simpler and more robust.
+                
+                if ($temp !~ m/\n$/)
+                {
+                    $temp .= "\n";
+                }
+                
+                // Get all the fields before we start so the code below is cleaner, and we want all the line
+                // splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
+                // whatever.
+                
+                $hasValues = 0;
+                $fields = array();
+                $myMatches = array();
+                while ((preg_replace('/^(.*?)(?:\s*\|\s+|\n)/smg', 
+                                     function($matches) 
+                                     {
+                                         foreach ($matches as $single)
+                                         {
+                                             array_push($myMatches, $single);
+                                             return '';
+                                         }
+                                     }, $temp)))
+                    {
+                        // Clean up "$var" and "func()" to be "var" and "func".
+                        my $raw = $1;
+                        $raw =~ s/\(\)//;
+                            $raw =~ s/^\$//;
+                            
                 // Trim whitespace from values. This probably only occurs when there aren't | chars on the line.
                 $raw =~ s/^\s+(.*)\s+$/$1/;
                 if ($raw ne '')
                 {
-                    $has_values = 1;
+                    $hasValues = 1;
                 }
                 push(@fields, $raw);
             }
             
-            if ($has_values)
+            if ($hasValues)
             {
                 for (my $xx=0; $xx<=$#va; $xx++)
                 {
-                    $new_hr['$va[$xx]'] = $fields[$xx];
+                    $newList['$va[$xx]'] = $fields[$xx];
                     // print "$va[$xx]: $fields[$xx]\n";
                 }
-                push(@table, $new_hr);
+                push(@table, $newList);
             }
         }
     }
