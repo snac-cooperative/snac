@@ -549,18 +549,18 @@ class Workflow
     private function readStateData($dataFile)
     {
         // column names, va mnemonic for variables.
-        va = array('edge', 'test', 'func', 'next');
+        $colName = array('edge', 'test', 'func', 'next');
         
         $fields = array();
         
-        my $log_flag = 0;
+        $logFlag = false;
         
         if (! $fd = fopen($dataFile, 'r'))
         {
-            if (! $log_flag)
+            if (! $logFlag)
             {
                 print ("Error: Can't open $dataFile for reading\n");
-                $log_flag = 1;
+                $logFlag = true; // Why are we setting this to true here? Odd.
             }
         }
         else
@@ -587,7 +587,7 @@ class Workflow
                 
                 // Make sure there is a terminal \n which makes the regex both simpler and more robust.
                 
-                if ($temp !~ m/\n$/)
+                if (preg_match('/\n$/', $temp))
                 {
                     $temp .= "\n";
                 }
@@ -599,107 +599,131 @@ class Workflow
                 $hasValues = 0;
                 $fields = array();
                 $myMatches = array();
-                while ((preg_replace('/^(.*?)(?:\s*\|\s+|\n)/smg', 
+                /*
+                 *
+                 * php can't return the matches from preg_replace() so we have to use preg_replace_callback()
+                 * and make the callback function write into a local variable (declared at a global) as a side
+                 * effect.
+                 *
+                 */ 
+                while ((preg_replace_callback('/^(.*?)(?:\s*\|\s+|\n)/smg', 
                                      function($matches) 
-                                     {
-                                         foreach ($matches as $single)
-                                         {
-                                             array_push($myMatches, $single);
-                                             return '';
-                                         }
-                                     }, $temp)))
+                                              {
+                                                  global $myMatches;
+                                                  $myMatches = $matches;
+                                                  return '';
+                                              },
+                                              $temp)))
                     {
-                        // Clean up "$var" and "func()" to be "var" and "func".
-                        my $raw = $1;
-                        $raw =~ s/\(\)//;
-                            $raw =~ s/^\$//;
+                        /* 
+                         * Clean up "$var" and "func()" to be "var" and "func".
+                         * Remove () from func() and $ from $var
+                         */
+                        $raw = $myMatches[1];
+                        preg_replace('/\(\)/', '', $raw);
+                        preg_replace('/^\$/', '', $raw);
                             
-                // Trim whitespace from values. This probably only occurs when there aren't | chars on the line.
-                $raw =~ s/^\s+(.*)\s+$/$1/;
-                if ($raw ne '')
-                {
-                    $hasValues = 1;
-                }
-                push(@fields, $raw);
-            }
+                        /*
+                         * Trim whitespace from values. This probably only occurs when there aren't | chars on
+                         * the line. Why not just use trim()?
+                         */
+                        preg_replace('/^\s+(.*)\s+$/', '$1', $raw);
+                        if ($raw != '')
+                        {
+                            $hasValues = 1;
+                        }
+                        array_push($fields, $raw);
+                    }
             
             if ($hasValues)
             {
-                for (my $xx=0; $xx<=$#va; $xx++)
-                {
-                    $newList['$va[$xx]'] = $fields[$xx];
-                    // print "$va[$xx]: $fields[$xx]\n";
-                }
-                push(@table, $newList);
+                $newList = array('edge' => $fields[0],
+                                 'test' => $fields[1],
+                                 'func' => $fields[2],
+                                 'next' => $fields[3]);
+                array_push($table, $newList);
+                
+                /* This old code was historically a generalized named-column data manager. We don't need that.
+                 * for (my $xx=0; $xx<=$#colName; $xx++)
+                 * {
+                 *     $newList['$colName[$xx]'] = $fields[$xx];
+                 *     // print "$colName[$xx]: $fields[$xx]\n";
+                 * }
+                 */
             }
         }
     }
-    close(IN);
+    fclose($fp);
 }
 
 
 
-sub sanity_check_states
-{
-    my $ok = 1; // Things are ok.
-    my %next_states;
-
-    // Capture non-empty states.
-    foreach my $hr (@table)
+    private function sanity_check_states()
     {
-        if ($hr['edge'])
+        $ok = true; // Things are ok.
+        $nextStates = array();
+        
+        /* 
+         * Capture non-empty states.
+         * 
+         * jump() is a way of doing next state, so record those as well. Remember that unlike everything else
+         * in the state table, jump() has an argument which is the state to jump to.
+         *
+         */
+        foreach ($table as $hr)
         {
-            $knownStates{$hr['edge']}++;
-        }
-        if ($hr['next'])
-        {
-            $next_states{$hr['next']}++;
-        }
-        // jump() is a way of doing next state, so record those as well
-        if ($hr['func'] =~ m/jump\((.*)\)/)
-        {
-            $next_states{$1}++;
-        }
-    }
-    
-    // Check for unknown states in next.
-    foreach my $hr (@table)
-    {
-        if ($hr['next'] && ! exists($knownStates{$hr['next']}))
-        {
-            if  ($hr['func'] =~ m/return/)
+            if ($hr['edge'])
             {
-                msg("Warning: unknown state following return");
+                $knownStates{$hr['edge']}++;
             }
-            else
+            if ($hr['next'])
             {
-                msg("Error: unknown state $hr['next']");
-                msg( Dumper($hr) );
+                $nextStates{$hr['next']}++;
+            }
+            if (preg_match('/jump\((.*)\)/', $hr['func'], $matches))
+            {
+                $nextStates{$matches[1]}++;
+            }
+        }
+    
+        /*
+         * Check for unknown states in next.
+         */ 
+        foreach ($table as $hr)
+        {
+            if ($hr['next'] && ! isset($knownStates{$hr['next']}))
+            {
+                if  (preg_match('/return/', $hr['func']))
+                {
+                    msg("Warning: unknown state following return");
+                }
+                else
+                {
+                    msg(sprintf("Error: unknown state %s\n%s", $hr['next'], var_export($hr,1)));
+                    $ok = false;
+                }
+            }
+        }
+        
+        /*
+         * Check for states which can never be reached due to no next.
+         */
+        foreach ($knownStates as $state => $value)
+        {
+            if (! exists($nextStates{$state}))
+            {
+                msg("No next-state for: $state");
                 $ok = 0;
             }
         }
-    }
-
-    // Check for states which can never be reached due to no next.
-    foreach my $state (keys(%known_states))
-    {
-        if (! exists($next_states{$state}))
+        
+        if (! $ok)
         {
-            msg("No next-state for: $state");
-            $ok = 0;
+            msg("Failed state table sanity check (unknown or unreachable states)");
+            return 0;
         }
+        return 1;
     }
-
-    if (! $ok)
-    {
-        msg("Failed state table sanity check (unknown or unreachable states)");
-        return 0;
-    }
-    return 1;
-}
-
-
-
-
+    
 }
 
