@@ -82,6 +82,27 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "reconcile":
 
+                $engine = new \snac\server\identityReconciliation\ReconciliationEngine();
+
+                // Add stages to run
+                $engine->addStage("ElasticOriginalNameEntry");
+                $engine->addStage("ElasticNameOnly");
+                $engine->addStage("ElasticSeventyFive");
+                $engine->addStage("OriginalLength");
+                $engine->addStage("MultiStage", "ElasticNameOnly", "OriginalLengthDifference");
+                $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
+
+                // Run the reconciliation engine against this identity
+                $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                $engine->reconcile($constellation);
+
+
+                $results = array();
+                foreach ($engine->getResults() as $k => $v) {
+                    $results[$k] = $v->toArray();
+                }
+                $this->response["results"] = $results;
+
                 break;
             case "edit":
                 // Create new parser for this file and parse it

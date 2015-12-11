@@ -61,7 +61,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
     public function run() {
 
         $connect = new ServerConnect();
-        
+
+        if (isset($this->input["reconcile"])) {
+            // Create the new identity to search
+            $identity = new \snac\data\Constellation();
+            $name = new \snac\data\NameEntry();
+            $name->setOriginal($_GET['q']);
+            $identity->addNameEntry($name);
+            $this->input["command"] = "reconcile";
+            $this->input["constellation"] = $identity->toArray();
+        }
+
         $serverResponse = $connect->query($this->input);
         
         $this->response = "<html><body><h1>Server Response</h1><pre>" . print_r($serverResponse, true) .
