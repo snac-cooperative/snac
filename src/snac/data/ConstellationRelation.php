@@ -108,7 +108,7 @@ class ConstellationRelation extends AbstractData {
      * * cpfRelation/date/*
      * * cpfRelation/dateRange/*
      * 
-     * @var \snac\data\SNACDate Dates of thie relationship
+     * @var \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
      */
     private $dates = null;    
     
@@ -235,12 +235,12 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return a
+     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return an array.
      *
      * * cpfRelation/date/*
      * * cpfRelation/dateRange/*
      * 
-     * @return \snac\data\SNACDate Dates of thie relationship
+     * @return \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
      *
      */
     function getDates()

@@ -46,7 +46,8 @@ class SNACFunction extends AbstractData {
      * 
      * * function/dateRange
      * 
-     * @var \snac\data\SNACDate Date range of the function
+     * @var \snac\data\SNACDate Date range of the function. As far as I can tell, this is a single date, so
+     * ignore the pluralization.
      */
     private $dates;
 
@@ -95,11 +96,11 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * getter for $this->dates
+     * getter for $this->dates. This is only one date, not an array.
      *
      * * function/dateRange
      * 
-     * @return \snac\data\SNACDate Date range of the function
+     * @return \snac\data\SNACDate Date range of the function. One date, not a list of dates.
      *
      */
     function getDates()
