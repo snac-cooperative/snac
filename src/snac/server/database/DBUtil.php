@@ -90,15 +90,16 @@ class DBUtil
     }    
         
     /**
-     * A helper function to get a constellation from the db for testing purposes
+     * A helper function to get a constellation from the db for testing purposes.
      *
-     * @return string[] Standard vh_info associative list with the keys 'version' and 'main_id' from the constellation.
+     * @return string[] Return the standard vh_info associative list with the keys 'version' and 'main_id'
+     * from the constellation.
      * 
      */
     public function demoConstellation()
     {
-        list($cid, $version, $main_id) = $this->sql->randomConstellationID();
-        return array('version' => $version, 'main_id' => $main_id);
+        list($ConstellationId, $version, $mainId) = $this->sql->randomConstellationID();
+        return array('version' => $version, 'main_id' => $mainId);
     }
 
     /**
@@ -416,7 +417,10 @@ class DBUtil
 
         }
 
-        // Constellation name entry data is already an array of name entry data. 
+        /* 
+         * Constellation name entry data is already an array of name entry data. 
+         * getUseDates() returns SNACDate[] (An array of SNACDate objects.)
+         */
         foreach ($id->getNameEntries() as $ndata)
         {
             $name_id = $this->sql->insertName($vh_info, 
@@ -459,17 +463,26 @@ class DBUtil
          *  | getTerm             | function_id       | function/term                   |
          *  | getVocabularySource | vocabulary_source | function/term/@vocabularySource |
          *  | getNote             | note              | function/descriptiveNote        |
-         *  | getDates            | table date_range  | function/dateRange                                |
+         *  | getDates            | table date_range  | function/dateRange              |
+         *
+         *
+         * I considered adding keys for the second arg, but is not clear that using them for sanity checking
+         * would gain anything. The low level code would become more fragile, and would break "separation of
+         * concerns". The sanity check would require that the low level code have knowledge about the
+         * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
+         * the database. Any sanity check should happen up here.
+         *
+         *
+         *  SNACFunction->getDates() returns a single SNACDate.
          */
-        
 
         foreach ($id->getFunctions() as $fdata)
         {
             $this->sql->insertFunction($vh_info,
-                                       array('function_type' => $fdata->getType(),
-                                             'vocabulary_source' => $fdata->getVocabularySource(),
-                                             'note' => $fdata->getNote(),
-                                             'function_id' => $fdata->getTerm()),
+                                       array($fdata->getType(),
+                                             $fdata->getVocabularySource(),
+                                             $fdata->getNote(),
+                                             $fdata->getTerm()),
                                        $fdata->getDates());
         }
 
@@ -500,6 +513,9 @@ class DBUtil
           New convention: when there are dates, make them the second arg. Final arg is a list of all the
           scalar values that will eventually be passed to execute() in the SQL function. This convention
           is already in use in a couple of places, but needs to be done for some existing functions.
+
+          getDates() returns a single SNACDate object. 
+          
         */
 
         foreach ($id->getRelations() as $fdata)

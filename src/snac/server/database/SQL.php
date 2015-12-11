@@ -90,7 +90,7 @@ class SQL
      * @param string $vocabularySource Not currently saved. As far as we know, these are specific to
      * AnF. These probably should be somehow cross-walked to the SNAC vocabularies.
      *
-     * @param SNACDate[] An array of SNACDate objects. We pass it to insertDate() and get a foreign key
+     * @param SNACDate[] $dates An array of SNACDate objects. We pass it to insertDate() and get a foreign key
      * back. Our id is in table date_range, so we don't currently need the returned foreign key.
      *
      * @param string $note A note about the occupation.
@@ -295,7 +295,7 @@ class SQL
      * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[][] $existDates list of list of date range key/values. Passed to insertDate() unchanged.
+     * @param SNACDate[] $existDates List SNACDate objects. Each one is passed to insertDate() unchanged.
      *
      * @param string[] $argList Assoc list with keys matching db fields, currently expected to be in the
      * order: ark_id, entity_type, biog_hist, nationality, gender, general_context, structure_or_genealogy,
@@ -372,7 +372,9 @@ class SQL
     }
     
     /** 
-     * Insert a name into the database. 
+     * Insert a name into the database. This uses an old, arg style call as opposed to the newer array style
+     * calls. You must make sure here that the array() arg passed to execute() is correct. In the new style
+     * calls, that burden is placed on the calling code in DBUtils.
      * 
      * Need to return the name.id so we can used it as fk for inserting related records
      *
@@ -393,8 +395,8 @@ class SQL
      *
      * @param string $scriptCode The script code of this name. Looked up from table vocabulary and the id saved in table name.
      *
-     * @param string[][] $useDates Not currently implemented for table name. It needs to be inserted into
-     * table date_range using an existing method as elsewhere in the class.
+     * @param SNACDate[] $useDates Not currently implemented for table name. It needs to be inserted into
+     * table date_range using insertDate(). 
      *
      */
     public function insertName($vhInfo, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
@@ -451,9 +453,9 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[] $argList list with keys:
+     * @param string[] $argList A flat list of data for execute().
      * 
-     * @param string[][] $dates list of list of date keys suitable for insertDate()
+     * @param SNACDate $dates A single SNACDate object suitable for insertDate().
      * 
      */
     public function insertFunction($vhInfo, $argList, $dates)
@@ -468,10 +470,7 @@ class SQL
                             returning id');
         
         /* 
-         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. If you decide to
-         * sanity check $argList, put the checks here, and if you want to change list element order, do that
-         * here too. Keep in mind that our philosophy is for DBUtils to know about php objects and SQL fields,
-         * but not how to do SQL queries. Class SQL is intentionally minimal, knowing only enough to do queries.
+         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. 
          */
         $eArgs = $vhInfo;
         foreach ($argList as $arg)
@@ -526,10 +525,10 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      * 
-     * @param $dates list of list of date_range keys suitable to pass to insertDate(). Yes, list of list in order to support multiple dates.
+     * @param SNACDate $dates A single SNACDate object.
      *
-     * @param $argList list of keys: related_id, related_ark, role, arcrole, relation_type, relation_entry,
-     * descriptive_note. We assume that DBUtils knows the php to sql field translation. Keys must occur in the noted order.
+     * @param $argList Flat array of data suitable for execute(). We assume that DBUtils
+     * knows the php to sql field translation.
      *
      * @return no return value.
      * 
@@ -574,10 +573,10 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param $argList list with keys: role, relation_entry_type, arcrole, relation_entry, object_xml_wrap,
-     * decriptive_note. These elements must occur in this order, and they are not sanity checked. The foreach
-     * before execute() simply copies all of them into a list to pass to execute(). If there is a problem, but
-     * the sanity check in the foreach loop.
+     * @param string[] $argList A flat array. The foreach before execute() simply copies all of them into a
+     * list to pass to execute(). We assume that DBUtils knows the order of data to send. If an order problem
+     * develops, fix it in the calling code, not down here. The whole point of DBUtils is to know php and SQL
+     * fields. The code down here only knows how to write database tables.
      *
      * @return no return values
      * 
@@ -595,8 +594,10 @@ class SQL
                             (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, \'^.*#\', \'\')),
                             $7, $8, $9)');
 
-        // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
-        // first two elements of the array with id and main_id from vhInfo.
+        /* 
+         * Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
+         * first two elements of the array with id and main_id from vhInfo.
+         */
         $execList = array($vhInfo['version'], $vhInfo['main_id']);
         foreach ($argList as $arg)
         {
@@ -655,7 +656,7 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] list of record id values meeting the version and main_id constriants.
+     * @return integer[] Return a list of record id values meeting the version and main_id constriants.
      * 
      */
     public function matchORID($vhInfo)
@@ -689,7 +690,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return a list of otherid rows
+     * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, other_id,
+     * link_type.
      * 
      */
     public function selectOtherRecordIDs($vhInfo)
@@ -728,7 +730,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return list with keys: id, version, main_id, subject_id 
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * subject_id. There may be multiple subjects returned.
      * 
      */
     public function selectSubjects($vhInfo)
@@ -765,7 +768,7 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
+     * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
      * 
      */
     public function selectOccupations($vhInfo)
@@ -795,9 +798,9 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return list of lists. There may be multiple relations. Each relation has keys: id, version, main_id,
-     * related_id, related_ark, relation_entry, descriptive_node, relation_type, role, arcrole, date. Date is
-     * an associative list with keys from table date_range. See selectDate().
+     * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
+     * version, main_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
+     * arcrole, date. Date is an associative list with keys from table date_range. See selectDate().
      * 
      */ 
     public function selectRelation($vhInfo)
@@ -842,7 +845,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] Keys: id, version, main_id, relation_entry_type, href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
+     * @return string[][] Return a list of lists. Inner list keys: id, version, main_id, relation_entry_type,
+     * href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
     public function selectRelatedResources($vhInfo)
@@ -876,8 +880,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] An array('id', 'version', 'main_id', 'function_type', 'note', 'date' => assoc array of
-     * date info from selectDate()
+     * @return string[][] Return a list of list. The inner list has keys: id, version, main_id, function_type,
+     * note, date. Key date is also a list assoc array of date info from selectDate().
      *
      */ 
     public function selectFunctions($vhInfo)
@@ -918,13 +922,11 @@ class SQL
       * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
       * NameEntry object.
       *
-      * @param array $vhInfo with keys version, main_id.
+      * @param string[] $vhInfo with keys version, main_id.
       *
-      * @return array('original'=>"",
-      * 		     'language'=>"",
-      *              'script_code'=>"",
-      *              'preference_score'=>"",
-      *              'contributors' =>  array('name_type'=>"", 'short_name'=>""))
+      * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
+      * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
+      * version, main_id, name_id, short_name, name_type.
       */
     public function selectNameEntries($vhInfo)
     {
@@ -983,7 +985,8 @@ class SQL
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
      * 
-     * @return string[] An array with keys: id, version, main_id, for a record that has a date_range
+     * @return string[] Return a flat array. This seems like a function that should return an associative
+     * list. Currently, is only called in one place. 
      */
     public function randomConstellationID()
     {
