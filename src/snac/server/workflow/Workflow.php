@@ -42,7 +42,7 @@ class Workflow
      *
      * @var string[]
      */
-    private $known_states = array(); // assoc.
+    private $knownStates = array(); // assoc.
 
     /**
      * The starting state for traversing the state table. It has been 'login', but will probably be instance
@@ -92,7 +92,7 @@ class Workflow
      *
      *
      */
-    public function make_graph ()
+    public function makeGraph ()
     {
         $file = "graphviz_states.gv";
         $out;
@@ -116,8 +116,9 @@ class Workflow
             {
                 $trans = $hr['test'];
             }
-            elseif ($hr->{func} != '') // isn't ($hr['func']) more clear and robust? Any concept of 'true' is ok here.
+            elseif ($hr['func'] != '') 
             {
+                // isn't ($hr['func']) more clear and robust? Any concept of 'true' is ok here.
                 $trans = $hr['func'];
             }
         
@@ -136,194 +137,220 @@ class Workflow
         exit();
     }
 
-sub options_checkboxes
-{
-    my $curr_state = $_[0];
-    my $html = "";
-    my %unique;
-    my @all_tests;
-    # First we need a list of unique tests.
-    foreach my $hr (@table)
+    /**
+     * Used by the walk-through web site to make a list of checkboxes. This works based on a convention of
+     * test function naming.
+     *
+     * @param string $currState the current state we are in
+     *
+     * @return string $html the html for the checkboxes (I think) 
+     */ 
+    public function optionsCheckboxes($currState)
     {
-        if ($hr->{test} && ! exists($unique{$hr->{test}}))
+        $currState = $_[0];
+        $html = "";
+        $unique = array();
+        $allTests;
+        // First we need a list of unique tests.
+        foreach ($table as $hr)
         {
-            $unique{$hr->{test}} = 1;
-            push(@all_tests, $hr->{test});
+            if ($hr['test'] && ! isset($unique[$hr['test']]))
+            {
+                $unique[$hr['test']] = 1;
+                array_push($allTests, $hr['test']);
+            }
         }
-    }
 
-    my $curr_state_test = $curr_state;
-    $curr_state_test =~ s/(.*)\-input/if-page-$1/;
+        $currStateTest = $currState;
+        // $currStateTest =~ s/(.*)\-input/if-page-$1/;
+        // Change $currStateTest in place.
+        preg_replace('/(.*)\-input/','if-page-$1', $currStateTest);
     
-    # foreach over the sorted list so the order is always the same.
-    foreach my $test (sort(@all_tests))
-    {
-            my $checked = '';
-            my $auto_msg = '';
-            my $disabled = '';
+        // foreach over the sorted list so the order is always the same.
+        sort($allTests);
+        foreach ($allTests as $test)
+        {
+            $checked = '';
+            $autoMsg = '';
+            $disabled = '';
 
-            # If a checkbox is checked, and it isn't an "if-page-x" test, then keep it checked.  Else if the
-            # matches the current states if-page-x, set the check, else unchecked. dashboard-input causes
-            # if-page-dashboard to be true.
+            // If a checkbox is checked, and it isn't an "if-page-x" test, then keep it checked.  Else if the
+            // matches the current states if-page-x, set the check, else unchecked. dashboard-input causes
+            // if-page-dashboard to be true.
 
-            if (check_demo_cgi($test) && $test !~ m/if\-page/)
+            // if (checkDemoCGI($test) && $test !~ m/if\-page/)
+            if (checkDemoCGI($test) && ! (preg_match('/if\-page/', $test)))
             {
                 $checked = 'checked';
             }
-            elsif ($test eq $curr_state_test)
+            elseif ($test == $currStateTest)
             {
                 $checked = 'checked';
-                $auto_msg = "(auto-checked)";
+                $autoMsg = "(auto-checked)";
             }
 
-            if ($test =~ m/if\-not\-/)
+            // if ($test =~ m/if\-not\-/)
+            if (preg_match('/if\-not\-/', $test))
             {
-                my $not_test = $test;
-                $not_test =~ s/if\-not\-(.*)/if-$1/;
-                $auto_msg = "(disabled, depends on $not_test)";
+                $notTest = $test;
+                // $notTest =~ s/if\-not\-(.*)/if-$1/;
+                // Note: $notTest modified in place
+                preg_replace('/if\-not\-(.*)/', '/if-$1/', $notTest);
+                $autoMsg = "(disabled, depends on $notTest)";
                 $disabled = "disabled";
             }
 
-            # Always uncheck if-go-x because presumably we went there. Users need to say where to do on each
-            # request, so we don't want these properties to carry over.
+            // Always uncheck if-go-x because presumably we went there. Users need to say where to do on each
+            // request, so we don't want these properties to carry over.
 
-            if ($test =~ m/if\-go\-/ || $test =~ m/if\-do\-/)
+            if ((preg_match('/if\-go\-/', $test)) || (preg_match('/if\-do\-/', $test)))
             {
                 $checked = '';
-                $auto_msg = "(auto-cleared)";
+                $autoMsg = "(auto-cleared)";
             }
-
-            $html .= "$test <input type=\"checkbox\" name=\"options\" value=\"$test\" $checked $disabled> $auto_msg <br>\n";
+            // I wonder if this contatenation and string interpolation will work identically to Perl?
+            $html .= "$test <input type=\"checkbox\" name=\"options\" value=\"$test\" $checked $disabled> $autoMsg <br>\n";
+        }
+        return $html;
     }
-    return $html;
-}
-
-sub msg
-{
-    $msg .= "$_[0]<br>\n";
-    # print "$_[0]\n";
-}
-
-# This is normally first called with $default_state, and state table traversal goes from there. 
-sub traverse
-{
-    my $curr_state = $_[0];
-    my $msg;
-    my $wait_next = '';
-    my $last_flag = 0;
-    my $do_next = 1;
-
-    # In the old days, when we came out of wait, we ran the wait_next state. Now we start at the beginning,
-    # and we have an if-test to get us back to a state that will match the rest of the input in the http
-    # request.
-
-    my $xx = 0;
-    while ($do_next)
+    
+    /**
+     * Private method to concatenate values to the private var $msg. Makes a nicer interface than depending on
+     * assigning to a global-to-this-class class variable.
+     *
+     * @param string $msg
+     *
+     * @return void
+     *
+     */
+    private function msg($msg)
     {
-        msg("<span style=\"background-color:lightblue;\">Going into state: $curr_state</span>");
-        $last_flag = 0;
-        # if ($wait_next)
-        # {
-        #     $curr_state = $wait_next;
-        # }
-        # $wait_next = '';
-        foreach my $hr (@table)
+        $msg .= "$msg<br>\n";
+    }
+    
+    // This is normally first called with $default_state, and state table traversal goes from there. 
+    public function traverse($currState)
+    {
+        $msg = '';
+        $waitNext = '';
+        $lastFlag = 0;
+        $doNext = 1;
+        
+        // In the old days, when we came out of wait, we ran the wait_next state. Now we start at the beginning,
+        // and we have an if-test to get us back to a state that will match the rest of the input in the http
+        // request.
+        
+        $xx = 0;
+        while ($doNext)
         {
-            if (($hr->{edge} eq $curr_state))
+            msg("<span style=\"background-color:lightblue;\">Going into state: $currState</span>");
+            $lastFlag = 0;
+            // if ($waitNext)
+            // {
+            //     $currState = $waitNext;
+            // }
+            // $waitNext = '';
+            foreach ($table as $hr)
             {
-                if ((dispatch($hr, 'test')) ||
-                    ($hr->{test} eq 'true') ||
-                    ($hr->{test} eq ''))
+                if (($hr['edge'] == $currState))
                 {
-                    # Defaulting to the function as the choice makes sense most of the time, but not with return()
-                    # $choice = $hr->{func};
-                    $last_flag = 1;
-
-                    # Unless we hit a wait function, we continue with the next state.
-                    $do_next = 1;
-
-                    if ($hr->{func} eq 'null' || $hr->{func} eq '')
+                    if ((dispatch($hr, 'test')) ||
+                        ($hr['test'] == 'true') ||
+                        ($hr['test'] == ''))
                     {
-                        $curr_state = $hr->{next};
-                        # Do nothing.
-                    }
-                    elsif ($hr->{func} =~ m/^jump\((.*)\)/)
-                    {
-                        # Ick. Capture inside literal parens is weird looking. (above)
-                        my $jump_to_state = $1;
-                        # Push the state we will transition to when we return.
-                        push_state($hr->{next});
-                        $curr_state = $jump_to_state;
-                    }
-                    elsif ($hr->{func} =~ m/^return[\(\)]*/)
-                    {
-                        $curr_state = pop_state();
-                        # Is $curr_state really correct for the automatic choice when doing return()? $hr->{func}
-                        # is not correct, btw.
-                        # $choice = $curr_state
-                    }
-                    elsif ($hr->{func} =~ m/^wait/)
-                    {
-                        # Up above, this should cause all choices to become available.  We could get back pretty
-                        # much any input from the user, but depending on the wait state, only certain other states
-                        # will be acceptable.
-                        $wait_next = $hr->{next};
-                        # $wait_next = $default_state;
-                        $do_next = 0;
-                    }
-                    else
-                    {
-                        msg("<span style='background-color:lightgreen;'>Dispatch function: $hr->{func}</span>");
-                    
-                        # Eventually, the state table will be sanity checked, and perhaps munged so that nothing
-                        # bad can happen. For now do a little sanity checking right here.
-                    
-                        my $return_value = dispatch($hr, 'func');
-                        if ($hr->{next})
+                        // Defaulting to the function as the choice makes sense most of the time, but not with return()
+                        // $choice = $hr['func'];
+                        $lastFlag = 1;
+                        
+                        // Unless we hit a wait function, we continue with the next state.
+                        $doNext = 1;
+                        
+                        if ($hr['func'] == 'null' || $hr['func'] == '')
                         {
-                            $curr_state = $hr->{next};
+                            $currState = $hr['next'];
+                            // Do nothing.
+                        }
+                        elseif ((preg_match('/^jump\((.*)\)/', $hr['func'], $matches)))
+                        {
+                            // Note: Capture inside literal parens is weird looking (above), but it is exactly
+                            // what we want.
+                            $jumpToState = $matches[1];
+                            // Push the state we will transition to when we return.
+                            push_state($hr['next']);
+                            $currState = $jumpToState;
+                        }
+                        elseif ((preg_match('/^return[\(\)]*/', $hr['func'])))
+                        {
+                            $currState = pop_state();
+                            // Is $currState really correct for the automatic choice when doing return()? $hr['func']
+                            // is not correct, btw.
+                            // $choice = $currState
+                        }
+                        elseif ((preg_match('/^wait/', $hr['func'])))
+                        {
+                            // Up above, this should cause all choices to become available.  We could get back
+                            // pretty much any input from the user, but depending on the wait state, only
+                            // certain other states will be acceptable. At one point, we jumped back to the
+                            // default state, but I think that is for a semi-continuous mode of operation:
+                            // $waitNext = $default_state;
+                            $waitNext = $hr['next'];
+                            $doNext = 0;
                         }
                         else
                         {
-                            $last_flag = 0;
+                            msg(sprintf("<span style='background-color:lightgreen;'>Dispatch function: %s</span>", $hr['func']));
+                            
+                            // Eventually, the state table will be sanity checked, and perhaps munged so that nothing
+                            // bad can happen. For now do a little sanity checking right here.
+                            
+                            // Is $returnValue used? If not, then this (apparantly historical) variable should
+                            // be removed.
+                            
+                            $returnValue = dispatch($hr, 'func');
+                            if ($hr['next'])
+                            {
+                                $currState = $hr['next'];
+                            }
+                            else
+                            {
+                                $lastFlag = 0;
+                            }
+                            // Else, the $currState is unchanged, iterate
                         }
-                        # Else, the $curr_state is unchanged, iterate
-                    }
-                    # msg("end of if curr_state: $curr_state do_next: $do_next last_flag: $last_flag");
-                }
-                elsif ($hr->{test} && $verbose)
-                {
-                    msg("If: $hr->{test} is false,");
-                    if ($hr->{func})
+                        }
+                    elseif ($hr['test'] && $verbose)
                     {
-                        msg("not running func: $hr->{func}, ");
+                        msg("If: $hr['test'] is false,");
+                        if ($hr['func'])
+                        {
+                            msg("not running func: $hr['func'], ");
+                        }
+                        msg("not going to state: $hr['next']");
                     }
-                    msg("not going to state: $hr->{next}");
+                    }
+                else
+                {
+                    // msg("$hr['edge'] is not $currState last_flag: $lastFlag");
                 }
-            }
-            else
+                if ($lastFlag)
+                {
+                    last;
+                }
+                }
+            $xx++;
+            if ($xx > 30)
             {
-                # msg("$hr->{edge} is not $curr_state last_flag: $last_flag");
-            }
-            if ($last_flag)
-            {
+                msg("Error: inf loop catcher!");
                 last;
             }
-        }
-        $xx++;
-        if ($xx > 30)
-        {
-            msg("Error: inf loop catcher!");
-            last;
-        }
-    }
+            }
 
 
-    my %tresults; # traverse results
-    $tresults{wait_next} = $wait_next;
-    $tresults{msg} = $msg;
-    return %tresults;
-}
+        my %tresults; // traverse results
+        $tresults{wait_next} = $waitNext;
+        $tresults{msg} = $msg;
+        return %tresults;
+        }
 
 
 my @state_stack = [];
@@ -353,7 +380,7 @@ sub table_to_html
         $html .= "<tr>\n";
         foreach my $key ('edge', 'test', 'func', 'next')
         {
-            $html .= "<td>$hr->{$key}</td>\n";
+            $html .= "<td>$hr['$key']</td>\n";
         }
         $html .= "</tr>\n";
     }
@@ -363,21 +390,21 @@ sub table_to_html
 sub render
 {
     my ($args) = @_;
-    my $options = $args->{options};
-    my $curr_state = $args->{curr_state};
-    my $msg = $args->{msg};
-    my $options_list_str = $args->{options_list_str};
+    my $options = $args['options'];
+    my $currState = $args['currState'];
+    my $msg = $args['msg'];
+    my $options_list_str = $args['options_list_str'];
 
     my $table = table_to_html();
 
-    # print "Content-type: text/plain\n\n";
-    # print "Current state: $curr_state<br>\n";
-    # print $options;
+    // print "Content-type: text/plain\n\n";
+    // print "Current state: $currState<br>\n";
+    // print $options;
 
     my $template = read_file('index.html');
     $template =~ s/\$options_list_str/$options_list_str/smg;
     $template =~ s/\$options/$options/smg;
-    $template =~ s/\$curr_state/$curr_state/smg;
+    $template =~ s/\$currState/$currState/smg;
     $template =~ s/\$msg/$msg/smg;
     $template =~ s/\$table/$table/smg;
     
@@ -386,10 +413,10 @@ sub render
 
 }
 
-# Quick shortcut to check if- functions from the CGI input. If the CGI key exists and is true, then return
-# true, else return false
+// Quick shortcut to check if- functions from the CGI input. If the CGI key exists and is true, then return
+// true, else return false
 
-sub check_demo_cgi
+sub checkDemoCGI
 {
     my $key = $_[0];
     my %opts;
@@ -412,7 +439,7 @@ sub check_demo_cgi
             return 1;
         }
     }
-    elsif ($key =~ m/^if\-/ && $opts{$key})
+    elseif ($key =~ m/^if\-/ && $opts{$key})
     {
         return 1;
     }
@@ -424,40 +451,40 @@ sub dispatch
     my $hr = $_[0];
     my $key = $_[1];
 
-    # Sanity check and default
+    // Sanity check and default
     if ($key ne 'func' && $key ne 'test')
     {
         $key = 'func';
     }
 
-    # true is always true, empty (no test/function) is true as well.
-    if ($hr->{$key} eq 'true' || $hr->{$key} eq '')
+    // true is always true, empty (no test/function) is true as well.
+    if ($hr['$key'] == 'true' || $hr['$key'] == '')
     {
         return 1;
     }
 
-    # auto-clear some options based one the function 'logout' or any if-do-x test option.
+    // auto-clear some options based one the function 'logout' or any if-do-x test option.
 
-    if ($hr->{$key} eq 'logout')
+    if ($hr['$key'] == 'logout')
     {
-        # Yikes. A bit crude but should work. Will leave \0\0 in the options string.
+        // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
         $ch{options} =~ s/if\-logged\-in//;
-        # msg("logout options: $ch{options}");
+        // msg("logout options: $ch{options}");
     }
 
-    # Auto clear if-go-x and if-do-x, search auto-cleared in this file.
+    // Auto clear if-go-x and if-do-x, search auto-cleared in this file.
 
-    # Look up test values from the if- checkboxes, aka options handled by check_demo_cgi().
+    // Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
 
-    if ($key eq 'test')
+    if ($key == 'test')
     {
-        my $val = check_demo_cgi($hr->{$key});
+        my $val = checkDemoCGI($hr['$key']);
         my $val_text = 'false';
         if ($val)
         {
             $val_text = 'true';
         }
-        msg("checking: $hr->{$key} result: $val_text<br>\n");
+        msg("checking: $hr['$key'] result: $val_text<br>\n");
         return $val;
     }
     else
@@ -470,9 +497,9 @@ sub dispatch
 sub read_state_data
 {
     my $data_file = shift(@_);
-    my @va = @_; # remaining args are column names, va mnemonic for variables.
+    my @va = @_; // remaining args are column names, va mnemonic for variables.
 
-    # print "Reading state data file: $data_file\n";
+    // print "Reading state data file: $data_file\n";
     my($temp);
     my @fields;
     
@@ -493,45 +520,45 @@ sub read_state_data
         {
             my $new_hr;
 
-            # Remove the leading | and optional whitespace. 
+            // Remove the leading | and optional whitespace. 
             $temp =~ s/^\|\s*//;
 
             if ($temp =~ m/^\s*#/)
             {
-                # We have a comment, ignore this line.
+                // We have a comment, ignore this line.
                 next;
             }
 
             if ($temp =~ m/^\-\-/)
             {
-                # We have a separator line, ignore.
+                // We have a separator line, ignore.
                 next;
             }
 
-            # Don't use split because Perl will truncate the returned array due to an undersireable feature
-            # where arrays returned and assigned have null elements truncated.
+            // Don't use split because Perl will truncate the returned array due to an undersireable feature
+            // where arrays returned and assigned have null elements truncated.
 
-            # Also, make sure there is a terminal \n which makes the regex both simpler and more robust.
+            // Also, make sure there is a terminal \n which makes the regex both simpler and more robust.
 
             if ($temp !~ m/\n$/)
             {
                 $temp .= "\n";
             }
 
-            # Get all the fields before we start so the code below is cleaner, and we want all the line
-            # splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
-            # whatever.
+            // Get all the fields before we start so the code below is cleaner, and we want all the line
+            // splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
+            // whatever.
 
             my $has_values = 0;
             my @fields;
             while ($temp =~ s/^(.*?)(?:\s*\|\s+|\n)//smg)
             {
-                # Clean up "$var" and "func()" to be "var" and "func".
+                // Clean up "$var" and "func()" to be "var" and "func".
                 my $raw = $1;
                 $raw =~ s/\(\)//;
                 $raw =~ s/^\$//;
 
-                # Trim whitespace from values. This probably only occurs when there aren't | chars on the line.
+                // Trim whitespace from values. This probably only occurs when there aren't | chars on the line.
                 $raw =~ s/^\s+(.*)\s+$/$1/;
                 if ($raw ne '')
                 {
@@ -544,8 +571,8 @@ sub read_state_data
             {
                 for (my $xx=0; $xx<=$#va; $xx++)
                 {
-                    $new_hr->{$va[$xx]} = $fields[$xx];
-                    # print "$va[$xx]: $fields[$xx]\n";
+                    $new_hr['$va[$xx]'] = $fields[$xx];
+                    // print "$va[$xx]: $fields[$xx]\n";
                 }
                 push(@table, $new_hr);
             }
@@ -558,46 +585,46 @@ sub read_state_data
 
 sub sanity_check_states
 {
-    my $ok = 1; # Things are ok.
+    my $ok = 1; // Things are ok.
     my %next_states;
 
-    # Capture non-empty states.
+    // Capture non-empty states.
     foreach my $hr (@table)
     {
-        if ($hr->{edge})
+        if ($hr['edge'])
         {
-            $known_states{$hr->{edge}}++;
+            $knownStates{$hr['edge']}++;
         }
-        if ($hr->{next})
+        if ($hr['next'])
         {
-            $next_states{$hr->{next}}++;
+            $next_states{$hr['next']}++;
         }
-        # jump() is a way of doing next state, so record those as well
-        if ($hr->{func} =~ m/jump\((.*)\)/)
+        // jump() is a way of doing next state, so record those as well
+        if ($hr['func'] =~ m/jump\((.*)\)/)
         {
             $next_states{$1}++;
         }
     }
     
-    # Check for unknown states in next.
+    // Check for unknown states in next.
     foreach my $hr (@table)
     {
-        if ($hr->{next} && ! exists($known_states{$hr->{next}}))
+        if ($hr['next'] && ! exists($knownStates{$hr['next']}))
         {
-            if  ($hr->{func} =~ m/return/)
+            if  ($hr['func'] =~ m/return/)
             {
                 msg("Warning: unknown state following return");
             }
             else
             {
-                msg("Error: unknown state $hr->{next}");
+                msg("Error: unknown state $hr['next']");
                 msg( Dumper($hr) );
                 $ok = 0;
             }
         }
     }
 
-    # Check for states which can never be reached due to no next.
+    // Check for states which can never be reached due to no next.
     foreach my $state (keys(%known_states))
     {
         if (! exists($next_states{$state}))
