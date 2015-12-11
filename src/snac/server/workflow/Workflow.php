@@ -12,9 +12,8 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+use \snac\Config as Config;
 namespace snac\client\workflow;
-
-use \snac\client\util\ServerConnect as ServerConnect;
 
 /**
   This is the Workflow class. It should be instantiated, then the run()
@@ -71,9 +70,7 @@ class Workflow
     private $verbose = 0;
     
     /**
-     * A stack used by 
-     *
-     *
+     * A stack used by jump and return. Push to this stack on jump, and pop on return.
      */
     private $stateStack = array();
     
@@ -100,9 +97,10 @@ class Workflow
      * Constructor
      * 
      * Requires the input to the server as an associative array
-     * @param array $input Input to the server
+     * @param string $tableAlias An alias name for the state table to read.
      */
-    public function __construct($input) {
+    public function __construct($tableAlias) {
+        $host = Config::$["host"];
         // read the state table
     }
 
