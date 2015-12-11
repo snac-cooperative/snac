@@ -37,8 +37,9 @@ class Workflow
 
     /**
      *
-     * A list of states that exist in the state table. These are the unique values from column 'edge'.
-     *
+     * A list of states that exist in the state table. These are the unique values from column 'edge'.  This
+     * list is used primarily for sanity checking and user interaction. I'm pretty sure it isn't necessary for
+     * running the engine.
      *
      * @var string[]
      */
@@ -69,6 +70,11 @@ class Workflow
      */
     private $verbose = 0;
     
+    /**
+     * A stack used by 
+     *
+     *
+     */
     private $stateStack = array();
     
     /**
@@ -298,27 +304,42 @@ class Workflow
                         }
                         elseif ((preg_match('/^jump\((.*)\)/', $hr['func'], $matches)))
                         {
-                            // Note: Capture inside literal parens is weird looking (above), but it is exactly
-                            // what we want.
+                            /*
+                             * This is there jump() happens.
+                             *
+                             * Get the state we're jumping to from the regex match above. 
+                             * 
+                             * Push the state we will transition to when we return.
+                             *
+                             * Change $currState to the new state. All done. 
+                             *
+                             * Note: Capture inside literal parens is weird looking (above), but it is exactly
+                             * what we want.
+                             */
                             $jumpToState = $matches[1];
-                            // Push the state we will transition to when we return.
                             pushState($hr['next']);
                             $currState = $jumpToState;
                         }
                         elseif ((preg_match('/^return[\(\)]*/', $hr['func'])))
                         {
+                            /* 
+                             * Is $currState really correct for the automatic choice when doing return()?
+                             * $hr['func'] is not correct, btw.
+                             */
                             $currState = popState();
-                            // Is $currState really correct for the automatic choice when doing return()? $hr['func']
-                            // is not correct, btw.
-                            // $choice = $currState
                         }
                         elseif ((preg_match('/^wait/', $hr['func'])))
                         {
-                            // Up above, this should cause all choices to become available.  We could get back
-                            // pretty much any input from the user, but depending on the wait state, only
-                            // certain other states will be acceptable. At one point, we jumped back to the
-                            // default state, but I think that is for a semi-continuous mode of operation:
-                            // $waitNext = $default_state;
+                            /* 
+                             * Wait is really exit. In the old, continuously running model, wait was simply a
+                             * pause for user input.
+                             *
+                             * Up above, this should cause all choices to become available.  We could get back
+                             * pretty much any input from the user, but depending on the wait state, only
+                             * certain other states will be acceptable. At one point, we jumped back to the
+                             * default state, but I think that is for a semi-continuous mode of operation:
+                             * $waitNext = $default_state;
+                             */
                             $waitNext = $hr['next'];
                             $doNext = 0;
                         }
@@ -326,12 +347,13 @@ class Workflow
                         {
                             msg(sprintf("<span style='background-color:lightgreen;'>Dispatch function: %s</span>", $hr['func']));
                             
-                            // Eventually, the state table will be sanity checked, and perhaps munged so that nothing
-                            // bad can happen. For now do a little sanity checking right here.
-                            
-                            // Is $returnValue used? If not, then this (apparantly historical) variable should
-                            // be removed.
-                            
+                            /* 
+                             * Eventually, the state table will be sanity checked, and perhaps munged so that nothing
+                             * bad can happen. For now do a little sanity checking right here.
+                             * 
+                             * Is $returnValue used? If not, then this (apparantly historical) variable should
+                             * be removed.
+                             */
                             $returnValue = dispatch($hr, 'func');
                             if ($hr['next'])
                             {
@@ -341,7 +363,7 @@ class Workflow
                             {
                                 $lastFlag = 0;
                             }
-                            // Else, the $currState is unchanged, iterate
+                            /* else, the $currState is unchanged, iterate */
                         }
                     }
                     elseif ($hr['test'] && $verbose)
@@ -370,11 +392,12 @@ class Workflow
                 last;
             }
         }
-        $tResults = array(); // traverse results
+        // traverse results        
+        $tResults = array();
         $tResults['waitNext']= $waitNext;
         $tResults['msg'] = $msg;
         return $tResults;
-    }
+    } // end traverse
 
 
     /**
@@ -516,13 +539,13 @@ class Workflow
             // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
             // $ch{options} =~ s/if\-logged\-in//;
             preg_replace('/if\-logged\-in/', '', $ch{options});
-            // msg("logout options: $ch{options}");
         }
         
-        // Auto clear if-go-x and if-do-x, search auto-cleared in this file.
-        
-        // Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
-        
+        /* 
+         * Auto clear if-go-x and if-do-x, search auto-cleared in this file.
+         * 
+         * Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
+         */
         if ($key == 'test')
         {
             $val = checkDemoCGI($hr['$key']);
