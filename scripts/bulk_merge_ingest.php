@@ -53,7 +53,7 @@ function foo_main ()
      */
     $dbu = new snac\server\database\DBUtil();
 
-    list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
+    list($appUserID, $role) = $dbu->getAppUserInfo('system');
     printf("appUserID: %s role: %s\n", $appUserID, $role);
     
     // If no file was parsed, then print the output that something went wrong

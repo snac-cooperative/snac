@@ -16,21 +16,86 @@ namespace snac\client\workflow;
 
 use \snac\client\util\ServerConnect as ServerConnect;
 
-/*
+/**
   This is the Workflow class. It should be instantiated, then the run()
   method called to run the machine based on user input and the system's current state
   
   @author Tom Laudeman
 */
-class Workflow {
+class Workflow 
+{
+    private $ch = array(); // assoc.
 
-    
-    
-    // Constructor
-    // 
-    // Requires the input to the server as an associative array
-    // @param array $input Input to the server
+    /**
+     *  
+     * The main state table. This is a list of lists, essentially a 2D table with columns edge, test, func, and next.
+     *
+     * @var string[][] table List of associative list with keys: edge, test, func, next
+     */
 
+    private $table = array();
+
+    /**
+     *
+     * A list of states that exist in the state table. These are the unique values from column 'edge'.
+     *
+     *
+     * @var string[]
+     */
+    private $knownStates = array(); // assoc.
+
+    /**
+     * The starting state for traversing the state table. It has been 'login', but will probably be instance
+     * specific.
+     *
+     * @var string='login' The starting state for table traversal. Defaults to 'login'.
+     *
+     */
+    private $default_state = 'login';
+
+    /**
+     * A message we return to the calling code.
+     *
+     *
+     * @var string A message we return.
+     * 
+     */
+    private $msg = '';
+    
+    /**
+     * Verbose output if true.
+     *
+     * @var boolean If true (in any sense of 'true') then do verbose output.
+     */
+    private $verbose = 0;
+    
+    private $stateStack = array();
+    
+    /**
+     * Push onto the state stack. Probaly used for jump and return.
+     * @var string The state to push
+     */
+    private function pushState($arg)
+    {
+        array_push($stateStack, $arg);
+    }
+    
+    /**
+     * Pop the state stack, return the state.
+     * @return string The popped state.
+     *
+     */
+    private function popState()
+    {
+        return array_pop($stateStack);
+    }
+
+    /**
+     * Constructor
+     * 
+     * Requires the input to the server as an associative array
+     * @param array $input Input to the server
+     */
     public function __construct($input) {
         // read the state table
     }
@@ -38,12 +103,603 @@ class Workflow {
     /*
       Run Method
 
-      Runs the server
+      Runs the workflow engine. Or something.
     */
-    public function run() {
+    public function run() 
+    {
         // run the state table
         return;
     }
+    
+    
+    /**
+     *
+     * Turn the state table into a graphviz .gv graphic file. It reads the $table and writes file $file.
+     *
+     *
+     */
+    public function makeGraph ()
+    {
+        $file = "graphviz_states.gv";
+        $out;
+        if (! ($out = fopen($file, 'w')))
+        {
+            printf("Cannot open $file for output\n");
+            exit(1);
+        }
+        
+        fprintf($out, "digraph States \{\n"); 
+        
+        // $hr was "hashref" but php doesn't have refs, so this is a tableRow or something.
+        foreach ($table as $hr)
+        {
+            $trans = '';
+            if ($hr['test'] != '' && $hr['func'] != '')
+            {
+                $trans = sprintf("%s\n%s", $hr['test'], $hr['func']);
+            }
+            elseif ($hr['test'] != '')
+            {
+                $trans = $hr['test'];
+            }
+            elseif ($hr['func'] != '') 
+            {
+                // isn't ($hr['func']) more clear and robust? Any concept of 'true' is ok here.
+                $trans = $hr['func'];
+            }
+        
+            $next = $hr['next'];
+            if (preg_match('/^wait/', $hr['func']))
+            {
+                $next = $hr['func'];
+            }
+            fprintf($out, "\t\"%s\" -> \"%s\" [label=\"%s\"];\n", $hr['edge'], $next, $trans);
+        }
+        
+        fprintf($out, "\}\n");
+        fclose($out);
+        // Really exit? That seems like a very bad idea inside a method.
+        printf("Exiting from function make_graph\n");
+        exit();
+    }
+
+    /**
+     * Used by the walk-through web site to make a list of checkboxes. This works based on a convention of
+     * test function naming.
+     *
+     * @param string $currState the current state we are in
+     *
+     * @return string $html the html for the checkboxes (I think) 
+     */ 
+    public function optionsCheckboxes($currState)
+    {
+        $currState = $_[0];
+        $html = "";
+        $unique = array();
+        $allTests;
+        // First we need a list of unique tests.
+        foreach ($table as $hr)
+        {
+            if ($hr['test'] && ! isset($unique[$hr['test']]))
+            {
+                $unique[$hr['test']] = 1;
+                array_push($allTests, $hr['test']);
+            }
+        }
+
+        $currStateTest = $currState;
+        // $currStateTest =~ s/(.*)\-input/if-page-$1/;
+        // Change $currStateTest in place.
+        preg_replace('/(.*)\-input/','if-page-$1', $currStateTest);
+    
+        // foreach over the sorted list so the order is always the same.
+        sort($allTests);
+        foreach ($allTests as $test)
+        {
+            $checked = '';
+            $autoMsg = '';
+            $disabled = '';
+
+            // If a checkbox is checked, and it isn't an "if-page-x" test, then keep it checked.  Else if the
+            // matches the current states if-page-x, set the check, else unchecked. dashboard-input causes
+            // if-page-dashboard to be true.
+
+            // if (checkDemoCGI($test) && $test !~ m/if\-page/)
+            if (checkDemoCGI($test) && ! (preg_match('/if\-page/', $test)))
+            {
+                $checked = 'checked';
+            }
+            elseif ($test == $currStateTest)
+            {
+                $checked = 'checked';
+                $autoMsg = "(auto-checked)";
+            }
+
+            // if ($test =~ m/if\-not\-/)
+            if (preg_match('/if\-not\-/', $test))
+            {
+                $notTest = $test;
+                // $notTest =~ s/if\-not\-(.*)/if-$1/;
+                // Note: $notTest modified in place
+                preg_replace('/if\-not\-(.*)/', '/if-$1/', $notTest);
+                $autoMsg = "(disabled, depends on $notTest)";
+                $disabled = "disabled";
+            }
+
+            // Always uncheck if-go-x because presumably we went there. Users need to say where to do on each
+            // request, so we don't want these properties to carry over.
+
+            if ((preg_match('/if\-go\-/', $test)) || (preg_match('/if\-do\-/', $test)))
+            {
+                $checked = '';
+                $autoMsg = "(auto-cleared)";
+            }
+            // I wonder if this contatenation and string interpolation will work identically to Perl?
+            $html .= "$test <input type=\"checkbox\" name=\"options\" value=\"$test\" $checked $disabled> $autoMsg <br>\n";
+        }
+        return $html;
+    }
+    
+    /**
+     * Private method to concatenate values to the private var $msg. Makes a nicer interface than depending on
+     * assigning to a global-to-this-class class variable.
+     *
+     * @param string $msg
+     *
+     * @return void
+     *
+     */
+    private function msg($msg)
+    {
+        $msg .= "$msg<br>\n";
+    }
+    
+    // This is normally first called with $default_state, and state table traversal goes from there. 
+    public function traverse($currState)
+    {
+        $msg = '';
+        $waitNext = '';
+        $lastFlag = 0;
+        $doNext = 1;
+        
+        // In the old days, when we came out of wait, we ran the wait_next state. Now we start at the beginning,
+        // and we have an if-test to get us back to a state that will match the rest of the input in the http
+        // request.
+        
+        $xx = 0;
+        while ($doNext)
+        {
+            msg("<span style=\"background-color:lightblue;\">Going into state: $currState</span>");
+            $lastFlag = 0;
+            // if ($waitNext)
+            // {
+            //     $currState = $waitNext;
+            // }
+            // $waitNext = '';
+            foreach ($table as $hr)
+            {
+                if ($hr['edge'] == $currState)
+                {
+                    if ((dispatch($hr, 'test')) ||
+                        ($hr['test'] == 'true') ||
+                        ($hr['test'] == ''))
+                    {
+                        // Defaulting to the function as the choice makes sense most of the time, but not with return()
+                        // $choice = $hr['func'];
+                        $lastFlag = 1;
+                        
+                        // Unless we hit a wait function, we continue with the next state.
+                        $doNext = 1;
+                        
+                        if ($hr['func'] == 'null' || $hr['func'] == '')
+                        {
+                            $currState = $hr['next'];
+                            // Do nothing.
+                        }
+                        elseif ((preg_match('/^jump\((.*)\)/', $hr['func'], $matches)))
+                        {
+                            // Note: Capture inside literal parens is weird looking (above), but it is exactly
+                            // what we want.
+                            $jumpToState = $matches[1];
+                            // Push the state we will transition to when we return.
+                            pushState($hr['next']);
+                            $currState = $jumpToState;
+                        }
+                        elseif ((preg_match('/^return[\(\)]*/', $hr['func'])))
+                        {
+                            $currState = popState();
+                            // Is $currState really correct for the automatic choice when doing return()? $hr['func']
+                            // is not correct, btw.
+                            // $choice = $currState
+                        }
+                        elseif ((preg_match('/^wait/', $hr['func'])))
+                        {
+                            // Up above, this should cause all choices to become available.  We could get back
+                            // pretty much any input from the user, but depending on the wait state, only
+                            // certain other states will be acceptable. At one point, we jumped back to the
+                            // default state, but I think that is for a semi-continuous mode of operation:
+                            // $waitNext = $default_state;
+                            $waitNext = $hr['next'];
+                            $doNext = 0;
+                        }
+                        else
+                        {
+                            msg(sprintf("<span style='background-color:lightgreen;'>Dispatch function: %s</span>", $hr['func']));
+                            
+                            // Eventually, the state table will be sanity checked, and perhaps munged so that nothing
+                            // bad can happen. For now do a little sanity checking right here.
+                            
+                            // Is $returnValue used? If not, then this (apparantly historical) variable should
+                            // be removed.
+                            
+                            $returnValue = dispatch($hr, 'func');
+                            if ($hr['next'])
+                            {
+                                $currState = $hr['next'];
+                            }
+                            else
+                            {
+                                $lastFlag = 0;
+                            }
+                            // Else, the $currState is unchanged, iterate
+                        }
+                    }
+                    elseif ($hr['test'] && $verbose)
+                    {
+                        msg(sprintf("If: %s is false,", $hr['test']));
+                        if ($hr['func'])
+                        {
+                            msg(sprintf("not running func: %s, ", $hr['func']));
+                        }
+                        msg(sprintf("not going to state: %s", $hr['next']));
+                    }
+                }
+                else
+                {
+                    // msg("$hr['edge'] is not $currState last_flag: $lastFlag");
+                }
+                if ($lastFlag)
+                {
+                    last;
+                }
+            }
+            $xx++;
+            if ($xx > 30)
+            {
+                msg("Error: inf loop catcher!");
+                last;
+            }
+        }
+        $tResults = array(); // traverse results
+        $tResults['waitNext']= $waitNext;
+        $tResults['msg'] = $msg;
+        return $tResults;
+    }
+
+
+    /**
+     * Turn the state table variable into and html representation.
+     *
+     * @return string $html The html fragment that is a table element of the workflow state table.
+     *
+     */
+
+    public function tableToHtml()
+    {
+        $html = "<table border=\"1\">\n";
+        $html .= "<tr bgcolor='lightgray'>\n";
+        foreach (array('State', 'Test', 'Func', 'Next-state') as  $head)
+        {
+            $html .= "<td>$head</td>\n";
+        }
+        $html .= "</tr>\n";
+        
+        foreach ($table as $hr)
+        {
+            $html .= "<tr>\n";
+            foreach (array('edge', 'test', 'func', 'next') as $key)
+            {
+                $html .= sprintf("<td>%s</td>\n", $hr['$key']);
+            }
+            $html .= "</tr>\n";
+        }
+        $html .= "</table>\n";
+        return $html;
+    }
+
+    /**
+     * This is a simply regex html substitution template function. If it needs anything more interesting than
+     * this, we should migrate is to a real template system like twig.
+     *
+     * @param string $options Options as html checkboxes
+     *
+     * @param string $currState The name of the current state
+     *
+     * @param string $msg A message for the user giving the status of the state machine
+     *
+     * @param $optionListStr A list of options as a string.
+     *
+     */
+
+    public function render($options, $currState, $msg, $optionsListStr)
+    {
+        $table = table_to_html();
+        
+        // print "Content-type: text/plain\n\n";
+        // print "Current state: $currState<br>\n";
+        // print $options;
+        
+        $template = read_file('index.html');
+        preg_replace('/\$optionsListStr/smg', '$optionsListStr', $template);
+        preg_replace('/\$options/smg', '$options', $template);
+        preg_replace('/\$currState/smg', '$currState', $template);
+        preg_replace('/\$msg/smg', '$msg', $template);
+        preg_replace('/\$table/smg', '$table', $template);
+        
+        print "Content-type: text/html\n\n";
+        print $template;
+    }
+    
+    /* 
+     * Quick shortcut to check if- functions from the CGI input. If the CGI key exists and is true, then return
+     * true, else return false
+     *
+     *
+     * @param string $key The key we are checking against the CGI params
+     *
+     * @return boolean True or false, depending on whether the key was found.
+     */
+    
+    public function checkDemoCGI($key)
+    {
+        // I think these are CGI params. Pull them out using the standard php idiom.
+        $opts = array();
+        /* 
+         * foreach my $opt (split("\0", $ch{options}))
+         * {
+         *     $opts{$opt} = 1;
+         * }
+         */
+        
+        $notComplementKey = $key;
+        preg_replace('/if\-not\-(.*)/', 'if-$1', $notComplementKey);
+        
+        if ((preg_match('/^if\-not\-/', $key)))
+        {
+            if ($opts[$notComplementKey])
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        elseif ((preg_match('/^if\-/', $key)) && $opts[$key])
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     *
+     * Dispatch a function. This calls the functions that do work specified by the workflow.
+     *
+     *
+     *
+     *
+     */
+    private function dispatch($hr, $key)
+    {
+        // Sanity check and default
+        if ($key != 'func' && $key != 'test')
+        {
+            $key = 'func';
+        }
+        
+        /* 
+         * The state value true is always true, empty (no test/function) is true as well because empty is
+         * considered a "this is a default" or something. State table functions return explicit true or false,
+         * and not having a function is assumed to be true. Put another way, if you don't have a function,
+         * then you expected the state to transtion.
+         */
+        if ($hr['$key'] == 'true' || $hr['$key'] == '')
+        {
+            return 1;
+        }
+
+        // auto-clear some options based one the function 'logout' or any if-do-x test option.
+
+        if ($hr['$key'] == 'logout')
+        {
+            // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
+            // $ch{options} =~ s/if\-logged\-in//;
+            preg_replace('/if\-logged\-in/', '', $ch{options});
+            // msg("logout options: $ch{options}");
+        }
+        
+        // Auto clear if-go-x and if-do-x, search auto-cleared in this file.
+        
+        // Look up test values from the if- checkboxes, aka options handled by checkDemoCGI().
+        
+        if ($key == 'test')
+        {
+            $val = checkDemoCGI($hr['$key']);
+            $val_text = 'false';
+            if ($val)
+            {
+                $val_text = 'true';
+            }
+            msg(sprintf("checking: %s result: $val_text<br>\n", $hr['$key'] ));
+            return $val;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+
+    /**
+     *
+     * This needs to be upgraded. The constructor should call this.
+     *
+     */
+    private function readStateData($dataFile)
+    {
+        // column names, va mnemonic for variables.
+        va = array('edge', 'test', 'func', 'next');
+        
+        $fields = array();
+        
+        my $log_flag = 0;
+        
+        if (! $fd = fopen($dataFile, 'r'))
+        {
+            if (! $log_flag)
+            {
+                print ("Error: Can't open $dataFile for reading\n");
+                $log_flag = 1;
+            }
+        }
+        else
+        {
+            fgets($fd);
+            while (($temp = fgets($fs)))
+            {
+                $newList = array();
+                
+                // Remove the leading | and optional whitespace. 
+                preg_replace('/^\|\s*/', '', $temp);
+                
+                if ((preg_match('/^\s*#/', $temp)))
+                {
+                    // We have a comment, ignore this line.
+                    next;
+                }
+                
+                if ((preg_match('/^\-\-/', $temp)))
+                {
+                    // We have a separator line, ignore.
+                    next;
+                }
+                
+                // Make sure there is a terminal \n which makes the regex both simpler and more robust.
+                
+                if ($temp !~ m/\n$/)
+                {
+                    $temp .= "\n";
+                }
+                
+                // Get all the fields before we start so the code below is cleaner, and we want all the line
+                // splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
+                // whatever.
+                
+                $hasValues = 0;
+                $fields = array();
+                $myMatches = array();
+                while ((preg_replace('/^(.*?)(?:\s*\|\s+|\n)/smg', 
+                                     function($matches) 
+                                     {
+                                         foreach ($matches as $single)
+                                         {
+                                             array_push($myMatches, $single);
+                                             return '';
+                                         }
+                                     }, $temp)))
+                    {
+                        // Clean up "$var" and "func()" to be "var" and "func".
+                        my $raw = $1;
+                        $raw =~ s/\(\)//;
+                            $raw =~ s/^\$//;
+                            
+                // Trim whitespace from values. This probably only occurs when there aren't | chars on the line.
+                $raw =~ s/^\s+(.*)\s+$/$1/;
+                if ($raw ne '')
+                {
+                    $hasValues = 1;
+                }
+                push(@fields, $raw);
+            }
+            
+            if ($hasValues)
+            {
+                for (my $xx=0; $xx<=$#va; $xx++)
+                {
+                    $newList['$va[$xx]'] = $fields[$xx];
+                    // print "$va[$xx]: $fields[$xx]\n";
+                }
+                push(@table, $newList);
+            }
+        }
+    }
+    close(IN);
+}
+
+
+
+sub sanity_check_states
+{
+    my $ok = 1; // Things are ok.
+    my %next_states;
+
+    // Capture non-empty states.
+    foreach my $hr (@table)
+    {
+        if ($hr['edge'])
+        {
+            $knownStates{$hr['edge']}++;
+        }
+        if ($hr['next'])
+        {
+            $next_states{$hr['next']}++;
+        }
+        // jump() is a way of doing next state, so record those as well
+        if ($hr['func'] =~ m/jump\((.*)\)/)
+        {
+            $next_states{$1}++;
+        }
+    }
+    
+    // Check for unknown states in next.
+    foreach my $hr (@table)
+    {
+        if ($hr['next'] && ! exists($knownStates{$hr['next']}))
+        {
+            if  ($hr['func'] =~ m/return/)
+            {
+                msg("Warning: unknown state following return");
+            }
+            else
+            {
+                msg("Error: unknown state $hr['next']");
+                msg( Dumper($hr) );
+                $ok = 0;
+            }
+        }
+    }
+
+    // Check for states which can never be reached due to no next.
+    foreach my $state (keys(%known_states))
+    {
+        if (! exists($next_states{$state}))
+        {
+            msg("No next-state for: $state");
+            $ok = 0;
+        }
+    }
+
+    if (! $ok)
+    {
+        msg("Failed state table sanity check (unknown or unreachable states)");
+        return 0;
+    }
+    return 1;
+}
+
+
+
 
 }
 
