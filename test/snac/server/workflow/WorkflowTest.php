@@ -1,5 +1,5 @@
 /**
- * Database Utility Test File
+ * Workflow testing 
  *
  *
  * License:
@@ -11,7 +11,7 @@
  */
 
 /**
- * Database Utils test suite
+ * Workflow engine tests
  * 
  * @author Tom Laudeman
  *
