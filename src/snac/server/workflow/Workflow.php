@@ -13,7 +13,7 @@
  *            the Regents of the University of California
  */
 use \snac\Config as Config;
-namespace snac\client\workflow;
+namespace snac\server\workflow;
 
 /**
   This is the Workflow class. It should be instantiated, then the run()
@@ -23,8 +23,6 @@ namespace snac\client\workflow;
 */
 class Workflow 
 {
-    private $ch = array(); // assoc.
-
     /**
      *  
      * The main state table. This is a list of lists, essentially a 2D table with columns edge, test, func, and next.
@@ -94,14 +92,19 @@ class Workflow
     }
 
     /**
-     * Constructor
+     * Constructor. Currently known values for $tableAlias: 'client', 'server'. See Config.php and
+     * Config_dist.php. Assume (at least for now) that the state tables are in the same directory as this
+     * file.
      * 
-     * Requires the input to the server as an associative array
      * @param string $tableAlias An alias name for the state table to read.
      */
     public function __construct($tableAlias) {
-        $host = Config::$["host"];
-        // read the state table
+        if (! $tableAlias || ! (isset(Config::$stateTableAlias[$tableAlias])))
+        {
+            $tableAlias = 'server';
+        }
+        $fileName = Config::$stateTableAlias[$tableAlias];
+        readStateDate($fileName);
     }
 
     /*
@@ -475,12 +478,6 @@ class Workflow
     {
         // I think these are CGI params. Pull them out using the standard php idiom.
         $opts = array();
-        /* 
-         * foreach my $opt (split("\0", $ch{options}))
-         * {
-         *     $opts{$opt} = 1;
-         * }
-         */
         
         $notComplementKey = $key;
         preg_replace('/if\-not\-(.*)/', 'if-$1', $notComplementKey);
@@ -535,8 +532,9 @@ class Workflow
         if ($hr['$key'] == 'logout')
         {
             // Yikes. A bit crude but should work. Will leave \0\0 in the options string.
-            // $ch{options} =~ s/if\-logged\-in//;
-            preg_replace('/if\-logged\-in/', '', $ch{options});
+            
+            printf("Error: need to re-implement the concept of logging out\n");
+            //preg_replace('/if\-logged\-in/', '', $ch{options});
         }
         
         /* 
@@ -564,14 +562,13 @@ class Workflow
 
     /**
      *
-     * This needs to be upgraded. The constructor should call this.
+     * Read the state table, populate var $table.
+     *
+     * @param $dataFile Filename of the state table to read.
      *
      */
     private function readStateData($dataFile)
     {
-        // column names, va mnemonic for variables.
-        $colName = array('edge', 'test', 'func', 'next');
-        
         $fields = array();
         
         $logFlag = false;
@@ -586,6 +583,10 @@ class Workflow
         }
         else
         {
+            /* 
+             * Start by pulling off the first line of the file. We assume that the first line is column
+             * headings that humans use to remind themselves which column is which.
+             */
             fgets($fd);
             while (($temp = fgets($fs)))
             {
@@ -602,7 +603,7 @@ class Workflow
                 
                 if ((preg_match('/^\-\-/', $temp)))
                 {
-                    // We have a separator line, ignore.
+                    // We have a separator line, ignore. org-mode tables 
                     next;
                 }
                 
@@ -621,65 +622,67 @@ class Workflow
                 $fields = array();
                 $myMatches = array();
                 /*
+                 * Do a while loop over the input line, trimming off a column by replacing the column data
+                 * with '', and then process the captured ($myMatch[1]) column. While this looks exciting in
+                 * php, while-replace-and-keep is idiomatic in Perl where the syntax is natural. It can be
+                 * idiomatic in php, albeit with a few extra lines of code. Using preg_replace_callback()
+                 * saves doing a preg_match() followed by preg_replace(), and is therefore more robust (no
+                 * duplicated regex on two separate lines of code).
                  *
                  * php can't return the matches from preg_replace() so we have to use preg_replace_callback()
-                 * and make the callback function write into a local variable (declared at a global) as a side
-                 * effect.
+                 * and make the callback function write into a local variable (declared as a global) as a side
+                 * effect. The main purpose of the callback is to supply the replacement value. We replace the
+                 * matched (and captured) value with the empty string ''.
                  *
                  */ 
                 while ((preg_replace_callback('/^(.*?)(?:\s*\|\s+|\n)/smg', 
-                                     function($matches) 
+                                              function($matches) 
                                               {
                                                   global $myMatches;
                                                   $myMatches = $matches;
                                                   return '';
                                               },
                                               $temp)))
-                    {
-                        /* 
-                         * Clean up "$var" and "func()" to be "var" and "func".
-                         * Remove () from func() and $ from $var
-                         */
-                        $raw = $myMatches[1];
-                        preg_replace('/\(\)/', '', $raw);
-                        preg_replace('/^\$/', '', $raw);
+                {
+                    /* 
+                     * Clean up "$var" and "func()" to be "var" and "func".
+                     * Remove () from func() and $ from $var
+                     */
+                    $raw = $myMatches[1];
+                    preg_replace('/\(\)/', '', $raw);
+                    preg_replace('/^\$/', '', $raw);
                             
-                        /*
-                         * Trim whitespace from values. This probably only occurs when there aren't | chars on
-                         * the line. Why not just use trim()?
-                         */
-                        preg_replace('/^\s+(.*)\s+$/', '$1', $raw);
-                        if ($raw != '')
-                        {
-                            $hasValues = 1;
-                        }
-                        array_push($fields, $raw);
+                    /*
+                     * Trim whitespace from values. This probably only occurs when there aren't | chars on
+                     * the line. Why not just use trim()?
+                     */
+                    preg_replace('/^\s+(.*)\s+$/', '$1', $raw);
+                    if ($raw != '')
+                    {
+                        $hasValues = 1;
                     }
-            
-            if ($hasValues)
-            {
-                $newList = array('edge' => $fields[0],
-                                 'test' => $fields[1],
-                                 'func' => $fields[2],
-                                 'next' => $fields[3]);
-                array_push($table, $newList);
+                    array_push($fields, $raw);
+                }
                 
-                /* This old code was historically a generalized named-column data manager. We don't need that.
-                 * for (my $xx=0; $xx<=$#colName; $xx++)
-                 * {
-                 *     $newList['$colName[$xx]'] = $fields[$xx];
-                 *     // print "$colName[$xx]: $fields[$xx]\n";
-                 * }
-                 */
+                /*
+                 * Note that the column names are hard coded. Changes here would required changes everywhere. 
+                 */ 
+                if ($hasValues)
+                {
+                    $newList = array('edge' => $fields[0],
+                                     'test' => $fields[1],
+                                     'func' => $fields[2],
+                                     'next' => $fields[3]);
+                    array_push($table, $newList);
+                }
             }
         }
+        fclose($fp);
     }
-    fclose($fp);
-}
 
 
 
-    private function sanity_check_states()
+    public function sanityCheckStates()
     {
         $ok = true; // Things are ok.
         $nextStates = array();
@@ -741,9 +744,9 @@ class Workflow
         if (! $ok)
         {
             msg("Failed state table sanity check (unknown or unreachable states)");
-            return 0;
+            return false;
         }
-        return 1;
+        return true;
     }
     
 }

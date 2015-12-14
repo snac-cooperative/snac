@@ -19,10 +19,9 @@
  */
 class DBUtilTest extends PHPUnit_Framework_TestCase {
     
-    /*
-     * Can we get a random Constellation?
-     *
-     *
+    /**
+     * Test a few fundamentals of the database utility layer, and by implication low level SQL functions.
+     * 
      * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
      *
      * Maybe use @dataProvider to test various records from the db for function, subject, etc.
