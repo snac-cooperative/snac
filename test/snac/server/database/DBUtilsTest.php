@@ -51,7 +51,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         list($appUserID, $role) = $this->dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
+    }
 
+
+    public function testDemoConstellation()
+    {
         $vhInfo = $this->dbu->demoConstellation();
         $cObj = $this->dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($cObj);
@@ -64,7 +68,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                'version' => $vhInfo['version']);
         $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $appUserID);
         $this->assertNotNull($reverseCObj);
-
+    }
+        
+    public function testParseToDB()
+    {
         // Parse a file, write the data into the db.
 
         $eParser = new \snac\util\EACCPFParser();
@@ -95,6 +102,5 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                          $existingMainId);
         $this->assertTrue(($vhInfo['version'] < $updatedVhInfo['version']) &&
                           ($vhInfo['main_id'] == $updatedVhInfo['main_id']));
-
     }
 }
