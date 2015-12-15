@@ -52,7 +52,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
     public function testAppUserInfo()
     {
-        $this->assertNotNull($appUserID);
+        $this->assertNotNull($this->appUserID);
     }
 
 
@@ -68,7 +68,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $vhInfo = $this->dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
                                'version' => $vhInfo['version']);
-        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $appUserID);
+        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
     }
         
@@ -78,7 +78,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $this->dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+        $vhInfo = $this->dbu->insertConstellation($constellationObj, $this->appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
 
         $this->assertNotNull($vhInfo);
 
@@ -86,7 +86,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Get the constellation that was just inserted. As of Dec 2015, the inserted and selected
          * constellation won't be identical due to unresolved treatment of place and maintenance data.
          */
-        $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $appUserID);
+        $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
         $this->assertNotNull($selectedConstellationObj);
         
         /*
@@ -97,7 +97,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
         $existingMainId = $vhInfo['main_id'];
         $updatedVhInfo = $this->dbu->updateConstellation($constellationObj,
-                                                         $appUserID,
+                                                         $this->appUserID,
                                                          $role,
                                                          'needs review',
                                                          'updating constellation for test',
