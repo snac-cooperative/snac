@@ -217,12 +217,12 @@ class SQL
         /*
          * Note: query() as opposed to prepare() and execute()
          */ 
-        $this->sdb->query('insert into version_history 
-                            (main_id, user_id, role_id, status, is_current, note)
-                            values 
-                            ($1, $2, $3, $4, $5, $6)
-                            returning id as version',
-                          array($main_id, $userid, $role, $status, true, $note));
+        $result = $this->sdb->query('insert into version_history 
+                                    (main_id, user_id, role_id, status, is_current, note)
+                                    values 
+                                    ($1, $2, $3, $4, $5, $6)
+                                    returning id as version',
+                                    array($main_id, $userid, $role, $status, true, $note));
         $version = $this->sdb->fetchrow($result);
         return array('version' => $version, 'main_id' => $main_id);
     }
