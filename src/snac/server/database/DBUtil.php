@@ -439,6 +439,7 @@ class DBUtil
      */
     private function saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo)
     {
+        printf("vhInfo %s\n", var_export($vhInfo, 1));
         $this->sql->insertNrd($vhInfo,
                               $id->getExistDates(),
                               array($id->getArk(),
@@ -619,5 +620,5 @@ class DBUtil
         }
 
         return $vhInfo;
-    } // end updateConstellation
+    } // end saveConstellation
 }
