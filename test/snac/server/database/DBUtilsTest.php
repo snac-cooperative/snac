@@ -31,12 +31,16 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * 
      */
-    public function testRandomConstellation() 
+    public function testDBUtilAll() 
     {
+        global $dbu;
         $dbu = new snac\server\database\DBUtil();
         $this->assertNotNull($dbu);
+    }
 
-
+    public function testAppUserInfo()
+    {
+        global $dbu;
         list($appUserID, $role) = $dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
 
@@ -49,7 +53,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
         $vhInfo = $dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
-                           'version' => $vhInfo['version']);
+                               'version' => $vhInfo['version']);
         $reverseCObj = $dbu->selectConstellation($reverseVhInfo, $appUserID);
         $this->assertNotNull($reverseCObj);
 
