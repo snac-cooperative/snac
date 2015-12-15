@@ -23,7 +23,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      * DBUtil object for this class
      * @var DBUtil object
      */ 
-    private $dbu;
+    private $dbu = null;
 
     /*
      * Can we get a random Constellation?
@@ -40,7 +40,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testDBUtilAll() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        $this->assertNotNull($dbu);
+        $this->assertNotNull($this->dbu);
     }
 
     public function testAppUserInfo()
