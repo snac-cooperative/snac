@@ -54,6 +54,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * 
      */
+    private $tba = false;
     public function testDBUtilAll() 
     {
         $this->assertNotNull($this->dbu);
