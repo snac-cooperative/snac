@@ -78,7 +78,7 @@ class DatabaseConnector {
 
             // If the connection does not throw an exception, but the connector is false, then throw.
             if ($this->dbHandle === false) {
-                throw new Exception("Unable to connect to back-end database.");
+                throw new \Exception("Unable to connect to back-end database.");
             }
         } catch (Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out.
@@ -102,7 +102,7 @@ class DatabaseConnector {
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
-                throw new Exception("Database Prepare Error: " . $errorMessage);
+                throw new \Exception("Database Prepare Error: " . $errorMessage);
             }
         } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out
@@ -128,14 +128,14 @@ class DatabaseConnector {
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
-                throw new Exception("Database Execute Error: " . $errorMessage);
+                throw new \Exception("Database Execute Error: " . $errorMessage);
             }
             
             $resultError = \pg_result_error($result);
             if ($resultError === false) {
-                throw new Exception("Database Execute Error: Could not return results -- malformed result");
+                throw new \Exception("Database Execute Error: Could not return results -- malformed result");
             } else if (!empty($resultError)) {
-                throw new Exception("Database Execute Error: " . $resultError);
+                throw new \Exception("Database Execute Error: " . $resultError);
             }
             
             return $result;
