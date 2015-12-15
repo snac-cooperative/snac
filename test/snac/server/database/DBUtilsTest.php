@@ -79,7 +79,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                    $appUserID,
                                                    $role,
                                                    'needs review',
-                                                   'updating constellation for test'
+                                                   'updating constellation for test',
                                                    $existingMainId);
         $this->assertTrue(($vhInfo['version'] < $updatedVhInfo['version']) &&
                           ($vhInfo['main_id'] == $updatedVhInfo['main_id']));
