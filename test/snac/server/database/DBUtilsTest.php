@@ -74,11 +74,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * How can this test that the constellation was successfully updated? We need more SQL functions to
          * look at parts of the newly updated constellation records in the various tables.
          */ 
+        $existingMainId = $vhInfo['main_id'];
         $updatedVhInfo = $dbu->updateConstellation($constellationObj,
                                                    $appUserID,
                                                    $role,
                                                    'needs review',
-                                                   'updating constellation for test');
+                                                   'updating constellation for test'
+                                                   $existingMainId);
         $this->assertTrue(($vhInfo['version'] < $updatedVhInfo['version']) &&
                           ($vhInfo['main_id'] == $updatedVhInfo['main_id']));
 
