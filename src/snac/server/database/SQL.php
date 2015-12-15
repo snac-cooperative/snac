@@ -214,8 +214,10 @@ class SQL
      */
     public function updateVersionHistory($userid, $role, $status, $note, $main_id)
     {
-        $this->sdb->query('insert_version_history', 
-                            'insert into version_history 
+        /*
+         * Note: query() as opposed to prepare() and execute()
+         */ 
+        $this->sdb->query('insert into version_history 
                             (main_id, user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5, $6)
