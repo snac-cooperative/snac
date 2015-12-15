@@ -383,7 +383,7 @@ class DBUtil
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
         $vhInfo = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
-        saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
         return $vhInfo;
     } // end insertConstellation
 
@@ -412,7 +412,7 @@ class DBUtil
     public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
     {
         $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
-        saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
         return $vhInfo;
     }
     
