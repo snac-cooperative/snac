@@ -19,14 +19,23 @@
  */
 class DBUtilTest extends PHPUnit_Framework_TestCase {
     
-    /*
+    /**
      * DBUtil object for this class
-     * @var DBUtil object
+     * @var $dbu DBUtil object
      */ 
     private $dbu = null;
 
-    private $appUserId = null;
+    /**
+     * Class var to hold the appUserID
+     * @var $appUserID holds the appUserID
+     */ 
+    private $appUserID = null;
 
+    /*
+     * Any vars that aren't set up here won't be initialized, even though the other functions seem to run in
+     * order. It behaves as though initializing instance vars anywhere except here don't initialize for the
+     * whole class, almost as though the class where being instantiated from scratch for each test.
+     */ 
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
@@ -48,13 +57,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testDBUtilAll() 
     {
         $this->assertNotNull($this->dbu);
+        $this->tba = true; // testDBUtilAll has run.
     }
 
     public function testAppUserInfo()
     {
         $this->assertNotNull($this->appUserID);
+        $this->assertTrue($this->tba); // Did testDBUtilAll run?
     }
-
 
     public function testDemoConstellation()
     {
