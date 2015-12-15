@@ -44,12 +44,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($cObj);
 
-        /*
+        /* 
          * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
          */ 
         $vhInfo = $dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
-                           'version' => $vhinfo['version']);
+                           'version' => $vhInfo['version']);
         $reverseCObj = $dbu->selectConstellation($reverseVhInfo, $appUserID);
         $this->assertNotNull($reverseCObj);
 
