@@ -363,7 +363,7 @@ class DBUtil
     /**
      * Write a PHP Constellation object to the database.
      *  
-     * @param Constallation $id A PHP Constellation object.
+     * @param \snac\data\Constellation $id A PHP Constellation object.
      *
      * @param string $userid The user's appuser.id value from the db. 
      *
