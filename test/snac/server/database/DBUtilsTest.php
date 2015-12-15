@@ -25,6 +25,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     private $dbu = null;
 
+    private $appUserId = null;
+
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
@@ -49,7 +51,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
     public function testAppUserInfo()
     {
-        list($appUserID, $role) = $this->dbu->getAppUserInfo('system');
+        list($this->appUserID, $role) = $this->dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
     }
 
@@ -57,7 +59,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testDemoConstellation()
     {
         $vhInfo = $this->dbu->demoConstellation();
-        $cObj = $this->dbu->selectConstellation($vhInfo, $appUserID);
+        $cObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
         $this->assertNotNull($cObj);
 
         /* 
