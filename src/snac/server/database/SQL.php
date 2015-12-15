@@ -470,9 +470,11 @@ class SQL
                             returning id');
         
         /* 
-         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. 
+         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. Always use
+         * keys explicitly when going from associative context to flat list context.
          */
-        $eArgs = $vhInfo;
+        $eArgs = array($vhInfo['version'], $vhInfo['main_id']);
+
         foreach ($argList as $arg)
         {
             array_push($eArgs, $arg);
@@ -642,7 +644,12 @@ class SQL
                             version=(select max(version) from nrd where version<=$1)
                             and main_id=$2');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq, 
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -670,8 +677,12 @@ class SQL
                             where
                             version=(select max(version) from otherid where version<=$1 and main_id=$2)
                             and main_id=$2');
-
-        $result = $this->sdb->execute($qq, $vhInfo);
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -746,8 +757,13 @@ class SQL
                             where
                             subject.id=aa.id
                             and subject.version=aa.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
-        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -783,8 +799,13 @@ class SQL
                             where
                             aa.id=bb.id
                             and aa.version=bb.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
-        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -818,7 +839,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -864,7 +887,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -897,7 +922,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version']
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -954,8 +981,9 @@ class SQL
                             and name_contributor.version=aa.version
                             and name_contributor.name_id=$3');
         
-        $name_result = $this->sdb->execute($qq_1, $vhInfo);
-        
+        $name_result = $this->sdb->execute($qq_1,
+                                           array($vhInfo['version']
+                                                 $vhInfo['main_id']));
         // Contributor has issues. See comments in schema.sql. This will work for now.
         // Get each name, and for each name get each contributor.
         $all = array();
