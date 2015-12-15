@@ -31,7 +31,7 @@ while ($filename = trim(fgets(STDIN))) {
 
     // Create new parser for this file and parse it
     $e = new \snac\util\EACCPFParser();
-    $id = $e->parseFile($filename);
+    $constellation = $e->parseFile($filename);
 
     // For each unparsable tag and attribute in the parsed EAC-CPF, print it out
     foreach ($e->getMissing() as $miss) {
@@ -39,7 +39,7 @@ while ($filename = trim(fgets(STDIN))) {
     }
 
     // Insert the constellation into the database
-    $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+    $vhInfo = $dbu->insertConstellation($constellation, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
 }
 
 // If no file was parsed, then print the output that something went wrong
