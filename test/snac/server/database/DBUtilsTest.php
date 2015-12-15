@@ -30,6 +30,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
+        list($this->appUserID, $role) = $this->dbu->getAppUserInfo('system');
     }
 
     /*
@@ -51,7 +52,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
     public function testAppUserInfo()
     {
-        list($this->appUserID, $role) = $this->dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
     }
 
