@@ -216,14 +216,18 @@ class SQL
     {
         /*
          * Note: query() as opposed to prepare() and execute()
+         * query() has two args:
+         * 1) a string (sql query)
+         * 2) an array of the vars that match the query placeholders
+         * 
          */ 
         $result = $this->sdb->query('insert into version_history 
                                     (main_id, user_id, role_id, status, is_current, note)
                                     values 
                                     ($1, $2, $3, $4, $5, $6)
-                                    returning id as version',
-                                    array($main_id, $userid, $role, $status, true, $note)
-                                    returning id as version);
+                                    returning id as version'
+                                    ,
+                                    array($main_id, $userid, $role, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
         return array('version' => $row['version'], 'main_id' => $main_id);
     }
