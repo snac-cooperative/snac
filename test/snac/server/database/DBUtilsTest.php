@@ -20,6 +20,12 @@
 class DBUtilTest extends PHPUnit_Framework_TestCase {
     
     /*
+     * DBUtil object for this class
+     * @var DBUtil object
+     */ 
+    private $dbu;
+
+    /*
      * Can we get a random Constellation?
      *
      *
@@ -33,35 +39,33 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */
     public function testDBUtilAll() 
     {
-        global $dbu;
-        $dbu = new snac\server\database\DBUtil();
+        $this->dbu = new snac\server\database\DBUtil();
         $this->assertNotNull($dbu);
     }
 
     public function testAppUserInfo()
     {
-        global $dbu;
-        list($appUserID, $role) = $dbu->getAppUserInfo('system');
+        list($appUserID, $role) = $this->dbu->getAppUserInfo('system');
         $this->assertNotNull($appUserID);
 
-        $vhInfo = $dbu->demoConstellation();
-        $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
+        $vhInfo = $this->dbu->demoConstellation();
+        $cObj = $this->dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($cObj);
 
         /* 
          * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
          */ 
-        $vhInfo = $dbu->demoConstellation();
+        $vhInfo = $this->dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
                                'version' => $vhInfo['version']);
-        $reverseCObj = $dbu->selectConstellation($reverseVhInfo, $appUserID);
+        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $appUserID);
         $this->assertNotNull($reverseCObj);
 
         // Parse a file, write the data into the db.
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+        $vhInfo = $this->dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
 
         $this->assertNotNull($vhInfo);
 
@@ -69,7 +73,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Get the constellation that was just inserted. As of Dec 2015, the inserted and selected
          * constellation won't be identical due to unresolved treatment of place and maintenance data.
          */
-        $selectedConstellationObj = $dbu->selectConstellation($vhInfo, $appUserID);
+        $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($selectedConstellationObj);
         
         /*
@@ -79,12 +83,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * look at parts of the newly updated constellation records in the various tables.
          */ 
         $existingMainId = $vhInfo['main_id'];
-        $updatedVhInfo = $dbu->updateConstellation($constellationObj,
-                                                   $appUserID,
-                                                   $role,
-                                                   'needs review',
-                                                   'updating constellation for test',
-                                                   $existingMainId);
+        $updatedVhInfo = $this->dbu->updateConstellation($constellationObj,
+                                                         $appUserID,
+                                                         $role,
+                                                         'needs review',
+                                                         'updating constellation for test',
+                                                         $existingMainId);
         $this->assertTrue(($vhInfo['version'] < $updatedVhInfo['version']) &&
                           ($vhInfo['main_id'] == $updatedVhInfo['main_id']));
 
