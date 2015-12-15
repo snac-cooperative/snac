@@ -32,9 +32,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     private $appUserID = null;
 
     /*
-     * Any vars that aren't set up here won't be initialized, even though the other functions seem to run in
-     * order. It behaves as though initializing instance vars anywhere except here don't initialize for the
-     * whole class, almost as though the class where being instantiated from scratch for each test.
+     * Any vars that aren't set up in the constructor won't be initialized, even though the other functions
+     * appear to run in order. Initializing instance vars anywhere except the constructor does not initialize
+     * for the whole class. phpunit behaves as though the class where being instantiated from scratch for each
+     * test.
+     *
+     * In cases where tests need to happen in order, all the ordered tests are most easily done inside one
+     * test, with multiple assertions.
      */ 
     public function __construct() 
     {
@@ -45,7 +49,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     /*
      * Can we get a random Constellation?
      *
-     *
      * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
      *
      * Maybe use @dataProvider to test various records from the db for function, subject, etc.
@@ -54,18 +57,15 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * 
      */
-    private $tba = false;
     public function testDBUtilAll() 
     {
         $this->assertNotNull($this->dbu);
         $this->tba = true; // testDBUtilAll has run.
-        $this->assertTrue($this->tba); // Did testDBUtilAll run?
     }
 
     public function testAppUserInfo()
     {
         $this->assertNotNull($this->appUserID);
-        $this->assertTrue($this->tba); // Did testDBUtilAll run?
     }
 
     public function testDemoConstellation()
