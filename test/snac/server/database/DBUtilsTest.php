@@ -30,7 +30,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        list($this->appUserID, $role) = $this->dbu->getAppUserInfo('system');
+        list($this->appUserID, $this->role) = $this->dbu->getAppUserInfo('system');
     }
 
     /*
@@ -78,7 +78,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $this->dbu->insertConstellation($constellationObj, $this->appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+        $vhInfo = $this->dbu->insertConstellation($constellationObj, $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
 
         $this->assertNotNull($vhInfo);
 
@@ -98,7 +98,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $existingMainId = $vhInfo['main_id'];
         $updatedVhInfo = $this->dbu->updateConstellation($constellationObj,
                                                          $this->appUserID,
-                                                         $role,
+                                                         $this->role,
                                                          'needs review',
                                                          'updating constellation for test',
                                                          $existingMainId);
