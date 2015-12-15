@@ -30,6 +30,9 @@ abstract class AbstractData {
     /**
      * Constructor
      *
+     * What is in the associative array? It varies depending on the object being created, so you should go
+     * look at fromArray() in the class that extends AbstractData.
+     *
      * @param string[][] $data optional Associative array of data to fill this
      *                                  object with.
      */

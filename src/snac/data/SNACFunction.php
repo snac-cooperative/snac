@@ -46,7 +46,8 @@ class SNACFunction extends AbstractData {
      * 
      * * function/dateRange
      * 
-     * @var \snac\data\SNACDate Date range of the function
+     * @var \snac\data\SNACDate Date range of the function. As far as I can tell, this is a single date, so
+     * ignore the pluralization.
      */
     private $dates;
 
@@ -66,8 +67,73 @@ class SNACFunction extends AbstractData {
      * 
      * @var string Vocabulary source for the function
      */
-    private $vocabularySource;
+    private $vocabularySource = '';
+
+    /**
+     * getter for $this->term
+     *
+     * * function/term
+     * 
+     * @return string Function controlled vocabulary term
+     *
+     */
+    function getTerm()
+    {
+        return $this->term;
+    }
     
+    /**
+     * getter for $this->type
+     *
+     * * function/@localType
+     * 
+     * @return string Type of the function
+     *
+     */
+    function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * getter for $this->dates. This is only one date, not an array.
+     *
+     * * function/dateRange
+     * 
+     * @return \snac\data\SNACDate Date range of the function. One date, not a list of dates.
+     *
+     */
+    function getDates()
+    {
+        return $this->dates;
+    }
+
+    /**
+     * getter for $this->note
+     *
+     * * function/descriptiveNote
+     * 
+     * @return string Descriptive note for the function
+     *
+     */
+    function getNote()
+    {
+        return $this->note;
+    }
+
+    /**
+     * getter for $this->vocabularySource
+     *
+     * * function/term/@vocabularySource
+     * 
+     * @return string Vocabulary source for the function
+     *
+     */
+    function getVocabularySource()
+    {
+        return $this->vocabularySource;
+    }
+
     /**
      * Returns this object's data as an associative array
      *

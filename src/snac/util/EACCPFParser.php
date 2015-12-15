@@ -28,6 +28,15 @@ namespace snac\util;
  */
 class EACCPFParser {
 
+
+
+    /**
+     *
+     * @var string[] ARK ID used for warnings and error messages. Set after parsing begins. See setArkID();
+     */
+    private $arkID = "";
+
+
     /**
      *
      * @var string[] The list of namespaces in the document
@@ -66,7 +75,7 @@ class EACCPFParser {
         $xml = simplexml_load_string($xmlText);
         
         $identity = new \snac\data\Constellation();
-        
+      
         $this->unknowns = array ();
         $this->namespaces = $xml->getNamespaces(true);
         
@@ -76,172 +85,173 @@ class EACCPFParser {
                 foreach ($this->getChildren($node) as $control) {
                     $catts = $this->getAttributes($control);
                     switch ($control->getName()) {
-                        case "recordId":
-                            $identity->setArkID((string) $control);
-                            $this->markUnknownAtt(
+                    case "recordId":
+                        $identity->setArkID((string) $control);
+                        $this->arkID = $identity->toArray()['ark']; // Yes, toArray() and an index key all on one line.
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "otherRecordId":
+                        $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
+                        break;
+                    case "maintenanceStatus":
+                        $identity->setMaintenanceStatus((string) $control);
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "maintenanceAgency":
+                        $agencyInfo = $this->getChildren($control);
+                        for($i = 1; $i < count($agencyInfo); $i++)
+                            $this->markUnknownTag(
+                                array (
+                                    $node->getName,
+                                    $control->getName()
+                                ), 
+                                array (
+                                    $agencyInfo[$i]
+                                ));
+                        $identity->setMaintenanceAgency(trim((string) $agencyInfo[0]));
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName(),
+                                $agencyInfo[0]->getName()
+                            ), $this->getAttributes($agencyInfo[0]));
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "languageDeclaration":
+                        foreach ($this->getChildren($control) as $lang) {
+                            $latts = $this->getAttributes($lang);
+                            switch ($lang->getName()) {
+                            case "language":
+                                if (isset($latts["languageCode"])) {
+                                    $code = $latts["languageCode"];
+                                    unset($latts["languageCode"]);
+                                }
+                                $identity->setLanguage($code, (string) $lang);
+                                $this->markUnknownAtt(
                                     array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "otherRecordId":
-                            $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
-                            break;
-                        case "maintenanceStatus":
-                            $identity->setMaintenanceStatus((string) $control);
-                            $this->markUnknownAtt(
+                                        $node->getName(),
+                                        $control->getName(),
+                                        $lang->getName()
+                                    ), $latts);
+                                break;
+                            case "script":
+                                if (isset($latts["scriptCode"])) {
+                                    $code = $latts["scriptCode"];
+                                    unset($latts["scriptCode"]);
+                                }
+                                $identity->setScript($code, (string) $lang);
+                                $this->markUnknownAtt(
                                     array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "maintenanceAgency":
-                            $agencyInfo = $this->getChildren($control);
-                            for($i = 1; $i < count($agencyInfo); $i++)
+                                        $node->getName(),
+                                        $control->getName(),
+                                        $lang->getName()
+                                    ), $latts);
+                                break;
+                            default:
                                 $this->markUnknownTag(
-                                        array (
-                                                $node->getName,
-                                                $control->getName()
-                                        ), 
-                                        array (
-                                                $agencyInfo[$i]
-                                        ));
-                            $identity->setMaintenanceAgency(trim((string) $agencyInfo[0]));
-                            $this->markUnknownAtt(
                                     array (
+                                        $node->getName(),
+                                        $control->getName()
+                                    ), $lang);
+                            }
+                        }
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "maintenanceHistory":
+                        foreach ($this->getChildren($control) as $mevent) {
+                            $event = new \snac\data\MaintenanceEvent();
+                            foreach ($this->getChildren($mevent) as $mev) {
+                                $eatts = $this->getAttributes($mev);
+                                switch ($mev->getName()) {
+                                case "eventType":
+                                    $event->setEventType((string) $mev);
+                                    break;
+                                case "eventDateTime":
+                                    $event->setEventDateTime((string) $mev);
+                                    if (isset($eatts["standardDateTime"])) {
+                                        $event->setStandardDateTime($eatts["standardDateTime"]);
+                                        unset($eatts["standardDateTime"]);
+                                    }
+                                    break;
+                                case "agentType":
+                                    $event->setAgentType((string) $mev);
+                                    break;
+                                case "agent":
+                                    $event->setAgent((string) $mev);
+                                    break;
+                                case "eventDescription":
+                                    $event->setEventDescription((string) $mev);
+                                    break;
+                                default:
+                                    $this->markUnknownTag(
+                                        array (
                                             $node->getName(),
                                             $control->getName(),
-                                            $agencyInfo[0]->getName()
-                                    ), $this->getAttributes($agencyInfo[0]));
-                            $this->markUnknownAtt(
-                                    array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "languageDeclaration":
-                            foreach ($this->getChildren($control) as $lang) {
-                                $latts = $this->getAttributes($lang);
-                                switch ($lang->getName()) {
-                                    case "language":
-                                        if (isset($latts["languageCode"])) {
-                                            $code = $latts["languageCode"];
-                                            unset($latts["languageCode"]);
-                                        }
-                                        $identity->setLanguage($code, (string) $lang);
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $control->getName(),
-                                                        $lang->getName()
-                                                ), $latts);
-                                        break;
-                                    case "script":
-                                        if (isset($latts["scriptCode"])) {
-                                            $code = $latts["scriptCode"];
-                                            unset($latts["scriptCode"]);
-                                        }
-                                        $identity->setScript($code, (string) $lang);
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $control->getName(),
-                                                        $lang->getName()
-                                                ), $latts);
-                                        break;
-                                    default:
-                                        $this->markUnknownTag(
-                                                array (
-                                                        $node->getName(),
-                                                        $control->getName()
-                                                ), $lang);
-                                }
-                            }
-                            $this->markUnknownAtt(
-                                    array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "maintenanceHistory":
-                            foreach ($this->getChildren($control) as $mevent) {
-                                $event = new \snac\data\MaintenanceEvent();
-                                foreach ($this->getChildren($mevent) as $mev) {
-                                    $eatts = $this->getAttributes($mev);
-                                    switch ($mev->getName()) {
-                                        case "eventType":
-                                            $event->setEventType((string) $mev);
-                                            break;
-                                        case "eventDateTime":
-                                            $event->setEventDateTime((string) $mev);
-                                            if (isset($eatts["standardDateTime"])) {
-                                                $event->setStandardDateTime($eatts["standardDateTime"]);
-                                                unset($eatts["standardDateTime"]);
-                                            }
-                                            break;
-                                        case "agentType":
-                                            $event->setAgentType((string) $mev);
-                                            break;
-                                        case "agent":
-                                            $event->setAgent((string) $mev);
-                                            break;
-                                        case "eventDescription":
-                                            $event->setEventDescription((string) $mev);
-                                            break;
-                                        default:
-                                            $this->markUnknownTag(
-                                                    array (
-                                                            $node->getName(),
-                                                            $control->getName(),
-                                                            $mevent->getName()
-                                                    ), $mev);
-                                    }
-                                    $this->markUnknownAtt(
-                                            array (
-                                                    $node->getName(),
-                                                    $control->getName(),
-                                                    $mevent->getName(),
-                                                    $mev->getName()
-                                            ), $eatts);
+                                            $mevent->getName()
+                                        ), $mev);
                                 }
                                 $this->markUnknownAtt(
-                                        array (
-                                                $node->getName(),
-                                                $control->getName(),
-                                                $mevent->getName()
-                                        ), $this->getAttributes($mevent));
+                                    array (
+                                        $node->getName(),
+                                        $control->getName(),
+                                        $mevent->getName(),
+                                        $mev->getName()
+                                    ), $eatts);
+                            }
+                            $this->markUnknownAtt(
+                                array (
+                                    $node->getName(),
+                                    $control->getName(),
+                                    $mevent->getName()
+                                ), $this->getAttributes($mevent));
                                 
-                                $identity->addMaintenanceEvent($event);
-                            }
-                            $this->markUnknownAtt(
-                                    array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "conventionDeclaration":
-                            $identity->setConventionDeclaration((string) $control);
-                            $this->markUnknownAtt(
-                                    array (
-                                            $node->getName(),
-                                            $control->getName()
-                                    ), $catts);
-                            break;
-                        case "sources":
-                            foreach ($this->getChildren($control) as $source) {
-                                $satts = $this->getAttributes($source);
-                                $identity->addSource($this->getValue($satts['type']), $satts['href']);
-                                // TODO Need to handle the ObjectXMLWrap
-                            }
-                            break;
-                        default:
-                            $this->markUnknownTag(
-                                    array (
-                                            $node->getName()
-                                    ), 
-                                    array (
-                                            $control
-                                    ));
+                            $identity->addMaintenanceEvent($event);
+                        }
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "conventionDeclaration":
+                        $identity->setConventionDeclaration((string) $control);
+                        $this->markUnknownAtt(
+                            array (
+                                $node->getName(),
+                                $control->getName()
+                            ), $catts);
+                        break;
+                    case "sources":
+                        foreach ($this->getChildren($control) as $source) {
+                            $satts = $this->getAttributes($source);
+                            $identity->addSource($this->getValue($satts['type']), $satts['href']);
+                            // TODO Need to handle the ObjectXMLWrap
+                        }
+                        break;
+                    default:
+                        $this->markUnknownTag(
+                            array (
+                                $node->getName()
+                            ), 
+                            array (
+                                $control
+                            ));
                     }
                 }
             } elseif ($node->getName() == "cpfDescription") {
@@ -250,631 +260,647 @@ class EACCPFParser {
                     $datts = $this->getAttributes($desc);
                     
                     switch ($desc->getName()) {
-                        case "identity":
-                            foreach ($this->getChildren($desc) as $ident) {
-                                $iatts = $this->getAttributes($ident);
-                                switch ($ident->getName()) {
-                                    case "entityId":
-                                        $identity->addOtherRecordID("entityId", (string) $ident);
+                    case "identity":
+                        foreach ($this->getChildren($desc) as $ident) {
+                            $iatts = $this->getAttributes($ident);
+                            switch ($ident->getName()) {
+                            case "entityId":
+                                $identity->addOtherRecordID("entityId", (string) $ident);
+                                break;
+                            case "entityType":
+                                $identity->setEntityType((string) $ident);
+                                break;
+                            case "nameEntry":
+                                $nameEntry = new \snac\data\NameEntry();
+                                if (isset($iatts["preferenceScore"])) {
+                                    $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
+                                    unset($iatts["preferenceScore"]);
+                                }
+                                if (isset($iatts["lang"])) {
+                                    $nameEntry->setLanguage($iatts["lang"]);
+                                    unset($iatts["lang"]);
+                                }
+                                if (isset($iatts["scriptCode"])) {
+                                    $nameEntry->setScriptCode($iatts["scriptCode"]);
+                                    unset($iatts["scriptCode"]);
+                                }
+                                foreach ($this->getChildren($ident) as $npart) {
+                                    switch ($npart->getName()) {
+                                    case "part":
+                                        $nameEntry->setOriginal((string) $npart);
                                         break;
-                                    case "entityType":
-                                        $identity->setEntityType((string) $ident);
+                                    case "alternativeForm":
+                                    case "authorizedForm":
+                                        $nameEntry->addContributor($npart->getName(), (string) $npart);
                                         break;
-                                    case "nameEntry":
-                                        $nameEntry = new \snac\data\NameEntry();
-                                        if (isset($iatts["preferenceScore"])) {
-                                            $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
-                                            unset($iatts["preferenceScore"]);
-                                        }
-                                        if (isset($iatts["lang"])) {
-                                            $nameEntry->setLanguage($iatts["lang"]);
-                                            unset($iatts["lang"]);
-                                        }
-                                        if (isset($iatts["scriptCode"])) {
-                                            $nameEntry->setScriptCode($iatts["scriptCode"]);
-                                            unset($iatts["scriptCode"]);
-                                        }
-                                        foreach ($this->getChildren($ident) as $npart) {
-                                            switch ($npart->getName()) {
-                                                case "part":
-                                                    $nameEntry->setOriginal((string) $npart);
-                                                    break;
-                                                case "alternativeForm":
-                                                case "authorizedForm":
-                                                    $nameEntry->addContributor($npart->getName(), (string) $npart);
-                                                    break;
-                                                case "useDates":
-                                                    foreach ($this->getChildren($npart) as $dateEntry) {
-                                                        if ($dateEntry->getName() == "dateRange" ||
-                                                                 $dateEntry->getName() == "date") {
-                                                            $nameEntry->setUseDates(
-                                                                    $this->parseDate($dateEntry, 
-                                                                            array (
-                                                                                    $node->getName(),
-                                                                                    $desc->getName(),
-                                                                                    $ident->getName(),
-                                                                                    $npart->getName()
-                                                                            )));
-                                                        } else {
-                                                            $this->markUnknownTag(
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $ident->getName(),
-                                                                            $npart->getName()
-                                                                    ), array (
-                                                                            $dateEntry
-                                                                    ));
-                                                        }
-                                                    }
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $ident->getName()
-                                                            ), 
-                                                            array (
-                                                                    $npart
-                                                            ));
-                                            }
-                                            $this->markUnknownAtt(
+                                    case "useDates":
+                                        foreach ($this->getChildren($npart) as $dateEntry) {
+                                            if ($dateEntry->getName() == "dateRange" ||
+                                                $dateEntry->getName() == "date") {
+                                                $nameEntry->setUseDates(
+                                                    $this->parseDate($dateEntry, 
+                                                                     array (
+                                                                         $node->getName(),
+                                                                         $desc->getName(),
+                                                                         $ident->getName(),
+                                                                         $npart->getName()
+                                                                     )));
+                                            } else {
+                                                $this->markUnknownTag(
                                                     array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $ident->getName(),
-                                                            $npart->getName()
-                                                    ), $this->getAttributes($npart));
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $ident->getName(),
+                                                        $npart->getName()
+                                                    ), array (
+                                                        $dateEntry
+                                                    ));
+                                            }
                                         }
-                                        $identity->addNameEntry($nameEntry);
                                         break;
                                     default:
                                         $this->markUnknownTag(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName()
-                                                ), 
-                                                array (
-                                                        $ident
-                                                ));
-                                }
-                                $this->markUnknownAtt(
-                                        array (
+                                            array (
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $ident->getName()
-                                        ), $iatts);
-                            }
-                            break;
-                        case "description":
-                            foreach ($this->getChildren($desc) as $desc2) {
-                                $d2atts = $this->getAttributes($desc2);
-                                switch ($desc2->getName()) {
-                                    case "existDates":
-                                        foreach ($this->getChildren($desc2) as $dates) {
-                                            switch ($dates->getName()) {
-                                                case "dateSet":
-                                                    foreach ($this->getChildren($dates) as $dateEntry) {
-                                                        $dateEntryName = $dateEntry->getName();
-                                                        if ($dateEntryName == "dateRange" || $dateEntryName == "date") {
-                                                            $date = $this->parseDate($dateEntry, 
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $desc2->getName(),
-                                                                            $dates->getName()
-                                                                    ));
-                                                            $identity->addExistDates($date);
-                                                        } else {
-                                                            $this->markUnknownTag(
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $desc2->getName(),
-                                                                            $dates->getName()
-                                                                    ), 
-                                                                    array (
-                                                                            $dateEntry
-                                                                    ));
-                                                        }
-                                                    }
-                                                    break;
-                                                case "dateRange":
-                                                case "date":
-                                                    $date = $this->parseDate($dates, 
-                                                            array (
-                                                                    $node->getName() . $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ));
-                                                    $identity->addExistDates($date);
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $identity->setExistDatesNote((string) $dates);
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $dates->getName()
-                                                            ), $this->getAttributes($dates));
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), 
-                                                            array (
-                                                                    $dates
-                                                            ));
-                                            }
-                                        }
-                                        break;
-                                    case "place":
-                                        $place = new \snac\data\Place();
-                                        $platts = $this->getAttributes($desc2);
-                                        if (isset($platts["localType"])) {
-                                            $place->setType($this->getValue($platts["localType"]));
-                                            unset($platts["localType"]);
-                                        }
-                                        foreach ($this->getChildren($desc2) as $placePart) {
-                                            switch ($placePart->getName()) {
-                                                case "date":
-                                                case "dateRange":
-                                                    $place->setDateRange(
-                                                            $this->parseDate($placePart, 
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $desc2->getName()
-                                                                    )));
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $place->setNote((string) $placePart);
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $placePart->getName()
-                                                            ), $this->getAttributes($placePart));
-                                                    break;
-                                                case "placeRole":
-                                                    $place->setRole((string) $placePart);
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $placePart->getName()
-                                                            ), $this->getAttributes($placePart));
-                                                    break;
-                                                case "placeEntry":
-                                                    $place->addPlaceEntry(
-                                                            $this->parsePlaceEntry($placePart, 
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $desc2->getName()
-                                                                    )));
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), 
-                                                            array (
-                                                                    $placePart
-                                                            ));
-                                            }
-                                        }
-                                        $identity->addPlace($place);
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName(),
-                                                        $desc2->getName()
-                                                ), $platts);
-                                        break;
-                                    case "localDescription":
-                                        $subTags = $this->getChildren($desc2);
-                                        $subTag = $subTags[0];
-                                        for($i = 1; $i < count($subTags); $i++) {
-                                            $this->markUnknownTag(
-                                                    array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $desc2->getName()
-                                                    ), 
-                                                    array (
-                                                            $subTags[$i]
-                                                    ));
-                                        }
-                                        switch ($d2atts["localType"]) {
-                                            // Each of these is in a sub element
-                                            case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
-                                                $identity->addSubject((string) $subTag);
-                                                break;
-                                            case "http://viaf.org/viaf/terms#nationalityOfEntity":
-                                                $identity->setNationality((string) $subTag);
-                                                break;
-                                            case "http://viaf.org/viaf/terms#gender":
-                                                $identity->setGender($this->getValue((string) $subTag));
-                                                break;
-                                            default:
-                                                $this->markUnknownTag(
-                                                        array (
-                                                                $node->getName(),
-                                                                $desc->getName()
-                                                        ), 
-                                                        array (
-                                                                $desc2
-                                                        ));
-                                        }
-                                        break;
-                                    case "languageUsed":
-                                        foreach ($this->getChildren($desc2) as $lang) {
-                                            $latts = $this->getAttributes($lang);
-                                            switch ($lang->getName()) {
-                                                case "language":
-                                                    if (isset($latts["languageCode"])) {
-                                                        $code = $latts["languageCode"];
-                                                        unset($latts["languageCode"]);
-                                                    }
-                                                    $identity->setLanguageUsed($code, (string) $lang);
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $lang->getName()
-                                                            ), $latts);
-                                                    break;
-                                                case "script":
-                                                    if (isset($latts["scriptCode"])) {
-                                                        $code = $latts["scriptCode"];
-                                                        unset($latts["scriptCode"]);
-                                                    }
-                                                    $identity->setScript($code, (string) $lang);
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $lang->getName()
-                                                            ), $latts);
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), $lang);
-                                            }
-                                        }
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName(),
-                                                        $desc2->getName()
-                                                ), $d2atts);
-                                        break;
-                                    case "generalContext":
-                                        $identity->setGeneralContext($desc2->asXML());
-                                        break;
-                                    case "legalStatus":
-                                        $legalTerm = null;
-                                        $legalVocab = null;
-                                        foreach ($this->getChildren($desc2) as $legal) {
-                                            $legalAtts = $this->getAttributes($legal);
-                                            switch ($legal->getName()) {
-                                                case "term":
-                                                    $legalTerm = (string) $legal;
-                                                    if (isset($legalAtts["vocabularySource"])) {
-                                                        $legalVocab = $legalAtts["vocabularySource"];
-                                                        unset($legalAtts["vocabularySource"]);
-                                                    }
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), 
-                                                            array (
-                                                                    $legal
-                                                            ));
-                                            }
-                                            $this->markUnknownAtt(
-                                                    array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $desc2->getName(),
-                                                            $legal->getName()
-                                                    ), $legalAtts);
-                                        }
-                                        $identity->addLegalStatus($legalTerm, $legalVocab);
-                                        break;
-                                    case "mandate":
-                                        // These are only seen in ANF, and they always have only a descriptiveNote
-                                        $identity->setMandate($desc2->asXML());
-                                        break;
-                                    case "structureOrGenealogy":
-                                        $identity->setStructureOrGenealogy($desc2->asXML());
-                                        break;
-                                    case "occupation":
-                                        $occupation = new \snac\data\Occupation();
-                                        foreach ($this->getChildren($desc2) as $occ) {
-                                            $oatts = $this->getAttributes($occ);
-                                            switch ($occ->getName()) {
-                                                case "term":
-                                                    $occupation->setTerm((string) $occ);
-                                                    if (isset($oatts["vocabularySource"])) {
-                                                        $occupation->setVocabularySource($oatts["vocabularySource"]);
-                                                        unset($oatts["vocabularySource"]);
-                                                    }
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $occupation->setNote((string) $occ);
-                                                    break;
-                                                case "dateRange":
-                                                    $date = $this->parseDate($occ, 
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ));
-                                                    $occupation->setDateRange($date);
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), 
-                                                            array (
-                                                                    $occ
-                                                            ));
-                                            }
-                                            $this->markUnknownAtt(
-                                                    array (
-                                                            $node->getName(),
-                                                            $desc->getName(),
-                                                            $desc2->getName(),
-                                                            $occ->getName()
-                                                    ), $oatts);
-                                        }
-                                        $identity->addOccupation($occupation);
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName(),
-                                                        $desc2->getName()
-                                                ), $this->getAttributes($desc2));
-                                        break;
-                                    case "function":
-                                        $function = new \snac\data\SNACFunction();
-                                        foreach ($this->getChildren($desc2) as $fun) {
-                                            $fatts = $this->getAttributes($fun);
-                                            switch ($fun->getName()) {
-                                                case "term":
-                                                    $function->setTerm((string) $fun);
-                                                    if (isset($fatts["vocabularySource"])) {
-                                                        $function->setVocabularySource($fatts["vocabularySource"]);
-                                                        unset($fatts["vocabularySource"]);
-                                                    }
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $function->setNote((string) $fun);
-                                                    break;
-                                                case "dateRange":
-                                                    $date = $this->parseDate($fun, 
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ));
-                                                    $function->setDateRange($date);
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName()
-                                                            ), 
-                                                            array (
-                                                                    $fun
-                                                            ));
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $desc2->getName(),
-                                                                    $fun->getName()
-                                                            ), $fatts);
-                                            }
-                                        }
-                                        $fatts = $this->getAttributes($desc2);
-                                        if (isset($fatts["localType"])) {
-                                            $function->setType($fatts["localType"]);
-                                            unset($fatts["localType"]);
-                                        }
-                                        $identity->addFunction($function);
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName(),
-                                                        $desc2->getName()
-                                                ), $fatts);
-                                        break;
-                                    case "biogHist":
-                                        $identity->addBiogHist($desc2->asXML());
-                                        break;
-                                    default:
-                                        $this->markUnknownTag(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName()
-                                                ), 
-                                                array (
-                                                        $desc2
-                                                ));
+                                            ), 
+                                            array (
+                                                $npart
+                                            ));
+                                    }
+                                    $this->markUnknownAtt(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName(),
+                                            $ident->getName(),
+                                            $npart->getName()
+                                        ), $this->getAttributes($npart));
                                 }
-                            }
-                            break;
-                        case "relations":
-                            foreach ($this->getChildren($desc) as $rel) {
-                                $ratts = $this->getAttributes($rel);
-                                switch ($rel->getName()) {
-                                    case "cpfRelation":
-                                        $relation = new \snac\data\ConstellationRelation();
-                                        $relation->setType($this->getValue($ratts["arcrole"]));
-                                        $relation->setTargetArkID($ratts['href']);
-                                        $relation->setTargetType($this->getValue($ratts['role']));
-                                        $relation->setAltType($this->getValue($ratts["type"]));
-                                        $relation->setCPFRelationType($ratts['cpfRelationType']);
-                                        unset($ratts["arcrole"]);
-                                        unset($ratts["href"]);
-                                        unset($ratts["role"]);
-                                        unset($ratts["type"]);
-                                        unset($ratts["cpfRelationType"]);
-                                        $children = $this->getChildren($rel);
-                                        $relation->setContent((string) $children[0]);
-                                        foreach ($children as $child) {
-                                            switch ($child->getName()) {
-                                                case "relationEntry":
-                                                    $relation->setContent((string) $child);
-                                                    break;
-                                                case "date":
-                                                case "dateRange":
-                                                    $relation->setDates(
-                                                            $this->parseDate($child, 
-                                                                    array (
-                                                                            $node->getName(),
-                                                                            $desc->getName(),
-                                                                            $rel->getName()
-                                                                    )));
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $relation->setNote($child->asXML());
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName(),
-                                                                    $child->getName()
-                                                            ), $this->getAttributes($child));
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName()
-                                                            ), 
-                                                            array (
-                                                                    $child
-                                                            ));
-                                            }
-                                        }
-                                        $this->markUnknownAtt(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName(),
-                                                        $rel->getName()
-                                                ), $ratts);
-                                        $identity->addRelation($relation);
-                                        break;
-                                    case "resourceRelation":
-                                        $relation = new \snac\data\ResourceRelation();
-                                        $relation->setDocumentType($this->getValue($ratts["role"]));
-                                        $relation->setLink($ratts['href']);
-                                        $relation->setLinkType($this->getValue($ratts['type']));
-                                        $relation->setRole($this->getValue($ratts['arcrole']));
-                                        foreach ($this->getChildren($rel) as $relItem) {
-                                            switch ($relItem->getName()) {
-                                                case "relationEntry":
-                                                    $relation->setContent((string) $relItem);
-                                                    $relAtts = $this->getAttributes($relItem);
-                                                    if (isset($relAtts["localType"])) {
-                                                        $relation->setRelationEntryType($this->getValue($relAtts["localType"]));
-                                                        unset($relAtts["localType"]);
-                                                    }
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName(),
-                                                                    $relItem->getName()
-                                                            ), $relAtts);
-                                                    break;
-                                                case "objectXMLWrap":
-                                                    $relation->setSource($relItem->asXML());
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName(),
-                                                                    $relItem->getName()
-                                                            ), $this->getAttributes($relItem));
-                                                    break;
-                                                case "descriptiveNote":
-                                                    $relation->setNote($relItem->asXML());
-                                                    $this->markUnknownAtt(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName(),
-                                                                    $relItem->getName()
-                                                            ), $this->getAttributes($relItem));
-                                                    break;
-                                                default:
-                                                    $this->markUnknownTag(
-                                                            array (
-                                                                    $node->getName(),
-                                                                    $desc->getName(),
-                                                                    $rel->getName()
-                                                            ), 
-                                                            array (
-                                                                    $relItem
-                                                            ));
-                                            }
-                                        }
-                                        $identity->addResourceRelation($relation);
-                                        break;
-                                    default:
-                                        $this->markUnknownTag(
-                                                array (
-                                                        $node->getName(),
-                                                        $desc->getName()
-                                                ), 
-                                                array (
-                                                        $rel
-                                                ));
-                                }
-                            }
-                            break;
-                        default:
-                            $this->markUnknownTag(
+                                $identity->addNameEntry($nameEntry);
+                                break;
+                            default:
+                                $this->markUnknownTag(
                                     array (
-                                            $node->getName()
+                                        $node->getName(),
+                                        $desc->getName()
                                     ), 
                                     array (
-                                            $desc
+                                        $ident
                                     ));
+                            }
+                            $this->markUnknownAtt(
+                                array (
+                                    $node->getName(),
+                                    $desc->getName(),
+                                    $ident->getName()
+                                ), $iatts);
+                        }
+                        break;
+                    case "description":
+                        foreach ($this->getChildren($desc) as $desc2) {
+                            $d2atts = $this->getAttributes($desc2);
+                            switch ($desc2->getName()) {
+                            case "existDates":
+                                foreach ($this->getChildren($desc2) as $dates) {
+                                    switch ($dates->getName()) {
+                                    case "dateSet":
+                                        foreach ($this->getChildren($dates) as $dateEntry) {
+                                            $dateEntryName = $dateEntry->getName();
+                                            if ($dateEntryName == "dateRange" || $dateEntryName == "date") {
+                                                $date = $this->parseDate($dateEntry, 
+                                                                         array (
+                                                                             $node->getName(),
+                                                                             $desc->getName(),
+                                                                             $desc2->getName(),
+                                                                             $dates->getName()
+                                                                         ));
+                                                $identity->addExistDates($date);
+                                            } else {
+                                                $this->markUnknownTag(
+                                                    array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $desc2->getName(),
+                                                        $dates->getName()
+                                                    ), 
+                                                    array (
+                                                        $dateEntry
+                                                    ));
+                                            }
+                                        }
+                                        break;
+                                    case "dateRange":
+                                    case "date":
+                                        $date = $this->parseDate($dates, 
+                                                                 array (
+                                                                     $node->getName() . $desc->getName(),
+                                                                     $desc2->getName()
+                                                                 ));
+                                        $identity->addExistDates($date);
+                                        break;
+                                    case "descriptiveNote":
+                                        $identity->setExistDatesNote((string) $dates);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $dates->getName()
+                                            ), $this->getAttributes($dates));
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), 
+                                            array (
+                                                $dates
+                                            ));
+                                    }
+                                }
+                                break;
+                            case "place":
+                                $place = new \snac\data\Place();
+                                $platts = $this->getAttributes($desc2);
+                                if (isset($platts["localType"])) {
+                                    $place->setType($this->getValue($platts["localType"]));
+                                    unset($platts["localType"]);
+                                }
+                                foreach ($this->getChildren($desc2) as $placePart) {
+                                    switch ($placePart->getName()) {
+                                    case "date":
+                                    case "dateRange":
+                                        $place->setDateRange(
+                                            $this->parseDate($placePart, 
+                                                             array (
+                                                                 $node->getName(),
+                                                                 $desc->getName(),
+                                                                 $desc2->getName()
+                                                             )));
+                                        break;
+                                    case "descriptiveNote":
+                                        $place->setNote((string) $placePart);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $placePart->getName()
+                                            ), $this->getAttributes($placePart));
+                                        break;
+                                    case "placeRole":
+                                        $place->setRole((string) $placePart);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $placePart->getName()
+                                            ), $this->getAttributes($placePart));
+                                        break;
+                                    case "placeEntry":
+                                        $place->addPlaceEntry(
+                                            $this->parsePlaceEntry($placePart, 
+                                                                   array (
+                                                                       $node->getName(),
+                                                                       $desc->getName(),
+                                                                       $desc2->getName()
+                                                                   )));
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), 
+                                            array (
+                                                $placePart
+                                            ));
+                                    }
+                                }
+                                $identity->addPlace($place);
+                                $this->markUnknownAtt(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName(),
+                                        $desc2->getName()
+                                    ), $platts);
+                                break;
+                            case "localDescription":
+                                $subTags = $this->getChildren($desc2);
+                                $subTag = $subTags[0];
+                                for($i = 1; $i < count($subTags); $i++) {
+                                    $this->markUnknownTag(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName(),
+                                            $desc2->getName()
+                                        ), 
+                                        array (
+                                            $subTags[$i]
+                                        ));
+                                }
+                                switch ($d2atts["localType"]) {
+                                    // Each of these is in a sub element
+                                case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
+                                    $identity->addSubject((string) $subTag);
+                                    break;
+                                case "http://viaf.org/viaf/terms#nationalityOfEntity":
+                                    $identity->setNationality((string) $subTag);
+                                    break;
+                                case "http://viaf.org/viaf/terms#gender":
+                                    $identity->setGender($this->getValue((string) $subTag));
+                                    break;
+                                default:
+                                    $this->markUnknownTag(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName()
+                                        ), 
+                                        array (
+                                            $desc2
+                                        ));
+                                }
+                                break;
+                            case "languageUsed":
+                                foreach ($this->getChildren($desc2) as $lang) {
+                                    $latts = $this->getAttributes($lang);
+                                    switch ($lang->getName()) {
+                                    case "language":
+                                        if (isset($latts["languageCode"])) {
+                                            $code = $latts["languageCode"];
+                                            unset($latts["languageCode"]);
+                                        }
+                                        $identity->setLanguageUsed($code, (string) $lang);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $lang->getName()
+                                            ), $latts);
+                                        break;
+                                    case "script":
+                                        if (isset($latts["scriptCode"])) {
+                                            $code = $latts["scriptCode"];
+                                            unset($latts["scriptCode"]);
+                                        }
+                                        $identity->setScript($code, (string) $lang);
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $lang->getName()
+                                            ), $latts);
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), $lang);
+                                    }
+                                }
+                                $this->markUnknownAtt(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName(),
+                                        $desc2->getName()
+                                    ), $d2atts);
+                                break;
+                            case "generalContext":
+                                $identity->setGeneralContext($desc2->asXML());
+                                break;
+                            case "legalStatus":
+                                $legalTerm = null;
+                                $legalVocab = null;
+                                foreach ($this->getChildren($desc2) as $legal) {
+                                    $legalAtts = $this->getAttributes($legal);
+                                    switch ($legal->getName()) {
+                                    case "term":
+                                        $legalTerm = (string) $legal;
+                                        if (isset($legalAtts["vocabularySource"])) {
+                                            $legalVocab = $legalAtts["vocabularySource"];
+                                            unset($legalAtts["vocabularySource"]);
+                                        }
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), 
+                                            array (
+                                                $legal
+                                            ));
+                                    }
+                                    $this->markUnknownAtt(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName(),
+                                            $desc2->getName(),
+                                            $legal->getName()
+                                        ), $legalAtts);
+                                }
+                                $identity->addLegalStatus($legalTerm, $legalVocab);
+                                break;
+                            case "mandate":
+                                // These are only seen in ANF, and they always have only a descriptiveNote
+                                $identity->setMandate($desc2->asXML());
+                                break;
+                            case "structureOrGenealogy":
+                                $identity->setStructureOrGenealogy($desc2->asXML());
+                                break;
+                            case "occupation":
+                                $occupation = new \snac\data\Occupation();
+                                foreach ($this->getChildren($desc2) as $occ) {
+                                    $oatts = $this->getAttributes($occ);
+                                    switch ($occ->getName()) {
+                                    case "term":
+                                        $occupation->setTerm((string) $occ);
+                                        if (isset($oatts["vocabularySource"])) {
+                                            $occupation->setVocabularySource($oatts["vocabularySource"]);
+                                            unset($oatts["vocabularySource"]);
+                                        }
+                                        break;
+                                    case "descriptiveNote":
+                                        $occupation->setNote((string) $occ);
+                                        break;
+                                    case "dateRange":
+                                        $date = $this->parseDate($occ, 
+                                                                 array (
+                                                                     $node->getName(),
+                                                                     $desc->getName(),
+                                                                     $desc2->getName()
+                                                                 ));
+                                        $occupation->setDateRange($date);
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), 
+                                            array (
+                                                $occ
+                                            ));
+                                    }
+                                    $this->markUnknownAtt(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName(),
+                                            $desc2->getName(),
+                                            $occ->getName()
+                                        ), $oatts);
+                                }
+                                $identity->addOccupation($occupation);
+                                $this->markUnknownAtt(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName(),
+                                        $desc2->getName()
+                                    ), $this->getAttributes($desc2));
+                                break;
+                            case "function":
+                                $function = new \snac\data\SNACFunction();
+                                foreach ($this->getChildren($desc2) as $fun) {
+                                    $fatts = $this->getAttributes($fun);
+                                    switch ($fun->getName()) {
+                                    case "term":
+                                        $function->setTerm((string) $fun);
+                                        if (isset($fatts["vocabularySource"])) {
+                                            $function->setVocabularySource($fatts["vocabularySource"]);
+                                            unset($fatts["vocabularySource"]);
+                                        }
+                                        break;
+                                    case "descriptiveNote":
+                                        $function->setNote((string) $fun);
+                                        break;
+                                    case "dateRange":
+                                        $date = $this->parseDate($fun, 
+                                                                 array (
+                                                                     $node->getName(),
+                                                                     $desc->getName(),
+                                                                     $desc2->getName()
+                                                                 ));
+                                        $function->setDateRange($date);
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName()
+                                            ), 
+                                            array (
+                                                $fun
+                                            ));
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $desc2->getName(),
+                                                $fun->getName()
+                                            ), $fatts);
+                                    }
+                                }
+                                $fatts = $this->getAttributes($desc2);
+                                if (isset($fatts["localType"])) {
+                                    $function->setType($fatts["localType"]);
+                                    unset($fatts["localType"]);
+                                }
+                                $identity->addFunction($function);
+                                $this->markUnknownAtt(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName(),
+                                        $desc2->getName()
+                                    ), $fatts);
+                                break;
+                            case "biogHist":
+                                $identity->addBiogHist($desc2->asXML());
+                                break;
+                            default:
+                                $this->markUnknownTag(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName()
+                                    ), 
+                                    array (
+                                        $desc2
+                                    ));
+                            }
+                        }
+                        break;
+                    case "relations":
+                        foreach ($this->getChildren($desc) as $rel) {
+                            $ratts = $this->getAttributes($rel);
+                            // We want 'href' to always exist. If it doesn't, warn, and set it to the empty string.
+                            if ( ! isset($ratts['href']))
+                            {
+                                // In retrospect, we can silently just make this an empty string, probably.
+                                /* 
+                                 * $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID);
+                                 * $stderr = fopen('php://stderr', 'w');
+                                 * fwrite($stderr,"  $message\n");
+                                 * fclose($stderr); 
+                                 */
+                                $ratts['href'] = "";
+                            }
+                            switch ($rel->getName()) {
+                            case "cpfRelation":
+                                $relation = new \snac\data\ConstellationRelation();
+                                $relation->setType($this->getValue($ratts["arcrole"]));
+                                $relation->setTargetArkID($ratts['href']);
+                                $relation->setTargetType($this->getValue($ratts['role']));
+                                $relation->setAltType($this->getValue($ratts["type"]));
+                                if (isset($ratts['cpfRelationType'])) {
+                                    $relation->setCPFRelationType($ratts['cpfRelationType']);
+                                    unset($ratts["cpfRelationType"]);
+                                }
+                                unset($ratts["arcrole"]);
+                                unset($ratts["href"]);
+                                unset($ratts["role"]);
+                                unset($ratts["type"]);
+                                $children = $this->getChildren($rel);
+                                if (! empty($children)) {
+                                    $relation->setContent((string) $children[0]);
+                                }
+                                foreach ($children as $child) {
+                                    switch ($child->getName()) {
+                                    case "relationEntry":
+                                        $relation->setContent((string) $child);
+                                        break;
+                                    case "date":
+                                    case "dateRange":
+                                        $relation->setDates(
+                                            $this->parseDate($child, 
+                                                             array (
+                                                                 $node->getName(),
+                                                                 $desc->getName(),
+                                                                 $rel->getName()
+                                                             )));
+                                        break;
+                                    case "descriptiveNote":
+                                        $relation->setNote($child->asXML());
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName(),
+                                                $child->getName()
+                                            ), $this->getAttributes($child));
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName()
+                                            ), 
+                                            array (
+                                                $child
+                                            ));
+                                    }
+                                }
+                                $this->markUnknownAtt(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName(),
+                                        $rel->getName()
+                                    ), $ratts);
+                                $identity->addRelation($relation);
+                                break;
+                            case "resourceRelation":
+                                $relation = new \snac\data\ResourceRelation();
+                                $relation->setDocumentType($this->getValue($ratts["role"]));
+                                $relation->setLink($ratts['href']);
+                                $relation->setLinkType($this->getValue($ratts['type']));
+                                $relation->setRole($this->getValue($ratts['arcrole']));
+                                foreach ($this->getChildren($rel) as $relItem) {
+                                    switch ($relItem->getName()) {
+                                    case "relationEntry":
+                                        $relation->setContent((string) $relItem);
+                                        $relAtts = $this->getAttributes($relItem);
+                                        if (isset($relAtts["localType"])) {
+                                            $relation->setRelationEntryType($this->getValue($relAtts["localType"]));
+                                            unset($relAtts["localType"]);
+                                        }
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName(),
+                                                $relItem->getName()
+                                            ), $relAtts);
+                                        break;
+                                    case "objectXMLWrap":
+                                        $relation->setSource($relItem->asXML());
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName(),
+                                                $relItem->getName()
+                                            ), $this->getAttributes($relItem));
+                                        break;
+                                    case "descriptiveNote":
+                                        $relation->setNote($relItem->asXML());
+                                        $this->markUnknownAtt(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName(),
+                                                $relItem->getName()
+                                            ), $this->getAttributes($relItem));
+                                        break;
+                                    default:
+                                        $this->markUnknownTag(
+                                            array (
+                                                $node->getName(),
+                                                $desc->getName(),
+                                                $rel->getName()
+                                            ), 
+                                            array (
+                                                $relItem
+                                            ));
+                                    }
+                                }
+                                $identity->addResourceRelation($relation);
+                                break;
+                            default:
+                                $this->markUnknownTag(
+                                    array (
+                                        $node->getName(),
+                                        $desc->getName()
+                                    ), 
+                                    array (
+                                        $rel
+                                    ));
+                            }
+                        }
+                        break;
+                    default:
+                        $this->markUnknownTag(
+                            array (
+                                $node->getName()
+                            ), 
+                            array (
+                                $desc
+                            ));
                     }
                 }
             } else {
                 $this->markUnknownTag(array (), array (
-                        $node->getName()
+                    $node->getName()
                 ));
             }
         }
@@ -1006,16 +1032,16 @@ class EACCPFParser {
         foreach ($missing as $m) {
             // Mark this tag as missing
             $this->markUnknowns($xpath, array (
-                    $m->getName() => (string) $m
+                $m->getName() => (string) $m
             ), true);
             // Mark all attributes of this tag as missing
             $this->markUnknowns(array_merge($xpath, array (
-                    $m->getName()
+                $m->getName()
             )), $this->getAttributes($m), false);
             
             // Traverse down the children
             $this->markUnknownTag(array_merge($xpath, array (
-                    $m->getName()
+                $m->getName()
             )), $this->getChildren($m));
         }
     }
@@ -1038,85 +1064,104 @@ class EACCPFParser {
             foreach ($this->getChildren($dateElement) as $dateTag) {
                 $dateAtts = $this->getAttributes($dateTag);
                 switch ($dateTag->getName()) {
-                    case "fromDate":
-                        if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
-                            $notBefore = null;
-                            $notAfter = null;
-                            if (isset($dateAtts["notBefore"]))
-                                $notBefore = $dateAtts["notBefore"];
-                            if (isset($dateAtts["notAfter"]))
-                                $notAfter = $dateAtts["notAfter"];
-                            $date->setFromDateRange($notBefore, $notAfter);
+                case "fromDate":
+                    if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                        $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $notBefore = null;
+                        $notAfter = null;
+                        if (isset($dateAtts["notBefore"]))
+                            $notBefore = $dateAtts["notBefore"];
+                        if (isset($dateAtts["notAfter"]))
+                            $notAfter = $dateAtts["notAfter"];
+                        $date->setFromDateRange($notBefore, $notAfter);
                             
-                            unset($dateAtts["notBefore"]);
-                            unset($dateAtts["notAfter"]);
-                            unset($dateAtts["standardDate"]);
-                            unset($dateAtts["localType"]);
-                            $this->markUnknownAtt(
-                                    array_merge($xpath, 
-                                            array (
-                                                    $dateElement->getName(),
-                                                    $dateTag->getName()
-                                            )), $dateAtts);
-                        }
-                        break;
-                    case "toDate":
-                        if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                            $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
-                            $notBefore = null;
-                            $notAfter = null;
-                            if (isset($dateAtts["notBefore"]))
-                                $notBefore = $dateAtts["notBefore"];
-                            if (isset($dateAtts["notAfter"]))
-                                $notAfter = $dateAtts["notAfter"];
-                            $date->setToDateRange($notBefore, $notAfter);
-                            
-                            unset($dateAtts["notBefore"]);
-                            unset($dateAtts["notAfter"]);
-                            unset($dateAtts["standardDate"]);
-                            unset($dateAtts["localType"]);
-                            $this->markUnknownAtt(
-                                    array_merge($xpath, 
-                                            array (
-                                                    $dateElement->getName(),
-                                                    $dateTag->getName()
-                                            )), $dateAtts);
-                        }
-                        break;
-                    default:
-                        $this->markUnknownTag(
-                                array_merge($xpath, 
+                        unset($dateAtts["notBefore"]);
+                        unset($dateAtts["notAfter"]);
+                        unset($dateAtts["standardDate"]);
+                        unset($dateAtts["localType"]);
+                        $this->markUnknownAtt(
+                            array_merge($xpath, 
                                         array (
-                                                $dateElement->getName()
-                                        )), 
-                                array (
-                                        $dateTag
-                                ));
+                                            $dateElement->getName(),
+                                            $dateTag->getName()
+                                        )), $dateAtts);
+                    }
+                    break;
+                case "toDate":
+                    if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                        $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $notBefore = null;
+                        $notAfter = null;
+                        if (isset($dateAtts["notBefore"]))
+                            $notBefore = $dateAtts["notBefore"];
+                        if (isset($dateAtts["notAfter"]))
+                            $notAfter = $dateAtts["notAfter"];
+                        $date->setToDateRange($notBefore, $notAfter);
+                            
+                        unset($dateAtts["notBefore"]);
+                        unset($dateAtts["notAfter"]);
+                        unset($dateAtts["standardDate"]);
+                        unset($dateAtts["localType"]);
+                        $this->markUnknownAtt(
+                            array_merge($xpath, 
+                                        array (
+                                            $dateElement->getName(),
+                                            $dateTag->getName()
+                                        )), $dateAtts);
+                    }
+                    break;
+                default:
+                    $this->markUnknownTag(
+                        array_merge($xpath, 
+                                    array (
+                                        $dateElement->getName()
+                                    )), 
+                        array (
+                            $dateTag
+                        ));
                 }
             }
         } elseif ($dateElement->getName() == "date") {
-            // Handle the single date that appears
-            $date->setRange(false);
-            $dateAtts = $this->getAttributes($dateElement);
-            $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
-            $notBefore = null;
-            $notAfter = null;
-            if (isset($dateAtts["notBefore"]))
-                $notBefore = $dateAtts["notBefore"];
-            if (isset($dateAtts["notAfter"]))
-                $notAfter = $dateAtts["notAfter"];
-            $date->setDateRange($notBefore, $notAfter);
-            
-            unset($dateAtts["notBefore"]);
-            unset($dateAtts["notAfter"]);
-            unset($dateAtts["standardDate"]);
-            unset($dateAtts["localType"]);
-            $this->markUnknownAtt(
+            /* 
+             * Sanity check standardDate. Unclear what should happen if we don't have a standardDate
+             * value. This code leaves $date unchanged, and hopes that the initialization was sane.
+             */
+            if (isset($dateAtts["standardDate"]))
+            {
+                
+                // Handle the single date that appears
+                $date->setRange(false);
+                $dateAtts = $this->getAttributes($dateElement);
+                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                $notBefore = null;
+                $notAfter = null;
+                if (isset($dateAtts["notBefore"]))
+                    $notBefore = $dateAtts["notBefore"];
+                if (isset($dateAtts["notAfter"]))
+                    $notAfter = $dateAtts["notAfter"];
+                $date->setDateRange($notBefore, $notAfter);
+                
+                unset($dateAtts["notBefore"]);
+                unset($dateAtts["notAfter"]);
+                unset($dateAtts["standardDate"]);
+                unset($dateAtts["localType"]);
+                $this->markUnknownAtt(
                     array_merge($xpath, 
-                            array (
+                                array (
                                     $dateElement->getName()
-                            )), $dateAtts);
+                                )), $dateAtts);
+            }
+            else
+            {
+                /* Silently make dates with no standard date only partial complete.
+                 * 
+                 * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
+                 * $stderr = fopen('php://stderr', 'w');
+                 * fwrite($stderr,"  $message\n");
+                 * fclose($stderr); 
+                 */
+                $date->setDate((string) $dateElement, '', '');
+            }
         }
         return $date;
     }

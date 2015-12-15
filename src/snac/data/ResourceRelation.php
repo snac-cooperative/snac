@@ -36,8 +36,14 @@ class ResourceRelation extends AbstractData {
 
     /**
      * From EAC-CPF tag(s):
-     * 
-     * * resourceRelation/@type
+     *
+     * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
+     * in the export template.
+     *
+     * (old comment:) resourceRelation/@type
+     * Actually: resourceRelation@xlink:type
+     *
+     * 'linkType' => 'simple',
      * 
      * @var string Link type
      */
@@ -97,6 +103,116 @@ class ResourceRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+
+    /**
+     * getter for $this->documentType
+     *
+     * * resourceRelation/@role
+     * 
+     * @return string Document type
+     *
+     */
+    function getDocumentType()
+    {
+        return $this->documentType;
+    }
+
+    /**
+     * getter for $this->linkType
+     *
+     * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
+     * in the export template.
+     *
+     * (old comment:) resourceRelation/@type
+     * Actually: resourceRelation@xlink:type
+     *
+     * 'linkType' => 'simple',
+     * 
+     * @return string Link type
+     *
+     */
+    function getLinkType()
+    {
+        return $this->linkType;
+    }
+
+    /**
+     * getter for $this->entryType
+     *
+     * * resourceRelation/relationEntry/@localType
+     * 
+     * @return string Relation entry type
+     *
+     */
+    function getEntryType()
+    {
+        return $this->entryType;
+    }
+
+    /**
+     * getter for $this->link
+     *
+     * * resourceRelation/@href
+     * 
+     * @return string Link to external resource
+     *
+     */
+    function getLink()
+    {
+        return $this->link;
+    }
+
+    /**
+     * getter for $this->role
+     *
+     * * resourceRelation/@arcrole
+     * 
+     * @return string Role in of the relation
+     *
+     */
+    function getRole()
+    {
+        return $this->role;
+    }
+
+    /**
+     * getter for $this->content
+     *
+     * * resourceRelation/resourceEntry
+     * 
+     * @return string Content in the relation
+     *
+     */
+    function getContent()
+    {
+        return $this->content;
+    }
+
+    /**
+     * getter for $this->source
+     *
+     * * resourceRelation/objectXMLWrap
+     * 
+     * @return string XML source of the resource relation
+     *
+     */
+    function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * getter for $this->note
+     *
+     * * resourceRelation/descriptiveNote
+     * 
+     * @return string Note attached to relation
+     *
+     */
+    function getNote()
+    {
+        return $this->note;
+    }
 
     /**
      * Returns this object's data as an associative array

@@ -188,7 +188,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/languageUsed/script/@scriptCode
      * 
-     * @var string Script code used by the identity described
+     * @var string Script code used by the identity described[w
      */
     private $scriptCode = null;
 
@@ -281,7 +281,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
      * 
-     * @var string[] Subjects
+     * @var [wstring[] Subjects
      */
     private $subjects = null;
     
@@ -331,9 +331,14 @@ class Constellation extends AbstractData {
     private $mandate = null;
 
     /**
-     * Constructor
+     * Constructor for the class.
      *
-     * Initializes arrays.
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object. Normal use is to call the
+     * constructor without an argument, get an empty class and use the setters to fill in the properties.
+     *
+     * @return Constellation object
+     * 
      */
     public function __construct($data = null) {
 
@@ -353,6 +358,456 @@ class Constellation extends AbstractData {
             $this->legalStatuses = array();
         } else
             parent::__construct($data);
+    }
+
+    /**
+     * getter for $this->ark
+     *
+     * * eac-cpf/control/recordId
+     * 
+     * @return string ARK identifier
+     *
+     */
+    function getArk()
+    {
+        return $this->ark;
+    }
+
+    /**
+     * getter for $this->entityType
+     *
+     * * eac-cpf/cpfDescription/identity/entityType
+     * 
+     * @return  string Entity type
+     *
+     */
+    function getEntityType()
+    {
+        return $this->entityType;
+    }
+
+    /**
+     * getter for $this->otherRecordIDs
+     *
+     * * eac-cpf/control/otherRecordId
+     * * eac-cpf/cpfDescription/identity/entityID
+     * 
+     * @return string[] Other record IDs by which this constellation may be known
+     *
+     */
+    function getOtherRecordIDs()
+    {
+        return $this->otherRecordIDs;
+    }
+
+    /**
+     * getter for $this->maintenanceStatus
+     *
+     * * eac-cpf/control/maintenanceStatus
+     * 
+     * @return string Current maintenance status
+     *
+     */
+    function getMaintenanceStatus()
+    {
+        return $this->maintenanceStatus;
+    }
+
+    /**
+     * getter for $this->maintenanceAgency
+     *
+     * * eac-cpf/control/maintenanceAgency/agencyName
+     *
+     * @return string Latest maintenance agency
+     *
+     */
+    function getMaintenanceAgency()
+    {
+        return $this->maintenanceAgency;
+    }
+
+    /**
+     * getter for $this->maintenanceEvents
+     *
+     * * eac-cpf/control/maintenanceHistory/maintenanceEvent/*
+     *
+     * @return \snac\data\MaintenanceEvent[] List of maintenance events performed on this constellation
+     *
+     */
+    function getMaintenanceEvents()
+    {
+        return $this->maintenanceEvents;
+    }
+
+    /**
+     * getter for $this->sources
+     *
+     * * /eac-cpf/control/sources/source/@type
+     * * /eac-cpf/control/sources/source/@href
+     * 
+     * @return string[][] List of sources, each source is an array of type,value entries
+     *
+     */
+    function getSources()
+    {
+        return $this->sources;
+    }
+
+    /**
+     * getter for $this->legalStatuses
+     *
+     * * eac-cpf/cpfDescription/description/legalStatus/term
+     * * eac-cpf/cpfDescription/description/legalStatus/@vocabularySource
+     *
+     * Returned as:
+     * ```
+     * [ ["term" => term, "vocabularySource" => vocSrc], ... ]
+     * ```
+     * 
+     * @return string[][] List of legal status, each status as an array of term,vocabularySource entries
+     *
+     */
+    function getLegalStatuses()
+    {
+        return $this->legalStatuses;
+    }
+
+    /**
+     * getter for $this->conventionDeclaration
+     *
+     * * eac-cpf/control/conventionDeclaration
+     * 
+     * @return string Convention declaration
+     *
+     */
+    function getConventionDeclaration()
+    {
+        return $this->conventionDeclaration;
+    }
+
+    /**
+     * getter for $this->constellationLanguage
+     *
+     * * eac-cpf/control/languageDeclaration/language
+     *
+     * @return string Language used for Constellation Record
+     *
+     */
+    function getConstellationLanguage()
+    {
+        return $this->constellationLanguage;
+    }
+
+    /**
+     * getter for $this->constellationLanguageCode
+     *
+     * * eac-cpf/control/languageDeclaration/language/@languageCode
+     *
+     * @return string Language code used for Constellation Record
+     *
+     */
+    function getConstellationLanguageCode()
+    {
+        return $this->constellationLanguageCode;
+    }
+
+    /**
+     * getter for $this->constellationScript
+     *
+     * * eac-cpf/control/languageDeclaration/script
+     * 
+     * @return string Script used for Constellation Record
+     *
+     */
+    function getConstellationScript()
+    {
+        return $this->constellationScript;
+    }
+
+    /**
+     * getter for $this->constellationScriptCode
+     *
+     * * eac-cpf/control/languageDeclaration/script/@scriptCode
+     *
+     * eac-cpf/control/languageDeclaration/script/@scriptCode
+     *
+     * @return string Script code used for Constellation Record
+     *
+     */
+    function getConstellationScriptCode()
+    {
+        return $this->constellationScriptCode;
+    }
+
+    /**
+     * getter for $this->language
+     *
+     * * eac-cpf/cpfDescription/description/languageUsed/language
+     *
+     * @return string Language used by the identity described
+     *
+     */
+    function getLanguage()
+    {
+        return $this->language;
+    }
+
+    /**
+     * getter for $this->languageCode
+     *
+     * * eac-cpf/cpfDescription/description/languageUsed/language/@languageCode
+     *
+     * @return string Language code used by the identity described
+     *
+     */
+    function getLanguageCode()
+    {
+        return $this->languageCode;
+    }
+
+    /**
+     * getter for $this->script
+     *
+     * * eac-cpf/cpfDescription/description/languageUsed/script
+     *
+     * @return string Script used by the identity described
+     *
+     */
+    function getScript()
+    {
+        return $this->script;
+    }
+
+    /**
+     * getter for $this->scriptCode
+     *
+     * * eac-cpf/cpfDescription/description/languageUsed/script/@scriptCode
+     *
+     * @return string Script used by the identity described
+     *
+     */
+    function getScriptCode()
+    {
+        return $this->scriptCode;
+    }
+
+    /**
+     * getter for $this->nameEntries
+     *
+     * * eac-cpf/cpfDescription/identity/nameEntry
+     *
+     * @return \snac\data\NameEntry[] List of name entries for this constellation
+     *
+     */
+    function getNameEntries()
+    {
+        return $this->nameEntries;
+    }
+
+    /**
+     * getter for $this->occupations
+     *
+     * * eac-cpf/cpfDescription/description/occupation/*
+     * 
+     * @return \snac\data\Occupation[] List of occupations
+     *
+     */
+    function getOccupations()
+    {
+        return $this->occupations;
+    }
+
+    /**
+     * getter for $this->biogHists (note plural)
+     *
+     * All the other code expects biogHist to be a single string. On the off chance that the array of
+     * biogHists has more than one, concat all them into a single string and return that string.
+     *
+     * eac-cpf/cpfDescription/description/biogHist
+     * 
+     * The return value is a string[]. BiogHist entries for this constellation (in XML strings)
+     *
+     * @return string[] Returns biog hist as a single string, even though currently the private var biogHist
+     * is an array.
+     */
+    function getBiogHists()
+    {
+        $normativeBiogHist = '';
+        foreach ($this->biogHists as $singleBiogHist)
+        {
+            $normativeBiogHist .= $singleBiogHist;
+        }
+        return $normativeBiogHist;
+    }
+
+    /**
+     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return a
+     *
+     * * eac-cpf/cpfDescription/description/existDates/dateSet/dateRange/*
+     * * eac-cpf/cpfDescription/description/existDates/dateSet/date/*
+     * * eac-cpf/cpfDescription/description/existDates/dateRange/*
+     * * eac-cpf/cpfDescription/description/existDates/date/*
+     *
+     * @return \snac\data\SNACDate[] Exist dates for the entity
+     *
+     */
+    function getExistDates()
+    {
+        // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
+        // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
+        // this universe.
+        if ($this->existDates)
+        {
+            return $this->existDates;
+        }
+        else
+        {
+            return array();
+        }
+    }
+
+    /**
+     * getter for $this->existDatesNote
+     *
+     * * eac-cpf/cpfDescription/description/existDates/descriptiveNote
+     *
+     * @return string Note about the exist dates
+     *
+     */
+    function getExistDatesNote()
+    {
+        return $this->existDatesNote;
+    }
+
+    /**
+     * getter for $this->relations
+     *
+     * * eac-cpf/cpfDescription/relations/cpfRelation/*
+     *
+     * @return \snac\data\ConstellationRelation[] Constellation relations
+     *
+     */
+    function getRelations()
+    {
+        return $this->relations;
+    }
+
+    /**
+     * See private $resourceRelations. This gets an array of ResourceRelation objects.
+     *
+     * From EAC-CPF tag(s):
+     * 
+     * * eac-cpf/cpfDescription/relations/resourceRelation/*
+     * 
+     * @var \snac\data\ResourceRelation[] Resource relations
+     */
+    function getResourceRelations()
+    {
+        return $this->resourceRelations;
+    }
+
+    /**
+     * getter for $this->functions
+     *
+     * * eac-cpf/cpfDescription/description/function/*
+     *
+     * @return \snac\data\SNACFunction Functions
+     *
+     */
+    function getFunctions()
+    {
+        return $this->functions;
+    }
+
+    /**
+     * getter for $this->places
+     *
+     * * eac-cpf/cpfDescription/description/place/*
+     *
+     * @return \snac\data\Place[] Places
+     *
+     */
+    function getPlaces()
+    {
+        return $this->places;
+    }
+
+    /**
+     * getter for $this->subjects
+     *
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
+     *
+     * @return \snac\data\Place[] Places
+     *
+     */
+    function getSubjects()
+    {
+        return $this->subjects;
+    }
+
+    /**
+     * getter for $this->nationality
+     *
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=nationalityOfEntity/term
+     *
+     * @return  string nationality
+     *
+     */
+    function getNationality()
+    {
+        return $this->nationality;
+    }
+
+    /**
+     * getter for $this->gender
+     *
+     * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
+     *
+     * @return  string Gender
+     *
+     */
+    function getGender()
+    {
+        return $this->gender;
+    }
+
+    /**
+     * getter for $this->generalContext
+     *
+     * * eac-cpf/cpfDescription/description/generalContext
+     *
+     * @return  string General Context
+     *
+     */
+    function getGeneralContext()
+    {
+        return $this->generalContext;
+    }
+
+    /**
+     * getter for $this->structureOrGenealogy
+     *
+     * * eac-cpf/cpfDescription/description/structureOrGenealogy
+     *
+     * @return string Structure Or Genealogy information
+     *
+     */
+    function getStructureOrGenealogy()
+    {
+        return $this->structureOrGenealogy;
+    }
+
+    /**
+     * getter for $this->mandate
+     *
+     * * eac-cpf/cpfDescription/description/mandate
+     *
+     * @return string Mandate
+     *
+     */
+    function getMandate()
+    {
+        return $this->mandate;
     }
 
     /**
@@ -438,6 +893,9 @@ class Constellation extends AbstractData {
     /**
      * Replaces this object's data with the given associative array
      *
+     * Need docs about the keys in the array passed to this. This is called by the AbstractData class
+     * constructor which was called by this class' constructor via parent::__construct($data);
+     * 
      * @param string[][] $data This objects data in array form
      * @return boolean true on success, false on failure
      */
