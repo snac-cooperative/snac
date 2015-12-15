@@ -682,7 +682,7 @@ class SQL
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq, 
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
@@ -715,7 +715,7 @@ class SQL
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
@@ -795,7 +795,7 @@ class SQL
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
@@ -837,7 +837,7 @@ class SQL
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
@@ -874,7 +874,7 @@ class SQL
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
@@ -922,7 +922,7 @@ class SQL
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
@@ -957,7 +957,7 @@ class SQL
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version']
+                                      array($vhInfo['version'],
                                             $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
@@ -1016,7 +1016,7 @@ class SQL
                             and name_contributor.name_id=$3');
         
         $name_result = $this->sdb->execute($qq_1,
-                                           array($vhInfo['version']
+                                           array($vhInfo['version'],
                                                  $vhInfo['main_id']));
         // Contributor has issues. See comments in schema.sql. This will work for now.
         // Get each name, and for each name get each contributor.
