@@ -59,6 +59,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         $this->assertNotNull($this->dbu);
         $this->tba = true; // testDBUtilAll has run.
+        $this->assertTrue($this->tba); // Did testDBUtilAll run?
     }
 
     public function testAppUserInfo()
