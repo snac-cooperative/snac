@@ -271,8 +271,8 @@ class DBUtil
          * | php                                 | sql              |
          * |-------------------------------------+------------------|
          * |                                     | id               |
-         * | $vh_info['verion']                  | version          |
-         * | $vh_info['main_id']                 | main_id          |
+         * | $vhInfo['verion']                   | version          |
+         * | $vhInfo['main_id']                  | main_id          |
          * | setTargetConstellation              | related_id       |
          * | setTargetArkID                      | related_ark      |
          * | setTargetType  aka targetEntityType | role             |
@@ -307,8 +307,8 @@ class DBUtil
          * | php                  | sql                 |
          * |----------------------+---------------------|
          * |                      | id                  |
-         * | $vh_info['version']  | version             |
-         * | $vh_info['main_id']  | main_id             |
+         * | $vhInfo['version']   | version             |
+         * | $vhInfo['main_id']   | main_id             |
          * | setDocumentType      | role                |
          * | setRelationEntryType | relation_entry_type |
          * | setLink              | href                |
@@ -361,7 +361,7 @@ class DBUtil
     } // end selectConstellation
 
     /**
-     * Write a PHP Constellation object to the database.
+     * Write a PHP Constellation object to the database. This is a new constellation, and will get new version and main_id values.
      *  
      * @param Constallation $id A PHP Constellation object.
      *
@@ -382,9 +382,66 @@ class DBUtil
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
         // vh_info: version_history.id, version_history.main_id,
-        $vh_info = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
+        $vhInfo = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
 
-        $this->sql->insertNrd($vh_info,
+        saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+
+        return $vhInfo;
+    } // end insertConstellation
+
+
+    /**
+     * Update a php constellation that is already in the database
+     *  
+     * @param Constallation $id A PHP Constellation object.
+     *
+     * @param string $userid The user's appuser.id value from the db. 
+     *
+     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     *
+     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
+     *
+     * @param string $note A user-created note for what was done to the constellation. A check-in note.
+     *
+     * @param int $main_id The main_id for this constellation.
+     * 
+     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
+     * return value such as true for success, and false for failure. This function might need to call into the
+     * system-wide user message class that we haven't written yet.
+     * 
+     */
+    public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
+    {
+        // vh_info: version_history.id, version_history.main_id,
+        $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        return $vhInfo;
+    }
+    
+    /**
+     * Private function. Update a php constellation that is already in the database. This is called from
+     * insertConstellation() or updateConstellation().
+     *  
+     * @param Constallation $id A PHP Constellation object.
+     *
+     * @param string $userid The user's appuser.id value from the db. 
+     *
+     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     *
+     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
+     *
+     * @param string $note A user-created note for what was done to the constellation. A check-in note.
+     *
+     * @param string[] $vhInfo The main_id for this constellation.
+     * 
+     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
+     * return value such as true for success, and false for failure. This function might need to call into the
+     * system-wide user message class that we haven't written yet.
+     * 
+     */
+    private function saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo)
+    {
+        $this->sql->insertNrd($vhInfo,
                               $id->getExistDates(),
                               array($id->getArk(),
                                     $id->getEntityType(),
@@ -413,7 +470,7 @@ class DBUtil
                 // TODO: Throw warning or log
             }
 
-            $this->sql->insertOtherID($vh_info, $otherID['type'], $otherID['href']);
+            $this->sql->insertOtherID($vhInfo, $otherID['type'], $otherID['href']);
 
         }
 
@@ -423,7 +480,7 @@ class DBUtil
          */
         foreach ($id->getNameEntries() as $ndata)
         {
-            $name_id = $this->sql->insertName($vh_info, 
+            $name_id = $this->sql->insertName($vhInfo, 
                                               $ndata->getOriginal(),
                                               $ndata->getPreferenceScore(),
                                               $ndata->getContributors(), // list of type/contributor values
@@ -436,7 +493,7 @@ class DBUtil
         {
             // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
             // validation.
-            $this->sql->insertSource($vh_info,
+            $this->sql->insertSource($vhInfo,
                                      $sdata['href']);
         }
 
@@ -448,7 +505,7 @@ class DBUtil
         // fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
         foreach ($id->getOccupations() as $fdata)
         {
-            $this->sql->insertOccupation($vh_info,
+            $this->sql->insertOccupation($vhInfo,
                                          $fdata->getTerm(),
                                          $fdata->getVocabularySource(),
                                          $fdata->getDates(),
@@ -478,7 +535,7 @@ class DBUtil
 
         foreach ($id->getFunctions() as $fdata)
         {
-            $this->sql->insertFunction($vh_info,
+            $this->sql->insertFunction($vhInfo,
                                        array($fdata->getType(),
                                              $fdata->getVocabularySource(),
                                              $fdata->getNote(),
@@ -488,7 +545,7 @@ class DBUtil
 
         foreach ($id->getSubjects() as $term)
         {
-            $this->sql->insertSubject($vh_info,
+            $this->sql->insertSubject($vhInfo,
                                        $term);
         }
 
@@ -499,8 +556,8 @@ class DBUtil
 
           | placeholder | php                 | what                                          | sql               |
           |-------------+---------------------+-----------------------------------------------+-------------------|
-          |           1 | $vh_info['version'] |                                               | version           |
-          |           2 | $vh_info['main_id'] |                                               | main_id           |
+          |           1 | $vhInfo['version' ] |                                               | version           |
+          |           2 | $vhInfo['main_id']  |                                               | main_id           |
           |           3 | targetConstellation | id fk to version_history                      | .related_id       |
           |           4 | targetArkID         | ark                                           | .related_ark      |
           |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type     | .role             |
@@ -520,7 +577,7 @@ class DBUtil
 
         foreach ($id->getRelations() as $fdata)
         {
-            $this->sql->insertRelation($vh_info,
+            $this->sql->insertRelation($vhInfo,
                                         $fdata->getDates(),
                                         array($fdata->getTargetConstellation(),
                                               $fdata->getTargetArkID(),
@@ -536,8 +593,8 @@ class DBUtil
 
           | placeholder | php                 | what                                             | sql                  |
           |-------------+---------------------+--------------------------------------------------+----------------------|
-          |           1 | $vh_info['version'] |                                                  | .version             |
-          |           2 | $vh_info['main_id'] |                                                  | .main_id             |
+          |           1 | $vhInfo['version']  |                                                  | .version             |
+          |           2 | $vhInfo['main_id']  |                                                  | .main_id             |
           |           3 | documentType        | @xlink:role id fk to vocab document_type         | .role                |
           |           4 | entryType           | relationEntry@localType, AnF, always 'archival'? | .relation_entry_type |
           |           5 | link                | @xlink:href                                      | .href                |
@@ -553,7 +610,7 @@ class DBUtil
 
         foreach ($id->getResourceRelations() as $fdata)
         {
-            $this->sql->insertResourceRelation($vh_info,
+            $this->sql->insertResourceRelation($vhInfo,
                                                array($fdata->getDocumentType(),
                                                      $fdata->getEntryType(),
                                                      $fdata->getLink(),
@@ -563,6 +620,6 @@ class DBUtil
                                                      $fdata->getNote()));
         }
 
-        return $vh_info;
-    } // end insertConstellation
+        return $vhInfo;
+    } // end updateConstellation
 }
