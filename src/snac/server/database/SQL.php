@@ -222,9 +222,10 @@ class SQL
                                     values 
                                     ($1, $2, $3, $4, $5, $6)
                                     returning id as version',
-                                    array($main_id, $userid, $role, $status, true, $note));
-        $version = $this->sdb->fetchrow($result);
-        return array('version' => $version, 'main_id' => $main_id);
+                                    array($main_id, $userid, $role, $status, true, $note)
+                                    returning id as version);
+        $row = $this->sdb->fetchrow($result);
+        return array('version' => $row['version'], 'main_id' => $main_id);
     }
 
 
