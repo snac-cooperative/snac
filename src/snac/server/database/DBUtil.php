@@ -361,7 +361,8 @@ class DBUtil
     } // end selectConstellation
 
     /**
-     * Write a PHP Constellation object to the database. This is a new constellation, and will get new version and main_id values.
+     * Write a PHP Constellation object to the database. This is a new constellation, and will get new version
+     * and main_id values. Calls saveConstellation() to call a sql function to do the actual writing.
      *  
      * @param Constallation $id A PHP Constellation object.
      *
@@ -381,17 +382,15 @@ class DBUtil
 
     public function insertConstellation($id, $userid, $role, $icstatus, $note)
     {
-        // vh_info: version_history.id, version_history.main_id,
         $vhInfo = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
-
         saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
-
         return $vhInfo;
     } // end insertConstellation
 
 
     /**
-     * Update a php constellation that is already in the database
+     * Update a php constellation that is already in the database. Calls saveConstellation() to call lower
+     * level code to update the database.
      *  
      * @param Constallation $id A PHP Constellation object.
      *
@@ -412,7 +411,6 @@ class DBUtil
      */
     public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
     {
-        // vh_info: version_history.id, version_history.main_id,
         $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
         saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
         return $vhInfo;

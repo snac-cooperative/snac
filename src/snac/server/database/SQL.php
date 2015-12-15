@@ -192,6 +192,40 @@ class SQL
         return $vhInfo;
     }
 
+    /**
+     * Update a version_history record by getting a new version but keeping the existing main_id. This also
+     * uses DatabaseConnector->query() in an attempt to be more efficient, or perhaps just less verbose.
+     *
+     * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
+     *
+     * @param integer $role Foreign key to role.id, the role id value of the current user.
+     *
+     * @param string $status Status value from the enum icstatus. Using an enum from the db is a bit obscure
+     * to all the php code, so maybe best to move icstatus to some util class and have a method to handle
+     * these. Or a method that knows about the db class, but can hide the details from the application
+     * code. Something.
+     *
+     * @param string $note A string the user enters to identify what changed in this version.
+     *
+     * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
+     * returned as 'id', but all the code knows that as the version number, so this code plays nice by
+     * returning it as 'version'. Note the "returning ..." part of the query.
+     *
+     */
+    public function updateVersionHistory($userid, $role, $status, $note, $main_id)
+    {
+        $this->sdb->query('insert_version_history', 
+                            'insert into version_history 
+                            (main_id, user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5, $6)
+                            returning id as version',
+                          array($main_id, $userid, $role, $status, true, $note));
+        $version = $this->sdb->fetchrow($result);
+        return array('version' => $version, 'main_id' => $main_id);
+    }
+
+
     /** 
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.

@@ -44,6 +44,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $cObj = $dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($cObj);
 
+        /*
+         * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
+         */ 
+        $vhInfo = $dbu->demoConstellation();
+        $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
+                           'version' => $vhinfo['version']);
+        $reverseCObj = $dbu->selectConstellation($reverseVhInfo, $appUserID);
+        $this->assertNotNull($reverseCObj);
 
         // Parse a file, write the data into the db.
 
@@ -53,11 +61,26 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertNotNull($vhInfo);
 
-        // get the constellation that was just inserted. As of Dec 2015, the inserted and selected
-        // constellation won't be identical due to unresolved treatment of place and maintenance data.
-
+        /* 
+         * Get the constellation that was just inserted. As of Dec 2015, the inserted and selected
+         * constellation won't be identical due to unresolved treatment of place and maintenance data.
+         */
         $selectedConstellationObj = $dbu->selectConstellation($vhInfo, $appUserID);
         $this->assertNotNull($selectedConstellationObj);
+        
+        /*
+         * Test that updateVersionHistory() returns a new version, but keeps the same old main_id.
+         *
+         * How can this test that the constellation was successfully updated? We need more SQL functions to
+         * look at parts of the newly updated constellation records in the various tables.
+         */ 
+        $updatedVhInfo = $dbu->updateConstellation($constellationObj,
+                                                   $appUserID,
+                                                   $role,
+                                                   'needs review',
+                                                   'updating constellation for test');
+        $this->assertTrue(($vhInfo['version'] < $updatedVhInfo['version']) &&
+                          ($vhInfo['main_id'] == $updatedVhInfo['main_id']));
 
     }
 }
