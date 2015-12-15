@@ -84,8 +84,9 @@ class Server implements \snac\interfaces\ServerInterface {
 
                 break;
             case "edit":
-                // Editing the given ark id
                 if (isset($this->input["arkid"])) {
+                    // Editing the given ark id by reading querying the current HRT
+                    
                     // split on ark:/
                     $tmp = explode("ark:/", $this->input["arkid"]);
                     if (isset($tmp[1])) {
@@ -99,9 +100,18 @@ class Server implements \snac\interfaces\ServerInterface {
                             return;
                         }
                     }
+                } else if (isset($this->input["constellationid"])) {
+                    // Editing the given constellation id by reading the database
+                    $db = new \snac\server\database\DBUtil();
+                    $constellation = $db->selectConstellation(
+                        array(
+                            "main_id" => $this->input["constellationid"], 
+                            "version"=> 1), // version number -- how do I get this??
+                        "system"); // no idea how to get this now
+                    $this->response["constellation"] = $constellation->toArray();
+                    return;
                 }
-                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"] . ", ArkID: ". $this->input["arkid"]);    
-                break;
+                // break; // no longer breaking to allow th edefault case to give an error if neither matches
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);    
 
