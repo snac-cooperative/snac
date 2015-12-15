@@ -79,7 +79,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $clientId     = '637211524599-1kqbnunctjna2s70i5j971g08p1ioakp.apps.googleusercontent.com';
         $clientSecret = '6q-4PaGb9lNHZdCGkmJjnHsK';
         // Change this if you are not using the built-in PHP server
-        $redirectUri  = 'http://shannonvm.village.virginia.edu/~jh2jf/snac_server/www/?command=login2';
+        $redirectUri  = 'http://shannonvm.village.virginia.edu/?command=login2';
         // Initialize the provider
         $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
         $_SESSION['oauth2state'] = $provider->getState();

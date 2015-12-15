@@ -105,8 +105,9 @@ class Server implements \snac\interfaces\ServerInterface {
                     $db = new \snac\server\database\DBUtil();
                     $constellation = $db->selectConstellation(
                         array(
-                            "main_id" => $this->input["constellationid"], 
-                            "version"=> 1), // version number -- how do I get this??
+                            "version"=> $this->input["version"],
+                            "main_id" => $this->input["constellationid"] 
+                        ), // version number -- how do I get this??
                         "system"); // no idea how to get this now
                     $this->response["constellation"] = $constellation->toArray();
                     return;
