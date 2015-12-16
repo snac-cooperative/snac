@@ -28,6 +28,11 @@ namespace snac;
 class Config {
 
     /**
+     * @var the full path of this project (to the root of the repository)
+     */
+    public static $PROJECT_DIR = "";
+
+    /**
      *
      * @var string URL of the back-end server
      */
@@ -58,6 +63,16 @@ class Config {
      *      database calls will only be logged and not committed to the database.
      */
     public static $DATABASE_TESTING = false;
+    
+    /**
+     * @var string Location of the template directory
+     */
+    public static $TEMPLATE_DIR = \snac\Config::$PROJECT_DIR . "/src/snac/client/webui/templates";
+
+    /**
+     * @var string Location of the template cache directory
+     */
+    public static $TEMPLATE_CACHE = "/tmp/";
 
     /**
      * @var string[][] OAuth connection information.  Each entry should have all the
