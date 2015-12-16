@@ -67,7 +67,7 @@ class Config {
     /**
      * @var string Location of the template directory
      */
-    public static $TEMPLATE_DIR = \snac\Config::$PROJECT_DIR . "/src/snac/client/webui/templates";
+    public static $TEMPLATE_DIR = "full/path/to/src/snac/client/webui/templates";
 
     /**
      * @var string Location of the template cache directory
