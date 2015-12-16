@@ -494,7 +494,7 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[] $argList A flat list of data for execute().
+     * @param string[] $argList 
      * 
      * @param SNACDate $dates A single SNACDate object suitable for insertDate().
      * 
@@ -1073,6 +1073,27 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return array($row['id'], $row['version'], $row['main_id']);
+    }
+
+    /**
+     *
+     * Small utility function to count rows in table vocabulary. Currently only used in DBUtilTest.php
+     *
+     * @return int Count of number of rows in table vocabulary.
+     */
+    public function countVocabulary()
+    {
+        /*
+         * Note: query() as opposed to prepare() and execute()
+         * query() has two args:
+         * 1) a string (sql query)
+         * 2) an array of the vars that match the query placeholders, empty here because there are no placeholders.
+         * 
+         */ 
+        $result = $this->sdb->query('select count(*) as count from vocabulary',
+                                    array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['count'];
     }
 
 

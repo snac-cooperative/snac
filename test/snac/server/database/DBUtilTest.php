@@ -47,6 +47,23 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /*
+     * Make sure that table vocabulary has many entries. The real number is probably far larger than 100k, but
+     * at least 100k means that someone tried to init the table.
+     */ 
+    public function testTableVocabularyPopulated()
+    {
+        /* Verbose:
+         * $sql = $this->dbu->sqlObj();
+         * $numRows = $sql->countVocabulary();
+         *
+         * Concise:
+         */
+        $numRows = $this->dbu->sqlObj()->countVocabulary();
+        $this->assertTrue($numRows > 100000);
+    }
+
+
+    /*
      * Can we get a random Constellation?
      *
      * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers

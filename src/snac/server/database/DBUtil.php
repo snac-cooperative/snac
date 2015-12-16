@@ -46,6 +46,15 @@ class DBUtil
         $this->sql = new SQL($db);
     }
 
+    /**
+     * Utility function to return the SQL object for this DBUtil instance. Currently only used for testing, and that may be the only valid use.
+     * @return \snac\server\database\SQL Return the SQL object of this DBUtil instance.
+     */
+    public function sqlObj()
+    {
+        return $this->sql;
+    }
+
     
     /**
      * Access some system-wide authentication and/or current user info.
@@ -57,7 +66,7 @@ class DBUtil
      *
      * @return string[] Associative list of user info data.
      */
-    function getAppUserInfo($userid)
+    public function getAppUserInfo($userid)
     {
         $uInfo = $this->sql->getAppUserInfo($userid);
         return $uInfo;
@@ -105,7 +114,7 @@ class DBUtil
     /**
      * Select a given constellation from the database based on version and main_id.
      *
-     * @param string[] vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
      * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
      * the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
@@ -392,7 +401,7 @@ class DBUtil
      * Update a php constellation that is already in the database. Calls saveConstellation() to call lower
      * level code to update the database.
      *  
-     * @param Constallation $id A PHP Constellation object.
+     * @param \snac\data\Constellation $id A PHP Constellation object.
      *
      * @param string $userid The user's appuser.id value from the db. 
      *
@@ -420,7 +429,7 @@ class DBUtil
      * Private function. Update a php constellation that is already in the database. This is called from
      * insertConstellation() or updateConstellation().
      *  
-     * @param Constallation $id A PHP Constellation object.
+     * @param \snac\data\Constellation $id A PHP Constellation object.
      *
      * @param string $userid The user's appuser.id value from the db. 
      *
