@@ -18,6 +18,8 @@ namespace snac\data;
 /**
  * Place data structure class
  *
+ * See the abstract parent class for common methods setDBInfo() and getDBInfo().
+ *
  * @author Robbie Hott
  *        
  */
@@ -95,7 +97,8 @@ class Place extends AbstractData {
             "type" => $this->type,
             "role" => $this->role,
             "entries" => array(),
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         foreach ($this->entries as $i => $entry) 
@@ -124,6 +127,11 @@ class Place extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "Place")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']);
+        }
 
         if (isset($data["dates"]))
             $this->dates = new SNACDate($data["dates"]);

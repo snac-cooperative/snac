@@ -15,7 +15,7 @@
 namespace snac\data;
 
 /**
- * Constellation Relationship
+ * Constellation Relationship.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
  * Data class to store the information about a relationship between Constellations
  *
@@ -290,7 +290,8 @@ class ConstellationRelation extends AbstractData {
             "cpfRelationType" => $this->cpfRelationType,
             "content" => $this->content,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -315,6 +316,11 @@ class ConstellationRelation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "ConstellationRelation")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']);
+        }
 
         if (isset($data["sourceConstellation"]))
             $this->sourceConstellation = $data["sourceConstellation"];

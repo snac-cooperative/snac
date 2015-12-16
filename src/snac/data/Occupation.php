@@ -16,6 +16,8 @@ namespace snac\data;
 
 /**
  * Occupation Class
+ *
+ *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  * 
  * Stores the data related to an individual Constellation's occupation.
  * 
@@ -138,7 +140,8 @@ class Occupation extends AbstractData {
             "term" => $this->term,
             "vocabularySource" => $this->vocabularySource,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -163,6 +166,11 @@ class Occupation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "Occupation")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']);
+        }
 
         if (isset($data["term"]))
             $this->term = $data["term"];

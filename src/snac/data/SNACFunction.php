@@ -17,6 +17,8 @@ namespace snac\data;
 
 /**
  * Function data storage class
+ *
+ *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  * 
  * @author Robbie Hott
  *        
@@ -147,7 +149,8 @@ class SNACFunction extends AbstractData {
             "type" => $this->type,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -172,6 +175,11 @@ class SNACFunction extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACFunction")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']);
+        }
 
         if (isset($data["term"]))
             $this->term = $data["term"];
