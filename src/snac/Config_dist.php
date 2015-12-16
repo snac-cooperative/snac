@@ -39,11 +39,11 @@ class Config {
      * @var array database connection information
      */
     public static $DATABASE = array (
-            "database" => "db_name",
-            "host" => "hostname.com",
-            "port" => 5432,
-            "user" => "user_id",
-            "password" => "full_password"
+        "database" => "db_name",
+        "host" => "hostname.com",
+        "port" => 5432,
+        "user" => "user_id",
+        "password" => "full_password"
     );
 
     /**
@@ -58,4 +58,16 @@ class Config {
      *      database calls will only be logged and not committed to the database.
      */
     public static $DATABASE_TESTING = false;
+
+    /**
+     * @var string[][] OAuth connection information.  Each entry should have all the
+     *      required information to connect to that provider.
+     */
+    public static $OAUTH_CONNECTION = array (
+        "google" => array(
+            "client_id" => 'XXXXXXXXX',
+            "client_secret" => 'XXXXXXXX',
+            "redirect_uri" => 'XXXXXXX',
+        )
+    );
 }
