@@ -101,7 +101,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($reverseCObj);
 
         $demo = $this->dbu->demoConstellationList();
-        printf("%s\n", json_encode($demo));
+        printf("%s\n", json_encode($demo, JSON_PRETTY_PRINT));
     }
         
     public function testParseToDB()
