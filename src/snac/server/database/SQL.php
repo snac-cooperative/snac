@@ -1112,7 +1112,8 @@ class SQL
         {
             $nRow = $this->selectNameEntry(array('version' => $row['version'],
                                           'main_id' => $row['main_id']));
-            $row['formatted_name'] = $nRow['original'];
+            // Just use the first name returned, whatever that is. Later we'll want the preferred name.
+            $row['formatted_name'] = $nRow[0]['original'];
             array_push($all, $row);
         }
         return $all;
