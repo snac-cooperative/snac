@@ -100,8 +100,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
 
-        $jsonDemo = $this->dbu->demoConstellationList();
-        printf("%s\n", json_encode($demoData));
+        $demo = $this->dbu->demoConstellationList();
+        printf("%s\n", json_encode($demo));
     }
         
     public function testParseToDB()
