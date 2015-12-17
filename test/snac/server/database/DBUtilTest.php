@@ -125,7 +125,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($selectedConstellationObj->getDBInfo()['main_id'] > 0);
 
         /*
-         * Optional assertions, depending on if our constellation has occupation, function
+         * Optional assertions, depending on if our constellation has function.  This is kind of a
+         * weak idea, but until we have a test constellation with all sub-object, this is it.
          */
         if (($fObj = $selectedConstellationObj->getFunctions()))
         {

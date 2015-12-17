@@ -113,6 +113,28 @@ class DBUtil
 
     /**
      * Select a given constellation from the database based on version and main_id.
+     * Create an empty constellation by calling the constructor with no args. Then used the setters to add
+     * individual properties of the class(es).
+     *
+     * | php                                                    | sql                    |
+     * |--------------------------------------------------------+------------------------|
+     * | setArkID                                               | ark_id                 |
+     * | setEntityType                                          | entity_type            |
+     * | setGender                                              | gender                 |
+     * | setLanguage('language_code','language')                | language               |
+     * | setLanguage('language_code','language')                | language_code          |
+     * | setScript('script_code', 'script')                     | script                 |
+     * | setScript('script_code', 'script')                     | script_code            |
+     * | setLanguageUsed('language_used_code', 'language_used') | language_used          |
+     * | setScriptUsed('script_used_code', 'script_used')       | script_used            |
+     * | setNationality                                         | nationality            |
+     * | addBiogHist                                            | biog_hist              |
+     * | addExistDates                                          | exist_date             |
+     * | setGeneralContext                                      | general_context        |
+     * | setStructureOrGenealogy                                | structure_or_genealogy |
+     * | setConventionDeclaration                               | convention_declaration |
+     * | setMandate                                             | mandate                |
+     * |                                                        |                        |
      *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
      * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
@@ -126,35 +148,6 @@ class DBUtil
      */
     public function selectConstellation($vhInfo, $appUserID)
     {
-        /** 
-         * Create an empty constellation by calling the constructor with no args. Then used the setters to add
-         * individual properties of the class(es).
-         */
-
-        /**
-
-          | php                                                    | sql                    |
-          |--------------------------------------------------------+------------------------|
-          | setArkID                                               | ark_id                 |
-          | setEntityType                                          | entity_type            |
-          | setGender                                              | gender                 |
-          | setLanguage('language_code','language')                | language               |
-          | setLanguage('language_code','language')                | language_code          |
-          | setScript('script_code', 'script')                     | script                 |
-          | setScript('script_code', 'script')                     | script_code            |
-          | setLanguageUsed('language_used_code', 'language_used') | language_used          |
-          | setScriptUsed('script_used_code', 'script_used')       | script_used            |
-          | setNationality                                         | nationality            |
-          | addBiogHist                                            | biog_hist              |
-          | addExistDates                                          | exist_date             |
-          | setGeneralContext                                      | general_context        |
-          | setStructureOrGenealogy                                | structure_or_genealogy |
-          | setConventionDeclaration                               | convention_declaration |
-          | setMandate                                             | mandate                |
-          |                                                        |                        |
-
-         */
-
         $cObj = new \snac\data\Constellation();
 
         $row = $this->sql->selectConstellation($vhInfo);
@@ -174,9 +167,95 @@ class DBUtil
         $cObj->setMandate($row['mandate']);
         $cObj->setDBInfo($row['version'], $row['main_id']);
         
-        // add the existDates
+        $this->populateConstellationExistDate($row['id'], $cObj)
 
-        $dateRows = $this->sql->selectDate($row['id']);
+        $oridRows = $this->sql->selectOtherRecordID($vhInfo); 
+        foreach ($oridRows as $singleOrid)
+        {
+            $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
+        }
+        
+        $subjRows = $this->sql->selectSubject($vhInfo); 
+        foreach ($subjRows as $singleSubj)
+        {
+            $cObj->addSubject($singleSubj['subject_id']);
+        }
+
+        /*
+         * Note: $cObj passed by reference and changed in place.
+         */ 
+        $this->populateNameEntry($vhInfo, $cObj);
+        $this->populateOccupation($vhInfo, $cObj);
+        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+        $this->populateRelatedResource($vhInfo, $cObj); // resourceRelation
+        $this->populateFunction($vhInfo, $cObj);
+
+        /* 
+         * todo: places.
+         * 
+         * todo: maintenanceEvents
+         * 
+         */
+        return $cObj;
+    } // end selectConstellation
+
+    /** 
+     * nameEntry objects
+     *
+     * test with: scripts/get_constellation_demo.php 2 10
+     *
+     * That constellation has 3 name contributors.
+     * 
+     * | php                                        | sql table name   |
+     * |--------------------------------------------+------------------|
+     * | setOriginal                                | original         |
+     * | setPreferenceScore                         | preference_score |
+     * | setLanguage                                | language         |
+     * | setScriptCode                              | script_code      |
+     * | addContributor(string $type, string $name) |                  |
+     * 
+     * | php                              | sql table name_contributor |
+     * |----------------------------------+----------------------------|
+     * |                                  | name_id                    |
+     * | getContributors()['contributor'] | short_name                 |
+     * | getContributors()['type']        | name_type                  |
+     * |                                  |                            |
+     * 
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
+     */
+    public function populateNameEntry($vhInfo, &$cObj)
+    {
+        $neRows = $this->sql->selectNameEntry($vhInfo);
+        foreach ($neRows as $oneName)
+        {
+            $neObj = new \snac\data\NameEntry();
+            $neObj->setOriginal($oneName['original']);
+            $neObj->setLanguage($oneName['language']);
+            $neObj->setScriptCode($oneName['script_code']);
+            $neObj->setPreferenceScore($oneName['preference_score']);
+            foreach ($oneName['contributors'] as $contrib)
+            {
+                $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
+            }
+            $neObj->setDBInfo($vhInfo['version'], $vhInfo['main_id']);
+            
+            $cObj->addNameEntry($neObj);
+        }
+    }
+
+    /**
+     * Select date range(s) from db, foreach create SNACDate object, add to Constellation object.
+     *
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param int $rowID the nrd.id actual row id from table nrd.
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     */
+    public function populateConstellationExistDate($rowID, &$cObj)
+    {
+        $dateRows = $this->sql->selectDate($rowID);
         foreach ($dateRows as $singleDate)
         {
             $dateObj = new \snac\data\SNACDate();
@@ -189,96 +268,10 @@ class DBUtil
                                 $singleDate['to_date'],
                                 $singleDate['to_type']);
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id']);
             $cObj->addExistDates($dateObj);
         }
-
-        $oridRows = $this->sql->selectOtherRecordIDs($vhInfo); 
-        foreach ($oridRows as $singleOrid)
-        {
-            $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
-        }
-        
-        $subjRows = $this->sql->selectSubjects($vhInfo); 
-        foreach ($subjRows as $singleSubj)
-        {
-            $cObj->addSubject($singleSubj['subject_id']);
-        }
-
-
-        /** 
-         * nameEntries
-         *
-         * test with: scripts/get_constellation_demo.php 2 10
-         *
-         * That constellation has 3 name contributors.
-         * 
-         * | php                                        | sql table name   |
-         * |--------------------------------------------+------------------|
-         * | setOriginal                                | original         |
-         * | setPreferenceScore                         | preference_score |
-         * | setLanguage                                | language         |
-         * | setScriptCode                              | script_code      |
-         * | addContributor(string $type, string $name) |                  |
-         * 
-         * | php                              | sql table name_contributor |
-         * |----------------------------------+----------------------------|
-         * |                                  | name_id                    |
-         * | getContributors()['contributor'] | short_name                 |
-         * | getContributors()['type']        | name_type                  |
-         * |                                  |                            |
-         * 
-         * 
-         */
-
-        $neRows = $this->sql->selectNameEntries($vhInfo);
-        foreach ($neRows as $oneName)
-        {
-            $neObj = new \snac\data\NameEntry();
-            $neObj->setOriginal($oneName['original']);
-            $neObj->setLanguage($oneName['language']);
-            $neObj->setScriptCode($oneName['script_code']);
-            $neObj->setPreferenceScore($oneName['preference_score']);
-            foreach ($oneName['contributors'] as $contrib)
-            {
-                $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
-            }
-            
-            $cObj->addNameEntry($neObj);
-        }
-
-        /* 
-         * occupation
-         */
-
-        $this->populateOccupation($vhInfo, $cObj);
-
-        /* 
-         * Relation aka cpfRelation. Note: $cObj passed by reference and changed in place.
-         */
-        $relRows = $this->sql->selectRelation($vhInfo);
-        $this->populateRelation($vhInfo, $relRows, $cObj);
-        
-        /*
-         * related archival resource. Note: $cObj passed by reference and changed in place.
-         */ 
-        $rrRows = $this->sql->selectRelatedResource($vhInfo); 
-        $this->populateRelatedResource($vhInfo, $rrRows, $cObj);
-
-        /*
-         * Functions added to Constellation. Note that $cObj is passed by reference and will change in place.
-        */
-        $funcRows = $this->sql->selectFunction($vhInfo);
-        $this->populateFunction($vhInfo, $funcRows, $cObj);
-
-        /* 
-         * todo: places.
-         * 
-         * todo: maintenanceEvents
-         * 
-         */
-        return $cObj;
-    } // end selectConstellation
+    }
 
     /**
      * Get Occupation from the db, populate occupation object(s), add to Constellation object passed by
@@ -335,11 +328,11 @@ class DBUtil
      * | setNote                             | descriptive_note |
      * 
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $relRows list of associative list from SQL selectRelatedResource().
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateRelation($vhInfo, $relRows, &$cObj)
+    public function populateRelation($vhInfo, &$cObj)
     {
+        $relRows = $this->sql->selectRelation($vhInfo);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
@@ -377,12 +370,12 @@ class DBUtil
      * | setNote              | descriptive_note    |
      *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $rrRows list of associative list from SQL selectRelatedResource().
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateRelatedResource($vhInfo, $rrRows, &$cObj)
+    public function populateRelatedResource($vhInfo, &$cObj)
     {
+        $rrRows = $this->sql->selectRelatedResource($vhInfo); 
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
@@ -403,12 +396,12 @@ class DBUtil
      * Populate the SNACFunction object(s), and add it/them to an existing Constellation object.
      *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $funcRows list of associative list from SQL selectFunction().
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateFunction($vhInfo, $funcRows, &$cObj)
+    public function populateFunction($vhInfo, &$cObj)
     {
+        $funcRows = $this->sql->selectFunction($vhInfo);
         foreach ($funcRows as $oneFunc)
         {
             $fObj = new \snac\data\SNACFunction();

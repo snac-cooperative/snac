@@ -699,7 +699,7 @@ class SQL
     /** 
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
-     * helper function for selectOtherRecordIDs(). This deals with the possibility that a given otherid.id may
+     * helper function for selectOtherRecordID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -746,7 +746,7 @@ class SQL
      * link_type.
      * 
      */
-    public function selectOtherRecordIDs($vhInfo)
+    public function selectOtherRecordID($vhInfo)
     {
         $matchingIDs = $this->matchORID($vhInfo);
 
@@ -786,7 +786,7 @@ class SQL
      * subject_id. There may be multiple subjects returned.
      * 
      */
-    public function selectSubjects($vhInfo)
+    public function selectSubject($vhInfo)
     {
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
@@ -996,7 +996,7 @@ class SQL
       * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
       * version, main_id, name_id, short_name, name_type.
       */
-    public function selectNameEntries($vhInfo)
+    public function selectNameEntry($vhInfo)
     {
         $qq_1 = 'selname';
         $qq_2 = 'selcontributor';
