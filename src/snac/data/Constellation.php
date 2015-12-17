@@ -904,9 +904,11 @@ class Constellation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
 
-        if (isset($data['dbInfo']))
+        if (isset($data['dbInfo']) &&
+            isset($data['dbInfo']['version']) &&
+            isset($data['dbInfo']['main_id']))
         {
-            $this->setDBInfo($data['dbInfo']);
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
         }
 
         unset($this->ark);

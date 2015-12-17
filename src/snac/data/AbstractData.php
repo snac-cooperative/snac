@@ -54,36 +54,6 @@ abstract class AbstractData {
     private $dbInfo = array('version' => null,
                             'main_id' => null);
 
-    /**
-     * Set this object's dbInfo. Take a list with keys 'version' and 'main_id' in any order. We use this list
-     * because it is compatible with $vhInfo used in the DBUtil and SQL classes. Most code will pass $vhInfo
-     * and $dbiList without knowing what is inside the list, and since most code doesn't know about the inner
-     * workings, we use an associative list. Note that via setDBInfo() we are compatible the $vhInfo convention,
-     * but hide our private internal workings.
-     *
-     * Either or both keys may be empty, so there is no obvious sanity check. When a new Constellation object
-     * is created by parsing a CPF file, both $dbiList keys will be empty.
-     *
-     * @param string[] $dbiList A list with keys 'version' and 'main_id' in any order. If $dbiList is true for
-     * any meaning of true, then we check for each key. If $dbiList not true (for any php meaning of 'not
-     * true'), then this function will do nothing.
-     *
-     */
-    public function xsetDBInfo($dbiList)
-    {
-        if ($dbiList)
-        {
-            if (isset($dbiList['version']))
-            {
-                $this->dbInfo['version'] = $dbiList['version'];
-            }
-            if (isset($dbiList['main_id']))
-            {
-                $this->dbInfo['main_id'] = $dbiList['main_id'];
-            }
-        }
-    }
-
         /**
      * Set this object's dbInfo. Take a list with keys 'version' and 'main_id' in any order. We use this list
      * because it is compatible with $vhInfo used in the DBUtil and SQL classes. Most code will pass $vhInfo
