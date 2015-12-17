@@ -123,6 +123,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $display->setData($serverResponse["constellation"]);
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
+            // Ask the server for a list of records to edit
+            $ask = array("command"=>"user_information");
+            $serverResponse = $connect->query($ask);
+            $display->setData($serverResponse);
         } else if ($this->input["command"] == "login") {
             // Destroy the old session
             session_destroy();
