@@ -1009,7 +1009,7 @@ class SQL
                             (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
                             where
                             name.id=aa.id
-                            and name.version=aa.version');
+                            and name.version=aa.version order by preference_score');
         
         $this->sdb->prepare($qq_2,
                             'select 
@@ -1099,7 +1099,9 @@ class SQL
     /**
      * Get a set of 100 records, but only return data necessary for display in the dashboard.
      * Note: query() as opposed to prepare() and execute()
-     * 
+     *
+     * @return string[] A list of 100 lists. Inner list keys are: 'version', 'main_id', 'formatted_name'. At
+     * this time 'formatted_name' is from table name.original
      */ 
     public function selectDemoRecs()
     {
@@ -1112,7 +1114,8 @@ class SQL
         {
             $nRow = $this->selectNameEntry(array('version' => $row['version'],
                                           'main_id' => $row['main_id']));
-            // Just use the first name returned, whatever that is. Later we'll want the preferred name.
+            // For now just use the first name returned, whatever that is. selectNameEntry() sorts by
+            // preference_score, but that score might not be accurate for all contexts.
             $row['formatted_name'] = $nRow[0]['original'];
             array_push($all, $row);
         }

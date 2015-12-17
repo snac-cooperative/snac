@@ -678,9 +678,10 @@ class DBUtil
     } // end saveConstellation
 
     /**
-     * Return 100 constellations, partial data enough for the UI to function. At this stage we think that is: version, main_id, formatted name.
+     * Return 100 constellations as a json string. Only 3 fields are included: version, main_id, formatted
+     * name. The idea it to return enough for the UI to allow selection of a record to edit.
      *
-     *
+     * @return string A json encoded string of 100 records.
      */
     public function demoConstellationList()
     {
