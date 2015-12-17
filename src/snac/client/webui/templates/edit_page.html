@@ -30,6 +30,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
 
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+
+
 <!-- Code to run once the body has been loaded -->
 <script language="javascript">
 var editor = null;
@@ -120,8 +124,18 @@ body {
 
 <div class="container snac" role="main">
 
-    <form class="form-horizontal">
+    <form class="form-horizontal" id="constellation_form">
         <h1>Editing Constellation: {{data.nameEntries.0.original}}</h1>
+
+        <div class="alert alert-01 alert-warning" style="display: none">
+            <p>Saving Constellation...</p>
+        </div><!-- end alert -->
+        <div class="alert alert-01 alert-success" style="display: none">
+            <p>Successfully saved!</p>
+        </div><!-- end alert -->
+        <div class="alert alert-01 alert-danger" style="display: none">
+            <p>An error occured while saving</p>
+        </div><!-- end alert -->
         <div class="row">
             <div class="col-md-8">
 
@@ -501,10 +515,10 @@ body {
                     <div class="panel-body">
                         <p>You may perform any of the following actions on this constellation.</p>
                         <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-info">Save &amp; Continue</a>
-                            <a href="?command=dashboard" class="list-group-item list-group-item-success">Save &amp; Dashboard</a>
-                            <a href="#" class="list-group-item list-group-item-warning">Save &amp; Submit</a>
-                            <a href="#" class="list-group-item list-group-item-danger">Cancel</a>
+                            <a href="#" class="list-group-item list-group-item-info" id="save_and_continue">Save &amp; Continue</a>
+                            <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard">Save &amp; Dashboard</a>
+                            <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit">Save &amp; Submit</a>
+                            <a href="#" class="list-group-item list-group-item-danger" id="cancel">Cancel</a>
                         </div>
                     </div>
                 </div>
