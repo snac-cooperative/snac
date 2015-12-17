@@ -1009,7 +1009,7 @@ class SQL
                             (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
                             where
                             name.id=aa.id
-                            and name.version=aa.version order by preference_score');
+                            and name.version=aa.version order by preference_score desc');
         
         $this->sdb->prepare($qq_2,
                             'select 
