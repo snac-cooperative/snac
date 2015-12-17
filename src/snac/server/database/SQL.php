@@ -1096,6 +1096,28 @@ class SQL
         return $row['count'];
     }
 
+    /**
+     * Get a set of 100 records, but only return data necessary for display in the dashboard.
+     * Note: query() as opposed to prepare() and execute()
+     * 
+     */ 
+    public function selectDemoRecs()
+    {
+        $result = $this->sdb->query('select max(id) as version,main_id from 
+                                    version_history 
+                                    where main_id < 50 group by main_id limit 100',
+                                    array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $nRow = selectNameEntry(array('version' => $row['version'],
+                                          'main_id' => $row['main_id']));
+            $row['formatted_name'] = $nRow['original'];
+            array_push($all, $row);
+        }
+        return $all
+    }
+
 
 
 }

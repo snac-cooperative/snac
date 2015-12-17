@@ -676,4 +676,17 @@ class DBUtil
 
         return $vhInfo;
     } // end saveConstellation
+
+    /**
+     * Return 100 constellations, partial data enough for the UI to function. At this stage we think that is: version, main_id, formatted name.
+     *
+     *
+     */
+    public function demoConstellationList()
+    {
+        $demoData = $this->sql->selectDemoRecs();
+        printf("%s\n", json_encode($demoData));
+        return json_encode($demoData);
+    }
+
 }
