@@ -162,6 +162,37 @@ class WebUI implements \snac\interfaces\ServerInterface {
             header('Location: index.php');
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
+            
+            // Rework the input into arrays of sections
+            $nested = array();
+            $nested["nameEntry"] = array();
+            $nested["otherID"] = array();
+            $nested["source"] = array();
+            $nested["resourceRelation"] = array();
+            $nested["constellationRelation"] = array();
+            $nested["subject"] = array();
+            $nested["occupation"] = array();
+            $nested["place"] = array();
+            
+            foreach ($this->input as $k => $v) {
+                // Try to split on underscore
+                $parts = explode("_", $k);
+                if (count($parts) == 1) { 
+                    // only one piece: non-repeating
+                    // key => value ==> nested[key] = value
+                    $nested[$k] = $v;
+                } else if (count($parts) == 2) { 
+                    // two pieces: single-val repeating
+                    // key_index => value ==> nested[key][index] = value
+                    $nested[$parts[0]][$parts[1]] = $v;
+                } else if (count($parts) == 3) { 
+                    // three parts: mulitple-vals repeating
+                    // key_subkey_index => value ==> nested[key][index][subkey] = value
+                    if (!isset($nested[$parts[0]][$parts[2]]))
+                        $nested[$parts[0]][$parts[2]] = array();
+                    $nested[$parts[0]][$parts[2]][$parts[1]] = $v;
+                }
+            }
 
             // Build a data structure to send to the server
             $request = array("command"=>"update_constellation");
@@ -169,7 +200,70 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Convert the input into a constellation
             $constellation = new \snac\data\Constellation();
             // TODO
-            
+            if (isset($nested["entityType"]))
+                $constellation->setEntityType($nested["entityType"]);
+            if (isset($nested["gender"]))
+                $constellation->setGender($nested["gender"]);
+            if (isset($nested["nationality"]))
+                $constellation->setNationality($nested["nationality"]);
+            if (isset($nested["languageCode"]))
+                $constellation->setLanguageUsed($nested["languageCode"], ""); //TODO
+            if (isset($nested["scriptCode"]))
+                $constellation->setScriptUsed($nested["scriptCode"], ""); //TODO
+            if (isset($nested["biogHist"]))
+                $constellation->addBiogHist($nested["biogHist"]);
+            foreach ($nested["nameEntry"] as $data) {
+                $nameEntry = new \snac\data\NameEntry();
+                $nameEntry->setOriginal($data["original"]);
+                $constellation->addNameEntry($nameEntry);
+            }
+            foreach ($nested["otherID"] as $data) {
+                $constellation->addOtherRecordID($data["type"], $data["href"]);
+            }
+            foreach ($nested["source"] as $data) {
+                $constellation->addSource("simple", $data["href"]); //TODO
+            }
+            foreach ($nested["resourceRelation"] as $data) {
+                $relation = new \snac\data\ResourceRelation();
+                $relation->setContent($data["content"]);
+                $relation->setRole($data["role"]);
+                $relation->setLink($data["link"]);
+                $relation->setDocumentType($data["documentType"]);
+                $relation->setSource($data["source"]);
+                $constellation->addResourceRelation($relation);
+            }
+            foreach ($nested["constellationRelation"] as $data) {
+                $relation = new \snac\data\ConstellationRelation();
+                $relation->setContent($data["content"]);
+                $relation->setTargetArkID($data["targetArkID"]);
+                $relation->setTargetType($data["targetEntityType"]);
+                $relation->setType($data["type"]);
+                $constellation->addRelation($relation);
+            }
+            foreach ($nested["subject"] as $data) {
+                $constellation->addSubject($data);
+            }
+            foreach ($nested["function"] as $data) {
+                $fn = new \snac\data\SNACFunction();
+                $fn->setTerm($data);
+                $constellation->addFunction($fn);
+            }
+            foreach ($nested["occupation"] as $data) {
+                $occupation = new \snac\data\Occupation();
+                $occupation->setTerm($data);
+                $constellation->addOccupation($occupation);
+            }
+            foreach ($nested["place"] as $data) {
+                $place = new \snac\data\Place();
+                $placeEntry = new \snac\data\PlaceEntry();
+                $placeEntry->setOriginal($data["original"]);
+                $bestMatch = new \snac\data\PlaceEntry();
+                $bestMatch->setOriginal($data["bestMatch"]);
+                $placeEntry->setBestMatch($bestMatch);
+                $place->addPlaceEntry($placeEntry);
+                $constellation->addPlace($place);
+            }
+
 
 
             // Send the query to the server
@@ -178,8 +272,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
 
             // Generate response to the user's web browser
-            $response = array(); 
-            $response["result"] = $serverResponse["result"];
+            //$response = array(); 
+            $response = $serverResponse;
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
