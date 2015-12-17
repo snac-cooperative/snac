@@ -1110,7 +1110,7 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $nRow = selectNameEntry(array('version' => $row['version'],
+            $nRow = $this->selectNameEntry(array('version' => $row['version'],
                                           'main_id' => $row['main_id']));
             $row['formatted_name'] = $nRow['original'];
             array_push($all, $row);
