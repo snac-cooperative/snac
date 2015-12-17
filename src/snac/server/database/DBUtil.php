@@ -82,7 +82,7 @@ class DBUtil
      * 
      * @return SNACDate
      */
-    public static function buildDate($singleDate)
+    public static function buildDate($vhInfo, $singleDate)
     {
         $dateObj = new \snac\data\SNACDate();
         $dateObj->setRange($singleDate['is_range']);
@@ -94,7 +94,7 @@ class DBUtil
                             $singleDate['to_date'],
                             $singleDate['to_type']); 
         $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            
+        $dateObj->setDBInfo($vhInfo);
         return $dateObj;
     }    
         
@@ -247,54 +247,99 @@ class DBUtil
         }
 
         /* 
-         * occupations
-         * Need to add date range
-         * Need to add vocabulary source
-         *
-         * 
-         * | php                 | sql               |
-         * |---------------------+-------------------|
-         * |                     | id                |
-         * |                     | version           |
-         * |                     | main_id           |
-         * | setTerm             | occupation_id     |
-         * | setNote             | note              |
-         * | setVocabularySource | vocabulary_source |
+         * occupation
          */
 
-        $occRows = $this->sql->selectOccupations($vhInfo);
+        $this->populateOccupation($vhInfo, $cObj);
+
+        /* 
+         * Relation aka cpfRelation. Note: $cObj passed by reference and changed in place.
+         */
+        $relRows = $this->sql->selectRelation($vhInfo);
+        $this->populateRelation($vhInfo, $relRows, $cObj);
+        
+        /*
+         * related archival resource. Note: $cObj passed by reference and changed in place.
+         */ 
+        $rrRows = $this->sql->selectRelatedResource($vhInfo); 
+        $this->populateRelatedResource($vhInfo, $rrRows, $cObj);
+
+        /*
+         * Functions added to Constellation. Note that $cObj is passed by reference and will change in place.
+        */
+        $funcRows = $this->sql->selectFunction($vhInfo);
+        $this->populateFunction($vhInfo, $funcRows, $cObj);
+
+        /* 
+         * todo: places.
+         * 
+         * todo: maintenanceEvents
+         * 
+         */
+        return $cObj;
+    } // end selectConstellation
+
+    /**
+     * Get Occupation from the db, populate occupation object(s), add to Constellation object passed by
+     * reference.
+     *
+     * Need to add date range
+     * Need to add vocabulary source
+     * 
+     * | php                 | sql               |
+     * |---------------------+-------------------|
+     * |                     | id                |
+     * |$vhInfo['version']   | version           |
+     * |$vhInfo['main_id']   | main_id           |
+     * | setTerm             | occupation_id     |
+     * | setNote             | note              |
+     * | setVocabularySource | vocabulary_source |
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
+     */
+    public function populateOccupation($vhInfo, &$cObj)
+    {
+        $occRows = $this->sql->selectOccupation($vhInfo);
         foreach ($occRows as $oneOcc)
         {
             $occObj = new \snac\data\Occupation();
             $occObj->setTerm($oneOcc['occupation_id']);
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
+            $occObj->setDBInfo($vhInfo);
             $cObj->addOccupation($occObj);
         }
+    }
 
-        /* 
-         * relations
-         * test with: scripts/get_constellation_demo.php 2 10
-         *
-         * 
-         * | php                                 | sql              |
-         * |-------------------------------------+------------------|
-         * |                                     | id               |
-         * | $vhInfo['verion']                   | version          |
-         * | $vhInfo['main_id']                  | main_id          |
-         * | setTargetConstellation              | related_id       |
-         * | setTargetArkID                      | related_ark      |
-         * | setTargetType  aka targetEntityType | role             |
-         * | setType                             | arcrole          |
-         * | setCPFRelationType                  | relation_type    |
-         * | setContent                          | relation_entry   |
-         * | setDates                            | date             |
-         * | setNote                             | descriptive_note |
-         * 
-         */
-
-        $relRows = $this->sql->selectRelation($vhInfo);
-        foreach ($relRows as $oneRel)
+    /**
+     * Populate relation object(s), and add to existing Constellation object.
+     *
+     * test with: scripts/get_constellation_demo.php 2 10
+     *
+     * 
+     * | php                                 | sql              |
+     * |-------------------------------------+------------------|
+     * |                                     | id               |
+     * | $vhInfo['verion']                   | version          |
+     * | $vhInfo['main_id']                  | main_id          |
+     * | setTargetConstellation              | related_id       |
+     * | setTargetArkID                      | related_ark      |
+     * | setTargetType  aka targetEntityType | role             |
+     * | setType                             | arcrole          |
+     * | setCPFRelationType                  | relation_type    |
+     * | setContent                          | relation_entry   |
+     * | setDates                            | date             |
+     * | setNote                             | descriptive_note |
+     * 
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param $relRows list of associative list from SQL selectRelatedResource().
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     */
+    public function populateRelation($vhInfo, $relRows, &$cObj)
+    {
+                foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
             $relatedObj->setTargetConstellation($oneRel['related_id']);
@@ -305,30 +350,38 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
+            $relatedObj->setDBInfo($vhInfo);
             $cObj->addRelation($relatedObj);
         }
+    }
 
-        
-        /*
-         * resourceRelations
-         *
-         * 
-         * | php                  | sql                 |
-         * |----------------------+---------------------|
-         * |                      | id                  |
-         * | $vhInfo['version']   | version             |
-         * | $vhInfo['main_id']   | main_id             |
-         * | setDocumentType      | role                |
-         * | setRelationEntryType | relation_entry_type |
-         * | setLink              | href                |
-         * | setRole              | arcrole             |
-         * | setContent           | relation_entry      |
-         * | setSource            | object_xml_wrap     |
-         * | setNote              | descriptive_note    |
-         */
 
-        $rrRows = $this->sql->selectRelatedResources($vhInfo); 
-
+    /**
+     * Populate the RelatedResource object(s), and add it/them to an existing Constellation object.
+     *
+     * resourceRelation
+     *
+     * 
+     * | php                  | sql                 |
+     * |----------------------+---------------------|
+     * |                      | id                  |
+     * | $vhInfo['version']   | version             |
+     * | $vhInfo['main_id']   | main_id             |
+     * | setDocumentType      | role                |
+     * | setRelationEntryType | relation_entry_type |
+     * | setLink              | href                |
+     * | setRole              | arcrole             |
+     * | setContent           | relation_entry      |
+     * | setSource            | object_xml_wrap     |
+     * | setNote              | descriptive_note    |
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param $rrRows list of associative list from SQL selectRelatedResource().
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */
+    public function populateRelatedResource($vhInfo, $rrRows, &$cObj)
+    {
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
@@ -339,15 +392,22 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
+            $rrObj->setDBInfo($vhInfo);
             $cObj->addResourceRelation($rrObj);
         }
+    }
 
-        /*
-         * functions
-         *
-        */
 
-        $funcRows = $this->sql->selectFunctions($vhInfo);
+    /**
+     * Populate the SNACFunction object(s), and add it/them to an existing Constellation object.
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param $funcRows list of associative list from SQL selectFunction().
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */
+    public function populateFunction($vhInfo, $funcRows, &$cObj)
+    {
         foreach ($funcRows as $oneFunc)
         {
             $fObj = new \snac\data\SNACFunction();
@@ -355,19 +415,12 @@ class DBUtil
             $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
-            $fDate = $this->buildDate($oneFunc['date']);
+            $fObj->setDBInfo($vhInfo);
+            $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
             $fObj->setDateRange($fDate);
             $cObj->addFunction($fObj);
         }
-
-        /* 
-         * todo: places.
-         * 
-         * todo: maintenanceEvents
-         * 
-         */
-        return $cObj;
-    } // end selectConstellation
+    }
 
     /**
      * Write a PHP Constellation object to the database. This is a new constellation, and will get new version
@@ -439,7 +492,7 @@ class DBUtil
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
-     * @param string[] $vhInfo The main_id for this constellation.
+     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      * 
      * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
      * return value such as true for success, and false for failure. This function might need to call into the

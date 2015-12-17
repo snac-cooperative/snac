@@ -9,6 +9,7 @@
  *
  *
  * @author Robbie Hott
+ * @author Tom Laudeman
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
@@ -24,6 +25,7 @@ namespace snac\data;
  * default constructor that may take an array as a parameter to fill the object.
  *
  * @author Robbie Hott
+ * @author Tom Laudeman
  */
 abstract class AbstractData {
 

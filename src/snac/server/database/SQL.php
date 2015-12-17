@@ -828,7 +828,7 @@ class SQL
      * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
      * 
      */
-    public function selectOccupations($vhInfo)
+    public function selectOccupation($vhInfo)
     {
         $qq = 'socc';
         $this->sdb->prepare($qq, 
@@ -904,7 +904,7 @@ class SQL
     }
 
     /**
-     * select related archival resources given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
+     * select related archival resource records given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
      * turn the return value into a pgp ResourceRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -913,7 +913,7 @@ class SQL
      * href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
-    public function selectRelatedResources($vhInfo)
+    public function selectRelatedResource($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -941,7 +941,7 @@ class SQL
     }
 
     /**
-     * Select all functions for the given version and main_id. Code in DBUtils turns the return value into a
+     * Select all function records for the given version and main_id. Code in DBUtils turns the return value into a
      * SNACFunction object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -950,7 +950,7 @@ class SQL
      * note, date. Key date is also a list assoc array of date info from selectDate().
      *
      */ 
-    public function selectFunctions($vhInfo)
+    public function selectFunction($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
