@@ -121,6 +121,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Check a couple of dbInfo values for the Constellation and sub-objects.
          */
+        printf("dbi %s\n", var_export($selectedConstellationObj->getDBInfo(), 1));
         $this->assertTrue($selectedConstellationObj->getDBInfo()['version'] > 0);
         $this->assertTrue($selectedConstellationObj->getDBInfo()['main_id'] > 0);
         
