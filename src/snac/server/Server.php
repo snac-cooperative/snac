@@ -83,6 +83,11 @@ class Server implements \snac\interfaces\ServerInterface {
             case "reconcile":
 
                 break;
+            case "user_information":
+                $this->response["user"] = array();
+                $db = new \snac\server\database\DBUtil();
+                $this->response["user"]["editing"] = $db->demoConstellationList();
+                break;
             case "update_constellation":
                 $this->response["result"] = "success";
                 break;
