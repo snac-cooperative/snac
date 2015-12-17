@@ -100,10 +100,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
 
+        // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
-        // printf("%s\n", $demo);
-        printf("%s\n", count(json_decode($demo)));
-        // $this->assertTrue(count($demo) == 100);
+        $this->assertTrue(count(json_decode($demo)) == 100);
     }
         
     public function testParseToDB()
