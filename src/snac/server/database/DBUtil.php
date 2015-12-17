@@ -172,8 +172,7 @@ class DBUtil
         $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
-        $cObj->setDBInfo(array('version' => $row['version'],
-                               'main_id' => $row['main_id']));
+        $cObj->setDBInfo($row['version'], $row['main_id']);
         
         // add the existDates
 
@@ -310,7 +309,7 @@ class DBUtil
             $occObj->setTerm($oneOcc['occupation_id']);
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
-            $occObj->setDBInfo($vhInfo);
+            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id']);
             $cObj->addOccupation($occObj);
         }
     }
@@ -341,7 +340,7 @@ class DBUtil
      */
     public function populateRelation($vhInfo, $relRows, &$cObj)
     {
-                foreach ($relRows as $oneRel)
+        foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
             $relatedObj->setTargetConstellation($oneRel['related_id']);
@@ -352,7 +351,7 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
-            $relatedObj->setDBInfo($vhInfo);
+            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id']);
             $cObj->addRelation($relatedObj);
         }
     }
@@ -394,7 +393,7 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
-            $rrObj->setDBInfo($vhInfo);
+            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id']);
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -417,7 +416,7 @@ class DBUtil
             $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
-            $fObj->setDBInfo($vhInfo);
+            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id']);
             $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
             $fObj->setDateRange($fDate);
             $cObj->addFunction($fObj);
