@@ -102,7 +102,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $demo = $this->dbu->demoConstellationList();
         // printf("%s\n", $demo);
-        printf("%s\n", count($demo));
+        printf("%s\n", count(json_decode($demo)));
         // $this->assertTrue(count($demo) == 100);
     }
         
