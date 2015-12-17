@@ -24,3 +24,8 @@ $jsonIn = file_get_contents("test/snac/data/json/constellation_test2.json");
 $identity->fromJSON($jsonIn);
 file_put_contents("test/snac/data/json/constellation_test2_v2.json", $identity->toJSON(false));
 printf("Wrote: test/snac/data/json/constellation_test2_v2.json\n");
+
+$identity = new \snac\data\Constellation();
+$jsonIn = file_get_contents("test/snac/data/json/constellation_simple.json");
+$identity->fromJSON($jsonIn);
+file_put_contents("test/snac/data/json/constellation_simple_v2.json", $identity->toJSON(false));
