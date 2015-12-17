@@ -74,7 +74,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         $connect = new ServerConnect();
         
-        $serverResponse = $connect->query($this->input);
         
         // Start the session
         session_name("SNACWebUI");
@@ -118,6 +117,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Display the current information
         if ($this->input["command"] == "edit") {
+            $serverResponse = $connect->query($this->input);
             $display->setTemplate("edit_page");
             if (isset($serverResponse["constellation"]))
                 $display->setData($serverResponse["constellation"]);
@@ -162,11 +162,24 @@ class WebUI implements \snac\interfaces\ServerInterface {
             header('Location: index.php');
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
+
+            // Build a data structure to send to the server
+            $request = array("command"=>"update_constellation");
+
+            // Convert the input into a constellation
+            $constellation = new \snac\data\Constellation();
+            // TODO
+            
+
+
+            // Send the query to the server
+            $request["constellation"] = $constellation->toArray();
+            $serverResponse = $connect->query($request);
+            
+
+            // Generate response to the user's web browser
             $response = array(); 
-
-
-
-            $response["result"] = "success";
+            $response["result"] = $serverResponse["result"];
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;

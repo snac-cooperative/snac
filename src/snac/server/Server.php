@@ -83,6 +83,9 @@ class Server implements \snac\interfaces\ServerInterface {
             case "reconcile":
 
                 break;
+            case "update_constellation":
+                $this->response["result"] = "success";
+                break;
             case "edit":
                 if (isset($this->input["arkid"])) {
                     // Editing the given ark id by reading querying the current HRT
@@ -112,7 +115,7 @@ class Server implements \snac\interfaces\ServerInterface {
                     $this->response["constellation"] = $constellation->toArray();
                     return;
                 }
-                // break; // no longer breaking to allow th edefault case to give an error if neither matches
+                // break; // no longer breaking to allow the default case to give an error if neither matches
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);    
 
