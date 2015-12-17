@@ -117,6 +117,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
         $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
         $this->assertNotNull($selectedConstellationObj);
+
+        /*
+         * Check a couple of dbInfo values for the Constellation and sub-objects.
+         */
+        $this->assertTrue($selectedConstellationObj->getDBInfo()['version'] > 0);
+        $this->assertTrue($selectedConstellationObj->getDBInfo()['main_id'] > 0);
         
         /*
          * Test that updateVersionHistory() returns a new version, but keeps the same old main_id.
