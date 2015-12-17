@@ -1103,9 +1103,9 @@ class SQL
      */ 
     public function selectDemoRecs()
     {
-        $result = $this->sdb->query('select max(id) as version,main_id from 
-                                    version_history 
-                                    where main_id < 50 order by id asc group by main_id limit 100',
+        $result = $this->sdb->query('select max(id) as version,main_id 
+                                    from version_history 
+                                    group by main_id order by main_id limit 100',
                                     array());
         $all = array();
         while($row = $this->sdb->fetchrow($result))
