@@ -988,7 +988,8 @@ class SQL
 
      /** 
       * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
-      * NameEntry object.
+      * NameEntry object. Order the returned records by preference_score descending so that preferred names
+      * are at the beginning of the returned list.
       *
       * @param string[] $vhInfo with keys version, main_id.
       *
