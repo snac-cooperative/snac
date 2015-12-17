@@ -103,6 +103,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $demo = $this->dbu->demoConstellationList();
         $this->assertTrue(count($demo) == 100);
         // printf("%s\n", json_encode($demo, JSON_PRETTY_PRINT));
+        printf("count: %s\n", count($demo));
     }
         
     public function testParseToDB()
