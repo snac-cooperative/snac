@@ -54,6 +54,8 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
 
         $identity->fromJSON($jsonIn);
 
+        printf("tjj: %s\n", var_export($identity->getDBInfo(), 1));
+
         $this->assertEquals($jsonIn, $identity->toJSON(false));
     }
     
