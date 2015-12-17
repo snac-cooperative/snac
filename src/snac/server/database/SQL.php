@@ -1105,7 +1105,7 @@ class SQL
     {
         $result = $this->sdb->query('select max(id) as version,main_id from 
                                     version_history 
-                                    where main_id < 50 group by main_id limit 100',
+                                    where main_id < 50 order by id asc group by main_id limit 100',
                                     array());
         $all = array();
         while($row = $this->sdb->fetchrow($result))
