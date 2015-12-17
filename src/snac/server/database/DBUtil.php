@@ -172,6 +172,8 @@ class DBUtil
         $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
+        $cObj->setDBInfo(array('version' => $row['version'],
+                               'main_id' => $row['main_id']));
         
         // add the existDates
 
