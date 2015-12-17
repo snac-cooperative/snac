@@ -1115,7 +1115,7 @@ class SQL
             $row['formatted_name'] = $nRow['original'];
             array_push($all, $row);
         }
-        return $all
+        return $all;
     }
 
 

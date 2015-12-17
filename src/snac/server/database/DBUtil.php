@@ -685,7 +685,6 @@ class DBUtil
     public function demoConstellationList()
     {
         $demoData = $this->sql->selectDemoRecs();
-        printf("%s\n", json_encode($demoData));
         return json_encode($demoData);
     }
 
