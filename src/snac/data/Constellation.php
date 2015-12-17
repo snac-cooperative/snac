@@ -331,7 +331,7 @@ class Constellation extends AbstractData {
     private $mandate = null;
 
     /**
-     * Constructor for the class.
+     * Constructor for the class. See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object. Normal use is to call the
@@ -850,7 +850,8 @@ class Constellation extends AbstractData {
             "gender" => $this->gender,
             "generalContext" => $this->generalContext,
             "structureOrGenealogy" => $this->structureOrGenealogy,
-            "mandate" => $this->mandate
+            "mandate" => $this->mandate,
+            'dbInfo' => $this->getDBInfo()
         );
 
         foreach ($this->maintenanceEvents as $i => $v)
@@ -902,6 +903,13 @@ class Constellation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
+
+        if (isset($data['dbInfo']) &&
+            isset($data['dbInfo']['version']) &&
+            isset($data['dbInfo']['main_id']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
 
         unset($this->ark);
         if (isset($data["ark"]))

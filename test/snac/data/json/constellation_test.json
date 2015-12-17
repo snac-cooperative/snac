@@ -18,7 +18,11 @@
             "standardDateTime": null,
             "agentType": "human",
             "agent": "Florence CLAVAUD",
-            "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation"
+            "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "MaintenanceEvent",
@@ -27,7 +31,11 @@
             "standardDateTime": null,
             "agentType": "machine",
             "agent": "cpf_norm.pl",
-            "eventDescription": null
+            "eventDescription": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "sources": [
@@ -64,7 +72,11 @@
             ],
             "language": "fre",
             "scriptCode": "Latn",
-            "useDates": null
+            "useDates": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "NameEntry",
@@ -92,7 +104,15 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
+            },
+            "dbInfo": {
+                "version": null,
+                "main_id": null
             }
         },
         {
@@ -121,7 +141,15 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
+            },
+            "dbInfo": {
+                "version": null,
+                "main_id": null
             }
         }
     ],
@@ -131,7 +159,11 @@
             "term": "archiviste",
             "vocabularySource": "d699msirr1g-3naumnfaswc",
             "dates": null,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "biogHists": [
@@ -157,7 +189,11 @@
                 "notAfter": null
             },
             "isRange": true,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "existDatesNote": "\n               \n            ",
@@ -192,9 +228,17 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
             },
-            "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>"
+            "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "ConstellationRelation",
@@ -226,9 +270,17 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
             },
-            "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>"
+            "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "ConstellationRelation",
@@ -242,7 +294,11 @@
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
             "dates": null,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "ConstellationRelation",
@@ -256,7 +312,11 @@
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
             "dates": null,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "resourceRelations": [
@@ -269,7 +329,11 @@
             "role": "creatorOf",
             "content": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
             "source": null,
-            "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>"
+            "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "ResourceRelation",
@@ -280,7 +344,11 @@
             "role": "referencedIn",
             "content": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
             "source": null,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "ResourceRelation",
@@ -291,7 +359,11 @@
             "role": "referencedIn",
             "content": "Gr\u00e2ces accord\u00e9es",
             "source": null,
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "functions": [
@@ -301,7 +373,11 @@
             "type": null,
             "dates": null,
             "vocabularySource": "d5bhviikk9--y6te63k761ib",
-            "note": null
+            "note": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "places": [
@@ -326,7 +402,11 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
             },
             "type": null,
             "role": "Lieu g\u00e9n\u00e9ral",
@@ -342,7 +422,11 @@
                     "original": "Pierrefitte-sur-Seine",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "nomLieu"
+                    "type": "nomLieu",
+                    "dbInfo": {
+                        "version": null,
+                        "main_id": null
+                    }
                 },
                 {
                     "dataType": "PlaceEntry",
@@ -355,10 +439,18 @@
                     "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "lieu"
+                    "type": "lieu",
+                    "dbInfo": {
+                        "version": null,
+                        "main_id": null
+                    }
                 }
             ],
-            "note": "\n                  \n               "
+            "note": "\n                  \n               ",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         },
         {
             "dataType": "Place",
@@ -381,7 +473,11 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null
+                "note": null,
+                "dbInfo": {
+                    "version": null,
+                    "main_id": null
+                }
             },
             "type": null,
             "role": "Lieu de Paris",
@@ -397,7 +493,11 @@
                     "original": "Paris, Archives nationales",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "nomLieu"
+                    "type": "nomLieu",
+                    "dbInfo": {
+                        "version": null,
+                        "main_id": null
+                    }
                 },
                 {
                     "dataType": "PlaceEntry",
@@ -410,7 +510,11 @@
                     "original": "03e arrondissement",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "arrondissement_actuel"
+                    "type": "arrondissement_actuel",
+                    "dbInfo": {
+                        "version": null,
+                        "main_id": null
+                    }
                 },
                 {
                     "dataType": "PlaceEntry",
@@ -423,10 +527,18 @@
                     "original": "Francs-Bourgeois (rue des)",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "voie"
+                    "type": "voie",
+                    "dbInfo": {
+                        "version": null,
+                        "main_id": null
+                    }
                 }
             ],
-            "note": "\n                  \n               "
+            "note": "\n                  \n               ",
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
     ],
     "subjects": [],
@@ -434,5 +546,9 @@
     "gender": null,
     "generalContext": "<generalContext>\n            <p>idem<\/p>\n         <\/generalContext>",
     "structureOrGenealogy": "<structureOrGenealogy>\n            <p>idem<\/p>\n         <\/structureOrGenealogy>",
-    "mandate": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>"
+    "mandate": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>",
+    "dbInfo": {
+        "version": null,
+        "main_id": null
+    }
 }

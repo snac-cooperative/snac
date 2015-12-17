@@ -18,6 +18,8 @@ namespace snac\data;
 /**
  * Maintenance Event Class
  *
+ *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
+ *
  * Data storage class for maintenance events on an identity constellation.
  *
  * @author Robbie Hott
@@ -94,7 +96,8 @@ class MaintenanceEvent extends AbstractData {
             "standardDateTime" => $this->standardDateTime,
             "agentType" => $this->agentType,
             "agent" => $this->agent,
-            "eventDescription" => $this->eventDescription
+            "eventDescription" => $this->eventDescription,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -119,6 +122,11 @@ class MaintenanceEvent extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
             return false;
+        
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
 
         if (isset($data["eventType"]))
             $this->eventType = $data["eventType"];

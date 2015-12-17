@@ -19,6 +19,8 @@ namespace snac\data;
  * SNACDate class
  * 
  * Storage class for dates.
+ *
+ *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  * 
  * @author Robbie Hott
  *
@@ -327,7 +329,8 @@ class SNACDate extends AbstractData {
             "toBC" => $this->toBC,
             "toRange" => $this->toRange,
             "isRange" => $this->isRange,
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -352,6 +355,11 @@ class SNACDate extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
 
         if (isset($data["fromDate"]))
             $this->fromDate = $data["fromDate"];

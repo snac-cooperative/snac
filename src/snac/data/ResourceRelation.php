@@ -16,7 +16,7 @@
 namespace snac\data;
 
 /**
- * Resource Relationship
+ * Resource Relationship.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
  * Data storage class for relationships of an Identity Constellation to an external Resource.
  *
@@ -230,7 +230,8 @@ class ResourceRelation extends AbstractData {
             "role" => $this->role,
             "content" => $this->content,
             "source" => $this->source,
-            "note" => $this->note
+            "note" => $this->note,
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -255,6 +256,11 @@ class ResourceRelation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "ResourceRelation")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
 
         if (isset($data["documentType"]))
             $this->documentType = $data["documentType"];

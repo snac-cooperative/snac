@@ -1,5 +1,22 @@
 {
     "dataType": "Constellation",
+    "ark": null,
+    "entityType": null,
+    "otherRecordIDs": [],
+    "maintenanceStatus": null,
+    "maintenanceAgency": null,
+    "maintenanceEvents": [],
+    "sources": [],
+    "legalStatuses": [],
+    "conventionDeclaration": null,
+    "constellationLanguage": null,
+    "constellationLanguageCode": null,
+    "constellationScript": null,
+    "constellationScriptCode": null,
+    "language": null,
+    "languageCode": null,
+    "script": null,
+    "scriptCode": null,
     "nameEntries": [
         {
             "dataType": "NameEntry",
@@ -13,8 +30,29 @@
             ],
             "language": null,
             "scriptCode": null,
-            "useDates": null
+            "useDates": null,
+            "dbInfo": {
+                "version": null,
+                "main_id": null
+            }
         }
-    ]
+    ],
+    "occupations": [],
+    "biogHists": [],
+    "existDates": [],
+    "existDatesNote": null,
+    "relations": [],
+    "resourceRelations": [],
+    "functions": [],
+    "places": [],
+    "subjects": [],
+    "nationality": null,
+    "gender": null,
+    "generalContext": null,
+    "structureOrGenealogy": null,
+    "mandate": null,
+    "dbInfo": {
+        "version": null,
+        "main_id": null
+    }
 }
-

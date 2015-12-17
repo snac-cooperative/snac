@@ -17,6 +17,8 @@ namespace snac\data;
 /**
  * NameEntry Class
  *
+ * See the abstract parent class for common methods setDBInfo() and getDBInfo().
+ *
  * Storage class for name entries.
  *
  * @author Robbie Hott
@@ -86,7 +88,7 @@ class NameEntry extends AbstractData {
     private $useDates;
 
     /**
-     * Constructor
+     * Constructor.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
@@ -185,7 +187,8 @@ class NameEntry extends AbstractData {
             "contributors" => $this->contributors,      // already an array
             "language" => $this->language,
             "scriptCode" => $this->scriptCode,
-            "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten)
+            "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten),
+            'dbInfo' => $this->getDBInfo()
         );
 
         // Shorten if necessary
@@ -211,7 +214,12 @@ class NameEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
             return false;
-
+        
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
+        
         if (isset($data["original"]))
             $this->original = $data["original"];
         else

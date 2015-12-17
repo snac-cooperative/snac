@@ -192,6 +192,47 @@ class SQL
         return $vhInfo;
     }
 
+    /**
+     * Update a version_history record by getting a new version but keeping the existing main_id. This also
+     * uses DatabaseConnector->query() in an attempt to be more efficient, or perhaps just less verbose.
+     *
+     * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
+     *
+     * @param integer $role Foreign key to role.id, the role id value of the current user.
+     *
+     * @param string $status Status value from the enum icstatus. Using an enum from the db is a bit obscure
+     * to all the php code, so maybe best to move icstatus to some util class and have a method to handle
+     * these. Or a method that knows about the db class, but can hide the details from the application
+     * code. Something.
+     *
+     * @param string $note A string the user enters to identify what changed in this version.
+     *
+     * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
+     * returned as 'id', but all the code knows that as the version number, so this code plays nice by
+     * returning it as 'version'. Note the "returning ..." part of the query.
+     *
+     */
+    public function updateVersionHistory($userid, $role, $status, $note, $main_id)
+    {
+        /*
+         * Note: query() as opposed to prepare() and execute()
+         * query() has two args:
+         * 1) a string (sql query)
+         * 2) an array of the vars that match the query placeholders
+         * 
+         */ 
+        $result = $this->sdb->query('insert into version_history 
+                                    (main_id, user_id, role_id, status, is_current, note)
+                                    values 
+                                    ($1, $2, $3, $4, $5, $6)
+                                    returning id as version'
+                                    ,
+                                    array($main_id, $userid, $role, $status, true, $note));
+        $row = $this->sdb->fetchrow($result);
+        return array('version' => $row['version'], 'main_id' => $main_id);
+    }
+
+
     /** 
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
@@ -453,7 +494,7 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[] $argList A flat list of data for execute().
+     * @param string[] $argList 
      * 
      * @param SNACDate $dates A single SNACDate object suitable for insertDate().
      * 
@@ -470,9 +511,11 @@ class SQL
                             returning id');
         
         /* 
-         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. 
+         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. Always use
+         * keys explicitly when going from associative context to flat list context.
          */
-        $eArgs = $vhInfo;
+        $eArgs = array($vhInfo['version'], $vhInfo['main_id']);
+
         foreach ($argList as $arg)
         {
             array_push($eArgs, $arg);
@@ -642,7 +685,12 @@ class SQL
                             version=(select max(version) from nrd where version<=$1)
                             and main_id=$2');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq, 
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -651,7 +699,7 @@ class SQL
     /** 
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
-     * helper function for selectOtherRecordIDs(). This deals with the possibility that a given otherid.id may
+     * helper function for selectOtherRecordID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -670,8 +718,12 @@ class SQL
                             where
                             version=(select max(version) from otherid where version<=$1 and main_id=$2)
                             and main_id=$2');
-
-        $result = $this->sdb->execute($qq, $vhInfo);
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -694,7 +746,7 @@ class SQL
      * link_type.
      * 
      */
-    public function selectOtherRecordIDs($vhInfo)
+    public function selectOtherRecordID($vhInfo)
     {
         $matchingIDs = $this->matchORID($vhInfo);
 
@@ -734,7 +786,7 @@ class SQL
      * subject_id. There may be multiple subjects returned.
      * 
      */
-    public function selectSubjects($vhInfo)
+    public function selectSubject($vhInfo)
     {
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
@@ -746,8 +798,13 @@ class SQL
                             where
                             subject.id=aa.id
                             and subject.version=aa.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
-        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -771,7 +828,7 @@ class SQL
      * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
      * 
      */
-    public function selectOccupations($vhInfo)
+    public function selectOccupation($vhInfo)
     {
         $qq = 'socc';
         $this->sdb->prepare($qq, 
@@ -783,8 +840,13 @@ class SQL
                             where
                             aa.id=bb.id
                             and aa.version=bb.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
-        $result = $this->sdb->execute($qq, $vhInfo);
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -818,7 +880,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -840,7 +904,7 @@ class SQL
     }
 
     /**
-     * select related archival resources given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
+     * select related archival resource records given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
      * turn the return value into a pgp ResourceRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -849,7 +913,7 @@ class SQL
      * href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
-    public function selectRelatedResources($vhInfo)
+    public function selectRelatedResource($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -864,7 +928,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -875,7 +941,7 @@ class SQL
     }
 
     /**
-     * Select all functions for the given version and main_id. Code in DBUtils turns the return value into a
+     * Select all function records for the given version and main_id. Code in DBUtils turns the return value into a
      * SNACFunction object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -884,7 +950,7 @@ class SQL
      * note, date. Key date is also a list assoc array of date info from selectDate().
      *
      */ 
-    public function selectFunctions($vhInfo)
+    public function selectFunction($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
@@ -897,7 +963,9 @@ class SQL
                             aa.id=bb.id
                             and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, $vhInfo);
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -920,7 +988,8 @@ class SQL
 
      /** 
       * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
-      * NameEntry object.
+      * NameEntry object. Order the returned records by preference_score descending so that preferred names
+      * are at the beginning of the returned list.
       *
       * @param string[] $vhInfo with keys version, main_id.
       *
@@ -928,7 +997,7 @@ class SQL
       * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
       * version, main_id, name_id, short_name, name_type.
       */
-    public function selectNameEntries($vhInfo)
+    public function selectNameEntry($vhInfo)
     {
         $qq_1 = 'selname';
         $qq_2 = 'selcontributor';
@@ -941,7 +1010,7 @@ class SQL
                             (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
                             where
                             name.id=aa.id
-                            and name.version=aa.version');
+                            and name.version=aa.version order by preference_score desc');
         
         $this->sdb->prepare($qq_2,
                             'select 
@@ -954,8 +1023,9 @@ class SQL
                             and name_contributor.version=aa.version
                             and name_contributor.name_id=$3');
         
-        $name_result = $this->sdb->execute($qq_1, $vhInfo);
-        
+        $name_result = $this->sdb->execute($qq_1,
+                                           array($vhInfo['version'],
+                                                 $vhInfo['main_id']));
         // Contributor has issues. See comments in schema.sql. This will work for now.
         // Get each name, and for each name get each contributor.
         $all = array();
@@ -1004,6 +1074,53 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return array($row['id'], $row['version'], $row['main_id']);
+    }
+
+    /**
+     *
+     * Small utility function to count rows in table vocabulary. Currently only used in DBUtilTest.php
+     *
+     * @return int Count of number of rows in table vocabulary.
+     */
+    public function countVocabulary()
+    {
+        /*
+         * Note: query() as opposed to prepare() and execute()
+         * query() has two args:
+         * 1) a string (sql query)
+         * 2) an array of the vars that match the query placeholders, empty here because there are no placeholders.
+         * 
+         */ 
+        $result = $this->sdb->query('select count(*) as count from vocabulary',
+                                    array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['count'];
+    }
+
+    /**
+     * Get a set of 100 records, but only return data necessary for display in the dashboard.
+     * Note: query() as opposed to prepare() and execute()
+     *
+     * @return string[] A list of 100 lists. Inner list keys are: 'version', 'main_id', 'formatted_name'. At
+     * this time 'formatted_name' is from table name.original
+     */ 
+    public function selectDemoRecs()
+    {
+        $result = $this->sdb->query('select max(id) as version,main_id 
+                                    from version_history 
+                                    group by main_id order by main_id limit 100',
+                                    array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $nRow = $this->selectNameEntry(array('version' => $row['version'],
+                                          'main_id' => $row['main_id']));
+            // For now just use the first name returned, whatever that is. selectNameEntry() sorts by
+            // preference_score, but that score might not be accurate for all contexts.
+            $row['formatted_name'] = $nRow[0]['original'];
+            array_push($all, $row);
+        }
+        return $all;
     }
 
 

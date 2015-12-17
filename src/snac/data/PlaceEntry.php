@@ -116,7 +116,7 @@ class PlaceEntry extends AbstractData {
     private $type;
 
     /**
-     * Constructor
+     * Constructor.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
@@ -149,7 +149,8 @@ class PlaceEntry extends AbstractData {
             "original" => $this->original,
             "bestMatch" => $this->bestMatch == null ? null : $this->bestMatch->toArray($shorten),
             "maybeSame" => array(),
-            "type" => $this->type
+            "type" => $this->type,
+            'dbInfo' => $this->getDBInfo()
         );
         foreach ($this->maybeSame as $i => $placeEntry)
             $return["maybeSame"][$i] = $placeEntry->toArray($shorten);
@@ -177,6 +178,11 @@ class PlaceEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "PlaceEntry")
             return false;
+
+        if (isset($data['dbInfo']))
+        {
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
+        }
 
         if (isset($data["latitude"]))
             $this->latitude = $data["latitude"];
