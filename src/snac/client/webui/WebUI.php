@@ -37,6 +37,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
     private $response = "";
 
     /**
+     * Response headers
+     *
+     * @var string[] $responseHeaders response headers for the web server
+     */
+    private $responseHeaders = null;
+
+
+
+    /**
      * Constructor
      * 
      * Takes the input parameters to the web server as an associative array.  These will likely
@@ -46,6 +55,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      */
     public function __construct($input) {
 
+        $this->responseHeaders = array();
         $this->input = $input;
         if (!isset($this->input["command"]))
             $this->input["command"] = "";
@@ -150,9 +160,21 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Go to the homepage 
             header('Location: index.php');
+        } else if ($this->input["command"] == "save") {
+            // If saving, this is just an ajax/JSON return.
+            $response = array(); 
+
+
+
+            $response["result"] = "success";
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
         } else {
             $display->setTemplate("landing_page");
         }
+        array_push($this->responseHeaders, "Content-Type: text/html");
         $this->response = $display->getDisplay();
 
         return;
@@ -177,6 +199,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      */
     public function getResponseHeaders() {
 
+        return $this->responseHeaders;
         return array (
                 "Content-Type: text/html"
         );
