@@ -102,7 +102,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
-        $this->assertTrue(count(json_decode($demo)) == 100);
+        $this->assertTrue(count($demo) == 100);
         // printf("%s\n", $demo);
     }
         
