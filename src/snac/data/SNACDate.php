@@ -358,7 +358,7 @@ class SNACDate extends AbstractData {
 
         if (isset($data['dbInfo']))
         {
-            $this->setDBInfo($data['dbInfo']);
+            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
         }
 
         if (isset($data["fromDate"]))
