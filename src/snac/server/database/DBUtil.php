@@ -167,7 +167,7 @@ class DBUtil
         $cObj->setMandate($row['mandate']);
         $cObj->setDBInfo($row['version'], $row['main_id']);
         
-        $this->populateConstellationExistDate($row['id'], $cObj)
+        $this->populateExistDate($row['id'], $cObj);
 
         $oridRows = $this->sql->selectOtherRecordID($vhInfo); 
         foreach ($oridRows as $singleOrid)
@@ -253,7 +253,7 @@ class DBUtil
      * @param int $rowID the nrd.id actual row id from table nrd.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateConstellationExistDate($rowID, &$cObj)
+    public function populateExistDate($rowID, &$cObj)
     {
         $dateRows = $this->sql->selectDate($rowID);
         foreach ($dateRows as $singleDate)
