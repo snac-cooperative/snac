@@ -204,6 +204,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Convert the input into a constellation
             $constellation = new \snac\data\Constellation();
             // TODO
+            if (isset($nested["ark"]))
+                $constellation->setArkID($nested["ark"]);
             if (isset($nested["constellationid"]))
                 $constellation->setID($nested["constellationid"]);
             if (isset($nested["version"]))

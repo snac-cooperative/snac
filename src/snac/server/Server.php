@@ -89,7 +89,17 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"]["editing"] = $db->demoConstellationList();
                 break;
             case "update_constellation":
-                $this->response["result"] = "success";
+                $db = new \snac\server\database\DBUtil();
+                if (isset($this->input["constellation"]) && isset($this->input["constellation"]["id"])) {
+                    $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                    $result = $db->updateConstellation($constellation, 6, 1, "being edited", "Demo updates for now", $constellation->getID());
+                    if (isset($result["main_id"]))
+                        $this->response["result"] = "success";
+                    else
+                        $this->response["result"] = "failure";
+                } else {
+                    $this->response["result"] = "failure";
+                }
                 break;
             case "edit":
                 if (isset($this->input["arkid"])) {
