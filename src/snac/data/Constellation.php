@@ -819,6 +819,8 @@ class Constellation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Constellation",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "ark" => $this->ark,
             "entityType" => $this->entityType,
             "otherRecordIDs" => $this->otherRecordIDs,
@@ -850,8 +852,7 @@ class Constellation extends AbstractData {
             "gender" => $this->gender,
             "generalContext" => $this->generalContext,
             "structureOrGenealogy" => $this->structureOrGenealogy,
-            "mandate" => $this->mandate,
-            'dbInfo' => $this->getDBInfo()
+            "mandate" => $this->mandate
         );
 
         foreach ($this->maintenanceEvents as $i => $v)
@@ -904,12 +905,17 @@ class Constellation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
 
-        if (isset($data['dbInfo']) &&
-            isset($data['dbInfo']['version']) &&
-            isset($data['dbInfo']['main_id']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         unset($this->ark);
         if (isset($data["ark"]))
