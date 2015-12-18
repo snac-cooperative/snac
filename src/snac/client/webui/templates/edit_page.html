@@ -191,6 +191,10 @@ body {
                         </div>
                         -->
 
+                        <!-- Constellation Data -->
+                        <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+                        <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+
                         <div class="form-group">
                             <label for="entityType" class="control-label col-xs-2">
                                 Entity Type
@@ -257,6 +261,8 @@ body {
                         {% for nameEntry in data.nameEntries %}
                         <div class="panel panel-default">
                             <div class="panel-body">
+                                <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
+                                <input version="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
                                 <div class="form-group">
                                     <label for="nameEntry_original_{{ i }}" class="control-label col-xs-2">
                                         Original
@@ -338,6 +344,8 @@ body {
                         {% for relation in data.resourceRelations %}
                         <div class="panel panel-default">
                             <div class="panel-body">
+                                <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
+                                <input version="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <div class="form-group">
                                     <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-2">
                                         Relation Text
@@ -392,6 +400,8 @@ body {
                         {% for relation in data.relations %}
                         <div class="panel panel-default">
                             <div class="panel-body">
+                                <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
+                                <input version="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <div class="form-group">
                                     <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-2">
                                         Relation Text
@@ -452,8 +462,10 @@ body {
                         {% set i = 0 %}
                         {% for function in data.functions %}
                         <div class="form-group">
+                            <input id="function_id_{{i}}" name="function_id_{{i}}" type="hidden" value="{{ function.id }}"/>
+                            <input version="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
                             <div class="col-xs-10">
-                                <input id="function_{{i}}" name="function_{{i}}" type="text" class="form-control" value="{{ function }}"/>
+                                <input id="function_term_{{i}}" name="function_term_{{i}}" type="text" class="form-control" value="{{ function.term }}"/>
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -467,8 +479,10 @@ body {
                         {% set i = 0 %}
                         {% for occupation in data.occupations %}
                         <div class="form-group">
+                            <input id="occupation_id_{{i}}" name="occupation_id_{{i}}" type="hidden" value="{{ occupation.id }}"/>
+                            <input version="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
                             <div class="col-xs-10">
-                                <input id="occupation_{{i}}" name="occupation_{{i}}" type="text" class="form-control" value="{{ occupation.term }}"/>
+                                <input id="occupation_term_{{i}}" name="occupation_term_{{i}}" type="text" class="form-control" value="{{ occupation.term }}"/>
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -483,7 +497,11 @@ body {
                         {% for place in data.places %}
                         <div class="panel panel-default">
                             <div class="panel-body">
+                                <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
+                                <input version="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
                                 <div class="form-group">
+                                    <input id="place_originalid_{{i}}" name="place_originalid_{{i}}" type="hidden" value="{{ place.entries.0.id }}"/>
+                                    <input version="place_originalversion_{{i}}" name="place_originalversion_{{i}}" type="hidden" value="{{ place.entries.0.version }}"/>
                                     <label for="place_original_{{ i }}" class="control-label col-xs-2">
                                         Original
                                     </label>
@@ -492,6 +510,8 @@ body {
                                     </div>
                                 </div>
                                 <div class="form-group">
+                                    <input id="place_bestMatchid_{{i}}" name="place_bestMatchid_{{i}}" type="hidden" value="{{ place.entries.0.bestMatch.id }}"/>
+                                    <input version="place_bestMatchversion_{{i}}" name="place_bestMatchversion_{{i}}" type="hidden" value="{{ place.entries.0.bestMatch.version }}"/>
                                     <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
                                         Geonames
                                     </label>

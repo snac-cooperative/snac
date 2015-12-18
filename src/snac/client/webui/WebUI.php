@@ -204,6 +204,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Convert the input into a constellation
             $constellation = new \snac\data\Constellation();
             // TODO
+            if (isset($nested["constellationid"]))
+                $constellation->setID($nested["constellationid"]);
+            if (isset($nested["version"]))
+                $constellation->setVersion($nested["version"]);
             if (isset($nested["entityType"]))
                 $constellation->setEntityType($nested["entityType"]);
             if (isset($nested["gender"]))
@@ -218,6 +222,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $constellation->addBiogHist($nested["biogHist"]);
             foreach ($nested["nameEntry"] as $data) {
                 $nameEntry = new \snac\data\NameEntry();
+                $nameEntry->setID($data["id"]);
+                $nameEntry->setVersion($data["version"]);
                 $nameEntry->setOriginal($data["original"]);
                 $constellation->addNameEntry($nameEntry);
             }
@@ -229,6 +235,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             }
             foreach ($nested["resourceRelation"] as $data) {
                 $relation = new \snac\data\ResourceRelation();
+                $relation->setID($data["id"]);
+                $relation->setVersion($data["version"]);
                 $relation->setContent($data["content"]);
                 $relation->setRole($data["role"]);
                 $relation->setLink($data["link"]);
@@ -238,6 +246,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             }
             foreach ($nested["constellationRelation"] as $data) {
                 $relation = new \snac\data\ConstellationRelation();
+                $relation->setID($data["id"]);
+                $relation->setVersion($data["version"]);
                 $relation->setContent($data["content"]);
                 $relation->setTargetArkID($data["targetArkID"]);
                 $relation->setTargetType($data["targetEntityType"]);
@@ -249,20 +259,30 @@ class WebUI implements \snac\interfaces\ServerInterface {
             }
             foreach ($nested["function"] as $data) {
                 $fn = new \snac\data\SNACFunction();
-                $fn->setTerm($data);
+                $fn->setID($data["id"]);
+                $fn->setVersion($data["version"]);
+                $fn->setTerm($data["term"]);
                 $constellation->addFunction($fn);
             }
             foreach ($nested["occupation"] as $data) {
                 $occupation = new \snac\data\Occupation();
-                $occupation->setTerm($data);
+                $occupation->setID($data["id"]);
+                $occupation->setVersion($data["version"]);
+                $occupation->setTerm($data["term"]);
                 $constellation->addOccupation($occupation);
             }
             foreach ($nested["place"] as $data) {
                 $place = new \snac\data\Place();
+                $place->setID($data["id"]);
+                $place->setVersion($data["version"]);
                 $placeEntry = new \snac\data\PlaceEntry();
                 $placeEntry->setOriginal($data["original"]);
+                $placeEntry->setID($data["originalid"]);
+                $placeEntry->setVersion($data["originalversion"]);
                 $bestMatch = new \snac\data\PlaceEntry();
                 $bestMatch->setOriginal($data["bestMatch"]);
+                $bestMatch->setID($data["bestMatchid"]);
+                $bestMatch->setVersion($data["bestMatchversion"]);
                 $placeEntry->setBestMatch($bestMatch);
                 $place->addPlaceEntry($placeEntry);
                 $constellation->addPlace($place);
