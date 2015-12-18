@@ -106,7 +106,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // printf("%s\n", $demo);
 
         // Undelete something and verify it.
-        $deletedId = $this->dbu->setDeleted($constellationObj->getNameEntries()[0]->get, $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
+        $deletedId = $this->dbu->setDeleted($constellationObj->getNameEntries()[0]->getDBInfo(), $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
         
     }
         
