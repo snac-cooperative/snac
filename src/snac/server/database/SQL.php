@@ -102,14 +102,15 @@ class SQL
         $qq = 'insert_occupation';
         $this->sdb->prepare($qq, 
                             'insert into occupation
-                            (version, main_id, occupation_id, note)
+                            (version, main_id, occupation_id, vocabulary_source, note)
                             values 
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4)
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4, $5)
                             returning id');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $term,
+                                            $vocabularySource,
                                             $note));
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
@@ -316,7 +317,7 @@ class SQL
                             to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id,
                             (select value from vocabulary where id=from_type) as from_type,
                             (select value from vocabulary where id=to_type) as to_type
-                            from date_range where fk_id=$1');
+                            from date_range where fk_id=$1 and not is_deleted');
 
 
         $result = $this->sdb->execute($qq, array($did));
@@ -681,7 +682,7 @@ class SQL
                             (select value from vocabulary where vocabulary.id=language_code) as language_code,
                             (select value from vocabulary where vocabulary.id=script_code) as script_code
                             from nrd
-                            where
+                            where not is_deleted and
                             version=(select max(version) from nrd where version<=$1)
                             and main_id=$2');
 
@@ -791,13 +792,13 @@ class SQL
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
                             'select
-                            subject.id, subject.version, subject.main_id,
+                            aa.id, aa.version, aa.main_id,
                             (select value from vocabulary where id=subject_id) as subject_id
-                            from subject,
-                            (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as aa
-                            where
-                            subject.id=aa.id
-                            and subject.version=aa.version');
+                            from subject aa,
+                            (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version');
         /* 
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
@@ -825,7 +826,7 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
+     * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, note, vocabulary_source, occupation_id, date
      * 
      */
     public function selectOccupation($vhInfo)
@@ -837,7 +838,7 @@ class SQL
                             (select value from vocabulary where id=aa.occupation_id) as occupation_id
                             from occupation as aa,
                             (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
         /* 
@@ -849,6 +850,18 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
+            $rid = $row['id'];
+            $dateList = $this->selectDate($rid);
+            $row['date'] = array();
+            if (count($dateList)>=1)
+            {
+                $row['date'] = $dateList[0];
+            }
+            if (count($dateList)>1)
+            {
+                // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
+                // Prine says: "Stop wishing for bad luck and knocking on wood"
+            }
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -876,7 +889,7 @@ class SQL
                             (select value from vocabulary where id=aa.arcrole) as arcrole
                             from related_identity as aa,
                             (select id, max(version) as version from related_identity where version<=$1 and main_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
@@ -924,7 +937,7 @@ class SQL
                             (select value from vocabulary where id=aa.arcrole) as arcrole
                             from related_resource as aa,
                             (select id, max(version) as version from related_resource where version<=$1 and main_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
@@ -959,7 +972,7 @@ class SQL
                             (select value from vocabulary where id=aa.function_id) as function_id
                             from function as aa,
                             (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
@@ -1008,7 +1021,7 @@ class SQL
                             (select value from vocabulary where id=script_code) as script_code
                             from name,
                             (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
-                            where
+                            where  not name.is_deleted and
                             name.id=aa.id
                             and name.version=aa.version order by preference_score desc');
         
@@ -1018,7 +1031,7 @@ class SQL
                             (select value from vocabulary where id=name_type) as name_type
                             from  name_contributor,
                             (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as aa
-                            where
+                            where not name_contributor.is_deleted and
                             name_contributor.id=aa.id
                             and name_contributor.version=aa.version
                             and name_contributor.name_id=$3');
@@ -1123,7 +1136,85 @@ class SQL
         return $all;
     }
 
+    /*
+     * Update a record in table $table to have is_deleted set to true.  Don't constrain the query to not
+     * aa.is_deleted. First, it won't matter to delete the record again. Second, all the other code checks
+     * is_deleted, so the other code won't even show the user a records that has already been marked as
+     * deleted.
+     *
+     * There is an important assumption that the record id is the first field, always. If we care, we could
+     * check that before each insert.
+     * 
+     */
+    public function updateIsDeleted($vhInfo, $table, $id)
+    {
+        /* This was what I thought before I realized that we need record id $id because tables like name may
+         * have many entries with version,main_id. There's a more complete comment in DBUtil setDeleted().
+         * 
+         * $selectSQL = "select * from $table as aa,
+         *               (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
+         *               where
+         *               aa.id=bb.id
+         *               and aa.version=bb.version";
+         */
+        $selectSQL = "select * from $table where id=$1";
+        $result = $this->sdb->query($sql, array($id));
+        $row = $this->sdb->fetchrow($result);
+        $row['is_deleted'] = 't';
+        $row['version'] = $vhInfo['version'];
+    
+        // Field id is default. Instead of a placeholder, it gets default, and we skip it in the place holder
+        // generation.
+        $updateSQL = "insert into $table values (default,";
+        my $xx = 1; // Counting numbers start at 1 (indexes start at zero)
+        foreach ($row as $key => $value)
+        {
+            if ($key != 'id')
+            {
+                $updateSQL .="\$$xx, ";
+                $xx++;
+            }
+        }
+        $updateSQL .= ") returning id";
+        $newResult = $this->sdb->query($sql, $row);
+        $newRow = $this->sdb->fetchrow($newResult);
+        return $newRow['id'];
+    }
 
+    /*
+     * This method is more direct, but if any arg lists change, this has to be manually updated. It is also
+     * possible for an arg list mistake at the outset to not be detected. This would need QA, and the obvious
+     * QA method is the function above.
+     * 
+     * public function manual_call_each_table_updateIsDeleted($vhInfo, $table)
+     * {
+     *     $selectSQL = "select * from $table as aa,
+     *                     (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
+     *                     where
+     *                     aa.id=bb.id
+     *                     and aa.version=bb.version";
+     *     $row = $this->sdb->query($sql, array($vhInfo['version'], $vhInfo['main_id']));
+     *     $row['is_deleted'] = 't';
+     *     $row['version'] = $vhInfo['version'];
+     *     // unset the original $vhInfo, and don't use it again.
+     *     unset($vhInfo);
+     *     $updatedVhInfo = array('version' => $row['version'], 'main_id' => $row['main_id']);
+     *     if ($table == 'source')
+     *     {
+     *         $this->insertSource($updatedVhInfo, $row['href']);
+     *     }
+     *     elseif ($table == 'occupation')
+     *     {
+     *         // select:  id, version, main_id, note, vocabulary_source, occupation_id, date
+     *         // insert:  vhInfo, occupation_id, vocabularySource, $dates, $note
+     *         $this->insertOccupation($updatedVhInfo, 
+     *                                 $row['occupation_id'],
+     *                                 row['vocabulary_source'],
+     *                                 $row['dates'],
+     *                                 $row['note']);
+     *     }
+     * }
+     */
 
 }
 

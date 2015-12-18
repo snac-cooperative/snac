@@ -104,6 +104,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $demo = $this->dbu->demoConstellationList();
         $this->assertTrue(count($demo) == 100);
         // printf("%s\n", $demo);
+
+        // Undelete something and verify it.
+        $deletedId = $this->dbu->setDeleted($constellationObj->getNameEntries()[0]->get, $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
+        
     }
         
     public function testParseToDB()

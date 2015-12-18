@@ -689,4 +689,30 @@ class DBUtil
         return $demoData;
     }
 
+    /**
+     * Delete a single record of a single table. We need the id here because we only want a single record. The
+     * other code here just gets all the records (keeping their id values) and throwing them into an
+     * Constellation object. Delete is different and delete has single-record granularity.
+     *
+     * 
+     * @param string $icstatus Pass a null if unchanged. Lower level code will preserved the existing setting.
+     *
+     */
+    public function setDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    {
+        $canDelete = array_fill_keys(array('nrd', 'name', 'name_component', 'name_contributor',
+                                           'contributor', 'date_range', 'source', 
+                                           'source_link', 'control', 'pre_snac_maintenance_history',
+                                           'occupation', 'place', 'function', 
+                                           'nationality', 'subject', 
+                                           'related_identity', 'related_resource'));
+        if (! isset(canDelete[$table]))
+        {
+            // Hmmm. Need to throw an exception, but this will work for now.
+            printf("Cannot set deleted on table: $table\n");
+            exit();
+        }
+        $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        return updateIsDeleted($vhInfo, $table, $id);
+    }
 }
