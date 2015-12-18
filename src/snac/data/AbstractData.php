@@ -98,7 +98,7 @@ abstract class AbstractData {
     public function getDBInfo()
     {
         return array('version' => $this->version,
-                     'main_id' => $this->main_id);
+                     'main_id' => $this->id);
     }
 
     /**
