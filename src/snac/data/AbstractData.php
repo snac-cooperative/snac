@@ -29,6 +29,17 @@ namespace snac\data;
  */
 abstract class AbstractData {
 
+
+    /**
+     * var int $id The canonical ID for this data structure
+     */
+    protected $id;
+
+    /**
+     * var int $version The version number for this data structure
+     */
+    protected $version;
+
     /**
      * Constructor
      *
@@ -45,16 +56,8 @@ abstract class AbstractData {
             $this->fromArray($data);
     }
 
-    /**
-     * Database info that the constellation objects carry around. Keys are not order dependent. Keys have been
-     * chosen for compatibility with $vhInfo in DBUtil and SQL.
-     *
-     * @var $dbInfo An array with keys 'version' and 'main_id' in any order.
-     */
-    private $dbInfo = array('version' => null,
-                            'main_id' => null);
 
-        /**
+    /**
      * Set this object's dbInfo. Take a list with keys 'version' and 'main_id' in any order. We use this list
      * because it is compatible with $vhInfo used in the DBUtil and SQL classes. Most code will pass $vhInfo
      * and $dbiList without knowing what is inside the list, and since most code doesn't know about the inner
@@ -76,11 +79,11 @@ abstract class AbstractData {
     {
         if ($version)
         {
-            $this->dbInfo['version'] = $version;
+            $this->version = $version;
         }
         if ($mainID)
         {
-            $this->dbInfo['main_id'] = $mainID;
+            $this->id = $mainID;
         }
     }
 
@@ -94,8 +97,44 @@ abstract class AbstractData {
      */
     public function getDBInfo()
     {
-        return array('version' => $this->dbInfo['version'],
-                     'main_id' => $this->dbInfo['main_id']);
+        return array('version' => $this->version,
+                     'main_id' => $this->main_id);
+    }
+
+    /**
+     * Get the ID of this data structure
+     *
+     *  @return int ID of this structure
+     */
+    public function getID() {
+        return $this->id;
+    }
+
+    /**
+     * Set the ID of this data structure
+     *
+     * @param int $id ID to assign this structure
+     */
+    public function setID($id) {
+        $this->id = $id;
+    }
+    
+    /**
+     * Get the version number of this data structure
+     *
+     *  @return int version of this structure
+     */
+    public function getVersion() {
+        return $this->version;
+    }
+
+    /**
+     * Set the version number of this data structure
+     *
+     * @param int $id version to assign this structure
+     */
+    public function setVersion($version) {
+        $this->version = $version;
     }
       
     
