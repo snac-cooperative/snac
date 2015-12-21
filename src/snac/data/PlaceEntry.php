@@ -140,6 +140,8 @@ class PlaceEntry extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "PlaceEntry",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "latitude" => $this->latitude,
             "longitude" => $this->longitude,
             "administrationCode" => $this->administrationCode,
@@ -149,8 +151,7 @@ class PlaceEntry extends AbstractData {
             "original" => $this->original,
             "bestMatch" => $this->bestMatch == null ? null : $this->bestMatch->toArray($shorten),
             "maybeSame" => array(),
-            "type" => $this->type,
-            'dbInfo' => $this->getDBInfo()
+            "type" => $this->type
         );
         foreach ($this->maybeSame as $i => $placeEntry)
             $return["maybeSame"][$i] = $placeEntry->toArray($shorten);
@@ -179,10 +180,17 @@ class PlaceEntry extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "PlaceEntry")
             return false;
 
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["latitude"]))
             $this->latitude = $data["latitude"];

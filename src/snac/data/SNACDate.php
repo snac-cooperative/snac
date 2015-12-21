@@ -318,6 +318,8 @@ class SNACDate extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "SNACDate",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "fromDate" => $this->fromDate,
             "fromDateOriginal" => $this->fromDateOriginal,
             "fromType" => $this->fromType,
@@ -329,8 +331,7 @@ class SNACDate extends AbstractData {
             "toBC" => $this->toBC,
             "toRange" => $this->toRange,
             "isRange" => $this->isRange,
-            "note" => $this->note,
-            'dbInfo' => $this->getDBInfo()
+            "note" => $this->note
         );
 
         // Shorten if necessary
@@ -356,10 +357,17 @@ class SNACDate extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
 
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["fromDate"]))
             $this->fromDate = $data["fromDate"];

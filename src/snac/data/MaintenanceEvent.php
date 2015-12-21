@@ -91,13 +91,14 @@ class MaintenanceEvent extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "MaintenanceEvent",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "eventType" => $this->eventType,
             "eventDateTime" => $this->eventDateTime,
             "standardDateTime" => $this->standardDateTime,
             "agentType" => $this->agentType,
             "agent" => $this->agent,
-            "eventDescription" => $this->eventDescription,
-            'dbInfo' => $this->getDBInfo()
+            "eventDescription" => $this->eventDescription
         );
 
         // Shorten if necessary
@@ -123,10 +124,17 @@ class MaintenanceEvent extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
             return false;
         
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["eventType"]))
             $this->eventType = $data["eventType"];

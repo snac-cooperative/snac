@@ -93,12 +93,13 @@ class Place extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Place",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "type" => $this->type,
             "role" => $this->role,
             "entries" => array(),
-            "note" => $this->note,
-            'dbInfo' => $this->getDBInfo()
+            "note" => $this->note
         );
 
         foreach ($this->entries as $i => $entry) 
@@ -128,10 +129,17 @@ class Place extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Place")
             return false;
 
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["dates"]))
             $this->dates = new SNACDate($data["dates"]);

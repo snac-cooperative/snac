@@ -280,6 +280,8 @@ class ConstellationRelation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ConstellationRelation",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "sourceConstellation" => $this->sourceConstellation,
             "targetConstellation" => $this->targetConstellation,
             "sourceArkID" => $this->sourceArkID,
@@ -290,8 +292,7 @@ class ConstellationRelation extends AbstractData {
             "cpfRelationType" => $this->cpfRelationType,
             "content" => $this->content,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
-            "note" => $this->note,
-            'dbInfo' => $this->getDBInfo()
+            "note" => $this->note
         );
 
         // Shorten if necessary
@@ -317,10 +318,17 @@ class ConstellationRelation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "ConstellationRelation")
             return false;
 
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["sourceConstellation"]))
             $this->sourceConstellation = $data["sourceConstellation"];

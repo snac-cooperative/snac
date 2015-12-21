@@ -223,6 +223,8 @@ class ResourceRelation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ResourceRelation",
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
             "documentType" => $this->documentType,
             "linkType" => $this->linkType,
             "entryType" => $this->entryType,
@@ -230,8 +232,7 @@ class ResourceRelation extends AbstractData {
             "role" => $this->role,
             "content" => $this->content,
             "source" => $this->source,
-            "note" => $this->note,
-            'dbInfo' => $this->getDBInfo()
+            "note" => $this->note
         );
 
         // Shorten if necessary
@@ -257,10 +258,17 @@ class ResourceRelation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "ResourceRelation")
             return false;
 
-        if (isset($data['dbInfo']))
-        {
-            $this->setDBInfo($data['dbInfo']['version'], $data['dbInfo']['main_id']);
-        }
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
 
         if (isset($data["documentType"]))
             $this->documentType = $data["documentType"];

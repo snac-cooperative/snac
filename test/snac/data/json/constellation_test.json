@@ -1,5 +1,7 @@
 {
     "dataType": "Constellation",
+    "id": null,
+    "version": null,
     "ark": "FRAN_NP_050744",
     "entityType": "corporateBody",
     "otherRecordIDs": [
@@ -13,29 +15,25 @@
     "maintenanceEvents": [
         {
             "dataType": "MaintenanceEvent",
+            "id": null,
+            "version": null,
             "eventType": "created",
             "eventDateTime": "2014-03-20",
             "standardDateTime": null,
             "agentType": "human",
             "agent": "Florence CLAVAUD",
-            "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation"
         },
         {
             "dataType": "MaintenanceEvent",
+            "id": null,
+            "version": null,
             "eventType": "revised",
             "eventDateTime": "2015-10-05",
             "standardDateTime": null,
             "agentType": "machine",
             "agent": "cpf_norm.pl",
-            "eventDescription": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "eventDescription": null
         }
     ],
     "sources": [
@@ -62,6 +60,8 @@
     "nameEntries": [
         {
             "dataType": "NameEntry",
+            "id": null,
+            "version": null,
             "original": "Notice Test Collectivit\u00e9",
             "preferenceScore": null,
             "contributors": [
@@ -72,14 +72,12 @@
             ],
             "language": "fre",
             "scriptCode": "Latn",
-            "useDates": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "useDates": null
         },
         {
             "dataType": "NameEntry",
+            "id": null,
+            "version": null,
             "original": "Test Collectivit\u00e9",
             "preferenceScore": null,
             "contributors": [],
@@ -87,6 +85,8 @@
             "scriptCode": null,
             "useDates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2012-01-01",
                 "fromDateOriginal": "2012",
                 "fromType": null,
@@ -104,19 +104,13 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
-            },
-            "dbInfo": {
-                "version": null,
-                "main_id": null
+                "note": null
             }
         },
         {
             "dataType": "NameEntry",
+            "id": null,
+            "version": null,
             "original": "Collectivit\u00e9 test",
             "preferenceScore": null,
             "contributors": [],
@@ -124,6 +118,8 @@
             "scriptCode": null,
             "useDates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2003-01-01",
                 "fromDateOriginal": "2003",
                 "fromType": null,
@@ -141,29 +137,19 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
-            },
-            "dbInfo": {
-                "version": null,
-                "main_id": null
+                "note": null
             }
         }
     ],
     "occupations": [
         {
             "dataType": "Occupation",
+            "id": null,
+            "version": null,
             "term": "archiviste",
             "vocabularySource": "d699msirr1g-3naumnfaswc",
             "dates": null,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         }
     ],
     "biogHists": [
@@ -172,6 +158,8 @@
     "existDates": [
         {
             "dataType": "SNACDate",
+            "id": null,
+            "version": null,
             "fromDate": "2003-01-01",
             "fromDateOriginal": "2003",
             "fromType": null,
@@ -189,17 +177,15 @@
                 "notAfter": null
             },
             "isRange": true,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         }
     ],
     "existDatesNote": "\n               \n            ",
     "relations": [
         {
             "dataType": "ConstellationRelation",
+            "id": null,
+            "version": null,
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
@@ -211,6 +197,8 @@
             "content": "Service interminist\u00e9riel des archives de France",
             "dates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2010-01-01",
                 "fromDateOriginal": "2010",
                 "fromType": null,
@@ -228,20 +216,14 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
+                "note": null
             },
-            "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>"
         },
         {
             "dataType": "ConstellationRelation",
+            "id": null,
+            "version": null,
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
@@ -253,6 +235,8 @@
             "content": "Rocard, Michel",
             "dates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2003-01-01",
                 "fromDateOriginal": "2003",
                 "fromType": null,
@@ -270,20 +254,14 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
+                "note": null
             },
-            "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>"
         },
         {
             "dataType": "ConstellationRelation",
+            "id": null,
+            "version": null,
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
@@ -294,14 +272,12 @@
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
             "dates": null,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         },
         {
             "dataType": "ConstellationRelation",
+            "id": null,
+            "version": null,
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
@@ -312,16 +288,14 @@
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
             "dates": null,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         }
     ],
     "resourceRelations": [
         {
             "dataType": "ResourceRelation",
+            "id": null,
+            "version": null,
             "documentType": "ArchivalResource",
             "linkType": "simple",
             "entryType": "archival",
@@ -329,14 +303,12 @@
             "role": "creatorOf",
             "content": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
             "source": null,
-            "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>"
         },
         {
             "dataType": "ResourceRelation",
+            "id": null,
+            "version": null,
             "documentType": "ArchivalResource",
             "linkType": "simple",
             "entryType": "archival",
@@ -344,14 +316,12 @@
             "role": "referencedIn",
             "content": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
             "source": null,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         },
         {
             "dataType": "ResourceRelation",
+            "id": null,
+            "version": null,
             "documentType": "ArchivalResource",
             "linkType": "simple",
             "entryType": "archival",
@@ -359,32 +329,30 @@
             "role": "referencedIn",
             "content": "Gr\u00e2ces accord\u00e9es",
             "source": null,
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         }
     ],
     "functions": [
         {
             "dataType": "SNACFunction",
+            "id": null,
+            "version": null,
             "term": "culture",
             "type": null,
             "dates": null,
             "vocabularySource": "d5bhviikk9--y6te63k761ib",
-            "note": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": null
         }
     ],
     "places": [
         {
             "dataType": "Place",
+            "id": null,
+            "version": null,
             "dates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2012-01-01",
                 "fromDateOriginal": "2012",
                 "fromType": null,
@@ -402,17 +370,15 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
+                "note": null
             },
             "type": null,
             "role": "Lieu g\u00e9n\u00e9ral",
             "entries": [
                 {
                     "dataType": "PlaceEntry",
+                    "id": null,
+                    "version": null,
                     "latitude": null,
                     "longitude": null,
                     "administrationCode": null,
@@ -422,14 +388,12 @@
                     "original": "Pierrefitte-sur-Seine",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "nomLieu",
-                    "dbInfo": {
-                        "version": null,
-                        "main_id": null
-                    }
+                    "type": "nomLieu"
                 },
                 {
                     "dataType": "PlaceEntry",
+                    "id": null,
+                    "version": null,
                     "latitude": null,
                     "longitude": null,
                     "administrationCode": null,
@@ -439,23 +403,19 @@
                     "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "lieu",
-                    "dbInfo": {
-                        "version": null,
-                        "main_id": null
-                    }
+                    "type": "lieu"
                 }
             ],
-            "note": "\n                  \n               ",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": "\n                  \n               "
         },
         {
             "dataType": "Place",
+            "id": null,
+            "version": null,
             "dates": {
                 "dataType": "SNACDate",
+                "id": null,
+                "version": null,
                 "fromDate": "2003-01-01",
                 "fromDateOriginal": "2003",
                 "fromType": null,
@@ -473,17 +433,15 @@
                     "notAfter": null
                 },
                 "isRange": true,
-                "note": null,
-                "dbInfo": {
-                    "version": null,
-                    "main_id": null
-                }
+                "note": null
             },
             "type": null,
             "role": "Lieu de Paris",
             "entries": [
                 {
                     "dataType": "PlaceEntry",
+                    "id": null,
+                    "version": null,
                     "latitude": null,
                     "longitude": null,
                     "administrationCode": null,
@@ -493,14 +451,12 @@
                     "original": "Paris, Archives nationales",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "nomLieu",
-                    "dbInfo": {
-                        "version": null,
-                        "main_id": null
-                    }
+                    "type": "nomLieu"
                 },
                 {
                     "dataType": "PlaceEntry",
+                    "id": null,
+                    "version": null,
                     "latitude": null,
                     "longitude": null,
                     "administrationCode": null,
@@ -510,14 +466,12 @@
                     "original": "03e arrondissement",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "arrondissement_actuel",
-                    "dbInfo": {
-                        "version": null,
-                        "main_id": null
-                    }
+                    "type": "arrondissement_actuel"
                 },
                 {
                     "dataType": "PlaceEntry",
+                    "id": null,
+                    "version": null,
                     "latitude": null,
                     "longitude": null,
                     "administrationCode": null,
@@ -527,18 +481,10 @@
                     "original": "Francs-Bourgeois (rue des)",
                     "bestMatch": null,
                     "maybeSame": [],
-                    "type": "voie",
-                    "dbInfo": {
-                        "version": null,
-                        "main_id": null
-                    }
+                    "type": "voie"
                 }
             ],
-            "note": "\n                  \n               ",
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "note": "\n                  \n               "
         }
     ],
     "subjects": [],
@@ -546,9 +492,5 @@
     "gender": null,
     "generalContext": "<generalContext>\n            <p>idem<\/p>\n         <\/generalContext>",
     "structureOrGenealogy": "<structureOrGenealogy>\n            <p>idem<\/p>\n         <\/structureOrGenealogy>",
-    "mandate": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>",
-    "dbInfo": {
-        "version": null,
-        "main_id": null
-    }
+    "mandate": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>"
 }

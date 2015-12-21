@@ -1,5 +1,7 @@
 {
     "dataType": "Constellation",
+    "id": null,
+    "version": null,
     "ark": null,
     "entityType": null,
     "otherRecordIDs": [],
@@ -20,6 +22,8 @@
     "nameEntries": [
         {
             "dataType": "NameEntry",
+            "id": null,
+            "version": null,
             "original": "Jefferson, Thomas, 1743-1826.",
             "preferenceScore": "99",
             "contributors": [
@@ -30,11 +34,7 @@
             ],
             "language": null,
             "scriptCode": null,
-            "useDates": null,
-            "dbInfo": {
-                "version": null,
-                "main_id": null
-            }
+            "useDates": null
         }
     ],
     "occupations": [],
@@ -50,9 +50,5 @@
     "gender": null,
     "generalContext": null,
     "structureOrGenealogy": null,
-    "mandate": null,
-    "dbInfo": {
-        "version": null,
-        "main_id": null
-    }
+    "mandate": null
 }
