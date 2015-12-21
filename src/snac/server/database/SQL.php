@@ -230,7 +230,7 @@ class SQL
                                     ,
                                     array($main_id, $userid, $role, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
-        return array('version' => $row['version'], 'main_id' => $main_id);
+        return $row['version'];
     }
 
 
@@ -1137,46 +1137,60 @@ class SQL
     }
 
     /*
-     * Update a record in table $table to have is_deleted set to true.  Don't constrain the query to not
-     * aa.is_deleted. First, it won't matter to delete the record again. Second, all the other code checks
-     * is_deleted, so the other code won't even show the user a records that has already been marked as
-     * deleted.
+     * Update a record in table $table to have is_deleted set to true, for the most recent version. "Most
+     * recent" is the version prior to $newVersion which has not yet been saved in the database. The query
+     * retains the usual subquery $version<=$1 even though in this case we have a new version so < would also
+     * work.
      *
-     * There is an important assumption that the record id is the first field, always. If we care, we could
-     * check that before each insert.
-     * 
+     * Note that the method below makes no assumptions about field order. Even associative list key order is
+     * not assumed to be unchanging.
+     *
+     * Don't constrain the query to not aa.is_deleted. First, it won't matter to delete the record
+     * again. Second, all the other code checks is_deleted, so the other code won't even show the user a
+     * record that has already been marked as deleted.
+     *
      */
-    public function updateIsDeleted($vhInfo, $table, $id)
+    public function updateIsDeleted($table, $id, $newVersion)
     {
-        /* This was what I thought before I realized that we need record id $id because tables like name may
-         * have many entries with version,main_id. There's a more complete comment in DBUtil setDeleted().
-         * 
-         * $selectSQL = "select * from $table as aa,
-         *               (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
-         *               where
-         *               aa.id=bb.id
-         *               and aa.version=bb.version";
+        /*
+         * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
+         * and used by higher level code to build the constellation, but by and large main_id is not used for
+         * record updates, so the code below makes no explicit mention of main_id.
          */
-        $selectSQL = "select * from $table where id=$1";
-        $result = $this->sdb->query($sql, array($id));
+
+        $selectSQL = "select aa.* from $table as aa,
+                      (select id, max(version) as version from $table where version<=$1 and group by id) as bb
+                      where id=$1 and aa.version=bb.version";
+        
+        $result = $this->sdb->query($sql, array($id, $oldVersion));
         $row = $this->sdb->fetchrow($result);
         $row['is_deleted'] = 't';
-        $row['version'] = $vhInfo['version'];
+        $row['version'] = $newVersion;
     
-        // Field id is default. Instead of a placeholder, it gets default, and we skip it in the place holder
-        // generation.
-        $updateSQL = "insert into $table values (default,";
-        my $xx = 1; // Counting numbers start at 1 (indexes start at zero)
+        /* 
+         * Dynamically build an insert statement "column string" and matching "place holder string". We could
+         * assume the order or columns and keys would be invariant, as is defined in SQL and php. However, it
+         * is not too outlandish to think that something will break one of those two foundational language
+         * definitions.
+         *
+         * Use the tween idiom to handle the comma separators. By prefixing the tween, we don't need to clean
+         * trailing tween/separator from the strings after the loop. The tween string starts empty, and is set
+         * at the end of the loop.
+         */
+
+        $columnString = '';
+        $placHolderString = '';
+        $xx = 1; // Counting numbers start at 1 (indexes start at zero)
+        $tween = ''; // Tweens always start empty.
         foreach ($row as $key => $value)
         {
-            if ($key != 'id')
-            {
-                $updateSQL .="\$$xx, ";
-                $xx++;
-            }
+            $columnString .="$tween$key";
+            $placeHolderString .= "$tween\$$xx";
+            $xx++;
+            $tween = ", ";
         }
-        $updateSQL .= ") returning id";
-        $newResult = $this->sdb->query($sql, $row);
+        $updateSQL = "insert into $table ($columnString) values ($placeHolderString) returning id";
+        $newResult = $this->sdb->query($updateSQL, $row);
         $newRow = $this->sdb->fetchrow($newResult);
         return $newRow['id'];
     }

@@ -467,7 +467,8 @@ class DBUtil
      */
     public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
     {
-        $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVerion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $vhInfo = array('version' => $newVersion, 'main_id' => $main_id);
         $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
         return $vhInfo;
     }
@@ -691,9 +692,8 @@ class DBUtil
 
     /**
      * Delete a single record of a single table. We need the id here because we only want a single record. The
-     * other code here just gets all the records (keeping their id values) and throwing them into an
+     * other code here just gets all the records (keeping their id values) and throws them into an
      * Constellation object. Delete is different and delete has single-record granularity.
-     *
      * 
      * @param string $icstatus Pass a null if unchanged. Lower level code will preserved the existing setting.
      *
@@ -712,7 +712,8 @@ class DBUtil
             printf("Cannot set deleted on table: $table\n");
             exit();
         }
-        $vhInfo = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
-        return updateIsDeleted($vhInfo, $table, $id);
+        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        
+        return updateIsDeleted($table, $id, $newVersion);
     }
 }

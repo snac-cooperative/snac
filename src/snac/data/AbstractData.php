@@ -102,7 +102,7 @@ abstract class AbstractData {
     }
 
     /**
-     * Get the ID of this data structure
+     * Get the ID of this data structure. See comments from setID().
      *
      *  @return int ID of this structure
      */
@@ -111,7 +111,9 @@ abstract class AbstractData {
     }
 
     /**
-     * Set the ID of this data structure
+     * Set the ID of this data structure. This is sql table.id for all tables except (maybe) table nrd, for
+     * which is might be nrd.main_id. Or nrd.id might be the same as nrd.main_id. Note that to find the
+     * correct table.id, you need version_history.id (as version) and version_history.main_id.
      *
      * @param int $id ID to assign this structure
      */
