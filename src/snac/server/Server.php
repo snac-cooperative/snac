@@ -80,6 +80,12 @@ class Server implements \snac\interfaces\ServerInterface {
 
         switch ($this->input["command"]) {
 
+            case "vocabulary":
+                $db = new \snac\server\database\DBUtil();
+                $this->response["results"] = $db->searchVocabulary(
+                    $this->input["type"],
+                    $this->input["query_string"]);
+                break;
             case "reconcile":
 
                 break;
