@@ -281,7 +281,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
      * 
-     * @var [wstring[] Subjects
+     * @var string[] Subjects
      */
     private $subjects = null;
     
