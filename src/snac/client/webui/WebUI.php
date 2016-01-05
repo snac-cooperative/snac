@@ -304,6 +304,24 @@ class WebUI implements \snac\interfaces\ServerInterface {
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
+        } else if ($this->input["command"] == "vocabulary") {
+            // Check what kind of vocabulary is wanted, and ask server for it
+            $request = array();
+            $request["command"] = "vocabulary";
+            $request["type"] = $this->input["type"];
+            $request["query_string"] = $this->input["q"];
+            
+            // Send the query to the server
+            $serverResponse = $connect->query($request);
+
+            foreach ($serverResponse["results"] as $k => $v) 
+                $serverResponse["results"][$k]["text"] = $v["value"];
+
+            // Send the response back to the web client
+            $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
         } else {
             $display->setTemplate("landing_page");
         }

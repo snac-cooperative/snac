@@ -1124,6 +1124,19 @@ class SQL
     }
 
 
+    public function searchVocabulary($term, $query)
+    {
+        $result = $this->sdb->query('select id,value 
+                                    from vocabulary 
+                                    where type=$1 and value ilike $2 order by value asc limit 100;',
+                                    array($term, "%".$query."%"));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
 
 }
 

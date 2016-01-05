@@ -677,6 +677,11 @@ class DBUtil
         return $vhInfo;
     } // end saveConstellation
 
+
+    public function searchVocabulary($type, $query) {
+
+        return $this->sql->searchVocabulary($type, $query);
+    }
     /**
      * Return 100 constellations as a json string. Only 3 fields are included: version, main_id, formatted
      * name. The idea it to return enough for the UI to allow selection of a record to edit.
