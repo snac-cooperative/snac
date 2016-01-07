@@ -819,8 +819,6 @@ class Constellation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Constellation",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "ark" => $this->ark,
             "entityType" => $this->entityType,
             "otherRecordIDs" => $this->otherRecordIDs,
@@ -879,6 +877,9 @@ class Constellation extends AbstractData {
         foreach ($this->places as $i => $v)
             $return["places"][$i] = $v->toArray($shorten);
 
+            
+        $return = array_merge($return, parent::toArray($shorten));
+        
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -905,18 +906,8 @@ class Constellation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
-
+        parent::fromArray($data);
+            
         unset($this->ark);
         if (isset($data["ark"]))
             $this->ark = $data["ark"];

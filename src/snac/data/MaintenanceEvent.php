@@ -91,8 +91,6 @@ class MaintenanceEvent extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "MaintenanceEvent",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "eventType" => $this->eventType,
             "eventDateTime" => $this->eventDateTime,
             "standardDateTime" => $this->standardDateTime,
@@ -100,6 +98,8 @@ class MaintenanceEvent extends AbstractData {
             "agent" => $this->agent,
             "eventDescription" => $this->eventDescription
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -123,18 +123,8 @@ class MaintenanceEvent extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
             return false;
-        
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
 
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["eventType"]))
             $this->eventType = $data["eventType"];

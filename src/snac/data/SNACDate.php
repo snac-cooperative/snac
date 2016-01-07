@@ -318,8 +318,6 @@ class SNACDate extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "SNACDate",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "fromDate" => $this->fromDate,
             "fromDateOriginal" => $this->fromDateOriginal,
             "fromType" => $this->fromType,
@@ -333,6 +331,8 @@ class SNACDate extends AbstractData {
             "isRange" => $this->isRange,
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -357,17 +357,7 @@ class SNACDate extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["fromDate"]))
             $this->fromDate = $data["fromDate"];

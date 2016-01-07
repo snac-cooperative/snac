@@ -182,8 +182,6 @@ class NameEntry extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "NameEntry",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
             "contributors" => $this->contributors,      // already an array
@@ -191,6 +189,8 @@ class NameEntry extends AbstractData {
             "scriptCode" => $this->scriptCode,
             "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten)
         );
+
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -215,19 +215,9 @@ class NameEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
             return false;
-        
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
-        
+       
+        parent::fromArray($data);
+            
         if (isset($data["original"]))
             $this->original = $data["original"];
         else

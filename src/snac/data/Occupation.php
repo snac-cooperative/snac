@@ -137,13 +137,13 @@ class Occupation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Occupation",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "term" => $this->term,
             "vocabularySource" => $this->vocabularySource,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -168,17 +168,7 @@ class Occupation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Occupation")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["term"]))
             $this->term = $data["term"];

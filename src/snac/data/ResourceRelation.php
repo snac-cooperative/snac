@@ -223,8 +223,6 @@ class ResourceRelation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ResourceRelation",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "documentType" => $this->documentType,
             "linkType" => $this->linkType,
             "entryType" => $this->entryType,
@@ -234,6 +232,8 @@ class ResourceRelation extends AbstractData {
             "source" => $this->source,
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -258,17 +258,7 @@ class ResourceRelation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "ResourceRelation")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["documentType"]))
             $this->documentType = $data["documentType"];

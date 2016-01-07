@@ -140,8 +140,6 @@ class PlaceEntry extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "PlaceEntry",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "latitude" => $this->latitude,
             "longitude" => $this->longitude,
             "administrationCode" => $this->administrationCode,
@@ -155,6 +153,8 @@ class PlaceEntry extends AbstractData {
         );
         foreach ($this->maybeSame as $i => $placeEntry)
             $return["maybeSame"][$i] = $placeEntry->toArray($shorten);
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -180,17 +180,7 @@ class PlaceEntry extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "PlaceEntry")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["latitude"]))
             $this->latitude = $data["latitude"];

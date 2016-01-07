@@ -39,6 +39,11 @@ abstract class AbstractData {
      * var int $version The version number for this data structure
      */
     protected $version;
+    
+    /**
+     * var \snac\data\Metadata[] $metadata The metadata entries for this piece of data.
+     */
+    protected $metadata;
 
     /**
      * Constructor
@@ -52,6 +57,7 @@ abstract class AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
+        $this->metadata = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
     }
@@ -136,7 +142,34 @@ abstract class AbstractData {
     public function setVersion($version) {
         $this->version = $version;
     }
-      
+    
+    /**
+     * Add a piece of metadata to this structure
+     * 
+     * @param \snac\data\Metadata $metadata metadata to add to this structure
+     */
+    public function addMetadata($metadata) {
+        array_push($this->metadata, $metadata);
+    }
+    
+    /**
+     * Set all the metadata for this structure
+     * 
+     * @param \snac\data\Metadata[] $metadata Array of metadata to add to this structure
+     */
+    public function setAllMetadata($metadata) {
+        unset($this->metadata);
+        $this->metadata = $metadata;
+    }
+    
+    /**
+     * Get all metadata for this structure
+     * 
+     * @return \snac\data\Metadata[] Array of metadata about this data
+     */
+    public function getMetadata() {
+        return $this->metadata;
+    }
     
     /**
      * Required method to convert this data object to an array
@@ -144,14 +177,56 @@ abstract class AbstractData {
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This object as an associative array
      */
-    public abstract function toArray($shorten = true);
+    public function toArray($shorten = true) {
+        $return = array(
+            'id' => $this->getID(),
+            'version' => $this->getVersion(),
+            'metadata' => array()
+        );
+        
+        foreach ($this->metadata as $i => $v)
+            $return["metadata"][$i] = $v->toArray($shorten);
+        
+       // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
+
+        return $return; 
+    }
 
     /**
      * Required method to import an array into this data object
      *
      * @param string[][] $data The data for this object in an associative array
      */
-    public abstract function fromArray($data);
+    public function fromArray($data) {
+            
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+
+        unset($this->version);
+        if (isset($data["version"]))
+            $this->version = $data["version"];
+        else
+            $this->version = null;
+        
+        unset($this->metadata);
+        $this->metadata = array();
+        if (isset($data["metadata"])) {
+            foreach ($data["metadata"] as $i => $entry)
+                $this->metadata[$i] = new Metadata($entry);
+        }
+    }
 
     /**
      * Convert this object to JSON

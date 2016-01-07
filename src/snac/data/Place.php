@@ -93,8 +93,6 @@ class Place extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Place",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "type" => $this->type,
             "role" => $this->role,
@@ -104,6 +102,8 @@ class Place extends AbstractData {
 
         foreach ($this->entries as $i => $entry) 
             $return["entries"][$i] = $entry->toArray($shorten);
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -129,17 +129,7 @@ class Place extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Place")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["dates"]))
             $this->dates = new SNACDate($data["dates"]);
