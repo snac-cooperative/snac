@@ -1138,9 +1138,9 @@ class SQL
 
     /*
      * Update a record in table $table to have is_deleted set to true, for the most recent version. "Most
-     * recent" is the version prior to $newVersion which has not yet been saved in the database. The query
-     * retains the usual subquery $version<=$1 even though in this case we have a new version so < would also
-     * work.
+     * recent" is the version prior to $newVersion, because $newVersion has not yet been saved in the
+     * database. The query retains the usual subquery $version<=$1 even though in this case we have a new
+     * version so < would also work.
      *
      * Note that the method below makes no assumptions about field order. Even associative list key order is
      * not assumed to be unchanging.
@@ -1149,20 +1149,20 @@ class SQL
      * again. Second, all the other code checks is_deleted, so the other code won't even show the user a
      * record that has already been marked as deleted.
      *
+     * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
+     * and used by higher level code to build the constellation, but by and large main_id is not used for
+     * record updates, so the code below makes no explicit mention of main_id.
      */
-    public function updateIsDeleted($table, $id, $newVersion)
+    public function sqlSetDeleted($table, $id, $newVersion)
     {
-        /*
-         * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
-         * and used by higher level code to build the constellation, but by and large main_id is not used for
-         * record updates, so the code below makes no explicit mention of main_id.
+        /* 
+         * $selectSQL = "select aa.* from $table as aa,
+         *               (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
+         *               where id=$1 and aa.version=bb.version";
          */
+        $selectSQL = "select * from $table where id=$1";
 
-        $selectSQL = "select aa.* from $table as aa,
-                      (select id, max(version) as version from $table where version<=$1 and group by id) as bb
-                      where id=$1 and aa.version=bb.version";
-        
-        $result = $this->sdb->query($sql, array($id, $oldVersion));
+        $result = $this->sdb->query($selectSQL, array($id));
         $row = $this->sdb->fetchrow($result);
         $row['is_deleted'] = 't';
         $row['version'] = $newVersion;
@@ -1179,7 +1179,7 @@ class SQL
          */
 
         $columnString = '';
-        $placHolderString = '';
+        $placeHolderString = '';
         $xx = 1; // Counting numbers start at 1 (indexes start at zero)
         $tween = ''; // Tweens always start empty.
         foreach ($row as $key => $value)

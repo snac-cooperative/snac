@@ -93,6 +93,7 @@ class MaintenanceEvent extends AbstractData {
             "dataType" => "MaintenanceEvent",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "eventType" => $this->eventType,
             "eventDateTime" => $this->eventDateTime,
             "standardDateTime" => $this->standardDateTime,
@@ -124,6 +125,11 @@ class MaintenanceEvent extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
             return false;
         
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
+
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];

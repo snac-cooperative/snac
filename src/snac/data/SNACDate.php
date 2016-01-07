@@ -320,6 +320,7 @@ class SNACDate extends AbstractData {
             "dataType" => "SNACDate",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "fromDate" => $this->fromDate,
             "fromDateOriginal" => $this->fromDateOriginal,
             "fromType" => $this->fromType,
@@ -356,6 +357,11 @@ class SNACDate extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
+
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
 
         unset($this->id);
         if (isset($data["id"]))

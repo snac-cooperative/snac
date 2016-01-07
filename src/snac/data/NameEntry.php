@@ -174,7 +174,8 @@ class NameEntry extends AbstractData {
 
 
     /**
-     * Returns this object's data as an associative array
+     * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
+     * is added. Can't we use introspection to automate this?
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
@@ -184,6 +185,7 @@ class NameEntry extends AbstractData {
             "dataType" => "NameEntry",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
             "contributors" => $this->contributors,      // already an array
@@ -216,6 +218,10 @@ class NameEntry extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
             return false;
         
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];

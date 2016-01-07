@@ -103,10 +103,16 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
         $this->assertTrue(count($demo) == 100);
-        // printf("%s\n", $demo);
 
         // Undelete something and verify it.
-        $deletedId = $this->dbu->setDeleted($constellationObj->getNameEntries()[0]->getDBInfo(), $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
+        // Need a helper function somewhere to associate object type with database table. 
+        $deletedId = $this->dbu->setDeleted($this->appUserID,
+                                            $this->role,
+                                            'bulk ingest',
+                                            'set something to be deleted',
+                                            $cObj->getNameEntries()[0]->getMainID(),
+                                            'name',
+                                            $cObj->getNameEntries()[0]->getID());
         
     }
         

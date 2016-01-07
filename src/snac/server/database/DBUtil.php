@@ -94,7 +94,7 @@ class DBUtil
                             $singleDate['to_date'],
                             $singleDate['to_type']); 
         $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-        $dateObj->setDBInfo($vhInfo);
+        $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id']);
         return $dateObj;
     }    
         
@@ -136,7 +136,7 @@ class DBUtil
      * | setMandate                                             | mandate                |
      * |                                                        |                        |
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'. The version and main_id you
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id', 'id'. The version and main_id you
      * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
      * the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
@@ -165,7 +165,7 @@ class DBUtil
         $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
-        $cObj->setDBInfo($row['version'], $row['main_id']);
+        $cObj->setDBInfo($row['version'], $row['main_id'], $row['id']);
         
         $this->populateExistDate($row['id'], $cObj);
 
@@ -221,7 +221,7 @@ class DBUtil
      * | getContributors()['type']        | name_type                  |
      * |                                  |                            |
      * 
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
@@ -239,7 +239,7 @@ class DBUtil
             {
                 $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
             }
-            $neObj->setDBInfo($vhInfo['version'], $vhInfo['main_id']);
+            $neObj->setDBInfo($oneName['version'], $oneName['main_id'], $oneName['id']);
             
             $cObj->addNameEntry($neObj);
         }
@@ -268,7 +268,7 @@ class DBUtil
                                 $singleDate['to_date'],
                                 $singleDate['to_type']);
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id']);
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id']);
             $cObj->addExistDates($dateObj);
         }
     }
@@ -282,9 +282,9 @@ class DBUtil
      * 
      * | php                 | sql               |
      * |---------------------+-------------------|
-     * |                     | id                |
-     * |$vhInfo['version']   | version           |
-     * |$vhInfo['main_id']   | main_id           |
+     * | setDBInfo           | id                |
+     * | setDBInfo           | version           |
+     * | setDBInfo           | main_id           |
      * | setTerm             | occupation_id     |
      * | setNote             | note              |
      * | setVocabularySource | vocabulary_source |
@@ -302,7 +302,7 @@ class DBUtil
             $occObj->setTerm($oneOcc['occupation_id']);
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
-            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id']);
+            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id'], $oneOcc['id']);
             $cObj->addOccupation($occObj);
         }
     }
@@ -315,9 +315,9 @@ class DBUtil
      * 
      * | php                                 | sql              |
      * |-------------------------------------+------------------|
-     * |                                     | id               |
-     * | $vhInfo['verion']                   | version          |
-     * | $vhInfo['main_id']                  | main_id          |
+     * | setDBInfo                           | id               |
+     * | setDBInfo                           | version          |
+     * | setDBInfo                           | main_id          |
      * | setTargetConstellation              | related_id       |
      * | setTargetArkID                      | related_ark      |
      * | setTargetType  aka targetEntityType | role             |
@@ -344,7 +344,7 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
-            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id']);
+            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id'], $oneRel['id']);
             $cObj->addRelation($relatedObj);
         }
     }
@@ -358,9 +358,9 @@ class DBUtil
      * 
      * | php                  | sql                 |
      * |----------------------+---------------------|
-     * |                      | id                  |
-     * | $vhInfo['version']   | version             |
-     * | $vhInfo['main_id']   | main_id             |
+     * | setDBInfo            | id                  |
+     * | setDBInfo            | version             |
+     * | setDBInfo            | main_id             |
      * | setDocumentType      | role                |
      * | setRelationEntryType | relation_entry_type |
      * | setLink              | href                |
@@ -386,7 +386,7 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
-            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id']);
+            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id'], $oneRes['id']);
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -409,7 +409,7 @@ class DBUtil
             $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
-            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id']);
+            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id'], $oneFunc['id']);
             $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
             $fObj->setDateRange($fDate);
             $cObj->addFunction($fObj);
@@ -467,7 +467,7 @@ class DBUtil
      */
     public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
     {
-        $newVerion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
         $vhInfo = array('version' => $newVersion, 'main_id' => $main_id);
         $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
         return $vhInfo;
@@ -611,7 +611,7 @@ class DBUtil
 
           | placeholder | php                 | what                                          | sql               |
           |-------------+---------------------+-----------------------------------------------+-------------------|
-          |           1 | $vhInfo['version' ] |                                               | version           |
+          |           1 | $vhInfo['version']  |                                               | version           |
           |           2 | $vhInfo['main_id']  |                                               | main_id           |
           |           3 | targetConstellation | id fk to version_history                      | .related_id       |
           |           4 | targetArkID         | ark                                           | .related_ark      |
@@ -694,7 +694,12 @@ class DBUtil
      * Delete a single record of a single table. We need the id here because we only want a single record. The
      * other code here just gets all the records (keeping their id values) and throws them into an
      * Constellation object. Delete is different and delete has single-record granularity.
-     * 
+     *
+     * Need a helper function somewhere to associate object type with database table.
+     *
+     * The $table should be the object typeof() and we will figure out what SQL table that corresponds to. The
+     * calling programmer should not be doing that.
+
      * @param string $icstatus Pass a null if unchanged. Lower level code will preserved the existing setting.
      *
      */
@@ -705,8 +710,8 @@ class DBUtil
                                            'source_link', 'control', 'pre_snac_maintenance_history',
                                            'occupation', 'place', 'function', 
                                            'nationality', 'subject', 
-                                           'related_identity', 'related_resource'));
-        if (! isset(canDelete[$table]))
+                                           'related_identity', 'related_resource'), 1);
+        if (! isset($canDelete[$table]))
         {
             // Hmmm. Need to throw an exception, but this will work for now.
             printf("Cannot set deleted on table: $table\n");
@@ -714,6 +719,6 @@ class DBUtil
         }
         $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
         
-        return updateIsDeleted($table, $id, $newVersion);
+        return $this->sql->sqlSetDeleted($table, $id, $newVersion);
     }
 }

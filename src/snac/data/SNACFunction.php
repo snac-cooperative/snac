@@ -147,6 +147,7 @@ class SNACFunction extends AbstractData {
             "dataType" => "SNACFunction",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "term" => $this->term,
             "type" => $this->type,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
@@ -176,6 +177,11 @@ class SNACFunction extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACFunction")
             return false;
+
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
 
         unset($this->id);
         if (isset($data["id"]))

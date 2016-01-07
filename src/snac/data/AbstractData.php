@@ -31,14 +31,19 @@ abstract class AbstractData {
 
 
     /**
-     * var int $id The canonical ID for this data structure
+     * var int $id The record id for this data structure. This is not the constellation id.
      */
-    protected $id;
+    protected $id = null;
 
     /**
      * var int $version The version number for this data structure
      */
-    protected $version;
+    protected $version = null;
+
+    /**
+     * var int $mainID The constellation id for this data structure
+     */
+    protected $mainID = null;
 
     /**
      * Constructor
@@ -75,7 +80,7 @@ abstract class AbstractData {
      * nothing.
      * 
      */
-    public function setDBInfo($version, $mainID)
+    public function setDBInfo($version, $mainID, $id)
     {
         if ($version)
         {
@@ -83,26 +88,43 @@ abstract class AbstractData {
         }
         if ($mainID)
         {
-            $this->id = $mainID;
+            $this->mainID = $mainID;
         }
+        if ($id)
+        {
+            $this->id = $id;
+        }
+            
     }
 
 
     /**
-     * Get the dbInfo, returning a list with keys 'version' and 'main_id' in any order. This is compatible
-     * with $vhInfo used extensively in DBUtil and SQL.
+     * Get the dbInfo, returning a list with keys 'version', 'main_id', and 'id' in any order. This is compatible
+     * with $vhInfo used extensively in DBUtil and SQL. Key 'id' was added Jan 2016.
      *
-     * @return string[] An array with keys 'version' and 'main_id' in any order.
+     * @return string[] An array with keys 'version', 'main_id', 'id' in any order.
      *
      */
     public function getDBInfo()
     {
         return array('version' => $this->version,
-                     'main_id' => $this->id);
+                     'main_id' => $this->mainID,
+                     'id' => $this->id);
     }
 
     /**
-     * Get the ID of this data structure. See comments from setID().
+     * Get constellation id aka main_id aka mainID aka version_history.main_id.
+     * This is *the* Constellation main_id derived from version_history.main_id.
+     *
+     *  @return int Constellation ID of this structure.
+     */
+    public function getMainID() {
+        return $this->mainID;
+    }
+
+    /**
+     * Get the ID of this data structure. See comments from setID(). In keeping with SQL conventions, the id
+     * is a per-record numeric key. This is *not* the Constellation main_id derived from version_history.main_id.
      *
      *  @return int ID of this structure
      */
@@ -111,11 +133,22 @@ abstract class AbstractData {
     }
 
     /**
-     * Set the ID of this data structure. This is sql table.id for all tables except (maybe) table nrd, for
-     * which is might be nrd.main_id. Or nrd.id might be the same as nrd.main_id. Note that to find the
+     * Set the constellation ID of this object. This is table.main_id, derived from version_history.main_id.
+     *
+     * @param int $mainID constellation id of this object
+     */
+    public function setMainID($mainID) {
+        $this->mainID = $mainID;
+    }
+
+    /**
+     * Set the record ID of this data structure. This is sql table.id for all tables. Note that to find the
      * correct table.id, you need version_history.id (as version) and version_history.main_id.
      *
-     * @param int $id ID to assign this structure
+     * (An old comment suggested that for table nrd, there might be confusion about nrd.id and nrd.main_id. As
+     * far as I know, there is no confusion.)
+     *
+     * @param int $id Record ID to assign this structure
      */
     public function setID($id) {
         $this->id = $id;

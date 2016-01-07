@@ -142,6 +142,7 @@ class PlaceEntry extends AbstractData {
             "dataType" => "PlaceEntry",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "latitude" => $this->latitude,
             "longitude" => $this->longitude,
             "administrationCode" => $this->administrationCode,
@@ -179,6 +180,11 @@ class PlaceEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "PlaceEntry")
             return false;
+
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
 
         unset($this->id);
         if (isset($data["id"]))

@@ -282,6 +282,7 @@ class ConstellationRelation extends AbstractData {
             "dataType" => "ConstellationRelation",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "sourceConstellation" => $this->sourceConstellation,
             "targetConstellation" => $this->targetConstellation,
             "sourceArkID" => $this->sourceArkID,
@@ -317,6 +318,11 @@ class ConstellationRelation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "ConstellationRelation")
             return false;
+
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
 
         unset($this->id);
         if (isset($data["id"]))

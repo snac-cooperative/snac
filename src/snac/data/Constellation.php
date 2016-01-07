@@ -821,6 +821,7 @@ class Constellation extends AbstractData {
             "dataType" => "Constellation",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
+            'mainID' => $this->getMainID(),
             "ark" => $this->ark,
             "entityType" => $this->entityType,
             "otherRecordIDs" => $this->otherRecordIDs,
@@ -905,6 +906,10 @@ class Constellation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Constellation")
             return false;
 
+        if (isset($data['mainID']))
+        {
+            $this->setMainID($data['mainID']);
+        }
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];
