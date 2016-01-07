@@ -3,7 +3,7 @@
 /**
  * Abstract data object class.
  *
- * Contains the data class for the resource relations.
+ * Contains the abstract class for the basis for any other data classes.
  *
  * License:
  *
