@@ -183,11 +183,13 @@ abstract class AbstractData {
             'version' => $this->getVersion(),
             'metadata' => array()
         );
+       
+        if (isset($this->metadata)) {
+            foreach ($this->metadata as $i => $v)
+                $return["metadata"][$i] = $v->toArray($shorten);
+        }
         
-        foreach ($this->metadata as $i => $v)
-            $return["metadata"][$i] = $v->toArray($shorten);
-        
-       // Shorten if necessary
+        // Shorten if necessary
         if ($shorten) {
             $return2 = array();
             foreach ($return as $i => $v)
