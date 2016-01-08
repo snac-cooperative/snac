@@ -180,11 +180,11 @@ abstract class AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             'id' => $this->getID(),
-            'version' => $this->getVersion(),
-            'metadata' => array()
+            'version' => $this->getVersion()
         );
        
         if (isset($this->metadata)) {
+            $return['metadata'] = array();
             foreach ($this->metadata as $i => $v)
                 $return["metadata"][$i] = $v->toArray($shorten);
         }
