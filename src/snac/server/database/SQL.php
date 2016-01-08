@@ -1088,6 +1088,35 @@ class SQL
         $this->sdb->deallocate($qq);
         return array($row['id'], $row['version'], $row['main_id']);
     }
+    
+    /**
+     * Return the lowest main_id for a multi-name constellation with more than 1 non-deleted names. Returns
+     * only a version and main_id for a single record in table name.
+     *
+     * @return integer[] Returns an array of two integers: version and main_id for the specific name. Note that since a record may have several versions, that version 
+     * 
+     * 
+     */
+    public function multiNameConstellationID()
+    {
+        $qq = 'mncid';
+        // From table "name", get main_id for a multi-name constellation
+        $this->sdb->prepare($qq, 
+                            'select * from 
+                            (select count(aa.id),aa.main_id from name as aa
+                            where aa.id not in (select id from name where is_deleted='t') group by main_id order by main_id) as zz
+                            where
+                            zz.count>1 limit 1');
+    
+        $result = $this->sdb->execute($qq, array());
+        $row = $this->sdb->fetchrow($result);
+
+        // Is main_id enough to return? Is that all we need for the most recent version of the multi-name constellation?
+
+        $this->sdb->deallocate($qq);
+        return $row['main_id'];
+    }
+
 
     /**
      *
@@ -1119,17 +1148,21 @@ class SQL
      */ 
     public function selectDemoRecs()
     {
-        $result = $this->sdb->query('select max(id) as version,main_id 
-                                    from version_history 
-                                    group by main_id order by main_id limit 100',
-                                    array());
+        $qq =
+            'select max(id) as version,main_id 
+            from version_history 
+            group by main_id order by main_id limit 100';
+
+        $result = $this->sdb->query($qq, array());
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             $nRow = $this->selectNameEntry(array('version' => $row['version'],
                                           'main_id' => $row['main_id']));
-            // For now just use the first name returned, whatever that is. selectNameEntry() sorts by
-            // preference_score, but that score might not be accurate for all contexts.
+            /* 
+             * For now just use the first name returned, whatever that is. selectNameEntry() sorts by
+             * preference_score, but that score might not be accurate for all contexts.
+             */
             $row['formatted_name'] = $nRow[0]['original'];
             array_push($all, $row);
         }
@@ -1195,6 +1228,8 @@ class SQL
         return $newRow['id'];
     }
 
+
+
     /*
      * This method is more direct, but if any arg lists change, this has to be manually updated. It is also
      * possible for an arg list mistake at the outset to not be detected. This would need QA, and the obvious
@@ -1229,6 +1264,39 @@ class SQL
      *     }
      * }
      */
+
+    /**
+     * Count names, current version, not deleted, for a single constellation.
+     *
+     * This is used to check if we are allowed to delete a name, because we must not delete the only name for
+     * a constellation.
+     *
+     * Note that Postgres names the column from the count() function 'count', so we do not need to alias the
+     * column. I used the explicit alias just to make intent clear.
+     *
+     * @param $main_id Integer constellation id usually from version_history.main_id.
+     *
+     * @return interger Number of names meeting the criteria. Zero if no names or if the query fails. 
+     * 
+     */
+    public function CountNames($main_id)
+    {
+        $selectSQL =
+            "select count(*) as count from name as aa,
+            (select id, main_id, max(version) as version from name group by id,main_id) as bb
+            where aa.id=bb.id and aa.is_deleted='f' and aa.version=bb.version and aa.main_id=bb.main_id and aa.main_id=$1";
+        
+        $result = $this->sdb->query($selectSQL, array($main_id));
+        $row = $this->sdb->fetchrow($result);
+        if ($row and isset($row['count']))
+        {
+            return $row['count'];
+        }
+        else
+        {
+            return 0;
+        }
+    }
 
 }
 

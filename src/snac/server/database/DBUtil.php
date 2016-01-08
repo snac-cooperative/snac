@@ -702,10 +702,13 @@ class DBUtil
 
      * @param string $icstatus Pass a null if unchanged. Lower level code will preserved the existing setting.
      *
+     * @return string Non-null is success, null is failure. On succeess returns the deleted row id, which
+     * should be the same as $id.
+     * 
      */
     public function setDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
     {
-        $canDelete = array_fill_keys(array('nrd', 'name', 'name_component', 'name_contributor',
+        $canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
                                            'contributor', 'date_range', 'source', 
                                            'source_link', 'control', 'pre_snac_maintenance_history',
                                            'occupation', 'place', 'function', 
@@ -713,9 +716,15 @@ class DBUtil
                                            'related_identity', 'related_resource'), 1);
         if (! isset($canDelete[$table]))
         {
-            // Hmmm. Need to throw an exception, but this will work for now.
+            // Hmmm. Need to warn the user and write into the log. 
             printf("Cannot set deleted on table: $table\n");
-            exit();
+            return null;
+        }
+        if ($table == 'name' & $this->sql->CountNames($main_id) <= 1)
+        {
+            // Need a message and logging for this.
+            printf("Cannot delete the only name for main_id: $main_id\n");
+            return null;
         }
         $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
         
