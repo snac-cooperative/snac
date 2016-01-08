@@ -30,7 +30,7 @@ class SNACFunction extends AbstractData {
      * 
      * * function/term
      * 
-     * @var string Function controlled vocabulary term
+     * @var \snac\data\Term Function controlled vocabulary term
      */
     private $term;
 
@@ -76,7 +76,7 @@ class SNACFunction extends AbstractData {
      *
      * * function/term
      * 
-     * @return string Function controlled vocabulary term
+     * @return \snac\data\Term Function controlled vocabulary term
      *
      */
     function getTerm()
@@ -145,7 +145,7 @@ class SNACFunction extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "SNACFunction",
-            "term" => $this->term,
+            "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "type" => $this->type,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
@@ -180,7 +180,7 @@ class SNACFunction extends AbstractData {
         parent::fromArray($data);
 
         if (isset($data["term"]))
-            $this->term = $data["term"];
+            $this->term = new Term($data["term"]);
         else
             $this->term = null;
 
@@ -211,7 +211,7 @@ class SNACFunction extends AbstractData {
     /**
      * Set the term of this function (controlled vocabulary)
      * 
-     * @param string $term term
+     * @param \snac\data\Term $term term
      */
     public function setTerm($term) {
 

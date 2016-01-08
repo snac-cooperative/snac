@@ -31,7 +31,7 @@ class Occupation extends AbstractData {
      * 
      * * occupation/term
      * 
-     * @var string Occupation controlled vocabulary term
+     * @var \snac\data\Term Occupation controlled vocabulary term
      */
     private $term = null;
 
@@ -80,7 +80,7 @@ class Occupation extends AbstractData {
     /**
      * Getter for $this->term
      *
-     * @return string Occupation controlled vocabulary term
+     * @return \snac\data\Term Occupation controlled vocabulary term
      * 
      */ 
     public function getTerm()
@@ -137,7 +137,7 @@ class Occupation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Occupation",
-            "term" => $this->term,
+            "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
@@ -171,7 +171,7 @@ class Occupation extends AbstractData {
         parent::fromArray($data);
 
         if (isset($data["term"]))
-            $this->term = $data["term"];
+            $this->term = new Term($data["term"]);
         else
             $this->term = null;
 
@@ -196,7 +196,7 @@ class Occupation extends AbstractData {
     /**
      * Set the occupation controlled vocabulary name
      * 
-     * @param string $term The occupation term
+     * @param \snac\data\Term $term The occupation term
      */
     public function setTerm($term) {
         $this->term = $term;
