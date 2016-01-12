@@ -59,7 +59,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * * cpfRelation/@role
      * 
-     * @var string Target entity type
+     * @var \snac\data\Term Target entity type
      */
     private $targetEntityType = null;
 
@@ -68,7 +68,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * * cpfRelation/@arcrole
      * 
-     * @var string Type of the constellation
+     * @var \snac\data\Term Type of the constellation
      */
     private $type = null;
 
@@ -80,7 +80,7 @@ class ConstellationRelation extends AbstractData {
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
      * 
-     * @var string Alternate type
+     * @var \snac\data\Term Alternate type
      */
     private $altType = null;
     
@@ -89,7 +89,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * * cpfRelation/@cpfRelationType
      * 
-     * @var string CPF Relation Type
+     * @var \snac\data\Term CPF Relation Type
      */
     private $cpfRelationType = null;
 
@@ -170,7 +170,7 @@ class ConstellationRelation extends AbstractData {
      *
      * * cpfRelation/@role
      *
-     * @return string Target entity type
+     * @return \snac\data\Term Target entity type
      *
      */
     function getTargetEntityType()
@@ -183,7 +183,7 @@ class ConstellationRelation extends AbstractData {
      *
      * * cpfRelation/@arcrole
      *
-     * @return string Type of the constellation
+     * @return \snac\data\Term Type of the constellation
      *
      */
     function getType()
@@ -200,7 +200,7 @@ class ConstellationRelation extends AbstractData {
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
      * 
-     * @return string Alternate type
+     * @return \snac\data\Term Alternate type
      *
      */
     function getAltType()
@@ -213,7 +213,7 @@ class ConstellationRelation extends AbstractData {
      *
      * * cpfRelation/@cpfRelationType
      * 
-     * @return string CPF Relation Type
+     * @return \snac\data\Term CPF Relation Type
      *
      */
     function getCpfRelationType()
@@ -245,17 +245,7 @@ class ConstellationRelation extends AbstractData {
      */
     function getDates()
     {
-        // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
-        // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
-        // this universe.
-        if ($this->dates)
-        {
-            return $this->dates;
-        }
-        else
-        {
-            return array();
-        }
+        return $this->dates;
     }
 
     /**
@@ -284,10 +274,10 @@ class ConstellationRelation extends AbstractData {
             "targetConstellation" => $this->targetConstellation,
             "sourceArkID" => $this->sourceArkID,
             "targetArkID" => $this->targetArkID,
-            "targetEntityType" => $this->targetEntityType,
-            "type" => $this->type,
-            "altType" => $this->altType,
-            "cpfRelationType" => $this->cpfRelationType,
+            "targetEntityType" => $this->targetEntityType == null ? null : $this->targetEntityType->toArray($shorten),
+            "type" => $this->type == null ? null : $this->type->toArray($shorten),
+            "altType" => $this->altType == null ? null : $this->type->toArray($shorten),
+            "cpfRelationType" => $this->cpfRelationType == null ? null : $this->type->toArray($shorten),
             "content" => $this->content,
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
@@ -341,22 +331,22 @@ class ConstellationRelation extends AbstractData {
             $this->targetArkID = null;
 
         if (isset($data["targetEntityType"]))
-            $this->targetEntityType = $data["targetEntityType"];
+            $this->targetEntityType = new \snac\data\Term($data["targetEntityType"]);
         else
             $this->targetEntityType = null;
 
         if (isset($data["type"]))
-            $this->type = $data["type"];
+            $this->type = new \snac\data\Term($data["type"]);
         else
             $this->type = null;
 
         if (isset($data["altType"]))
-            $this->altType = $data["altType"];
+            $this->altType = new \snac\data\Term($data["altType"]);
         else
             $this->altType = null;
 
         if (isset($data["cpfRelationType"]))
-            $this->cpfRelationType = $data["cpfRelationType"];
+            $this->cpfRelationType = new \snac\data\Term($data["cpfRelationType"]);
         else
             $this->cpfRelationType = null;
 
@@ -401,7 +391,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the target entity type
      * 
-     * @param string $type Target's entity type
+     * @param \snac\data\Term $type Target's entity type
      */
     public function setTargetType($type) {
         $this->targetEntityType = $type;
@@ -410,7 +400,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the relation type
      *
-     * @param string $type Type of the relation
+     * @param \snac\data\Term $type Type of the relation
      */
     public function setType($type) {
 
@@ -420,7 +410,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the CPF Relation type
      * 
-     * @param string $type CPF Relation Type
+     * @param \snac\data\Term $type CPF Relation Type
      */
     public function setCPFRelationType($type) {
         $this->cpfRelationType = $type;
@@ -429,7 +419,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the relation's alternate type
      *
-     * @param string $type Alternate type of the relation
+     * @param \snac\data\Term $type Alternate type of the relation
      */
     public function setAltType($type) {
 

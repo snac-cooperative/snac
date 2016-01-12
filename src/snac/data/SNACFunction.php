@@ -39,7 +39,7 @@ class SNACFunction extends AbstractData {
      * 
      * * function/@localType
      * 
-     * @var string Type of the function
+     * @var \snac\data\Term Type of the function
      */
     private $type;
 
@@ -89,7 +89,7 @@ class SNACFunction extends AbstractData {
      *
      * * function/@localType
      * 
-     * @return string Type of the function
+     * @return \snac\data\Term Type of the function
      *
      */
     function getType()
@@ -146,7 +146,7 @@ class SNACFunction extends AbstractData {
         $return = array(
             "dataType" => "SNACFunction",
             "term" => $this->term == null ? null : $this->term->toArray($shorten),
-            "type" => $this->type,
+            "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
@@ -185,7 +185,7 @@ class SNACFunction extends AbstractData {
             $this->term = null;
 
         if (isset($data["type"]))
-            $this->type = $data["type"];
+            $this->type = new Term($data["type"]);
         else
             $this->type = null;
 
@@ -221,7 +221,7 @@ class SNACFunction extends AbstractData {
     /**
      * Set the type of this function
      * 
-     * @param string $type type
+     * @param \snac\data\Term $type type
      */
     public function setType($type) {
 

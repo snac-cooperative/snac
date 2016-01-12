@@ -30,7 +30,7 @@ class ResourceRelation extends AbstractData {
      * 
      * * resourceRelation/@role
      * 
-     * @var string Document type
+     * @var \snac\data\Term Document type
      */
     private $documentType = null;
 
@@ -45,7 +45,7 @@ class ResourceRelation extends AbstractData {
      *
      * 'linkType' => 'simple',
      * 
-     * @var string Link type
+     * @var \snac\data\Term Link type
      */
     private $linkType = null;
     
@@ -54,7 +54,7 @@ class ResourceRelation extends AbstractData {
      * 
      * * resourceRelation/relationEntry/@localType
      * 
-     * @var string Relation entry type
+     * @var \snac\data\Term Relation entry type
      * 
      */
     private $entryType = null;
@@ -73,7 +73,7 @@ class ResourceRelation extends AbstractData {
      * 
      * * resourceRelation/@arcrole
      * 
-     * @var string Role in of the relation
+     * @var \snac\data\Term Role in of the relation
      */
     private $role = null;
 
@@ -109,7 +109,7 @@ class ResourceRelation extends AbstractData {
      *
      * * resourceRelation/@role
      * 
-     * @return string Document type
+     * @return \snac\data\Term Document type
      *
      */
     function getDocumentType()
@@ -128,7 +128,7 @@ class ResourceRelation extends AbstractData {
      *
      * 'linkType' => 'simple',
      * 
-     * @return string Link type
+     * @return \snac\data\Term Link type
      *
      */
     function getLinkType()
@@ -141,7 +141,7 @@ class ResourceRelation extends AbstractData {
      *
      * * resourceRelation/relationEntry/@localType
      * 
-     * @return string Relation entry type
+     * @return \snac\data\Term Relation entry type
      *
      */
     function getEntryType()
@@ -167,7 +167,7 @@ class ResourceRelation extends AbstractData {
      *
      * * resourceRelation/@arcrole
      * 
-     * @return string Role in of the relation
+     * @return \snac\data\Term Role in of the relation
      *
      */
     function getRole()
@@ -223,11 +223,11 @@ class ResourceRelation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ResourceRelation",
-            "documentType" => $this->documentType,
-            "linkType" => $this->linkType,
-            "entryType" => $this->entryType,
+            "documentType" => $this->documentType == null ? null : $this->documentType->toArray($shorten),
+            "linkType" => $this->linkType == null ? null : $this->linkType->toArray($shorten),
+            "entryType" => $this->entryType == null ? null : $this->entryType->toArray($shorten),
             "link" => $this->link,
-            "role" => $this->role,
+            "role" => $this->role == null ? null : $this->role->toArray($shorten),
             "content" => $this->content,
             "source" => $this->source,
             "note" => $this->note
@@ -261,17 +261,17 @@ class ResourceRelation extends AbstractData {
         parent::fromArray($data);
 
         if (isset($data["documentType"]))
-            $this->documentType = $data["documentType"];
+            $this->documentType = new \snac\data\Term($data["documentType"]);
         else
             $this->documentType = null;
 
         if (isset($data["linkType"]))
-            $this->linkType = $data["linkType"];
+            $this->linkType = new \snac\data\Term($data["linkType"]);
         else
             $this->linkType = null;
 
         if (isset($data["entryType"]))
-            $this->entryType = $data["entryType"];
+            $this->entryType = new \snac\data\Term($data["entryType"]);
         else
             $this->entryType = null;
 
@@ -281,7 +281,7 @@ class ResourceRelation extends AbstractData {
             $this->link = null;
 
         if (isset($data["role"]))
-            $this->role = $data["role"];
+            $this->role = new \snac\data\Term($data["role"]);
         else
             $this->role = null;
 
@@ -307,7 +307,7 @@ class ResourceRelation extends AbstractData {
     /**
      * Set the document type for this relation
      *
-     * @param string $type Document type
+     * @param \snac\data\Term $type Document type
      */
     public function setDocumentType($type) {
 
@@ -327,7 +327,7 @@ class ResourceRelation extends AbstractData {
     /**
      * Set the link type for this relation
      * 
-     * @param string $type Link type
+     * @param \snac\data\Term $type Link type
      */
     public function setLinkType($type) {
 
@@ -337,7 +337,7 @@ class ResourceRelation extends AbstractData {
     /**
      * Set the role of this resource relation
      *
-     * @param string $role Relation role
+     * @param \snac\data\Term $role Relation role
      */
     public function setRole($role) {
 
@@ -377,7 +377,7 @@ class ResourceRelation extends AbstractData {
     /**
      * Set the relation entry type
      * 
-     * @param string $type Relation entry type
+     * @param \snac\data\Term $type Relation entry type
      */
     public function setRelationEntryType($type) {
         $this->entryType = $type;

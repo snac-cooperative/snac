@@ -49,7 +49,7 @@ class Place extends AbstractData {
      * 
      * * place/@localType
      * 
-     * @var string Type of the place
+     * @var \snac\data\Term Type of the place
      */
     private $type;
 
@@ -58,7 +58,7 @@ class Place extends AbstractData {
      * 
      * * place/placeRole
      * 
-     * @var string Place role
+     * @var \snac\data\Term Place role
      */
     private $role;
 
@@ -94,8 +94,8 @@ class Place extends AbstractData {
         $return = array(
             "dataType" => "Place",
             "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
-            "type" => $this->type,
-            "role" => $this->role,
+            "type" => $this->type == null ? null : $this->type->toArray($shorten),
+            "role" => $this->role == null ? null : $this->role->toArray($shorten),
             "entries" => array(),
             "note" => $this->note
         );
@@ -137,12 +137,12 @@ class Place extends AbstractData {
             $this->dates = null;
 
         if (isset($data["type"]))
-            $this->type = $data["type"];
+            $this->type = new \snac\data\Term($data["type"]);
         else
             $this->type = null;
 
         if (isset($data["role"]))
-            $this->role = $data["role"];
+            $this->role = new \snac\data\Term($data["role"]);
         else
             $this->role = null;
 
@@ -183,7 +183,7 @@ class Place extends AbstractData {
     /**
      * Set the place type
      * 
-     * @param string $type Place type
+     * @param \snac\data\Term $type Place type
      */
     public function setType($type) {
 
@@ -193,7 +193,7 @@ class Place extends AbstractData {
     /**
      * Set the place role
      * 
-     * @param string $role place role
+     * @param \snac\data\Term $role place role
      */
     public function setRole($role) {
 

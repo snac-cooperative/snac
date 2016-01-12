@@ -53,7 +53,7 @@ class SNACDate extends AbstractData {
      * * dateRange/fromDate/@localType
      * * date/@localType
      * 
-     * @var[w string Type of the from date
+     * @var \snac\data\Term Type of the from date
      */
     private $fromType;
 
@@ -102,7 +102,7 @@ class SNACDate extends AbstractData {
      * 
      * * dateRange/toDate/@localType
      * 
-     * @var string Type of the to date
+     * @var \snac\data\Term Type of the to date
      */
     private $toType;
 
@@ -171,7 +171,7 @@ class SNACDate extends AbstractData {
     /**
      * getter for $this->fromType
      *
-     * @return string Original string given for the from date
+     * @return \snac\data\Term Original \snac\data\Term given for the from date
      *
      *
      */
@@ -236,7 +236,7 @@ class SNACDate extends AbstractData {
     /**
      * getter for $this->toType
      *
-     * @return string Type of the to date
+     * @return \snac\data\Term Type of the to date
      *
      *
      */
@@ -320,12 +320,12 @@ class SNACDate extends AbstractData {
             "dataType" => "SNACDate",
             "fromDate" => $this->fromDate,
             "fromDateOriginal" => $this->fromDateOriginal,
-            "fromType" => $this->fromType,
+            "fromType" => $this->fromType == null ? null : $this->fromType->toArray($shorten),
             "fromBC" => $this->fromBC,
             "fromRange" => $this->fromRange,
             "toDate" => $this->toDate,
             "toDateOriginal" => $this->toDateOriginal,
-            "toType" => $this->toType,
+            "toType" => $this->toType == null ? null : $this->toType->toArray($shorten),
             "toBC" => $this->toBC,
             "toRange" => $this->toRange,
             "isRange" => $this->isRange,
@@ -370,7 +370,7 @@ class SNACDate extends AbstractData {
             $this->fromDateOriginal = null;
 
         if (isset($data["fromType"]))
-            $this->fromType = $data["fromType"];
+            $this->fromType = new \snac\data\Term($data["fromType"]);
         else
             $this->fromType = null;
 
@@ -395,7 +395,7 @@ class SNACDate extends AbstractData {
             $this->toDateOriginal = null;
 
         if (isset($data["toType"]))
-            $this->toType = $data["toType"];
+            $this->toType = new \snac\data\Term($data["toType"]);
         else
             $this->toType = null;
 
@@ -463,7 +463,7 @@ class SNACDate extends AbstractData {
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date
      */
     public function setToDate($original, $standardDate, $type) {
 
@@ -488,7 +488,7 @@ class SNACDate extends AbstractData {
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date
      */
     public function setDate($original, $standardDate, $type) {
 

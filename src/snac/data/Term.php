@@ -25,11 +25,11 @@ namespace snac\data;
  * @author Robbie Hott
  * @author Tom Laudeman
  */
-abstract class Term {
+class Term {
 
 
     /**
-     * var int $id The canonical vocabulary ID for this term
+     * var int $id The postgres vocabulary ID for this term
      */
     protected $id;
 
@@ -37,6 +37,16 @@ abstract class Term {
      * var int $term The term (in any language) for this particular vocabulary term
      */
     protected $term;
+    
+    /**
+     * var string $uri The full URI for this controlled vocabulary term
+     */
+    protected $uri;
+    
+    /**
+     * var string $definition The definition (in any language) for this particular vocabulary term
+     */
+    protected $definition;
     
     /**
      * Constructor
@@ -86,8 +96,44 @@ abstract class Term {
      *
      * @param string $term Term for this vocab term
      */
-    public function setVersion($version) {
-        $this->version = $version;
+    public function setTerm($term) {
+        $this->term = $term;
+    }
+
+    /**
+     * Get the URI of this vocab term
+     *
+     *  @return string URI of this vocab term
+     */
+    public function getURI() {
+        return $this->uri;
+    }
+
+    /**
+     * Set the URI of this vocab term
+     *
+     * @param string $term URI for this vocab term
+     */
+    public function setURI($uri) {
+        $this->uri = $uri;
+    }
+    
+    /**
+     * Get the definition of this vocab term
+     *
+     *  @return string definition of this vocab term
+     */
+    public function getDefinition() {
+        return $this->definition;
+    }
+
+    /**
+     * Set the definition of this vocab term
+     *
+     * @param string $term Definition for this vocab term
+     */
+    public function setDefinition($definition) {
+        $this->definition = $definition;
     }
     
     /**
@@ -99,7 +145,9 @@ abstract class Term {
     public function toArray($shorten = true) {
         $return = array(
             'id' => $this->getID(),
-            'term' => $this->getTerm()
+            'term' => $this->getTerm(),
+            'uri' => $this->getURI(),
+            'definition' => $this->getDefinition()
         );
        
         // Shorten if necessary
@@ -134,6 +182,18 @@ abstract class Term {
             $this->term = $data["term"];
         else
             $this->term = null;
+
+        unset($this->uri);
+        if (isset($data["uri"]))
+            $this->uri = $data["uri"];
+        else
+            $this->uri = null;
+
+        unset($this->definition);
+        if (isset($data["definition"]))
+            $this->definition = $data["definition"];
+        else
+            $this->definition = null;
     }
 
     /**

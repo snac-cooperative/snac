@@ -281,7 +281,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
      * 
-     * @var [wstring[] Subjects
+     * @var \snac\data\Term[] Subjects
      */
     private $subjects = null;
     
@@ -737,7 +737,7 @@ class Constellation extends AbstractData {
      *
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
      *
-     * @return \snac\data\Place[] Places
+     * @return \snac\data\Term[] Subjects
      *
      */
     function getSubjects()
@@ -845,7 +845,7 @@ class Constellation extends AbstractData {
             "resourceRelations" => array(),
             "functions" => array(),
             "places" => array(),
-            "subjects" => $this->subjects,
+            "subjects" => array(),
             "nationality" => $this->nationality,
             "gender" => $this->gender,
             "generalContext" => $this->generalContext,
@@ -876,6 +876,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->places as $i => $v)
             $return["places"][$i] = $v->toArray($shorten);
+        
+        foreach ($this->subjects as $i => $v)
+            $return["subjects"][$i] = $v->toArray($shorten);
 
             
         $return = array_merge($return, parent::toArray($shorten));
@@ -1018,7 +1021,7 @@ class Constellation extends AbstractData {
 
         unset($this->subjects);
         if (isset($data["subjects"]))
-            $this->subjects = $data["subjects"];
+            $this->subjects = new Term($data["subjects"]);
         else
             $this->subjects = array();
 
@@ -1287,7 +1290,7 @@ class Constellation extends AbstractData {
     /**
      * Add the subject to this Constellation
      *
-     * @param string $subject Subject to add.
+     * @param \snac\data\Term $subject Subject to add.
      */
     public function addSubject($subject) {
         array_push($this->subjects, $subject);

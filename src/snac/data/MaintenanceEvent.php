@@ -32,7 +32,7 @@ class MaintenanceEvent extends AbstractData {
      * 
      * * maintenanceEvent/eventType 
      * 
-     * @var string Event type
+     * @var \snac\data\Term Event type
      */
     private $eventType;
 
@@ -60,7 +60,7 @@ class MaintenanceEvent extends AbstractData {
      * 
      * * maintenanceEvent/agentType
      * 
-     * @var string Type of the agent performing the event
+     * @var \snac\data\Term Type of the agent performing the event
      */
     private $agentType;
 
@@ -91,10 +91,10 @@ class MaintenanceEvent extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "MaintenanceEvent",
-            "eventType" => $this->eventType,
+            "eventType" => $this->eventType == null ? null : $this->eventType->toArray($shorten),
             "eventDateTime" => $this->eventDateTime,
             "standardDateTime" => $this->standardDateTime,
-            "agentType" => $this->agentType,
+            "agentType" => $this->agentType == null ? null : $this->agentType->toArray($shorten),
             "agent" => $this->agent,
             "eventDescription" => $this->eventDescription
         );
@@ -127,7 +127,7 @@ class MaintenanceEvent extends AbstractData {
         parent::fromArray($data);
 
         if (isset($data["eventType"]))
-            $this->eventType = $data["eventType"];
+            $this->eventType = new \snac\data\Term($data["eventType"]);
         else
             $this->eventType = null;
 
@@ -147,7 +147,7 @@ class MaintenanceEvent extends AbstractData {
             $this->agent = null;
 
         if (isset($data["agentType"]))
-            $this->agentType = $data["agentType"];
+            $this->agentType = new \snac\data\Term($data["agentType"]);
         else
             $this->agentType = null;
 
@@ -162,7 +162,7 @@ class MaintenanceEvent extends AbstractData {
     /**
      * Set the event type.
      * 
-     * @param string $eventType Event type
+     * @param \snac\data\Term $eventType Event type
      */
     public function setEventType($eventType) {
 
@@ -192,7 +192,7 @@ class MaintenanceEvent extends AbstractData {
     /**
      * Set the agent type.
      * 
-     * @param string $agentType Agent type
+     * @param \snac\data\Term $agentType Agent type
      */
     public function setAgentType($agentType) {
 
