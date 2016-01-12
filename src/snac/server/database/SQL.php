@@ -1021,7 +1021,7 @@ class SQL
                             (select value from vocabulary where id=script_code) as script_code
                             from name,
                             (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
-                            where  not name.is_deleted and
+                            where not name.is_deleted and
                             name.id=aa.id
                             and name.version=aa.version order by preference_score desc');
         
@@ -1090,31 +1090,54 @@ class SQL
     }
     
     /**
-     * Return the lowest main_id for a multi-name constellation with more than 1 non-deleted names. Returns
-     * only a version and main_id for a single record in table name.
+     * Helper function to return the most recent version for a given main_id.
      *
-     * @return integer[] Returns an array of two integers: version and main_id for the specific name. Note that since a record may have several versions, that version 
+     * @param integer $mainID id value matching version_history.main_id.
+     *
+     * @return integer Version number from version_history.id returned as 'version', as is our convention.
+     *
+     */
+
+    public function sqlCurrentVersion($mainID)
+    {
+        $result = $this->sdb->query('select max(id) as version from version_history where main_id=$1',
+                                    array($mainID));
+        $row = $this->sdb->fetchrow($result);
+        return $row['version'];
+    }
+
+    /**
+     * Return the lowest main_id for a multi-name constellation with 2 or more non-deleted names. Returns a
+     * version and main_id for the constelletion to which this name belongs.
+     *
+     * This is a helper/convenience function for testing purposes only.
+     *
+     * @return integer[] Returns a vhInfo associateve list of integers with key names 'version' and
+     * 'main_id'. The main_id is from table 'name' for the multi-alt string name. That main_id is a
+     * constellation id, so we call sqlCurrentVersion() to get the current version for that
+     * constellation. This allows us to return a conventional vhInfo associative list which is conventient
+     * return value. (Convenient, in that we do extra work so the calling code is simpler.)
      * 
      * 
      */
-    public function multiNameConstellationID()
+    public function sqlMultiNameConstellationID()
     {
         $qq = 'mncid';
-        // From table "name", get main_id for a multi-name constellation
         $this->sdb->prepare($qq, 
                             'select * from 
                             (select count(aa.id),aa.main_id from name as aa
-                            where aa.id not in (select id from name where is_deleted='t') group by main_id order by main_id) as zz
+                            where aa.id not in (select id from name where is_deleted=\'t\') group by main_id order by main_id) as zz
                             where
                             zz.count>1 limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
 
-        // Is main_id enough to return? Is that all we need for the most recent version of the multi-name constellation?
+        $version = $this->sqlCurrentVersion($row['main_id']);
 
         $this->sdb->deallocate($qq);
-        return $row['main_id'];
+        return array('version' => $version, 
+                     'main_id' => $row['main_id']);
     }
 
 
@@ -1175,6 +1198,10 @@ class SQL
      * database. The query retains the usual subquery $version<=$1 even though in this case we have a new
      * version so < would also work.
      *
+     * Note that $table is a direct string interpolation. It is vital to avoiding sql injection attacks that
+     * calling code only allow valid table names. There are limits to what placeholders can do, and
+     * placeholders are limited to being column values.
+     *
      * Note that the method below makes no assumptions about field order. Even associative list key order is
      * not assumed to be unchanging.
      *
@@ -1185,17 +1212,29 @@ class SQL
      * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
      * and used by higher level code to build the constellation, but by and large main_id is not used for
      * record updates, so the code below makes no explicit mention of main_id.
+     * 
+     * @param string $table A valid table name, created from internal data only since there is a risk here of SQL injection attack.
+     *
+     * @param integer $id The id (table.id) of the record we are deleting. This field is not unique, so we
+     * must use id,version as is conventional practice.
+     *
+     * @param integer $version The max version of the record to delete. We delete the record with the matching
+     * table.id and the version <= to $version as is conventional practice.
+     *
+     * @return integer The id of the newly deleted row. Given that this is the same id as the old row, this
+     * return value makes no sense. Redundant.
      */
     public function sqlSetDeleted($table, $id, $newVersion)
     {
-        /* 
-         * $selectSQL = "select aa.* from $table as aa,
-         *               (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
-         *               where id=$1 and aa.version=bb.version";
-         */
-        $selectSQL = "select * from $table where id=$1";
+        $selectSQL =
+                   "select aa.* from $table as aa,
+                   (select id, max(version) as version from $table where version<=$1 and id=$2 group by id) as bb
+                   where aa.version=bb.version";
 
-        $result = $this->sdb->query($selectSQL, array($id));
+        /* Selecting the id cannot possibly work properly. table.id is not unique, but id,version is.
+        /* $selectSQL = "select * from $table where id=$1"; */
+
+        $result = $this->sdb->query($selectSQL, array($newVersion, $id));
         $row = $this->sdb->fetchrow($result);
         $row['is_deleted'] = 't';
         $row['version'] = $newVersion;

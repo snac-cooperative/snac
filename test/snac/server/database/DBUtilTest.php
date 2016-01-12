@@ -97,23 +97,44 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $vhInfo = $this->dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
                                'version' => $vhInfo['version']);
-        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
+        $reverseCObj = $this->dbu->selectConbstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
 
         // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
         $this->assertTrue(count($demo) == 100);
 
-        // Undelete something and verify it.
-        // Need a helper function somewhere to associate object type with database table. 
+        /* 
+         * Undelete something and verify it. 
+         * Need a helper function somewhere to associate object type with database table. 
+         */
+        $mNObj = $this->dbu->multiNameConstellation($this->appUserID);
+
+        $preDeleteNameCount = count($mNObj->getNameEntries());
+
         $deletedId = $this->dbu->setDeleted($this->appUserID,
                                             $this->role,
                                             'bulk ingest',
-                                            'set something to be deleted',
-                                            $cObj->getNameEntries()[0]->getMainID(),
+                                            'delete a name, that is: set is_deleted to true',
+                                            $mNObj->getNameEntries()[0]->getMainID(),
                                             'name',
-                                            $cObj->getNameEntries()[0]->getID());
-        
+                                            $mNObj->getNameEntries()[0]->getID());
+
+        // Post delete
+
+        $pDVhInfo = $mNObj->getDBInfo();
+
+        $pDObj = $this->dbu->selectConstellation($pDVhInfo, $this->appUserID);
+
+        $postDeleteNameCount = count($pDObj->getNameEntries());
+
+        $mInfo = $mNObj->getDBInfo();
+
+        printf("\nmain_id: %s pre: %s post: %s\n", 
+               var_export($mNObj, 1),
+               $preDeleteNameCount,
+               $postDeleteNameCount);
+        $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
     }
         
     public function testParseToDB()

@@ -165,6 +165,9 @@ class DBUtil
         $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
+        printf("constellation version: %s main_id: %s id: %s for vhInfo: %s %s\n",
+               $row['version'], $row['main_id'], $row['id'], $vhInfo['version'], $vhInfo['main_id']);
+        
         $cObj->setDBInfo($row['version'], $row['main_id'], $row['id']);
         
         $this->populateExistDate($row['id'], $cObj);
@@ -689,6 +692,22 @@ class DBUtil
         $demoData = $this->sql->selectDemoRecs();
         return $demoData;
     }
+
+    /**
+     * Return a constellation object that has 2 or more non-delted names. This is a helper function for testing purposes only.
+     *
+     * @param string $appUserID A user id string. When testing this comes from getAppUserInfo().
+     * 
+     * @return \snac\data\Constellation A PHP constellation object.
+     *
+     */
+    public function multiNameConstellation($appUserID)
+    {
+        $vhInfo = $this->sql->sqlMultiNameConstellationID();
+        $mNConstellation = $this->selectConstellation($vhInfo, $appUserID);
+        return $mNConstellation;
+    }
+    
 
     /**
      * Delete a single record of a single table. We need the id here because we only want a single record. The
