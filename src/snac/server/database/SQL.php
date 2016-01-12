@@ -298,6 +298,9 @@ class SQL
 
 
     /** 
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
+     *
      * Select a date knowing a date id values. selectDate() relies on the date.id being in the original table,
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
@@ -313,11 +316,13 @@ class SQL
         $qq = 'select_date';
         $this->sdb->prepare($qq, 
                             'select 
-                            id, version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
-                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, fk_id,
+                            aa.id, aa.version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
+                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, aa.fk_id,
                             (select value from vocabulary where id=from_type) as from_type,
                             (select value from vocabulary where id=to_type) as to_type
-                            from date_range where fk_id=$1 and not is_deleted');
+                            from date_range as aa,
+                            (select fk_id,max(version) as version from date_range where fk_id=$1 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
 
         $result = $this->sdb->execute($qq, array($did));
@@ -674,17 +679,18 @@ class SQL
         $qq = 'sc';
         $this->sdb->prepare($qq, 
                             'select
-                            id,version,main_id,biog_hist,general_context,structure_or_genealogy, mandate, convention_declaration,
-                            ark_id,language,script,
-                            (select value from vocabulary where vocabulary.id=entity_type) as entity_type,
-                            (select value from vocabulary where vocabulary.id=nationality) as nationality,
-                            (select value from vocabulary where vocabulary.id=gender) as gender,
-                            (select value from vocabulary where vocabulary.id=language_code) as language_code,
-                            (select value from vocabulary where vocabulary.id=script_code) as script_code
-                            from nrd
-                            where not is_deleted and
-                            version=(select max(version) from nrd where version<=$1)
-                            and main_id=$2');
+                            aa.id,aa.version,aa.main_id,aa.biog_hist,aa.general_context,aa.structure_or_genealogy,aa.mandate,
+                            aa.convention_declaration,aa.ark_id,aa.language,script,
+                            (select value from vocabulary where vocabulary.id=aa.entity_type) as entity_type,
+                            (select value from vocabulary where vocabulary.id=aa.nationality) as nationality,
+                            (select value from vocabulary where vocabulary.id=aa.gender) as gender,
+                            (select value from vocabulary where vocabulary.id=aa.language_code) as language_code,
+                            (select value from vocabulary where vocabulary.id=aa.script_code) as script_code
+                            from nrd as aa,
+                            (select id, max(version) as version from nrd where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version');
 
         /* 
          * Always use key names explicitly when going from associative context to flat indexed list context.
@@ -1016,25 +1022,25 @@ class SQL
         $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_1,
                             'select
-                            name.id,name.version, main_id, original, preference_score,
-                            (select value from vocabulary where id=language) as language,
-                            (select value from vocabulary where id=script_code) as script_code
-                            from name,
-                            (select id, max(version) as version from name where version<=$1 and main_id=$2 group by id) as aa
-                            where not name.is_deleted and
-                            name.id=aa.id
-                            and name.version=aa.version order by preference_score desc');
+                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score,
+                            (select value from vocabulary where id=aa.language) as language,
+                            (select value from vocabulary where id=aa.script_code) as script_code
+                            from name as aa,
+                            (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
+                            where
+                            aa.id = bb.id and not aa.is_deleted and 
+                            aa.version = bb.version');
         
         $this->sdb->prepare($qq_2,
                             'select 
-                            name_contributor.id,name_contributor.version, main_id, name_id, short_name,
+                            aa.id,aa.version, main_id, name_id, short_name,
                             (select value from vocabulary where id=name_type) as name_type
-                            from  name_contributor,
-                            (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as aa
-                            where not name_contributor.is_deleted and
-                            name_contributor.id=aa.id
-                            and name_contributor.version=aa.version
-                            and name_contributor.name_id=$3');
+                            from  name_contributor as aa,
+                            (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version
+                            and aa.name_id=$3');
         
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
@@ -1044,6 +1050,15 @@ class SQL
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
+            if ($name_row['main_id']==100)
+            {
+                printf("\nselectName v: %s m: %s i: %s id: %s\n",
+                       $vhInfo['version'],
+                       $vhInfo['main_id'],
+                       $name_row['id'], 
+                       $name_row['is_deleted']);
+            }
+            
             $name_row['contributors'] = array();
             $contributor_result = $this->sdb->execute($qq_2,
                                                       array($vhInfo['version'],
@@ -1067,6 +1082,8 @@ class SQL
      * This is used for testing. Not really random. Get a record that has a date_range record. The query
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
+     *
+     * Note: Must select max(version_history.id) as version. The max() version is the Constellation version.
      * 
      * @return string[] Return a flat array. This seems like a function that should return an associative
      * list. Currently, is only called in one place. 
@@ -1075,18 +1092,20 @@ class SQL
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq, 
-                            'select nrd.id, version_history.id as version, version_history.main_id
+                            'select max(version_history.id) as version, version_history.main_id
                             from nrd,date_range, version_history
                             where
                             nrd.id=date_range.fk_id and
-                            nrd.main_id=version_history.main_id and
-                            nrd.version=version_history.id
+                            nrd.main_id=version_history.main_id
+                            and not date_range.is_deleted
+                            group by version_history.main_id
+                            order by version_history.main_id
                             limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
-        return array($row['id'], $row['version'], $row['main_id']);
+        return array($row['version'], $row['main_id']);
     }
     
     /**
@@ -1110,6 +1129,12 @@ class SQL
      * Return the lowest main_id for a multi-name constellation with 2 or more non-deleted names. Returns a
      * version and main_id for the constelletion to which this name belongs.
      *
+     * Note: When getting a version number, we must always look for max(version_history.id) as version to be
+     * sure we have "the" constellation version number.
+     *
+     * Note: Use boolean "is true" short syntax "is_deleted" in the sql because it is unambiguous, and it
+     * saves escaping \'t\' which is necessary in the verbose syntax.
+     *
      * This is a helper/convenience function for testing purposes only.
      *
      * @return integer[] Returns a vhInfo associateve list of integers with key names 'version' and
@@ -1124,11 +1149,13 @@ class SQL
     {
         $qq = 'mncid';
         $this->sdb->prepare($qq, 
-                            'select * from 
+                            'select max(vh.id) as version, vh.main_id 
+                            from version_history as vh,
                             (select count(aa.id),aa.main_id from name as aa
-                            where aa.id not in (select id from name where is_deleted=\'t\') group by main_id order by main_id) as zz
-                            where
-                            zz.count>1 limit 1');
+                            where aa.id not in (select id from name where is_deleted) group by main_id order by main_id) as zz
+                            where 
+                            vh.main_id=zz.main_id and 
+                            zz.count>1 group by vh.main_id limit 1');
     
         $result = $this->sdb->execute($qq, array());
         $row = $this->sdb->fetchrow($result);
@@ -1181,7 +1208,13 @@ class SQL
         while($row = $this->sdb->fetchrow($result))
         {
             $nRow = $this->selectNameEntry(array('version' => $row['version'],
-                                          'main_id' => $row['main_id']));
+                                                 'main_id' => $row['main_id']));
+            if (count($nRow) == 0)
+            {
+                // Yikes, cannot have a constellation with zero names.
+                printf("No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
+            }
+
             /* 
              * For now just use the first name returned, whatever that is. selectNameEntry() sorts by
              * preference_score, but that score might not be accurate for all contexts.
@@ -1221,18 +1254,15 @@ class SQL
      * @param integer $version The max version of the record to delete. We delete the record with the matching
      * table.id and the version <= to $version as is conventional practice.
      *
-     * @return integer The id of the newly deleted row. Given that this is the same id as the old row, this
-     * return value makes no sense. Redundant.
      */
     public function sqlSetDeleted($table, $id, $newVersion)
     {
+        printf("sd: table: $table newVersion: $newVersion id: $id \n");
+
         $selectSQL =
                    "select aa.* from $table as aa,
                    (select id, max(version) as version from $table where version<=$1 and id=$2 group by id) as bb
-                   where aa.version=bb.version";
-
-        /* Selecting the id cannot possibly work properly. table.id is not unique, but id,version is.
-        /* $selectSQL = "select * from $table where id=$1"; */
+                   where aa.version=bb.version and aa.id=bb.id";
 
         $result = $this->sdb->query($selectSQL, array($newVersion, $id));
         $row = $this->sdb->fetchrow($result);
@@ -1262,9 +1292,14 @@ class SQL
             $tween = ", ";
         }
         $updateSQL = "insert into $table ($columnString) values ($placeHolderString) returning id";
-        $newResult = $this->sdb->query($updateSQL, $row);
+
+
+        $newResult = $this->sdb->query($updateSQL, array_values($row));
+
+        printf("setDelete: v: %s m: %s i: %s\nrow:%s\n",
+               $row['version'], $row['main_id'], $row['id'], var_export(array_values($row),1));
+
         $newRow = $this->sdb->fetchrow($newResult);
-        return $newRow['id'];
     }
 
 
@@ -1323,7 +1358,7 @@ class SQL
         $selectSQL =
             "select count(*) as count from name as aa,
             (select id, main_id, max(version) as version from name group by id,main_id) as bb
-            where aa.id=bb.id and aa.is_deleted='f' and aa.version=bb.version and aa.main_id=bb.main_id and aa.main_id=$1";
+            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.main_id=bb.main_id and aa.main_id=$1";
         
         $result = $this->sdb->query($selectSQL, array($main_id));
         $row = $this->sdb->fetchrow($result);
@@ -1336,6 +1371,7 @@ class SQL
             return 0;
         }
     }
+
 
 }
 

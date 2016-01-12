@@ -41,6 +41,11 @@ abstract class AbstractData {
     protected $version = null;
 
     /**
+     * var int $nrdVersion The version number for this data structure. Table nrd.version, not max(version_history.id)
+     */
+    protected $nrdVersion = null;
+
+    /**
      * var int $mainID The constellation id for this data structure
      */
     protected $mainID = null;
@@ -80,8 +85,9 @@ abstract class AbstractData {
      * nothing.
      * 
      */
-    public function setDBInfo($version, $mainID, $id)
+    public function setDBInfo($version, $mainID, $id, $nrdVersion)
     {
+        // printf("sdi-one: $version $mainID $id\n");
         if ($version)
         {
             $this->version = $version;
@@ -94,7 +100,11 @@ abstract class AbstractData {
         {
             $this->id = $id;
         }
-            
+        if ($nrdVersion) // Table nrd.version, not max(version_history.id)
+        {
+            $this->nrdVersion = $nrdVersion;
+        }
+        // printf("sdi-two: $this->version $this->mainID $this->id\n");
     }
 
 
@@ -171,7 +181,25 @@ abstract class AbstractData {
     public function setVersion($version) {
         $this->version = $version;
     }
-      
+
+        /**
+     * Get the version number of this data structure. Table nrd.version, not max(version_history.id)
+     *
+     *  @return int version of this structure
+     */
+    public function getNrdVersion() {
+        return $this->nrdVersion;
+    }
+
+    /**
+     * Set the version number of this data structure. Table nrd.version, not max(version_history.id)
+     *
+     * @param int $id version to assign this structure
+     */
+    public function setNrdVersion($version) {
+        $this->version = $nrdVersion;
+    }
+
     
     /**
      * Required method to convert this data object to an array

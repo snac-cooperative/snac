@@ -94,7 +94,8 @@ class DBUtil
                             $singleDate['to_date'],
                             $singleDate['to_type']); 
         $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-        $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id']);
+        // Set nrdVersion to null for now.
+        $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id'], null);
         return $dateObj;
     }    
         
@@ -107,8 +108,8 @@ class DBUtil
      */
     public function demoConstellation()
     {
-        list($ConstellationId, $version, $mainId) = $this->sql->randomConstellationID();
-        return array('version' => $version, 'main_id' => $mainId);
+        list($version, $mainID) = $this->sql->randomConstellationID();
+        return array('version' => $version, 'main_id' => $mainID);
     }
 
     /**
@@ -165,11 +166,10 @@ class DBUtil
         $cObj->setStructureOrGenealogy($row['structure_or_genealogy']);
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
-        printf("constellation version: %s main_id: %s id: %s for vhInfo: %s %s\n",
-               $row['version'], $row['main_id'], $row['id'], $vhInfo['version'], $vhInfo['main_id']);
-        
-        $cObj->setDBInfo($row['version'], $row['main_id'], $row['id']);
-        
+
+        // 4th arg is Table nrd.version, not max(version_history.id)
+        $cObj->setDBInfo($vhInfo['version'], $row['main_id'], $row['id'], $row['version']);
+
         $this->populateExistDate($row['id'], $cObj);
 
         $oridRows = $this->sql->selectOtherRecordID($vhInfo); 
@@ -242,7 +242,7 @@ class DBUtil
             {
                 $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
             }
-            $neObj->setDBInfo($oneName['version'], $oneName['main_id'], $oneName['id']);
+            $neObj->setDBInfo($oneName['version'], $oneName['main_id'], $oneName['id'], null);
             
             $cObj->addNameEntry($neObj);
         }
@@ -271,7 +271,7 @@ class DBUtil
                                 $singleDate['to_date'],
                                 $singleDate['to_type']);
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id']);
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id'], null);
             $cObj->addExistDates($dateObj);
         }
     }
@@ -305,7 +305,7 @@ class DBUtil
             $occObj->setTerm($oneOcc['occupation_id']);
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
-            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id'], $oneOcc['id']);
+            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id'], $oneOcc['id'], null);
             $cObj->addOccupation($occObj);
         }
     }
@@ -347,7 +347,7 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
-            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id'], $oneRel['id']);
+            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id'], $oneRel['id'], null);
             $cObj->addRelation($relatedObj);
         }
     }
@@ -389,7 +389,7 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
-            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id'], $oneRes['id']);
+            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id'], $oneRes['id'], null);
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -412,7 +412,7 @@ class DBUtil
             $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
-            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id'], $oneFunc['id']);
+            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id'], $oneFunc['id'], null);
             $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
             $fObj->setDateRange($fDate);
             $cObj->addFunction($fObj);
@@ -707,7 +707,7 @@ class DBUtil
         $mNConstellation = $this->selectConstellation($vhInfo, $appUserID);
         return $mNConstellation;
     }
-    
+
 
     /**
      * Delete a single record of a single table. We need the id here because we only want a single record. The
@@ -746,7 +746,7 @@ class DBUtil
             return null;
         }
         $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
-        
-        return $this->sql->sqlSetDeleted($table, $id, $newVersion);
+        $this->sql->sqlSetDeleted($table, $id, $newVersion);
+        return $newVersion;
     }
 }

@@ -88,16 +88,19 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testDemoConstellation()
     {
         $vhInfo = $this->dbu->demoConstellation();
+
         $cObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
         $this->assertNotNull($cObj);
 
         /* 
          * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
          */ 
+
         $vhInfo = $this->dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
                                'version' => $vhInfo['version']);
-        $reverseCObj = $this->dbu->selectConbstellation($reverseVhInfo, $this->appUserID);
+
+        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
 
         // The returned value is a json string, with 100 top level elements.
@@ -112,7 +115,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $preDeleteNameCount = count($mNObj->getNameEntries());
 
-        $deletedId = $this->dbu->setDeleted($this->appUserID,
+        printf("\ndeleting name main_id %s id: %s\n", 
+               $mNObj->getNameEntries()[0]->getMainID(), 
+               $mNObj->getNameEntries()[0]->getID());
+        
+        /*
+         * We need the new version of the deleted record, which becomes the max(version) of the constellation.
+         */  
+        $newVersion = $this->dbu->setDeleted($this->appUserID,
                                             $this->role,
                                             'bulk ingest',
                                             'delete a name, that is: set is_deleted to true',
@@ -120,22 +130,28 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                             'name',
                                             $mNObj->getNameEntries()[0]->getID());
 
-        // Post delete
+        /* 
+         * Post delete. The delete operation mints a new version number, so we must retrieve the new
+         * constellation main_id from the database to get get the most recent version number. Or we can ask
+         * the db for the most recent version number for main_id= $mNObj->getMainID();
+         */
 
-        $pDVhInfo = $mNObj->getDBInfo();
+        $postDVhInfo = array('version' => $newVersion,
+                             'main_id' => $mNObj->getMainID());
 
-        $pDObj = $this->dbu->selectConstellation($pDVhInfo, $this->appUserID);
+        $postDObj = $this->dbu->selectConstellation($postDVhInfo, $this->appUserID);
 
-        $postDeleteNameCount = count($pDObj->getNameEntries());
+        $postDeleteNameCount = count($postDObj->getNameEntries());
 
         $mInfo = $mNObj->getDBInfo();
 
-        printf("\nmain_id: %s pre: %s post: %s\n", 
-               var_export($mNObj, 1),
+        printf("\npre: %s (v:%s m:%s) post: %s (v:%s m: %s)\n", 
                $preDeleteNameCount,
-               $postDeleteNameCount);
+               $mNObj->getVersion(), $mNObj->getMainID(),
+               $postDeleteNameCount,
+               $postDObj->getVersion(), $postDObj->getMainID());
         $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
-    }
+  }
         
     public function testParseToDB()
     {
