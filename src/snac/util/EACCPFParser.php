@@ -64,6 +64,12 @@ class EACCPFParser {
         }
     }
 
+    public function getTerm($termString, $vocab) {
+        $term = new \snac\data\Term();
+        $term->setTerm($termString);
+        return $term;
+    }
+
     /**
      * Parse a string containing EAC-CPF XML into an identity constellation.
      *
@@ -98,7 +104,7 @@ class EACCPFParser {
                         $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
                         break;
                     case "maintenanceStatus":
-                        $identity->setMaintenanceStatus((string) $control);
+                        $identity->setMaintenanceStatus($this->getTerm((string) $control, "maintenanceStatus"));
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -180,7 +186,7 @@ class EACCPFParser {
                                 $eatts = $this->getAttributes($mev);
                                 switch ($mev->getName()) {
                                 case "eventType":
-                                    $event->setEventType((string) $mev);
+                                    $event->setEventType($this->getTerm((string) $mev, "eventType"));
                                     break;
                                 case "eventDateTime":
                                     $event->setEventDateTime((string) $mev);
@@ -190,7 +196,7 @@ class EACCPFParser {
                                     }
                                     break;
                                 case "agentType":
-                                    $event->setAgentType((string) $mev);
+                                    $event->setAgentType($this->getTerm((string) $mev, "agentType"));
                                     break;
                                 case "agent":
                                     $event->setAgent((string) $mev);
@@ -268,7 +274,7 @@ class EACCPFParser {
                                 $identity->addOtherRecordID("entityId", (string) $ident);
                                 break;
                             case "entityType":
-                                $identity->setEntityType((string) $ident);
+                                $identity->setEntityType($this->getTerm((string) $ident, "entityType"));
                                 break;
                             case "nameEntry":
                                 $nameEntry = new \snac\data\NameEntry();
@@ -426,7 +432,7 @@ class EACCPFParser {
                                 $place = new \snac\data\Place();
                                 $platts = $this->getAttributes($desc2);
                                 if (isset($platts["localType"])) {
-                                    $place->setType($this->getValue($platts["localType"]));
+                                    $place->setType($this->getTerm($this->getValue($platts["localType"]), "placeType"));
                                     unset($platts["localType"]);
                                 }
                                 foreach ($this->getChildren($desc2) as $placePart) {
@@ -452,7 +458,7 @@ class EACCPFParser {
                                             ), $this->getAttributes($placePart));
                                         break;
                                     case "placeRole":
-                                        $place->setRole((string) $placePart);
+                                        $place->setRole($this->getTerm((string) $placePart, "placeRole"));
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -507,13 +513,17 @@ class EACCPFParser {
                                 switch ($d2atts["localType"]) {
                                     // Each of these is in a sub element
                                 case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
-                                    $identity->addSubject((string) $subTag);
+                                    $subject = new \snac\data\Subject();
+                                    $subject->setTerm($this->getTerm((string) $subTag, "subject"));
+                                    $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
                                     $identity->setNationality((string) $subTag);
                                     break;
                                 case "http://viaf.org/viaf/terms#gender":
-                                    $identity->setGender($this->getValue((string) $subTag));
+                                    $gender = new \snac\data\Gender();
+                                    $gender->setTerm($this->getTerm($this->getValue((string) $subTag), "gender"));
+                                    $identity->setGender($gender);
                                     break;
                                 default:
                                     $this->markUnknownTag(
@@ -624,7 +634,7 @@ class EACCPFParser {
                                     $oatts = $this->getAttributes($occ);
                                     switch ($occ->getName()) {
                                     case "term":
-                                        $occupation->setTerm((string) $occ);
+                                        $occupation->setTerm($this->getTerm((string) $occ, "occupation"));
                                         if (isset($oatts["vocabularySource"])) {
                                             $occupation->setVocabularySource($oatts["vocabularySource"]);
                                             unset($oatts["vocabularySource"]);
@@ -675,7 +685,7 @@ class EACCPFParser {
                                     $fatts = $this->getAttributes($fun);
                                     switch ($fun->getName()) {
                                     case "term":
-                                        $function->setTerm((string) $fun);
+                                        $function->setTerm($this->getTerm((string) $fun, "function"));
                                         if (isset($fatts["vocabularySource"])) {
                                             $function->setVocabularySource($fatts["vocabularySource"]);
                                             unset($fatts["vocabularySource"]);
@@ -758,12 +768,12 @@ class EACCPFParser {
                             switch ($rel->getName()) {
                             case "cpfRelation":
                                 $relation = new \snac\data\ConstellationRelation();
-                                $relation->setType($this->getValue($ratts["arcrole"]));
+                                $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relationType"));
                                 $relation->setTargetArkID($ratts['href']);
-                                $relation->setTargetType($this->getValue($ratts['role']));
-                                $relation->setAltType($this->getValue($ratts["type"]));
+                                $relation->setTargetType($this->getTerm($this->getValue($ratts['role']), "entityType"));
+                                $relation->setAltType($this->getTerm($this->getValue($ratts["type"]), "altType"));
                                 if (isset($ratts['cpfRelationType'])) {
-                                    $relation->setCPFRelationType($ratts['cpfRelationType']);
+                                    $relation->setCPFRelationType($this->getTerm($ratts['cpfRelationType'], "cpfRelationType"));
                                     unset($ratts["cpfRelationType"]);
                                 }
                                 unset($ratts["arcrole"]);
@@ -821,17 +831,17 @@ class EACCPFParser {
                                 break;
                             case "resourceRelation":
                                 $relation = new \snac\data\ResourceRelation();
-                                $relation->setDocumentType($this->getValue($ratts["role"]));
+                                $relation->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "documentType"));
                                 $relation->setLink($ratts['href']);
-                                $relation->setLinkType($this->getValue($ratts['type']));
-                                $relation->setRole($this->getValue($ratts['arcrole']));
+                                $relation->setLinkType($this->getTerm($this->getValue($ratts['type']), "linkType"));
+                                $relation->setRole($this->getTerm($this->getValue($ratts['arcrole']), "arcRole"));
                                 foreach ($this->getChildren($rel) as $relItem) {
                                     switch ($relItem->getName()) {
                                     case "relationEntry":
                                         $relation->setContent((string) $relItem);
                                         $relAtts = $this->getAttributes($relItem);
                                         if (isset($relAtts["localType"])) {
-                                            $relation->setRelationEntryType($this->getValue($relAtts["localType"]));
+                                            $relation->setRelationEntryType($this->getTerm($this->getValue($relAtts["localType"]), "relationType"));
                                             unset($relAtts["localType"]);
                                         }
                                         $this->markUnknownAtt(
@@ -1066,7 +1076,7 @@ class EACCPFParser {
                 switch ($dateTag->getName()) {
                 case "fromDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "dateType"));
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1089,7 +1099,7 @@ class EACCPFParser {
                     break;
                 case "toDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "dateType"));
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1132,7 +1142,7 @@ class EACCPFParser {
                 // Handle the single date that appears
                 $date->setRange(false);
                 $dateAtts = $this->getAttributes($dateElement);
-                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "dateType"));
                 $notBefore = null;
                 $notAfter = null;
                 if (isset($dateAtts["notBefore"]))
@@ -1197,7 +1207,7 @@ class EACCPFParser {
             unset($plAtts["longitude"]);
         }
         if (isset($plAtts["localType"])) {
-            $placeEntry->setType($plAtts["localType"]);
+            $placeEntry->setType($this->getTerm($plAtts["localType"], "placeType"));
             unset($plAtts["localType"]);
         }
         if (isset($plAtts["administrationCode"])) {

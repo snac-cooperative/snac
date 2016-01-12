@@ -40,7 +40,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/identity/entityType
      * 
-     * @var string Entity type
+     * @var \snac\data\Term Entity type
      */
     private $entityType = null;
 
@@ -299,9 +299,9 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
      * 
-     * @var string Gender
+     * @var \snac\data\Gender[] Gender
      */
-    private $gender = null;
+    private $genders = null;
     
     /**
      * From EAC-CPF tag(s):
@@ -356,6 +356,7 @@ class Constellation extends AbstractData {
             $this->places = array ();
             $this->subjects = array();
             $this->legalStatuses = array();
+            $this->genders = array();
         } else
             parent::__construct($data);
     }
@@ -763,12 +764,15 @@ class Constellation extends AbstractData {
      *
      * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
      *
-     * @return  string Gender
+     * @return \snac\Data\Gender First Gender stored for this constellation
      *
      */
     function getGender()
     {
-        return $this->gender;
+        if (count($this->genders) > 0)
+            return $this->genders[0];
+        else
+            return null;
     }
 
     /**
@@ -847,7 +851,7 @@ class Constellation extends AbstractData {
             "places" => array(),
             "subjects" => array(),
             "nationality" => $this->nationality,
-            "gender" => $this->gender,
+            "genders" => array(),
             "generalContext" => $this->generalContext,
             "structureOrGenealogy" => $this->structureOrGenealogy,
             "mandate" => $this->mandate
@@ -855,6 +859,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->maintenanceEvents as $i => $v)
             $return["maintenanceEvents"][$i] = $v->toArray($shorten);
+        
+        foreach ($this->genders as $i => $v)
+            $return["genders"][$i] = $v->toArray($shorten);
 
         foreach ($this->nameEntries as $i => $v)
             $return["nameEntries"][$i] = $v->toArray($shorten);
@@ -1031,11 +1038,11 @@ class Constellation extends AbstractData {
         else
             $this->nationality = null;
 
-        unset($this->gender);
-        if (isset($data["gender"]))
-            $this->gender = $data["gender"];
-        else
-            $this->gender = null;
+        unset($this->genders);
+        $this->genders = array();
+        if (isset($data["genders"]))
+            foreach ($data["genders"] as $i => $entry)
+                $this->genders[$i] = new Gender($entry);
 
         unset($this->generalContext);
         if (isset($data["generalContext"]))
@@ -1308,10 +1315,10 @@ class Constellation extends AbstractData {
     /**
      * Set the gender of this Constellation
      *
-     * @param string $gender Gender to set
+     * @param \snac\data\Gender $gender Gender to set
      */
     public function setGender($gender) {
-        $this->gender = $gender;
+        array_push($this->gender, $gender);
     }
 
     /**
