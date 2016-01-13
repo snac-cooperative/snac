@@ -101,19 +101,12 @@ class Occupation extends AbstractData {
     /**
      * Get and return \snac\data\SNACDate Date range for the occupation
      *
-     * @return SNACDate[] An array of SNAC Date objects.
+     * @return \snac\data\SNACDate A single SNACDate object 
      *
      */ 
     public function getDates()
     {
-        if ($this->dates)
-        {
-            return $this->dates;
-        }
-        else
-        {
-            return array();
-        }
+        return $this->dates;
     }
 
     /**
