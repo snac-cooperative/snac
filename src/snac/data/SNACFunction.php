@@ -79,7 +79,7 @@ class SNACFunction extends AbstractData {
      * @return \snac\data\Term Function controlled vocabulary term
      *
      */
-    function getTerm()
+    public function getTerm()
     {
         return $this->term;
     }
@@ -92,7 +92,7 @@ class SNACFunction extends AbstractData {
      * @return \snac\data\Term Type of the function
      *
      */
-    function getType()
+    public function getType()
     {
         return $this->type;
     }
@@ -105,7 +105,7 @@ class SNACFunction extends AbstractData {
      * @return \snac\data\SNACDate Date range of the function. One date, not a list of dates.
      *
      */
-    function getDates()
+    public function getDates()
     {
         return $this->dates;
     }
@@ -118,7 +118,7 @@ class SNACFunction extends AbstractData {
      * @return string Descriptive note for the function
      *
      */
-    function getNote()
+    public function getNote()
     {
         return $this->note;
     }
@@ -131,7 +131,7 @@ class SNACFunction extends AbstractData {
      * @return string Vocabulary source for the function
      *
      */
-    function getVocabularySource()
+    public function getVocabularySource()
     {
         return $this->vocabularySource;
     }

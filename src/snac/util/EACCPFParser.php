@@ -144,7 +144,7 @@ class EACCPFParser {
                                     $code = $latts["languageCode"];
                                     unset($latts["languageCode"]);
                                 }
-                                $identity->setLanguage($code, (string) $lang);
+                                //TODO $identity->setLanguage($code, (string) $lang);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -157,7 +157,7 @@ class EACCPFParser {
                                     $code = $latts["scriptCode"];
                                     unset($latts["scriptCode"]);
                                 }
-                                $identity->setScript($code, (string) $lang);
+                                //TODO $identity->setScript($code, (string) $lang);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -246,8 +246,21 @@ class EACCPFParser {
                     case "sources":
                         foreach ($this->getChildren($control) as $source) {
                             $satts = $this->getAttributes($source);
-                            $identity->addSource($this->getValue($satts['type']), $satts['href']);
-                            // TODO Need to handle the ObjectXMLWrap
+                            $sourceObj = new \snac\data\Source();
+                            $sourceObj->setType($this->getTerm($this->getValue($satts['type']), "sourceType"));
+                            $sourceObj->setURI($satts['href']);
+                            foreach ($this->getChildren($source) as $innerSource) {
+                                if ($innerSource->getName() == "objectXMLWrap")
+                                    $sourceObj->setText($innerSource->asXML());
+                                else
+                                    $this->markUnknownTag(
+                                        array (
+                                            $node->getName(),
+                                            $control->getName(),
+                                            $source->getName()
+                                        ), $innerSource);
+                            }
+                            $identity->addSource($sourceObj);
                         }
                         break;
                     default:
@@ -537,6 +550,8 @@ class EACCPFParser {
                                 }
                                 break;
                             case "languageUsed":
+                                $language = new \snac\data\Language();
+                                $updatedLanguage = false;
                                 foreach ($this->getChildren($desc2) as $lang) {
                                     $latts = $this->getAttributes($lang);
                                     switch ($lang->getName()) {
@@ -545,7 +560,11 @@ class EACCPFParser {
                                             $code = $latts["languageCode"];
                                             unset($latts["languageCode"]);
                                         }
-                                        $identity->setLanguageUsed($code, (string) $lang);
+                                        $tmp = new \snac\data\Term();
+                                        $tmp->setTerm((string) $lang);
+                                        $tmp->setURI($code);
+                                        $language->setLanguage($tmp);
+                                        $updatedLanguage = true;
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -559,7 +578,11 @@ class EACCPFParser {
                                             $code = $latts["scriptCode"];
                                             unset($latts["scriptCode"]);
                                         }
-                                        $identity->setScript($code, (string) $lang);
+                                        $tmp = new \snac\data\Term();
+                                        $tmp->setTerm((string) $lang);
+                                        $tmp->setURI($code);
+                                        $language->setScript($tmp);
+                                        $updatedLanguage = true;
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -577,6 +600,8 @@ class EACCPFParser {
                                             ), $lang);
                                     }
                                 }
+                                if ($updatedLanguage)
+                                    $identity->addLanguageUsed($language);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -588,15 +613,14 @@ class EACCPFParser {
                                 $identity->setGeneralContext($desc2->asXML());
                                 break;
                             case "legalStatus":
-                                $legalTerm = null;
-                                $legalVocab = null;
+                                $legalStatusTerm = new \snac\data\Term();
                                 foreach ($this->getChildren($desc2) as $legal) {
                                     $legalAtts = $this->getAttributes($legal);
                                     switch ($legal->getName()) {
                                     case "term":
-                                        $legalTerm = (string) $legal;
+                                        $legalStatusTerm->setTerm((string) $legal);
                                         if (isset($legalAtts["vocabularySource"])) {
-                                            $legalVocab = $legalAtts["vocabularySource"];
+                                            $legalStatusTerm->setURI($legalAtts["vocabularySource"]);
                                             unset($legalAtts["vocabularySource"]);
                                         }
                                         break;
@@ -619,7 +643,11 @@ class EACCPFParser {
                                             $legal->getName()
                                         ), $legalAtts);
                                 }
-                                $identity->addLegalStatus($legalTerm, $legalVocab);
+                                if (!$legalStatusTerm->isEmpty()) {
+                                    $legalStatus = new \snac\data\LegalStatus();
+                                    $legalStatus->setTerm($legalStatusTerm);
+                                    $identity->addLegalStatus($legalStatus);
+                                }
                                 break;
                             case "mandate":
                                 // These are only seen in ANF, and they always have only a descriptiveNote

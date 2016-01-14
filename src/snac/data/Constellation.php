@@ -50,7 +50,7 @@ class Constellation extends AbstractData {
      * * eac-cpf/control/otherRecordId
      * * eac-cpf/cpfDescription/identity/entityID
      * 
-     * @var string[] Other record IDs by which this constellation may be known
+     * @var \snac\data\SameAs[] Other record IDs by which this constellation may be known
      */
     private $otherRecordIDs = null;
 
@@ -87,12 +87,7 @@ class Constellation extends AbstractData {
      * * /eac-cpf/control/sources/source/@type
      * * /eac-cpf/control/sources/source/@href
      * 
-     * Stored as:
-     * ```
-     * [ [ "type"=> type, "href"=> href ], ... ]
-     * ```
-     *
-     * @var string[][] List of sources, each source is an array of type,value entries
+     * @var \snac\data\Source[] List of sources
      */
     private $sources = null;
     
@@ -102,12 +97,8 @@ class Constellation extends AbstractData {
      * * eac-cpf/cpfDescription/description/legalStatus/term
      * * eac-cpf/cpfDescription/description/legalStatus/@vocabularySource
      * 
-     * Stored as:
-     * ```
-     * [ ["term" => term, "vocabularySource" => vocSrc], ... ]
-     * ```
      *
-     * @var string[][] List of legal status, each status as an array of term,vocabularySource entries
+     * @var \snac\data\LegalStatus[] List of legal statuses
      */
     private $legalStatuses = null;
 
@@ -123,74 +114,14 @@ class Constellation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * eac-cpf/control/languageDeclaration/language
-     * 
-     * @var string Language used for Constellation Record
-     */
-    private $constellationLanguage = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * eac-cpf/control/languageDeclaration/language/@languageCode
-     * 
-     * @var string Language code used for Constellation Record
-     */
-    private $constellationLanguageCode = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * eac-cpf/control/languageDeclaration/script
-     * 
-     * @var string Script used for Constellation Record
-     */
-    private $constellationScript = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * eac-cpf/control/languageDeclaration/script/@scriptCode
-     * 
-     * @var string Script code used for Constellation Record
-     */
-    private $constellationScriptCode = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * eac-cpf/cpfDescription/description/languageUsed/language
-     * 
-     * @var string Language used by the identity described
-     */
-    private $language = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * eac-cpf/cpfDescription/description/languageUsed/language/@languageCode
-     * 
-     * @var string Language code used by the identity described
-     */
-    private $languageCode = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * eac-cpf/cpfDescription/description/languageUsed/script
-     * 
-     * @var string Script used by the identity described
-     */
-    private $script = null;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * eac-cpf/cpfDescription/description/languageUsed/script/@scriptCode
      * 
-     * @var string Script code used by the identity described[w
+     * @var \snac\data\Language[] Languages used by the identity described
      */
-    private $scriptCode = null;
+    private $languagesUsed = null;
 
     /**
      * From EAC-CPF tag(s):
@@ -215,7 +146,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/biogHist
      * 
-     * @var string[] BiogHist entries for this constellation (in XML strings)
+     * @var \snac\data\BiogHist[] BiogHist entries for this constellation (in XML strings)
      */
     private $biogHists = null;
 
@@ -281,7 +212,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
      * 
-     * @var \snac\data\Term[] Subjects
+     * @var \snac\data\Subject[] Subjects
      */
     private $subjects = null;
     
@@ -357,417 +288,275 @@ class Constellation extends AbstractData {
             $this->subjects = array();
             $this->legalStatuses = array();
             $this->genders = array();
+            $this->languagesUsed = array();
         } else
             parent::__construct($data);
     }
 
     /**
-     * getter for $this->ark
-     *
-     * * eac-cpf/control/recordId
+     * Get the ARK identifier URI for this constellation 
      * 
      * @return string ARK identifier
      *
      */
-    function getArk()
+    public function getArk()
     {
         return $this->ark;
     }
 
     /**
-     * getter for $this->entityType
+     * Get the entity type of this constellation
      *
-     * * eac-cpf/cpfDescription/identity/entityType
-     * 
-     * @return  string Entity type
+     * @return \snac\data\Term Entity type
      *
      */
-    function getEntityType()
+    public function getEntityType()
     {
         return $this->entityType;
     }
 
     /**
-     * getter for $this->otherRecordIDs
+     * Get the other record IDs (SameAs) for this constellation 
      *
-     * * eac-cpf/control/otherRecordId
-     * * eac-cpf/cpfDescription/identity/entityID
-     * 
-     * @return string[] Other record IDs by which this constellation may be known
+     * @return \snac\data\SameAs[] Other record IDs by which this constellation may be known
      *
      */
-    function getOtherRecordIDs()
+    public function getOtherRecordIDs()
     {
         return $this->otherRecordIDs;
     }
 
     /**
-     * getter for $this->maintenanceStatus
-     *
-     * * eac-cpf/control/maintenanceStatus
+     * Get the maintenance Status for this constellation 
      * 
      * @return string Current maintenance status
      *
      */
-    function getMaintenanceStatus()
+    public function getMaintenanceStatus()
     {
         return $this->maintenanceStatus;
     }
 
     /**
-     * getter for $this->maintenanceAgency
-     *
-     * * eac-cpf/control/maintenanceAgency/agencyName
+     * Get the maintenance agency for this constellation
      *
      * @return string Latest maintenance agency
      *
      */
-    function getMaintenanceAgency()
+    public function getMaintenanceAgency()
     {
         return $this->maintenanceAgency;
     }
 
     /**
-     * getter for $this->maintenanceEvents
-     *
-     * * eac-cpf/control/maintenanceHistory/maintenanceEvent/*
+     * Get the list of maintenance events for this constellation 
      *
      * @return \snac\data\MaintenanceEvent[] List of maintenance events performed on this constellation
      *
      */
-    function getMaintenanceEvents()
+    public function getMaintenanceEvents()
     {
         return $this->maintenanceEvents;
     }
 
     /**
-     * getter for $this->sources
-     *
-     * * /eac-cpf/control/sources/source/@type
-     * * /eac-cpf/control/sources/source/@href
+     * Get the list of sources for this constellation 
      * 
-     * @return string[][] List of sources, each source is an array of type,value entries
+     * @return \snac\data\Source[] List of sources
      *
      */
-    function getSources()
+    public function getSources()
     {
         return $this->sources;
     }
 
     /**
-     * getter for $this->legalStatuses
-     *
-     * * eac-cpf/cpfDescription/description/legalStatus/term
-     * * eac-cpf/cpfDescription/description/legalStatus/@vocabularySource
-     *
-     * Returned as:
-     * ```
-     * [ ["term" => term, "vocabularySource" => vocSrc], ... ]
-     * ```
+     * Get the list of legal statuses for this constellation 
      * 
-     * @return string[][] List of legal status, each status as an array of term,vocabularySource entries
+     * @return \snac\data\LegalStatus[] List of legal statuses
      *
      */
-    function getLegalStatuses()
+    public function getLegalStatuses()
     {
         return $this->legalStatuses;
     }
 
     /**
-     * getter for $this->conventionDeclaration
+     * Get the convention declaration for this constellation
      *
-     * * eac-cpf/control/conventionDeclaration
-     * 
      * @return string Convention declaration
      *
      */
-    function getConventionDeclaration()
+    public function getConventionDeclaration()
     {
         return $this->conventionDeclaration;
     }
 
     /**
-     * getter for $this->constellationLanguage
+     * Get the Languages Used
      *
-     * * eac-cpf/control/languageDeclaration/language
-     *
-     * @return string Language used for Constellation Record
+     * @return \snac\data\Language[] Languages and scripts used by the identity described
      *
      */
-    function getConstellationLanguage()
+    public function getLanguagesUsed()
     {
-        return $this->constellationLanguage;
+        return $this->languagesUsed;
     }
 
-    /**
-     * getter for $this->constellationLanguageCode
-     *
-     * * eac-cpf/control/languageDeclaration/language/@languageCode
-     *
-     * @return string Language code used for Constellation Record
-     *
-     */
-    function getConstellationLanguageCode()
-    {
-        return $this->constellationLanguageCode;
-    }
 
     /**
-     * getter for $this->constellationScript
-     *
-     * * eac-cpf/control/languageDeclaration/script
-     * 
-     * @return string Script used for Constellation Record
-     *
-     */
-    function getConstellationScript()
-    {
-        return $this->constellationScript;
-    }
-
-    /**
-     * getter for $this->constellationScriptCode
-     *
-     * * eac-cpf/control/languageDeclaration/script/@scriptCode
-     *
-     * eac-cpf/control/languageDeclaration/script/@scriptCode
-     *
-     * @return string Script code used for Constellation Record
-     *
-     */
-    function getConstellationScriptCode()
-    {
-        return $this->constellationScriptCode;
-    }
-
-    /**
-     * getter for $this->language
-     *
-     * * eac-cpf/cpfDescription/description/languageUsed/language
-     *
-     * @return string Language used by the identity described
-     *
-     */
-    function getLanguage()
-    {
-        return $this->language;
-    }
-
-    /**
-     * getter for $this->languageCode
-     *
-     * * eac-cpf/cpfDescription/description/languageUsed/language/@languageCode
-     *
-     * @return string Language code used by the identity described
-     *
-     */
-    function getLanguageCode()
-    {
-        return $this->languageCode;
-    }
-
-    /**
-     * getter for $this->script
-     *
-     * * eac-cpf/cpfDescription/description/languageUsed/script
-     *
-     * @return string Script used by the identity described
-     *
-     */
-    function getScript()
-    {
-        return $this->script;
-    }
-
-    /**
-     * getter for $this->scriptCode
-     *
-     * * eac-cpf/cpfDescription/description/languageUsed/script/@scriptCode
-     *
-     * @return string Script used by the identity described
-     *
-     */
-    function getScriptCode()
-    {
-        return $this->scriptCode;
-    }
-
-    /**
-     * getter for $this->nameEntries
-     *
-     * * eac-cpf/cpfDescription/identity/nameEntry
+     * Get the name entries for this constellation
      *
      * @return \snac\data\NameEntry[] List of name entries for this constellation
      *
      */
-    function getNameEntries()
+    public function getNameEntries()
     {
         return $this->nameEntries;
     }
 
     /**
-     * getter for $this->occupations
-     *
-     * * eac-cpf/cpfDescription/description/occupation/*
+     * Get the occupations for this constellation
      * 
      * @return \snac\data\Occupation[] List of occupations
      *
      */
-    function getOccupations()
+    public function getOccupations()
     {
         return $this->occupations;
     }
 
     /**
-     * getter for $this->biogHists (note plural)
+     * Get the BiogHist for this constellation.
      *
-     * All the other code expects biogHist to be a single string. On the off chance that the array of
-     * biogHists has more than one, concat all them into a single string and return that string.
+     * This will by default get the first BiogHist for the entity.  If another
+     * language is desired, it may be passed as a parameter.  In that case,
+     * the biogHist will be given for that language.  If no biogHist exists
+     * for that language, the first will be returned.
      *
-     * eac-cpf/cpfDescription/description/biogHist
-     * 
-     * The return value is a string[]. BiogHist entries for this constellation (in XML strings)
+     * @param \snac\data\Language $language optional Language of the desired BiogHist 
      *
-     * @return string[] Returns biog hist as a single string, even though currently the private var biogHist
-     * is an array.
+     * @return \snac\data\BiogHist The desired BiogHist for this language, the first
+     * BiogHist, or null if no BiogHist exists for this Constellation
      */
-    function getBiogHists()
+    public function getBiogHists($language = null)
     {
-        $normativeBiogHist = '';
-        foreach ($this->biogHists as $singleBiogHist)
-        {
-            $normativeBiogHist .= $singleBiogHist;
+        if (count($this->biogHists) > 0) {
+            if ($language == null) {
+                // No language, so return the first
+                return $this->biogHists[0];
+            } else {
+                // We have a language.  Start from the end, return matching language or first
+                // entry
+                $i = count($this->biogHists) - 1;
+                for (; $i >= 0; $i--) {
+                    // If languages match, then break and return this biogHist.
+                    if ($this->biogHists[$i]->getLanguage()->getLanguage()->getID() == 
+                        $language->getLanguage()->getID())
+                        break;
+                }
+                // Will return either the appropriate biogHist or the biogHist[0]
+                return $this->biogHists[$i];
+            }
         }
-        return $normativeBiogHist;
+        return null;
     }
 
     /**
-     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return a
+     * Get the list of exist dates for this constellation
      *
-     * * eac-cpf/cpfDescription/description/existDates/dateSet/dateRange/*
-     * * eac-cpf/cpfDescription/description/existDates/dateSet/date/*
-     * * eac-cpf/cpfDescription/description/existDates/dateRange/*
-     * * eac-cpf/cpfDescription/description/existDates/date/*
-     *
-     * @return \snac\data\SNACDate[] Exist dates for the entity
+     * @return \snac\data\SNACDate[] Exist dates for the entity or empty array
      *
      */
-    function getExistDates()
+    public function getExistDates()
     {
-        // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
-        // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
-        // this universe.
-        if ($this->existDates)
-        {
-            return $this->existDates;
-        }
-        else
-        {
-            return array();
-        }
+        return $this->existDates;
     }
 
     /**
-     * getter for $this->existDatesNote
-     *
-     * * eac-cpf/cpfDescription/description/existDates/descriptiveNote
+     * Get the descriptive note for the exist dates
      *
      * @return string Note about the exist dates
      *
      */
-    function getExistDatesNote()
+    public function getExistDatesNote()
     {
         return $this->existDatesNote;
     }
 
     /**
-     * getter for $this->relations
-     *
-     * * eac-cpf/cpfDescription/relations/cpfRelation/*
+     * Get the constellation relations for this constellation
      *
      * @return \snac\data\ConstellationRelation[] Constellation relations
      *
      */
-    function getRelations()
+    public function getRelations()
     {
         return $this->relations;
     }
 
     /**
-     * See private $resourceRelations. This gets an array of ResourceRelation objects.
+     * Get the resource relations for this constellation
      *
-     * From EAC-CPF tag(s):
-     * 
-     * * eac-cpf/cpfDescription/relations/resourceRelation/*
-     * 
      * @var \snac\data\ResourceRelation[] Resource relations
      */
-    function getResourceRelations()
+    public function getResourceRelations()
     {
         return $this->resourceRelations;
     }
 
     /**
-     * getter for $this->functions
-     *
-     * * eac-cpf/cpfDescription/description/function/*
+     * Get the Functions for this constellation 
      *
      * @return \snac\data\SNACFunction Functions
      *
      */
-    function getFunctions()
+    public function getFunctions()
     {
         return $this->functions;
     }
 
     /**
-     * getter for $this->places
-     *
-     * * eac-cpf/cpfDescription/description/place/*
+     * Get the places associated with this constellation
      *
      * @return \snac\data\Place[] Places
      *
      */
-    function getPlaces()
+    public function getPlaces()
     {
         return $this->places;
     }
 
     /**
-     * getter for $this->subjects
+     * Get the subjects associated with this constellation
      *
-     * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
-     *
-     * @return \snac\data\Term[] Subjects
+     * @return \snac\data\Subject[] Subjects
      *
      */
-    function getSubjects()
+    public function getSubjects()
     {
         return $this->subjects;
     }
 
     /**
-     * getter for $this->nationality
+     * Get the nationality associated with this constellation
      *
-     * * eac-cpf/cpfDescription/description/localDescription/@localType=nationalityOfEntity/term
-     *
-     * @return  string nationality
+     * @return string nationality
      *
      */
-    function getNationality()
+    public function getNationality()
     {
         return $this->nationality;
     }
 
     /**
-     * getter for $this->gender
-     *
-     * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
+     * Get the gender for this constellation.  If there are multiple, this
+     * will return the first gender in the list.
      *
      * @return \snac\Data\Gender First Gender stored for this constellation
      *
      */
-    function getGender()
+    public function getGender()
     {
         if (count($this->genders) > 0)
             return $this->genders[0];
@@ -776,40 +565,35 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * getter for $this->generalContext
+     * Get the general context text/xml for this constellation
      *
-     * * eac-cpf/cpfDescription/description/generalContext
      *
-     * @return  string General Context
+     * @return string General Context text/xml
      *
      */
-    function getGeneralContext()
+    public function getGeneralContext()
     {
         return $this->generalContext;
     }
 
     /**
-     * getter for $this->structureOrGenealogy
-     *
-     * * eac-cpf/cpfDescription/description/structureOrGenealogy
+     * Get the structureOrGenealogy for this constellation 
      *
      * @return string Structure Or Genealogy information
      *
      */
-    function getStructureOrGenealogy()
+    public function getStructureOrGenealogy()
     {
         return $this->structureOrGenealogy;
     }
 
     /**
-     * getter for $this->mandate
-     *
-     * * eac-cpf/cpfDescription/description/mandate
+     * Get the mandate for this constellation 
      *
      * @return string Mandate
      *
      */
-    function getMandate()
+    public function getMandate()
     {
         return $this->mandate;
     }
@@ -829,17 +613,10 @@ class Constellation extends AbstractData {
             "maintenanceStatus" => $this->maintenanceStatus,
             "maintenanceAgency" => $this->maintenanceAgency,
             "maintenanceEvents" => array(),
-            "sources" => $this->sources,
-            "legalStatuses" => $this->legalStatuses,
+            "sources" => array(),
+            "legalStatuses" => array(), 
             "conventionDeclaration" => $this->conventionDeclaration,
-            "constellationLanguage" => $this->constellationLanguage,
-            "constellationLanguageCode" => $this->constellationLanguageCode,
-            "constellationScript" => $this->constellationScript,
-            "constellationScriptCode" => $this->constellationScriptCode,
-            "language" => $this->language,
-            "languageCode" => $this->languageCode,
-            "script" => $this->script,
-            "scriptCode" => $this->scriptCode,
+            "languagesUsed" => array(),
             "nameEntries" => array(),
             "occupations" => array(),
             "biogHists" => $this->biogHists,
@@ -860,6 +637,15 @@ class Constellation extends AbstractData {
         foreach ($this->maintenanceEvents as $i => $v)
             $return["maintenanceEvents"][$i] = $v->toArray($shorten);
         
+        foreach ($this->languagesUsed as $i => $v)
+            $return["languagesUsed"][$i] = $v->toArray($shorten);
+
+        foreach ($this->legalStatuses as $i => $v)
+            $return["legalStatuses"][$i] = $v->toArray($shorten);
+
+        foreach ($this->sources as $i => $v)
+            $return["sources"][$i] = $v->toArray($shorten);
+
         foreach ($this->genders as $i => $v)
             $return["genders"][$i] = $v->toArray($shorten);
 
@@ -949,16 +735,16 @@ class Constellation extends AbstractData {
             $this->maintenanceAgency = null;
 
         unset($this->sources);
+        $this->sources = array();
         if (isset($data["sources"]))
-            $this->sources = $data["sources"];
-        else
-            $this->sources = array();
+            foreach ($data["sources"] as $i => $entry)
+                $this->sources[$i] = new Source($entry);
 
         unset($this->legalStatuses);
+        $this->legalStatuses = array();
         if (isset($data["legalStatuses"]))
-            $this->legalStatuses = $data["legalStatuses"];
-        else
-            $this->legalStatuses = array();
+            foreach ($data["legalStatuses"] as $i => $entry)
+                $this->legalStatuses[$i] = new LegalStatus($entry);
 
         unset($this->conventionDeclaration);
         if (isset($data["conventionDeclaration"]))
@@ -966,53 +752,11 @@ class Constellation extends AbstractData {
         else
             $this->conventionDeclaration = null;
 
-        unset($this->constellationLanguage);
-        if (isset($data["constellationLanguage"]))
-            $this->constellationLanguage = $data["constellationLanguage"];
+        unset($this->languagesUsed);
+        if (isset($data["languagesUsed"]))
+            $this->languagesUsed = $data["languagesUsed"];
         else
-            $this->constellationLanguage = null;
-
-        unset($this->constellationLanguageCode);
-        if (isset($data["constellationLanguageCode"]))
-            $this->constellationLanguageCode = $data["constellationLanguageCode"];
-        else
-            $this->constellationLanguageCode = null;
-
-        unset($this->constellationScript);
-        if (isset($data["constellationScript"]))
-            $this->constellationScript = $data["constellationScript"];
-        else
-            $this->constellationScript = null;
-
-        unset($this->constellationScriptCode);
-        if (isset($data["constellationScriptCode"]))
-            $this->constellationScriptCode = $data["constellationScriptCode"];
-        else
-            $this->constellationScriptCode = null;
-
-        unset($this->language);
-        if (isset($data["language"]))
-            $this->language = $data["language"];
-        else
-            $this->language = null;
-
-        unset($this->languageCode);
-        if (isset($data["languageCode"]))
-            $this->languageCode = $data["languageCode"];
-        else
-            $this->languageCode = null;
-
-        unset($this->script);
-        if (isset($data["script"]))
-            $this->script = $data["script"];
-        else
-            $this->script = null;
-
-        unset($this->scriptCode);
-        if (isset($data["scriptCode"]))
-            $this->scriptCode = $data["scriptCode"];
-        else
-            $this->scriptCode = null;
+            $this->languagesUsed = null;
 
         unset($this->biogHists);
         if (isset($data["biogHists"]))
@@ -1027,10 +771,10 @@ class Constellation extends AbstractData {
             $this->existDatesNote = null;
 
         unset($this->subjects);
+        $this->subjects = array();
         if (isset($data["subjects"]))
-            $this->subjects = new Term($data["subjects"]);
-        else
-            $this->subjects = array();
+            foreach ($data["subjects"] as $i => $entry)
+                $this->subjects[$i] = new Subject($entry);
 
         unset($this->nationality);
         if (isset($data["nationality"]))
@@ -1179,15 +923,11 @@ class Constellation extends AbstractData {
     /**
      * Adds a source to the list of sources for this constellation
      *
-     * @param string $type Type of the source
-     * @param string $link Href or other link to source
+     * @param \snac\data\Source $source Source to add 
      */
-    public function addSource($type, $link) {
+    public function addSource($source) {
 
-        array_push($this->sources, array (
-                "type" => $type,
-                "href" => $link
-        ));
+        array_push($this->sources, $source);
     }
 
     /**
@@ -1251,53 +991,18 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Set Language for constellation description
+     * Add Language Used by this constellation's identity
      *
-     * @param string $code Short-code for language
-     * @param string $value Human-readable language
+     * @param  \snac\data\Language Language and script used by this identity
      */
-    public function setLanguage($code, $value) {
-        $this->constellationLanguage = $value;
-        $this->constellationLanguageCode = $code;
-    }
-
-    /**
-     * Set Script for constellation description
-     *
-     * @param string $code Short-code for script
-     * @param string $value Human-readable script
-     */
-    public function setScript($code, $value) {
-        $this->constellationScript = $value;
-        $this->constellationScriptCode = $code;
-    }
-
-    /**
-     * Set Languaged used by constellation's identity
-     *
-     * @param string $code Short-code for language
-     * @param string $value Human-readable language
-     */
-    public function setLanguageUsed($code, $value) {
-        $this->language = $value;
-        $this->languageCode = $code;
-    }
-
-    /**
-     * Set Script used by constellation's identity
-     *
-     * @param string $code Short-code for script
-     * @param string $value Human-readable script
-     */
-    public function setScriptUsed($code, $value) {
-        $this->script = $value;
-        $this->scriptCode = $code;
+    public function addLanguageUsed($language) {
+        array_push($this->languagesUsed, $language);
     }
 
     /**
      * Add the subject to this Constellation
      *
-     * @param \snac\data\Term $subject Subject to add.
+     * @param \snac\data\Subject $subject Subject to add.
      */
     public function addSubject($subject) {
         array_push($this->subjects, $subject);
@@ -1392,11 +1097,10 @@ class Constellation extends AbstractData {
     /**
      * Add a legal status to this constellation
      * 
-     * @param string $term Term of the status
-     * @param string $vocabularySource Vocabulary source for the term
+     * @param \snac\data\LegalStatus $legalStatus The legal status to add 
      */
-    public function addLegalStatus($term, $vocabularySource) {
-        array_push($this->legalStatuses, array("term"=>$term, "vocabularySource"=>$vocabularySource));
+    public function addLegalStatus($legalStatus) {
+        array_push($this->legalStatuses, $legalStatus);
     }
     
     /**

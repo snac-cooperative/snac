@@ -109,7 +109,7 @@ class NameEntry extends AbstractData {
      *
      *
      */
-    function getOriginal()
+    public function getOriginal()
     {
         return $this->original;
     }
@@ -121,7 +121,7 @@ class NameEntry extends AbstractData {
      *
      *
      */ 
-    function getPreferenceScore()
+    public function getPreferenceScore()
     {
         return $this->preferenceScore;
     }
@@ -132,7 +132,7 @@ class NameEntry extends AbstractData {
      * @return string[][] Contributors providing this name entry including their type for this name entry
      *
      */
-    function getContributors()
+    public function getContributors()
     {
         return $this->contributors;
     }
@@ -143,7 +143,7 @@ class NameEntry extends AbstractData {
      * @return string Language of the entry
      *
      */
-    function getLanguage()
+    public function getLanguage()
     {
         return $this->language;
     }
@@ -154,7 +154,7 @@ class NameEntry extends AbstractData {
      * @return string Script code of the entry
      *
      */
-    function getScriptCode()
+    public function getScriptCode()
     {
         return $this->scriptCode;
     }
@@ -166,7 +166,7 @@ class NameEntry extends AbstractData {
      * @return \snac\data\SNACDate[] Use dates of the name entry, returned as an array of SNACDate objects.
      *
      */
-    function getUseDates()
+    public function getUseDates()
     {
         return $this->useDates;
     }

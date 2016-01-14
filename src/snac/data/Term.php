@@ -44,9 +44,9 @@ class Term {
     protected $uri;
     
     /**
-     * var string $definition The definition (in any language) for this particular vocabulary term
+     * var string $description The description (in any language) for this particular vocabulary term
      */
-    protected $definition;
+    protected $description;
     
     /**
      * Constructor
@@ -119,23 +119,35 @@ class Term {
     }
     
     /**
-     * Get the definition of this vocab term
+     * Get the description of this vocab term
      *
-     *  @return string definition of this vocab term
+     *  @return string description of this vocab term
      */
-    public function getDefinition() {
-        return $this->definition;
+    public function getDescription() {
+        return $this->description;
     }
 
     /**
-     * Set the definition of this vocab term
+     * Set the description of this vocab term
      *
-     * @param string $term Definition for this vocab term
+     * @param string $term Description for this vocab term
      */
-    public function setDefinition($definition) {
-        $this->definition = $definition;
+    public function setDescription($description) {
+        $this->description = $description;
     }
-    
+
+    /**
+     * Check whether or not this term object is empty (all null values).
+     *
+     * @return boolean True if the term is empty, false otherwise.
+     */
+    public function isEmpty() {
+        if ($this->uri == null && $this->description == null &&
+            $this->id == null && $this->term == null)
+            return true;
+        return false;
+    }
+
     /**
      * Required method to convert this term structure to an array
      *
@@ -147,7 +159,7 @@ class Term {
             'id' => $this->getID(),
             'term' => $this->getTerm(),
             'uri' => $this->getURI(),
-            'definition' => $this->getDefinition()
+            'description' => $this->getDescription()
         );
        
         // Shorten if necessary
@@ -189,11 +201,11 @@ class Term {
         else
             $this->uri = null;
 
-        unset($this->definition);
-        if (isset($data["definition"]))
-            $this->definition = $data["definition"];
+        unset($this->description);
+        if (isset($data["description"]))
+            $this->description = $data["description"];
         else
-            $this->definition = null;
+            $this->description = null;
     }
 
     /**
