@@ -95,7 +95,7 @@ class DBUtil
                             $singleDate['to_type']); 
         $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
         // Set nrdVersion to null for now.
-        $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id'], null);
+        $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
         return $dateObj;
     }    
         
@@ -167,8 +167,8 @@ class DBUtil
         $cObj->setConventionDeclaration($row['convention_declaration']);
         $cObj->setMandate($row['mandate']);
 
-        // 4th arg is Table nrd.version, not max(version_history.id)
-        $cObj->setDBInfo($vhInfo['version'], $row['main_id'], $row['id'], $row['version']);
+        $cObj->setVersion($vhInfo['version']);
+        $cObj->setID($row['main_id']);
 
         $this->populateExistDate($row['id'], $cObj);
 
@@ -242,7 +242,7 @@ class DBUtil
             {
                 $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
             }
-            $neObj->setDBInfo($oneName['version'], $oneName['main_id'], $oneName['id'], null);
+            $neObj->setDBInfo($oneName['version'], $oneName['id']);
             
             $cObj->addNameEntry($neObj);
         }
@@ -271,7 +271,7 @@ class DBUtil
                                 $singleDate['to_date'],
                                 $singleDate['to_type']);
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            $dateObj->setDBInfo($singleDate['version'], $singleDate['main_id'], $singleDate['id'], null);
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
             $cObj->addExistDates($dateObj);
         }
     }
@@ -305,7 +305,7 @@ class DBUtil
             $occObj->setTerm($oneOcc['occupation_id']);
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
-            $occObj->setDBInfo($oneOcc['version'], $oneOcc['main_id'], $oneOcc['id'], null);
+            $occObj->setDBInfo($oneOcc['version'], $oneOcc['id']);
             $cObj->addOccupation($occObj);
         }
     }
@@ -347,7 +347,7 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
-            $relatedObj->setDBInfo($oneRel['version'], $oneRel['main_id'], $oneRel['id'], null);
+            $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
             $cObj->addRelation($relatedObj);
         }
     }
@@ -389,7 +389,7 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
-            $rrObj->setDBInfo($oneRes['version'], $oneRes['main_id'], $oneRes['id'], null);
+            $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -412,7 +412,7 @@ class DBUtil
             $fObj->setTerm($oneFunc['function_id']);
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
-            $fObj->setDBInfo($oneFunc['version'], $oneFunc['main_id'], $oneFunc['id'], null);
+            $fObj->setDBInfo($oneFunc['version'], $oneFunc['id']);
             $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
             $fObj->setDateRange($fDate);
             $cObj->addFunction($fObj);
@@ -716,6 +716,11 @@ class DBUtil
      *
      * Need a helper function somewhere to associate object type with database table.
      *
+     * Instead of what we have implemented here, it might be best to delete by sending a complete php object
+     * to setDeleted() and that object would contain id, version, mainID (available via getters). This would
+     * allow setDeleted() to work without any out-of-band information.
+     * 
+     *
      * The $table should be the object typeof() and we will figure out what SQL table that corresponds to. The
      * calling programmer should not be doing that.
 
@@ -742,7 +747,7 @@ class DBUtil
         if ($table == 'name' & $this->sql->CountNames($main_id) <= 1)
         {
             // Need a message and logging for this.
-            printf("Cannot delete the only name for main_id: $main_id\n");
+            printf("Cannot delete the only name for main_id: $main_id count: %s\n", $this->sql->CountNames($main_id) );
             return null;
         }
         $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);

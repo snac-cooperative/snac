@@ -31,24 +31,19 @@ abstract class AbstractData {
 
 
     /**
-     * var int $id The record id for this data structure. This is not the constellation id.
+     * var int $id The record id for this data structure. This has two different meanings. For
+     * Constellation.php this is the main_id of the constellation aka version_history.main_id. For all other
+     * objects this is table.id, which is the record id, not the constellation id.
      */
     protected $id = null;
 
     /**
-     * var int $version The version number for this data structure
+     * var int $version The version number for this data structure. For Constellation.php this is the
+     * "constellation version number" aka max(version) aka max(version_history.id). For all other objects,
+     * this is the table.version.
      */
     protected $version = null;
 
-    /**
-     * var int $nrdVersion The version number for this data structure. Table nrd.version, not max(version_history.id)
-     */
-    protected $nrdVersion = null;
-
-    /**
-     * var int $mainID The constellation id for this data structure
-     */
-    protected $mainID = null;
 
     /**
      * Constructor
@@ -68,73 +63,51 @@ abstract class AbstractData {
 
 
     /**
-     * Set this object's dbInfo. Take a list with keys 'version' and 'main_id' in any order. We use this list
-     * because it is compatible with $vhInfo used in the DBUtil and SQL classes. Most code will pass $vhInfo
-     * and $dbiList without knowing what is inside the list, and since most code doesn't know about the inner
-     * workings, we use an associative list. Note that via setDBInfo() we are compatible the $vhInfo convention,
-     * but hide our private internal workings.
+     * Set this object's database info in a single setter call, equivalent to setVersion($version); setID($id);
      *
      * Either or both keys may be empty, so there is no obvious sanity check. When a new Constellation object
-     * is created by parsing a CPF file, both $dbiList keys will be empty.
+     * is created by parsing a CPF file, both keys will be empty.
      *
      * @param int $version A version number. If $version is true for any meaning of true, then assign it to our private variable.
-     * If $version not true (for any php meaning of 'not true'), then this function will do nothing.
      *
-     * @param int $mainID A main id number. If $mainID is true for any meaning of true, then assign it to our
-     * private variable.  If $mainID not true (for any php meaning of 'not true'), then this function will do
-     * nothing.
+     * @param int $id An id number. For constellation objects this is version_history.main_id. For all other
+     * objects this is table.id. If $id is true for any meaning of true, then assign it to our private
+     * variable.
      * 
      */
-    public function setDBInfo($version, $mainID, $id, $nrdVersion)
+    public function setDBInfo($version, $id)
     {
-        // printf("sdi-one: $version $mainID $id\n");
         if ($version)
         {
             $this->version = $version;
-        }
-        if ($mainID)
-        {
-            $this->mainID = $mainID;
         }
         if ($id)
         {
             $this->id = $id;
         }
-        if ($nrdVersion) // Table nrd.version, not max(version_history.id)
-        {
-            $this->nrdVersion = $nrdVersion;
-        }
-        // printf("sdi-two: $this->version $this->mainID $this->id\n");
     }
 
 
     /**
-     * Get the dbInfo, returning a list with keys 'version', 'main_id', and 'id' in any order. This is compatible
-     * with $vhInfo used extensively in DBUtil and SQL. Key 'id' was added Jan 2016.
+     * Get the dbInfo, returning a list with version and id. Do not return a list with keys unless you have a good reason. The
+     * variable $this->id is *not* compatible with $vhInfo in DBUtils, except for class Constellation. All
+     * other objects are not $vhInfo compatible, so it is best that we do not return a $vhInfo associative
+     * list.
      *
-     * @return string[] An array with keys 'version', 'main_id', 'id' in any order.
+     * @return string[] An array of version and id. For class Constellation, version is the max(version) aka
+     * *the* version of the constellation aka max(version_history.id). For all other classes, version is the
+     * version of each object (SQL record), and id is the table.id, not the constellation id.
      *
      */
     public function getDBInfo()
     {
-        return array('version' => $this->version,
-                     'main_id' => $this->mainID,
-                     'id' => $this->id);
+        return array($this->version, $this->id);
     }
 
-    /**
-     * Get constellation id aka main_id aka mainID aka version_history.main_id.
-     * This is *the* Constellation main_id derived from version_history.main_id.
-     *
-     *  @return int Constellation ID of this structure.
-     */
-    public function getMainID() {
-        return $this->mainID;
-    }
 
     /**
-     * Get the ID of this data structure. See comments from setID(). In keeping with SQL conventions, the id
-     * is a per-record numeric key. This is *not* the Constellation main_id derived from version_history.main_id.
+     * Get the ID of this data structure. See comments for getDBInfo(). Class constellation this is main_id. All
+     * other classes this is table.id.
      *
      *  @return int ID of this structure
      */
@@ -142,65 +115,40 @@ abstract class AbstractData {
         return $this->id;
     }
 
-    /**
-     * Set the constellation ID of this object. This is table.main_id, derived from version_history.main_id.
-     *
-     * @param int $mainID constellation id of this object
-     */
-    public function setMainID($mainID) {
-        $this->mainID = $mainID;
-    }
 
     /**
-     * Set the record ID of this data structure. This is sql table.id for all tables. Note that to find the
-     * correct table.id, you need version_history.id (as version) and version_history.main_id.
+     * Set the id of this object. See comments for setDBInfo(). Class constellation this is main_id. All
+     * other classes this is table.id.
      *
-     * (An old comment suggested that for table nrd, there might be confusion about nrd.id and nrd.main_id. As
-     * far as I know, there is no confusion.)
-     *
-     * @param int $id Record ID to assign this structure
+
+     * @param int $id Constellation main_id, or Object record id aka table.id for all other objects.
      */
     public function setID($id) {
         $this->id = $id;
     }
     
     /**
-     * Get the version number of this data structure
+     * Get the version number of this data structure. For constellation this is *the* constellation version
+     * aka max(version) aka max(version_history.id). For all other objects this is table.version for each
+     * record (object).
      *
-     *  @return int version of this structure
+     *  @return int The version of this object.
      */
     public function getVersion() {
         return $this->version;
     }
 
     /**
-     * Set the version number of this data structure
+     * Set the version number of this object. For constellation this is *the* constellation version aka
+     * max(version) aka max(version_history.id). For all other objects this is table.version for each record
+     * (object).
      *
-     * @param int $id version to assign this structure
+     * @param int $id The version of this object.
      */
     public function setVersion($version) {
         $this->version = $version;
     }
 
-        /**
-     * Get the version number of this data structure. Table nrd.version, not max(version_history.id)
-     *
-     *  @return int version of this structure
-     */
-    public function getNrdVersion() {
-        return $this->nrdVersion;
-    }
-
-    /**
-     * Set the version number of this data structure. Table nrd.version, not max(version_history.id)
-     *
-     * @param int $id version to assign this structure
-     */
-    public function setNrdVersion($version) {
-        $this->version = $nrdVersion;
-    }
-
-    
     /**
      * Required method to convert this data object to an array
      *

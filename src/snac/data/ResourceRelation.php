@@ -225,7 +225,6 @@ class ResourceRelation extends AbstractData {
             "dataType" => "ResourceRelation",
             'id' => $this->getID(),
             'version' => $this->getVersion(),
-            'mainID' => $this->getMainID(),
             "documentType" => $this->documentType,
             "linkType" => $this->linkType,
             "entryType" => $this->entryType,
@@ -258,11 +257,6 @@ class ResourceRelation extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "ResourceRelation")
             return false;
-
-        if (isset($data['mainID']))
-        {
-            $this->setMainID($data['mainID']);
-        }
 
         unset($this->id);
         if (isset($data["id"]))

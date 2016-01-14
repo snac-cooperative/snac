@@ -1050,15 +1050,6 @@ class SQL
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
-            if ($name_row['main_id']==100)
-            {
-                printf("\nselectName v: %s m: %s i: %s id: %s\n",
-                       $vhInfo['version'],
-                       $vhInfo['main_id'],
-                       $name_row['id'], 
-                       $name_row['is_deleted']);
-            }
-            
             $name_row['contributors'] = array();
             $contributor_result = $this->sdb->execute($qq_2,
                                                       array($vhInfo['version'],
@@ -1181,7 +1172,6 @@ class SQL
          * query() has two args:
          * 1) a string (sql query)
          * 2) an array of the vars that match the query placeholders, empty here because there are no placeholders.
-         * 
          */ 
         $result = $this->sdb->query('select count(*) as count from vocabulary',
                                     array());
@@ -1190,7 +1180,11 @@ class SQL
     }
 
     /**
-     * Get a set of 100 records, but only return data necessary for display in the dashboard.
+     * Get a set of 100 records, but only return data (version, main_id) that might be necessary for display
+     * in the dashboard. Version and main_id are sufficient to call selectConstellation(). The name is added
+     * on the off chance that this could be used in some UI that needed a name displayed for the
+     * constellation.
+     *
      * Note: query() as opposed to prepare() and execute()
      *
      * @return string[] A list of 100 lists. Inner list keys are: 'version', 'main_id', 'formatted_name'. At
@@ -1240,25 +1234,25 @@ class SQL
      *
      * Don't constrain the query to not aa.is_deleted. First, it won't matter to delete the record
      * again. Second, all the other code checks is_deleted, so the other code won't even show the user a
-     * record that has already been marked as deleted.
+     * record that has already been marked as deleted. Therefore (in theory) here we will never be asked to
+     * delete an is_deleted record.
      *
      * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
      * and used by higher level code to build the constellation, but by and large main_id is not used for
      * record updates, so the code below makes no explicit mention of main_id.
      * 
-     * @param string $table A valid table name, created from internal data only since there is a risk here of SQL injection attack.
+     * @param string $table A valid table name, created from internal data only, since there is a risk here of
+     * SQL injection attack.
      *
      * @param integer $id The id (table.id) of the record we are deleting. This field is not unique, so we
-     * must use id,version as is conventional practice.
+     * must constrain by id,version as is conventional practice.
      *
-     * @param integer $version The max version of the record to delete. We delete the record with the matching
-     * table.id and the version <= to $version as is conventional practice.
+     * @param integer $newVersion The max version of the record to delete. We delete the record with the matching
+     * table.id and the version <= to $newVersion as is conventional practice.
      *
      */
     public function sqlSetDeleted($table, $id, $newVersion)
     {
-        printf("sd: table: $table newVersion: $newVersion id: $id \n");
-
         $selectSQL =
                    "select aa.* from $table as aa,
                    (select id, max(version) as version from $table where version<=$1 and id=$2 group by id) as bb
@@ -1266,6 +1260,16 @@ class SQL
 
         $result = $this->sdb->query($selectSQL, array($newVersion, $id));
         $row = $this->sdb->fetchrow($result);
+        if (count($row) == 0) 
+        {
+            /*
+             * This should never happen. Calling code has already checked for one of these records, and
+             * wouldn't be calling us if there wasn't something to operate on. Still, when called with wrong
+             * arguments (an upstream bug), this has happened.
+             */ 
+            printf("Error: sqlSetDeleted() fails to select a row for table: $table id: $id newVersion: $newVersion\n");
+            return;
+        }
         $row['is_deleted'] = 't';
         $row['version'] = $newVersion;
     
@@ -1275,14 +1279,16 @@ class SQL
          * is not too outlandish to think that something will break one of those two foundational language
          * definitions.
          *
-         * Use the tween idiom to handle the comma separators. By prefixing the tween, we don't need to clean
-         * trailing tween/separator from the strings after the loop. The tween string starts empty, and is set
-         * at the end of the loop.
+         * Use the "tween idiom" to handle the comma separators. By prefixing the tween, we don't need to
+         * clean trailing tween/separator from the strings after the loop. The tween string starts empty, and
+         * is set at the end of the loop. The tween is always set at the end of the loop, which is a trifle
+         * brute force, but se assume that setting the tween is less CPU than checking to see if the tween is
+         * empty. In other words, there is no point in optimizing the loop below.
          */
 
         $columnString = '';
         $placeHolderString = '';
-        $xx = 1; // Counting numbers start at 1 (indexes start at zero)
+        $xx = 1;     // Counting numbers start at 1, and place holders start with $1 (indexes start at zero)
         $tween = ''; // Tweens always start empty.
         foreach ($row as $key => $value)
         {
@@ -1292,14 +1298,7 @@ class SQL
             $tween = ", ";
         }
         $updateSQL = "insert into $table ($columnString) values ($placeHolderString) returning id";
-
-
         $newResult = $this->sdb->query($updateSQL, array_values($row));
-
-        printf("setDelete: v: %s m: %s i: %s\nrow:%s\n",
-               $row['version'], $row['main_id'], $row['id'], var_export(array_values($row),1));
-
-        $newRow = $this->sdb->fetchrow($newResult);
     }
 
 
