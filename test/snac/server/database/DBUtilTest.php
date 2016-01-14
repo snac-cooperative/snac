@@ -108,7 +108,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(count($demo) == 100);
 
         /* 
-         * Undelete something and verify it. 
+         * Delete a name and verify it. 
          * Need a helper function somewhere to associate object type with database table. 
          */
         $mNObj = $this->dbu->multiNameConstellation($this->appUserID);
@@ -157,6 +157,24 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $postDObj = $this->dbu->selectConstellation($postDVhInfo, $this->appUserID);
         $postDeleteNameCount = count($postDObj->getNameEntries());
         $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
+
+        $undelVersion = $this->dbu->clearDeleted($this->appUserID,
+                                             $this->role,
+                                             'bulk ingest',
+                                             'un-delete a name, that is: set is_deleted to false',
+                                             $mNObj->getID(), // constellation main_id
+                                             'name',
+                                             $mNObj->getNameEntries()[0]->getID());
+        
+        /*
+         * Undelete the name we just deleted, and check that we're not back to the original number of names.
+         */ 
+
+        $undeleteDVhInfo = array('version' => $undelVersion,
+                                 'main_id' => $mNObj->getID());
+        $unDObj = $this->dbu->selectConstellation($undeleteDVhInfo, $this->appUserID);
+        $unDeleteNameCount = count($unDObj->getNameEntries());
+        $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
     }
         
     public function testParseToDB()

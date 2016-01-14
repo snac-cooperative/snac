@@ -1008,7 +1008,9 @@ class SQL
      /** 
       * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
       * NameEntry object. Order the returned records by preference_score descending so that preferred names
-      * are at the beginning of the returned list.
+      * are at the beginning of the returned list. For ties, we also order by id, just so we'll be
+      * consistent. The consistency may help testing more than UI related issues (where names should
+      * consistently appear in the same order each time the record is viewed.)
       *
       * @param string[] $vhInfo with keys version, main_id.
       *
@@ -1029,7 +1031,7 @@ class SQL
                             (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
                             where
                             aa.id = bb.id and not aa.is_deleted and 
-                            aa.version = bb.version');
+                            aa.version = bb.version order by preference_score,id');
         
         $this->sdb->prepare($qq_2,
                             'select 
@@ -1253,6 +1255,64 @@ class SQL
      */
     public function sqlSetDeleted($table, $id, $newVersion)
     {
+        $this->sqlCoreDeleted($table, $id, $newVersion, 'set');
+    }
+
+        /*
+     * Update a record in table $table to have is_deleted set to true, for the most recent version. "Most
+     * recent" is the version prior to $newVersion, because $newVersion has not yet been saved in the
+     * database. The query retains the usual subquery $version<=$1 even though in this case we have a new
+     * version so < would also work.
+     *
+     * Note that $table is a direct string interpolation. It is vital to avoiding sql injection attacks that
+     * calling code only allow valid table names. There are limits to what placeholders can do, and
+     * placeholders are limited to being column values.
+     *
+     * Note that the method below makes no assumptions about field order. Even associative list key order is
+     * not assumed to be unchanging.
+     *
+     * Don't constrain the query to not aa.is_deleted. First, it won't matter to delete the record
+     * again. Second, all the other code checks is_deleted, so the other code won't even show the user a
+     * record that has already been marked as deleted. Therefore (in theory) here we will never be asked to
+     * delete an is_deleted record.
+     *
+     * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
+     * and used by higher level code to build the constellation, but by and large main_id is not used for
+     * record updates, so the code below makes no explicit mention of main_id.
+     * 
+     * @param string $table A valid table name, created from internal data only, since there is a risk here of
+     * SQL injection attack.
+     *
+     * @param integer $id The id (table.id) of the record we are deleting. This field is not unique, so we
+     * must constrain by id,version as is conventional practice.
+     *
+     * @param integer $newVersion The max version of the record to delete. We delete the record with the matching
+     * table.id and the version <= to $newVersion as is conventional practice.
+     *
+     */
+    public function sqlClearDeleted($table, $id, $newVersion)
+    {
+        $this->sqlCoreDeleted($table, $id, $newVersion, 'clear');
+    }
+
+    /**
+     * Do the real work for set/clear is_deleted. The only difference between setting and clearing is the
+     * value put into is_deleted, so it makes sense to have one function doing both.
+     *
+     * @param string $table A valid table name, created from internal data only, since there is a risk here of
+     * SQL injection attack.
+     *
+     * @param integer $id The id (table.id) of the record we are deleting. This field is not unique, so we
+     * must constrain by id,version as is conventional practice.
+     *
+     * @param integer $newVersion The max version of the record to delete. We delete the record with the matching
+     * table.id and the version <= to $newVersion as is conventional practice.
+     * 
+     * @param string $operation Either 'set', or 'clear'. Set changes is_delete to 't'. Clear changes is_deleted to 'f'.
+     *
+     */
+    public function sqlCoreDeleted($table, $id, $newVersion, $operation)
+    {
         $selectSQL =
                    "select aa.* from $table as aa,
                    (select id, max(version) as version from $table where version<=$1 and id=$2 group by id) as bb
@@ -1260,6 +1320,7 @@ class SQL
 
         $result = $this->sdb->query($selectSQL, array($newVersion, $id));
         $row = $this->sdb->fetchrow($result);
+
         if (count($row) == 0) 
         {
             /*
@@ -1270,7 +1331,12 @@ class SQL
             printf("Error: sqlSetDeleted() fails to select a row for table: $table id: $id newVersion: $newVersion\n");
             return;
         }
-        $row['is_deleted'] = 't';
+        // Default to clearing, that is un-delete.
+        $row['is_deleted'] = 'f';
+        if ($operation == 'set')
+        {
+            $row['is_deleted'] = 't';
+        }
         $row['version'] = $newVersion;
     
         /* 

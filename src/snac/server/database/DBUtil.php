@@ -36,7 +36,14 @@ class DBUtil
      */
     private $sql = null;
 
-
+    
+    /**
+     * Used by setDeleted() and clearDeleted() to check table name.
+     *
+     * @var string[] Associative list where keys are table names legal to delete from.
+     *
+     */ 
+    private $canDelete = null; 
     /** 
      * The constructor for the DBUtil class. 
      */
@@ -44,6 +51,13 @@ class DBUtil
     {
         $db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($db);
+        $this->canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
+                                                 'contributor', 'date_range', 'source', 
+                                                 'source_link', 'control', 'pre_snac_maintenance_history',
+                                                 'occupation', 'place', 'function', 
+                                                 'nationality', 'subject', 
+                                                 'related_identity', 'related_resource'), 1);
+
     }
 
     /**
@@ -721,24 +735,32 @@ class DBUtil
      * allow setDeleted() to work without any out-of-band information.
      * 
      *
-     * The $table should be the object typeof() and we will figure out what SQL table that corresponds to. The
-     * calling programmer should not be doing that.
-
-     * @param string $icstatus Pass a null if unchanged. Lower level code will preserved the existing setting.
+     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
+     * create a new version_history record.
      *
+     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * 
+     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of
+     * the inserted constellation. Pass a null if unchanged. Lower level code will preserved the existing
+     * setting.
+     *
+     * @param string $note A user-created note for what was done to the constellation. A check-in note.
+     *
+     * @param integer $main_id The constellation id.
+     *
+     * @param string $table Name of the table we are deleting from. This might be changed to object typeof()
+     * and we will figure out what SQL table that corresponds to, using an associative list lookup. The
+     * calling programmer should not have to know table names.
+     *
+     * @param integer $id The record id of the record being deleted. Corresponds to table.id.
+     * 
      * @return string Non-null is success, null is failure. On succeess returns the deleted row id, which
      * should be the same as $id.
      * 
      */
     public function setDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
     {
-        $canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
-                                           'contributor', 'date_range', 'source', 
-                                           'source_link', 'control', 'pre_snac_maintenance_history',
-                                           'occupation', 'place', 'function', 
-                                           'nationality', 'subject', 
-                                           'related_identity', 'related_resource'), 1);
-        if (! isset($canDelete[$table]))
+        if (! isset($this->canDelete[$table]))
         {
             // Hmmm. Need to warn the user and write into the log. 
             printf("Cannot set deleted on table: $table\n");
@@ -754,4 +776,42 @@ class DBUtil
         $this->sql->sqlSetDeleted($table, $id, $newVersion);
         return $newVersion;
     }
+
+    /**
+     * Undelete a record. 
+     *
+     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
+     * create a new version_history record.
+     *
+     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * 
+     * @param string $icstatus Status of this record. Pass a null if unchanged. Lower level code will preserved the existing setting.
+     *
+     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
+     *
+     * @param string $note A user-created note for what was done to the constellation. A check-in note.
+     *
+     * @param integer $main_id The constellation id.
+     *
+     * @param string $table Name of the table we are deleting from.
+     *
+     * @param integer $id The record id of the record being deleted. Corresponds to table.id.
+     *
+     * @return string Non-null is success, null is failure. On succeess returns the deleted row id, which
+     * should be the same as $id.
+     *
+     */
+    public function clearDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    {
+        if (! isset($this->canDelete[$table]))
+        {
+            // Hmmm. Need to warn the user and write into the log. 
+            printf("Cannot clear deleted on table: $table\n");
+            return null;
+        }
+        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $this->sql->sqlClearDeleted($table, $id, $newVersion);
+        return $newVersion;
+    }
+
 }
