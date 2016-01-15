@@ -1,54 +1,143 @@
 {
     "dataType": "Constellation",
-    "id": null,
-    "version": null,
-    "ark": null,
-    "entityType": null,
-    "otherRecordIDs": [],
-    "maintenanceStatus": null,
-    "maintenanceAgency": null,
-    "maintenanceEvents": [],
-    "sources": [],
-    "legalStatuses": [],
-    "conventionDeclaration": null,
-    "constellationLanguage": null,
-    "constellationLanguageCode": null,
-    "constellationScript": null,
-    "constellationScriptCode": null,
-    "language": null,
-    "languageCode": null,
-    "script": null,
-    "scriptCode": null,
+    "entityType": {
+        "id": null,
+        "term": "person",
+        "uri": null,
+        "description": null
+    },
     "nameEntries": [
         {
             "dataType": "NameEntry",
-            "id": null,
-            "version": null,
             "original": "Jefferson, Thomas, 1743-1826.",
             "preferenceScore": "99",
             "contributors": [
                 {
                     "type": "authorizedForm",
                     "contributor": "VIAF"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "howard"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "uct"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "aps"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "colu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "inu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "uchic"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "nwda"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "vah"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "taro"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "LC"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "rutu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "pu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "ncsu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "nyu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "NLA"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "unc"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "WorldCat"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "nara"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "crnlu"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "uut"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "yale"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "cjh"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "nypl"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "oac"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "lc"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "umi"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "LAC"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "harvard"
+                },
+                {
+                    "type": "authorizedForm",
+                    "contributor": "pacscl"
                 }
             ],
             "language": null,
             "scriptCode": null,
-            "useDates": null
+            "useDates": null,
+            "id": null,
+            "version": null
         }
-    ],
-    "occupations": [],
-    "biogHists": [],
-    "existDates": [],
-    "existDatesNote": null,
-    "relations": [],
-    "resourceRelations": [],
-    "functions": [],
-    "places": [],
-    "subjects": [],
-    "nationality": null,
-    "gender": null,
-    "generalContext": null,
-    "structureOrGenealogy": null,
-    "mandate": null
+    ]
 }
