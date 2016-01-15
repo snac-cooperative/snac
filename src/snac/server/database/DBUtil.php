@@ -246,7 +246,6 @@ class DBUtil
     public function populateNameEntry($vhInfo, &$cObj)
     {
         $neRows = $this->sql->selectNameEntry($vhInfo);
-        printf("\n");
         foreach ($neRows as $oneName)
         {
             /* 
@@ -550,9 +549,10 @@ class DBUtil
                                $id->getArk());
                 // TODO: Throw warning or log
             }
-
-            $this->sql->insertOtherID($vhInfo, $otherID['type'], $otherID['href']);
-
+            // otherID as an object:
+            // $oid = $otherID->getID();
+            $oid = null;
+            $this->sql->insertOtherID($vhInfo, $otherID['type'], $otherID['href'], $oid);
         }
 
         /* 
@@ -568,8 +568,13 @@ class DBUtil
         {
             // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
             // validation.
+
+            // Fix this whens sources becomes an object
+            // $sid = $id->getID();
+            $sid = null;
             $this->sql->insertSource($vhInfo,
-                                     $sdata['href']);
+                                     $sdata['href'],
+                                     $sid);
         }
 
         foreach ($id->getLegalStatuses() as $sdata)
@@ -584,7 +589,8 @@ class DBUtil
                                          $fdata->getTerm(),
                                          $fdata->getVocabularySource(),
                                          $fdata->getDates(),
-                                         $fdata->getNote());
+                                         $fdata->getNote(),
+                                         $fdata->getID());
         }
 
 
@@ -611,17 +617,20 @@ class DBUtil
         foreach ($id->getFunctions() as $fdata)
         {
             $this->sql->insertFunction($vhInfo,
-                                       array($fdata->getType(),
-                                             $fdata->getVocabularySource(),
-                                             $fdata->getNote(),
-                                             $fdata->getTerm()),
+                                       $fdata->getType(),
+                                       $fdata->getVocabularySource(),
+                                       $fdata->getNote(),
+                                       $fdata->getTerm(),
+                                       $fdata->getID(),
                                        $fdata->getDates());
         }
 
         foreach ($id->getSubjects() as $term)
         {
-            $this->sql->insertSubject($vhInfo,
-                                       $term);
+            // Fix this when subject becomes an object.
+            // $sid = $subjectObject->getID();
+            $sid = null;
+            $this->sql->insertSubject($vhInfo, $term, $sid); 
         }
 
         /*
@@ -653,14 +662,15 @@ class DBUtil
         foreach ($id->getRelations() as $fdata)
         {
             $this->sql->insertRelation($vhInfo,
-                                        $fdata->getDates(),
-                                        array($fdata->getTargetConstellation(),
-                                              $fdata->getTargetArkID(),
-                                              $fdata->getTargetEntityType(),
-                                              $fdata->getType(),
-                                              $fdata->getCpfRelationType(),
-                                              $fdata->getContent(),
-                                              $fdata->getNote()));
+                                       $fdata->getDates(),
+                                       $fdata->getTargetConstellation(),
+                                       $fdata->getTargetArkID(),
+                                       $fdata->getTargetEntityType(),
+                                       $fdata->getType(),
+                                       $fdata->getCpfRelationType(),
+                                       $fdata->getContent(),
+                                       $fdata->getNote(),
+                                       $fdata->getID());
         }
 
         /*
@@ -686,20 +696,23 @@ class DBUtil
         foreach ($id->getResourceRelations() as $fdata)
         {
             $this->sql->insertResourceRelation($vhInfo,
-                                               array($fdata->getDocumentType(),
-                                                     $fdata->getEntryType(),
-                                                     $fdata->getLink(),
-                                                     $fdata->getRole(),
-                                                     $fdata->getContent(),
-                                                     $fdata->getSource(),
-                                                     $fdata->getNote()));
+                                               $fdata->getDocumentType(),
+                                               $fdata->getEntryType(),
+                                               $fdata->getLink(),
+                                               $fdata->getRole(),
+                                               $fdata->getContent(),
+                                               $fdata->getSource(),
+                                               $fdata->getNote(),
+                                               $fdata->getID());
         }
 
         return $vhInfo;
     } // end saveConstellation
 
     /**
-     * Get ready to update by creating a new version_history record, and getting the new version number back.
+     * Get ready to update by creating a new version_history record, and getting the new version number
+     * back. The constellation id (main_id) is unchanged. Each table.id is also unchanged. Both main_id and
+     * table.id *must* not change.
      *
      * @param snac\data\Constellation $pObj object that we are preparing to write all or part of back to the database.
      *

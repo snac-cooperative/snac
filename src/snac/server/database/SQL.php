@@ -54,6 +54,21 @@ class SQL
     }
 
     /**
+     * Mint a new record id. We always insert a new record, even on update. However, new objects do not have a
+     * record id, so we create a table.id from the main sequence id_seq. This is just a centralized place to
+     * do that. 
+     *
+     * @return integer A table id from sequence id_seq.
+     *
+     */ 
+    private function selectID()
+    {
+        $result = $this->sdb->query('select nextval(\'id_seq\') as id',array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
      * Insert a record into table source.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -64,20 +79,26 @@ class SQL
      * @return No return value.
      * 
      */
-    public function insertSource($vhInfo, $href)
+    public function insertSource($vhInfo, $href, $id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
-                            (version, main_id, href)
+                            (version, main_id, href, id)
                             values 
-                            ($1, $2, $3)');
+                            ($1, $2, $3, $4)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
-                                  $href));
+                                  $href,
+                                  $id));
         $this->sdb->deallocate($qq);
     }
+
 
     /**
      * Insert a constellation occupation.
@@ -95,24 +116,30 @@ class SQL
      *
      * @param string $note A note about the occupation.
      *
+     * @param integer Record id value, aka table.id. If null due to a new object, we simply mint a new id.
+     *
      *
      */ 
-    public function insertOccupation($vhInfo, $term, $vocabularySource, $dates, $note)
+    public function insertOccupation($vhInfo, $term, $vocabularySource, $dates, $note, $id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_occupation';
         $this->sdb->prepare($qq, 
                             'insert into occupation
                             (version, main_id, occupation_id, vocabulary_source, note)
                             values 
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')), $4, $5)
-                            returning id');
+                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')),
+                            $4, $5, $6)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $term,
                                             $vocabularySource,
-                                            $note));
-        $id = $this->sdb->fetchrow($result)['id'];
+                                            $note,
+                                            $id));
         $this->sdb->deallocate($qq);
         foreach ($dates as $single_date)
         {
@@ -403,30 +430,32 @@ class SQL
      * one. Or this might simply be some kind of ID string.
      *
      */ 
-    public function insertOtherID($vhInfo, $type, $href)
+    public function insertOtherID($vhInfo, $type, $href, $id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
                             'insert into otherid
-                            (version, main_id, other_id, link_type)
+                            (version, main_id, other_id, id, link_type)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'record_type\' and value=regexp_replace($4, \'^.*#\', \'\')))');
+                            ($1, $2, $3, $4,
+                            (select id from vocabulary where type=\'record_type\' and value=regexp_replace($5, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $href,
+                                            $id,
                                             $type));
         $this->sdb->deallocate($qq);
     }
     
     /** 
-     * Insert a name into the database. This uses an old, arg style call as opposed to the newer array style
-     * calls. You must make sure here that the array() arg passed to execute() is correct. In the new style
-     * calls, that burden is placed on the calling code in DBUtils.
+     * Insert (or update) a name into the database. 
      * 
-     * Need to return the name.id so we can used it as fk for inserting related records
-     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param string $original The original name string
@@ -445,7 +474,10 @@ class SQL
      * @param string $scriptCode The script code of this name. Looked up from table vocabulary and the id saved in table name.
      *
      * @param SNACDate[] $useDates Not currently implemented for table name. It needs to be inserted into
-     * table date_range using insertDate(). 
+     * table date_range using insertDate().
+     *
+     * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
+     * from selectID().
      *
      */
     public function insertName($vhInfo, 
@@ -457,44 +489,36 @@ class SQL
                                $useDates,
                                $nameID)
     {
-        $qq_1 = 'insert_name';
-        $qq_2 = 'insert_contributor';
-        $namePlaceHolder = '$7';
-        $exOne = array($vhInfo['version'],
-                       $vhInfo['main_id'],
-                       $original,
-                       $preferenceScore,
-                       $language,
-                       $scriptCode,
-                       $nameID);
         if (! $nameID)
         {
-            $namePlaceHolder = 'default';
-            $exOne = array($vhInfo['version'],
-                           $vhInfo['main_id'],
-                           $original,
-                           $preferenceScore,
-                           $language,
-                           $scriptCode);
+            $nameID = $this->selectID();
         }
+        $qq_1 = 'insert_name';
+        $qq_2 = 'insert_contributor';
 
-        $queryOne = sprintf(
-            'insert into name
-            (version, main_id, original, preference_score, language, script_code, id)
-            values
-            ($1, $2, $3, $4,
-            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, \'^.*#\', \'\')),
-            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, \'^.*#\', \'\')),
-            %s)', $namePlaceHolder);
-
-        $this->sdb->prepare($qq_1, $queryOne);
+        $this->sdb->prepare($qq_1,
+                            'insert into name
+                            (version, main_id, original, preference_score, language, script_code, id)
+                            values
+                            ($1, $2, $3, $4,
+                            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, \'^.*#\', \'\')),
+                            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, \'^.*#\', \'\')),
+                            $7)');
         
-        $result = $this->sdb->execute($qq_1, $exOne);
-                
+        $result = $this->sdb->execute($qq_1,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
+                                            $original,
+                                            $preferenceScore,
+                                            $language,
+                                            $scriptCode,
+                                            $nameID));
         /* 
          * Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
-         *  name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
-         *  name_contributor object with a $operation like everything else.
+         * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
+         * name_contributor object with a $operation like everything else.
+         *
+         * So, this will move to its own function. 
          */
 
         $this->sdb->prepare($qq_2,
@@ -531,28 +555,20 @@ class SQL
      * @param SNACDate $dates A single SNACDate object suitable for insertDate().
      * 
      */
-    public function insertFunction($vhInfo, $argList, $dates)
+    public function insertFunction($vhInfo, $type, $vocabularySource, $note, $term, $id, $dates)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
-                            (version, main_id, function_type, vocabulary_source, note, function_id)
+                            (version, main_id, function_type, vocabulary_source, note, id, function_id)
                             values
-                            ($1, $2, $3, $4, $5,
-                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')))
-                            returning id');
-        
-        /* 
-         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. Always use
-         * keys explicitly when going from associative context to flat list context.
-         */
-        $eArgs = array($vhInfo['version'], $vhInfo['main_id']);
-
-        foreach ($argList as $arg)
-        {
-            array_push($eArgs, $arg);
-        }
-        
+                            ($1, $2, $3, $4, $5, $6
+                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($7, \'^.*#\', \'\')))');
+        $eArgs = array($vhInfo['version'], $vhInfo['main_id'], $type, $vocabularySource, $note, $id, $term);
         $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
@@ -577,18 +593,23 @@ class SQL
      * @return no return value.
      * 
      */
-    public function insertSubject($vhInfo, $term)
+    public function insertSubject($vhInfo, $term, $id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
                             'insert into subject
-                            (version, main_id, subject_id)
+                            (version, main_id, id, subject_id)
                             values
-                            ($1, $2, (select id from vocabulary where type=\'subject\' and value=regexp_replace($3, \'^.*#\', \'\')))');
+                            ($1, $2, $3, (select id from vocabulary where type=\'subject\' and value=regexp_replace($4, \'^.*#\', \'\')))');
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
+                                            $id,
                                             $term));
         $this->sdb->deallocate($qq);
     }
@@ -608,38 +629,52 @@ class SQL
      * @return no return value.
      * 
      */
-    public function insertRelation($vhInfo, $dates, $argList)
+    public function insertRelation($vhInfo, 
+                                   $dates,
+                                   $targetID,
+                                   $targetArkID,
+                                   $targetEntityType,
+                                   $type,
+                                   $relationType,
+                                   $content,
+                                   $note,
+                                   $id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_related_identity';
         $this->sdb->prepare($qq,
                             'insert into related_identity
-                            (version, main_id, related_id, related_ark, role, arcrole, relation_type, relation_entry, descriptive_note)
+                            (version, main_id, related_id, related_ark, role, arcrole, 
+                            relation_type, relation_entry, descriptive_note, id)
                             values
                             ($1, $2, $3, $4,
                             (select id from vocabulary where type=\'entity_type\' and value=regexp_replace($5, \'^.*#\', \'\')),
                             (select id from vocabulary where type=\'relation_type\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7, $8, $9)
-                            returning id');
+                            $7, $8, $9, $10)');
 
-        // Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
-        // first two elements of the array with id and main_id from vhInfo.
-        $execList = array($vhInfo['version'], $vhInfo['main_id']);
-        foreach ($argList as $arg)
-        {
-            array_push($execList, $arg);
-        }
-        
+        // Combine vhInfo and the remaining args into a big array for execute().
+        $execList = array($vhInfo['version'], 
+                          $vhInfo['main_id'],
+                          $targetID,
+                          $targetArkID,
+                          $targetEntityType,
+                          $type,
+                          $relationType,
+                          $content,
+                          $note,
+                          $id);
         $result = $this->sdb->execute($qq, $execList);
         $row = $this->sdb->fetchrow($result);
 
-        $relationId = $row['id'];
         $this->sdb->deallocate($qq);
 
         foreach ($dates as $singleDate)
         {
-            $date_fk = $this->insertDate($vhInfo, $singleDate, 'related_identity', $relationId);
+            $date_fk = $this->insertDate($vhInfo, $singleDate, 'related_identity', $id);
         }
-
     }
 
     /**
@@ -656,29 +691,45 @@ class SQL
      * @return no return values
      * 
      */
-    public function insertResourceRelation($vhInfo, $argList)
+    public function insertResourceRelation($vhInfo,
+                                           $relationEntryType, // 3
+                                           $entryType, // 4
+                                           $href, // 5
+                                           $arcRole, // 6
+                                           $relationEntry, // 7
+                                           $objectXMLWrap, // 8
+                                           $note, // 9
+                                           $id) // 10
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, object_xml_wrap, descriptive_note)
+                            (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, 
+                            object_xml_wrap, descriptive_note, id)
                             values
                             ($1, $2,
                             (select id from vocabulary where type=\'document_type\' and value=regexp_replace($3, \'^.*#\', \'\')),
                             $4, $5,
                             (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7, $8, $9)');
+                            $7, $8, $9, $10)');
 
         /* 
-         * Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
-         * first two elements of the array with id and main_id from vhInfo.
+         * Combine vhInfo and the remaining args into a big array for execute().
          */
-        $execList = array($vhInfo['version'], $vhInfo['main_id']);
-        foreach ($argList as $arg)
-        {
-            array_push($execList, $arg);
-        }
-        
+        $execList = array($vhInfo['version'], // 1
+                          $vhInfo['main_id'], // 2
+                          $relationEntryType, // 3
+                          $entryType, // 4
+                          $href, // 5
+                          $arcRole, // 6
+                          $relationEntry, // 7
+                          $objectXMLWrap, // 8
+                          $note, // 9
+                          $id); // 10
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
     }

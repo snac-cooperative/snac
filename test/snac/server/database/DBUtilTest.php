@@ -177,12 +177,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
 
         /*
-         * Modify a name and save the constellation, then check that the number of names is unchanged, and
-         * that we have the modified name.
+         * Modify a name and save the modified name only. No other parts of the constellation are updated,
+         * which is reasonable because no other parts have been modified. After saving, re-read the entire
+         * constellation and check that the number of names is unchanged, and that we have the modified
+         * name. An early bug caused names to multiply on update.
          *
          * Note: getNameEntries() returns a reference, and changes to that reference modify $unDObj in place.
          * 
-         * Get a name reference so we can modify the name in place without asking for it a second time.
+         * Use that name reference so we can modify the name in place without asking for it a second time.
          */ 
 
         $neNameListRef = $unDObj->getNameEntries();
@@ -191,8 +193,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $name = $neNameListRef[0]->getOriginal();
         $modName = preg_replace('/(^.*) /', '$1xx ', $name);
         $neNameListRef[0]->setOriginal($modName);
-
-        // printf("\nmn: %s type: %s\n", $unDObj->getNameEntries()[0]->getOriginal(), gettype($neNameListRef));
 
         $modVhInfo = $this->dbu->updatePrepare($unDObj,
                                                $this->appUserID,
