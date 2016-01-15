@@ -306,7 +306,11 @@ class EACCPFParser {
                             $iatts = $this->getAttributes($ident);
                             switch ($ident->getName()) {
                             case "entityId":
-                                $identity->addOtherRecordID("entityId", (string) $ident);
+                                $term = $this->getTerm("entityID","otherRecordType");
+                                $sameas = new \snac\data\SameAs();
+                                $sameas->setType($term);
+                                $sameas->setURI((string) $ident);
+                                $identity->addOtherRecordID($sameas);
                                 break;
                             case "entityType":
                                 $identity->setEntityType($this->getTerm((string) $ident, "entityType"));
