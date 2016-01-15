@@ -122,7 +122,7 @@ class ConstellationRelation extends AbstractData {
     private $note = null;
 
     /**
-     * getter for $this->sourceConstellation
+     * Get the Source Constellation's ID 
      *
      * @return int Source constellation ID
      *
@@ -133,7 +133,7 @@ class ConstellationRelation extends AbstractData {
     }
         
     /**
-     * getter for $this->targetConstellation
+     * Get the Target Constellation's ID 
      *
      * @return int Source constellation ID
      *
@@ -144,7 +144,7 @@ class ConstellationRelation extends AbstractData {
     }
             
     /**
-     * getter for $this->sourceArkID
+     * Get the Source Constellation's ARK ID 
      *
      * @return string Source constellation ARK ID
      *
@@ -155,7 +155,7 @@ class ConstellationRelation extends AbstractData {
     }
     
     /**
-     * getter for $this->targetArkID
+     * Get the Target Constellation's ARK ID 
      *
      * @return string Target constellation ARK ID
      *
@@ -166,7 +166,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->targetEntityType
+     * Get the Target Constellation's Entity Type 
      *
      * * cpfRelation/@role
      *
@@ -179,7 +179,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->type
+     * Get the type of this relation (such as sameAs, correspondedWith, etc)
      *
      * * cpfRelation/@arcrole
      *
@@ -192,8 +192,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->altType
-     *
+     * Get the xlink type. This should not be used, as xlink type should always be simple
      * 
      * * cpfRelation/@type cpfRelation@xlink:type
      *
@@ -209,7 +208,9 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->cpfRelationType
+     * Get the secondary Relation type.  ANF Used this as a second way of describing
+     * the normal relation type.  That is, "associative" for "associatedWith", and "temporal-after"
+     * for "isSucceededBy" 
      *
      * * cpfRelation/@cpfRelationType
      * 
@@ -222,7 +223,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->content
+     * Get the text/xml content of this relation 
      *
      * * cpfRelation/relationEntry
      * 
@@ -235,7 +236,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return an array.
+     * Get the Dates for this relation. 
      *
      * * cpfRelation/date/*
      * * cpfRelation/dateRange/*
@@ -249,7 +250,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->note
+     * Get the human readable descriptive note for this relation 
      *
      * * cpfRelation/descriptiveNote
      * 

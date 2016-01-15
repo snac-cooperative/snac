@@ -145,7 +145,7 @@ class SNACDate extends AbstractData {
     private $note;
 
     /**
-     * getter for $this->fromDate
+     * Get the machine-parseable from date 
      *
      * @return string Begin date (if range)
      *
@@ -157,7 +157,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromDateOriginal
+     * Get the originally-entered human from date 
      *
      * @return string Original string given for the from date
      *
@@ -169,7 +169,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromType
+     * Get the type of the from date, such as "Birth" 
      *
      * @return \snac\data\Term Original \snac\data\Term given for the from date
      *
@@ -182,7 +182,7 @@ class SNACDate extends AbstractData {
 
 
     /**
-     * getter for $this->fromBC
+     * Tells if the from date is a BC date 
      *
      * This works as expected. A boolean is returns (in as much as php vars have a type). However, Postgres
      * expects bools to be 't' or 'f' and pg_execute() doesn't mogrify boolean that way. We transform boolean
@@ -198,7 +198,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromRange
+     * Get the fuzziness range on the from date, if it exists 
      *
      * @return string[] From date range, array ("notBefore" => null, "notAfter" => null);
      *
@@ -210,7 +210,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toDate
+     * Get the machine-actionable to/end date 
      *
      * @return string End date (if range)
      *
@@ -222,7 +222,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toDateOriginal
+     * Get the human-entered end date 
      *
      * @return string Original string given for the to date
      *
@@ -234,7 +234,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toType
+     * Get the type of the end date, such as "Death" 
      *
      * @return \snac\data\Term Type of the to date
      *
@@ -246,7 +246,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toBC
+     * Tells whether the end date is in BC 
      *
      * @return boolean If the to date is BC
      *
@@ -265,7 +265,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toRange
+     * Get the fuzziness range for the end date, if it exists
      *
      * @return string[] To date range, array ("notBefore" => null, "notAfter" => null);
      *
@@ -277,7 +277,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->isRange
+     * Tells whether this SNACDate object contains a range (from-to) or just a single date (from) 
      *
      * @return boolean If this SNACDate object contains a range or a single date
      *
@@ -296,7 +296,7 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->note
+     * Get the human-readable descriptive note for this date 
      *
      * (currently not used)
      *

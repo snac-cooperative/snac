@@ -78,7 +78,7 @@ class Occupation extends AbstractData {
     private $note = null;
 
     /**
-     * Getter for $this->term
+     * Get the Occupation Term for this occupation 
      *
      * @return \snac\data\Term Occupation controlled vocabulary term
      * 
@@ -89,7 +89,7 @@ class Occupation extends AbstractData {
     }
 
     /**
-     * Getter for $this->vocabularySource.
+     * Get the vocabulary source for this occupation
      *
      * @return string Vocabulary source for the occupation
      */ 
@@ -110,7 +110,7 @@ class Occupation extends AbstractData {
     }
 
     /**
-     * getter for $this->note
+     * Get the human readable descriptive note attached to this occupation 
      *
      * @return string Note attached to occupation
      *

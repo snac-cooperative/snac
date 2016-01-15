@@ -72,7 +72,7 @@ class SNACFunction extends AbstractData {
     private $vocabularySource = '';
 
     /**
-     * getter for $this->term
+     * Get the Term for this function 
      *
      * * function/term
      * 
@@ -85,7 +85,7 @@ class SNACFunction extends AbstractData {
     }
     
     /**
-     * getter for $this->type
+     * Get the type of this function 
      *
      * * function/@localType
      * 
@@ -98,7 +98,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * getter for $this->dates. This is only one date, not an array.
+     * Get the dates this function applied. This is only one date or date range. 
      *
      * * function/dateRange
      * 
@@ -111,7 +111,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * getter for $this->note
+     * Get the human-readable descriptive note for this function 
      *
      * * function/descriptiveNote
      * 
@@ -124,7 +124,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * getter for $this->vocabularySource
+     * Get the vocabulary source for this function 
      *
      * * function/term/@vocabularySource
      * 

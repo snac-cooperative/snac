@@ -47,7 +47,7 @@ class Language extends AbstractData {
     private $note = null;
 
     /**
-     * Getter for language
+     * Get the language controlled vocab term 
      *
      * @return \snac\data\Term Language controlled vocabulary term
      * 
@@ -58,7 +58,7 @@ class Language extends AbstractData {
     }
 
     /**
-     * Getter for script
+     * Get the script controlled vocab term
      *
      * @return \snac\data\Term Script controlled vocabulary term
      * 
@@ -69,7 +69,7 @@ class Language extends AbstractData {
     }
 
     /**
-     * Getter for vocabulary source
+     * Get the vocabulary source for this language
      *
      * @return string Vocabulary source for the language
      */ 

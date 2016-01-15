@@ -95,7 +95,7 @@ class NameEntry extends AbstractData {
     }
     
     /**
-     * Getter for $this->original
+     * Get the original (full combined nameString/header) for this name Entry 
      *
      * @return string Original name given in this entry
      *
@@ -107,7 +107,7 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Getter for $this->preferenceScore
+     * Get the SNAC preference score for display of this name Entry
      *
      * @return float Preference score given to this entry
      *
@@ -119,7 +119,7 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * getter for $this->contributors
+     * Get the list of contributors for this name entry 
      *
      * @return string[][] Contributors providing this name entry including their type for this name entry
      *
@@ -130,7 +130,7 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * getter for $this->language
+     * Get the language that this name entry is written in (language and script) 
      *
      * @return \snac\data\Language Language of the entry
      *
@@ -141,10 +141,9 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * getter for $this->useDates
+     * Get the dates this name entry was used 
      *
-     *
-     * @return \snac\data\SNACDate[] Use dates of the name entry, returned as an array of SNACDate objects.
+     * @return \snac\data\SNACDate Use dates of the name entry, returned as an array of SNACDate objects.
      *
      */
     public function getUseDates()

@@ -105,7 +105,7 @@ class ResourceRelation extends AbstractData {
     private $note = null;
 
     /**
-     * getter for $this->documentType
+     * Get the document type for the document pointed to by this relation, such as "ArchivalResource" 
      *
      * * resourceRelation/@role
      * 
@@ -118,7 +118,7 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->linkType
+     * Get the xlink type.  This should not be used, as it is always "simple" 
      *
      * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
      * in the export template.
@@ -137,7 +137,9 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->entryType
+     * Get the secondary type of the document pointed to by this relation.  The ANF use
+     * this field to repeat (in short form) the document type from @role, such as
+     * "archival" for "ArchivalResource"
      *
      * * resourceRelation/relationEntry/@localType
      * 
@@ -150,7 +152,7 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->link
+     * Get the URI link for the document pointed to by this relation
      *
      * * resourceRelation/@href
      * 
@@ -163,7 +165,8 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->role
+     * Get the role the constellation played with respect to this resource,
+     * such as "authorOf" or ""
      *
      * * resourceRelation/@arcrole
      * 
@@ -176,7 +179,7 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->content
+     * Get the text/xml content of this relation 
      *
      * * resourceRelation/resourceEntry
      * 
@@ -189,7 +192,7 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->source
+     * Get the source XML of this relation 
      *
      * * resourceRelation/objectXMLWrap
      * 
@@ -202,7 +205,7 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->note
+     * Get the human-readable descriptive note for this relation 
      *
      * * resourceRelation/descriptiveNote
      * 
