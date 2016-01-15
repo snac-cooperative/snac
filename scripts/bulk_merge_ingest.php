@@ -2,7 +2,7 @@
 <?php
 
   /* 
-   * Database Connector Test File
+   * Load 1000 CPF files into the database to create a test environment.
    * 
    * Usage: bulk_merge_ingest.php /data/merge 2> bmi.log
    * 
@@ -53,8 +53,15 @@ function foo_main ()
      */
     $dbu = new snac\server\database\DBUtil();
 
-    list($appUserID, $role) = $dbu->getAppUserInfo('twl8n');
+    list($appUserID, $role) = $dbu->getAppUserInfo('system');
+    if (! $appUserID || ! $role)
+    {
+        printf("Error: Missing userid or role. appUserID: %s role: %s\n", $appUserID, $role);
+        exit();
+    }
+
     printf("appUserID: %s role: %s\n", $appUserID, $role);
+
     
     // If no file was parsed, then print the output that something went wrong
     if ($argc < 2)

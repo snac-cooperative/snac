@@ -175,6 +175,52 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $unDObj = $this->dbu->selectConstellation($undeleteDVhInfo, $this->appUserID);
         $unDeleteNameCount = count($unDObj->getNameEntries());
         $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
+
+        /*
+         * Modify a name and save the constellation, then check that the number of names is unchanged, and
+         * that we have the modified name.
+         *
+         * Note: getNameEntries() returns a reference, and changes to that reference modify $unDObj in place.
+         * 
+         * Get a name reference so we can modify the name in place without asking for it a second time.
+         */ 
+
+        $neNameListRef = $unDObj->getNameEntries();
+
+        $origNCount = count($neNameListRef);
+        $name = $neNameListRef[0]->getOriginal();
+        $modName = preg_replace('/(^.*) /', '$1xx ', $name);
+        $neNameListRef[0]->setOriginal($modName);
+
+        // printf("\nmn: %s type: %s\n", $unDObj->getNameEntries()[0]->getOriginal(), gettype($neNameListRef));
+
+        $modVhInfo = $this->dbu->updatePrepare($unDObj,
+                                               $this->appUserID,
+                                               $this->role,
+                                               'needs review',
+                                               'modified first alt name');
+        // printf("\n: test save name\n");
+        $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+
+        $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
+
+        // printf("\n mod: $modName db: %s\n", $modObj->getNameEntries()[0]->getOriginal());
+
+        $this->assertTrue($modName == $modObj->getNameEntries()[0]->getOriginal());
+
+        /* 
+         * printf("\n");
+         * foreach ($modObj->getNameEntries() as $ne)
+         * {
+         *     printf("id: %s version: %s main_id: %s %s\n",
+         *            $ne->getID(),
+         *            $ne->getVersion(),
+         *            $modObj->getID(),
+         *            $ne->getOriginal());
+         * }
+         */
+
+        $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
         
     public function testParseToDB()

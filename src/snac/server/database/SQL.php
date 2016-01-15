@@ -309,9 +309,12 @@ class SQL
      *
      * @param integer $did A foreign key to record in another table.
      *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
      * @return string[] A list of date_range fields/value as list keys matching the database field names.
      */
-    public function selectDate($did)
+    public function selectDate($did, $version)
     {
         $qq = 'select_date';
         $this->sdb->prepare($qq, 
@@ -321,11 +324,10 @@ class SQL
                             (select value from vocabulary where id=from_type) as from_type,
                             (select value from vocabulary where id=to_type) as to_type
                             from date_range as aa,
-                            (select fk_id,max(version) as version from date_range where fk_id=$1 group by fk_id) as bb
+                            (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
-
-        $result = $this->sdb->execute($qq, array($did));
+        $result = $this->sdb->execute($qq, array($did, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -446,30 +448,54 @@ class SQL
      * table date_range using insertDate(). 
      *
      */
-    public function insertName($vhInfo, $original, $preferenceScore, $contributors, $language, $scriptCode, $useDates)
+    public function insertName($vhInfo, 
+                               $original,
+                               $preferenceScore,
+                               $contributors,
+                               $language,
+                               $scriptCode,
+                               $useDates,
+                               $nameID)
     {
         $qq_1 = 'insert_name';
         $qq_2 = 'insert_contributor';
-        $this->sdb->prepare($qq_1,
-                            'insert into name
-                            (version, main_id, original, preference_score, language, script_code)
-                            values
-                            ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, \'^.*#\', \'\')),
-                            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, \'^.*#\', \'\')))
-                            returning id');
-        
-        $result = $this->sdb->execute($qq_1,
-                                      array($vhInfo['version'],
-                                            $vhInfo['main_id'],
-                                            $original,
-                                            $preferenceScore,
-                                            $language,
-                                            $scriptCode));
-        $row = $this->sdb->fetchrow($result);
-        $name_id = $row['id'];
+        $namePlaceHolder = '$7';
+        $exOne = array($vhInfo['version'],
+                       $vhInfo['main_id'],
+                       $original,
+                       $preferenceScore,
+                       $language,
+                       $scriptCode,
+                       $nameID);
+        if (! $nameID)
+        {
+            $namePlaceHolder = 'default';
+            $exOne = array($vhInfo['version'],
+                           $vhInfo['main_id'],
+                           $original,
+                           $preferenceScore,
+                           $language,
+                           $scriptCode);
+        }
 
-        // Contributor has issues. See comments in schema.sql. This will work for now.
+        $queryOne = sprintf(
+            'insert into name
+            (version, main_id, original, preference_score, language, script_code, id)
+            values
+            ($1, $2, $3, $4,
+            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, \'^.*#\', \'\')),
+            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, \'^.*#\', \'\')),
+            %s)', $namePlaceHolder);
+
+        $this->sdb->prepare($qq_1, $queryOne);
+        
+        $result = $this->sdb->execute($qq_1, $exOne);
+                
+        /* 
+         * Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
+         *  name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
+         *  name_contributor object with a $operation like everything else.
+         */
 
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
@@ -484,7 +510,7 @@ class SQL
             $this->sdb->execute($qq_2,
                                 array($vhInfo['version'],
                                       $vhInfo['main_id'],
-                                      $name_id,
+                                      $nameID,
                                       $contrib['contributor'],
                                       $contrib['type']));
         }
@@ -857,7 +883,7 @@ class SQL
         while($row = $this->sdb->fetchrow($result))
         {
             $rid = $row['id'];
-            $dateList = $this->selectDate($rid);
+            $dateList = $this->selectDate($rid, $vhInfo['version']);
             $row['date'] = array();
             if (count($dateList)>=1)
             {
@@ -906,7 +932,7 @@ class SQL
         while ($row = $this->sdb->fetchrow($result))
         {
             $relationId = $row['id'];
-            $dateList = $this->selectDate($relationId);
+            $dateList = $this->selectDate($relationId, $vhInfo['version']);
             $row['date'] = array();
             if (count($dateList)>=1)
             {
@@ -988,7 +1014,7 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $dateList = $this->selectDate($row['id']);
+            $dateList = $this->selectDate($row['id'], $vhInfo['version']);
             $row['date'] = array();
             if (count($dateList)>=1)
             {
@@ -1366,43 +1392,6 @@ class SQL
         $updateSQL = "insert into $table ($columnString) values ($placeHolderString) returning id";
         $newResult = $this->sdb->query($updateSQL, array_values($row));
     }
-
-
-
-    /*
-     * This method is more direct, but if any arg lists change, this has to be manually updated. It is also
-     * possible for an arg list mistake at the outset to not be detected. This would need QA, and the obvious
-     * QA method is the function above.
-     * 
-     * public function manual_call_each_table_updateIsDeleted($vhInfo, $table)
-     * {
-     *     $selectSQL = "select * from $table as aa,
-     *                     (select id, max(version) as version from $table where version<=$1 and main_id=$2 group by id) as bb
-     *                     where
-     *                     aa.id=bb.id
-     *                     and aa.version=bb.version";
-     *     $row = $this->sdb->query($sql, array($vhInfo['version'], $vhInfo['main_id']));
-     *     $row['is_deleted'] = 't';
-     *     $row['version'] = $vhInfo['version'];
-     *     // unset the original $vhInfo, and don't use it again.
-     *     unset($vhInfo);
-     *     $updatedVhInfo = array('version' => $row['version'], 'main_id' => $row['main_id']);
-     *     if ($table == 'source')
-     *     {
-     *         $this->insertSource($updatedVhInfo, $row['href']);
-     *     }
-     *     elseif ($table == 'occupation')
-     *     {
-     *         // select:  id, version, main_id, note, vocabulary_source, occupation_id, date
-     *         // insert:  vhInfo, occupation_id, vocabularySource, $dates, $note
-     *         $this->insertOccupation($updatedVhInfo, 
-     *                                 $row['occupation_id'],
-     *                                 row['vocabulary_source'],
-     *                                 $row['dates'],
-     *                                 $row['note']);
-     *     }
-     * }
-     */
 
     /**
      * Count names, current version, not deleted, for a single constellation.

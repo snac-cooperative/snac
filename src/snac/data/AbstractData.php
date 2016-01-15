@@ -31,16 +31,23 @@ abstract class AbstractData {
 
 
     /**
-     * var int $id The record id for this data structure. This has two different meanings. For
-     * Constellation.php this is the main_id of the constellation aka version_history.main_id. For all other
-     * objects this is table.id, which is the record id, not the constellation id.
+     *
+     * The record id, or constellation id for this class. This has two different meanings, depending on the
+     * class. For Constellation.php this is the main_id of the constellation aka version_history.main_id. For
+     * all other classes this is table.id, which is the record id, not the constellation id.
+     *
+     * @var int $id 
      */
     protected $id = null;
 
+
     /**
-     * var int $version The version number for this data structure. For Constellation.php this is the
-     * "constellation version number" aka max(version) aka max(version_history.id). For all other objects,
-     * this is the table.version.
+     *
+     * The record version number, or constellation version (max) for this class. For Constellation.php this is
+     * the "constellation version number" aka max(version) aka max(version_history.id). For all other classes,
+     * this is the table.version which is a per-record version number, <= the constellation version number.
+     * 
+     * @var int $version 
      */
     protected $version = null;
 
@@ -120,15 +127,14 @@ abstract class AbstractData {
      * Set the id of this object. See comments for setDBInfo(). Class constellation this is main_id. All
      * other classes this is table.id.
      *
-
-     * @param int $id Constellation main_id, or Object record id aka table.id for all other objects.
+     * @param int $id Set the constellation main_id, or Object record id aka table.id for all other objects.
      */
     public function setID($id) {
         $this->id = $id;
     }
     
     /**
-     * Get the version number of this data structure. For constellation this is *the* constellation version
+     * Get the version number of this. For constellation this is *the* constellation version
      * aka max(version) aka max(version_history.id). For all other objects this is table.version for each
      * record (object).
      *
@@ -143,7 +149,7 @@ abstract class AbstractData {
      * max(version) aka max(version_history.id). For all other objects this is table.version for each record
      * (object).
      *
-     * @param int $id The version of this object.
+     * @param int $version The version of this object.
      */
     public function setVersion($version) {
         $this->version = $version;

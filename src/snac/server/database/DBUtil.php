@@ -35,7 +35,6 @@ class DBUtil
      * @var \snac\server\database\SQL low-level SQL class
      */
     private $sql = null;
-
     
     /**
      * Used by setDeleted() and clearDeleted() to check table name.
@@ -44,6 +43,7 @@ class DBUtil
      *
      */ 
     private $canDelete = null; 
+
     /** 
      * The constructor for the DBUtil class. 
      */
@@ -229,6 +229,7 @@ class DBUtil
      * | setPreferenceScore                         | preference_score |
      * | setLanguage                                | language         |
      * | setScriptCode                              | script_code      |
+     * | setDBInfo                                  | version, id      |
      * | addContributor(string $type, string $name) |                  |
      * 
      * | php                              | sql table name_contributor |
@@ -245,8 +246,16 @@ class DBUtil
     public function populateNameEntry($vhInfo, &$cObj)
     {
         $neRows = $this->sql->selectNameEntry($vhInfo);
+        printf("\n");
         foreach ($neRows as $oneName)
         {
+            /* 
+             * printf("pn id: %s version: %s name-main_id: %s constellation-main_id: %s\n",
+             *        $oneName['id'],
+             *        $oneName['version'],
+             *        $oneName['main_id'],
+             *        $vhInfo['main_id']);
+             */
             $neObj = new \snac\data\NameEntry();
             $neObj->setOriginal($oneName['original']);
             $neObj->setLanguage($oneName['language']);
@@ -272,7 +281,7 @@ class DBUtil
      */
     public function populateExistDate($rowID, &$cObj)
     {
-        $dateRows = $this->sql->selectDate($rowID);
+        $dateRows = $this->sql->selectDate($rowID, $cObj->getVersion());
         foreach ($dateRows as $singleDate)
         {
             $dateObj = new \snac\data\SNACDate();
@@ -552,13 +561,7 @@ class DBUtil
          */
         foreach ($id->getNameEntries() as $ndata)
         {
-            $name_id = $this->sql->insertName($vhInfo, 
-                                              $ndata->getOriginal(),
-                                              $ndata->getPreferenceScore(),
-                                              $ndata->getContributors(), // list of type/contributor values
-                                              $ndata->getLanguage(),
-                                              $ndata->getScriptCode(),
-                                              $ndata->getUseDates());
+            $this->saveName($vhInfo, $ndata);
         }
 
         foreach ($id->getSources() as $sdata)
@@ -694,6 +697,55 @@ class DBUtil
 
         return $vhInfo;
     } // end saveConstellation
+
+    /**
+     * Get ready to update by creating a new version_history record, and getting the new version number back.
+     *
+     * @param snac\data\Constellation $pObj object that we are preparing to write all or part of back to the database.
+     *
+     * @param string $appUserID Application user id string, for example "system" or "mst3k".
+     *
+     * @param string $role SNAC role
+     *
+     * @param string $icstatus A version history status string.
+     *
+     * @param string $note User created note explaining this update.
+     *
+     * @return string[] Associative list with keys 'version', 'main_id'
+     *
+     */
+    public function updatePrepare($pObj,
+                                  $appUserID,
+                                  $role,
+                                  $icstatus,
+                                  $note)
+    {
+        $mainID = $pObj->getID(); // Note: constellation id is the main_id
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $role, $icstatus, $note, $mainID);
+        $vhInfo = array('version' => $newVersion, 'main_id' => $mainID);
+        return $vhInfo;
+    }
+
+    /**
+     * Save a name entry to the database.
+     *
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
+     * @param \snac\data\NameEntry Name entry object
+     *
+     */
+    public function saveName($vhInfo, $ndata)
+    {
+        $this->sql->insertName($vhInfo, 
+                               $ndata->getOriginal(),
+                               $ndata->getPreferenceScore(),
+                               $ndata->getContributors(), // list of type/contributor values
+                               $ndata->getLanguage(),
+                               $ndata->getScriptCode(),
+                               $ndata->getUseDates(),
+                               $ndata->getID());
+    }
+
 
     /**
      * Return 100 constellations as a json string. Only 3 fields are included: version, main_id, formatted
