@@ -35,6 +35,11 @@ class Source extends AbstractData {
     private $text;
 
     /**
+     * @var string Note related to this source 
+     */
+    private $note;
+
+    /**
      * @var string URI of this source 
      */
     private $uri;
@@ -53,6 +58,17 @@ class Source extends AbstractData {
     public function getLanguage()
     {
         return $this->language;
+    }
+    
+    /**
+     * Get the note of this source
+     *
+     * @return string The note attached to this source
+     *
+     */
+    public function getNote()
+    {
+        return $this->note;
     }
     
     /**
@@ -96,6 +112,7 @@ class Source extends AbstractData {
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "text" => $this->text,
+            "note" => $this->note,
             "uri" => $this->uri
         );
             
@@ -146,14 +163,19 @@ class Source extends AbstractData {
         else
             $this->text = null;
 
+        if (isset($data["note"]))
+            $this->note = $data["note"];
+        else
+            $this->note = null;
+
         return true;
 
     }
 
     /**
-     * Set the language of this BiogHist.
+     * Set the language of this source 
      * 
-     * @param \snac\data\Language $language the language of this BiogHist
+     * @param \snac\data\Language $language the language of this source
      */
     public function setLanguage($language) {
 
@@ -168,6 +190,16 @@ class Source extends AbstractData {
     public function setText($text) {
 
         $this->text = $text;
+    }
+
+    /**
+     * Set the note of this Source
+     * 
+     * @param string $note the note attached to this source
+     */
+    public function setNote($note) {
+
+        $this->note = $note;
     }
 
     /**

@@ -84,6 +84,8 @@ class EACCPFParser {
       
         $this->unknowns = array ();
         $this->namespaces = $xml->getNamespaces(true);
+
+        $languageDeclaration = new \snac\data\Language();
         
         foreach ($this->getChildren($xml) as $node) {
             if ($node->getName() == "control") {
@@ -101,7 +103,11 @@ class EACCPFParser {
                             ), $catts);
                         break;
                     case "otherRecordId":
-                        $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
+                        $term = $this->getTerm($this->getValue($catts["localType"]),"otherRecordType");
+                        $sameas = new \snac\data\SameAs();
+                        $sameas->setType($term);
+                        $sameas->setURI((string) $control);
+                        $identity->addOtherRecordID($sameas);
                         break;
                     case "maintenanceStatus":
                         $identity->setMaintenanceStatus($this->getTerm((string) $control, "maintenanceStatus"));
@@ -144,7 +150,13 @@ class EACCPFParser {
                                     $code = $latts["languageCode"];
                                     unset($latts["languageCode"]);
                                 }
-                                //TODO $identity->setLanguage($code, (string) $lang);
+                                // Set the language term globally
+                                $languageTerm = $languageDeclaration->getLanguage();
+                                if ($languageTerm == null)
+                                    $languageTerm = new \snac\data\Term();
+                                $languageTerm->setTerm((string) $lang);
+                                $languageTerm->setURI($code);
+                                $languageDeclaration->setLanguage($languageTerm);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -157,7 +169,13 @@ class EACCPFParser {
                                     $code = $latts["scriptCode"];
                                     unset($latts["scriptCode"]);
                                 }
-                                //TODO $identity->setScript($code, (string) $lang);
+                                // Set the script term globally
+                                $scriptTerm = $languageDeclaration->getScript();
+                                if ($scriptTerm == null)
+                                    $scriptTerm = new \snac\data\Term();
+                                $scriptTerm->setTerm((string) $lang);
+                                $scriptTerm->setURI($code);
+                                $languageDeclaration->setScript($scriptTerm);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -236,7 +254,9 @@ class EACCPFParser {
                             ), $catts);
                         break;
                     case "conventionDeclaration":
-                        $identity->setConventionDeclaration((string) $control);
+                        $cd = new \snac\data\ConventionDeclaration();
+                        $cd->setText($control->asXML());
+                        $identity->addConventionDeclaration($cd);
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -252,6 +272,8 @@ class EACCPFParser {
                             foreach ($this->getChildren($source) as $innerSource) {
                                 if ($innerSource->getName() == "objectXMLWrap")
                                     $sourceObj->setText($innerSource->asXML());
+                                else if ($innerSource->getName() == "descriptiveNote")
+                                    $sourceObj->setNote($innerSource->asXML());
                                 else
                                     $this->markUnknownTag(
                                         array (
@@ -531,12 +553,16 @@ class EACCPFParser {
                                     $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
-                                    $identity->setNationality((string) $subTag);
+                                    // TODO: Sometimes nationality has non-standard placeEntry with only country code
+                                    $term = $this->getTerm((string) $subTag, "nationality");
+                                    $nationality = new \snac\data\Nationality();
+                                    $nationality->setTerm($term);
+                                    $identity->addNationality($nationality);
                                     break;
                                 case "http://viaf.org/viaf/terms#gender":
                                     $gender = new \snac\data\Gender();
                                     $gender->setTerm($this->getTerm($this->getValue((string) $subTag), "gender"));
-                                    $identity->setGender($gender);
+                                    $identity->addGender($gender);
                                     break;
                                 default:
                                     $this->markUnknownTag(
@@ -610,7 +636,9 @@ class EACCPFParser {
                                     ), $d2atts);
                                 break;
                             case "generalContext":
-                                $identity->setGeneralContext($desc2->asXML());
+                                $gc = new \snac\data\GeneralContext();
+                                $gc->setText($desc2->asXML());
+                                $identity->addGeneralContext($gc);
                                 break;
                             case "legalStatus":
                                 $legalStatusTerm = new \snac\data\Term();
@@ -650,11 +678,14 @@ class EACCPFParser {
                                 }
                                 break;
                             case "mandate":
-                                // These are only seen in ANF, and they always have only a descriptiveNote
-                                $identity->setMandate($desc2->asXML());
+                                $mandate = new \snac\data\Mandate();
+                                $mandate->setText($desc2->asXML());
+                                $identity->addMandate($mandate);
                                 break;
                             case "structureOrGenealogy":
-                                $identity->setStructureOrGenealogy($desc2->asXML());
+                                $sog = new \snac\data\StructureOrGenealogy();
+                                $sog->setText($desc2->asXML());
+                                $identity->addStructureOrGenealogy($sog);
                                 break;
                             case "occupation":
                                 $occupation = new \snac\data\Occupation();
@@ -764,7 +795,10 @@ class EACCPFParser {
                                     ), $fatts);
                                 break;
                             case "biogHist":
-                                $identity->addBiogHist($desc2->asXML());
+                                $bh = new \snac\data\BiogHist();
+                                $bh->setText($desc2->asXML());
+                                $bh->setLanguage($languageDeclaration);
+                                $identity->addBiogHist($bh);
                                 break;
                             default:
                                 $this->markUnknownTag(
