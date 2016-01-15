@@ -151,11 +151,7 @@ class EACCPFParser {
                                     unset($latts["languageCode"]);
                                 }
                                 // Set the language term globally
-                                $languageTerm = $languageDeclaration->getLanguage();
-                                if ($languageTerm == null)
-                                    $languageTerm = new \snac\data\Term();
-                                $languageTerm->setTerm((string) $lang);
-                                $languageTerm->setURI($code);
+                                $scriptTerm = $this->getTerm($code, "language");
                                 $languageDeclaration->setLanguage($languageTerm);
                                 $this->markUnknownAtt(
                                     array (
@@ -170,11 +166,7 @@ class EACCPFParser {
                                     unset($latts["scriptCode"]);
                                 }
                                 // Set the script term globally
-                                $scriptTerm = $languageDeclaration->getScript();
-                                if ($scriptTerm == null)
-                                    $scriptTerm = new \snac\data\Term();
-                                $scriptTerm->setTerm((string) $lang);
-                                $scriptTerm->setURI($code);
+                                $scriptTerm = $this->getTerm($code, "script");
                                 $languageDeclaration->setScript($scriptTerm);
                                 $this->markUnknownAtt(
                                     array (
@@ -323,11 +315,11 @@ class EACCPFParser {
                                 }
                                 $nameLanguage = new \snac\data\Language();
                                 if (isset($iatts["lang"])) {
-                                    $nameLangauge->setLanguage($this->getTerm($iatts["lang"], "language"));
+                                    $nameLanguage->setLanguage($this->getTerm($iatts["lang"], "language"));
                                     unset($iatts["lang"]);
                                 }
                                 if (isset($iatts["scriptCode"])) {
-                                    $nameLanguage->setScript($this->getTerm(iatts["scriptCode"], "script"));
+                                    $nameLanguage->setScript($this->getTerm($iatts["scriptCode"], "script"));
                                     unset($iatts["scriptCode"]);
                                 }
                                 if (!$nameLanguage->isEmpty())
@@ -594,9 +586,7 @@ class EACCPFParser {
                                             $code = $latts["languageCode"];
                                             unset($latts["languageCode"]);
                                         }
-                                        $tmp = new \snac\data\Term();
-                                        $tmp->setTerm((string) $lang);
-                                        $tmp->setURI($code);
+                                        $tmp = $this->getTerm($code, "language");
                                         $language->setLanguage($tmp);
                                         $updatedLanguage = true;
                                         $this->markUnknownAtt(
@@ -612,9 +602,7 @@ class EACCPFParser {
                                             $code = $latts["scriptCode"];
                                             unset($latts["scriptCode"]);
                                         }
-                                        $tmp = new \snac\data\Term();
-                                        $tmp->setTerm((string) $lang);
-                                        $tmp->setURI($code);
+                                        $tmp = $this->getTerm($code, "script");
                                         $language->setScript($tmp);
                                         $updatedLanguage = true;
                                         $this->markUnknownAtt(

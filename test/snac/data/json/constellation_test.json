@@ -118,8 +118,25 @@
                     "contributor": "ANF"
                 }
             ],
-            "language": "fre",
-            "scriptCode": "Latn",
+            "language": {
+                "dataType": "Language",
+                "language": {
+                    "id": null,
+                    "term": "fre",
+                    "uri": null,
+                    "description": null
+                },
+                "script": {
+                    "id": null,
+                    "term": "Latn",
+                    "uri": null,
+                    "description": null
+                },
+                "vocabularySource": null,
+                "note": null,
+                "id": null,
+                "version": null
+            },
             "useDates": null,
             "id": null,
             "version": null
@@ -130,7 +147,6 @@
             "preferenceScore": null,
             "contributors": [],
             "language": null,
-            "scriptCode": null,
             "useDates": {
                 "dataType": "SNACDate",
                 "fromDate": "2012-01-01",
@@ -173,7 +189,6 @@
             "preferenceScore": null,
             "contributors": [],
             "language": null,
-            "scriptCode": null,
             "useDates": {
                 "dataType": "SNACDate",
                 "fromDate": "2003-01-01",
@@ -227,16 +242,11 @@
             "dataType": "BiogHist",
             "language": {
                 "dataType": "Language",
-                "language": {
-                    "id": null,
-                    "term": "Fran\u00e7ais",
-                    "uri": "fre",
-                    "description": null
-                },
+                "language": null,
                 "script": {
                     "id": null,
-                    "term": "",
-                    "uri": "Latn",
+                    "term": "Latn",
+                    "uri": null,
                     "description": null
                 },
                 "vocabularySource": null,
