@@ -64,19 +64,11 @@ class NameEntry extends AbstractData {
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/@lang
-     * 
-     * @var string Language of the entry
-     */
-    private $language;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * nameEntry/@scriptcode
      * 
-     * @var string Script code of the entry
+     * @var \snac\data\Language Language of the entry
      */
-    private $scriptCode;
+    private $language;
     
     /**
      * From EAC-CPF tag(s):
@@ -140,23 +132,12 @@ class NameEntry extends AbstractData {
     /**
      * getter for $this->language
      *
-     * @return string Language of the entry
+     * @return \snac\data\Language Language of the entry
      *
      */
     public function getLanguage()
     {
         return $this->language;
-    }
-
-    /**
-     * getter for $this->scriptCode
-     *
-     * @return string Script code of the entry
-     *
-     */
-    public function getScriptCode()
-    {
-        return $this->scriptCode;
     }
 
     /**
@@ -185,8 +166,7 @@ class NameEntry extends AbstractData {
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
             "contributors" => $this->contributors,      // already an array
-            "language" => $this->language,
-            "scriptCode" => $this->scriptCode,
+            "language" => $this->language == null ? null : $this->language->toArray($shorten),
             "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten)
         );
 
@@ -234,14 +214,9 @@ class NameEntry extends AbstractData {
             $this->contributors = null;
 
         if (isset($data["language"]))
-            $this->language = $data["language"];
+            $this->language = new Language($data["language"]);
         else
             $this->language = null;
-
-        if (isset($data["scriptCode"]))
-            $this->scriptCode = $data["scriptCode"];
-        else
-            $this->scriptCode = null;
 
         if (isset($data["useDates"]))
             $this->useDates = new SNACDate($data["useDates"]);
@@ -265,21 +240,12 @@ class NameEntry extends AbstractData {
     /**
      * Set the language
      * 
-     * @param string $lang Language
+     * @param \snac\data\Language $lang Language
      */
     public function setLanguage($lang) {
         $this->language = $lang;
     }
     
-    /**
-     * Set the script code of the name entry
-     * 
-     * @param string $code Script code
-     */
-    public function setScriptCode($code) {
-        $this->scriptCode = $code;
-    }
-
     /**
      * Add contributor to the list of contributors.
      * 
