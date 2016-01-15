@@ -26,7 +26,7 @@ if ($argc < 2) {
 
     $unparsedTags = $e->getMissing();
     if (empty($unparsedTags))
-        echo $id->toJSON();
+        echo $id->toJSON(false);
     else {
         // For each unparsable tag and attribute in the parsed EAC-CPF, print it out
         foreach ($unparsedTags as $miss) {
