@@ -89,7 +89,19 @@ class Language extends AbstractData {
         return $this->note;
     }
 
-    
+    /**
+     * Check to see if this language is empty
+     *
+     * @return boolean true if the language has nothing set, false otherwise
+     */
+    public function isEmpty() {
+        if ($this->language == null && $this->script == null && $this->vocabularySource == null
+            && $this->note == null)
+            return true;
+        else
+            return false;
+    }
+
     /**
      * Returns this object's data as an associative array
      *

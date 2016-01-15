@@ -321,14 +321,18 @@ class EACCPFParser {
                                     $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
                                     unset($iatts["preferenceScore"]);
                                 }
+                                $nameLanguage = new \snac\data\Language();
                                 if (isset($iatts["lang"])) {
-                                    $nameEntry->setLanguage($iatts["lang"]);
+                                    $nameLangauge->setLanguage($this->getTerm($iatts["lang"], "language"));
                                     unset($iatts["lang"]);
                                 }
                                 if (isset($iatts["scriptCode"])) {
-                                    $nameEntry->setScriptCode($iatts["scriptCode"]);
+                                    $nameLanguage->setScript($this->getTerm(iatts["scriptCode"], "script"));
                                     unset($iatts["scriptCode"]);
                                 }
+                                if (!$nameLanguage->isEmpty())
+                                    $nameEntry->setLanguage($nameLanguage);
+
                                 foreach ($this->getChildren($ident) as $npart) {
                                     switch ($npart->getName()) {
                                     case "part":
