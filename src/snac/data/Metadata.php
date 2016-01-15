@@ -1,15 +1,14 @@
 <?php
 
 /**
- * Metadata Object class.
+ * SNAC Control Metadata Object class.
  *
- * Contains the metadata class.
+ * Contains the snac control metadata class.
  *
  * License:
  *
  *
  * @author Robbie Hott
- * @author Tom Laudeman
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
@@ -17,16 +16,16 @@
 namespace snac\data;
 
 /**
- * Metadata class
+ * SNAC Control Metadata class
  *
- * This class contains the metadata block associated with any other piece of
+ * This class contains the snac control metadata block associated with any other piece of
  * data.  It is included in the AbstractData class and is therefore allowed on
  * any piece of data that inherits from the abstract class.
  *
  * @author Robbie Hott
  * @author Tom Laudeman
  */
-class Metadata extends AbstractData {
+class SNACControlMetadata extends AbstractData {
 
     /**
      * Constructor
@@ -44,7 +43,7 @@ class Metadata extends AbstractData {
             $this->fromArray($data);
         
         // Metadata should never have metadata
-        unset ($this->metadata);
+        unset ($this->snacControlMetadata);
     }
 
     
@@ -56,7 +55,7 @@ class Metadata extends AbstractData {
      */
     public function toArray($shorten = true) {
         $return = array(
-            "dataType" => "Metadata"
+            "dataType" => "SNACControlMetadata"
         );
         $return = array_merge($return, parent::toArray($shorten));
         

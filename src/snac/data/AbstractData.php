@@ -41,9 +41,9 @@ abstract class AbstractData {
     protected $version;
     
     /**
-     * var \snac\data\Metadata[] $metadata The metadata entries for this piece of data.
+     * var \snac\data\SNACControlMetadata[] $snacControlMetadata The snac control metadata entries for this piece of data.
      */
-    protected $metadata;
+    protected $snacControlMetadata;
 
     /**
      * Constructor
@@ -144,31 +144,31 @@ abstract class AbstractData {
     }
     
     /**
-     * Add a piece of metadata to this structure
+     * Add a piece of snac control metadata to this structure
      * 
-     * @param \snac\data\Metadata $metadata metadata to add to this structure
+     * @param \snac\data\SNACControlMetadata $metadata snac control metadata to add to this structure
      */
-    public function addMetadata($metadata) {
-        array_push($this->metadata, $metadata);
+    public function addSNACControlMetadata($metadata) {
+        array_push($this->snacControlMetadata, $metadata);
     }
     
     /**
-     * Set all the metadata for this structure
+     * Set all the snac control metadata for this structure
      * 
-     * @param \snac\data\Metadata[] $metadata Array of metadata to add to this structure
+     * @param \snac\data\SNACControlMetadata[] $metadata Array of snac control metadata to add to this structure
      */
-    public function setAllMetadata($metadata) {
-        unset($this->metadata);
-        $this->metadata = $metadata;
+    public function setAllSNACControlMetadata($metadata) {
+        unset($this->snacControlMetadata);
+        $this->snacControlMetadata = $metadata;
     }
     
     /**
-     * Get all metadata for this structure
+     * Get all snac control metadata for this structure
      * 
-     * @return \snac\data\Metadata[] Array of metadata about this data
+     * @return \snac\data\SNACControlMetadata[] Array of snac control metadata about this data
      */
-    public function getMetadata() {
-        return $this->metadata;
+    public function getSNACControlMetadata() {
+        return $this->snacControlMetadata;
     }
     
     /**
@@ -183,10 +183,10 @@ abstract class AbstractData {
             'version' => $this->getVersion()
         );
        
-        if (isset($this->metadata) && !empty($this->metadata)) {
-            $return['metadata'] = array();
-            foreach ($this->metadata as $i => $v)
-                $return["metadata"][$i] = $v->toArray($shorten);
+        if (isset($this->snacControlMetadata) && !empty($this->snacControlMetadata)) {
+            $return['snacControlMetadata'] = array();
+            foreach ($this->snacControlMetadata as $i => $v)
+                $return["snacControlMetadata"][$i] = $v->toArray($shorten);
         }
         
         // Shorten if necessary
@@ -222,11 +222,11 @@ abstract class AbstractData {
         else
             $this->version = null;
         
-        unset($this->metadata);
-        $this->metadata = array();
-        if (isset($data["metadata"])) {
-            foreach ($data["metadata"] as $i => $entry)
-                $this->metadata[$i] = new Metadata($entry);
+        unset($this->snacControlMetadata);
+        $this->snacControlMetadata = array();
+        if (isset($data["snacControlMetadata"])) {
+            foreach ($data["snacControlMetadata"] as $i => $entry)
+                $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
         }
     }
 
