@@ -49,6 +49,18 @@ class EACCPFParser {
      */
     private $unknowns;
 
+
+    /**
+     * @var \snac\util\Vocabulary An object allowing the interaction with vocabulary terms from the
+     * database or another source.  It must provide the \snac\util\Vocabulary interface.
+     */
+    private $vocabulary;
+
+
+    public function __construct() {
+        $this->vocabulary = new \snac\util\LocalVocabulary();
+    }
+
     /**
      * Parse a file into an identity constellation.
      *
@@ -65,8 +77,14 @@ class EACCPFParser {
     }
 
     public function getTerm($termString, $vocab) {
-        $term = new \snac\data\Term();
-        $term->setTerm($termString);
+
+        $term = null;
+        if ($this->vocabulary != null) {
+            $term = $this->vocabulary->getTermByValue($termString, $vocab);
+        } else {
+            $term = new \snac\data\Term();
+            $term->setTerm($termString);   
+        }
         return $term;
     }
 

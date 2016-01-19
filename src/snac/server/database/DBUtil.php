@@ -69,7 +69,15 @@ class DBUtil
         return $this->sql;
     }
 
-    
+    /**
+     * Get all the vocabulary from the database in tabular form
+     *
+     * @return string[][] array of vocabulary terms and associated information
+     */
+    public function getAllVocabulary() {
+        return $this->sql->selectAllVocabulary();
+    }
+
     /**
      * Access some system-wide authentication and/or current user info.
      *
