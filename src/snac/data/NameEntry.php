@@ -154,7 +154,8 @@ class NameEntry extends AbstractData {
 
 
     /**
-     * Returns this object's data as an associative array
+     * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
+     * is added. Can't we use introspection to automate this?
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
