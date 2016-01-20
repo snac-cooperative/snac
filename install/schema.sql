@@ -58,7 +58,10 @@ drop sequence if exists id_seq;
 -- Sequences
 --
 
--- Sequence for data table record id values
+-- Sequence for data table record id values It is very, very important that both table.id and
+-- version_history.main_id use this sequence. These two are used as foreign keys between table date_range and
+-- other tables. Failure for nrd.main_id and table.id to be unique will (would) break data_range foreign
+-- keys. (And might break other foreign keys and sql queries as well.)
 CREATE SEQUENCE "id_seq";
 
 -- Sequence for controlled vocabulary

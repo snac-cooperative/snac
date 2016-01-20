@@ -53,7 +53,7 @@ class SNACDate extends AbstractData {
      * * dateRange/fromDate/@localType
      * * date/@localType
      * 
-     * @var \snac\data\Term Type of the from date
+     * @var \snac\data\Term Type of the from date, a full Term object.
      */
     private $fromType;
 
@@ -102,7 +102,7 @@ class SNACDate extends AbstractData {
      * 
      * * dateRange/toDate/@localType
      * 
-     * @var \snac\data\Term Type of the to date
+     * @var \snac\data\Term Type of the "to date", a full Term object.
      */
     private $toType;
 
@@ -171,7 +171,8 @@ class SNACDate extends AbstractData {
     /**
      * Get the type of the from date, such as "Birth" 
      *
-     * @return \snac\data\Term Original \snac\data\Term given for the from date
+     * @return \snac\data\Term The type for the "from date", a full Term object. (This used to say "Original",
+     * but that would seem to have been a typo.)
      *
      *
      */
@@ -236,7 +237,7 @@ class SNACDate extends AbstractData {
     /**
      * Get the type of the end date, such as "Death" 
      *
-     * @return \snac\data\Term Type of the to date
+     * @return \snac\data\Term Type of the "to date", a full Term object.
      *
      *
      */
@@ -434,11 +435,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the from date in this object
+     * Set the "from date" in this object, as well as setting some related private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setFromDate($original, $standardDate, $type) {
 
@@ -459,11 +460,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the to date in this object
+     * Set the "to date" in this object, as well as setting some related private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param \snac\data\Term $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setToDate($original, $standardDate, $type) {
 
@@ -484,11 +485,12 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the single date in this object
+     * Set the "single date" in this object. Single date is current the from date, and the date isRange is set
+     * to false. This sets several private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param \snac\data\Term $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setDate($original, $standardDate, $type) {
 

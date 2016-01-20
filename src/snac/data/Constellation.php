@@ -1037,7 +1037,8 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Add Language Used by this constellation's identity
+     * Add Language Used by this constellation's identity. (You might be tempted to call this
+     * setLanguagesUsed() or the singular setLanguageUsed() as the converse of getLanguagesUsed().)
      *
      * @param  \snac\data\Language Language and script used by this identity
      */

@@ -111,16 +111,13 @@ class SQL
      * @param string $vocabularySource Not currently saved. As far as we know, these are specific to
      * AnF. These probably should be somehow cross-walked to the SNAC vocabularies.
      *
-     * @param SNACDate[] $dates An array of SNACDate objects. We pass it to insertDate() and get a foreign key
-     * back. Our id is in table date_range, so we don't currently need the returned foreign key.
-     *
      * @param string $note A note about the occupation.
      *
      * @param integer Record id value, aka table.id. If null due to a new object, we simply mint a new id.
      *
      *
      */ 
-    public function insertOccupation($vhInfo, $term, $vocabularySource, $dates, $note, $id)
+    public function insertOccupation($vhInfo, $term, $vocabularySource, $note, $id)
     {
         if (! $id)
         {
@@ -141,10 +138,6 @@ class SQL
                                             $note,
                                             $id));
         $this->sdb->deallocate($qq);
-        foreach ($dates as $single_date)
-        {
-            $date_fk = $this->insertDate($vhInfo, $single_date, 'occupation', $id);
-        }
     }
 
 
@@ -285,7 +278,22 @@ class SQL
      * inserted.
      *
      */
-    public function insertDate($vhInfo, $date, $fk_table, $fk_id)
+
+    public function insertDate($vhInfo,
+                               $isRange,
+                               $fromDate,
+                               $fromType, // fk to vocabulary
+                               $fromBC, 
+                               $fromNotBefore,
+                               $fromNotAfter, 
+                               $toDate,
+                               $toType, // fk to vocabulary
+                               $toBC, 
+                               $toNotBefore, 
+                               $toNotAfter,
+                               $original, 
+                               $fk_table,
+                               $fk_id)
     {
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
@@ -293,28 +301,26 @@ class SQL
                             (version, main_id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
                             to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, 
-                            (select id from vocabulary where type=\'date_type\' and value=regexp_replace($5, \'^.*#\', \'\')),
-                            $6, $7, $8, $9,
-                            (select id from vocabulary where type=\'date_type\' and value=regexp_replace($10, \'^.*#\', \'\')),
+                            ($1, $2, $3, $4, $5,
+                            $6, $7, $8, $9, $10,
                             $11, $12, $13, $14, $15, $16)
                             returning id');
 
        $result = $this->sdb->execute($qq,
                                      array($vhInfo['version'], 
                                            $vhInfo['main_id'],
-                                           $this->sdb->boolToPg($date->getIsRange()),
-                                           $date->getFromDate(),
-                                           $date->getFromType(),
-                                           $this->sdb->boolToPg($date->getFromBc()),
-                                           $date->getFromRange()['notBefore'],
-                                           $date->getFromRange()['notAfter'],
-                                           $date->getToDate(),
-                                           $date->getToType(),
-                                           $this->sdb->boolToPg($date->getToBc()),
-                                           $date->getToRange()['notBefore'],
-                                           $date->getToRange()['notAfter'],
-                                           $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
+                                           $isRange,
+                                           $fromDate,
+                                           $fromType,
+                                           $fromBC,
+                                           $fromNotBefore,
+                                           $fromNotAfter, 
+                                           $toDate,
+                                           $toType,
+                                           $toBC,
+                                           $toNotBefore, 
+                                           $toNotAfter,
+                                           $original, 
                                            $fk_table,
                                            $fk_id));
 
@@ -367,56 +373,31 @@ class SQL
 
     
     /** 
-     * Insert the non-repeating parts (non repeading data) of the constellation.
+     * Insert the non-repeating parts (non repeading data) of the constellation. No need to return a value as
+     * the nrd row key is main_id,version which corresponds to the row key in all other tables being
+     * id,version. Table nrd is the 1:1 table for the constellation, therefore it is logical (and consistent)
+     * for it not to have a table.id field.
      * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param SNACDate[] $existDates List SNACDate objects. Each one is passed to insertDate() unchanged.
+     * @param string $ark_id ARK string. There was a reason why I added _id to distinguish this from something
+     * else with the naked name "ark".
      *
-     * @param string[] $argList Assoc list with keys matching db fields, currently expected to be in the
-     * order: ark_id, entity_type, biog_hist, nationality, gender, general_context, structure_or_genealogy,
-     * mandate, convention_declaration, language, language_code, script, script_code. biog_hist is a single
-     * string, not a list as it is in the Constallation. Some values are looked up on table vocabulary and
-     * their id values saved in table nrd.
-     *
+     * @param integer $entity_type A foreign key into table vocabulary, handled by Term related functions here and in
+     * DBUtils.
      * 
      */
-    public function insertNrd($vhInfo, $existDates, $arg_list)
+    public function insertNrd($vhInfo, $ark_id, $entity_type)
     {
         $qq = 'insert_nrd';
         $this->sdb->prepare($qq, 
                             'insert into nrd
-                            (version, main_id, ark_id, entity_type, biog_hist, nationality, 
-                            gender, general_context, structure_or_genealogy, mandate, convention_declaration,
-                            language, language_code, script, script_code)
+                            (version, main_id, ark_id, entity_type)
                             values
-                            ($1, $2, $3,
-                            (select id from vocabulary where type=\'entity_type\' and value=regexp_replace($4, \'^.*#\', \'\')),
-                            $5,
-                            (select id from vocabulary where type=\'nationality\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            (select id from vocabulary where type=\'gender\' and value=regexp_replace($7, \'^.*#\', \'\')),
-                            $8, $9, $10, $11, $12,
-                            (select id from vocabulary where type=\'language_code\' and value=regexp_replace($13, \'^.*#\', \'\')),
-                            $14,
-                            (select id from vocabulary where type=\'script_code\' and value=regexp_replace($15, \'^.*#\', \'\')))
-                            returning id');
-        
-        // Combine vhInfo and the remaining args into a big array for execute().
-        $execList = array($vhInfo['version'], $vhInfo['main_id']);
-
-        foreach ($arg_list as $arg)
-        {
-            array_push($execList, $arg);
-        }
-                                                                
+                            ($1, $2, $3, $4)');
+        $execList = array($vhInfo['version'], $vhInfo['main_id'], $ark_id, $entity_type);
         $result = $this->sdb->execute($qq, $execList);
-
-        $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
-        foreach ($existDates as $singleDate)
-        {
-            $date_fk = $this->insertDate($vhInfo, $singleDate, 'nrd', $id);
-        }
     }
 
     /**
@@ -473,9 +454,6 @@ class SQL
      *
      * @param string $scriptCode The script code of this name. Looked up from table vocabulary and the id saved in table name.
      *
-     * @param SNACDate[] $useDates Not currently implemented for table name. It needs to be inserted into
-     * table date_range using insertDate().
-     *
      * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
      * from selectID().
      *
@@ -486,7 +464,6 @@ class SQL
                                $contributors,
                                $language,
                                $scriptCode,
-                               $useDates,
                                $nameID)
     {
         if (! $nameID)
@@ -550,12 +527,10 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[] $argList 
-     * 
-     * @param SNACDate $dates A single SNACDate object suitable for insertDate().
-     * 
+     * @param 
+     *
      */
-    public function insertFunction($vhInfo, $type, $vocabularySource, $note, $term, $id, $dates)
+    public function insertFunction($vhInfo, $type, $vocabularySource, $note, $term, $id)
     {
         if (! $id)
         {
@@ -566,20 +541,11 @@ class SQL
                             'insert into function
                             (version, main_id, function_type, vocabulary_source, note, id, function_id)
                             values
-                            ($1, $2, $3, $4, $5, $6
-                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($7, \'^.*#\', \'\')))');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         $eArgs = array($vhInfo['version'], $vhInfo['main_id'], $type, $vocabularySource, $note, $id, $term);
         $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
-
-        if ($dates and count($dates)>=1)
-        {
-            foreach ($dates as $single_date)
-            {
-                $date_fk = $this->insertDate($vhInfo, $single_date, 'function', $id);
-            }
-        }
     }
 
     
@@ -617,12 +583,10 @@ class SQL
     /**
      * Insert a related identity aka table related_identity, aka constellation relation, aka cpf relation, aka
      * ConstellationRelation object. We first insert into related_identity saving the inserted record
-     * id. After that, we insert date_range records with related via saved related_record.id. See insertDate().
+     * id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      * 
-     * @param SNACDate $dates A single SNACDate object.
-     *
      * @param $argList Flat array of data suitable for execute(). We assume that DBUtils
      * knows the php to sql field translation.
      *
@@ -630,7 +594,6 @@ class SQL
      * 
      */
     public function insertRelation($vhInfo, 
-                                   $dates,
                                    $targetID,
                                    $targetArkID,
                                    $targetEntityType,
@@ -670,11 +633,6 @@ class SQL
         $row = $this->sdb->fetchrow($result);
 
         $this->sdb->deallocate($qq);
-
-        foreach ($dates as $singleDate)
-        {
-            $date_fk = $this->insertDate($vhInfo, $singleDate, 'related_identity', $id);
-        }
     }
 
     /**
@@ -737,8 +695,8 @@ class SQL
 
     /**
      *
-     * Select from table nrd which is philosophically the central constellation table. In actual
-     * implementation, table version_history is the center of everything. A class DBUtils method also called
+     * Select from table nrd which has 1:1 fields for the constellation. We keep 1:1 fields here, although
+     * table version_history is the center of everything. A class DBUtils method also called
      * selectConstellation() knows all the SQL methods to call to get the full constellation.
      *
      * It is intentional that the fields are not retrieved in any particular order because the row will be
@@ -746,29 +704,21 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] An associative list with keys: id, version, main_id, biog_hist, general_context,
-     * structure_or_genealogy, mandate, convention_declaration, ark_id, language, script.
+     * @return string[] An associative list with keys: version, main_id, ark_id, entity_type.
      * 
      * 
      */
-    public function selectConstellation($vhInfo)
+    public function selectNrd($vhInfo)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq, 
                             'select
-                            aa.id,aa.version,aa.main_id,aa.biog_hist,aa.general_context,aa.structure_or_genealogy,aa.mandate,
-                            aa.convention_declaration,aa.ark_id,aa.language,script,
-                            (select value from vocabulary where vocabulary.id=aa.entity_type) as entity_type,
-                            (select value from vocabulary where vocabulary.id=aa.nationality) as nationality,
-                            (select value from vocabulary where vocabulary.id=aa.gender) as gender,
-                            (select value from vocabulary where vocabulary.id=aa.language_code) as language_code,
-                            (select value from vocabulary where vocabulary.id=aa.script_code) as script_code
+                            aa.version,aa.main_id,aa.ark_id,aa.entity_type
                             from nrd as aa,
-                            (select id, max(version) as version from nrd where version<=$1 and main_id=$2 group by id) as bb
+                            (select main_id, max(version) as version from nrd where version<=$1 and main_id=$2 group by main_id) as bb
                             where not aa.is_deleted and
-                            aa.id=bb.id
+                            aa.main_id=bb.main_id
                             and aa.version=bb.version');
-
         /* 
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */

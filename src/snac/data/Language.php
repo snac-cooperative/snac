@@ -27,22 +27,22 @@ namespace snac\data;
 class Language extends AbstractData {
     
     /**
-     * @var \snac\data\Term Language controlled vocabulary term
+     * @var \snac\data\Term Language, a controlled vocabulary term object
      */
     private $language = null;
 
     /**
-     * @var \snac\data\Term Language controlled vocabulary term
+     * @var \snac\data\Term Script, a controlled vocabulary term object.
      */
     private $script = null;
 
     /**
-     * @var string Vocabulary source for the language
+     * @var string Vocabulary source for the language. A simple string.
      */
     private $vocabularySource = null;
 
     /**
-     * @var string Note attached to language
+     * @var string Note attached to language. A simple string.
      */
     private $note = null;
 
