@@ -1487,7 +1487,7 @@ class SQL
      * @return string[][] Multi-dimensional array of vocabulary terms
      */
     public function selectAllVocabulary() {
-        $selectSQL = "select id, type, value from vocabulary;";
+        $selectSQL = "select id, type, value, uri, description from vocabulary;";
         $result = $this->sdb->query($selectSQL, array());
         $allVocab = array();
         while ($row = $this->sdb->fetchrow($result)) {
