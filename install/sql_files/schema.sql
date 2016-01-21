@@ -542,9 +542,11 @@ create unique index geoplace_idx1 on geoplace (id,version);
 -- in several contexts.
 
 create table vocabulary (
-    id      int primary key default nextval('vocabulary_id_seq'),
-    type    text,             -- Type of the vocab
-    value   text             -- Values the vocab may take
+    id          int primary key default nextval('vocabulary_id_seq'),
+    type        text,        -- Type of the vocab
+    value       text,        -- Value of the controlled vocab term
+    uri         text,        -- URI for this controlled vocab term, if it exists
+    description text         -- Textual description of this vocab term
     );
 
 create unique index vocabulary_idx on vocabulary(id);
