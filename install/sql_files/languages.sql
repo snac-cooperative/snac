@@ -176,7 +176,7 @@ insert into vocabulary (type, value, description) values ('language_code', 'ell'
 insert into vocabulary (type, value, description) values ('language_code', 'grn', 'Guarani');
 insert into vocabulary (type, value, description) values ('language_code', 'gsw', 'Swiss German; Alemannic; Alsatian');
 insert into vocabulary (type, value, description) values ('language_code', 'guj', 'Gujarati');
-insert into vocabulary (type, value, description) values ('language_code', 'gwi', 'Gwich\'in');
+insert into vocabulary (type, value, description) values ('language_code', 'gwi', 'Gwich''in');
 insert into vocabulary (type, value, description) values ('language_code', 'hai', 'Haida');
 insert into vocabulary (type, value, description) values ('language_code', 'hat', 'Haitian; Haitian Creole');
 insert into vocabulary (type, value, description) values ('language_code', 'hau', 'Hausa');
@@ -291,7 +291,7 @@ insert into vocabulary (type, value, description) values ('language_code', 'mdf'
 insert into vocabulary (type, value, description) values ('language_code', 'mdr', 'Mandar');
 insert into vocabulary (type, value, description) values ('language_code', 'men', 'Mende');
 insert into vocabulary (type, value, description) values ('language_code', 'mga', 'Irish, Middle (900-1200)');
-insert into vocabulary (type, value, description) values ('language_code', 'mic', 'Mi\'kmaq; Micmac');
+insert into vocabulary (type, value, description) values ('language_code', 'mic', 'Mi''kmaq; Micmac');
 insert into vocabulary (type, value, description) values ('language_code', 'min', 'Minangkabau');
 insert into vocabulary (type, value, description) values ('language_code', 'mis', 'Uncoded languages');
 insert into vocabulary (type, value, description) values ('language_code', 'mkh', 'Mon-Khmer languages');
@@ -329,7 +329,7 @@ insert into vocabulary (type, value, description) values ('language_code', 'nob'
 insert into vocabulary (type, value, description) values ('language_code', 'nog', 'Nogai');
 insert into vocabulary (type, value, description) values ('language_code', 'non', 'Norse, Old');
 insert into vocabulary (type, value, description) values ('language_code', 'nor', 'Norwegian');
-insert into vocabulary (type, value, description) values ('language_code', 'nqo', 'N\'Ko');
+insert into vocabulary (type, value, description) values ('language_code', 'nqo', 'N''Ko');
 insert into vocabulary (type, value, description) values ('language_code', 'nso', 'Pedi; Sepedi; Northern Sotho');
 insert into vocabulary (type, value, description) values ('language_code', 'nub', 'Nubian languages');
 insert into vocabulary (type, value, description) values ('language_code', 'nwc', 'Classical Newari; Old Newari; Classical Nepal Bhasa');
