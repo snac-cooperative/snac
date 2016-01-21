@@ -252,8 +252,34 @@ abstract class AbstractData {
         $return = array(
             'id' => $this->getID(),
             'version' => $this->getVersion()
-        );
-       
+            );
+        
+        /*
+         * We won't return any dates if we aren't suppose to have dates in the first place. And if we're only
+         * suppose to have a single date, then we will only return a single date. This supposes that any
+         * errant dates got in here via some bug, not that we care. At least we won't return dates that aren't
+         * supposed to exist. That probably means that errant dates would be invisible outside the SQL code.
+         *
+         * Constellation.php called these $existDates, getExistDates(), addExistDates()
+         *
+         * NameEntry.php called these $useDates, getUseDates(), setUseDates()?
+         *
+         * Place.php called these $dates with setDateRange(), no getter?
+         *
+         * SNACFunction.php called these $dates, getDates(), setDateRange()
+         */ 
+        if ($this->maxDateCount > 0)
+        {
+            foreach ($this->dateList as $i => $v)
+            {
+                $return["dates"][$i] = $v->toArray($shorten);
+                if ($this->maxDateCount == 1)
+                {
+                    break;
+                }
+            }
+        }
+        
         if (isset($this->snacControlMetadata) && !empty($this->snacControlMetadata)) {
             $return['snacControlMetadata'] = array();
             foreach ($this->snacControlMetadata as $i => $v)

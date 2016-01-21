@@ -43,15 +43,6 @@ class SNACFunction extends AbstractData {
      */
     private $type;
 
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * function/dateRange
-     * 
-     * @var \snac\data\SNACDate Date range of the function. As far as I can tell, this is a single date, so
-     * ignore the pluralization.
-     */
-    private $dates;
 
     /**
      * From EAC-CPF tag(s):
@@ -70,6 +61,21 @@ class SNACFunction extends AbstractData {
      * @var string Vocabulary source for the function
      */
     private $vocabularySource = '';
+
+    /**
+     * Constructor
+     *
+     * A setMaxDateCount(1) means a single date for this class.
+     *
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object.
+     * 
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(1);
+        parent::__construct($data);
+    }
+
 
     /**
      * Get the Term for this function 
@@ -97,18 +103,6 @@ class SNACFunction extends AbstractData {
         return $this->type;
     }
 
-    /**
-     * Get the dates this function applied. This is only one date or date range. 
-     *
-     * * function/dateRange
-     * 
-     * @return \snac\data\SNACDate Date range of the function. One date, not a list of dates.
-     *
-     */
-    public function getDates()
-    {
-        return $this->dates;
-    }
 
     /**
      * Get the human-readable descriptive note for this function 
@@ -147,7 +141,6 @@ class SNACFunction extends AbstractData {
             "dataType" => "SNACFunction",
             "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
         );
@@ -189,11 +182,6 @@ class SNACFunction extends AbstractData {
         else
             $this->type = null;
 
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
-
         if (isset($data["vocabularySource"]))
             $this->vocabularySource = $data["vocabularySource"];
         else
@@ -226,16 +214,6 @@ class SNACFunction extends AbstractData {
     public function setType($type) {
 
         $this->type = $type;
-    }
-
-    /**
-     * Set the date range
-     *
-     * @param \snac\data\SNACDate $date Date object for the range
-     */
-    public function setDateRange($date) {
-
-        $this->dates = $date;
     }
 
     /**

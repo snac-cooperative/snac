@@ -126,10 +126,10 @@ class PlaceEntry extends AbstractData {
      * 
      */
     public function __construct($data = null) {
-
         $this->maybeSame = array ();
         parent::__construct($data);
     }
+
     
     /**
      * Returns this object's data as an associative array

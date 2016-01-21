@@ -62,20 +62,35 @@ class Occupation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * occupation/dateRange
-     * 
-     * @var \snac\data\SNACDate Date range for the occupation
-     */
-    private $dates = null;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * occupation/descriptiveNote
      * 
      * @var string Note attached to occupation
      */
     private $note = null;
+
+    /**
+     * Constructor for the class. See the abstract parent class for common methods setDBInfo() and getDBInfo().
+     *
+     * A setMaxDateCount(1) means a single date object.
+     *
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object. Normal use is to call the
+     * constructor without an argument, get an empty class and use the setters to fill in the properties.
+     *
+     * @return snac\data\Occupation And occuption object
+     * 
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(1);
+        if ($data == null) 
+        {
+            // Occupation doesn't have any special null initializers
+        } 
+        else
+        {
+            parent::__construct($data);
+        }
+    }
 
     /**
      * Get the Occupation Term for this occupation 
@@ -96,17 +111,6 @@ class Occupation extends AbstractData {
     public function getVocabularySource()
     {
         return $this->vocabularySource;
-    }
-
-    /**
-     * Get and return \snac\data\SNACDate Date range for the occupation
-     *
-     * @return \snac\data\SNACDate A single SNACDate object 
-     *
-     */ 
-    public function getDates()
-    {
-        return $this->dates;
     }
 
     /**
@@ -132,7 +136,6 @@ class Occupation extends AbstractData {
             "dataType" => "Occupation",
             "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
         );
             
@@ -173,11 +176,6 @@ class Occupation extends AbstractData {
         else
             $this->vocabularySource = null;
 
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
-
         if (isset($data["note"]))
             $this->note = $data["note"];
         else
@@ -195,23 +193,6 @@ class Occupation extends AbstractData {
         $this->term = $term;
     }
     
-    /**
-     * Set the date range. If the supplied arg is false for any reason (and any definition of 'false'), then
-     * set the private var to an empty SNACDate. Try checking get_class().
-     *
-     * 
-     * @param \snac\data\SNACDate $date Date object for the range
-     */
-    public function setDateRange($date) {
-        if (! $date or get_class($date) != 'SNACDate')
-        {
-            $this->dates = new \snac\data\SNACDate();
-        }
-        else
-        {
-            $this->dates = $date;
-        }
-    }
     
     /**
      * Set the vocabulary source. These values come from a controlled vocabulary, but so far, they are not

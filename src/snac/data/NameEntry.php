@@ -71,15 +71,6 @@ class NameEntry extends AbstractData {
     private $language;
     
     /**
-     * From EAC-CPF tag(s):
-     * 
-     * * nameEntry/useDates
-     * 
-     * @var \snac\data\SNACDate Use dates of the name entry
-     */
-    private $useDates;
-
-    /**
      * Constructor.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
@@ -141,19 +132,6 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Get the dates this name entry was used 
-     *
-     * @return \snac\data\SNACDate Use dates of the name entry, returned as an array of SNACDate objects.
-     *
-     */
-    public function getUseDates()
-    {
-        return $this->useDates;
-    }
-
-
-
-    /**
      * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
      * is added. Can't we use introspection to automate this?
      *
@@ -167,7 +145,6 @@ class NameEntry extends AbstractData {
             "preferenceScore" => $this->preferenceScore,
             "contributors" => $this->contributors,      // already an array
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
-            "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten)
         );
 
         $return = array_merge($return, parent::toArray($shorten));
@@ -181,8 +158,6 @@ class NameEntry extends AbstractData {
             unset($return);
             $return = $return2;
         }
-
-
         return $return;
     }
 
@@ -217,12 +192,6 @@ class NameEntry extends AbstractData {
             $this->language = new Language($data["language"]);
         else
             $this->language = null;
-
-        if (isset($data["useDates"]))
-            $this->useDates = new SNACDate($data["useDates"]);
-        else
-            $this->useDates = null;
-
 
         return true;
     }
@@ -261,15 +230,6 @@ class NameEntry extends AbstractData {
                 ));
     }
     
-    /**
-     * Set the use dates of the entry
-     * 
-     * @param \snac\data\SNACDate $date Dates
-     */
-    public function setUseDates($date) {
-        $this->useDates = $date;
-    }
-
     /**
      * Set the preference score.
      * 

@@ -28,16 +28,6 @@ class Place extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * place/date/*
-     * * place/dateRange/*
-     * 
-     * @var \snac\data\SNACDate Date range the place is valid
-     */
-    private $dates;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * place/descriptiveNote
      * 
      * @var string Descriptive note
@@ -74,12 +64,14 @@ class Place extends AbstractData {
     /**
      * Constructor
      *
+     * A setMaxDateCount(1) means a single date object.
+     *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
      * 
      */
     public function __construct($data = null) {
-
+        $this->setMaxDateCount(1);
         $this->entries = array ();
         parent::__construct($data);
     }
@@ -93,7 +85,6 @@ class Place extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Place",
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "role" => $this->role == null ? null : $this->role->toArray($shorten),
             "entries" => array(),
@@ -114,8 +105,6 @@ class Place extends AbstractData {
             unset($return);
             $return = $return2;
         }
-
-        
         return $return;
     }
 
@@ -130,11 +119,6 @@ class Place extends AbstractData {
             return false;
 
         parent::fromArray($data);
-
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
 
         if (isset($data["type"]))
             $this->type = new \snac\data\Term($data["type"]);
@@ -160,15 +144,6 @@ class Place extends AbstractData {
         return true;
     }
 
-    /**
-     * Set the date range
-     *
-     * @param \snac\data\SNACDate $date Date range
-     */
-    public function setDateRange($date) {
-
-        $this->dates = $date;
-    }
 
     /**
      * Set the descriptive note
