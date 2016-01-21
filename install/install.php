@@ -36,22 +36,22 @@ if ($response == "yes") {
     // Run a system shell command, that sudos bash, then su's to postgres user,
     // then creates the user and database from the Config class.
     system("
-    sudo bash -c \"
-    su postgres -c '
-    createuser -D -l -R -P $user <<EOF
-    $password
-    $password
-    EOF
-    psql <<EOF
-    create database $database;
-    grant create,connect on database $database to $user;
-    EOF'
+sudo bash -c \"
+su postgres -c '
+createuser -D -l -R -P $user <<EOF
+$password
+$password
+EOF
+psql <<EOF
+create database $database;
+grant create,connect on database $database to $user;
+EOF'
     \"\n", $retval);
     
     if ($retval != 0) {
         echo "  There was a problem creating the database.  Use the\n".
             "  following commands to create the database:\n\n".
-            "  As the postgres user, in a shell:\n"
+            "  As the postgres user, in a shell:\n".
             "    postgres@server$ createuser -D -l -R -P $user\n\n".
             "  In the postgres shell as the root pgsql user:\n".
             "    psql> create database $database;\n".
