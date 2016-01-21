@@ -106,7 +106,7 @@ insert into vocabulary (type, value, description) values ('script_code', 'Mymr',
 insert into vocabulary (type, value, description) values ('script_code', 'Narb', 'Old North Arabian (Ancient North Arabian)');
 insert into vocabulary (type, value, description) values ('script_code', 'Nbat', 'Nabataean');
 insert into vocabulary (type, value, description) values ('script_code', 'Newa', 'Newa, Newar, Newari, Nepāla lipi');
-insert into vocabulary (type, value, description) values ('script_code', 'Nkgb', 'Nakhi Geba ('Na-'Khi ²Ggŏ-¹baw, Naxi Geba)');
+insert into vocabulary (type, value, description) values ('script_code', 'Nkgb', 'Nakhi Geba (''Na-''Khi ²Ggŏ-¹baw, Naxi Geba)');
 insert into vocabulary (type, value, description) values ('script_code', 'Nkoo', 'N’Ko');
 insert into vocabulary (type, value, description) values ('script_code', 'Nshu', 'Nüshu');
 insert into vocabulary (type, value, description) values ('script_code', 'Ogam', 'Ogham');
