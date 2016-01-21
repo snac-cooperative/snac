@@ -1427,6 +1427,24 @@ class SQL
         }
     }
 
+    /**
+     * Select all vocabulary from the database.  This returns the vocabulary in a
+     * 2D array, with keys:
+     *  * id
+     *  * type
+     *  * value
+     *
+     * @return string[][] Multi-dimensional array of vocabulary terms
+     */
+    public function selectAllVocabulary() {
+        $selectSQL = "select id, type, value, uri, description from vocabulary;";
+        $result = $this->sdb->query($selectSQL, array());
+        $allVocab = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($allVocab, $row);
+        }
+        return $allVocab;
+    }
 
 }
 
