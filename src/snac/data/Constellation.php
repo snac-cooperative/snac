@@ -153,27 +153,6 @@ class Constellation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      * 
-     * * eac-cpf/cpfDescription/description/existDates/dateSet/dateRange/*
-     * * eac-cpf/cpfDescription/description/existDates/dateSet/date/*
-     * * eac-cpf/cpfDescription/description/existDates/dateRange/*
-     * * eac-cpf/cpfDescription/description/existDates/date/*
-     * 
-     * @var \snac\data\SNACDate[] Exist dates for the entity
-     */
-    private $existDates = null;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * eac-cpf/cpfDescription/description/existDates/descriptiveNote
-     * 
-     * @var string Note about the exist dates
-     */
-    private $existDatesNote = null;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
      * * eac-cpf/cpfDescription/relations/cpfRelation/*
      * 
      * @var \snac\data\ConstellationRelation[] Constellation relations
@@ -264,6 +243,8 @@ class Constellation extends AbstractData {
     /**
      * Constructor for the class. See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
+     * Any value for setMaxDateCount() >1 means any number of date objects.
+     *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object. Normal use is to call the
      * constructor without an argument, get an empty class and use the setters to fill in the properties.
@@ -272,7 +253,7 @@ class Constellation extends AbstractData {
      * 
      */
     public function __construct($data = null) {
-
+        $this->setMaxDateCount(2);
         if ($data == null) {
             $this->otherRecordIDs = array ();
             $this->sources = array ();
@@ -282,7 +263,6 @@ class Constellation extends AbstractData {
             $this->occupations = array ();
             $this->relations = array ();
             $this->resourceRelations = array ();
-            $this->existDates = array ();
             $this->functions = array ();
             $this->places = array ();
             $this->subjects = array();
@@ -468,28 +448,6 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the list of exist dates for this constellation
-     *
-     * @return \snac\data\SNACDate[] Exist dates for the entity or empty array
-     *
-     */
-    public function getExistDates()
-    {
-        return $this->existDates;
-    }
-
-    /**
-     * Get the descriptive note for the exist dates
-     *
-     * @return string Note about the exist dates
-     *
-     */
-    public function getExistDatesNote()
-    {
-        return $this->existDatesNote;
-    }
-
-    /**
      * Get the constellation relations for this constellation
      *
      * @return \snac\data\ConstellationRelation[] Constellation relations
@@ -650,8 +608,6 @@ class Constellation extends AbstractData {
             "nameEntries" => array(),
             "occupations" => array(),
             "biogHists" => array(),
-            "existDates" => array(),
-            "existDatesNote" => $this->existDatesNote,
             "relations" => array(),
             "resourceRelations" => array(),
             "functions" => array(),
@@ -706,9 +662,6 @@ class Constellation extends AbstractData {
         foreach ($this->occupations as $i => $v)
             $return["occupations"][$i] = $v->toArray($shorten);
 
-        foreach ($this->existDates as $i => $v)
-            $return["existDates"][$i] = $v->toArray($shorten);
-
         foreach ($this->relations as $i => $v)
             $return["relations"][$i] = $v->toArray($shorten);
 
@@ -723,7 +676,6 @@ class Constellation extends AbstractData {
         
         foreach ($this->subjects as $i => $v)
             $return["subjects"][$i] = $v->toArray($shorten);
-
             
         $return = array_merge($return, parent::toArray($shorten));
         
@@ -815,12 +767,6 @@ class Constellation extends AbstractData {
             foreach ($data["biogHists"] as $i => $entry)
                 $this->biogHists[$i] = new BiogHist($entry);
 
-        unset($this->existDatesNote);
-        if (isset($data["existDatesNote"]))
-            $this->existDatesNote = $data["existDatesNote"];
-        else
-            $this->existDatesNote = null;
-
         unset($this->subjects);
         $this->subjects = array();
         if (isset($data["subjects"]))
@@ -876,13 +822,6 @@ class Constellation extends AbstractData {
         if (isset($data["occupations"])) {
             foreach ($data["occupations"] as $i => $entry)
                 $this->occupations[$i] = new Occupation($entry);
-        }
-
-        unset($this->existDates);
-        $this->existDates = array();
-        if (isset($data["existDates"])) {
-            foreach ($data["existDates"] as $i => $entry)
-                $this->existDates[$i] = new SNACDate($entry);
         }
 
         unset($this->relations);
@@ -1083,26 +1022,6 @@ class Constellation extends AbstractData {
         unset($this->genders);
         $this->genders = array();
         array_push($this->genders, $gender);
-    }
-
-    /**
-     * Set the exist dates for this Constellation
-     *
-     * @param \snac\data\SNACDate $dates Date object
-     */
-    public function addExistDates($dates) {
-
-        array_push($this->existDates, $dates);
-    }
-
-    /**
-     * Set the note on the exist dates for this Constellation
-     *
-     * @param string $note The descriptive note for the dates
-     */
-    public function setExistDatesNote($note) {
-
-        $this->existDatesNote = $note;
     }
 
     /**

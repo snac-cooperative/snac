@@ -128,8 +128,7 @@ class SQL
                             'insert into occupation
                             (version, main_id, occupation_id, vocabulary_source, note)
                             values 
-                            ($1, $2, (select id from vocabulary where type=\'occupation\' and value=regexp_replace($3, \'^.*#\', \'\')),
-                            $4, $5, $6)');
+                            ($1, $2, $3, $4, $5, $6)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
@@ -587,8 +586,21 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      * 
-     * @param $argList Flat array of data suitable for execute(). We assume that DBUtils
-     * knows the php to sql field translation.
+     * @param integer $targetID The constellation id of the related entity (aka the relation)
+     * 
+     * @param string $targetArkID The ARK of the related entity
+     * 
+     * @param string $targetEntityType The entity type of the target relation (aka the other entity aka the related entity)
+     * 
+     * @param $type Traditionally the xlink:arcrole of the relation (aka relation type, a controlled vocabulary)
+     * 
+     * @param $relationType The CPF relation type of this relationship, originally only used by AnF
+     * cpfRelation@cpfRelationType. Probably xlink:arcrole should be used instead of this. The two seem
+     * related and/or redundant.
+     * 
+     * @param $content Content of this relation
+     * 
+     * @param $note A note, perhaps a descriptive note about the relationship
      *
      * @return no return value.
      * 
@@ -605,6 +617,7 @@ class SQL
     {
         if (! $id)
         {
+            // If this is a new record, get a record id, else use the previously assigned id
             $id = $this->selectID();
         }
         $qq = 'insert_related_identity';
@@ -613,10 +626,7 @@ class SQL
                             (version, main_id, related_id, related_ark, role, arcrole, 
                             relation_type, relation_entry, descriptive_note, id)
                             values
-                            ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'entity_type\' and value=regexp_replace($5, \'^.*#\', \'\')),
-                            (select id from vocabulary where type=\'relation_type\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
 
         // Combine vhInfo and the remaining args into a big array for execute().
         $execList = array($vhInfo['version'], 

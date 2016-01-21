@@ -138,7 +138,7 @@ class SNACDate extends AbstractData {
      * * dateRange/descriptiveNote
      * * date/descriptiveNote
      * 
-     * (currently not used)
+     * (currently not used) Really not used? This seems like a good place to put the constellation exist dates note.
      * 
      * @var string Note about this date
      */

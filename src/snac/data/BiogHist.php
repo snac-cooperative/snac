@@ -35,6 +35,17 @@ class BiogHist extends AbstractData {
     private $text;
 
     /**
+     * Constructor. 
+     *
+     * Mostly this exists to call setMaxDateCount() to a reasonable number for this class.
+     *
+     */ 
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+    }
+
+
+    /**
      * Get the language this biogHist was written in
      * 
      * @return \snac\data\Language Language of this BiogHist

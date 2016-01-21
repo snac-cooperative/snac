@@ -31,6 +31,18 @@ abstract class AbstractData {
 
 
     /**
+     * Universal date object list. 
+     *
+     */
+    protected $dateList = array();
+
+    /**
+     * How many dates might be in the $dateList. Objects with no dates set this to some number greater than zero.
+     *
+     */
+    protected $maxDateCount = 0;
+
+    /**
      *
      * The record id, or constellation id for this class. This has two different meanings, depending on the
      * class. For Constellation.php this is the main_id of the constellation aka version_history.main_id. For
@@ -73,6 +85,48 @@ abstract class AbstractData {
             $this->fromArray($data);
     }
 
+    /**
+     * Unset the $dateList array. This might be done to prevent an toArray() from creating an empty array in
+     * the json.
+     */
+    public function unsetDateList()
+    {
+        unset($dateList);
+    }
+
+    /**
+     * Set the number of date objects we can have in the list of dates.
+     *
+     * @param integer $count The number of dates supported.  
+     *
+     */
+    public function setMaxDateCount($count)
+    {
+        $this->maxDateCount = $count;
+    }
+
+    /**
+     * Get the list of dates. 
+     *
+     * @return \snac\data\SNACDate[] Returns a list of SNACDate objects, or an empty list if there are no dates.
+     *
+     */ 
+    public function getDateList()
+    {
+        return $this->dateList;
+    }
+
+    /**
+     * Add a date object to our list of dates. 
+     *
+     * @param \snac\data\SNACDate A single SNACDate that will be added to our list of dates.
+     *
+     */
+    public function addDate($dateObj)
+    {
+        array_push($this->dateList, $dateObj);
+    }
+    
 
     /**
      * Set this object's database info in a single setter call, equivalent to setVersion($version); setID($id);
