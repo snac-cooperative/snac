@@ -1,3 +1,4 @@
+
 <?php
 /**
  * Name Entry File
@@ -123,7 +124,8 @@ class NameEntry extends AbstractData {
     /**
      * Get the language that this name entry is written in (language and script) 
      *
-     * @return \snac\data\Language Language of the entry
+     * @return \snac\data\Language Language of the entry. Language object's getLanguage() returns a Term
+     * object. Language getScript() returns a Term object for the script.
      *
      */
     public function getLanguage()

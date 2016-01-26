@@ -260,25 +260,20 @@ class DBUtil
         $neRows = $this->sql->selectNameEntry($vhInfo);
         foreach ($neRows as $oneName)
         {
-            /* 
-             * printf("pn id: %s version: %s name-main_id: %s constellation-main_id: %s\n",
-             *        $oneName['id'],
-             *        $oneName['version'],
-             *        $oneName['main_id'],
-             *        $vhInfo['main_id']);
-             */
             $neObj = new \snac\data\NameEntry();
             $neObj->setOriginal($oneName['original']);
-            $neObj->setLanguage($oneName['language']);
-            $neObj->setScriptCode($oneName['script_code']);
+            /* 
+             * $neObj->setLanguage($oneName['language']);
+             * $neObj->setScriptCode($oneName['script_code']);
+             */
             $neObj->setPreferenceScore($oneName['preference_score']);
+            $neObj->setDBInfo($oneName['version'], $oneName['id']);
+            $this->populateLanguage($neObj);
             foreach ($oneName['contributors'] as $contrib)
             {
                 $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
             }
-            $neObj->setDBInfo($oneName['version'], $oneName['id']);
             $this->populateDate($neObj);
-            
             $cObj->addNameEntry($neObj);
         }
     }
@@ -419,12 +414,16 @@ class DBUtil
     }
 
     /* 
-     * $this->populateLanguage($vhInfo, $cObj);
-     * We have two term ids, so they need unique names (not the usual "term_id").
+     * Select language from the database, create a language object, add the language to the object referencedy
+     * by $cObj.
+     *
+     * We have two term ids, language_id and script_id, so they need unique names (keys) and not the usual
+     * "term_id".
+     * 
      */
     public function populateLanguage($vhInfo, &$cObj)
     {
-        $rows = $this->sql->selectLanguage($vhInfo);
+        $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Language();
@@ -433,7 +432,6 @@ class DBUtil
             $newObj->setVocabularySource($item['vocabulary_source']);
             $newObj->setNote($item['note']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateDate($newObj);
             $cObj->addLanguage($newObj);
         }
     }
@@ -491,9 +489,10 @@ class DBUtil
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\BiogHist();
-            $newObj->setLanguage(populateLanguage($item['language_id']));
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
+            // $newObj->setLanguage(populateLanguage($item['language_id']));
+            $this->populateLanguage($newObj);
             $this->populateDate($newObj);
             $cObj->addBiogHist($newObj);
         }
@@ -713,6 +712,10 @@ class DBUtil
     /**
      * Private function. Update a php constellation that is already in the database. This is called from
      * insertConstellation() or updateConstellation().
+     *
+     * The id->getID() has been populated by the calling code, whether this is new or exists in the
+     * database. This is due to constellation id values coming out of table version_history, unlike all other
+     * tables. For this reason, insertNrd() does not return the nrd.id value.
      *  
      * @param \snac\data\Constellation $id A PHP Constellation object.
      *
@@ -733,6 +736,12 @@ class DBUtil
      */
     private function saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo)
     {
+        /*
+         * Unlike other insert functions, insertNrd() does not return the id value. The id for nrd is the
+         * constellation id, aka $vhInfo['main_id'] aka main_id aka version_history.main_id, and as always,
+         * $id->getID() once the Constellation has been saved to the database. The $vhInfo arg is created by
+         * accessing the database, so it is guaranteed to be "new" or at least, up-to-date.
+         */
         $this->sql->insertNrd($vhInfo,
                               $id->getArk(),
                               $id->getEntityType());
@@ -743,6 +752,7 @@ class DBUtil
             // getFromType() must be a Term object
             // getToType() must be a Term object
             $this->sql->insertDate($vhInfo,
+                                   $date->getID(),
                                    $this->sdb->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
                                    $date->getFromType->getID(),
@@ -759,23 +769,43 @@ class DBUtil
                                    $vhInfo['main_id']);
         }
 
+        foreach ($id->getLanguage() as $lang)
+        {
+            insertLang($vhInfo,
+                       $lang->getID(),
+                       $lang->getLanguage()->getID(),
+                       $lang->getScript()->getID(),
+                       $lang->getVocabularySource(),
+                       $lang->getNote(),
+                       'nrd',
+                       $vhInfo['main_id']);
+        }
 
+        foreach ($id->getBiogHistList() as $biogHist)
+        {
+            $this->saveBiogHist($vhInfo, $biogHist);
+        }
+
+        /*
+         * Other record id can be found in the SameAs class.
+         *
+         * Here $otherID is a SameAs object. getType() is a Term. getURI() is a string. 
+         */ 
         foreach ($id->getOtherRecordIDs() as $otherID)
         {
-            $otherID['type'] = $otherID['type'];
-            // Sanity check otherRecordID
-            if ($otherID['type'] != 'MergedRecord' and
-                $otherID['type'] != 'viafID')
+            if ($otherID->getType()->getText() != 'MergedRecord' and
+                $otherID->getType()->getText() != 'viafID')
             {
                 $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
-                               $otherID['type'],
-                               $id->getArk());
+                               $otherID->getType()->getText(),
+                               $otherID->getURI());
                 // TODO: Throw warning or log
             }
-            // otherID as an object:
-            // $oid = $otherID->getID();
-            $oid = null;
-            $this->sql->insertOtherID($vhInfo, $otherID['type'], $otherID['href'], $oid);
+            $this->sql->insertOtherID($vhInfo,
+                                      $otherID->getID(),
+                                      $otherID->getText(),
+                                      $otherID->getType()->getID(),
+                                      $otherID->getURI());
         }
 
         /* 
@@ -787,35 +817,53 @@ class DBUtil
             $this->saveName($vhInfo, $ndata);
         }
 
-        foreach ($id->getSources() as $sdata)
+        foreach ($id->getSources() as $fdata)
         {
             // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
             // validation.
 
-            // Fix this whens sources becomes an object
-            // $sid = $id->getID();
-            $sid = null;
-            $this->sql->insertSource($vhInfo,
-                                     $sdata['href'],
-                                     $sid);
+            $sid = $this->sql->insertSource($vhInfo,
+                                            $fdata->getID(),
+                                            $fdata->getText(),
+                                            $fdata->getNote(),
+                                            $fdata->getURI(),
+                                            $fdata->getType->getID(),
+                                            $sid);
+            $lang = $fdata->getLanguage();
+            $this->sql->insertLang($vhInfo,
+                                   $lang->getID(),
+                                   $lang->getLanguage()->getID(),
+                                   $lang->getScript()->getID(),
+                                   $lang->getVocabularySource(),
+                                   $lang->getNote(),
+                                   'source',
+                                   $sid);
         }
 
-        foreach ($id->getLegalStatuses() as $sdata)
+        foreach ($id->getLegalStatuses() as $fdata)
         {
-            printf("Need to insert legalStatuses...\n");
+            $this->sql->insertLegalStatus($vhInfo,
+                                          $fdata->getID(),
+                                          $fdata->getTerm()->getID());
         }
 
-        // fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
+        /*
+         * Insert an occupation. If this is a new occupation, or a new constellation we will get a new
+         * occupation id which we save in $occID and use for the related dates.
+         *
+         * fdata is foreach data. Just a notation that the generic variable is for local use in this loop. 
+         */
         foreach ($id->getOccupations() as $fdata)
         {
-            $this->sql->insertOccupation($vhInfo,
-                                         $fdata->getTerm(),
-                                         $fdata->getVocabularySource(),
-                                         $fdata->getNote(),
-                                         $fdata->getID());
+            $occID = $this->sql->insertOccupation($vhInfo,
+                                                  $fdata->getID(),
+                                                  $fdata->getTerm()->getID(),
+                                                  $fdata->getVocabularySource(),
+                                                  $fdata->getNote());
             foreach ($fdata->getDateList() as $date)
             {
                 $date_fk = $this->insertDate($vhInfo,
+                                             $date->getID(),
                                              $this->sdb->boolToPg($date->getIsRange()),
                                              $date->getFromDate(),
                                              $date->getFromType->getID(),
@@ -829,7 +877,7 @@ class DBUtil
                                              $date->getToRange()['notAfter'],
                                              $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
                                              'occupation',
-                                             $fdata->getID());
+                                             $occID);
             }
         }
 
@@ -854,7 +902,7 @@ class DBUtil
 
         foreach ($id->getFunctions() as $fdata)
         {
-            $this->sql->insertFunction($vhInfo,
+            $funID = $this->sql->insertFunction($vhInfo,
                                        $fdata->getType()->getID(), // Term object
                                        $fdata->getVocabularySource(),
                                        $fdata->getNote(),
@@ -867,6 +915,7 @@ class DBUtil
             foreach ($fdata->getDateList() as $date)
             {
                 $date_fk = $this->sql->insertDate($vhInfo, 
+                                                  $date->getID(),
                                                   $this->sdb->boolToPg($date->getIsRange()),
                                                   $date->getFromDate(),
                                                   $date->getFromType->getID(),
@@ -880,16 +929,21 @@ class DBUtil
                                                   $date->getToRange()['notAfter'],
                                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
                                                   'function',
-                                                  $fData->getID());
+                                                  $funID);
             }
         }
 
+        /*
+         * getID() is the subject object record id.
+         *
+         * getTerm()->getID() is the vocabulary id of the Term object inside subject.
+         * 
+         */ 
         foreach ($id->getSubjects() as $term)
         {
-            // Fix this when subject becomes an object.
-            // $sid = $subjectObject->getID();
-            $sid = null;
-            $this->sql->insertSubject($vhInfo, $term, $sid); 
+            $this->sql->insertSubject($vhInfo, 
+                                      $term->getID(),
+                                      $term->getTerm->getID()); 
         }
 
         /*
@@ -918,7 +972,7 @@ class DBUtil
 
         foreach ($id->getRelations() as $fdata)
         {
-            $this->sql->insertRelation($vhInfo,
+            $relID = $this->sql->insertRelation($vhInfo,
                                        $fdata->getTargetConstellation(),
                                        $fdata->getTargetArkID(),
                                        $fdata->getTargetEntityType(),
@@ -930,6 +984,7 @@ class DBUtil
             foreach ($fdata->getDateList() as $date)
             {
                 $date_fk = $this->insertDate($vhInfo, 
+                                             $date->getID(),
                                              $this->sdb->boolToPg($date->getIsRange()),
                                              $date->getFromDate(),
                                              $date->getFromType->getID(),
@@ -943,7 +998,7 @@ class DBUtil
                                              $date->getToRange()['notAfter'],
                                              $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
                                              'related_identity',
-                                             $id);
+                                             $relID);
             }
         }
 
@@ -984,6 +1039,51 @@ class DBUtil
     } // end saveConstellation
 
     /**
+     * Save the biogHist, biogHist language, and biogHist date(s?). This is a private function that exists to
+     * keep the code organized. It is probably only called from saveConstellation().
+     *
+     * @param array[] $vhInfo Associative list with keys version, main_id
+     *
+     * @param \snac\data\BiogHist A single BiogHist object.
+     */ 
+    private function saveBiogHist($vhInfo, $biogHist)
+    {
+        $bid = insertBiogHist($vhInfo,
+                              $biogHist->getID(),
+                              $biogHist->getText());
+        
+        $lang = $biogHist->getLanguage();
+        $this->sql->insertLang($vhInfo,
+                               $lang->getID(),
+                               $lang->getLanguage()->getID(),
+                               $lang->getScript()->getID(),
+                               $lang->getVocabularySource(),
+                               $lang->getNote(),
+                               'biog_hist',
+                               $bid);
+        
+        foreach ($biogHist->getDateList() as $date)
+        {
+            $this->sql->insertDate($vhInfo,
+                                   $date->getID(),
+                                   $this->sdb->boolToPg($date->getIsRange()),
+                                   $date->getFromDate(),
+                                   $date->getFromType->getID(),
+                                   $this->sdb->boolToPg($date->getFromBc()),
+                                   $date->getFromRange()['notBefore'],
+                                   $date->getFromRange()['notAfter'],
+                                   $date->getToDate(),
+                                   $date->getToType->getID(),
+                                   $this->sdb->boolToPg($date->getToBc()),
+                                   $date->getToRange()['notBefore'],
+                                   $date->getToRange()['notAfter'],
+                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
+                                   'biog_hist',
+                                   $bid);
+        }
+    }
+
+    /**
      * Get ready to update by creating a new version_history record, and getting the new version number
      * back. The constellation id (main_id) is unchanged. Each table.id is also unchanged. Both main_id and
      * table.id *must* not change.
@@ -1014,23 +1114,58 @@ class DBUtil
     }
 
     /**
-     * Save a name entry to the database.
+     * Save a name entry to the database. This exists primarily to make the code here in DBUtil more legible.
+     *
+     * Note about \snac\data\Language objects. This is the Language of the entry. Language object's
+     * getLanguage() returns a Term object. Language getScript() returns a Term object for the script. The
+     * database only uses the id of each Term.
+     *
+     * When saving a name, the database assigns it a new id, and returns that id. We must be sure to use
+     * $nameID for related dates, etc.
      *
      * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
      *
      * @param \snac\data\NameEntry Name entry object
      *
      */
-    public function saveName($vhInfo, $ndata)
+    private function saveName($vhInfo, $ndata)
     {
-        $this->sql->insertName($vhInfo, 
+        $nameID = $this->sql->insertName($vhInfo, 
                                $ndata->getOriginal(),
                                $ndata->getPreferenceScore(),
                                $ndata->getContributors(), // list of type/contributor values
-                               $ndata->getLanguage(),
-                               $ndata->getScriptCode(),
-                               $ndata->getUseDates(),
                                $ndata->getID());
+        foreach ($ndata->getLanguage() as $lang)
+        {
+            insertLang($vhInfo,
+                       $lang->getID(),
+                       $lang->getLanguage()->getID(),
+                       $lang->getScript()->getID(),
+                       $lang->getVocabularySource(),
+                       $lang->getNote(),
+                       'name',
+                       $nameID());
+        }
+        foreach ($ndata->getUseDates() as $date)
+        {
+            $this->sql->insertDate($vhInfo,
+                                   $date->getID(),
+                                   $this->sdb->boolToPg($date->getIsRange()),
+                                   $date->getFromDate(),
+                                   $date->getFromType->getID(),
+                                   $this->sdb->boolToPg($date->getFromBc()),
+                                   $date->getFromRange()['notBefore'],
+                                   $date->getFromRange()['notAfter'],
+                                   $date->getToDate(),
+                                   $date->getToType->getID(),
+                                   $this->sdb->boolToPg($date->getToBc()),
+                                   $date->getToRange()['notBefore'],
+                                   $date->getToRange()['notAfter'],
+                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
+                                   'name',
+                                   $nameID);
+        }
+            
     }
 
 

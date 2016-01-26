@@ -388,6 +388,18 @@ class Constellation extends AbstractData {
         return $this->languagesUsed;
     }
 
+    /**
+     * Alias function for getLanguagesUsed(). Get the Languages Used. Called in DBUtil.
+     *
+     * @return \snac\data\Language[] Languages and scripts used by the identity described
+     *
+     */
+    public function getLanguage()
+    {
+        return $this->getLanguagesUsed();
+    }
+
+
 
     /**
      * Get the name entries for this constellation
@@ -410,6 +422,19 @@ class Constellation extends AbstractData {
     {
         return $this->occupations;
     }
+
+    /**
+     * Get the list of BiogHist for this constellation. Each BiogHist is presumed to be a translation in a
+     * specific language. See getBiogHist() which returns only a single BiogHist.
+     *
+     * @return \snac\data\BiogHist[] An array of BiogHist ordered by language 3 letter code, or an empty list
+     * if no BiogHist exists for this Constellation
+     */
+    public function getBiogHistList()
+    {
+        return $this->biogHists;
+    }
+
 
     /**
      * Get the BiogHist for this constellation.
@@ -984,6 +1009,21 @@ class Constellation extends AbstractData {
     public function addLanguageUsed($language) {
         array_push($this->languagesUsed, $language);
     }
+
+    /**
+     * Calls addLanguageUsed() and serves as an alias in DBUtil.
+     *
+     * Add a language used by this constellation's identity. (You might be tempted to call this
+     * setLanguages() or the singular setLanguage() as the converse of getLanguages().)
+     *
+     * @param  \snac\data\Language Language and script used by this identity
+     *
+     */ 
+    public function addLanguage($language) {
+        $this->addLanguageUsed($language);
+    }
+
+
 
     /**
      * Add the subject to this Constellation

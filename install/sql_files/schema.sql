@@ -317,17 +317,37 @@ create table date_range (
 
 create unique index date_range_idx1 on date_range(id,main_id,version);
 
+
+-- This corresponds to a php Language object, and has both language id values and script_id values.
+
+create table language (
+        id              int default nextval('id_seq'),
+        version           int not null,
+        main_id           int not null,
+        is_deleted        boolean default false,
+        language_id       int,  -- fk to vocabulary
+        script_id         int,  -- fk to vocabulary
+        vocabulary_source text,
+        note              text,
+        fk_table          text, -- table name of the related foreign table. Exists only as a backup
+        fk_id             int,  -- table.id of the related record
+        primary         key(id, version)
+        );
+
+create unique index language_idx1 on date_range(id,main_id,version);
+
 -- From the <source> element. The href and objectXMLWrap are not consistently used, so this may be
--- unnecessary.
+-- unnecessary. There will (often?) be a related entry in table language, related on source.id=language.fk_id.
 
 create table source (
-    id                  int default nextval('id_seq'),
-    version             int not null,
-    main_id int not null,
+    id         int default nextval('id_seq'),
+    version    int not null,
+    main_id    int not null,
     is_deleted boolean default false,
-    source_type         int, -- maybe unnecessary, probably hardcoded to "simple"
-    href                text,
-    object_xml_wrap     text,
+    text       text,    -- Text of this source
+    note       text,    -- Note related to this source
+    uri        text,    -- URI of this source
+    type_id    integer, -- Type of this source
     primary key(id, version)
     );
 
@@ -566,14 +586,17 @@ create table vocabulary_use (
     db_field    text  -- field in that table in this database
 );
 
--- Link constellation to original imported record id, aka extract record id. Probably does not need version since this is not user-editable.
+-- Link constellation to original imported record id, aka extract record id. Probably does not need version
+-- since this is not user-editable, but we give everything id, version, and main_id for the sake of
+-- consistency.
 
 create table otherid (
         id         int default nextval('id_seq'),
         version    int not null,
         main_id    int not null,
-        other_id   text, -- extracted record id, fk to target version_history.main_id
-        link_type  int,  -- (fk to vocabulary.id) -- type of link (right now, only MergedRecord)
+        text text, -- unclear what this is parse from in CPF. See SameAs.php.
+        uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.main_id
+        type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
         primary    key(id, version)
     );
 

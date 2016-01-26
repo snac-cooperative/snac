@@ -76,10 +76,11 @@ class SQL
      * @param string $href A string that goes into source.href. Presumably this is a resolvable URI for the
      * source, but sources are not currenly well defined.
      *
-     * @return No return value.
+     * @return integer The id value of this record. Sources have a language, so we need to return the $id
+     * which is used by language as a foreign key.
      * 
      */
-    public function insertSource($vhInfo, $href, $id)
+    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID)
     {
         if (! $id)
         {
@@ -88,36 +89,38 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
-                            (version, main_id, href, id)
+                            (version, main_id, id, text, note, uri, type_id)
                             values 
-                            ($1, $2, $3, $4)');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
-                                  $href,
-                                  $id));
+                                  $id,
+                                  $text,
+                                  $node, 
+                                  $uri, 
+                                  $typeID));
         $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
     /**
-     * Insert a constellation occupation.
+     * Insert a constellation occupation. If the $id arg is null, get a new id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string $term Vocabulary term string which will be saved as a vocabulary.id foreign key. This
-     * goes into occupation.occupation_id.
+     * @param int $id Record id occupation.id
+     *
+     * @param int $termID Vocabulary term foreign key id. Managed via Term objects in the calling code.
      *
      * @param string $vocabularySource Not currently saved. As far as we know, these are specific to
      * AnF. These probably should be somehow cross-walked to the SNAC vocabularies.
      *
      * @param string $note A note about the occupation.
      *
-     * @param integer Record id value, aka table.id. If null due to a new object, we simply mint a new id.
-     *
-     *
      */ 
-    public function insertOccupation($vhInfo, $term, $vocabularySource, $note, $id)
+    public function insertOccupation($vhInfo, $id, $termID, $vocabularySource, $note)
     {
         if (! $id)
         {
@@ -126,17 +129,18 @@ class SQL
         $qq = 'insert_occupation';
         $this->sdb->prepare($qq, 
                             'insert into occupation
-                            (version, main_id, occupation_id, vocabulary_source, note)
+                            (version, main_id, id, occupation_id, vocabulary_source, note)
                             values 
                             ($1, $2, $3, $4, $5, $6)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
-                                            $term,
+                                            $id, 
+                                            $termID,
                                             $vocabularySource,
-                                            $note,
-                                            $id));
+                                            $note));
         $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
@@ -279,6 +283,7 @@ class SQL
      */
 
     public function insertDate($vhInfo,
+                               $id, 
                                $isRange,
                                $fromDate,
                                $fromType, // fk to vocabulary
@@ -294,20 +299,22 @@ class SQL
                                $fk_table,
                                $fk_id)
     {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
-                            (version, main_id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
+                            (version, main_id, id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
                             to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5,
-                            $6, $7, $8, $9, $10,
-                            $11, $12, $13, $14, $15, $16)
-                            returning id');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)');
 
        $result = $this->sdb->execute($qq,
                                      array($vhInfo['version'], 
                                            $vhInfo['main_id'],
+                                           $id,
                                            $isRange,
                                            $fromDate,
                                            $fromType,
@@ -325,7 +332,7 @@ class SQL
 
        $row = $this->sdb->fetchrow($result);
        $this->sdb->deallocate($qq);
-       return $row['id'];
+       return $id;
     }
 
 
@@ -365,7 +372,6 @@ class SQL
         {
             array_push($all, $row);
         }
-
         $this->sdb->deallocate($qq);
         return $all;
     }
@@ -404,13 +410,18 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string $type The vocabulary id for this string into field link_type.
+     * @param int $id The id of this record, otherid.id
      *
-     * @param string $href This is the href for the persistent id of the other merged record, if it has
-     * one. Or this might simply be some kind of ID string.
+     * @param string $text The text of the SameAs object. 
+     *
+     * @param integer $typeID Vocabulary id foreign key for the type of this otherID. Probably the ids for
+     * MergedRecord, viafID. From the SameAs object.
+     *
+     * @param string $uri The URI of the other record, probably the SNAC ARK as a URI/URL. From the SameAs
+     * object.
      *
      */ 
-    public function insertOtherID($vhInfo, $type, $href, $id)
+    public function insertOtherID($vhInfo, $id, $text, $typeID, $uri)
     {
         if (! $id)
         {
@@ -419,18 +430,19 @@ class SQL
         $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
                             'insert into otherid
-                            (version, main_id, other_id, id, link_type)
+                            (version, main_id, id, text, uri, type)
                             values
-                            ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'record_type\' and value=regexp_replace($5, \'^.*#\', \'\')))');
+                            ($1, $2, $3, $4, $5, $6)');
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
-                                            $href,
                                             $id,
-                                            $type));
+                                            $text,
+                                            $typeID,
+                                            $uri));
         $this->sdb->deallocate($qq);
+        return $id;
     }
     
     /** 
@@ -446,12 +458,9 @@ class SQL
      * @param string[][] $contributors List of list with keys 'contributor', 'type'. Inserted into table
      * name_contributor.
      *
-     * @param string $language The language of this name. This value will be retrieved from table vocabulary,
-     * and the id saved in table name. This should be in the table vocabulary, however, instead of passing
-     * strings back and forth, we really should be using id values from the database, so this param needs
-     * work.
+     * @param integer $language The language id of this name. 
      *
-     * @param string $scriptCode The script code of this name. Looked up from table vocabulary and the id saved in table name.
+     * @param integer $scriptCode The script code id for this name. 
      *
      * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
      * from selectID().
@@ -476,10 +485,7 @@ class SQL
                             'insert into name
                             (version, main_id, original, preference_score, language, script_code, id)
                             values
-                            ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'language\' and value=regexp_replace($5, \'^.*#\', \'\')),
-                            (select id from vocabulary where type=\'scriptCode\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7)');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         
         $result = $this->sdb->execute($qq_1,
                                       array($vhInfo['version'],
@@ -517,12 +523,15 @@ class SQL
 
         $this->sdb->deallocate($qq_1);
         $this->sdb->deallocate($qq_2);
+        return $nameID;
     }
     
     
     /**
      * Insert into table function. The SQL returns the inserted id which is used when inserting a date into
      * table date_range. Function uses the same vocabulary terms as occupation.
+     *
+     * If the $id arg is null, get a new id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -545,11 +554,77 @@ class SQL
         $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
+        return $id;
     }
+
+    public function insertLanguage($vhInfo, $id, $languageID, $scriptID, $vocabularySource, $note, $fkTable, $fkID)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_language';
+        $this->sdb->prepare($qq,
+                            'insert into language
+                            (version, main_id, id, language_id, script_id, vocabulary_source, note, fk_table, fk_id)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
+        $eArgs = array($vhInfo['version'],
+                       $vhInfo['main_id'],
+                       $id,
+                       $languageID,
+                       $scriptID,
+                       $vocabularySource,
+                       $note,
+                       $fkTable,
+                       $fkID);
+        $result = $this->sdb->execute($qq, $eArgs);
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
+     * Note: This always gets the max version (most recent) for a given fkID. (Really? What is $version?)
+     * Published records (older than a specific edit) might show the edit (more recent) language. This is
+     * untested.  fix.
+     *
+     * Select a language knowing a fkID value. This elies on the language.fkid being in the original table,
+     * thus $fkID is a foreign key of the record to which this language applies. This does not know or care
+     * what the other record is. Note that for the "foreign-key-across-all-tables" to work, all the tables
+     * must use the same sequence (that is: id_seq).
+     *
+     * @param integer $fkID A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of location fields as list with keys matching the database field names.
+     */ 
+    public function selectLanguage($fkID, $version)
+    {
+        $qq = 'select_language';
+        $this->sdb->prepare($qq,
+                            'select aa.version, aa.main_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+                            from language as aa
+                            (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($fkID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+
 
     
     /**
-     * Insert into table subject. Data is currently only a string from the Constellation.
+     * Insert into table subject. Data is currently only a string from the Constellation. If $id is null, get
+     * a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -558,7 +633,7 @@ class SQL
      * @return no return value.
      * 
      */
-    public function insertSubject($vhInfo, $term, $id)
+    public function insertSubject($vhInfo, $id, $subjectID)
     {
         if (! $id)
         {
@@ -569,14 +644,15 @@ class SQL
                             'insert into subject
                             (version, main_id, id, subject_id)
                             values
-                            ($1, $2, $3, (select id from vocabulary where type=\'subject\' and value=regexp_replace($4, \'^.*#\', \'\')))');
+                            ($1, $2, $3, $4)');
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $id,
-                                            $term));
+                                            $subjectID));
         $this->sdb->deallocate($qq);
+        return id;
     }
 
     /**
@@ -739,6 +815,41 @@ class SQL
         $this->sdb->deallocate($qq);
         return $row;
     }
+
+
+    /**
+     * This table has biogHist text, and serves as a record for the biogHist language foreign key. Note that
+     * language (like date) relies on the fk from the original table to reside in the language table. Calling
+     * code will use a second function to retrieve the langauge of the biogHist, that is the language related
+     * to this biogHist.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[] An associative list with keys: version, main_id, id, text.
+     * 
+     */
+    public function selectBiogHist($vhInfo)
+    {
+        $qq = 'sbh';
+        $this->sdb->prepare($qq, 
+                            'select
+                            aa.version, aa.main_id, aa.id, aa.text
+                            from biog_hist as aa,
+                            (select main_id, max(version) as version from nrd where version<=$1 and main_id=$2 group by main_id) as bb
+                            where not aa.is_deleted and
+                            aa.main_id=bb.main_id
+                            and aa.version=bb.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq, 
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
 
     /** 
      *
@@ -1008,7 +1119,7 @@ class SQL
      */ 
     public function selectFunction($vhInfo)
     {
-        $qq = 'select_related_resource';
+        $qq = 'select_function';
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.main_id, aa.function_type, aa.vocabulary_source, aa.note,
