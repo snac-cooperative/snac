@@ -456,7 +456,7 @@ class EACCPFParser {
                                                                      $node->getName() . $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $identity->addExistDates($date);
+                                    $identity->addDate($date);
                                         break;
                                     case "descriptiveNote":
                                         $identity->setExistDatesNote((string) $dates);
@@ -1152,7 +1152,9 @@ class EACCPFParser {
                 switch ($dateTag->getName()) {
                 case "fromDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "date_type"));
+                        $date->setFromDate((string) $dateTag, 
+                                           $dateAtts["standardDate"], 
+                                           $this->getTerm($this->getValue($dateAtts["localType"]), "date_type"));
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1240,13 +1242,15 @@ class EACCPFParser {
             else
             {
                 /* Silently make dates with no standard date only partial complete.
+                 *
+                 * Arg 3 is type which is Term object, important to send a Term object, not null or '' (empty string)
                  * 
                  * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
                  * $stderr = fopen('php://stderr', 'w');
                  * fwrite($stderr,"  $message\n");
                  * fclose($stderr); 
                  */
-                $date->setDate((string) $dateElement, '', '');
+                $date->setDate((string) $dateElement, '', new \snac\data\Term());
             }
         }
         return $date;

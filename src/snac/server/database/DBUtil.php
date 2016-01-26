@@ -48,13 +48,20 @@ class DBUtil
      */ 
     private $canDelete = null; 
 
+    /**
+     * Database connector object
+     * 
+     * @var \snac\server\database\DatabaseConnector object.
+     */
+    private $db = null;
+
     /** 
      * The constructor for the DBUtil class. 
      */
     public function __construct() 
     {
-        $db = new \snac\server\database\DatabaseConnector();
-        $this->sql = new SQL($db);
+        $this->db = new \snac\server\database\DatabaseConnector();
+        $this->sql = new SQL($this->db);
         $this->canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
                                                  'contributor', 'date_range', 'source', 
                                                  'source_link', 'control', 'pre_snac_maintenance_history',
@@ -741,10 +748,14 @@ class DBUtil
          * constellation id, aka $vhInfo['main_id'] aka main_id aka version_history.main_id, and as always,
          * $id->getID() once the Constellation has been saved to the database. The $vhInfo arg is created by
          * accessing the database, so it is guaranteed to be "new" or at least, up-to-date.
+         *
+         * The entityType may be null because toArray() can't tell the differnce between an empty class and a
+         * non-empty class, leading to empty classes littering the JSON with empty json. To avoid that, we use
+         * null for an empty class, and test with the ternary operator.
          */
         $this->sql->insertNrd($vhInfo,
                               $id->getArk(),
-                              $id->getEntityType());
+                              $id->getEntityType() == null ? null : $id->getEntityType()->getID());
 
         foreach ($id->getDateList() as $date)
         {
@@ -753,15 +764,15 @@ class DBUtil
             // getToType() must be a Term object
             $this->sql->insertDate($vhInfo,
                                    $date->getID(),
-                                   $this->sdb->boolToPg($date->getIsRange()),
+                                   $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType->getID(),
-                                   $this->sdb->boolToPg($date->getFromBc()),
+                                   $date->getFromType()->getID(),
+                                   $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
                                    $date->getToDate(),
-                                   $date->getToType->getID(),
-                                   $this->sdb->boolToPg($date->getToBc()),
+                                   $date->getToType()==null?null:$date->getToType()->getID(),
+                                   $this->db->boolToPg($date->getToBc()),
                                    $date->getToRange()['notBefore'],
                                    $date->getToRange()['notAfter'],
                                    $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
@@ -771,14 +782,14 @@ class DBUtil
 
         foreach ($id->getLanguage() as $lang)
         {
-            insertLang($vhInfo,
-                       $lang->getID(),
-                       $lang->getLanguage()->getID(),
-                       $lang->getScript()->getID(),
-                       $lang->getVocabularySource(),
-                       $lang->getNote(),
-                       'nrd',
-                       $vhInfo['main_id']);
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'nrd',
+                                       $vhInfo['main_id']);
         }
 
         foreach ($id->getBiogHistList() as $biogHist)
@@ -789,15 +800,16 @@ class DBUtil
         /*
          * Other record id can be found in the SameAs class.
          *
-         * Here $otherID is a SameAs object. getType() is a Term. getURI() is a string. 
+         * Here $otherID is a SameAs object. SameAs->getType() is a Term object. SameAs->getURI() is a string.
+         * Term->getTerm() is a string. SameAs->getText() is a string.
          */ 
         foreach ($id->getOtherRecordIDs() as $otherID)
         {
-            if ($otherID->getType()->getText() != 'MergedRecord' and
-                $otherID->getType()->getText() != 'viafID')
+            if ($otherID->getType()->getTerm() != 'MergedRecord' and
+                $otherID->getType()->getTerm() != 'viafID')
             {
                 $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
-                               $otherID->getType()->getText(),
+                               $otherID->getType()->getTerm(),
                                $otherID->getURI());
                 // TODO: Throw warning or log
             }
@@ -827,17 +839,20 @@ class DBUtil
                                             $fdata->getText(),
                                             $fdata->getNote(),
                                             $fdata->getURI(),
-                                            $fdata->getType->getID(),
-                                            $sid);
+                                            $fdata->getType()->getID(),
+                                            $fdata->getID());
             $lang = $fdata->getLanguage();
-            $this->sql->insertLang($vhInfo,
-                                   $lang->getID(),
-                                   $lang->getLanguage()->getID(),
-                                   $lang->getScript()->getID(),
-                                   $lang->getVocabularySource(),
-                                   $lang->getNote(),
-                                   'source',
-                                   $sid);
+            if ($lang)
+            {
+                $this->sql->insertLanguage($vhInfo,
+                                           $lang->getID(),
+                                           $lang->getLanguage()->getID(),
+                                           $lang->getScript()->getID(),
+                                           $lang->getVocabularySource(),
+                                           $lang->getNote(),
+                                           'source',
+                                           $sid);
+            }
         }
 
         foreach ($id->getLegalStatuses() as $fdata)
@@ -862,17 +877,17 @@ class DBUtil
                                                   $fdata->getNote());
             foreach ($fdata->getDateList() as $date)
             {
-                $date_fk = $this->insertDate($vhInfo,
+                $date_fk = $this->sql->insertDate($vhInfo,
                                              $date->getID(),
-                                             $this->sdb->boolToPg($date->getIsRange()),
+                                             $this->db->boolToPg($date->getIsRange()),
                                              $date->getFromDate(),
-                                             $date->getFromType->getID(),
-                                             $this->sdb->boolToPg($date->getFromBc()),
+                                             $date->getFromType()->getID(),
+                                             $this->db->boolToPg($date->getFromBc()),
                                              $date->getFromRange()['notBefore'],
                                              $date->getFromRange()['notAfter'],
                                              $date->getToDate(),
-                                             $date->getToType->getID(),
-                                             $this->sdb->boolToPg($date->getToBc()),
+                                             $date->getToType()==null?null:$date->getToType()->getID(),
+                                             $this->db->boolToPg($date->getToBc()),
                                              $date->getToRange()['notBefore'],
                                              $date->getToRange()['notAfter'],
                                              $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
@@ -916,15 +931,15 @@ class DBUtil
             {
                 $date_fk = $this->sql->insertDate($vhInfo, 
                                                   $date->getID(),
-                                                  $this->sdb->boolToPg($date->getIsRange()),
+                                                  $this->db->boolToPg($date->getIsRange()),
                                                   $date->getFromDate(),
-                                                  $date->getFromType->getID(),
-                                                  $this->sdb->boolToPg($date->getFromBc()),
+                                                  $date->getFromType()->getID(),
+                                                  $this->db->boolToPg($date->getFromBc()),
                                                   $date->getFromRange()['notBefore'],
                                                   $date->getFromRange()['notAfter'],
                                                   $date->getToDate(),
-                                                  $date->getToType->getID(),
-                                                  $this->sdb->boolToPg($date->getToBc()),
+                                                  $date->getToType()==null?null:$date->getToType()->getID(),
+                                                  $this->db->boolToPg($date->getToBc()),
                                                   $date->getToRange()['notBefore'],
                                                   $date->getToRange()['notAfter'],
                                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
@@ -943,7 +958,7 @@ class DBUtil
         {
             $this->sql->insertSubject($vhInfo, 
                                       $term->getID(),
-                                      $term->getTerm->getID()); 
+                                      $term->getTerm()->getID()); 
         }
 
         /*
@@ -951,49 +966,59 @@ class DBUtil
           ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
           ignored: always 'simple', altType, cpfRelation@xlink:type vocab source_type, .type
 
-          | placeholder | php                 | what                                          | sql               |
-          |-------------+---------------------+-----------------------------------------------+-------------------|
-          |           1 | $vhInfo['version']  |                                               | version           |
-          |           2 | $vhInfo['main_id']  |                                               | main_id           |
-          |           3 | targetConstellation | id fk to version_history                      | .related_id       |
-          |           4 | targetArkID         | ark                                           | .related_ark      |
-          |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type     | .role             |
-          |           6 | type                | cpfRelation@xlink:arcrole vocab relation_type | .arcrole          |
-          |           7 | cpfRelationType     | AnF only, so far                              | .relation_type    |
-          |           8 | content             | cpfRelation/relationEntry, usually a name     | .relation_entry   |
-          |           9 | dates               | cpfRelation/date (or dateRange)               | .date             |
-          |          10 | note                | cpfRelation/descriptiveNote                   | .descriptive_note |
+          | placeholder | php                 | what                                                       | sql               |
+          |-------------+---------------------+------------------------------------------------------------+-------------------|
+          |           1 | $vhInfo['version']  |                                                            | version           |
+          |           2 | $vhInfo['main_id']  |                                                            | main_id           |
+          |           3 | targetConstellation | id fk to version_history                                   | .related_id       |
+          |           4 | targetArkID         | ark                                                        | .related_ark      |
+          |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type, Term object     | .role             |
+          |           6 | type                | cpfRelation@xlink:arcrole vocab relation_type, Term object | .arcrole          |
+          |           7 | cpfRelationType     | AnF only, so far                                           | .relation_type    |
+          |           8 | content             | cpfRelation/relationEntry, usually a name                  | .relation_entry   |
+          |           9 | dates               | cpfRelation/date (or dateRange)                            | .date             |
+          |          10 | note                | cpfRelation/descriptiveNote                                | .descriptive_note |
 
           New convention: when there are dates, make them the second arg. Final arg is a list of all the
           scalar values that will eventually be passed to execute() in the SQL function. This convention
           is already in use in a couple of places, but needs to be done for some existing functions.
 
+          Ignore ConstellationRelation->$altType. It was always "simple".
+
         */
 
         foreach ($id->getRelations() as $fdata)
         {
+            /*
+             * altType is cpfRelationType, at least in the CPF. 
+             */ 
+            $cpfRelTypeID = null;
+            if ($cr = $fdata->getcpfRelationType())
+            {
+                $cpfRelTypeID = $cr->getID();
+            }
             $relID = $this->sql->insertRelation($vhInfo,
-                                       $fdata->getTargetConstellation(),
-                                       $fdata->getTargetArkID(),
-                                       $fdata->getTargetEntityType(),
-                                       $fdata->getType(),
-                                       $fdata->getCpfRelationType(),
-                                       $fdata->getContent(),
-                                       $fdata->getNote(),
-                                       $fdata->getID());
+                                                $fdata->getTargetConstellation(),
+                                                $fdata->getTargetArkID(),
+                                                $fdata->getTargetEntityType()->getID(),
+                                                $fdata->getType()->getID(),
+                                                $cpfRelTypeID,
+                                                $fdata->getContent(),
+                                                $fdata->getNote(),
+                                                $fdata->getID());
             foreach ($fdata->getDateList() as $date)
             {
-                $date_fk = $this->insertDate($vhInfo, 
+                $date_fk = $this->sql->insertDate($vhInfo, 
                                              $date->getID(),
-                                             $this->sdb->boolToPg($date->getIsRange()),
+                                             $this->db->boolToPg($date->getIsRange()),
                                              $date->getFromDate(),
-                                             $date->getFromType->getID(),
-                                             $this->sdb->boolToPg($date->getFromBc()),
+                                             $date->getFromType()->getID(),
+                                             $this->db->boolToPg($date->getFromBc()),
                                              $date->getFromRange()['notBefore'],
                                              $date->getFromRange()['notAfter'],
                                              $date->getToDate(),
-                                             $date->getToType->getID(),
-                                             $this->sdb->boolToPg($date->getToBc()),
+                                             $date->getToType()==null?null:$date->getToType()->getID(),
+                                             $this->db->boolToPg($date->getToBc()),
                                              $date->getToRange()['notBefore'],
                                              $date->getToRange()['notAfter'],
                                              $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
@@ -1025,10 +1050,10 @@ class DBUtil
         foreach ($id->getResourceRelations() as $fdata)
         {
             $this->sql->insertResourceRelation($vhInfo,
-                                               $fdata->getDocumentType(),
-                                               $fdata->getEntryType(),
+                                               $fdata->getDocumentType()->getID(),
+                                               $fdata->getEntryType()== null ? null : $fdata->getEntryType()->getID(),
                                                $fdata->getLink(),
-                                               $fdata->getRole(),
+                                               $fdata->getRole()->getID(),
                                                $fdata->getContent(),
                                                $fdata->getSource(),
                                                $fdata->getNote(),
@@ -1048,33 +1073,33 @@ class DBUtil
      */ 
     private function saveBiogHist($vhInfo, $biogHist)
     {
-        $bid = insertBiogHist($vhInfo,
+        $bid = $this->sql->insertBiogHist($vhInfo,
                               $biogHist->getID(),
                               $biogHist->getText());
         
         $lang = $biogHist->getLanguage();
-        $this->sql->insertLang($vhInfo,
-                               $lang->getID(),
-                               $lang->getLanguage()->getID(),
-                               $lang->getScript()->getID(),
-                               $lang->getVocabularySource(),
-                               $lang->getNote(),
-                               'biog_hist',
-                               $bid);
+        $this->sql->insertLanguage($vhInfo,
+                                   $lang->getID(),
+                                   $lang->getLanguage()->getID(),
+                                   $lang->getScript()->getID(),
+                                   $lang->getVocabularySource(),
+                                   $lang->getNote(),
+                                   'biog_hist',
+                                   $bid);
         
         foreach ($biogHist->getDateList() as $date)
         {
             $this->sql->insertDate($vhInfo,
                                    $date->getID(),
-                                   $this->sdb->boolToPg($date->getIsRange()),
+                                   $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType->getID(),
-                                   $this->sdb->boolToPg($date->getFromBc()),
+                                   $date->getFromType()->getID(),
+                                   $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
                                    $date->getToDate(),
-                                   $date->getToType->getID(),
-                                   $this->sdb->boolToPg($date->getToBc()),
+                                   $date->getToType()==null?null:$date->getToType()->getID(),
+                                   $this->db->boolToPg($date->getToBc()),
                                    $date->getToRange()['notBefore'],
                                    $date->getToRange()['notAfter'],
                                    $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
@@ -1131,34 +1156,37 @@ class DBUtil
     private function saveName($vhInfo, $ndata)
     {
         $nameID = $this->sql->insertName($vhInfo, 
-                               $ndata->getOriginal(),
-                               $ndata->getPreferenceScore(),
-                               $ndata->getContributors(), // list of type/contributor values
-                               $ndata->getID());
-        foreach ($ndata->getLanguage() as $lang)
+                                         $ndata->getOriginal(),
+                                         $ndata->getPreferenceScore(),
+                                         $ndata->getContributors(), // list of type/contributor values
+                                         $ndata->getID());
+        if ($ndata->getLanguage() != null)
         {
-            insertLang($vhInfo,
-                       $lang->getID(),
-                       $lang->getLanguage()->getID(),
-                       $lang->getScript()->getID(),
-                       $lang->getVocabularySource(),
-                       $lang->getNote(),
-                       'name',
-                       $nameID());
+            foreach ($ndata->getLanguage() as $lang)
+            {
+                $this->sql->insertLanguage($vhInfo,
+                                           $lang->getID(),
+                                           $lang->getLanguage()->getID(),
+                                           $lang->getScript()->getID(),
+                                           $lang->getVocabularySource(),
+                                           $lang->getNote(),
+                                           'name',
+                                           $nameID());
+            }
         }
-        foreach ($ndata->getUseDates() as $date)
+        foreach ($ndata->getDateList() as $date)
         {
             $this->sql->insertDate($vhInfo,
                                    $date->getID(),
-                                   $this->sdb->boolToPg($date->getIsRange()),
+                                   $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType->getID(),
-                                   $this->sdb->boolToPg($date->getFromBc()),
+                                   $date->getFromType()->getID(),
+                                   $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
                                    $date->getToDate(),
-                                   $date->getToType->getID(),
-                                   $this->sdb->boolToPg($date->getToBc()),
+                                   $date->getToType()==null?null:$date->getToType()->getID(),
+                                   $this->db->boolToPg($date->getToBc()),
                                    $date->getToRange()['notBefore'],
                                    $date->getToRange()['notAfter'],
                                    $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),

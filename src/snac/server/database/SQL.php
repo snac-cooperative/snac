@@ -97,9 +97,41 @@ class SQL
                                   $vhInfo['main_id'],
                                   $id,
                                   $text,
-                                  $node, 
+                                  $note,
                                   $uri, 
                                   $typeID));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /**
+     * Insert a biogHist. If the $id arg is null, get a new id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param int $id Record id.
+     *
+     * @param string $text Text of the biogHist.
+     *
+     */
+    public function insertBiogHist($vhInfo, $id, $text)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_bioghist';
+        $this->sdb->prepare($qq, 
+                            'insert into biog_hist
+                            (version, main_id, id, text)
+                            values 
+                            ($1, $2, $3, $4)');
+        $this->sdb->execute($qq,
+                            array($vhInfo['version'],
+                                  $vhInfo['main_id'],
+                                  $id,
+                                  $text));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -406,7 +438,8 @@ class SQL
     }
 
     /**
-     * Insert an ID from records that were merged into this constellation.
+     * Insert an ID from records that were merged into this constellation. For the sake of convention, we put
+     * the SQL columns in the same order as the function args.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -430,7 +463,7 @@ class SQL
         $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
                             'insert into otherid
-                            (version, main_id, id, text, uri, type)
+                            (version, main_id, id, text, type, uri)
                             values
                             ($1, $2, $3, $4, $5, $6)');
         
@@ -470,8 +503,6 @@ class SQL
                                $original,
                                $preferenceScore,
                                $contributors,
-                               $language,
-                               $scriptCode,
                                $nameID)
     {
         if (! $nameID)
@@ -483,17 +514,15 @@ class SQL
 
         $this->sdb->prepare($qq_1,
                             'insert into name
-                            (version, main_id, original, preference_score, language, script_code, id)
+                            (version, main_id, original, preference_score, id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5)');
         
         $result = $this->sdb->execute($qq_1,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $original,
                                             $preferenceScore,
-                                            $language,
-                                            $scriptCode,
                                             $nameID));
         /* 
          * Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
@@ -652,7 +681,7 @@ class SQL
                                             $id,
                                             $subjectID));
         $this->sdb->deallocate($qq);
-        return id;
+        return $id;
     }
 
     /**
@@ -684,7 +713,7 @@ class SQL
     public function insertRelation($vhInfo, 
                                    $targetID,
                                    $targetArkID,
-                                   $targetEntityType,
+                                   $targetEntityTypeID,
                                    $type,
                                    $relationType,
                                    $content,
@@ -696,7 +725,7 @@ class SQL
             // If this is a new record, get a record id, else use the previously assigned id
             $id = $this->selectID();
         }
-        $qq = 'insert_related_identity';
+        $qq = 'insert_relation'; // aka insert_related_identity
         $this->sdb->prepare($qq,
                             'insert into related_identity
                             (version, main_id, related_id, related_ark, role, arcrole, 
@@ -709,7 +738,7 @@ class SQL
                           $vhInfo['main_id'],
                           $targetID,
                           $targetArkID,
-                          $targetEntityType,
+                          $targetEntityTypeID,
                           $type,
                           $relationType,
                           $content,
@@ -727,23 +756,27 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string[] $argList A flat array. The foreach before execute() simply copies all of them into a
-     * list to pass to execute(). We assume that DBUtils knows the order of data to send. If an order problem
-     * develops, fix it in the calling code, not down here. The whole point of DBUtils is to know php and SQL
-     * fields. The code down here only knows how to write database tables.
+     * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType
+     * @param integer $entryType Vocab id value of entry type
+     * @param string $href A URI
+     * @param integer $arcRole Vocabulary id value of the arc role
+     * @param string $relationEntry Often the name of the relation
+     * @param string $objectXMLWrap Optional extra data, often an XML fragment.
+     * @param string $note A note
+     * @param integer $id The database record id 
      *
-     * @return no return values
+     * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
      * 
      */
     public function insertResourceRelation($vhInfo,
-                                           $relationEntryType, // 3
-                                           $entryType, // 4
-                                           $href, // 5
-                                           $arcRole, // 6
-                                           $relationEntry, // 7
-                                           $objectXMLWrap, // 8
-                                           $note, // 9
-                                           $id) // 10
+                                           $relationEntryType, // aka documentType
+                                           $entryType, 
+                                           $href,
+                                           $arcRole,
+                                           $relationEntry,
+                                           $objectXMLWrap,
+                                           $note,
+                                           $id)
     {
         if (! $id)
         {
@@ -752,30 +785,26 @@ class SQL
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, 
-                            object_xml_wrap, descriptive_note, id)
+                            (version, main_id, id, role, relation_entry_type, href, arcrole, relation_entry, 
+                            object_xml_wrap, descriptive_note)
                             values
-                            ($1, $2,
-                            (select id from vocabulary where type=\'document_type\' and value=regexp_replace($3, \'^.*#\', \'\')),
-                            $4, $5,
-                            (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7, $8, $9, $10)');
-
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
         /* 
          * Combine vhInfo and the remaining args into a big array for execute().
          */
         $execList = array($vhInfo['version'], // 1
                           $vhInfo['main_id'], // 2
-                          $relationEntryType, // 3
-                          $entryType, // 4
-                          $href, // 5
-                          $arcRole, // 6
-                          $relationEntry, // 7
-                          $objectXMLWrap, // 8
-                          $note, // 9
-                          $id); // 10
+                          $id, // 3
+                          $relationEntryType, // 4
+                          $entryType, // 5
+                          $href, // 6
+                          $arcRole, // 7
+                          $relationEntry, // 8
+                          $objectXMLWrap, // 9
+                          $note); // 10
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
+        return $id;
     }
 
 

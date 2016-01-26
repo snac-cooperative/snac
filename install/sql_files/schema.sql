@@ -170,7 +170,6 @@ create table nrd (
     script_code   int,          -- (fk to vocabulary.id) 
     language_used int,          -- (fk to vocabulary.id) from languageUsed/language 
     script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
-    biog_hist     text, 
     exist_date    int,          -- fk to date_range.id
     general_context text,
     structure_or_genealogy text,
@@ -181,6 +180,18 @@ create table nrd (
 
 create unique index nrd_idx1 on nrd (ark_id,version,main_id);
 create unique index nrd_idx2 on nrd(id,main_id,version);
+
+-- The biog_hist language is in table language, and is related to this where biog_hist.id=language.fk_id
+
+create table biog_hist (
+    id               int default nextval('id_seq'),
+    version          int not null,
+    main_id          int not null,
+    text text
+);
+
+create unique index biog_hist_idx2 on biog_hist(id,main_id,version);
+
 
 -- Name string. There may be multiple of these per identity constellation, nrd one-to-many name.
 -- multiple authorizedForm, alternativeForm per name entry in the merged data

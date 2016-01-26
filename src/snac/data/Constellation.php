@@ -255,6 +255,7 @@ class Constellation extends AbstractData {
     public function __construct($data = null) {
         $this->setMaxDateCount(2);
         if ($data == null) {
+            $this->entitType = new \snac\data\Term();
             $this->otherRecordIDs = array ();
             $this->sources = array ();
             $this->maintenanceEvents = array ();

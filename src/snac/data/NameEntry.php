@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Name Entry File
@@ -18,7 +17,8 @@ namespace snac\data;
 /**
  * NameEntry Class
  *
- * See the abstract parent class for common methods setDBInfo() and getDBInfo().
+ * See the abstract parent class for common methods setDBInfo() and getDBInfo(). See the parent class for
+ * date, dates, getDateList(), addDate(), setMaxDateCount() and so on.
  *
  * Storage class for name entries.
  *
