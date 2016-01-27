@@ -567,7 +567,7 @@ class SQL
      * @param 
      *
      */
-    public function insertFunction($vhInfo, $type, $vocabularySource, $note, $term, $id)
+    public function insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
     {
         if (! $id)
         {
@@ -576,10 +576,16 @@ class SQL
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
-                            (version, main_id, function_type, vocabulary_source, note, id, function_id)
+                            (version, main_id, id, function_type, vocabulary_source, note, function_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
-        $eArgs = array($vhInfo['version'], $vhInfo['main_id'], $type, $vocabularySource, $note, $id, $term);
+        $eArgs = array($vhInfo['version'],
+                       $vhInfo['main_id'],
+                       $id,
+                       $type,
+                       $vocabularySource,
+                       $note,
+                       $term);
         $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);

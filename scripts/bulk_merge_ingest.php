@@ -102,13 +102,36 @@ function foo_main ()
     // Doesn't work, seems to be an issue with nested function calls.
     // while ($short_file = readdir(opendir($argv[1])))
 
-    printf("Opening dir: $argv[1]\n");
-    $dh = opendir($argv[1]);
-    printf("Done.\n");
+    if (1)
+    {
+        printf("Opening dir: $argv[1]\n");
+        $dh = opendir($argv[1]);
+        printf("Done.\n");
+    }
+    else
+    {
+        /*
+         * This is no faster than readdir(), but may be a bit more clever. This does not return . or .. as
+         * file names.
+         */ 
+        $it = new FilesystemIterator($argv[1]);
+    }
+    /* 
+     * foreach ($it as $fileinfo) 
+     * {
+     *     echo $fileinfo->getFilename() . "\n";
+     * }
+     */
 
+    /*
+     * As of Jan 27 2016 the parser takes a long time (a second or more) to instantiate. Don't repeat that,
+     * and reuse a single instance. What could possibly go wrong?
+     */ 
+    $eparser = new \snac\util\EACCPFParser();
     $xx = 0;
     while ($short_file = readdir($dh))
     {
+        // $short_file = $fileInfo->getFilename();
         if ($short_file == '.' or $short_file == '..')
         {
             continue;
@@ -118,16 +141,15 @@ function foo_main ()
         {
             exit();
         }
-
+        
         // Create a full path file name
         $file = "$argv[1]/$short_file";
 
-        // Create new parser for this file and parse it
-        $eparser = new \snac\util\EACCPFParser();
+        // Parse the file using the existing parser instance.
         $constellationObj = $eparser->parseFile($file);
 
-        
         $unparsedTags = $eparser->getMissing();
+
         if (empty($unparsedTags))
         {
             $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');

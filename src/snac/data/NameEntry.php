@@ -124,8 +124,8 @@ class NameEntry extends AbstractData {
     /**
      * Get the language that this name entry is written in (language and script) 
      *
-     * @return \snac\data\Language Language of the entry. Language object's getLanguage() returns a Term
-     * object. Language getScript() returns a Term object for the script.
+     * @return \snac\data\Language Language of the entry. If you then call the Language object's getLanguage()
+     * it returns a Term object. Language getScript() returns a Term object for the script.
      *
      */
     public function getLanguage()
@@ -191,7 +191,10 @@ class NameEntry extends AbstractData {
             $this->contributors = null;
 
         if (isset($data["language"]))
+        {
             $this->language = new Language($data["language"]);
+            printf("new lang type: %s\n", gettype($this->language));
+        }
         else
             $this->language = null;
 
@@ -213,7 +216,12 @@ class NameEntry extends AbstractData {
      * 
      * @param \snac\data\Language $lang Language
      */
-    public function setLanguage($lang) {
+    public function setLanguage(\snac\data\Language $lang) {
+        if (gettype($lang) != 'object')
+        {
+            debug_print_backtrace();
+            exit();
+        }
         $this->language = $lang;
     }
     

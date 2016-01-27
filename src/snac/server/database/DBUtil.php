@@ -759,14 +759,18 @@ class DBUtil
 
         foreach ($id->getDateList() as $date)
         {
-            // $date is a SNACDate object.
-            // getFromType() must be a Term object
-            // getToType() must be a Term object
+            /* 
+             * $date is a SNACDate object.
+             * getFromType() must be a Term object
+             * getToType() must be a Term object
+             *
+             * What does it mean to have a date with no fromType? Could be an unparseable date, I guess.
+             */
             $this->sql->insertDate($vhInfo,
                                    $date->getID(),
                                    $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType()->getID(),
+                                   $date->getFromType()==null?null:$date->getFromType()->getID(),
                                    $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
@@ -913,16 +917,21 @@ class DBUtil
          * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
          * the database. Any sanity check should happen up here.
          *
+         *
+         * Functions have a type (Term object) derived from function/@localType. The function/term is a Term object.
+         *
+         * Example files: /data/extract/anf/FRAN_NP_050744.xml
+         * 
          */
 
         foreach ($id->getFunctions() as $fdata)
         {
             $funID = $this->sql->insertFunction($vhInfo,
-                                       $fdata->getType()->getID(), // Term object
-                                       $fdata->getVocabularySource(),
-                                       $fdata->getNote(),
-                                       $fdata->getTerm()->getID(), // Term object
-                                       $fdata->getID());
+                                                $fdata->getID(), // record id
+                                                $fdata->getType()==null?null:$fdata->getType()->getID(), // function type, aka localType, Term object
+                                                $fdata->getVocabularySource(),
+                                                $fdata->getNote(),
+                                                $fdata->getTerm()->getID()); // function term id aka vocabulary.id, Term object
             /*
              * getDateList() always returns a list of SNACDate objects. If no dates then list is empty,
              * but it is still a list that we can foreach on without testing for null and count>0.
@@ -1160,20 +1169,18 @@ class DBUtil
                                          $ndata->getPreferenceScore(),
                                          $ndata->getContributors(), // list of type/contributor values
                                          $ndata->getID());
-        if ($ndata->getLanguage() != null)
+        if ($lang = $ndata->getLanguage())
         {
-            foreach ($ndata->getLanguage() as $lang)
-            {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $lang->getLanguage()->getID(),
-                                           $lang->getScript()->getID(),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'name',
-                                           $nameID());
-            }
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'name',
+                                       $nameID);
         }
+        $dateList = $ndata->getDateList();
         foreach ($ndata->getDateList() as $date)
         {
             $this->sql->insertDate($vhInfo,

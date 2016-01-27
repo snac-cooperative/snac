@@ -356,7 +356,10 @@ class EACCPFParser {
                                         foreach ($this->getChildren($npart) as $dateEntry) {
                                             if ($dateEntry->getName() == "dateRange" ||
                                                 $dateEntry->getName() == "date") {
-                                                $nameEntry->setUseDates(
+                                                /*
+                                                 * setUseDates() changed to addDate()
+                                                 */ 
+                                                $nameEntry->addDate(
                                                     $this->parseDate($dateEntry, 
                                                                      array (
                                                                          $node->getName(),
@@ -434,7 +437,11 @@ class EACCPFParser {
                                                                              $desc2->getName(),
                                                                              $dates->getName()
                                                                          ));
-                                                $identity->addExistDates($date);
+                                                /* 
+                                                 * Old code: $identity->addExistDates($date);
+                                                 * Add a date object to the list of date objects for this constellation.
+                                                 */
+                                                $identity->addDate($date);
                                             } else {
                                                 $this->markUnknownTag(
                                                     array (
@@ -456,10 +463,27 @@ class EACCPFParser {
                                                                      $node->getName() . $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                    $identity->addDate($date);
+                                        $identity->addDate($date);
                                         break;
                                     case "descriptiveNote":
-                                        $identity->setExistDatesNote((string) $dates);
+                                        /*
+                                         * Unclear intent of the original code.
+                                         *
+                                         * $identity->setExistDatesNote((string) $dates);
+                                         *
+                                         * $dates is an array SimpleXMLElement[], which is being typecast to a
+                                         * string. Whatever it does, we try to do the same thing with the new
+                                         * code.
+                                         *
+                                         * The original setExistDatesNote() from Constellation.php did this:
+                                         *
+                                         * $this->existDatesNote = $note;
+                                         *
+                                         * The original code clearly assumes only one date. Lets go with
+                                         * adding a note to the first date in the $identity Constellation
+                                         * object.
+                                         */ 
+                                        $identity->getDateList()[0]->setNote((string) $dates);
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -492,7 +516,12 @@ class EACCPFParser {
                                     switch ($placePart->getName()) {
                                     case "date":
                                     case "dateRange":
-                                        $place->setDateRange(
+                                        /*
+                                         * Place extends AbstractData which has a date list.
+                                         *
+                                         * change setDateRange() to addDate()
+                                         */ 
+                                        $place->addDate(
                                             $this->parseDate($placePart, 
                                                              array (
                                                                  $node->getName(),
@@ -723,7 +752,12 @@ class EACCPFParser {
                                                                      $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $occupation->setDateRange($date);
+                                        /*
+                                         * Occupation extends AbstractData which has a date list.
+                                         *
+                                         * change setDateRange() to addDate()
+                                         */ 
+                                        $occupation->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -774,7 +808,12 @@ class EACCPFParser {
                                                                      $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $function->setDateRange($date);
+                                        /*
+                                         * Function extends AbstractData which has a date list.
+                                         *
+                                         * change setDateRange() to addDate()
+                                         */ 
+                                        $function->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -797,7 +836,7 @@ class EACCPFParser {
                                 }
                                 $fatts = $this->getAttributes($desc2);
                                 if (isset($fatts["localType"])) {
-                                    $function->setType($fatts["localType"]);
+                                    $function->setType(new \snac\data\Term($fatts["localType"]));
                                     unset($fatts["localType"]);
                                 }
                                 $identity->addFunction($function);
@@ -867,7 +906,10 @@ class EACCPFParser {
                                         break;
                                     case "date":
                                     case "dateRange":
-                                        $relation->setDates(
+                                        /*
+                                         * setDates() changed to addDate()
+                                         */ 
+                                        $relation->addDate(
                                             $this->parseDate($child, 
                                                              array (
                                                                  $node->getName(),
@@ -1249,6 +1291,9 @@ class EACCPFParser {
                  * $stderr = fopen('php://stderr', 'w');
                  * fwrite($stderr,"  $message\n");
                  * fclose($stderr); 
+                 * 
+                 * 
+                 * 
                  */
                 $date->setDate((string) $dateElement, '', new \snac\data\Term());
             }
