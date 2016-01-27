@@ -192,7 +192,7 @@ class DBUtil
         $cObj->setEntityType($row['entity_type']);
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
-        $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
+        $this->populateDate($vhInfo['main_id'], $cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
 
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
@@ -207,16 +207,9 @@ class DBUtil
         foreach ($oridRows as $singleOrid)
         {
             $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
-            $this->populateDate($singleOrid);
+            // Jan 27 2016 Why was there a call to populateDate() here? Not possible, as far as I can tell.
         }
         
-        $subjRows = $this->sql->selectSubject($vhInfo); 
-        foreach ($subjRows as $singleSubj)
-        {
-            $cObj->addSubject($singleSubj['subject_id']);
-            $this->populateDate($singleSubj);
-        }
-
         /*
          * Note: $cObj passed by reference and changed in place.
          */ 
@@ -234,6 +227,52 @@ class DBUtil
          */
         return $cObj;
     } // end selectConstellation
+
+    /**
+     *
+     * Populate the Subject object(s), and add it/them to an existing Constellation object.
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     *
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */ 
+    private function populateSubject($vhInfo, &$cObj)
+    {
+        /*
+         * $gRows where g is for generic? As in a generic object. Make this as idiomatic as possible. 
+         */
+        $gRows = $this->sql->selectSubject($vhInfo);
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\Subject();
+            $gObj->setType($rec['function_type']);
+            $gObj->setTerm($rec['function_id']);
+            $gObj->setVocabularySource($rec['vocabulary_source']);
+            $gObj->setNote($rec['note']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+
+            // Must call $gOjb->setDBInfo() before calling populateExistDate()
+            // $gDate = $this->buildDate($vhInfo, $rec['date']);
+            $gDate = populateDate($gObj->getID(), $gObj);
+
+            $gObj->setDateRange($gDate);
+            $cObj->addFunction($gObj);
+            $this->populateDate($gObj);
+        }
+        /* 
+         * $subjRows = $this->sql->selectSubject($vhInfo); 
+         * foreach ($subjRows as $singleSubj)
+         * {
+         *     $newObj = new \snac\data\Subject();
+         *     
+         *     $this->populateDate($newObj->getID(), $newObj);
+         *     $cObj->addSubject($newObj);
+         * }
+         */
+
+    }
+
 
     /** 
      * nameEntry objects
