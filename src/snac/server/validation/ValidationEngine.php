@@ -66,6 +66,9 @@ class ValidationEngine {
      */
     public function validateConstellation($constellation) {
         
+        if ($constellation == null || !($constellation instanceof \snac\data\Constellation))
+            return false;
+        
         // Successful validation
         return true;
     }

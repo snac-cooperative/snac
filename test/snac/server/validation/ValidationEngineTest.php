@@ -36,6 +36,23 @@ class ValidationEngineTest extends PHPUnit_Framework_TestCase {
         
         $this->assertFalse($ve->addValidator(new \snac\data\Constellation()), "Could add a Constellation as validator");
     }
+    
+    /**
+     * Test validating null
+     */
+    public function testNullValidation() {
+        $ve = new ValidationEngine();
+        $this->assertFalse($ve->validateConstellation(null), "Could validate null");
+    }
+    
+    /**
+     * Test validating non-constellations
+     */
+    public function testNonConstellationValidation() {
+        $ve = new ValidationEngine();
+        $this->assertFalse($ve->validateConstellation("Constellation")), "Could validate a string as Constellation");
+        $this->assertFalse($ve->validateConstellation(new \snac\data\BiogHist())), "Could validate a a BiogHist as Constellation");
+    }
    
 
 }
