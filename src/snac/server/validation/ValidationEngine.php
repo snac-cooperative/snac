@@ -47,7 +47,11 @@ class ValidationEngine {
      * @return boolean true if successfully added validator, false otherwise
      */
     public function addValidator($validator) {
-        array_push($this->validators, $validator);
+        if ($validator != null && $validator instanceof \snac\server\validation\validators\Validator) {
+            array_push($this->validators, $validator);
+            return true;
+        }
+        return false;
     }
     
     /**
