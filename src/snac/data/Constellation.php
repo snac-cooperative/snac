@@ -607,7 +607,7 @@ class Constellation extends AbstractData {
      * @return \snac\data\Mandate[] list of Mandates
      *
      */
-    public function getMandate()
+    public function getMandates()
     {
         return $this->mandate;
     }
