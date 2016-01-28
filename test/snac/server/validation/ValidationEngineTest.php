@@ -50,8 +50,8 @@ class ValidationEngineTest extends PHPUnit_Framework_TestCase {
      */
     public function testNonConstellationValidation() {
         $ve = new ValidationEngine();
-        $this->assertFalse($ve->validateConstellation("Constellation")), "Could validate a string as Constellation");
-        $this->assertFalse($ve->validateConstellation(new \snac\data\BiogHist())), "Could validate a a BiogHist as Constellation");
+        $this->assertFalse($ve->validateConstellation("Constellation"), "Could validate a string as Constellation");
+        $this->assertFalse($ve->validateConstellation(new \snac\data\BiogHist()), "Could validate a a BiogHist as Constellation");
     }
    
 
