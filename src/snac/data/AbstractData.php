@@ -100,9 +100,20 @@ abstract class AbstractData {
      * @param integer $count The number of dates supported.  
      *
      */
-    public function setMaxDateCount($count)
+    protected function setMaxDateCount($count)
     {
         $this->maxDateCount = $count;
+    }
+
+    /**
+     * Get the number of date objects we can have in the list of dates.
+     *
+     * @return integer $count The number of dates supported.  
+     *
+     */
+    public function getMaxDateCount()
+    {
+        return $this->maxDateCount;
     }
 
     /**

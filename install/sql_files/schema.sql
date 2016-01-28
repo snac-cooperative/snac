@@ -42,6 +42,10 @@ drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists appuser_role_link;
 drop table if exists version_history;
+drop table if exists language;
+drop table if exists convention_declaration;
+drop table if exists biog_hist;
+drop table if exists convention_declaration;
 
 -- There is data in table vocabulary. If you really need to drop it, so so manually and reload the data.
 -- drop table if exists vocabulary;
@@ -154,6 +158,20 @@ create table split_merge_history (
 -- Table of data 1:1 to the identity. The glue of the identity is table version_history.
 
 -- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, main_id.
+-- Move to table: 
+-- convention_declaration text,
+-- mandate text,
+-- general_context text,
+-- structure_or_genealogy text,
+-- nationality   int,          -- fk to vocabulary.id type nationality
+-- gender        int,          -- fk to vocabulary.id type gender
+-- language      text,         -- not in vocab yet, keep the string
+-- language_code int,          -- (fk to vocabulary.id) 3 letter iso language code
+-- script        text,         -- not in vocab yet, keep the string
+-- script_code   int,          -- (fk to vocabulary.id) 
+-- language_used int,          -- (fk to vocabulary.id) from languageUsed/language 
+-- script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
+-- exist_date    int,          -- fk to date_range.id
 
 create table nrd (
     id            int default nextval('id_seq'),
@@ -162,24 +180,54 @@ create table nrd (
     is_deleted    boolean default false,
     ark_id        text,         -- control/cpfId
     entity_type   int not null, -- (fk to vocabulary.id) corp, pers, family
-    nationality   int,          -- fk to vocabulary.id type nationality
-    gender        int,          -- fk to vocabulary.id type gender
-    language      text,         -- not in vocab yet, keep the string
-    language_code int,          -- (fk to vocabulary.id) 3 letter iso language code
-    script        text,         -- not in vocab yet, keep the string
-    script_code   int,          -- (fk to vocabulary.id) 
-    language_used int,          -- (fk to vocabulary.id) from languageUsed/language 
-    script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
-    exist_date    int,          -- fk to date_range.id
-    general_context text,
-    structure_or_genealogy text,
-    convention_declaration text,
-    mandate text,
     primary key (id, version)
     );
 
 create unique index nrd_idx1 on nrd (ark_id,version,main_id);
 create unique index nrd_idx2 on nrd(id,main_id,version);
+
+-- I considered naming field text "value", but text is not a reserved word (amazingly), and although "text" is
+-- overused, it fits our convention here.
+
+create table convention_declaration (
+    id            int default nextval('id_seq'),
+    version       int not null,
+    main_id       int not null, -- fk to version_history.main_id
+    is_deleted    boolean default false,
+    text text                  -- the text term
+);
+
+create unique index convention_declaration_idx1 on convention_declaration(id,main_id,version);
+
+create table mandate (
+    id            int default nextval('id_seq'),
+    version       int not null,
+    main_id       int not null, -- fk to version_history.main_id
+    is_deleted    boolean default false,
+    text text                  -- the text term
+);
+
+create unique index mandate_idx1 on mandate(id,main_id,version);
+
+create table general_context (
+    id            int default nextval('id_seq'),
+    version       int not null,
+    main_id       int not null, -- fk to version_history.main_id
+    is_deleted    boolean default false,
+    text text                  -- the text term
+);
+
+create unique index general_context_idx1 on general_context(id,main_id,version);
+
+create table structure_genealogy (
+    id            int default nextval('id_seq'),
+    version       int not null,
+    main_id       int not null, -- fk to version_history.main_id
+    is_deleted    boolean default false,
+    text text                  -- the text term
+);
+
+create unique index structure_genealogy_idx1 on structure_genealogy(id,main_id,version);
 
 -- The biog_hist language is in table language, and is related to this where biog_hist.id=language.fk_id
 
@@ -187,6 +235,7 @@ create table biog_hist (
     id               int default nextval('id_seq'),
     version          int not null,
     main_id          int not null,
+    is_deleted       boolean default false,
     text text
 );
 
@@ -469,7 +518,7 @@ create table nationality (
     version        int not null,
     main_id        int not null,
     is_deleted     boolean default false,
-    nationality_id int,  -- (fk to vocabulary.id for a given nationality)
+    term_id int,  -- (fk to vocabulary.id for a given nationality)
     primary key(id, version)
     );
 
@@ -480,11 +529,26 @@ create table subject (
     version    int not null,
     main_id    int not null,
     is_deleted boolean default false,
-    subject_id int, -- (fk to vocabulary.id)
+    term_id int, -- (fk to vocabulary.id)
     primary key(id, version)
     );
 
 create unique index subject_idx1 on subject(id,main_id,version);
+
+-- Jan 28 2016. This is newer than nationality, subject. I considered naming term_id vocab_id because "term"
+-- is overused. However, term_id is conventional and descriptive.
+
+create table gender (
+    id         int default nextval('id_seq'),
+    version    int not null,
+    main_id    int not null,
+    is_deleted boolean default false,
+    term_id int, -- (fk to vocabulary.id)
+    primary key(id, version)
+    );
+
+create unique index gender_idx1 on gender(id,main_id,version);
+
 
 -- <cpfRelation> Was table cpf_relations. Fields moved here from the old table document: arcrole, role, href, type,
 -- cpfRelationType. cpfRelation/relationEntry is a name, and (sadly) is not always identical to the preferred

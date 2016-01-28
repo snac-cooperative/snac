@@ -26,12 +26,14 @@ abstract class AbstractTermData extends AbstractData{
 
 
     /**
-     * var string $dataType The type of this data object
+     * @var string $dataType The type of this data object. This is our internal name of the data type in the
+     * object. For example gender, subject. See the constructor for each class which calls setDataType() with
+     * a hard coded value.
      */
     protected $dataType;
 
     /**
-     * var \snac\data\Term $term The term for this object 
+     * @var \snac\data\Term $term The term for this object 
      */
     protected $term;
 

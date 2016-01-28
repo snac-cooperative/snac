@@ -906,7 +906,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\SameAs $other The other record ID in a SameAs object
      */
-    public function addOtherRecordID($other) {
+    public function addOtherRecordID(\snac\data\SameAs $other) {
 
         array_push($this->otherRecordIDs, $other); 
     }
@@ -1031,7 +1031,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Subject $subject Subject to add.
      */
-    public function addSubject($subject) {
+    public function addSubject(\snac\data\Subject $subject) {
         array_push($this->subjects, $subject);
     }
 
@@ -1040,7 +1040,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Nationality $nationality Nationality
      */
-    public function addNationality($nationality) {
+    public function addNationality(\snac\data\Nationality $nationality) {
         array_push($this->nationalities, $nationality);
     }
 

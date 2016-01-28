@@ -53,11 +53,10 @@ class NameEntry extends AbstractData {
      *
      * 'contributor' name value as a string
      *
-     * Stored as:
-     * ```
-     * [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ] 
-     * ```
-     * @var string[][] Contributors providing this name entry including their type for this name entry
+     * Stored as: ``` [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ]  ``` Originally implemented
+     * as string[][] Contributors providing this name entry including their type for this name entry
+     *
+     * @var \snac\data\Contributor[] List of Contributor
      */
     private $contributors;
     
@@ -113,7 +112,7 @@ class NameEntry extends AbstractData {
     /**
      * Get the list of contributors for this name entry 
      *
-     * @return string[][] Contributors providing this name entry including their type for this name entry
+     * @return \snac\data\Contributor[] Contributors providing this name entry including their type for this name entry
      *
      */
     public function getContributors()
@@ -186,7 +185,7 @@ class NameEntry extends AbstractData {
             $this->preferenceScore = null;
 
         if (isset($data["contributors"]))
-            $this->contributors = $data["contributors"];
+            $this->contributors = new \snac\data\Contributor($data["contributors"]);
         else
             $this->contributors = null;
 
@@ -228,16 +227,11 @@ class NameEntry extends AbstractData {
     /**
      * Add contributor to the list of contributors.
      * 
-     * @param string $type Type associated with this name entry
-     * @param string $name Name of the contributor
+     * @param \snac\data\Contributor $contributor Contributor object
      */
-    public function addContributor($type, $name) {
+    public function addContributor(\snac\data\Contributor $contributor) {
 
-        array_push($this->contributors, 
-                array (
-                        "type" => $type,
-                        "contributor" => $name
-                ));
+        array_push($this->contributors, $contributor);
     }
     
     /**
