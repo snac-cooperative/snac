@@ -141,22 +141,64 @@ abstract class Validator {
      */
     public function validateOccupation($occupation);
     
+    /**
+     * validate an Other Record ID
+     * @param \snac\data\SameAs $other
+     */
     public function validateOtherRecordID($other);
     
+    /**
+     * Validate a Place
+     * @param \snac\data\Place $place
+     */
     public function validatePlace($place);
     
+    /**
+     * Validate a ConstellationRelation
+     * @param \snac\data\ConstellationRelation $relation
+     */
     public function validateRelation($relation);
     
+    /**
+     * Validate a Resource Relation
+     * @param \snac\data\ResourceRelation $relation
+     */
     public function validateResourceRelation($relation);
     
+    /**
+     * Validate a SCM Object
+     * @param \snac\data\SNACControlMetadata $scm
+     */
     public function validateSNACControlMetadata($scm);
     
+    /**
+     * Validate a Source
+     * @param \snac\data\Source $source
+     */
     public function validateSource($source);
     
+    /**
+     * Validate a StructureOrGenealogy
+     * @param \snac\data\StructureOrGenealogy $sog
+     */
     public function validateStructureOrGenealogy($sog);
     
+    /**
+     * Validate a Subject
+     * @param \snac\data\Subject $subject
+     */
     public function validateSubject($subject);
     
+    /**
+     * Validate a Term 
+     * @param \snac\data\Term $term
+     */
     public function validateTerm($term);
+    
+    /**
+     * Validate a PlaceEntry
+     * @param \snac\data\PlaceEntry $placeEntry
+     */
+    public function validatePlaceEntry($placeEntry);
     
 }
