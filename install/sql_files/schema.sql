@@ -46,6 +46,10 @@ drop table if exists language;
 drop table if exists convention_declaration;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
+drop table if exists gender;
+drop table if exists mandate;
+drop table if exists general_context;
+drop table if exists structure_genealogy;
 
 -- There is data in table vocabulary. If you really need to drop it, so so manually and reload the data.
 -- drop table if exists vocabulary;
@@ -68,8 +72,11 @@ drop sequence if exists id_seq;
 -- keys. (And might break other foreign keys and sql queries as well.)
 CREATE SEQUENCE "id_seq";
 
+-- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
+-- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
+--
 -- Sequence for controlled vocabulary
-CREATE SEQUENCE "vocabulary_id_seq";
+-- CREATE SEQUENCE "vocabulary_id_seq";
 
 CREATE SEQUENCE "version_history_id_seq";
 
@@ -649,17 +656,21 @@ create unique index geoplace_idx1 on geoplace (id,version);
 -- Context for use is in a separate table (perhaps vocabulary_use) because some (like entity_type) can be used
 -- in several contexts.
 
-create table vocabulary (
-    id          int primary key default nextval('vocabulary_id_seq'),
-    type        text,        -- Type of the vocab
-    value       text,        -- Value of the controlled vocab term
-    uri         text,        -- URI for this controlled vocab term, if it exists
-    description text         -- Textual description of this vocab term
-    );
+-- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
+-- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
+--
 
-create unique index vocabulary_idx on vocabulary(id);
-create index vocabulary_type_idx on vocabulary(type);
-create index vocabulary_value_idx on vocabulary(value);
+-- create table vocabulary (
+--     id          int primary key default nextval('vocabulary_id_seq'),
+--     type        text,        -- Type of the vocab
+--     value       text,        -- Value of the controlled vocab term
+--     uri         text,        -- URI for this controlled vocab term, if it exists
+--     description text         -- Textual description of this vocab term
+--     );
+
+-- create unique index vocabulary_idx on vocabulary(id);
+-- create index vocabulary_type_idx on vocabulary(type);
+-- create index vocabulary_value_idx on vocabulary(value);
 
 -- We need a way for the data to sanity check that vocabulary is being used in the correct context.  If a
 -- given vocabulary value can be used in multiple contexts, we need a linking table.

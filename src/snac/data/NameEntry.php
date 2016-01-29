@@ -192,7 +192,6 @@ class NameEntry extends AbstractData {
         if (isset($data["language"]))
         {
             $this->language = new Language($data["language"]);
-            printf("new lang type: %s\n", gettype($this->language));
         }
         else
             $this->language = null;

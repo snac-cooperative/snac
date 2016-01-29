@@ -305,6 +305,11 @@ class EACCPFParser {
                         foreach ($this->getChildren($control) as $source) {
                             $satts = $this->getAttributes($source);
                             $sourceObj = new \snac\data\Source();
+                            /* 
+                             * File /data/merge/99166-w6df9ps1.xml ok.
+                             * PHP Notice:  Undefined index: type in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 308
+                             * PHP Notice:  Undefined index: href in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 309
+                             */
                             $sourceObj->setType($this->getTerm($this->getValue($satts['type']), "source_type"));
                             $sourceObj->setURI($satts['href']);
                             foreach ($this->getChildren($source) as $innerSource) {
@@ -505,6 +510,9 @@ class EACCPFParser {
                                         break;
                                     case "descriptiveNote":
                                         /*
+                                         *
+                                         * eac-cpf/cpfDescription/description/existDates/descriptiveNote
+                                         *
                                          * Unclear intent of the original code.
                                          *
                                          * $identity->setExistDatesNote((string) $dates);
@@ -521,7 +529,17 @@ class EACCPFParser {
                                          * adding a note to the first date in the $identity Constellation
                                          * object.
                                          */ 
-                                        $identity->getDateList()[0]->setNote((string) $dates);
+                                        if ($firstDate = $identity->getDateList()[0])
+                                        {
+                                            $firstDate->setNote((string) $dates);
+                                        }
+                                        else
+                                        {
+                                            $message = sprintf("Warning: exists date note, but no exists date: %s\n", $this->arkID);
+                                            $stderr = fopen('php://stderr', 'w');
+                                            fwrite($stderr,"  $message\n");
+                                            fclose($stderr); 
+                                        }
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -1234,6 +1252,17 @@ class EACCPFParser {
             // Handle the date range
             $date->setRange(true);
             foreach ($this->getChildren($dateElement) as $dateTag) {
+                /* 
+                 *   File /data/merge/99166-w62r7n84.xml ok.
+                 * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1255
+                 * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1279
+                 */
+
+                /* 
+                 * File /data/merge/99166-w6163116.xml ok.
+                 * PHP Notice:  Undefined index: localType in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1256
+                 */
+
                 $dateAtts = $this->getAttributes($dateTag);
                 switch ($dateTag->getName()) {
                 case "fromDate":
