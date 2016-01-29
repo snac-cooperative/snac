@@ -12,7 +12,7 @@ use \snac\server\validation\ValidationEngine as ValidationEngine;
 
 
 /**
- * Server Test Suite 
+ * Validation Engine Test Suite 
  * 
  * @author Robbie Hott
  *
@@ -53,6 +53,4 @@ class ValidationEngineTest extends PHPUnit_Framework_TestCase {
         $this->assertFalse($ve->validateConstellation("Constellation"), "Could validate a string as Constellation");
         $this->assertFalse($ve->validateConstellation(new \snac\data\BiogHist()), "Could validate a a BiogHist as Constellation");
     }
-   
-
 }
