@@ -886,6 +886,12 @@ class EACCPFParser {
                                 $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
                                 $relation->setTargetArkID($ratts['href']);
                                 $relation->setTargetType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+                                /*
+                                 * cpfRelation/@type cpfRelation@xlink:type
+                                 *
+                                 * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+                                 * serializing export.
+                                 */
                                 $relation->setAltType($this->getTerm($this->getValue($ratts["type"]), "relation_type"));
                                 if (isset($ratts['cpfRelationType'])) {
                                     $relation->setCPFRelationType($this->getTerm($ratts['cpfRelationType'], "relation_type"));
