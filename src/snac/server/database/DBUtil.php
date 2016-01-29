@@ -215,7 +215,7 @@ class DBUtil
             $gObj = new \snac\data\SameAs();
             $gObj->setText($rec['text']); // the text of this sameAs or otherRecordID
             $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
-            $gObj->setType($this->populateTerm($rec['term'])); // \snac\data\Term Type of this sameAs or otherRecordID
+            $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
             $cObj->addOtherRecordID($gObj);
         }
         
@@ -309,9 +309,14 @@ class DBUtil
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
             $this->populateLanguage($neObj);
+            $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
             foreach ($oneName['contributors'] as $contrib)
             {
-                $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
+                $ctObj = new \snac\data\Contributor();
+                $ctObj->setType(populateTerm($contrib['type']));
+                $ctObj->setName($contrib['name']);
+                $ctObj->setDBInfo($contrib['version'], $contrib['id']);
+                $neObj->addContributor($ctObj);
             }
             $this->populateDate($neObj);
             $cObj->addNameEntry($neObj);
@@ -383,7 +388,7 @@ class DBUtil
     public function populateTerm($termID)
     {
         $newObj = new \snac\data\Term();
-        $row = selectTerm($termID);
+        $row = $this->sql->selectTerm($termID);
         $newObj->setID($row['id']);
         $newObj->setTerm($row['term']);
         $newObj->setURI($row['uri']);
@@ -658,6 +663,13 @@ class DBUtil
      * | setDates                            | date             |
      * | setNote                             | descriptive_note |
      * 
+     * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * php: $altType setAltType() getAltType()
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
+     *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
@@ -669,9 +681,9 @@ class DBUtil
             $relatedObj = new \snac\data\ConstellationRelation();
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
-            $relatedObj->setTargetType($oneRel['role']);
-            $relatedObj->setType($oneRel['arcrole']);
-            $relatedObj->setCPFRelationType($oneRel['relation_type']);
+            $relatedObj->setTargetType($this->populateTerm($oneRel['role']));
+            $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
+            $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
@@ -711,10 +723,10 @@ class DBUtil
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
-            $rrObj->setDocumentType($oneRes['role']);
+            $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
             $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
             $rrObj->setLink($oneRes['href']);
-            $rrObj->setRole($oneRes['arcrole']);
+            $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
@@ -1331,7 +1343,7 @@ class DBUtil
     public function multiNameConstellation($appUserID)
     {
         $vhInfo = $this->sql->sqlMultiNameConstellationID();
-        $mNConstellation = $this->selectConstellation($vhInfo, $appUserID);
+        $mNConstellation = $this->sql->selectConstellation($vhInfo, $appUserID);
         return $mNConstellation;
     }
 

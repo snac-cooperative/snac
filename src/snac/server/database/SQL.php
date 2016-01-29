@@ -517,16 +517,26 @@ class SQL
         $this->sdb->deallocate($qq_1);
         return $nameID;
     }
-
+    
+    /**
+     * Insert a contributor record, related to name where contributor.name_id=name.id. This is a one-sided fk
+     * relationship also used for date and language.
+     *
+     * Old: Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
+     * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
+     * name_contributor object with a $operation like everything else.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $nameID Record id of related name
+     *
+     * @param string $name Name of the contributor
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this contributor.
+     *
+     */
     public function insertContributor($vhInfo, $nameID, $name, $typeID)
     {
-        /* 
-         * Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
-         * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
-         * name_contributor object with a $operation like everything else.
-         *
-         * So, this will move to its own function. 
-         */
         $qq_2 = 'insert_contributor';
 
         $this->sdb->prepare($qq_2,
@@ -634,7 +644,7 @@ class SQL
         $qq = 'select_language';
         $this->sdb->prepare($qq,
                             'select aa.version, aa.main_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
-                            from language as aa
+                            from language as aa,
                             (select fk_id,max(version) as version from language where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($fkID, $version));
@@ -1182,7 +1192,7 @@ class SQL
     /** 
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
-     * helper function for selectOtherRecordID(). This deals with the possibility that a given otherid.id may
+     * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1388,8 +1398,7 @@ class SQL
         $qq = 'socc';
         $this->sdb->prepare($qq, 
                             'select
-                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source,
-                            (select value from vocabulary where id=aa.occupation_id) as occupation_id
+                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source, aa.occupation_id
                             from occupation as aa,
                             (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1439,8 +1448,8 @@ class SQL
                             'select
                             aa.id, aa.version, aa.main_id, aa.related_id, aa.related_ark,
                             aa.relation_entry, aa.descriptive_note, aa.relation_type,
-                            (select value from vocabulary where id=aa.role) as role,
-                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            aa.role,
+                            aa.arcrole
                             from related_identity as aa,
                             (select id, max(version) as version from related_identity where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1487,8 +1496,8 @@ class SQL
                             'select
                             aa.id, aa.version, aa.main_id,
                             aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
-                            (select value from vocabulary where id=aa.role) as role,
-                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            aa.role,
+                            aa.arcrole
                             from related_resource as aa,
                             (select id, max(version) as version from related_resource where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1523,7 +1532,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.main_id, aa.function_type, aa.vocabulary_source, aa.note,
-                            (select value from vocabulary where id=aa.function_id) as function_id
+                            aa.function_id
                             from function as aa,
                             (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1560,20 +1569,23 @@ class SQL
       * consistent. The consistency may help testing more than UI related issues (where names should
       * consistently appear in the same order each time the record is viewed.)
       *
+      * Language is a related table where language.fk_id=name.id. Contributor is a related table where
+      * contributor.name_id=name.id. See selectLanguage(), selectContributor() both called in DBUtil.
+      *
+      * This code only knows about selecting from table name. DBUtil knows that to build a constellation it is
+      * necessary to also get information related to name.
+      *
       * @param string[] $vhInfo with keys version, main_id.
       *
       * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
-      * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
-      * version, main_id, name_id, short_name, name_type.
+      * preference_score. 
       */
     public function selectName($vhInfo)
     {
         $qq_1 = 'selname';
         $this->sdb->prepare($qq_1,
                             'select
-                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score,
-                            (select value from vocabulary where id=aa.language) as language,
-                            (select value from vocabulary where id=aa.script_code) as script_code
+                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score
                             from name as aa,
                             (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
                             where
@@ -1586,31 +1598,42 @@ class SQL
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
-            $name_row['contributors'] = selectContributor($name_row['id']);
             array_push($all, $name_row);
         }
         $this->sdb->deallocate($qq_1);
         return $all;
     }
 
-    public function selectContributor($nameID)
+    // Contributor has issues. See comments in schema.sql. This will work for now.
+    // Get each name, and for each name get each contributor. 
+
+    /*
+     * The new code is based on selectDate
+     *
+     * This is the old query. Unclear what the intent was, but it looks like it would heap all the
+     * contributors together, as opposed to per-name contributors which is what I recollect that we want.
+     *
+     * 'select 
+     * aa.id,aa.version, aa.main_id, aa.name_id, aa.short_name,aa.name_type
+     * from  name_contributor as aa,
+     * (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
+     * where not aa.is_deleted and
+     * aa.id=bb.id
+     * and aa.version=bb.version
+     * and aa.name_id=$3');
+     *
+     *
+     */  
+    public function selectContributor($nameID, $version)
     {
-        // Contributor has issues. See comments in schema.sql. This will work for now.
-        // Get each name, and for each name get each contributor. 
         $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_2,
                             'select 
-                            aa.id,aa.version, aa.main_id, aa.name_id, aa.short_name,aa.name_type
-                            from  name_contributor as aa,
-                            (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
-                            where not aa.is_deleted and
-                            aa.id=bb.id
-                            and aa.version=bb.version
-                            and aa.name_id=$3');
-        $contributor_result = $this->sdb->execute($qq_2,
-                                                  array($vhInfo['version'],
-                                                        $vhInfo['main_id'],
-                                                        $nameID));
+                            aa.id, aa.version, aa.main_id, aa.type, aa.name, aa.name_id
+                            from contributor as aa,
+                            (select fk_id,max(version) as version from contributor where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+        $contributor_result = $this->sdb->execute($qq_2, array($nameID, $version));
         $all = array();
         while($contributor_row = $this->sdb->fetchrow($contributor_result))
         {
@@ -1753,8 +1776,8 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $nRow = $this->selectNameEntry(array('version' => $row['version'],
-                                                 'main_id' => $row['main_id']));
+            $nRow = $this->selectName(array('version' => $row['version'],
+                                            'main_id' => $row['main_id']));
             if (count($nRow) == 0)
             {
                 // Yikes, cannot have a constellation with zero names.

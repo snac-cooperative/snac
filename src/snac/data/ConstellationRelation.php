@@ -394,7 +394,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * @param \snac\data\Term $type Target's entity type
      */
-    public function setTargetType($type) {
+    public function setTargetType(\snac\data\Term $type) {
         $this->targetEntityType = $type;
     }
 
@@ -403,7 +403,7 @@ class ConstellationRelation extends AbstractData {
      *
      * @param \snac\data\Term $type Type of the relation
      */
-    public function setType($type) {
+    public function setType(\snac\data\Term $type) {
 
         $this->type = $type;
     }
@@ -413,16 +413,21 @@ class ConstellationRelation extends AbstractData {
      * 
      * @param \snac\data\Term $type CPF Relation Type
      */
-    public function setCPFRelationType($type) {
+    public function setCPFRelationType(\snac\data\Term $type) {
         $this->cpfRelationType = $type;
     }
 
     /**
      * Set the relation's alternate type
      *
+     * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
+     *
      * @param \snac\data\Term $type Alternate type of the relation
      */
-    public function setAltType($type) {
+    public function setAltType(\snac\data\Term $type) {
 
         $this->altType = $type;
     }
