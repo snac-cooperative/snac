@@ -1,6 +1,6 @@
 <?php
 /**
- * Language File
+ * Contributor File
  *
  * Contains the data class for the contributors to names
  * 
@@ -24,22 +24,31 @@ namespace snac\data;
  * @author Tom Laudeman, Robbie Hott
  *
  */
-class Language extends AbstractData {
+class Contributor extends AbstractData {
 
     /**
      * @var \snac\data\Term Script, a controlled vocabulary term object.
+     *
+     * From EAC-CPF tag(s):
+     * vocabulary id for strings:
+     * nameEntry/alternativeForm
+     * nameEntry/authorizedForm
+     *
      */
     private $type = null;
 
     /**
-     * @var string Note attached to language. A simple string.
+     * @var string Name of the contributor. A simple string.
      */
     private $name = null;
 
 
     /**
-     * Return our data type. Seems like somethign that would be a property in AbstractData, and we would set
-     * it in our constructor. This is sort of an experiment. Other objects don't (yet?) have this. 
+     * Return our data type. Seems like something that would be a property in AbstractData, and we would set
+     * it in our constructor. This is sort of an experiment. Other objects don't (yet?) have this.
+     *
+     * The alternative is having test values for $data['dataType'] hard coded in at least two places:
+     * toArray() and fromArray()
      */
     protected function dataType()
     {

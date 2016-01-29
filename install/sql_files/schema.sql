@@ -285,9 +285,13 @@ create table name_component (
 create unique index name_component_idx1 on name_component(id,name_id,version);
 
 -- Link names to their contributing organization. Derived from: nameEntry/authorizedForm,
--- nameEntry/alternativeForm, both of which contain the sort SNAC name of a contributing institution.
--- Conceptually this seems wrong, or certainly incomplete. In any case, it needs to link to SNAC constellation
--- id, not to table contributor. See comments for table contributor.
+-- nameEntry/alternativeForm, both of which contain the short SNAC name of a contributing institution.
+-- Conceptually this seems wrong, or certainly incomplete.
+--
+--
+-- (Wrong? The name was contributed, so contributor links to the name. It makes no sense to link contributor
+-- to constellation id.) In any case, it needs to link to SNAC constellation id, not to table contributor. See
+-- comments for table contributor.
 
 create table name_contributor (
     id             int default nextval('id_seq'),
@@ -302,26 +306,32 @@ create table name_contributor (
 
 create unique index name_contributor_idx1 on name_contributor(id,main_id,version);
 
+-- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
+-- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
+-- an extensive commentary with examples of data supporting the change.
+
 -- Nov 12 2015: New think: skip the table contributor, and simply save the short_name in name_contributor. No
 -- matter what we do, there is a mess to clean up later on.
 
--- Removed from table name_contributor:    contributor_id int,  -- (fk to contributor.id, which is a temp table until we link to SNAC records for each contributor)
-
+-- Removed from table name_contributor:    contributor_id int,  
+-- (fk to contributor.id, which is a temp table until we link to SNAC records for each contributor)
 
 -- Applies only to name/authorizedForm and name/alternativeForm. contributor.short_name is contributor
 -- institution sort-cut name (aps, taro, VIAF, LC, nyu, WorldCat, etc). contributor.id needs to be converted
 -- to a SNAC constellation id after a record is created in SNAC for each institution that contributed a name.
 
-create table contributor (
-    id         int default nextval('id_seq'),
-    version    int not null,
-    main_id    int not null,
-    is_deleted boolean default false,
-    short_name text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
-    primary key(id, version)
-    );
-create unique index contributor_idx1 on contributor (short_name);
-create unique index contributor_idx2 on contributor (id,version,main_id);
+-- create table contributor (
+--     id         int default nextval('id_seq'),
+--     version    int not null,
+--     main_id    int not null,
+--     is_deleted boolean default false,
+--     short_name text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
+--     primary key(id, version)
+--     );
+-- create unique index contributor_idx1 on contributor (short_name);
+-- create unique index contributor_idx2 on contributor (id,version,main_id);
+
+
 
 -- Use this date table for all things with dates, not just the identity constellation. Both single dates and
 -- date ranges can be stored in the date range table. The alternative is some messy conditional code to handle

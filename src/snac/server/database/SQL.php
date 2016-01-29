@@ -538,25 +538,18 @@ class SQL
     public function insertContributor($vhInfo, $nameID, $name, $typeID)
     {
         $qq_2 = 'insert_contributor';
-
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
                             (version, main_id, name_id, short_name, name_type)
                             values
                             ($1, $2, $3, $4, $5)');
-
-        // foreach over $contributors executing the insert query on each.
-        foreach ($contributors as $contrib)
-        {
-            $this->sdb->execute($qq_2,
-                                array($vhInfo['version'],
-                                      $vhInfo['main_id'],
-                                      $nameID,
-                                      $contrib['contributor'],
-                                      $contrib['type']));
-        }
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['version'],
+                                  $vhInfo['main_id'],
+                                  $nameID,
+                                  $name,
+                                  $typeID));
         $this->sdb->deallocate($qq_2);
-        return $id;
     }
     
     
@@ -1107,6 +1100,27 @@ class SQL
         return $id;
     }
 
+    /**
+     * Get a single vocabulary record
+     *
+     * @param integer $termID The record id of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTerm($termID)
+    {
+        $qq = 'sc';
+        $this->sdb->prepare($qq, 
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where $1=id');
+        $result = $this->sdb->execute($qq, array($termID));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
 
     /**
      *
@@ -1608,7 +1622,15 @@ class SQL
     // Get each name, and for each name get each contributor. 
 
     /*
-     * The new code is based on selectDate
+     * Select contributor of a specific name, where name_contributor.name_id=name.id.
+     *
+     * @param integer $nameID The foreign key record id from name.id
+     *
+     * @param integer $version The version number.
+     *
+     * @return string[] List of list, one inner list per contributor keys: id, version, main_id, type, name, name_id
+     * 
+     * The new query is based on selectDate.
      *
      * This is the old query. Unclear what the intent was, but it looks like it would heap all the
      * contributors together, as opposed to per-name contributors which is what I recollect that we want.
@@ -1622,17 +1644,16 @@ class SQL
      * and aa.version=bb.version
      * and aa.name_id=$3');
      *
-     *
      */  
     public function selectContributor($nameID, $version)
     {
         $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_2,
                             'select 
-                            aa.id, aa.version, aa.main_id, aa.type, aa.name, aa.name_id
-                            from contributor as aa,
-                            (select fk_id,max(version) as version from contributor where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            aa.id, aa.version, aa.main_id, aa.short_name, aa.name_type, aa.name_id
+                            from name_contributor as aa,
+                            (select name_id,max(version) as version from name_contributor where name_id=$1 and version<=$2 group by name_id) as bb
+                            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
         $contributor_result = $this->sdb->execute($qq_2, array($nameID, $version));
         $all = array();
         while($contributor_row = $this->sdb->fetchrow($contributor_result))

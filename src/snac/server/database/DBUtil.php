@@ -201,7 +201,7 @@ class DBUtil
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateGeneralContext($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj);
+        $this->populateLanguage($cObj);
 
         /*
          * Other record id can be found in the SameAs class.
@@ -310,11 +310,11 @@ class DBUtil
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
             $this->populateLanguage($neObj);
             $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
-            foreach ($oneName['contributors'] as $contrib)
+            foreach ($cRows as $contrib)
             {
                 $ctObj = new \snac\data\Contributor();
-                $ctObj->setType(populateTerm($contrib['type']));
-                $ctObj->setName($contrib['name']);
+                $ctObj->setType($this->populateTerm($contrib['name_type']));
+                $ctObj->setName($contrib['short_name']);
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
             }
@@ -390,7 +390,8 @@ class DBUtil
         $newObj = new \snac\data\Term();
         $row = $this->sql->selectTerm($termID);
         $newObj->setID($row['id']);
-        $newObj->setTerm($row['term']);
+        $newObj->setType($row['type']); // Was setDataType() but this is a vocaulary type. See Term.php.
+        $newObj->setTerm($row['value']);
         $newObj->setURI($row['uri']);
         $newObj->setDescription($row['description']);
         return $newObj;
@@ -514,7 +515,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
-    public function populateLanguage($vhInfo, &$cObj)
+    public function populateLanguage(&$cObj)
     {
         $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
         foreach ($rows as $item)
@@ -559,9 +560,6 @@ class DBUtil
      * Select gender from database, create object, add the object to Constellation. Support multiples
      * per constellation.
      *
-     * setDataType() is called by the constructor, so we don't need to worry about that.
-     * When there is only one term and that term corresponds to the table name, the field is "term_id".
-     * 
      * Note: $cObj passed by reference and changed in place.
      *
      * @param integer[] $vhInfo list with keys version, main_id.
@@ -600,7 +598,6 @@ class DBUtil
             $newObj = new \snac\data\BiogHist();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            // $newObj->setLanguage(populateLanguage($item['language_id']));
             $this->populateLanguage($newObj);
             $this->populateDate($newObj);
             $cObj->addBiogHist($newObj);
@@ -1267,7 +1264,7 @@ class DBUtil
      * @param \snac\data\NameEntry Name entry object
      *
      */
-    private function saveName($vhInfo, $ndata)
+    public function saveName($vhInfo, $ndata)
     {
         $nameID = $this->sql->insertName($vhInfo, 
                                          $ndata->getOriginal(),
@@ -1343,7 +1340,7 @@ class DBUtil
     public function multiNameConstellation($appUserID)
     {
         $vhInfo = $this->sql->sqlMultiNameConstellationID();
-        $mNConstellation = $this->sql->selectConstellation($vhInfo, $appUserID);
+        $mNConstellation = $this->selectConstellation($vhInfo, $appUserID);
         return $mNConstellation;
     }
 

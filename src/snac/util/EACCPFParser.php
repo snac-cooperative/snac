@@ -378,11 +378,17 @@ class EACCPFParser {
                                         break;
                                     case "alternativeForm":
                                     case "authorizedForm":
+                                        /*
+                                         * Why is it ok to cast a $npart object to a string? It was done that
+                                         * way originally, so I kept it.
+                                         */ 
                                         $ctObj = new \snac\data\Contributor();
-                                        $ctObj->setType($this->getTerm($this->getValue($npart->getName(), 'name_type'));
-                                        $ctObj->setName($contrib['name']);
-                                        // ($type, $name)
-                                        // $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                        $ctObj->setType($this->getTerm($this->getValue($npart->getName()), 'name_type'));
+                                        $ctObj->setName((string) $npart);
+                                        /*
+                                         * The old addContributor($type, $name)
+                                         * $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                         */
                                         break;
                                     case "useDates":
                                         foreach ($this->getChildren($npart) as $dateEntry) {
