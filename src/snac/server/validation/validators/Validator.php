@@ -13,6 +13,7 @@
  */
 namespace snac\server\validation\validators;
 
+use snac\server\validation\ValidationError;
 /**
  * Validator Abstract Class
  *
@@ -28,6 +29,50 @@ abstract class Validator {
      * @var string name of this validator
      */
     protected $validatorName;
+    
+    /**
+     * @var \snac\server\validation\ValidationError[] List of errors encountered by this validator
+     */
+    protected $errors;
+    
+    /**
+     * Constructor
+     * 
+     * Needed to instantiate errors
+     */
+    public function __construct() {
+        $this->errors = array();
+    }
+    
+    /**
+     * Add error to the list of errors
+     */
+    protected function addError($message, $object) {
+        array_push($this->errors, new ValidationError($message, $object));
+    }
+    
+    /**
+     * Get the errors as an associative array
+     * 
+     */
+    public function getErrorArray() {
+        $return = array();
+        
+        foreach ($this->errors as $i => $error) {
+            $return[$i] = $error->toArray();
+        }
+        
+        return $return;
+    }
+    
+    /**
+     * Get whether an error occurred in validation
+     */
+    public function errorOccurred() {
+        if (count($this->errors) < 1)
+            return false;
+        return true;
+    }
     
     /**
      * Get the name of this validator

@@ -32,12 +32,18 @@ class ValidationEngine {
     private $validators;
     
     /**
+     * @var string[] Array of errors occurred, indexed by validator name
+     */
+    private $errors;
+    
+    /**
      * Constructor
      * 
      * Initializes the validation engine
      */
     public function __construct() {
         $this->validators = array();
+        $this->errors = array();
     }
     
     /**
@@ -163,12 +169,21 @@ class ValidationEngine {
                 $validator->validateSubject($subject);
             }
             
+            if ($validator->errorOccurred()) {
+                $this->errors[$validator->getName()] = $validator->getErrorArray();
+            }
         }
         
         
-        
-        // Successful validation
-        return true;
+       
+        if (count($this->errors) < 1) {
+            // Successful validation
+            return true;
+        } else {
+            throw new \snac\exceptions\SNACValidationException(
+                    json_encode($this->errors, JSON_PRETTY_PRINT));
+            return false; // just in case
+        }
     }
     
 }
