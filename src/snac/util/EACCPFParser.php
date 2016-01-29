@@ -56,7 +56,17 @@ class EACCPFParser {
      */
     private $vocabulary;
 
-
+    /**
+     * Constructor. This reads all the vocab from the database, and therefore takes a second or two. You
+     * probably do not want multiple instances of this parser. Just create one instance and used it as a
+     * static class.
+     * 
+     * Order of operations to initialize is a bit unclear. The vocabulary can't exist until the data is
+     * parsed, so there must be some pre-parsing step. Generally, once the vocaulary table is populated, we
+     * keep using it, even if the database is reset.
+     *
+     * 
+     */ 
     public function __construct() {
         $this->vocabulary = new \snac\util\LocalVocabulary();
     }
@@ -76,6 +86,24 @@ class EACCPFParser {
         }
     }
 
+    /**
+     * Create a Term object. Assume the vocab has already been initialized.
+     *
+     *  record_type, script_code, entity_type, event_type, name_type, occupation, language_code, gender,
+     *  nationality, maintenance_status, agent_type, document_role, document_type, function_type, function,
+     *  subject, date_type, relation_type, place_match, source_type
+     *
+     *  Contributor uses name_type. Find the type 'name_type' for contributor by querying the vocabulary
+     *  table. We know that a contributor type could be authorizedForm, therefore:
+     *
+     *  select * from vocabulary where value ilike '%authorizedform%';
+     *
+     * @param string $termString A string that can be found in the vocabulary
+     *
+     * @param string $vocab A vocabulary category such as "record_type", "language_code"
+     * 
+     * @return \snac\data\Term A Term object.
+     */
     public function getTerm($termString, $vocab) {
 
         $term = null;
@@ -350,7 +378,11 @@ class EACCPFParser {
                                         break;
                                     case "alternativeForm":
                                     case "authorizedForm":
-                                        $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                        $ctObj = new \snac\data\Contributor();
+                                        $ctObj->setType($this->getTerm($this->getValue($npart->getName(), 'name_type'));
+                                        $ctObj->setName($contrib['name']);
+                                        // ($type, $name)
+                                        // $nameEntry->addContributor($npart->getName(), (string) $npart);
                                         break;
                                     case "useDates":
                                         foreach ($this->getChildren($npart) as $dateEntry) {
