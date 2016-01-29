@@ -196,7 +196,10 @@ class EACCPFParser {
                                     $code = $latts["languageCode"];
                                     unset($latts["languageCode"]);
                                 }
-                                // Set the language term globally
+                                /*
+                                 * Set the language term globally
+                                 * Setting the language Term of a Language object.
+                                 */  
                                 $languageTerm = $this->getTerm($code, "language_code");
                                 $languageDeclaration->setLanguage($languageTerm);
                                 $this->markUnknownAtt(
@@ -211,7 +214,11 @@ class EACCPFParser {
                                     $code = $latts["scriptCode"];
                                     unset($latts["scriptCode"]);
                                 }
-                                // Set the script term globally
+
+                                /*
+                                 * Set the script term globally
+                                 * Setting the script Term of a Language object.
+                                 */ 
                                 $scriptTerm = $this->getTerm($code, "script_code");
                                 $languageDeclaration->setScript($scriptTerm);
                                 $this->markUnknownAtt(
@@ -679,6 +686,10 @@ class EACCPFParser {
                                 }
                                 break;
                             case "languageUsed":
+                                /*
+                                 * The test example test1.xml doesn't have langaugeUsed, only languageDeclaration, yet
+                                 * the test code clearly used to pass constellation langauge tests. How was that possible?
+                                 */ 
                                 $language = new \snac\data\Language();
                                 $updatedLanguage = false;
                                 foreach ($this->getChildren($desc2) as $lang) {
@@ -906,6 +917,9 @@ class EACCPFParser {
                             case "biogHist":
                                 $bh = new \snac\data\BiogHist();
                                 $bh->setText($desc2->asXML());
+                                /*
+                                 * Is it correct to set the language of the biogHist to the <languageDeclaration> element?
+                                 */ 
                                 $bh->setLanguage($languageDeclaration);
                                 $identity->addBiogHist($bh);
                                 break;

@@ -896,7 +896,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Term $type Entity type
      */
-    public function setEntityType($type) {
+    public function setEntityType(\snac\data\Term $type) {
 
         $this->entityType = $type;
     }
@@ -1007,7 +1007,7 @@ class Constellation extends AbstractData {
      *
      * @param  \snac\data\Language Language and script used by this identity
      */
-    public function addLanguageUsed($language) {
+    public function addLanguageUsed(\snac\data\Language $language) {
         array_push($this->languagesUsed, $language);
     }
 
@@ -1020,7 +1020,7 @@ class Constellation extends AbstractData {
      * @param  \snac\data\Language Language and script used by this identity
      *
      */ 
-    public function addLanguage($language) {
+    public function addLanguage(\snac\data\Language $language) {
         $this->addLanguageUsed($language);
     }
 

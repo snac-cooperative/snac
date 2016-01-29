@@ -189,10 +189,11 @@ class DBUtil
 
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
-        $cObj->setEntityType($row['entity_type']);
+        $cObj->setEntityType(populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
         $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
+        $this->populateLanguage($cObj);
 
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
@@ -201,7 +202,6 @@ class DBUtil
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateGeneralContext($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
-        $this->populateLanguage($cObj);
 
         /*
          * Other record id can be found in the SameAs class.
