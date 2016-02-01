@@ -3,7 +3,8 @@
 /**
  * Place File
  *
- * Contains the data class for the places
+ * Contains the data class for the Constellation place. See PlaceEntry for the place controlled vocabulary
+ * class.
  *
  * License:
  *
@@ -16,7 +17,14 @@
 namespace snac\data;
 
 /**
- * Place data structure class
+ * Place data structure class for place in Constellation. Constellation may contain Place, which may contain a
+ * list of PlaceEntry objects. The list of PlaceEntry is denormalized form of the database place_entry and
+ * geo_place tables.
+ *
+ * Constellation may have zero Place objects when there are no associated places. (I mention this because
+ * while fairly obvious, the implementation of place is also fairly confusing).
+ *
+ * Likewise, Place may have zero PlaceEntry objects where there is no known related geo names place.
  *
  * See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
@@ -53,6 +61,14 @@ class Place extends AbstractData {
     private $role;
 
     /**
+     * The list of PlaceEntry objects. There may be zero of these if the Place is not related to a known place
+     * in the geo names controlled vocabulary. There may be multiple PlaceEntry objects, each with the data
+     * from SQL place_link and geo_place. All of the data from those two tables is necessary to build the UI
+     * for normal constellation editing.
+     *
+     * Constellation has a list of zero or more Place objects. Each Place object as a list of zero or more
+     * PlaceEntry objects.
+     *
      * From EAC-CPF tag(s):
      * 
      * * place/placeEntry/*
@@ -60,6 +76,16 @@ class Place extends AbstractData {
      * @var \snac\data\PlaceEntry[] Place entries contained in this place
      */
     private $entries;
+
+        /**
+     * From EAC-CPF tag(s):
+     * 
+     * * placeEntry/
+     * * snac:placeEntry/placeEntry
+     * 
+     * @var string original text within this entry
+     */
+    private $original;
 
     /**
      * Constructor
@@ -77,6 +103,26 @@ class Place extends AbstractData {
     }
     
     /**
+     * Set the original place name
+     * 
+     * @param string $original original place name
+     */
+    public function setOriginal($original) {
+
+        $this->original = $original;
+    }
+
+    /**
+     * Get the original place name
+     * 
+     * @return string $original original place name
+     */
+    public function getOriginal() {
+
+        $this->original = $original;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -87,6 +133,7 @@ class Place extends AbstractData {
             "dataType" => "Place",
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "role" => $this->role == null ? null : $this->role->toArray($shorten),
+            "original" => $this->original,
             "entries" => array(),
             "note" => $this->note
         );
@@ -119,6 +166,11 @@ class Place extends AbstractData {
             return false;
 
         parent::fromArray($data);
+
+        if (isset($data["original"]))
+            $this->original = $data["original"];
+        else
+            $this->original = null;
 
         if (isset($data["type"]))
             $this->type = new \snac\data\Term($data["type"]);
@@ -160,7 +212,7 @@ class Place extends AbstractData {
      * 
      * @param \snac\data\Term $type Place type
      */
-    public function setType($type) {
+    public function setType(\snac\data\Term $type) {
 
         $this->type = $type;
     }
@@ -170,7 +222,7 @@ class Place extends AbstractData {
      * 
      * @param \snac\data\Term $role place role
      */
-    public function setRole($role) {
+    public function setRole(\snac\data\Term $role) {
 
         $this->role = $role;
     }

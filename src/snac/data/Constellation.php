@@ -178,6 +178,9 @@ class Constellation extends AbstractData {
     private $functions = null;
 
     /**
+     * A list of Place objects. There may be zero places. Each Place object will have at least one PlaceEntry
+     * object.
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/place/*
@@ -1090,7 +1093,7 @@ class Constellation extends AbstractData {
      * 
      * @param \snac\data\Place $place Place to add
      */
-    public function addPlace($place) {
+    public function addPlace(\snac\data\Place $place) {
 
         array_push($this->places, $place);
     }

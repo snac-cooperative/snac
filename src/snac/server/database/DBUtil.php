@@ -237,6 +237,99 @@ class DBUtil
         return $cObj;
     } // end selectConstellation
 
+    /** 
+     * Build class Place objects for this constellation, selecting from the database. Place corresponds to
+     * table place.  See populatePlacEntry() for the 1:many relation between Place and geo names.
+     *
+     * 
+     * | php            | sql      |
+     * |----------------+----------|
+     * | setID()        | id       |
+     * | setVersion()   | version  |
+     * | setType() Term | type     |
+     * | setOriginal()  | original |
+     * | setNote()      | note     |
+     * | setRole() Term | role     |
+     *
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
+     */
+    public function populatePlace($vhInfo, &$cObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
+         */
+        $gRows = $this->sql->selectPlace($vhInfo);
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\Place();
+            $gObj->setType(populateTerm($rec['type']));
+            $gOjb->setOriginal($rec['original']);
+            $gOjb->setNote($rec['note']);
+            $gObj->getRole(populateTerm($rec['role']));
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $gObj->populatePlaceEntry($vhInfo, $gObj);
+            $cObj->addPlace($gObj);
+        }
+    }
+
+
+    /** 
+     * Build class PlaceEntry objects for a given (single) Place object.
+     * Geonames has more fields that we're currently saving.
+     * 
+      | php                                             | sql                         | geonames.org         |
+      |-------------------------------------------------+-----------------------------+----------------------|
+      | setID()                                         | id                          |                      |
+      | setVersion()                                    | version                     |                      |
+      | setLatitude()                                   | geo_place.latitude          | lat                  |
+      | setLongitude()                                  | geo_place.longitude         | lon                  |
+      | setAdminCode() renamed from setAdmistrationCode | geo_place.admin_code        | adminCode            |
+      | setCountryCode()                                | geo_place.country_code      | countryCode          |
+      | setName()?                                      | geo_place.name              | name                 |
+      | setGeoNameId()?                                 | geo_place.geonamed_id       | geonameId            |
+      | setVocabularySource()                           | goe_place.vocabularySource  | SNAC geo parser, AnF |
+      | setCertaintyScore()                             | place_link.confidence       |                      |
+      | setBestMatch()                                  | boolean best match?         |                      |
+      | addMaybeSame()                                  | na?                         |                      |
+      | setMatchType() renamed from setType()           | place_link.place_match_type |                      |
+
+     *
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
+     * @param $cObj snac\data\Place object, passed by reference, and changed in place
+     * 
+     */
+    public function populatePlaceEntry($vhInfo, &$cObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
+         */
+        $gRows = $this->sql->selectPlace($vhInfo);
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\Place();
+            $gObj->setLatitude($rec['latitude']);
+            $gObj->setLongitude($rec['longitude']);
+            $gObj->setAdministrationCode($rec['administrative_code']);
+            $gObj->setCountryCode($rec['country_code']);
+            $gObj->setName($rec['name']);
+            $gObj->setGetNameId($rec['geoname_id']);
+            $gObj->setVocabularySource($rec['vocabularySource']);
+            $gObj->setCertaintyScore($rec['confidence']);
+            $gObj->setBestMatch($rec['isBestMatch']); // Not sure about the logic and intent of BestMatch
+            $gObj->addMaybeSame($rec['isSameAs']); // Not sure about logic and intent of adding MaybeSame
+            
+            $gObj->setMatchType(populateTerm($rec['place_match_type']));
+
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $gObj->populatePlaceEntry($vhInfo, $gObj);
+            $cObj->addPlace($gObj);
+        }
+    }
+
     /**
      *
      * Populate the Subject object(s), and add it/them to an existing Constellation object.

@@ -21,7 +21,8 @@ drop table if exists contributor;
 drop table if exists control;
 drop table if exists date_range;
 drop table if exists function;
-drop table if exists geoplace;
+drop table if exists place;
+drop table if exists geo_place;
 drop table if exists name;
 drop table if exists name_component;
 drop table if exists name_contributor;
@@ -29,7 +30,6 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
-drop table if exists place;
 drop table if exists pre_snac_maintenance_history;
 drop table if exists related;
 drop table if exists related_identity;
@@ -500,22 +500,6 @@ create table occupation (
 
 create unique index occupation_idx1 on occupation(id,main_id,version);
 
--- Places associated with an identity constellation
-
-create table place (
-    id               int default nextval('id_seq'),
-    version          int not null,
-    main_id          int not null,
-    is_deleted       boolean default false,
-    place_id         int,  -- (fk to geoplace.id)
-    place_match_type int,  -- (fk to vocabulary.id) -- likelySame, maybeSame, unmatched
-    original         text,
-    confidence       int,  -- from snac place entry
-    primary key(id, version)
-    );
-
-create unique index place_idx1 on place(id,main_id,version);
-
 create table function (
     id                int default nextval('id_seq'),
     version           int not null,
@@ -620,33 +604,108 @@ create table related_resource (
 
 create unique index related_resource_idx1 on related_resource(id,main_id,version);
 
+-- The Constellation concept of place requires two classes, and three SQL tables. The php denormalizes (using
+-- more space, but optimising i/o) by combining fields from place_link and geo_place into PlaceEntry.
+--
+-- Places associated with an identity constellation. Each place relates to one or more geo_place controlled
+-- vocabulary records. When we have a place we also have at least one relation to geo_place via the linking
+-- table place_link.
+--
+-- The original place text needs to be here because it only occurs once per Constellation place.
+--
+-- The various matches each have their own geo_place_id, place_match_type, and confidence so they are found in
+-- table place_link.
+--
+-- Table place_link and geo_place are denormalized together to create php PlaceEntry objects.
 
--- Removed table document since we decided to de-normalize href for now in both cpfRelation (related_identity)
--- and resourceRelation (related_resource)
+create table place (
+    id         int default nextval('id_seq'),
+    version    int not null,
+    main_id    int not null,
+    is_deleted boolean default false,
+    original   text, -- the original place text
+    type       int,  -- fk to vocabulary.id, from place/@localType
+    note       text, -- descriptive note, from place/descriptiveNote
+    role       int   -- fk to vocabulary.id, from place/placeRole
+    primary key(id, version)
+    );
+
+create unique index place_idx1 on place(id,main_id,version);
+
+-- One to many linking table between place and geo_place. For the usual reasons SNAC place entry is
+-- denormalized. Some of these fields are in the SNAC XML.
+--
+-- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
+
+create table place_link (
+        id               int default nextval('id_seq'),
+        place_id         int, -- fk to place.id
+        geo_place_id     int, -- fk to geo_place.id
+        place_match_type int, -- fk to vocabulary.id, likelySame, maybeSame, unmatched
+        confidence       int, -- confidence of this link, from snac place entry
+        primary key(id, version)
+    );
+
+create unique index place_idx1 on place(id,main_id,version);
 
 --
 -- Meta data, authority data, system link tables
 -- 
 
--- Was table place (the other "place" table used to be called cpf_place). Removed field main_id, because this
--- table is an authority table, not a part of identity constellation data.
+-- Most (all?) of these fields should be coming out of a controlled vocabulary, probably geo names. Place
+-- records link here via place_link.
 
--- Seems like most of these fields should be coming out of controlled vocabulary, and country code should match a new fk link to 
--- another geoplace.id for the country.
+-- If we fully normalize place, then we don't want to repleat country_code (and administrative_code) In that
+-- case, both country_code and administrative_code will be self related foreign keys to other records in
+-- geo_place.
 
-create table geoplace (
+-- We don't know the max decimal places in geoname lat and lon, so save them as text. Also, we don't want
+-- Postgres or php to truncate or round the numbers. We could investigate GIS data types.
+
+-- This quotes Google Maps docs: From the Google Maps documentation: "To keep the storage space required for
+-- your table at a minimum, you can specify that the lat and lng attributes are floats of size (10,6)". This
+-- is a bit odd/interesting since the last url below gives an example of needing 7 decimal places at high latitudes.
+--
+-- http://stackoverflow.com/questions/1196174/correct-datatype-for-latitude-and-longitude-in-activerecord
+
+-- If stored numerically, fixed precision, perhaps: lat 9,7 and lon 9.6. Or perhaps not. Strings are safe,
+-- although non-optimal for calculations.
+-- 
+-- http://stackoverflow.com/questions/1196415/what-datatype-to-use-when-storing-latitude-and-longitude-data-in-sql-databases
+
+-- Contrary to the 6 decimal places some people suggest, this says explains why 7 decimal places are necessary
+-- >41.7 degrees latitude
+-- 
+-- https://groups.google.com/forum/#!topic/google-maps-api/uSi1-8U1GCE
+
+-- http://api.geonames.org/postalCodeSearch?postalcode=9011&maxRows=10&username=demo
+-- <lat>47.60764</lat>
+-- <lng>17.78194</lng>
+
+-- http://api.geonames.org/get?geonameId=6295630&username=demo&style=full
+-- The forum post gives the id for "Earth".
+-- Geonames id values appear to be integer. Note singular name of the element.
+-- <geonameId>6295630</geonameId>
+
+-- We have some geographic names from AnF's geographic vocab. They aren't geonames entries, but might still
+-- fit in this table. Might.
+--
+-- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
+
+create table geo_place (
     id                  int default nextval('id_seq'),
-    version             int not null, -- fk to version_history.id, sequence is unique foreign key
-    latitude            int,
-    longitude           int,
-    administrative_code text,
-    country_code        text,
-    name                text,
-    geonames_id         text,
+    version             int not null,  -- fk to version_history.id, sequence is unique foreign key
+    latitude            numeric(10,7), -- Fixed precision, perhaps more precise than we will need.
+    longitude           numeric(10,7), -- Fixed precision, perhaps more precise than we will need.
+    administrative_code text,          -- Should be an fk to geo_place.id for the encompassing administrative_code?
+    country_code        text,          -- Should be an fk to geo_place.id for the encompassing country_code?
+    name                text,          -- The (canonical?) geonames name of this place?
+    geoname_id         text,          -- Is this an integer or URI? Give example.
+    vocabularySource text, -- AnF and Robbie's geonames search creates @vocabularySource attribute.
     primary key(id, version)
     );
 
-create unique index geoplace_idx1 on geoplace (id,version);
+create unique index geo_place_idx1 on geo_place (id,version);
 
 -- Controlled Vocabulary. Will be superceded by multilingual controlled vocabularies for: occupation,
 -- function, topical subject, nationality, language, language code, gender, script, name component labels,
