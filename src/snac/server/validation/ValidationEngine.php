@@ -186,6 +186,15 @@ class ValidationEngine {
         }
     }
     
+    /**
+     * List Errors
+     * 
+     * Get the list of errors from the validation engine.  This is a multi-dimensional array of strings,
+     * which contains an array for each Validator, indexed by the Validator's name.  Each subarray contains
+     * the list of errors reported by that Validator.
+     * 
+     * @return string[][] List of errors associated with all validation steps run
+     */
     public function getErrors() {
         return $this->errors;
     }
