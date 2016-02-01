@@ -21,12 +21,13 @@ namespace snac\server\validation\validators;
  * @author Robbie Hott
  *
  */
-class OperationValidator {
+class OperationValidator extends \snac\server\validation\validators\Validator {
     
     private $constellationOperation = null;
     
     public function __construct() {
         $this->validatorName = "OperationValidator";
+        parent::__construct();
     }
     
     private function checkOperationValue($operation) {
@@ -40,6 +41,8 @@ class OperationValidator {
     }
     
     private function validateOperation($testOp, $parentOp = null) {
+        // Set the parent operation, either to the constellation-wide op or
+        // to the parameter to the function
         $op = $parentOp;
         if ($op == null) {
             $op = $this->constellationOperation;
@@ -53,6 +56,31 @@ class OperationValidator {
             return true;
         }
         
+    }
+    
+    private function validateAbstractData($object, $context = null) {
+        // Null objects very easily success validation
+        if ($object == null)
+            return true;
+        
+        $operation = $context;
+        if ($operation == null) 
+            $operation = $this->constellationOperation;
+        
+        // Test that the operation is appropriate for its parent, if not give an error
+        if ($this->checkOperationValue($object->getOperation())) {
+            if (!$this->validateOperation($object->getOperation(), $operation)) {
+                // If the operation doesn't validate, then a sub operation has an invalid
+                // operation with relation to a parent.  So, we'll message that out:
+
+                $this->addError("Operation \"". $object->getOperation() . "\" cannot follow " .
+                        "parent's operation \"". $operation . "\"", $object);
+                return false;
+            }
+            return true;
+        }
+        $this->addError("Invalid operation", $object);
+        return false;
     }
     
     /**
@@ -87,10 +115,10 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateBiogHist($biogHist, $context=null) {
-        if ($this->checkOperationValue($biogHist->getOperation())) {
-            return $this->validateOperation($biogHist->getOperation());
-        }
-        return false;
+        $success = $this->validateAbstractData($biogHist, $context);
+        $success = $success && 
+                    $this->validateLanguage($biogHist->getLanguage(), $biogHist->getOperation());
+        return $success;
     }
     
     /**
@@ -100,10 +128,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateConventionDeclaration($cd, $context=null) {
-        if ($this->checkOperationValue($cd->getOperation())) {
-            return $this->validateOperation($cd->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($cd, $context);
     }
     
     /**
@@ -113,10 +138,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateDate($date, $context=null) {
-        if ($this->checkOperationValue($date->getOperation())) {
-            return $this->validateOperation($date->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($date, $context);
     }
     
     /**
@@ -125,10 +147,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateFunction($fn, $context=null) {
-        if ($this->checkOperationValue($fn->getOperation())) {
-            return $this->validateOperation($fn->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($fn, $context);
     }
     
     /**
@@ -137,10 +156,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateGender($gender, $context=null) {
-        if ($this->checkOperationValue($gender->getOperation())) {
-            return $this->validateOperation($gender->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($gender, $context);
     }
     
     /**
@@ -149,10 +165,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateGeneralContext($gc, $context=null) {
-        if ($this->checkOperationValue($gc->getOperation())) {
-            return $this->validateOperation($gc->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($gc, $context);
     }
     
     /**
@@ -161,10 +174,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateLanguage($lang, $context=null) {
-        if ($this->checkOperationValue($lang->getOperation())) {
-            return $this->validateOperation($lang->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($lang, $context);
     }
     
     /**
@@ -173,10 +183,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateLegalStatus($legalStatus, $context=null) {
-        if ($this->checkOperationValue($legalStatus->getOperation())) {
-            return $this->validateOperation($legalStatus->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($legalStatus, $context);
     }
     
     /**
@@ -185,10 +192,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateMaintenanceEvent($event, $context=null) {
-        if ($this->checkOperationValue($event->getOperation())) {
-            return $this->validateOperation($event->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($event, $context);
     }
     
     /**
@@ -197,10 +201,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateMandate($mandate, $context=null) {
-        if ($this->checkOperationValue($mandate->getOperation())) {
-            return $this->validateOperation($mandate->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($mandate, $context);
     }
     
     /**
@@ -209,10 +210,15 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateNameEntry($nameEntry, $context=null) {
-        if ($this->checkOperationValue($nameEntry->getOperation())) {
-            return $this->validateOperation($nameEntry->getOperation());
+        $success = $this->validateAbstractData($nameEntry, $context);
+        $success = $success &&
+                    $this->validateLanguage($nameEntry->getLanguage(), $nameEntry->getOperation());
+        foreach ($nameEntry->getDateList() as $date) {
+            $success = $success &&
+                    $this->validateDate($date, $nameEntry->getOperation());
         }
-        return false;
+        //TODO Validate Contributor objects?
+        return $success;
     }
     
     /**
@@ -221,10 +227,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateNationality($nationality, $context=null) {
-        if ($this->checkOperationValue($nationality->getOperation())) {
-            return $this->validateOperation($nationality->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($nationality, $context);
     }
     
     /**
@@ -233,10 +236,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateOccupation($occupation, $context=null) {
-        if ($this->checkOperationValue($occupation->getOperation())) {
-            return $this->validateOperation($occupation->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($occupation, $context);
     }
     
     /**
@@ -245,10 +245,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateOtherRecordID($other, $context=null) {
-        if ($this->checkOperationValue($other->getOperation())) {
-            return $this->validateOperation($other->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($other, $context);
     }
     
     /**
@@ -257,10 +254,16 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validatePlace($place, $context=null) {
-        if ($this->checkOperationValue($place->getOperation())) {
-            return $this->validateOperation($place->getOperation());
+        $success = $this->validateAbstractData($place, $context);
+        foreach ($place->getDateList() as $date) {
+            $success = $success &&
+                        $this->validateDate($date, $place->getOperation());
         }
-        return false;
+        foreach ($place->getPlaceEntries() as $placeEntry) {
+            $success = $success &&
+                        $this->validatePlaceEntry($placeEntry, $place->getOperation());
+        }
+        return $success;
     }
     
     /**
@@ -269,10 +272,12 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateRelation($relation, $context=null) {
-        if ($this->checkOperationValue($relation->getOperation())) {
-            return $this->validateOperation($relation->getOperation());
+        $success = $this->validateAbstractData($relation, $context);
+        foreach ($relation->getDateList() as $date) {
+            $success = $success &&
+                        $this->validateDate($date, $relation->getOperation());
         }
-        return false;
+        return $success;
     }
     
     /**
@@ -281,10 +286,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateResourceRelation($relation, $context=null) {
-        if ($this->checkOperationValue($relation->getOperation())) {
-            return $this->validateOperation($relation->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($relation, $context);
     }
     
     /**
@@ -293,10 +295,10 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateSNACControlMetadata($scm, $context=null) {
-        if ($this->checkOperationValue($scm->getOperation())) {
-            return $this->validateOperation($scm->getOperation());
-        }
-        return false;
+        $success = $this->validateAbstractData($scm, $context);
+        $success = $success && $this->validateSource($scm->getCitation(), $scm->getOperation());
+        $success = $success && $this->validateLanguage($scm->getLanguage(), $scm->getOperation());
+        return $success;
     }
     
     /**
@@ -305,10 +307,10 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateSource($source, $context=null) {
-        if ($this->checkOperationValue($source->getOperation())) {
-            return $this->validateOperation($source->getOperation());
-        }
-        return false;
+        $success = $this->validateAbstractData($source, $context);
+        $success = $success && 
+                    $this->validateLanguage($source->getLanguage(), $source->getOperation());
+        return $success;
     }
     
     /**
@@ -317,10 +319,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateStructureOrGenealogy($sog, $context=null) {
-        if ($this->checkOperationValue($sog->getOperation())) {
-            return $this->validateOperation($sog->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($sog, $context);
     }
     
     /**
@@ -329,10 +328,7 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validateSubject($subject, $context=null) {
-        if ($this->checkOperationValue($subject->getOperation())) {
-            return $this->validateOperation($subject->getOperation());
-        }
-        return false;
+        return $this->validateAbstractData($subject, $context);
     }
     
     /**
@@ -350,10 +346,16 @@ class OperationValidator {
      * @param mixed[] $context optional Any context information needed for validation
      */
     public function validatePlaceEntry($placeEntry, $context=null) {
-        if ($this->checkOperationValue($placeEntry->getOperation())) {
-            return $this->validateOperation($placeEntry->getOperation());
+        $success = $this->validateAbstractData($placeEntry, $context);
+        $success = $success && $this->validatePlaceEntry($placeEntry->getBestMatch(), $placeEntry->getOperation());
+        foreach ($placeEntry->getDateList() as $date) {
+            $success = $success && $this->validateDate($date, $placeEntry->getOperation());
         }
-        return false;
+        foreach ($placeEntry->getMaybeSames() as $subEntry) {
+            $success = $success && $this->validatePlaceEntry($subEntry, $placeEntry->getOperation());
+        }
+        return $success;
+        
     }
     
 }

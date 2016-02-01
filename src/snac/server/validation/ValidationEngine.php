@@ -186,4 +186,8 @@ class ValidationEngine {
         }
     }
     
+    public function getErrors() {
+        return $this->errors;
+    }
+    
 }
