@@ -267,9 +267,9 @@ abstract class AbstractData {
      * @return boolean true on success, false on failure
      */
     public function setOperation($operation) {
-        if ($operation == $this->OPERATION_UPDATE ||
-            $operation == $this->OPERATION_DELETE ||
-            $operation == $this->OPERATION_INSERT) {
+        if ($operation == AbstractData::$OPERATION_UPDATE ||
+            $operation == AbstractData::$OPERATION_DELETE ||
+            $operation == AbstractData::$OPERATION_INSERT) {
                 $this->operation = $operation;
                 return true;
         }
