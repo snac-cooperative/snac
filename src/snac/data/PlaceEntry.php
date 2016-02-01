@@ -332,6 +332,24 @@ class PlaceEntry extends AbstractData {
     }
 
     /**
+     * Get the best match place entry
+     *
+     * @return \snac\data\PlaceEntry The best match place entry
+     */
+    public function getBestMatch() {
+        return $this->bestMatch;
+    }
+
+    /**
+     * Get the list of possible matches
+     *
+     * @return \snac\data\PlaceEntry[] The list of possible matches for this placeEntry
+     */
+    public function getMaybeSames() {
+        return $this->maybeSame;
+    }
+
+    /**
      * Set the local type of the place entry
      * 
      * @param string $type type

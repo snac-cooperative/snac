@@ -184,4 +184,13 @@ class Place extends AbstractData {
 
         array_push($this->entries, $entry);
     }
+
+    /**
+     * Get the list of PlaceEntry objects associated with this place 
+     * 
+     * @return \snac\data\PlaceEntry[] place entries associated with this place
+     */
+    public function getPlaceEntries() {
+        return $this->entries;
+    }
 }
