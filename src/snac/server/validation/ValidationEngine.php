@@ -32,7 +32,7 @@ class ValidationEngine {
     private $validators;
     
     /**
-     * @var string[] Array of errors occurred, indexed by validator name
+     * @var string[][] Array of errors occurred, indexed by validator name
      */
     private $errors;
     
