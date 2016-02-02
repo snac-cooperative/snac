@@ -618,6 +618,14 @@ create unique index related_resource_idx1 on related_resource(id,main_id,version
 --
 -- Table place_link and geo_place are denormalized together to create php PlaceEntry objects.
 
+-- Example values:
+--
+-- <placeRole>Lieu de Paris</placeRole>
+-- <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv5k4th--1kog8v18wrm89">02e arrondissement</placeEntry>
+-- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
+-- <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
+-- <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+
 create table place (
     id         int default nextval('id_seq'),
     version    int not null,

@@ -38,6 +38,8 @@ class SNACControlMetadata extends AbstractData {
     private $subCitation;
 
     /**
+     * We put original strings in here. For example an original place string.
+     *
      * @var string source data, the "as recorded" data: exactly what was found in the source
      */
     private $sourceData;

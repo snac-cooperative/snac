@@ -189,7 +189,7 @@ class DBUtil
 
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
-        $cObj->setEntityType(populateTerm($row['entity_type']));
+        $cObj->setEntityType($this->populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
         $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
