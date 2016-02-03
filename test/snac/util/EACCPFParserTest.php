@@ -70,8 +70,18 @@ class EACCPFParserTest extends PHPUnit_Framework_TestCase {
     }
 }
 
+/**
+ * Test vocabulary for the parser tests
+ * 
+ * @author Robbie Hott
+ *
+ */
 class TestVocabulary implements \snac\util\Vocabulary {
 
+    /**
+     * {@inheritDoc}
+     * @see \snac\util\Vocabulary::getTermByValue()
+     */
     public function getTermByValue($value, $type) {
         $term = new \snac\data\Term();
         $term->setTerm($value);
@@ -79,6 +89,10 @@ class TestVocabulary implements \snac\util\Vocabulary {
         return $term;
     }
 
+    /**
+     * {@inheritDoc}
+     * @see \snac\util\Vocabulary::getTermByID()
+     */
     public function getTermByID($id, $type) {
         $term = new \snac\data\Term();
         $term->setID($id);
