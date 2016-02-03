@@ -105,6 +105,8 @@ abstract class Validator {
     }
     
     /**
+     * Set Constellation root info
+     * 
      * Grab global constellation-level information that is needed in the validation
      * 
      * @param \snac\data\Constellation $constellation constellation
