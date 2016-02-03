@@ -68,6 +68,28 @@ class EACCPFParser {
      * 
      */ 
     public function __construct() {
+        $this->vocabulary = null;
+    }
+
+    /**
+     * Set Vocabulary Source
+     *
+     * Use this method to change the vocabulary source. This is useful when testing to replace the vocabulary
+     * with a test version.
+     *
+     * @param \snac\util\Vocabulary $vocab A vocabulary to replace the object in this parser.
+     */
+    public function setVocabulary($vocab) {
+        $this->vocabulary = $vocab;
+    }
+
+    /**
+     * Use the Default Vocabulary
+     *
+     * Use this method to instantiate the default vocabulary.  This should be done if the vocabulary
+     * has never been overwritten by setVocabulary().
+     */
+    private function instantiateVocabulary() {
         $this->vocabulary = new \snac\util\LocalVocabulary();
     }
 
@@ -105,6 +127,8 @@ class EACCPFParser {
      * @return \snac\data\Term A Term object.
      */
     public function getTerm($termString, $vocab) {
+        if ($this->vocabulary == null)
+            $this->instantiateVocabulary();
 
         $term = null;
         if ($this->vocabulary != null) {
