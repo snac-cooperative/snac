@@ -234,7 +234,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param string $sourceData source data, the "as recorded" data: exactly what was found in the source
      */
-    public function setSourceData($sourceData) {
+    public function setSourceData(string $sourceData) {
         $this->sourceData = $sourceData;
     }
 
@@ -252,7 +252,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param \snac\data\Language $language the language associated with this citation/data
      */
-    public function setLanguage($language) {
+    public function setLanguage(\snac\data\Language $language) {
         $this->language = $language;
     }
 

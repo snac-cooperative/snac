@@ -1017,6 +1017,9 @@ class Constellation extends AbstractData {
     /**
      * Calls addLanguageUsed() and serves as an alias in DBUtil.
      *
+     * In retrospect it doesn't help that much because DBUtil populateLanguage() needs to test the class
+     * regardless due to api inconsistency. 
+     *
      * Add a language used by this constellation's identity. (You might be tempted to call this
      * setLanguages() or the singular setLanguage() as the converse of getLanguages().)
      *

@@ -16,10 +16,15 @@
 namespace snac\data;
 
 /**
- * Source data storage class. Snac Source File. A "source" is a citation source, and has qualities of an
- * authority file.  This appears to derive from /eac-cpf/control/source in the CPF. Going forward we use it
- * for all sources which merit any level of authority control. For example, SNACControlMetadata->citation is a
- * Source object. Constellation->sources is a list of sources. 
+ * Source data storage class.
+ *
+ * Snac Source File. A "source" is a citation source, and has qualities of an authority file although every
+ * source is independent, even if it seems to be a duplicate.  This appears to derive from
+ * /eac-cpf/control/source in the CPF. Going forward we use it for all sources.  For example,
+ * SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
+ *
+ * Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
+ * just like date. 
  *
  * @author Robbie Hott
  *        
@@ -27,6 +32,7 @@ namespace snac\data;
 class Source extends AbstractData {
 
     /**
+     * Langage object 
      * 
      * @var \snac\data\Language The language this source was written in
      */
@@ -180,7 +186,7 @@ class Source extends AbstractData {
      * 
      * @param \snac\data\Language $language the language of this source
      */
-    public function setLanguage($language) {
+    public function setLanguage(\snac\data\Language $language) {
 
         $this->language = $language;
     }

@@ -316,7 +316,7 @@ class GeoTerm {
      * 
      * @param string $id Id of this place
      */
-    public function setId($id) {
+    public function setID($id) {
 
         $this->id = $id;
     }
@@ -326,7 +326,7 @@ class GeoTerm {
      * 
      * @return string $id Id of this place
      */
-    public function getId() {
+    public function getID() {
 
         return $this->id;
     }

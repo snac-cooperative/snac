@@ -102,16 +102,33 @@ class SQL
     /**
      * Insert a record into table source.
      *
+     * Language related is a Language object, and is saved in table language. It is related where
+     * source.id=language.fk_id. There is not language_id in table source, and there should not be.
+     *
+     * $typeID is different. It is a vocabulary id, from a PHP Term object. Therefore we only save the id. The
+     * Term object's instance is really a single row in table vocabulary.
+     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param string $href A string that goes into source.href. Presumably this is a resolvable URI for the
-     * source, but sources are not currenly well defined.
+     * @param integer $id Record id
      *
+     * @param string $text Text of this source.
+     *
+     * @param string $note Note about this source.
+     *
+     * @param string $uri URI of this source
+     *
+     * @param integer $typeID Vocabulary fk of the type
+     *
+     * @param integer $fkID Foreign key of the table related to this source.
+     *
+     * @param string $fkTable Name of the related table.
+     * 
      * @return integer The id value of this record. Sources have a language, so we need to return the $id
      * which is used by language as a foreign key.
      * 
      */
-    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID, $languageID)
+    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID, $fkTable, $fkID)
     {
         if (! $id)
         {
@@ -120,9 +137,9 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
-                            (version, main_id, id, text, note, uri, type_id, language_id)
+                            (version, main_id, id, text, note, uri, type_id, fk_table, fk_id)
                             values 
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
@@ -131,7 +148,8 @@ class SQL
                                   $note,
                                   $uri, 
                                   $typeID,
-                                  $languageID));
+                                  $fkTable,
+                                  $fkID));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -487,7 +505,7 @@ class SQL
      * @return integer $id The id of what we (might) have inserted.
      * 
      */
-    public function insertPlace($vhInfo, $id, $confirmed, $geo_place_id,  $fk_table, $fk_id)
+    public function insertPlace($vhInfo, $id, $confirmed, $original,  $geo_place_id,  $fk_table, $fk_id)
     {
         if (! $id)
         {
@@ -496,7 +514,7 @@ class SQL
         $qq = 'insert_place';
         $this->sdb->prepare($qq, 
                             'insert into place_link
-                            (version, main_id, id, confirmed, geo_place_id,  fk_id, fk_table)
+                            (version, main_id, id, confirmed, original, geo_place_id,  fk_id, fk_table)
                             values 
                             ($1, $2, $3, $4, $5, $6. $7)');
 
@@ -505,6 +523,7 @@ class SQL
                                             $vhInfo['version'],
                                             $id,
                                             $confirmed,
+                                            $original,
                                             $geo_place_id,
                                             $fk_id,
                                             $fk_table));
@@ -548,23 +567,39 @@ class SQL
     }
 
     /** 
-     * Insert meta record related to the $fk_id. Table scm, php object SNACControlMetadata.
+     * Insert meta record
      *
+     * Inset meta related to the $fk_id. Table scm, php object SNACControlMetadata.
+     *
+     * Note: we do not use citation_id because citations are source, and source is not a controlled
+     * vocabulary. Source is like date. Each source is indivualized for the record it relates to. To get the
+     * citation, conceptuall select from source where scm.id==source.fk_id.
+     *
+     * Note: We do not save language_id because languages are objects, not a single vocabulary term like
+     * $ruleID. The language is related back to this table where scm.id=language.fk_id and
+     * scm.version=language.version. (Or something like that with version. It might be complicated.)
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param integer $id Record id of this table.
      *
-     * @param string $citation_id Foreign key to \snac\data\Source
+     * @param string $subCitation
      *
-     * @param integer $fk_id A foreign key to record in another table.
+     * @param string $sourceData
      *
-     * @param string $fk_table Name of the foreign key table.
+     * @param integer $ruleID fk to vocaulary.id
      *
-     * @param integer $version The constellation version. For edits this is max version of the
-     * constellation. For published, this is the published constellation version.
+     * @param integer $languageID fk to vocaulary.id
+     *
+     * @param string $note
+     *
+     * @param integer $fkID fk to the relate table
+     *
+     * @param string $fkTable name of the related table 
      *
      */
-    public function insertMeta($vhInfo, $id, $citation_id, $sub_citation, $source_data,
-                               $rule_id, $language_id, $note, $fk_id, $fk_table)
+    public function insertMeta($vhInfo, $id, $subCitation, $sourceData,
+                               $ruleID, $note, $fkID, $fkTable)
     {
         if (! $id)
         {
@@ -573,24 +608,23 @@ class SQL
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
                             'insert into scm 
-                            (version, main_id, id, citation_id, sub_citation, source_data, 
+                            (version, main_id, id, sub_citation, source_data, 
                             rule_id, language_id, note, fk_id, fk_table)
                             values ($1, $2, $3, $4, $5, $6, $7, $8 $9)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'], 
                                             $vhInfo['main_id'],
                                             $id,
-                                            $citation_id,
-                                            $sub_citation,
-                                            $source_data,
-                                            $rule_id,
-                                            $language_id,
+                                            $subCitation,
+                                            $sourceData,
+                                            $ruleID,
+                                            $languageID,
                                             $note,
-                                            $fk_id,
-                                            $fk_table));
+                                            $fkID,
+                                            $fkTable));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
-       return $id;
+        return $id;
     }
 
     /**
@@ -820,14 +854,19 @@ class SQL
     }
 
     /**
+     * Select for Language object.
+     *
+     * This is not language controlled vocabulary. That is in the vocabulary table. This table links vocab id
+     * (language, script) to another table. Language objects are denormalized views of link and vocab tables.
+     * 
      * Note: This always gets the max version (most recent) for a given fkID. (Really? What is $version?)
      * Published records (older than a specific edit) might show the edit (more recent) language. This is
      * untested.  fix.
      *
-     * Select a language knowing a fkID value. This elies on the language.fkid being in the original table,
-     * thus $fkID is a foreign key of the record to which this language applies. This does not know or care
-     * what the other record is. Note that for the "foreign-key-across-all-tables" to work, all the tables
-     * must use the same sequence (that is: id_seq).
+     * Select fields for a language object knowing a fkID value of the related table. This relies on the
+     * language.fk_id==orig_table.id. $fkID is a foreign key of the record to which this language
+     * applies. This (mostly) does not know or care what the other record is. Note that for the
+     * "foreign-key-across-all-tables" to work, all the tables must use the same sequence (that is: id_seq).
      *
      * @param integer $fkID A foreign key to record in another table.
      *

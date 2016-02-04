@@ -44,6 +44,13 @@ class Place extends AbstractData {
     private $original;
 
     /**
+     * Confirmed geo place
+     *
+     * @var boolean $confirmed  True after a human confirms the place
+     */
+    private $confirmed;
+
+    /**
      * The original, source place data from CPF.
      *
      * From EAC-CPF tag(s):
@@ -60,17 +67,33 @@ class Place extends AbstractData {
      */
     private $source;
 
-    // \snac\data\GeoTerm
+    /**
+     * The related GeoTerm object
+     *
+     * @var \snac\data\GeoTerm Geo term authority object
+     */ 
     private $geoTerm;
 
-    // move to GeoTerm.
-    private $latitude;
-    private $longitude;
-    private $adminCode;
-    // Why a code and not a id from our vocabulary?
-    private $countryCode;
-    private $name;
-    private $geoNameId;
+
+    /**
+     * Set $confirmed
+     *
+     * @var boolean $confirmed
+     */
+    public function setConfirmed($confirmed)
+    {
+        $this->confirmed = $confirmed;
+    }
+
+    /**
+     * Get $confirmed
+     *
+     * @return $confirmed boolean
+     */
+    public function getConfirmed()
+    {
+        return $this->confirmed;
+    }
 
     /**
      * Set $source
@@ -93,123 +116,23 @@ class Place extends AbstractData {
     }
 
     /**
-     * Set $latitude
+     * Get geoTerm
      *
-     * @var string $latitude
+     * @return \snac\data\GeoTerm Geo Term authority object
      */
-    public function setLatitude($latitude)
+    public function getGeoTerm()
     {
-        $this->latitude = $latitude;
+        return $this->geoTerm;
     }
 
     /**
-     * Set $longitude
+     * Set geoTerm
      *
-     * @var string $longitude
+     * @param \snac\data\GeoTerm $geoTerm Geo Term authority object
      */
-    public function setLongitude($longitude)
+    public function setGeoTerm($geoTerm)
     {
-        $this->longitude = $longitude;
-    }
-    
-    /**
-     * Set $adminCode
-     *
-     * @var string $adminCode
-     */
-    public function setAdmincode($adminCode)
-    {
-        $this->adminCode = $adminCode;
-    }
-
-    /**
-     * Set $countryCode
-     *
-     * @var string $countryCode
-     */
-    public function setCountrycode($countryCode)
-    {
-        $this->countryCode = $countryCode;
-    }
-
-    /**
-     * Set $name
-     *
-     * @var string $name
-     */
-    public function setName($name)
-    {
-        $this->name = $name;
-    }
-
-    /**
-     * Set $geoNameId
-     *
-     * @var string $geoNameId
-     */
-    public function setGeonameid($geoNameId)
-    {
-        $this->geoNameId = $geoNameId;
-    }
-
-    /**
-     * Get latitude
-     *
-     * @return string latitude
-     */
-    public function getLatitude()
-    {
-        return $this->latitude;
-    }
-
-    /**
-     * Get longitude
-     *
-     * @return string longitude
-     */
-    public function getLongitude()
-    {
-        return $this->longitude;
-    }
-
-    /**
-     * Get adminCode
-     *
-     * @return string adminCode
-     */
-    public function getAdmincode()
-    {
-        return $this->adminCode;
-    }
-
-    /**
-     * Get countryCode
-     *
-     * @return string countryCode
-     */
-    public function getCountrycode()
-    {
-        return $this->countryCode;
-    }
-
-    /**
-     * Get name
-     *
-     * @return string name
-     */
-    public function getName()
-    {
-        return $this->name;
-    }
-
-    /**
-     * Get geoNameId
-     *
-     * @return string geoNameId
-     */
-    public function getGeonameid()
-    {
-        return $this->geoNameId;
+        $this->geoTerm = $geoTerm;
     }
 
     /**

@@ -392,7 +392,8 @@ create table date_range (
 create unique index date_range_idx1 on date_range(id,main_id,version);
 
 
--- This corresponds to a php Language object, and has both language id values and script_id values.
+-- This corresponds to a php Language object, and has both language id values and script_id values. This is
+-- not language controlled vocabulary. The language controlled vocabulary id fk is language.language_id.
 
 create table language (
         id              int default nextval('id_seq'),
@@ -412,16 +413,29 @@ create unique index language_idx1 on date_range(id,main_id,version);
 
 -- From the <source> element. The href and objectXMLWrap are not consistently used, so this may be
 -- unnecessary. There will (often?) be a related entry in table language, related on source.id=language.fk_id.
+--
+-- From Source.php:
+--
+-- Snac Source File. A "source" is a citation source, and has qualities of an authority file although every
+-- source is independent, even if it seems to be a duplicate.  This appears to derive from
+-- /eac-cpf/control/source in the CPF. Going forward we use it for all sources.  For example,
+-- SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
+-- 
+-- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
+-- just like date. 
 
 create table source (
-    id         int default nextval('id_seq'),
-    version    int not null,
-    main_id    int not null,
-    is_deleted boolean default false,
-    text       text,    -- Text of this source
-    note       text,    -- Note related to this source
-    uri        text,    -- URI of this source
-    type_id    integer, -- Type of this source
+    id          int default nextval('id_seq'),
+    version     int not null,
+    main_id     int not null,
+    is_deleted  boolean default false,
+    text        text,    -- Text of this source
+    note        text,    -- Note related to this source
+    uri         text,    -- URI of this source
+    type_id     integer, -- Type of this source, fk to vocabulary.id
+    language_id integer, -- language, fk to vocabulary.id
+    fk_id       integer,
+    fk_table    text,
     primary key(id, version)
     );
 
@@ -603,6 +617,8 @@ create table related_resource (
 create unique index related_resource_idx1 on related_resource(id,main_id,version);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
+-- 
+-- No language_id. Language is an object, and has its own table related where scm.id=language.fk_id.
 
 create table scm (
     id           int default nextval('id_seq'),
@@ -613,7 +629,6 @@ create table scm (
     sub_citation text, -- human readable location within the source
     source_data  text, -- original data "as entered" from CPF
     rule_id      int,  -- fk to some vocabulary of descriptive rules
-    language_id  int,  -- fk to vocabulary.id
     note         text,
     fk_id        int,  -- fk to related table.id
     fk_table     text  -- table name of the related foreign table. This field exists as backup
@@ -678,11 +693,12 @@ create table scm (
 create table place_link (
         id           int default nextval('id_seq'),
         version      int not null,
-        main_id         int not null,
-        is_deleted      boolean default false,
+        main_id      int not null,
+        is_deleted   boolean default false,
         fk_id        int,                   -- fk to related table.id
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
         confirmed    boolean default false, -- true after confirmation by a human
+        original     text,                  -- original as seen text from CPF import
         geo_place_id int,                   -- fk to geo_place.id, might be null
         primary key(id, version)
     );

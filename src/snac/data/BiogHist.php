@@ -126,7 +126,7 @@ class BiogHist extends AbstractData {
      * 
      * @param \snac\data\Language $language the language of this BiogHist
      */
-    public function setLanguage($language) {
+    public function setLanguage(\snac\data\Language $language) {
 
         $this->language = $language;
     }

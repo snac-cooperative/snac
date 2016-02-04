@@ -79,7 +79,7 @@ class DBUtil
      *
      * @return integer The record id of the thing
      */
-    private function thingID(mixed $thing)
+    private function thingID($thing)
     {
         return $thing==null?null:$thing->getID();
     }
@@ -308,8 +308,11 @@ class DBUtil
     }
 
     /**
-     * Return a snac meta object. Eventually populateMeta() will replace this when we have a consistent API
-     * for adding snac meta to all objects. That would be setSource() for all objects, or equivalent.
+     * Return a snac meta object. Perhaps populateMeta() will replace this when we have a consistent API
+     * for adding snac meta to all objects. See the discussion in populateSource(). That would be setSource() for all objects, or equivalent.
+     *
+     * Don't be confused by setSource() that uses a Source object and setSource() that uses a
+     * SNACControlMetadata object.
      *
      * The convention for related things like date, place, and meta is args ($id, $version) so we're
      * following that.h
@@ -327,13 +330,19 @@ class DBUtil
         if( $rec = $this->sql->selectMeta($tid, $version))
         {
             $gObj = new \snac\data\SNACControlMetadata();
-            $gObj->setCitation($rec['citation']);
             $gObj->setSubCitation($rec['sub_citation']);
             $gObj->setSourceData($rec['source_data']);
-            $gObj->setDescriptiveRule(populateTerm($rec['rule_id']));
-            $gObj->setLanguage(populateLanguage($rec['language_id']));
+            $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
+            /*
+             * setLanguage() is a Language object. What is $rec['language_id']?
+             */ 
             $gObj->setNote($rec['note']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
+            $this->populateLanguage($gObj);
+            /*
+             * populateSource() will call setCitation() for SNACControlMetadata objects
+             */ 
+            $this->populateSource($rec['id'], $gObj);
             return $gObj;
         }
         return null;
@@ -605,7 +614,7 @@ class DBUtil
     }
 
     /* 
-     * Select language from the database, create a language object, add the language to the object referencedy
+     * Select language from the database, create a language object, add the language to the object referenced
      * by $cObj.
      *
      * We have two term ids, language_id and script_id, so they need unique names (keys) and not the usual
@@ -629,15 +638,44 @@ class DBUtil
             $newObj->setVocabularySource($item['vocabulary_source']);
             $newObj->setNote($item['note']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $cObj->addLanguage($newObj);
+            $class = get_class($cObj);
+            // SNACControlMetadata
+            if ($class == 'snac\data\SNACControlMetadata' ||
+                $class == 'snac\data\Source' ||
+                $class == 'snac\data\BiogHist')
+            {
+                $cObj->setLanguage($newObj);
+            }
+            else if ($class == 'snac\data\Constellation')
+            {
+                $cObj->addLanguage($newObj);
+            }
         }
     }
 
-    /* 
-     * Select source from the database, create a source object, add the source to the object referenced by
-     * $cObj.
+    /**
+     * Create a source object from the database
+     * 
+     * Select source from the database, create a source object and return it. The api isn't consisten with how
+     * Source objects are added to other objects, so we're best off to build and return. This is different
+     * than the populate* functions that rely on a consistent api to add theirself to the parent object.
      *
-     * Note: $cObj passed by reference and changed in place.
+     * This is a bit exciting because Constellation will have a list of Source, but SNACControlMetadata only
+     * has a single Source.
+     *
+     * Two options for setCitaion()
+     * 1) call a function to build a Source object, call setCitation()
+     *  $sourceArrayOrSingle = $this->buildSource($cObj);
+     *  $gObj->setCitation($sourceOjb)
+     *
+     * 2) Call populateSource(), which is smart enough to know that SNACControlMetadata uses setCitation()
+     * for its Source object and Constellation uses addSource(). 
+     *
+     * Option 2 is better because Constellation needs an array and SNACControlMetadata needs a single
+     * Source object. It would be very odd for a function to return an array sometimes, and a single
+     * object other times. The workaround for that is two functions, which is awkard.
+     *
+     * Best to just take our medicine and encapsulate the complexity inside here populateSource().
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
@@ -653,9 +691,29 @@ class DBUtil
             $newObj->setText($rec['text']);
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
-            $newObj->setType(populateTerm($rec['type_id']));
-            $newObj->setLanguage(populateLanguage($rec['language_id']));
-            $cObj->addSource($newObj);
+            $newObj->setType($this->populateTerm($rec['type_id']));
+            $newObj->setDBInfo($rec['version'], $rec['id']);
+            /*
+             * setLanguage() is a Language object.
+             */
+            $this->populateLanguage($newObj);
+
+            $class = get_class($cObj);
+            if ($class == 'snac\data\Constellation')
+            {
+                $cObj->addSource($newObj);
+            }
+            else if ($class == 'snac\data\SNACControlMetadata')
+            {
+                $cObj->setCitation($newObj);
+                // There is only one Source in the citation, so best that we break now.
+                break;
+            }
+            else
+            {
+                $msg = sprintf("Cannot add Source to class: %s\n", $class);
+                die($msg);
+            }
         }
     }
 
@@ -966,37 +1024,117 @@ class DBUtil
         {
             foreach($placeList as $gObj)
             {
-                /*
-                 */ 
                 $pid = $this->sql->insertPlace($vhInfo,
                                                $gObj->getID(),
                                                $gObj->getConfirmed(),
                                                $gObj->getOriginal(),
-                                               $gObj->getGeoPlaceId(),
-                                               $relateTable,
+                                               $this->thingID($gObj->getGeoTerm()),
+                                               $relatedTable,
                                                $id->GetID());
                 if ($metaObj = $gObj->getSource())
                 {
-                    /*
-                     * We want to write the citation id into our meta data record. Is getID() really the
-                     * Source object record id?
-                     *
-                     * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
-                     * appropriate table in the database. Or if not existing they can be null.
-                     */ 
-                    $this->sql->insertMeta($vhInfo,
-                                           $id,
-                                           $this->thingID($metaObj->getCitation()),
-                                           $metaObj->getSubCitation(),
-                                           $metaObj->getSourceData,
-                                           $this->thingID($metaObj->getDescriptiveRule()),
-                                           $this->thingID($metaObj->getLanguage()),
-                                           $metaObj->getNote(), 
-                                           'place_link',
-                                           $pid);
+                    saveMeta($metaObj);
                 }
             }
         }
+    }
+
+    private function saveMeta($metaObj)
+    {
+        if (! $metaObj)
+        {
+            return; 
+        }
+        /*
+         * Citation is a Source object. Source objects are like dates: each one is specific to the
+         * related record. Source is not a controlled vocabulary. Therefore, like date, Source has
+         * an fk back to the original table.
+         * 
+         * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
+         * appropriate table in the database. Or if not existing they can be null.
+         */ 
+        $metaID = $this->sql->insertMeta($vhInfo,
+                                         $id,
+                                         $metaObj->getSubCitation(),
+                                         $metaObj->getSourceData,
+                                         $this->thingID($metaObj->getDescriptiveRule()),
+                                         $metaObj->getNote(), 
+                                         'place_link',
+                                         $pid);
+        if ($lang = $metaObj->getLanguage())
+        {
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'scm',
+                                       $metaID);
+        }
+        $citeID = null;
+        if ($cite = $metaObj->getCitation())
+        {
+            $this->saveSource($vhInfo, $cite, 'scm', $metaID);
+            /* 
+             * $citeID = $this->sql->insertSource($vhInfo,
+             *                                    $cite->getID(),
+             *                                    $cite->getText(),
+             *                                    $cite->getNote(),
+             *                                    $cite->getURI(),
+             *                                    $this->thingID($cite->getType()),
+             *                                    'scm',
+             *                                    $metaID);
+             */
+        }
+    }
+
+    /**
+     * Save a Source
+     *
+     * Source objects are written to table source, and their related language (if one exists) is written to
+     * table Language with a reverse foreign key as usual. Related on source.id=language.fk_id.
+     *
+     *
+     * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
+     * validation.
+     *
+     * Source is first order data. It is a non-authority description of a source. Each source is not a
+     * shared authority and is singular to the record to which it is attached. That is: each Source is
+     * related back to a record. There can be multiple sources all related back to a single record, as
+     * is the case here in Constellation (nrd).
+     * 
+     * @param Object $gObj The object containing this source
+     *
+     * @param string $fkTable The name of the containing object's table.
+     *
+     * @param integer $fkID The record id of the containing table.
+     *
+     */
+    private function saveSource($vhInfo, $gObj, $fkTable, $fkID)
+    {
+        $genericRecordID = $this->sql->insertSource($vhInfo,
+                                                    $gObj->getID(),
+                                                    $gObj->getText(),
+                                                    $gObj->getNote(),
+                                                    $gObj->getURI(),
+                                                    $this->thingID($gObj->getType()),
+                                                    $fkTable,
+                                                    $fkID);
+        /*
+         * Source only has a single language.
+         */ 
+        if ($lang = $gObj->getLanguage())
+        {
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'source',
+                                       $genericRecordID);
+         }
     }
 
 
@@ -1069,6 +1207,10 @@ class DBUtil
                                    $vhInfo['main_id']);
         }
 
+        /*
+         * Constellation getLanguage() returns a list of Language objects. That's very reasonable in this
+         * context.
+         */ 
         foreach ($id->getLanguage() as $lang)
         {
             $this->sql->insertLanguage($vhInfo,
@@ -1120,32 +1262,30 @@ class DBUtil
 
         foreach ($id->getSources() as $fdata)
         {
+            $this->saveSource($vhInfo, $fdata, 'nrd', $vhInfo['main_id']);
             /* 
-             * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
-             * validation.
-             *
-             * Source is first order data. It is a non-authority description of a source. Each source is not a
-             * shared authority and is singular to the record to which it is attached.
+             * $sid = $this->sql->insertSource($vhInfo,
+             *                                 $fdata->getID(),
+             *                                 $fdata->getText(),
+             *                                 $fdata->getNote(),
+             *                                 $fdata->getURI(),
+             *                                 $this->thingID($fdata->getType()),
+             *                                 $this->thingID($fdata->getLanguage()),
+             *                                 'nrd',
+             *                                 $vhInfo['main_id']);
+             * $lang = $fdata->getLanguage();
+             * if ($lang)
+             * {
+             *     $this->sql->insertLanguage($vhInfo,
+             *                                $lang->getID(),
+             *                                $this->thingID($lang->getLanguage()),
+             *                                $this->thingID($lang->getScript()),
+             *                                $lang->getVocabularySource(),
+             *                                $lang->getNote(),
+             *                                'source',
+             *                                $sid);
+             * }
              */
-            $sid = $this->sql->insertSource($vhInfo,
-                                            $fdata->getID(),
-                                            $fdata->getText(),
-                                            $fdata->getNote(),
-                                            $fdata->getURI(),
-                                            $this->thingID($fdata->getType()),
-                                            $this->thingID($fdata->getLanguage()));
-            $lang = $fdata->getLanguage();
-            if ($lang)
-            {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $this->thingID($lang->getLanguage()),
-                                           $this->thingID($lang->getScript()),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'source',
-                                           $sid);
-            }
         }
 
         foreach ($id->getLegalStatuses() as $fdata)
@@ -1375,16 +1515,17 @@ class DBUtil
                               $biogHist->getID(),
                               $biogHist->getText());
         
-        $lang = $biogHist->getLanguage();
-        $this->sql->insertLanguage($vhInfo,
-                                   $lang->getID(),
-                                   $lang->getLanguage()->getID(),
-                                   $lang->getScript()->getID(),
-                                   $lang->getVocabularySource(),
-                                   $lang->getNote(),
-                                   'biog_hist',
-                                   $bid);
-        
+        if ($lang = $biogHist->getLanguage())
+        {
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'biog_hist',
+                                       $bid);
+        }
         foreach ($biogHist->getDateList() as $date)
         {
             $this->sql->insertDate($vhInfo,
