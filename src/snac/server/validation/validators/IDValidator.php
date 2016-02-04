@@ -94,6 +94,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateBiogHist($biogHist, $context=null) {
+        if ($biogHist == null) 
+            return true;
         
         if ($biogHist->getID() == null) {
             if ($biogHist->getLanguage() == null)
@@ -128,7 +130,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateConventionDeclaration($cd, $context=null) {
-        if ($cd->getID() == null)
+        if ($cd == null || $cd->getID() == null)
             return true;
         
         if (in_array($cd->getID(), $this->seen["cd"])) {
@@ -154,7 +156,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateDate($date, $context=null) {
-        if ($date->getID() == null)
+        if ($date == null || $date->getID() == null)
             return true;
         
         $preID = "";    
@@ -192,7 +194,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateFunction($fn, $context=null) {
-        if ($fn->getID() == null)
+        if ($fn == null || $fn->getID() == null)
             return true;
         
         if (in_array($fn->getID(), $this->seen["fn"])) {
@@ -218,7 +220,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateGender($gender, $context=null) {
-        if ($gender->getID() == null)
+        if ($gender == null || $gender->getID() == null)
             return true;
         
         if (in_array($gender->getID(), $this->seen["gender"])) {
@@ -244,7 +246,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateGeneralContext($gc, $context=null) {
-        if ($gc->getID() == null)
+        if ($gc == null || $gc->getID() == null)
             return true;
         
         if (in_array($gc->getID(), $this->seen["gc"])) {
@@ -270,7 +272,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateLanguage($lang, $context=null) {
-        if ($lang->getID() == null)
+        if ($lang == null || $lang->getID() == null)
             return true;
         
         $preID = "";    
@@ -306,7 +308,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateLegalStatus($legalStatus, $context=null) {
-        if ($legalStatus->getID() == null)
+        if ($legalStatus == null || $legalStatus->getID() == null)
             return true;
         
         if (in_array($legalStatus->getID(), $this->seen["legalStatus"])) {
@@ -332,7 +334,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateMaintenanceEvent($event, $context=null) {
-        if ($event->getID() == null)
+        if ($event == null || $event->getID() == null)
             return true;
         
         if (in_array($event->getID(), $this->seen["event"])) {
@@ -358,7 +360,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateMandate($mandate, $context=null) {
-        if ($mandate->getID() == null)
+        if ($mandate == null || $mandate->getID() == null)
             return true;
         
         if (in_array($mandate->getID(), $this->seen["mandate"])) {
@@ -384,6 +386,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateNameEntry($nameEntry, $context=null) {
+        if ($nameEntry == null)
+            return true;
 
         if ($nameEntry->getID() == null) {
             if (empty($nameEntry->getDateList()) && $nameEntry->getLanguage() == null)
@@ -422,7 +426,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateNationality($nationality, $context=null) {
-        if ($nationality->getID() == null)
+        if ($nationality == null || $nationality->getID() == null)
             return true;
         
         if (in_array($nationality->getID(), $this->seen["nationality"])) {
@@ -446,7 +450,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateOccupation($occupation, $context=null) {
-        if ($occupation->getID() == null)
+        if ($occupation == null || $occupation->getID() == null)
             return true;
         
         if (in_array($occupation->getID(), $this->seen["occupation"])) {
@@ -472,7 +476,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateOtherRecordID($other, $context=null) {
-        if ($other->getID() == null)
+        if ($other == null || $other->getID() == null)
             return true;
         
         if (in_array($other->getID(), $this->seen["other"])) {
@@ -498,7 +502,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validatePlace($place, $context=null) {
-        
+        if ($place == null)
+            return true;
         
         if ($place->getID() == null) {
             if (empty($place->getDateList()))
@@ -536,6 +541,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateRelation($relation, $context=null) {
+        if ($relation == null)
+            return true;
         
         if ($relation->getID() == null) {
             if (empty($relation->getDateList()))
@@ -575,7 +582,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateResourceRelation($relation, $context=null) {
-        if ($relation->getID() == null)
+        if ($relation == null || $relation->getID() == null)
             return true;
         
         if (in_array($relation->getID(), $this->seen["resource_relation"])) {
@@ -601,11 +608,14 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateSNACControlMetadata($scm, $context=null) {
-        $success = $this->validateSource($scm->getCitation());
-        $success = $success && $this->validateLanguage($scm->getLanguage());
+        if ($scm == null)
+            return true;
         
         if ($scm->getID() == null) {
-            if ($scm->getCitation() == null && $scm->getLanguage() == null)
+            if (($scm->getCitation() == null  ||
+                        ($scm->getCitation() != null && $scm->getCitation()->getID() == null)) 
+                    && ($scm->getLanguage() == null ||
+                        ($scm->getLanguage() != null && $scm->getLanguage()->getID() == null)))
                 return true;
             else {
                 $this->addError("SNACControlMetadata with no ID has elements with ID", $scm);
@@ -618,7 +628,11 @@ class IDValidator extends \snac\server\validation\validators\Validator {
             return false;
         }
     
-        foreach ($this->constellation->getSNACControlMetadata() as $i => $current) {
+        $scmList = $this->constellation->getSNACControlMetadata();
+        if ($context != null) {
+            $scmList = $context->getSNACControlMetadata();
+        }
+        foreach ($scmList as $i => $current) {
             if ($scm->getID() == $current->getID()) {
                 array_push($this->seen["scm"], $scm->getID());
                 $success = $this->validateSource($scm->getCitation(), $current);
@@ -638,7 +652,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateSource($source, $context=null) {
-        $success = $this->validateLanguage($source->getLanguage());
+        if ($source == null)
+            return true;
         
         if ($source->getID() == null) {
             if ($source->getLanguage() == null)
@@ -683,7 +698,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateStructureOrGenealogy($sog, $context=null) {
-        if ($sog->getID() == null)
+        if ($sog == null || $sog->getID() == null)
             return true;
         
         if (in_array($sog->getID(), $this->seen["sog"])) {
@@ -709,7 +724,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateSubject($subject, $context=null) {
-        if ($subject->getID() == null)
+        if ($subject == null || $subject->getID() == null)
             return true;
         
         if (in_array($subject->getID(), $this->seen["subject"])) {
