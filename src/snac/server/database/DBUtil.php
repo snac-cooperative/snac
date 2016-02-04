@@ -971,6 +971,7 @@ class DBUtil
                 $pid = $this->sql->insertPlace($vhInfo,
                                                $gObj->getID(),
                                                $gObj->getConfirmed(),
+                                               $gObj->getOriginal(),
                                                $gObj->getGeoPlaceId(),
                                                $relateTable,
                                                $id->GetID());

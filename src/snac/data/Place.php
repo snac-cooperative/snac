@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Place File
+ * Place class
  *
  * Contains the place data for the objects such as Constellation.
  *
@@ -16,13 +16,15 @@
 namespace snac\data;
 
 /**
- * Place data class for place in Constellations and other objects. Constellation may contain Place. Place
+ * Place data class
+ *
+ * Place in Constellations and other objects. Constellation may contain Place. Place
  * data is denormalized form of the database place_link, (related snac meta data) and geo_place tables.
  *
  * Constellation may have zero Place objects when there are no associated places. (I mention this because
  * while fairly obvious, the implementation of place is also fairly confusing).
  *
- * Likewise, Place may have many empty properties where there is no known related geo names record.
+ * Likewise, Place may have many empty properties where there is no known related geo_place (aka geonames) record.
  *
  * See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
@@ -57,8 +59,6 @@ class Place extends AbstractData {
      * @var \snac\data\SNACControlMetadata A SCM object with all the human readable XML for CPF place and placeEntry.
      */
     private $source;
-
-    private $score;
 
     // \snac\data\GeoTerm
     private $geoTerm;
@@ -223,7 +223,6 @@ class Place extends AbstractData {
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(1);
-        $this->entries = array ();
         parent::__construct($data);
     }
     
@@ -259,13 +258,9 @@ class Place extends AbstractData {
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "role" => $this->role == null ? null : $this->role->toArray($shorten),
             "original" => $this->original,
-            "entries" => array(),
             "note" => $this->note
         );
 
-        foreach ($this->entries as $i => $entry) 
-            $return["entries"][$i] = $entry->toArray($shorten);
-            
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -307,12 +302,6 @@ class Place extends AbstractData {
         else
             $this->role = null;
 
-        $this->entries = array();
-        if (isset($data["entries"])) {
-            foreach ($data["entries"] as $i => $entry)
-                $this->entries[$i] = new PlaceEntry($entry);
-        }
-
         if (isset($data["note"]))
             $this->note = $data["note"];
         else
@@ -352,13 +341,4 @@ class Place extends AbstractData {
         $this->role = $role;
     }
 
-    /**
-     * Add a place entry to the place
-     * 
-     * @param \snac\data\PlaceEntry $entry Place entry to add
-     */
-    public function addPlaceEntry($entry) {
-
-        array_push($this->entries, $entry);
-    }
 }
