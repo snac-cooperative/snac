@@ -1520,6 +1520,8 @@ class EACCPFParser {
                         $score = $plAtts["certaintyScore"];
                         unset($plAtts["certaintyScore"]);
                     }
+                    
+                    $geoTerm->setName((string) $child);
 
                     $this->markUnknownAtt(array_merge(
                             $xpath, 
