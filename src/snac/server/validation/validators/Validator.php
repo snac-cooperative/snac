@@ -309,6 +309,16 @@ abstract class Validator {
      * @return boolean true if valid, false otherwise
      */
     public abstract function validateSubject($subject, $context=null);
+
+    /**
+     * Validate a Contributor
+     *
+     * @param \snac\data\Contributor $contributor Contributor to validate
+     * @param mixed[] $context optional Any context information needed for validation
+     * @return boolean true if valid, false otherwise
+     */
+    public abstract function validateContributor($contributor, $context=null);
+    
     
     /**
      * Validate a Term 

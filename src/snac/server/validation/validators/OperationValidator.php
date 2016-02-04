@@ -289,7 +289,10 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
             $success = $success &&
                     $this->validateDate($date, $nameEntry->getOperation());
         }
-        //TODO Validate Contributor objects?
+        foreach ($nameEntry->getContributors() as $contributor) {
+            $success = $success &&
+                    $this->validateContributor($contributor, $nameEntry->getOperation());
+        }
         return $success;
     }
     
@@ -417,6 +420,18 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
      */
     public function validateSubject($subject, $context=null) {
         return $this->validateAbstractData($subject, $context);
+    }
+    
+    /**
+     * Validate a Contributor
+     *
+     * @param \snac\data\Contributor $contributor Contributor to validate
+     * @param mixed[] $context optional Any context information needed for validation
+     * @return boolean true if valid, false otherwise
+     */
+    public function validateContributor($contributor, $context=null) {
+        return $this->validateAbstractData($contributor, $context);
+        
     }
     
     /**
