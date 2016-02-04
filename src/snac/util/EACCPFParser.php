@@ -691,7 +691,7 @@ class EACCPFParser {
                                     $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
-                                    // TODO: Sometimes nationality has non-standard placeEntry with only country code
+                                    //TODO Sometimes nationality has non-standard placeEntry with only country code
                                     $term = $this->getTerm((string) $subTag, "nationality");
                                     $nationality = new \snac\data\Nationality();
                                     $nationality->setTerm($term);
