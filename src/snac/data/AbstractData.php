@@ -80,7 +80,7 @@ abstract class AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
-        $this->metadata = array();
+        $this->snacControlMetadata = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
     }

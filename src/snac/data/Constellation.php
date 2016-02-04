@@ -178,8 +178,7 @@ class Constellation extends AbstractData {
     private $functions = null;
 
     /**
-     * A list of Place objects. There may be zero places. Each Place object will have at least one PlaceEntry
-     * object.
+     * A list of Place objects. 
      *
      * From EAC-CPF tag(s):
      * 
