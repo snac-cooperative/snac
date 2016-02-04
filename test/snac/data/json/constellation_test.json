@@ -112,7 +112,9 @@
             "dataType": "NameEntry",
             "original": "Notice Test Collectivit\u00e9",
             "preferenceScore": null,
-            "contributors": [],
+            "contributors": [
+                {}
+            ],
             "language": {
                 "dataType": "Language",
                 "language": {
@@ -452,6 +454,7 @@
     "places": [
         {
             "dataType": "Place",
+            "original": "Pierrefitte-sur-Seine",
             "type": null,
             "role": {
                 "id": null,
@@ -459,38 +462,9 @@
                 "uri": null,
                 "description": null
             },
-            "entries": [
-                {
-                    "dataType": "PlaceEntry",
-                    "latitude": null,
-                    "longitude": null,
-                    "administrationCode": null,
-                    "countryCode": null,
-                    "vocabularySource": null,
-                    "certaintyScore": null,
-                    "original": "Pierrefitte-sur-Seine",
-                    "bestMatch": null,
-                    "maybeSame": [],
-                    "type": {},
-                    "id": null,
-                    "version": null
-                },
-                {
-                    "dataType": "PlaceEntry",
-                    "latitude": null,
-                    "longitude": null,
-                    "administrationCode": null,
-                    "countryCode": null,
-                    "vocabularySource": "d3ntxf5186--sga9u2l9iboc",
-                    "certaintyScore": null,
-                    "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
-                    "bestMatch": null,
-                    "maybeSame": [],
-                    "type": {},
-                    "id": null,
-                    "version": null
-                }
-            ],
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
@@ -523,10 +497,24 @@
                     "id": null,
                     "version": null
                 }
+            ],
+            "snacControlMetadata": [
+                {
+                    "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
+                    "sourceData": "Pierrefitte-sur-Seine",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "note": "Parsed from SNAC EAC-CPF.",
+                    "id": null,
+                    "version": null
+                }
             ]
         },
         {
             "dataType": "Place",
+            "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
             "type": null,
             "role": {
                 "id": null,
@@ -534,53 +522,77 @@
                 "uri": null,
                 "description": null
             },
-            "entries": [
+            "geoplace": {
+                "id": null,
+                "uri": "d3ntxf5186--sga9u2l9iboc",
+                "name": null,
+                "latitude": null,
+                "longitude": null,
+                "administrationCode": null,
+                "countryCode": null
+            },
+            "score": 0,
+            "confirmed": false,
+            "note": "\n                  \n               ",
+            "id": null,
+            "version": null,
+            "dates": [
                 {
-                    "dataType": "PlaceEntry",
-                    "latitude": null,
-                    "longitude": null,
-                    "administrationCode": null,
-                    "countryCode": null,
-                    "vocabularySource": null,
-                    "certaintyScore": null,
-                    "original": "Paris, Archives nationales",
-                    "bestMatch": null,
-                    "maybeSame": [],
-                    "type": {},
-                    "id": null,
-                    "version": null
-                },
-                {
-                    "dataType": "PlaceEntry",
-                    "latitude": null,
-                    "longitude": null,
-                    "administrationCode": null,
-                    "countryCode": null,
-                    "vocabularySource": "d3nyv8gloo-1mqax06e8pe1d",
-                    "certaintyScore": null,
-                    "original": "03e arrondissement",
-                    "bestMatch": null,
-                    "maybeSame": [],
-                    "type": {},
-                    "id": null,
-                    "version": null
-                },
-                {
-                    "dataType": "PlaceEntry",
-                    "latitude": null,
-                    "longitude": null,
-                    "administrationCode": null,
-                    "countryCode": null,
-                    "vocabularySource": "d3nzaj2p6v--hrd7lqok52tn",
-                    "certaintyScore": null,
-                    "original": "Francs-Bourgeois (rue des)",
-                    "bestMatch": null,
-                    "maybeSame": [],
-                    "type": {},
+                    "dataType": "SNACDate",
+                    "fromDate": "2012-01-01",
+                    "fromDateOriginal": "2012",
+                    "fromType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": null,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
                     "id": null,
                     "version": null
                 }
             ],
+            "snacControlMetadata": [
+                {
+                    "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
+                    "sourceData": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "note": "Parsed from SNAC EAC-CPF.",
+                    "id": null,
+                    "version": null
+                }
+            ]
+        },
+        {
+            "dataType": "Place",
+            "original": "Paris, Archives nationales",
+            "type": null,
+            "role": {
+                "id": null,
+                "term": null,
+                "uri": null,
+                "description": null
+            },
+            "geoplace": null,
+            "score": 0,
+            "confirmed": false,
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
@@ -615,6 +627,165 @@
                     },
                     "isRange": true,
                     "note": null,
+                    "id": null,
+                    "version": null
+                }
+            ],
+            "snacControlMetadata": [
+                {
+                    "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
+                    "sourceData": "Paris, Archives nationales",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "note": "Parsed from SNAC EAC-CPF.",
+                    "id": null,
+                    "version": null
+                }
+            ]
+        },
+        {
+            "dataType": "Place",
+            "original": "03e arrondissement",
+            "type": null,
+            "role": {
+                "id": null,
+                "term": null,
+                "uri": null,
+                "description": null
+            },
+            "geoplace": {
+                "id": null,
+                "uri": "d3nyv8gloo-1mqax06e8pe1d",
+                "name": null,
+                "latitude": null,
+                "longitude": null,
+                "administrationCode": null,
+                "countryCode": null
+            },
+            "score": 0,
+            "confirmed": false,
+            "note": "\n                  \n               ",
+            "id": null,
+            "version": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2003-01-01",
+                    "fromDateOriginal": "2003",
+                    "fromType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": "2012-12-31",
+                    "toDateOriginal": "2012",
+                    "toType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null
+                }
+            ],
+            "snacControlMetadata": [
+                {
+                    "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
+                    "sourceData": "03e arrondissement",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "note": "Parsed from SNAC EAC-CPF.",
+                    "id": null,
+                    "version": null
+                }
+            ]
+        },
+        {
+            "dataType": "Place",
+            "original": "Francs-Bourgeois (rue des)",
+            "type": null,
+            "role": {
+                "id": null,
+                "term": null,
+                "uri": null,
+                "description": null
+            },
+            "geoplace": {
+                "id": null,
+                "uri": "d3nzaj2p6v--hrd7lqok52tn",
+                "name": null,
+                "latitude": null,
+                "longitude": null,
+                "administrationCode": null,
+                "countryCode": null
+            },
+            "score": 0,
+            "confirmed": false,
+            "note": "\n                  \n               ",
+            "id": null,
+            "version": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2003-01-01",
+                    "fromDateOriginal": "2003",
+                    "fromType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": "2012-12-31",
+                    "toDateOriginal": "2012",
+                    "toType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null
+                }
+            ],
+            "snacControlMetadata": [
+                {
+                    "dataType": "SNACControlMetadata",
+                    "citation": null,
+                    "subCitation": null,
+                    "sourceData": "Francs-Bourgeois (rue des)",
+                    "descriptiveRule": null,
+                    "language": null,
+                    "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null
                 }

@@ -1026,22 +1026,25 @@ class DBUtil
             {
                 $pid = $this->sql->insertPlace($vhInfo,
                                                $gObj->getID(),
-                                               $gObj->getConfirmed(),
+                                               $this->db->boolToPg($gObj->getConfirmed()),
                                                $gObj->getOriginal(),
                                                $this->thingID($gObj->getGeoTerm()),
                                                $relatedTable,
                                                $id->GetID());
-                if ($metaObj = $gObj->getSource())
+                if ($metaObjList = $gObj->getSNACControlMetadata())
                 {
-                    saveMeta($metaObj);
+                    $this->saveMeta($vhInfo, $metaObjList, 'place_link', $pid);
                 }
             }
         }
     }
 
-    private function saveMeta($metaObj)
+    /**
+     *
+     */ 
+    private function saveMeta($vhInfo, $metaObjList, $fkTable, $fkID)
     {
-        if (! $metaObj)
+        if (! $metaObjList)
         {
             return; 
         }
@@ -1053,39 +1056,32 @@ class DBUtil
          * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
          * appropriate table in the database. Or if not existing they can be null.
          */ 
-        $metaID = $this->sql->insertMeta($vhInfo,
-                                         $id,
-                                         $metaObj->getSubCitation(),
-                                         $metaObj->getSourceData,
-                                         $this->thingID($metaObj->getDescriptiveRule()),
-                                         $metaObj->getNote(), 
-                                         'place_link',
-                                         $pid);
-        if ($lang = $metaObj->getLanguage())
+        foreach ($metaObjList as $metaObj)
         {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $lang->getLanguage()->getID(),
-                                       $lang->getScript()->getID(),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'scm',
-                                       $metaID);
-        }
-        $citeID = null;
-        if ($cite = $metaObj->getCitation())
-        {
-            $this->saveSource($vhInfo, $cite, 'scm', $metaID);
-            /* 
-             * $citeID = $this->sql->insertSource($vhInfo,
-             *                                    $cite->getID(),
-             *                                    $cite->getText(),
-             *                                    $cite->getNote(),
-             *                                    $cite->getURI(),
-             *                                    $this->thingID($cite->getType()),
-             *                                    'scm',
-             *                                    $metaID);
-             */
+            $metaID = $this->sql->insertMeta($vhInfo,
+                                             $metaObj->getID(),
+                                             $metaObj->getSubCitation(),
+                                             $metaObj->getSourceData(),
+                                             $this->thingID($metaObj->getDescriptiveRule()),
+                                             $metaObj->getNote(), 
+                                             $fkTable,
+                                             $fkID);
+            if ($lang = $metaObj->getLanguage())
+            {
+                $this->sql->insertLanguage($vhInfo,
+                                           $lang->getID(),
+                                           $lang->getLanguage()->getID(),
+                                           $lang->getScript()->getID(),
+                                           $lang->getVocabularySource(),
+                                           $lang->getNote(),
+                                           'scm',
+                                           $metaID);
+            }
+            $citeID = null;
+            if ($cite = $metaObj->getCitation())
+            {
+                $this->saveSource($vhInfo, $cite, 'scm', $metaID);
+            }
         }
     }
 

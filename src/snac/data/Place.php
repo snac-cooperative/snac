@@ -46,15 +46,6 @@ class Place extends AbstractData {
     private $original;
 
     /**
-     * Confirmed geo place
-     *
-     * @var boolean $confirmed  True after a human confirms the place
-     */
-    private $confirmed;
-
-    /**
-     * The original, source place data from CPF.
-     *
      * Descriptive Note
      * 
      * From EAC-CPF tag(s):

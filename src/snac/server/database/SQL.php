@@ -516,7 +516,7 @@ class SQL
                             'insert into place_link
                             (version, main_id, id, confirmed, original, geo_place_id,  fk_id, fk_table)
                             values 
-                            ($1, $2, $3, $4, $5, $6. $7)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['main_id'],
@@ -599,7 +599,7 @@ class SQL
      *
      */
     public function insertMeta($vhInfo, $id, $subCitation, $sourceData,
-                               $ruleID, $note, $fkID, $fkTable)
+                               $ruleID, $note, $fkTable, $fkID)
     {
         if (! $id)
         {
@@ -609,8 +609,8 @@ class SQL
         $this->sdb->prepare($qq, 
                             'insert into scm 
                             (version, main_id, id, sub_citation, source_data, 
-                            rule_id, language_id, note, fk_id, fk_table)
-                            values ($1, $2, $3, $4, $5, $6, $7, $8 $9)');
+                            rule_id, note, fk_id, fk_table)
+                            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'], 
                                             $vhInfo['main_id'],
@@ -618,7 +618,6 @@ class SQL
                                             $subCitation,
                                             $sourceData,
                                             $ruleID,
-                                            $languageID,
                                             $note,
                                             $fkID,
                                             $fkTable));
