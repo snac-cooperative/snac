@@ -3,8 +3,7 @@
 /**
  * Place File
  *
- * Contains the data class for the Constellation place. See PlaceEntry for the place controlled vocabulary
- * class.
+ * Contains the place data for the objects such as Constellation.
  *
  * License:
  *
@@ -17,14 +16,13 @@
 namespace snac\data;
 
 /**
- * Place data structure class for place in Constellation. Constellation may contain Place, which may contain a
- * list of PlaceEntry objects. The list of PlaceEntry is denormalized form of the database place_entry and
- * geo_place tables.
+ * Place data class for place in Constellations and other objects. Constellation may contain Place. Place
+ * data is denormalized form of the database place_link, (related snac meta data) and geo_place tables.
  *
  * Constellation may have zero Place objects when there are no associated places. (I mention this because
  * while fairly obvious, the implementation of place is also fairly confusing).
  *
- * Likewise, Place may have zero PlaceEntry objects where there is no known related geo names place.
+ * Likewise, Place may have many empty properties where there is no known related geo names record.
  *
  * See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
@@ -34,58 +32,185 @@ namespace snac\data;
 class Place extends AbstractData {
 
     /**
-     * From EAC-CPF tag(s):
-     * 
-     * * place/descriptiveNote
-     * 
-     * @var string Descriptive note
-     */
-    private $note;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * place/@localType
-     * 
-     * @var \snac\data\Term Type of the place
-     */
-    private $type;
-
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * place/placeRole
-     * 
-     * @var \snac\data\Term Place role
-     */
-    private $role;
-
-    /**
-     * The list of PlaceEntry objects. There may be zero of these if the Place is not related to a known place
-     * in the geo names controlled vocabulary. There may be multiple PlaceEntry objects, each with the data
-     * from SQL place_link and geo_place. All of the data from those two tables is necessary to build the UI
-     * for normal constellation editing.
+     * Original place from CPF
      *
-     * Constellation has a list of zero or more Place objects. Each Place object as a list of zero or more
-     * PlaceEntry objects.
+     * This is the original data as seen in the parsed CPF. Once a place is linked to a geo name by a human,
+     * what do we do with this string? If we don't change to the empty string, it may confuse people, athough
+     * once $confirmed is true, the UI could stop showing the original.
      *
-     * From EAC-CPF tag(s):
-     * 
-     * * place/placeEntry/*
-     * 
-     * @var \snac\data\PlaceEntry[] Place entries contained in this place
-     */
-    private $entries;
-
-        /**
-     * From EAC-CPF tag(s):
-     * 
-     * * placeEntry/
-     * * snac:placeEntry/placeEntry
-     * 
-     * @var string original text within this entry
      */
     private $original;
+
+    /**
+     * The original, source place data from CPF.
+     *
+     * From EAC-CPF tag(s):
+     * 
+     * place/descriptiveNote,  place/@localType, place/placeRole, placeEntry/,
+     * snac:placeEntry/placeEntry
+     *
+     * Note that CPF <placeEntry> appear to be broader hierarchial regions for the actual geographic
+     * location. The nature of XML necessiates a certain amount of copying of data from authorities for the
+     * sake of convience and legibility. We don't need to copy broader geographical entities, but we do
+     * denormalize enough to build the user interface. 
+     * 
+     * @var \snac\data\SNACControlMetadata A SCM object with all the human readable XML for CPF place and placeEntry.
+     */
+    private $source;
+
+    private $score;
+
+    // \snac\data\GeoTerm
+    private $geoTerm;
+
+    // move to GeoTerm.
+    private $latitude;
+    private $longitude;
+    private $adminCode;
+    // Why a code and not a id from our vocabulary?
+    private $countryCode;
+    private $name;
+    private $geoNameId;
+
+    /**
+     * Set $source
+     *
+     * @var \snac\data\SNACControlMetadata $source
+     */
+    public function setSource(\snac\data\SNACControlMetadata $source)
+    {
+        $this->source = $source;
+    }
+
+    /**
+     * Get $source
+     *
+     * @return \snac\data\SNACControlMetadata source
+     */
+    public function getSource()
+    {
+        return $this->source;
+    }
+
+    /**
+     * Set $latitude
+     *
+     * @var string $latitude
+     */
+    public function setLatitude($latitude)
+    {
+        $this->latitude = $latitude;
+    }
+
+    /**
+     * Set $longitude
+     *
+     * @var string $longitude
+     */
+    public function setLongitude($longitude)
+    {
+        $this->longitude = $longitude;
+    }
+    
+    /**
+     * Set $adminCode
+     *
+     * @var string $adminCode
+     */
+    public function setAdmincode($adminCode)
+    {
+        $this->adminCode = $adminCode;
+    }
+
+    /**
+     * Set $countryCode
+     *
+     * @var string $countryCode
+     */
+    public function setCountrycode($countryCode)
+    {
+        $this->countryCode = $countryCode;
+    }
+
+    /**
+     * Set $name
+     *
+     * @var string $name
+     */
+    public function setName($name)
+    {
+        $this->name = $name;
+    }
+
+    /**
+     * Set $geoNameId
+     *
+     * @var string $geoNameId
+     */
+    public function setGeonameid($geoNameId)
+    {
+        $this->geoNameId = $geoNameId;
+    }
+
+    /**
+     * Get latitude
+     *
+     * @return string latitude
+     */
+    public function getLatitude()
+    {
+        return $this->latitude;
+    }
+
+    /**
+     * Get longitude
+     *
+     * @return string longitude
+     */
+    public function getLongitude()
+    {
+        return $this->longitude;
+    }
+
+    /**
+     * Get adminCode
+     *
+     * @return string adminCode
+     */
+    public function getAdmincode()
+    {
+        return $this->adminCode;
+    }
+
+    /**
+     * Get countryCode
+     *
+     * @return string countryCode
+     */
+    public function getCountrycode()
+    {
+        return $this->countryCode;
+    }
+
+    /**
+     * Get name
+     *
+     * @return string name
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
+
+    /**
+     * Get geoNameId
+     *
+     * @return string geoNameId
+     */
+    public function getGeonameid()
+    {
+        return $this->geoNameId;
+    }
 
     /**
      * Constructor

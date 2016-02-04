@@ -69,6 +69,37 @@ class SQL
     }
 
     /**
+     * Select records from table source.
+     *
+     * @param integer $fkID A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of location fields as list with keys matching the database field names:
+     * version, main_id, id, text, note, uri, type_id, language_id.
+     * 
+     */
+    public function selectSource($fkID, $version)
+    {
+        $qq = 'select_source';
+        $this->sdb->prepare($qq, 
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id
+                            from source as aa,
+                            (select fk_id,max(version) as version from source where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($fkID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
      * Insert a record into table source.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -80,7 +111,7 @@ class SQL
      * which is used by language as a foreign key.
      * 
      */
-    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID)
+    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID, $languageID)
     {
         if (! $id)
         {
@@ -89,7 +120,7 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
-                            (version, main_id, id, text, note, uri, type_id)
+                            (version, main_id, id, text, note, uri, type_id, language_id)
                             values 
                             ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq,
@@ -99,7 +130,8 @@ class SQL
                                   $text,
                                   $note,
                                   $uri, 
-                                  $typeID));
+                                  $typeID,
+                                  $languageID));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -301,10 +333,6 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param SNACDate $date Contrary to practice elsewhere, this code knows about the internal structure of
-     * SNACDate. This arg needs to be moved up to DBUtils, and wrapped with a function to translate php
-     * objects to sql tables. There shouldn't be any info about objects here, because this file is sql only.
-     *
      * @param string $fk_table The name of the table to which this date and $fk_id apply.
      *
      * @param integer $fk_id The id of the record to which this date applies.
@@ -313,7 +341,6 @@ class SQL
      * inserted.
      *
      */
-
     public function insertDate($vhInfo,
                                $id, 
                                $isRange,
@@ -407,7 +434,184 @@ class SQL
         return $all;
     }
 
-    
+    /** 
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
+     *
+     * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
+     * place applies. We do not know or care what the other record is.
+     * 
+     * @param integer $tid A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: id,
+     * version, main_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
+     */
+    public function selectPlace($tid, $version)
+    {
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.geo_place_id, fk_table, aa.fk_id,
+                            aa.from_type, aa.to_type
+                            from place as aa,
+                            (select fk_id,max(version) as version from place where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($did, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /** 
+     * Insert into place_link. 
+     *
+     * @param integer $id The id
+     *
+     * @param string $confirmed Boolean confirmed by human
+     *
+     * @param string $geo_place_id The geo_place_id
+     *
+     * @param string $fk_id The fk_id of the related table.
+     *
+     * @param string $fk_table The fk_table name
+     *
+     * @return integer $id The id of what we (might) have inserted.
+     * 
+     */
+    public function insertPlace($vhInfo, $id, $confirmed, $geo_place_id,  $fk_table, $fk_id)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_place';
+        $this->sdb->prepare($qq, 
+                            'insert into place_link
+                            (version, main_id, id, confirmed, geo_place_id,  fk_id, fk_table)
+                            values 
+                            ($1, $2, $3, $4, $5, $6. $7)');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['main_id'],
+                                            $vhInfo['version'],
+                                            $id,
+                                            $confirmed,
+                                            $geo_place_id,
+                                            $fk_id,
+                                            $fk_table));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /** 
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
+     *
+     * Select a meta data record. We expect only one record, and will only return one (or zero). The query
+     * relies on table.id==fk_id where $tid is a foreign key of the record to which this applies. We do not
+     * know or care what the other record is.
+     * 
+     * @param integer $tid A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: id,
+     * version, main_id, citation_id, sub_citation, source_data, rule_id,
+     * language_id, note. I don't think calling code has any use for fk_id, so we don't return it.
+     */
+    public function selectMeta($tid, $version)
+    {
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
+                            aa.rule_id, aa.language_id, aa.note
+                            from scm as aa,
+                            (select fk_id,max(version) as version from scm where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($did, $version));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+    /** 
+     * Insert meta record related to the $fk_id. Table scm, php object SNACControlMetadata.
+     *
+     *
+     * @param integer $id Record id of this table.
+     *
+     * @param string $citation_id Foreign key to \snac\data\Source
+     *
+     * @param integer $fk_id A foreign key to record in another table.
+     *
+     * @param string $fk_table Name of the foreign key table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     */
+    public function insertMeta($vhInfo, $id, $citation_id, $sub_citation, $source_data,
+                               $rule_id, $language_id, $note, $fk_id, $fk_table)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'insert into scm 
+                            (version, main_id, id, citation_id, sub_citation, source_data, 
+                            rule_id, language_id, note, fk_id, fk_table)
+                            values ($1, $2, $3, $4, $5, $6, $7, $8 $9)');
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'], 
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $citation_id,
+                                            $sub_citation,
+                                            $source_data,
+                                            $rule_id,
+                                            $language_id,
+                                            $note,
+                                            $fk_id,
+                                            $fk_table));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+       return $id;
+    }
+
+    /**
+     * Get a geo_place record.
+     * 
+     * @param integer $gid A geo_place.id value.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: latitude,
+     * longitude, administrative_code, country_code, name, geoname_id.
+     */
+    public function selectGeo($gid)
+    {
+        $qq = 'select_geo_place';
+        $this->sdb->prepare($qq, 'select * from geo_place where id=$1');
+        $result = $this->sdb->execute($qq, array($gid));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+
     /** 
      * Insert the non-repeating parts (non repeading data) of the constellation. No need to return a value as
      * the nrd row key is main_id,version which corresponds to the row key in all other tables being

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Snac Source File
+ * Snac Source. A "source" is a source in the sense of a citation, and has qualities of an authority file.
  *
  * Contains the data class for source information
  *
@@ -16,7 +16,10 @@
 namespace snac\data;
 
 /**
- * Source data storage class
+ * Source data storage class. Snac Source File. A "source" is a citation source, and has qualities of an
+ * authority file.  This appears to derive from /eac-cpf/control/source in the CPF. Going forward we use it
+ * for all sources which merit any level of authority control. For example, SNACControlMetadata->citation is a
+ * Source object. Constellation->sources is a list of sources. 
  *
  * @author Robbie Hott
  *        

@@ -17,11 +17,11 @@
 
 -- drop table if existss and sequences that may already exist, and create everything from scratch
 
-drop table if exists contributor;
 drop table if exists control;
 drop table if exists date_range;
 drop table if exists function;
-drop table if exists place;
+drop table if exists place_link;
+drop table if exists scm;
 drop table if exists geo_place;
 drop table if exists name;
 drop table if exists name_component;
@@ -31,19 +31,16 @@ drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
 drop table if exists pre_snac_maintenance_history;
-drop table if exists related;
 drop table if exists related_identity;
 drop table if exists related_resource;
 drop table if exists role;
 drop table if exists appuser;
 drop table if exists source;
-drop table if exists source_link;
 drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists appuser_role_link;
 drop table if exists version_history;
 drop table if exists language;
-drop table if exists convention_declaration;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
 drop table if exists gender;
@@ -433,18 +430,19 @@ create table source (
 
 create unique index source_idx2 on source (id,version,main_id);
 
--- Not currently used? (Because we're denormalizing source records.)
--- Was table sources (plural) which was table cpf_sources. 
--- Linking table source.id=source_link.source_id and source_link.main_id=identity_constellation.id
+-- Source is first order data, not an authority. Every source is treated separately. We rejected the idea of
+-- an authority (broadly, controlled vocabulary) for source and will copy each source for each object it
+-- applies to. As a result, linking is not necessary.
 
-create table source_link (
-    id         int default nextval('id_seq'),
-    version    int not null,
-    main_id    int not null,
-    is_deleted boolean default false,
-    source_id  int, -- fk to source.id
-    primary key(id, version)
-    );
+-- create table source_link (
+--     id         int default nextval('id_seq'),
+--     version    int not null,
+--     main_id    int not null,
+--     is_deleted boolean default false,
+--     fk_id      int, -- fk to the related table.id, always or usually nrd.id
+--     source_id  int, -- fk to source.id
+--     primary key(id, version)
+--     );
 
 -- Some of the elements from <control>. Multiple control records per identity_constellation.  The XML
 -- accumulated these over time, but we have versioning, so we can add records with a version. This kind of
@@ -604,16 +602,36 @@ create table related_resource (
 
 create unique index related_resource_idx1 on related_resource(id,main_id,version);
 
--- The Constellation concept of place requires two classes, and three SQL tables. The php denormalizes (using
--- more space, but optimising i/o) by combining fields from place_link and geo_place into PlaceEntry.
+-- meta aka SNACControlMetadata aka SNAC Control Metadata
+
+create table scm (
+    id           int default nextval('id_seq'),
+    version      int not null,
+    main_id      int not null,
+    is_deleted   boolean default false,
+    citation_id  int,  --  fk to source.id?
+    sub_citation text, -- human readable location within the source
+    source_data  text, -- original data "as entered" from CPF
+    rule_id      int,  -- fk to some vocabulary of descriptive rules
+    language_id  int,  -- fk to vocabulary.id
+    note         text,
+    fk_id        int,  -- fk to related table.id
+    fk_table     text  -- table name of the related foreign table. This field exists as backup
+);
+
+-- Tables needing place data use place_link to relate to geo_place. Table place_link also relates to snac meta
+-- data in order to capture original strings. The php denormalizes (using more space, but optimising i/o) by
+-- combining fields from place_link and geo_place into PlaceEntry.
 --
--- Places associated with an identity constellation. Each place relates to one or more geo_place controlled
--- vocabulary records. When we have a place we also have at least one relation to geo_place via the linking
--- table place_link.
+-- At one point the Constellation concept of place required two classes, and three SQL tables. One of those
+-- tables was place, now commented out.
 --
--- The original place text needs to be here because it only occurs once per Constellation place.
+-- Table place_link associates a place to another table. Each place_link relates to one geo_place authority
+-- (controlled vocabulary) records. 
 --
--- The various matches each have their own geo_place_id, place_match_type, and confidence so they are found in
+-- The original place text was here because it only occured once per Constellation place.
+--
+-- The various matches each had their own geo_place_id, place_match_type, and confidence so they were found in
 -- table place_link.
 --
 -- Table place_link and geo_place are denormalized together to create php PlaceEntry objects.
@@ -625,36 +643,51 @@ create unique index related_resource_idx1 on related_resource(id,main_id,version
 -- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
 -- <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
 -- <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+-- /data/merge/99166-w60v9g87.xml:            <placeEntry countryCode="FR"/>
+-- /data/merge/99166-w6r24hfw.xml:            <placeEntry>Pennsylvania--Chester County</placeEntry>
+-- /data/merge/99166-w6p37bxz.xml:            <placeEntry>Bermuda Islands, North Atlantic Ocean</placeEntry>
+-- /data/merge/99166-w6rr6xvw.xml:            <placeEntry>Australia</placeEntry>
 
-create table place (
-    id         int default nextval('id_seq'),
-    version    int not null,
-    main_id    int not null,
-    is_deleted boolean default false,
-    original   text, -- the original place text
-    type       int,  -- fk to vocabulary.id, from place/@localType
-    note       text, -- descriptive note, from place/descriptiveNote
-    role       int   -- fk to vocabulary.id, from place/placeRole
-    primary key(id, version)
-    );
 
-create unique index place_idx1 on place(id,main_id,version);
+-- Feb 2 2016 table place unused. Stuff humans previously typed is in meta data related to place_link. First
+-- order data which needs place uses place_link to relate to geo_place authority records.
+
+-- create table place (
+--     id         int default nextval('id_seq'),
+--     version    int not null,
+--     main_id    int not null,
+--     is_deleted boolean default false,
+--     original   text, -- the original place text
+--     type       int,  -- fk to vocabulary.id, from place/@localType
+--     note       text, -- descriptive note, from place/descriptiveNote
+--     role       int   -- fk to vocabulary.id, from place/placeRole
+--     primary key(id, version)
+--     );
+
+-- create unique index place_idx1 on place(id,main_id,version);
 
 -- One to many linking table between place and geo_place. For the usual reasons SNAC place entry is
 -- denormalized. Some of these fields are in the SNAC XML.
 --
 -- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
 
+        -- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
+        -- confidence       int,  -- confidence of this link, from snac place entry
+
+
 create table place_link (
-        id               int default nextval('id_seq'),
-        place_id         int, -- fk to place.id
-        geo_place_id     int, -- fk to geo_place.id
-        place_match_type int, -- fk to vocabulary.id, likelySame, maybeSame, unmatched
-        confidence       int, -- confidence of this link, from snac place entry
+        id           int default nextval('id_seq'),
+        version      int not null,
+        main_id         int not null,
+        is_deleted      boolean default false,
+        fk_id        int,                   -- fk to related table.id
+        fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
+        confirmed    boolean default false, -- true after confirmation by a human
+        geo_place_id int,                   -- fk to geo_place.id, might be null
         primary key(id, version)
     );
 
-create unique index place_idx1 on place(id,main_id,version);
+create unique index place_link_idx1 on place_link(id,main_id,version);
 
 --
 -- Meta data, authority data, system link tables
@@ -700,6 +733,10 @@ create unique index place_idx1 on place(id,main_id,version);
 --
 -- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
 
+-- We don't need vocabulary source because that was a CPF hold over prior to using a geo authority.
+-- vocabularySource text, -- AnF and Robbie's geonames search creates @vocabularySource attribute.
+
+
 create table geo_place (
     id                  int default nextval('id_seq'),
     version             int not null,  -- fk to version_history.id, sequence is unique foreign key
@@ -708,8 +745,7 @@ create table geo_place (
     administrative_code text,          -- Should be an fk to geo_place.id for the encompassing administrative_code?
     country_code        text,          -- Should be an fk to geo_place.id for the encompassing country_code?
     name                text,          -- The (canonical?) geonames name of this place?
-    geoname_id         text,          -- Is this an integer or URI? Give example.
-    vocabularySource text, -- AnF and Robbie's geonames search creates @vocabularySource attribute.
+    geoname_id          text,          -- Persistent id, integer, text, or URI. vocabularySource goes here.
     primary key(id, version)
     );
 

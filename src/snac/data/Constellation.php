@@ -939,7 +939,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Source $source Source to add 
      */
-    public function addSource($source) {
+    public function addSource(\snac\data\Source $source) {
 
         array_push($this->sources, $source);
     }

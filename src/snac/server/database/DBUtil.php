@@ -72,6 +72,20 @@ class DBUtil
     }
 
     /**
+     * Get object ID. Call this so we don't have to sprinkle ternary ops in our code.
+     * Works for class that has a getID() method. Intended to use with Language, Term, Source,
+     * 
+     * @param mixed $thing Some object that when not null has a getID() method.
+     *
+     * @return integer The record id of the thing
+     */
+    private function thingID(mixed $thing)
+    {
+        return $thing==null?null:$thing->getID();
+    }
+
+
+    /**
      * Utility function to return the SQL object for this DBUtil instance. Currently only used for testing, and that may be the only valid use.
      * @return \snac\server\database\SQL Return the SQL object of this DBUtil instance.
      */
@@ -194,7 +208,7 @@ class DBUtil
         $cObj->setVersion($vhInfo['version']);
         $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
         $this->populateLanguage($cObj);
-
+        $this->populateSource($cObj);
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
         $this->populateMandate($vhInfo, $cObj);
@@ -238,8 +252,8 @@ class DBUtil
     } // end selectConstellation
 
     /** 
-     * Build class Place objects for this constellation, selecting from the database. Place corresponds to
-     * table place.  See populatePlacEntry() for the 1:many relation between Place and geo names.
+     * Build class Place objects for this constellation, selecting from the database. Place gets data from
+     * place_link, scm, and geo_place.
      *
      * 
      * | php            | sql      |
@@ -250,6 +264,18 @@ class DBUtil
      * | setOriginal()  | original |
      * | setNote()      | note     |
      * | setRole() Term | role     |
+     *
+     * | php                                             | sql                         | geonames.org         |
+     * |-------------------------------------------------+-----------------------------+----------------------|
+     * | setID()                                         | id                          |                      |
+     * | setVersion()                                    | version                     |                      |
+     * | setLatitude()                                   | geo_place.latitude          | lat                  |
+     * | setLongitude()                                  | geo_place.longitude         | lon                  |
+     * | setAdminCode() renamed from setAdmistrationCode | geo_place.admin_code        | adminCode            |
+     * | setCountryCode()                                | geo_place.country_code      | countryCode          |
+     * | setName()                                       | geo_place.name              | name                 |
+     * | setGeoNameId()                                  | geo_place.geonamed_id       | geonameId            |
+     * | setSource()                                     | scm.source_data             |                      |
      *
      * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
      *
@@ -265,70 +291,54 @@ class DBUtil
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Place();
-            $gObj->setType(populateTerm($rec['type']));
-            $gOjb->setOriginal($rec['original']);
-            $gOjb->setNote($rec['note']);
-            $gObj->getRole(populateTerm($rec['role']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $gObj->populatePlaceEntry($vhInfo, $gObj);
+            $metaObj = $this->buildMeta($rec['id'], $vhInfo['version']);
+            $gObj->setSource($metaObj);
+
+            $geo = selectGeo($rec['geo_place_id']);
+            $gObj->setLatitude($geo['latitude']);
+            $gObj->setLongitude($geo['longitude']);
+            $gObj->setAdministrationCode($geo['administrative_code']);
+            $gObj->setCountryCode($geo['country_code']);
+            $gObj->setName($geo['name']);
+            $gObj->setGetNameId($geo['geoname_id']);
+
             $cObj->addPlace($gObj);
         }
     }
 
-
-    /** 
-     * Build class PlaceEntry objects for a given (single) Place object.
-     * Geonames has more fields that we're currently saving.
-     * 
-      | php                                             | sql                         | geonames.org         |
-      |-------------------------------------------------+-----------------------------+----------------------|
-      | setID()                                         | id                          |                      |
-      | setVersion()                                    | version                     |                      |
-      | setLatitude()                                   | geo_place.latitude          | lat                  |
-      | setLongitude()                                  | geo_place.longitude         | lon                  |
-      | setAdminCode() renamed from setAdmistrationCode | geo_place.admin_code        | adminCode            |
-      | setCountryCode()                                | geo_place.country_code      | countryCode          |
-      | setName()?                                      | geo_place.name              | name                 |
-      | setGeoNameId()?                                 | geo_place.geonamed_id       | geonameId            |
-      | setVocabularySource()                           | goe_place.vocabularySource  | SNAC geo parser, AnF |
-      | setCertaintyScore()                             | place_link.confidence       |                      |
-      | setBestMatch()                                  | boolean best match?         |                      |
-      | addMaybeSame()                                  | na?                         |                      |
-      | setMatchType() renamed from setType()           | place_link.place_match_type |                      |
-
+    /**
+     * Return a snac meta object. Eventually populateMeta() will replace this when we have a consistent API
+     * for adding snac meta to all objects. That would be setSource() for all objects, or equivalent.
      *
-     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     * The convention for related things like date, place, and meta is args ($id, $version) so we're
+     * following that.h
      *
-     * @param $cObj snac\data\Place object, passed by reference, and changed in place
-     * 
+     * @param integer $tid Table id, aka row id akd object id
+     *
+     * @param integer $version Constellation version number
+     *
      */
-    public function populatePlaceEntry($vhInfo, &$cObj)
+    public function buildMeta($tid, $version)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
          */
-        $gRows = $this->sql->selectPlace($vhInfo);
-        foreach ($gRows as $rec)
+        if( $rec = $this->sql->selectMeta($tid, $version))
         {
-            $gObj = new \snac\data\Place();
-            $gObj->setLatitude($rec['latitude']);
-            $gObj->setLongitude($rec['longitude']);
-            $gObj->setAdministrationCode($rec['administrative_code']);
-            $gObj->setCountryCode($rec['country_code']);
-            $gObj->setName($rec['name']);
-            $gObj->setGetNameId($rec['geoname_id']);
-            $gObj->setVocabularySource($rec['vocabularySource']);
-            $gObj->setCertaintyScore($rec['confidence']);
-            $gObj->setBestMatch($rec['isBestMatch']); // Not sure about the logic and intent of BestMatch
-            $gObj->addMaybeSame($rec['isSameAs']); // Not sure about logic and intent of adding MaybeSame
-            
-            $gObj->setMatchType(populateTerm($rec['place_match_type']));
-
+            $gObj = new \snac\data\SNACControlMetadata();
+            $gObj->setCitation($rec['citation']);
+            $gObj->setSubCitation($rec['sub_citation']);
+            $gObj->setSourceData($rec['source_data']);
+            $gObj->setDescriptiveRule(populateTerm($rec['rule_id']));
+            $gObj->setLanguage(populateLanguage($rec['language_id']));
+            $gObj->setNote($rec['note']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $gObj->populatePlaceEntry($vhInfo, $gObj);
-            $cObj->addPlace($gObj);
+            return $gObj;
         }
+        return null;
     }
+
 
     /**
      *
@@ -623,6 +633,32 @@ class DBUtil
         }
     }
 
+    /* 
+     * Select source from the database, create a source object, add the source to the object referenced by
+     * $cObj.
+     *
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
+     */
+    public function populateSource(&$cObj)
+    {
+        $rows = $this->sql->selectSource($cObj->getID(), $cObj->getVersion());
+        foreach ($rows as $rec)
+        {
+            $newObj = new \snac\data\Source();
+            $newObj->setText($rec['text']);
+            $newObj->setNote($rec['note']);
+            $newObj->setURI($rec['uri']);
+            $newObj->setType(populateTerm($rec['type_id']));
+            $newObj->setLanguage(populateLanguage($rec['language_id']));
+            $cObj->addSource($newObj);
+        }
+    }
+
 
     /**
      * Select mandate from database, create object, add the object to Constellation. Support multiples
@@ -912,6 +948,58 @@ class DBUtil
     }
     
     /**
+     * Save a list of places to place_link, including meta data.
+     *
+     * The only way to know the related table is for it to be passed in via $relatedTable.
+     *
+     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     *
+     * @param snac\data\AbstractData Object $id An object that might have a place, and that extends
+     * AbstractData.
+     *
+     * @param string $relatedTable Name of the related table for this place.
+     *
+     */
+    private function savePlace($vhInfo, $id, $relatedTable)
+    {
+        if ($placeList = $id->getPlaces())
+        {
+            foreach($placeList as $gObj)
+            {
+                /*
+                 */ 
+                $pid = $this->sql->insertPlace($vhInfo,
+                                               $gObj->getID(),
+                                               $gObj->getConfirmed(),
+                                               $gObj->getGeoPlaceId(),
+                                               $relateTable,
+                                               $id->GetID());
+                if ($metaObj = $gObj->getSource())
+                {
+                    /*
+                     * We want to write the citation id into our meta data record. Is getID() really the
+                     * Source object record id?
+                     *
+                     * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
+                     * appropriate table in the database. Or if not existing they can be null.
+                     */ 
+                    $this->sql->insertMeta($vhInfo,
+                                           $id,
+                                           $this->thingID($metaObj->getCitation()),
+                                           $metaObj->getSubCitation(),
+                                           $metaObj->getSourceData,
+                                           $this->thingID($metaObj->getDescriptiveRule()),
+                                           $this->thingID($metaObj->getLanguage()),
+                                           $metaObj->getNote(), 
+                                           'place_link',
+                                           $pid);
+                }
+            }
+        }
+    }
+
+
+    /**
      * Private function. Update a php constellation that is already in the database. This is called from
      * insertConstellation() or updateConstellation().
      *
@@ -952,6 +1040,7 @@ class DBUtil
                               $id->getArk(),
                               $id->getEntityType() == null ? null : $id->getEntityType()->getID());
 
+        $this->savePlace($vhInfo, $id, 'nrd');
         foreach ($id->getDateList() as $date)
         {
             /* 
@@ -1030,23 +1119,27 @@ class DBUtil
 
         foreach ($id->getSources() as $fdata)
         {
-            // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
-            // validation.
-
+            /* 
+             * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
+             * validation.
+             *
+             * Source is first order data. It is a non-authority description of a source. Each source is not a
+             * shared authority and is singular to the record to which it is attached.
+             */
             $sid = $this->sql->insertSource($vhInfo,
                                             $fdata->getID(),
                                             $fdata->getText(),
                                             $fdata->getNote(),
                                             $fdata->getURI(),
-                                            $fdata->getType()->getID(),
-                                            $fdata->getID());
+                                            $this->thingID($fdata->getType()),
+                                            $this->thingID($fdata->getLanguage()));
             $lang = $fdata->getLanguage();
             if ($lang)
             {
                 $this->sql->insertLanguage($vhInfo,
                                            $lang->getID(),
-                                           $lang->getLanguage()->getID(),
-                                           $lang->getScript()->getID(),
+                                           $this->thingID($lang->getLanguage()),
+                                           $this->thingID($lang->getScript()),
                                            $lang->getVocabularySource(),
                                            $lang->getNote(),
                                            'source',
