@@ -233,15 +233,28 @@ class GeoTerm {
     }
 
     /**
-     * Set vocabularySource
+     * Set vocabularySource (alias of setURI)
      * 
      * @param string $source vocabulary source
      */
     public function setVocabularySource($source) {
 
-        $this->vocabularySource = $source;
+        $this->setURI($source);
     }
 
+
+    /**
+     * Set URI
+     * 
+     * Set the canonical URI for this geographical place from its controlled vocabulary
+     *
+     * @param string $uri canonical URI
+     */
+    public function setURI($uri) {
+    
+        $this->uri = $uri;
+    }
+    
     /**
      * Set name
      * 
@@ -253,6 +266,76 @@ class GeoTerm {
     }
 
     /**
+     * Set id
+     *
+     * @param string $id Id of this place
+     */
+    public function setID($id) {
+    
+        $this->id = $id;
+    }
+    
+    /**
+     * Get the Longitude
+     * 
+     * @return float longitude
+     */
+    public function getLongitude() {
+        return $this->longitude;
+    }
+    
+    /**
+     * Get the Latitude
+     * 
+     * @return float latitude
+     */
+    public function getLatitude() {
+        return $this->latitude;
+    }
+    
+    /**
+     * Get the Administration Code
+     *
+     * @return string administration code
+     */
+    public function getAdministrationCode() {
+        return $this->administrationCode;
+    }
+    
+    /**
+     * Get the Country Code
+     * 
+     * Get the 2-character country code
+     * 
+     * @return string country code
+     */
+    public function getCountryCode() {
+        return $this->countryCode;
+    }
+    
+    /**
+     * Get the Vocabulary Source
+     * 
+     * This is an alias for getURI
+     * 
+     * @return string URI for the vocabulary source
+     */
+    public function getVocabularySource() {
+        return $this->getURI();
+    }
+    
+    /**
+     * Get the URI
+     * 
+     * Get the canonical URI for this geographical term
+     * 
+     * @return string URI
+     */
+    public function getURI() {
+        return $this->uri;
+    }
+
+    /**
      * Get name
      * 
      * @return string $name  Name of this place
@@ -260,16 +343,6 @@ class GeoTerm {
     public function getName() {
 
         return $this->name;
-    }
-
-    /**
-     * Set id
-     * 
-     * @param string $id Id of this place
-     */
-    public function setID($id) {
-
-        $this->id = $id;
     }
 
     /**

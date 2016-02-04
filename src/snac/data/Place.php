@@ -226,6 +226,17 @@ class Place extends AbstractData {
     public function deconfirm() {
         $this->confirmed = false;
     }
+    
+    /**
+     * Set the Geographical Term
+     * 
+     * Set the canonical geographical term associated with this place
+     * 
+     * @param \snac\data\GeoTerm $geoTerm The canonical geographical term
+     */
+    public function setGeoTerm($geoTerm) {
+        $this->geoTerm = $geoTerm;
+    }
 
     /**
      * Get the original place name
@@ -293,6 +304,17 @@ class Place extends AbstractData {
         if ($this->geoTerm == null)
             return 0;
         return $this->score;
+    }
+    
+    /**
+     * Get the Geographical Term
+     * 
+     * Get the canonical geographic term for this place
+     * 
+     * @return \snac\data\GeoTerm The geographic term, or null if none exists
+     */
+    public function getGeoTerm() {
+        return $this->geoTerm;
     }
 
     /**
