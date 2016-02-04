@@ -32,9 +32,11 @@ printf("Parser ready\n");
 /*
  * Parse the FRAN data from the test suite
  */
-$identity = $e->parseFile("test/snac/util/eac-cpf/FRAN_NP_050744.xml");
+$inFile = "test/snac/util/eac-cpf/FRAN_NP_050744.xml";
+printf("Reading $inFile...\n");
+$identity = $e->parseFile($inFile);
 file_put_contents("test/snac/data/json/constellation_test_v2_fromxml.json", $identity->toJSON(false));
-printf("Wrote: test/snac/data/json/constellation_test_v2.json\n");
+printf("Wrote: test/snac/data/json/constellation_test_v2_fromxml.json\n");
 
 $identity = new \snac\data\Constellation();
 $jsonIn = file_get_contents("test/snac/data/json/constellation_test_v2_fromxml.json");
@@ -44,7 +46,9 @@ file_put_contents("test/snac/data/json/constellation_test_v2_fromjson.json", $id
 /*
  * Parse Thomas Jefferson's EAC-CPF from the internet
  */
-$identity = $e->parseFile("http://socialarchive.iath.virginia.edu/snac/data/99166-w6w9576g.xml");
+$inFile = "http://socialarchive.iath.virginia.edu/snac/data/99166-w6w9576g.xml";
+printf("Reading $inFile\n");
+$identity = $e->parseFile($inFile);
 file_put_contents("test/snac/data/json/constellation_test2_v2_fromxml.json", $identity->toJSON(false));
 printf("Wrote: test/snac/data/json/constellation_test2_v2_fromxml.json\n");
 
