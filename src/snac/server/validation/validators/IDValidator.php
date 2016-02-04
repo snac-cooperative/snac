@@ -410,11 +410,12 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                 foreach ($nameEntry->getDateList() as $date) {
                     $success = $success && $this->validateDate($date, $current);
                 }
+                foreach ($nameEntry->getContributors() as $contributor) {
+                    $success = $success && $this->validateContributor($contributor, $current);
+                }
                 return $success;
             }
         }
-        
-        //TODO Validate Contributor objects?
         return false;
     }
     
@@ -740,6 +741,38 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         }
         
         return false;
+    }
+    
+
+    /**
+     * Validate a Contributor
+     *
+     * @param \snac\data\Contributor $contributor Contributor to validate
+     * @param mixed[] $context optional Any context information needed for validation
+     * @return boolean true if valid, false otherwise
+     */
+    public function validateContributor($contributor, $context=null) {
+        if ($contributor == null || $contributor->getID() == null)
+            return true;
+        
+        if (in_array($contributor->getID(), $this->seen["contributor"])) {
+            $this->addError("ID used multiple times", $contributor);
+            return false;
+        }
+        
+        // Couldn't get here without context
+        if ($context == null)
+            return false;
+        
+        foreach ($context->getContributors() as $i => $current) {
+            if ($contributor->getID() == $current->getID()) {
+                array_push($this->seen["contributor"], $contributor->getID());
+                return true;
+            }
+        }
+        
+        return false;
+    
     }
     
     /**
