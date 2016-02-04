@@ -106,6 +106,15 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
         if ($object == null)
             return true;
         
+        $success = true;
+        
+        // Check AbstractData-level objects
+        if ($object->getSNACControlMetadata() != null) {
+            foreach ($object->getSNACControlMetadata() as $scm) {
+                $success = $success && $this->validateSNACControlMetadata($scm, $object->getOperation());
+            }
+        }
+        
         $operation = $context;
         if ($operation == null) 
             $operation = $this->constellationOperation;
@@ -120,7 +129,7 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
                         "parent's operation \"". $operation . "\"", $object);
                 return false;
             }
-            return true;
+            return $success;
         }
         $this->addError("Invalid operation", $object);
         return false;
@@ -330,10 +339,6 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
             $success = $success &&
                         $this->validateDate($date, $place->getOperation());
         }
-        foreach ($place->getPlaceEntries() as $placeEntry) {
-            $success = $success &&
-                        $this->validatePlaceEntry($placeEntry, $place->getOperation());
-        }
         return $success;
     }
     
@@ -424,25 +429,16 @@ class OperationValidator extends \snac\server\validation\validators\Validator {
     public function validateTerm($term, $context=null) {
         return true; // not validating terms here
     }
-    
+
     /**
-     * Validate a PlaceEntry
-     * 
-     * @param \snac\data\PlaceEntry $placeEntry PlaceEntry to validate
+     * Validate a GeoTerm
+     *
+     * @param \snac\data\GeoTerm $geoTerm GeoTerm to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public function validatePlaceEntry($placeEntry, $context=null) {
-        $success = $this->validateAbstractData($placeEntry, $context);
-        $success = $success && $this->validatePlaceEntry($placeEntry->getBestMatch(), $placeEntry->getOperation());
-        foreach ($placeEntry->getDateList() as $date) {
-            $success = $success && $this->validateDate($date, $placeEntry->getOperation());
-        }
-        foreach ($placeEntry->getMaybeSames() as $subEntry) {
-            $success = $success && $this->validatePlaceEntry($subEntry, $placeEntry->getOperation());
-        }
-        return $success;
-        
+    public function validateGeoTerm($geoTerm, $context=null) {
+        return true; // not validation geoTerms here
     }
     
 }

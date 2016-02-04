@@ -320,12 +320,12 @@ abstract class Validator {
     public abstract function validateTerm($term, $context=null);
     
     /**
-     * Validate a PlaceEntry
+     * Validate a GeoTerm
      * 
-     * @param \snac\data\PlaceEntry $placeEntry PlaceEntry to validate
+     * @param \snac\data\GeoTerm $geoTerm GeoTerm to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public abstract function validatePlaceEntry($placeEntry, $context=null);
+    public abstract function validateGeoTerm($geoTerm, $context=null);
     
 }

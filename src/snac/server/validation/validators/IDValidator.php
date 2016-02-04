@@ -501,7 +501,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         
         
         if ($place->getID() == null) {
-            if (empty($place->getDateList()) && empty($place->getPlaceEntries()))
+            if (empty($place->getDateList()))
                 return true;
             else {
                 $this->addError("Place with no ID has elements with IDs", $place);
@@ -520,9 +520,6 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                 $success = true;
                 foreach ($place->getDateList() as $date) {
                     $success = $success && $this->validateDate($date, $current);
-                }
-                foreach ($place->getPlaceEntries() as $placeEntry) {
-                    $success = $success && $this->validatePlaceEntry($placeEntry, $current);
                 }
                 return $success;
             }
@@ -742,25 +739,14 @@ class IDValidator extends \snac\server\validation\validators\Validator {
     }
     
     /**
-     * Validate a PlaceEntry
-     * 
-     * @param \snac\data\PlaceEntry $placeEntry PlaceEntry to validate
+     * Validate a GeoTerm
+     *
+     * @param \snac\data\GeoTerm $geoTerm GeoTerm to validate
      * @param mixed[] $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
-    public function validatePlaceEntry($placeEntry, $context=null) {
-        
-        //TODO Places and PlaceEntries will change drastically
-        if ($placeEntry->getID() == null)
-            return true;
-        
-        if (in_array($placeEntry->getID(), $this->seen["placeEntry"])) {
-            $this->addError("ID used multiple times", $placeEntry);
-            return false;
-        }
-    
-        return true;
-        
+    public function validateGeoTerm($geoTerm, $context=null) {
+        return true; // not validation geoTerms here
     }
     
 }
