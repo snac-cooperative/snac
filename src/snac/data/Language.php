@@ -172,7 +172,7 @@ class Language extends AbstractData {
      * 
      * @param \snac\data\Term $language The language term
      */
-    public function setLanguage($language) {
+    public function setLanguage(\snac\data\Term $language) {
         $this->language = $language;
     }
     
@@ -181,7 +181,7 @@ class Language extends AbstractData {
      * 
      * @param \snac\data\Term $script The script term
      */
-    public function setScript($script) {
+    public function setScript(\snac\data\Term $script) {
         $this->script = $script;
     }
     

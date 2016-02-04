@@ -2,7 +2,7 @@
     "dataType": "Constellation",
     "ark": "FRAN_NP_050744",
     "entityType": {
-        "id": null,
+        "id": "696",
         "term": "corporateBody",
         "uri": null,
         "description": null
@@ -12,7 +12,7 @@
             "dataType": "SameAs",
             "type": {
                 "id": null,
-                "term": "entityID",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -29,7 +29,7 @@
             "dataType": "MaintenanceEvent",
             "eventType": {
                 "id": null,
-                "term": "created",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -37,7 +37,7 @@
             "standardDateTime": null,
             "agentType": {
                 "id": null,
-                "term": "human",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -49,7 +49,7 @@
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
-                "id": null,
+                "id": "699",
                 "term": "revised",
                 "uri": null,
                 "description": null
@@ -57,7 +57,7 @@
             "eventDateTime": "2015-10-05",
             "standardDateTime": null,
             "agentType": {
-                "id": null,
+                "id": "687",
                 "term": "machine",
                 "uri": null,
                 "description": null
@@ -87,7 +87,7 @@
     ],
     "legalStatuses": [
         {
-            "dataType": "LegalStatus",
+            "dataType": "term",
             "term": {
                 "id": null,
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
@@ -112,32 +112,26 @@
             "dataType": "NameEntry",
             "original": "Notice Test Collectivit\u00e9",
             "preferenceScore": null,
-            "contributors": [
-                {
-                    "type": "authorizedForm",
-                    "contributor": "ANF"
-                }
-            ],
+            "contributors": [],
             "language": {
                 "dataType": "Language",
                 "language": {
-                    "id": null,
+                    "id": "144",
                     "term": "fre",
                     "uri": null,
-                    "description": null
+                    "description": "French"
                 },
                 "script": {
-                    "id": null,
+                    "id": "586",
                     "term": "Latn",
                     "uri": null,
-                    "description": null
+                    "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
                 "id": null,
                 "version": null
             },
-            "useDates": null,
             "id": null,
             "version": null
         },
@@ -147,39 +141,6 @@
             "preferenceScore": null,
             "contributors": [],
             "language": null,
-            "useDates": {
-                "dataType": "SNACDate",
-                "fromDate": "2012-01-01",
-                "fromDateOriginal": "2012",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": "2014-03-03",
-                "toDateOriginal": "03\/03\/2014",
-                "toType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "toBC": false,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
             "id": null,
             "version": null
         },
@@ -189,34 +150,6 @@
             "preferenceScore": null,
             "contributors": [],
             "language": null,
-            "useDates": {
-                "dataType": "SNACDate",
-                "fromDate": "2003-01-01",
-                "fromDateOriginal": "2003",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": null,
-                "toDateOriginal": null,
-                "toType": null,
-                "toBC": null,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
             "id": null,
             "version": null
         }
@@ -225,13 +158,12 @@
         {
             "dataType": "Occupation",
             "term": {
-                "id": null,
+                "id": "9470",
                 "term": "archiviste",
                 "uri": null,
                 "description": null
             },
             "vocabularySource": "d699msirr1g-3naumnfaswc",
-            "dates": null,
             "note": null,
             "id": null,
             "version": null
@@ -242,12 +174,17 @@
             "dataType": "BiogHist",
             "language": {
                 "dataType": "Language",
-                "language": null,
+                "language": {
+                    "id": "144",
+                    "term": "fre",
+                    "uri": null,
+                    "description": "French"
+                },
                 "script": {
-                    "id": null,
+                    "id": "586",
                     "term": "Latn",
                     "uri": null,
-                    "description": null
+                    "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
@@ -259,37 +196,6 @@
             "version": null
         }
     ],
-    "existDates": [
-        {
-            "dataType": "SNACDate",
-            "fromDate": "2003-01-01",
-            "fromDateOriginal": "2003",
-            "fromType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "fromBC": false,
-            "fromRange": {
-                "notBefore": null,
-                "notAfter": null
-            },
-            "toDate": null,
-            "toDateOriginal": null,
-            "toType": null,
-            "toBC": null,
-            "toRange": {
-                "notBefore": null,
-                "notAfter": null
-            },
-            "isRange": true,
-            "note": null,
-            "id": null,
-            "version": null
-        }
-    ],
-    "existDatesNote": "\n               \n            ",
     "relations": [
         {
             "dataType": "ConstellationRelation",
@@ -299,57 +205,30 @@
             "targetArkID": "",
             "targetEntityType": {
                 "id": null,
-                "term": "CorporateBody",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "type": {
                 "id": null,
-                "term": "hasParent",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "altType": {
                 "id": null,
-                "term": "hasParent",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "cpfRelationType": {
                 "id": null,
-                "term": "hasParent",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "content": "Service interminist\u00e9riel des archives de France",
-            "dates": {
-                "dataType": "SNACDate",
-                "fromDate": "2010-01-01",
-                "fromDateOriginal": "2010",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": null,
-                "toDateOriginal": null,
-                "toType": null,
-                "toBC": null,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
+            "dates": null,
             "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
             "id": null,
             "version": null
@@ -362,57 +241,30 @@
             "targetArkID": "",
             "targetEntityType": {
                 "id": null,
-                "term": "Person",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "type": {
-                "id": null,
+                "id": "28214",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "altType": {
-                "id": null,
+                "id": "28214",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "cpfRelationType": {
-                "id": null,
+                "id": "28214",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "content": "Rocard, Michel",
-            "dates": {
-                "dataType": "SNACDate",
-                "fromDate": "2003-01-01",
-                "fromDateOriginal": "2003",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": null,
-                "toDateOriginal": null,
-                "toType": null,
-                "toBC": null,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
+            "dates": null,
             "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
             "id": null,
             "version": null
@@ -425,19 +277,19 @@
             "targetArkID": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/producteur\/consultationProducteur.action?notProdId=FRAN_NP_050744",
             "targetEntityType": {
                 "id": null,
-                "term": "CorporateBody",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "type": {
                 "id": null,
-                "term": "sameAs",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "altType": {
                 "id": null,
-                "term": "sameAs",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -456,19 +308,19 @@
             "targetArkID": "http:\/\/isni.org\/isni\/Unseulidentifiant",
             "targetEntityType": {
                 "id": null,
-                "term": "CorporateBody",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "type": {
                 "id": null,
-                "term": "sameAs",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "altType": {
                 "id": null,
-                "term": "sameAs",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -484,26 +336,26 @@
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": null,
+                "id": "694",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
             "linkType": {
                 "id": null,
-                "term": "simple",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "entryType": {
                 "id": null,
-                "term": "archival",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
             "role": {
-                "id": null,
+                "id": "692",
                 "term": "creatorOf",
                 "uri": null,
                 "description": null
@@ -517,26 +369,26 @@
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": null,
+                "id": "694",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
             "linkType": {
                 "id": null,
-                "term": "simple",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "entryType": {
                 "id": null,
-                "term": "archival",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
             "role": {
-                "id": null,
+                "id": "693",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -550,26 +402,26 @@
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": null,
+                "id": "694",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
             "linkType": {
                 "id": null,
-                "term": "simple",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "entryType": {
                 "id": null,
-                "term": "archival",
+                "term": null,
                 "uri": null,
                 "description": null
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
             "role": {
-                "id": null,
+                "id": "693",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -585,13 +437,12 @@
         {
             "dataType": "SNACFunction",
             "term": {
-                "id": null,
+                "id": "2657",
                 "term": "culture",
                 "uri": null,
                 "description": null
             },
             "type": null,
-            "dates": null,
             "vocabularySource": "d5bhviikk9--y6te63k761ib",
             "note": null,
             "id": null,
@@ -601,38 +452,10 @@
     "places": [
         {
             "dataType": "Place",
-            "dates": {
-                "dataType": "SNACDate",
-                "fromDate": "2012-01-01",
-                "fromDateOriginal": "2012",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": null,
-                "toDateOriginal": null,
-                "toType": null,
-                "toBC": null,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
             "type": null,
             "role": {
                 "id": null,
-                "term": "Lieu g\u00e9n\u00e9ral",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -670,47 +493,44 @@
             ],
             "note": "\n                  \n               ",
             "id": null,
-            "version": null
+            "version": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2012-01-01",
+                    "fromDateOriginal": "2012",
+                    "fromType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": null,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null
+                }
+            ]
         },
         {
             "dataType": "Place",
-            "dates": {
-                "dataType": "SNACDate",
-                "fromDate": "2003-01-01",
-                "fromDateOriginal": "2003",
-                "fromType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "fromBC": false,
-                "fromRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "toDate": "2012-12-31",
-                "toDateOriginal": "2012",
-                "toType": {
-                    "id": null,
-                    "term": null,
-                    "uri": null,
-                    "description": null
-                },
-                "toBC": false,
-                "toRange": {
-                    "notBefore": null,
-                    "notAfter": null
-                },
-                "isRange": true,
-                "note": null,
-                "id": null,
-                "version": null
-            },
             "type": null,
             "role": {
                 "id": null,
-                "term": "Lieu de Paris",
+                "term": null,
                 "uri": null,
                 "description": null
             },
@@ -763,7 +583,42 @@
             ],
             "note": "\n                  \n               ",
             "id": null,
-            "version": null
+            "version": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2003-01-01",
+                    "fromDateOriginal": "2003",
+                    "fromType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": "2012-12-31",
+                    "toDateOriginal": "2012",
+                    "toType": {
+                        "id": null,
+                        "term": null,
+                        "uri": null,
+                        "description": null
+                    },
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null
+                }
+            ]
         }
     ],
     "subjects": [],
@@ -794,5 +649,35 @@
         }
     ],
     "id": null,
-    "version": null
+    "version": null,
+    "dates": [
+        {
+            "dataType": "SNACDate",
+            "fromDate": "2003-01-01",
+            "fromDateOriginal": "2003",
+            "fromType": {
+                "id": null,
+                "term": null,
+                "uri": null,
+                "description": null
+            },
+            "fromBC": false,
+            "fromRange": {
+                "notBefore": null,
+                "notAfter": null
+            },
+            "toDate": null,
+            "toDateOriginal": null,
+            "toType": null,
+            "toBC": null,
+            "toRange": {
+                "notBefore": null,
+                "notAfter": null
+            },
+            "isRange": true,
+            "note": "\n               \n            ",
+            "id": null,
+            "version": null
+        }
+    ]
 }

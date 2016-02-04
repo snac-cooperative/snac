@@ -28,7 +28,7 @@ class SNACControlMetadata extends AbstractData {
 
 
     /**
-     * @var \snac\data\Source the citation source
+     * @var \snac\data\Source the citation source object
      */
     private $citation;
 
@@ -38,6 +38,8 @@ class SNACControlMetadata extends AbstractData {
     private $subCitation;
 
     /**
+     * We put original strings in here. For example an original place string.
+     *
      * @var string source data, the "as recorded" data: exactly what was found in the source
      */
     private $sourceData;
@@ -214,7 +216,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param \snac\data\Source $citation the citation source
      */
-    public function setCitation($citation) {
+    public function setCitation(\snac\data\Source $citation) {
         $this->citation = $citation;
     }
 

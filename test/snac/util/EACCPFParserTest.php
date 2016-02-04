@@ -24,38 +24,79 @@ class EACCPFParserTest extends PHPUnit_Framework_TestCase {
      */
     public function testBadFilename() {
         $parser = new \snac\util\EACCPFParser();
+        $parser->setVocabulary(new TestVocabulary());
         try {
             $parser->parseFile("Not-a-valid-filename");
         } catch (\snac\exceptions\SNACParserException $e) {
             // Catching this exception passes
             $this->assertEquals(
-                    "file_get_contents(Not-a-valid-filename): failed to open stream: No such file or directory", 
-                    $e->getMessage());
+                "file_get_contents(Not-a-valid-filename): failed to open stream: No such file or directory", 
+                $e->getMessage());
         } catch (\Exception $e) {
             $this->fail("Parser threw the wrong exception");
         }
     }
-    
+
     /**
      * Test that the parser correctly parses a given sample file
      */
     public function testParseFile() {
-       $parser = new \snac\util\EACCPFParser();
-       try {
-           // Parse the file into an identity
-           $identity = $parser->parseFile("test/snac/util/eac-cpf/test1.xml");
-           
-           // Check that attributes matched the parsed versions
-           $this->assertAttributeEquals("http://n2t.net/ark:/99166/w6kw9c2x", "ark", $identity);
-           $this->assertAttributeEquals("person", "entityType", $identity);
-           $this->assertAttributeEquals("SNAC: Social Networks and Archival Context Project", "maintenanceAgency", $identity);
-           $this->assertAttributeEquals("English", "constellationLanguage", $identity);
-           $this->assertAttributeEquals("eng", "constellationLanguageCode", $identity);
-           $this->assertAttributeEquals("Latin Alphabet", "constellationScript", $identity);
-           $this->assertAttributeEquals("Latn", "constellationScriptCode", $identity);
-       } catch (\snac\exceptions\SNACParserException $e) {
-           $this->fail("Hit exception: " . $e->getMessage());
-       }
+        $parser = new \snac\util\EACCPFParser();
+        $parser->setVocabulary(new TestVocabulary());
+        try {
+            // Parse the file into an identity
+            $identity = $parser->parseFile("test/snac/util/eac-cpf/test1.xml");
 
+            // Check that attributes matched the parsed versions
+            $this->assertAttributeEquals("http://n2t.net/ark:/99166/w6kw9c2x", "ark", $identity);
+
+            // Check that the entity type is person
+            $this->assertEquals($identity->getEntityType()->getTerm(), "person");
+
+            $this->assertAttributeEquals("SNAC: Social Networks and Archival Context Project", "maintenanceAgency", $identity);
+
+            // Check that the language Used makes it through
+            $this->assertNotEmpty($identity->getLanguage(), "Did not parse any languages used");
+            $lang = $identity->getLanguagesUsed()[0];
+            
+            $this->assertEquals("eng", $lang->getLanguage()->getTerm());
+            $this->assertEquals("Latn", $lang->getScript()->getTerm());
+
+
+        } catch (\snac\exceptions\SNACParserException $e) {
+            $this->fail("Hit exception: " . $e->getMessage());
+        }
+
+    }
+}
+
+/**
+ * Test vocabulary for the parser tests
+ * 
+ * @author Robbie Hott
+ *
+ */
+class TestVocabulary implements \snac\util\Vocabulary {
+
+    /**
+     * {@inheritDoc}
+     * @see \snac\util\Vocabulary::getTermByValue()
+     */
+    public function getTermByValue($value, $type) {
+        $term = new \snac\data\Term();
+        $term->setTerm($value);
+        $term->setURI($type);
+        return $term;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @see \snac\util\Vocabulary::getTermByID()
+     */
+    public function getTermByID($id, $type) {
+        $term = new \snac\data\Term();
+        $term->setID($id);
+        $term->setURI($type);
+        return $term;
     }
 }

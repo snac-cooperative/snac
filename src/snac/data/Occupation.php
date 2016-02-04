@@ -189,7 +189,7 @@ class Occupation extends AbstractData {
      * 
      * @param \snac\data\Term $term The occupation term
      */
-    public function setTerm($term) {
+    public function setTerm(\snac\data\Term $term) {
         $this->term = $term;
     }
     

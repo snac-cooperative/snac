@@ -29,22 +29,32 @@ class Term {
 
 
     /**
-     * var int $id The postgres vocabulary ID for this term
+     * @var string $type Vocabulary type of this term. Really more of a group or category.
+     *
+     * As of Jan 29 2016 the list includes: record_type, script_code, entity_type, event_type, name_type,
+     * occupation, language_code, gender, nationality, maintenance_status, agent_type, document_role,
+     * document_type, function_type, function, subject, date_type, relation_type, place_match, source_type
+     * 
+     */
+    protected $type;
+
+    /**
+     * @var int $id The postgres vocabulary ID for this term
      */
     protected $id;
 
     /**
-     * var int $term The term (in any language) for this particular vocabulary term
+     * @var int $term The term (in any language) for this particular vocabulary term
      */
     protected $term;
     
     /**
-     * var string $uri The full URI for this controlled vocabulary term
+     * @var string $uri The full URI for this controlled vocabulary term
      */
     protected $uri;
     
     /**
-     * var string $description The description (in any language) for this particular vocabulary term
+     * @var string $description The description (in any language) for this particular vocabulary term
      */
     protected $description;
     
@@ -62,6 +72,28 @@ class Term {
     public function __construct($data = null) {
         if ($data != null && is_array($data))
             $this->fromArray($data);
+    }
+
+    /**
+     * Set the type for this vocabulary term. Objects using this term will match their type against this. User
+     * interface will use this constrain vocabulary term selection only to appropriate values.
+     * 
+     * @param string $type Set the vocabulary type of this Term.
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+    }
+
+    /**
+     * Get the type for this vocabulary term. Objects using this term will match their type against this. User
+     * interface will use this constrain vocabulary term selection only to appropriate values.
+     * 
+     * @return string The vocabulary type of this Term.
+     */
+    public function getType($type)
+    {
+        return $this->type;
     }
 
     /**

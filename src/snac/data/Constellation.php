@@ -178,6 +178,8 @@ class Constellation extends AbstractData {
     private $functions = null;
 
     /**
+     * A list of Place objects. 
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/place/*
@@ -498,7 +500,7 @@ class Constellation extends AbstractData {
     /**
      * Get the Functions for this constellation 
      *
-     * @return \snac\data\SNACFunction Functions
+     * @return \snac\data\SNACFunction[] Functions
      *
      */
     public function getFunctions()
@@ -897,7 +899,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Term $type Entity type
      */
-    public function setEntityType($type) {
+    public function setEntityType(\snac\data\Term $type) {
 
         $this->entityType = $type;
     }
@@ -907,7 +909,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\SameAs $other The other record ID in a SameAs object
      */
-    public function addOtherRecordID($other) {
+    public function addOtherRecordID(\snac\data\SameAs $other) {
 
         array_push($this->otherRecordIDs, $other); 
     }
@@ -937,7 +939,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Source $source Source to add 
      */
-    public function addSource($source) {
+    public function addSource(\snac\data\Source $source) {
 
         array_push($this->sources, $source);
     }
@@ -1008,7 +1010,7 @@ class Constellation extends AbstractData {
      *
      * @param  \snac\data\Language Language and script used by this identity
      */
-    public function addLanguageUsed($language) {
+    public function addLanguageUsed(\snac\data\Language $language) {
         array_push($this->languagesUsed, $language);
     }
 
@@ -1021,7 +1023,7 @@ class Constellation extends AbstractData {
      * @param  \snac\data\Language Language and script used by this identity
      *
      */ 
-    public function addLanguage($language) {
+    public function addLanguage(\snac\data\Language $language) {
         $this->addLanguageUsed($language);
     }
 
@@ -1032,7 +1034,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Subject $subject Subject to add.
      */
-    public function addSubject($subject) {
+    public function addSubject(\snac\data\Subject $subject) {
         array_push($this->subjects, $subject);
     }
 
@@ -1041,7 +1043,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Nationality $nationality Nationality
      */
-    public function addNationality($nationality) {
+    public function addNationality(\snac\data\Nationality $nationality) {
         array_push($this->nationalities, $nationality);
     }
 
@@ -1091,7 +1093,7 @@ class Constellation extends AbstractData {
      * 
      * @param \snac\data\Place $place Place to add
      */
-    public function addPlace($place) {
+    public function addPlace(\snac\data\Place $place) {
 
         array_push($this->places, $place);
     }

@@ -72,6 +72,20 @@ class DBUtil
     }
 
     /**
+     * Get object ID. Call this so we don't have to sprinkle ternary ops in our code.
+     * Works for class that has a getID() method. Intended to use with Language, Term, Source,
+     * 
+     * @param mixed $thing Some object that when not null has a getID() method.
+     *
+     * @return integer The record id of the thing
+     */
+    private function thingID(mixed $thing)
+    {
+        return $thing==null?null:$thing->getID();
+    }
+
+
+    /**
      * Utility function to return the SQL object for this DBUtil instance. Currently only used for testing, and that may be the only valid use.
      * @return \snac\server\database\SQL Return the SQL object of this DBUtil instance.
      */
@@ -189,11 +203,12 @@ class DBUtil
 
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
-        $cObj->setEntityType($row['entity_type']);
+        $cObj->setEntityType($this->populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
         $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
-
+        $this->populateLanguage($cObj);
+        $this->populateSource($cObj);
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
         $this->populateMandate($vhInfo, $cObj);
@@ -201,29 +216,30 @@ class DBUtil
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateGeneralContext($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj);
 
-        $oridRows = $this->sql->selectOtherRecordID($vhInfo); 
-        foreach ($oridRows as $singleOrid)
+        /*
+         * Other record id can be found in the SameAs class.
+         *
+         * Here $otherID is a SameAs object. SameAs->getType() is a Term object. SameAs->getURI() is a string.
+         * Term->getTerm() is a string. SameAs->getText() is a string.
+         */ 
+        $oridRows = $this->sql->selectOtherID($vhInfo); 
+        foreach ($oridRows as $rec)
         {
-            $cObj->addOtherRecordID($singleOrid['link_type'], $singleOrid['other_id']);
-            $this->populateDate($singleOrid);
+            $gObj = new \snac\data\SameAs();
+            $gObj->setText($rec['text']); // the text of this sameAs or otherRecordID
+            $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
+            $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
+            $cObj->addOtherRecordID($gObj);
         }
         
-        $subjRows = $this->sql->selectSubject($vhInfo); 
-        foreach ($subjRows as $singleSubj)
-        {
-            $cObj->addSubject($singleSubj['subject_id']);
-            $this->populateDate($singleSubj);
-        }
-
         /*
          * Note: $cObj passed by reference and changed in place.
          */ 
         $this->populateNameEntry($vhInfo, $cObj);
         $this->populateOccupation($vhInfo, $cObj);
         $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
-        $this->populateRelatedResource($vhInfo, $cObj); // resourceRelation
+        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
         $this->populateFunction($vhInfo, $cObj);
 
         /* 
@@ -234,6 +250,126 @@ class DBUtil
          */
         return $cObj;
     } // end selectConstellation
+
+    /** 
+     * Build class Place objects for this constellation, selecting from the database. Place gets data from
+     * place_link, scm, and geo_place.
+     *
+     * 
+     * | php            | sql      |
+     * |----------------+----------|
+     * | setID()        | id       |
+     * | setVersion()   | version  |
+     * | setType() Term | type     |
+     * | setOriginal()  | original |
+     * | setNote()      | note     |
+     * | setRole() Term | role     |
+     *
+     * | php                                             | sql                         | geonames.org         |
+     * |-------------------------------------------------+-----------------------------+----------------------|
+     * | setID()                                         | id                          |                      |
+     * | setVersion()                                    | version                     |                      |
+     * | setLatitude()                                   | geo_place.latitude          | lat                  |
+     * | setLongitude()                                  | geo_place.longitude         | lon                  |
+     * | setAdminCode() renamed from setAdmistrationCode | geo_place.admin_code        | adminCode            |
+     * | setCountryCode()                                | geo_place.country_code      | countryCode          |
+     * | setName()                                       | geo_place.name              | name                 |
+     * | setGeoNameId()                                  | geo_place.geonamed_id       | geonameId            |
+     * | setSource()                                     | scm.source_data             |                      |
+     *
+     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
+     */
+    public function populatePlace($vhInfo, &$cObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
+         */
+        $gRows = $this->sql->selectPlace($vhInfo);
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\Place();
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $metaObj = $this->buildMeta($rec['id'], $vhInfo['version']);
+            $gObj->setSource($metaObj);
+
+            $geo = selectGeo($rec['geo_place_id']);
+            $gObj->setLatitude($geo['latitude']);
+            $gObj->setLongitude($geo['longitude']);
+            $gObj->setAdministrationCode($geo['administrative_code']);
+            $gObj->setCountryCode($geo['country_code']);
+            $gObj->setName($geo['name']);
+            $gObj->setGetNameId($geo['geoname_id']);
+
+            $cObj->addPlace($gObj);
+        }
+    }
+
+    /**
+     * Return a snac meta object. Eventually populateMeta() will replace this when we have a consistent API
+     * for adding snac meta to all objects. That would be setSource() for all objects, or equivalent.
+     *
+     * The convention for related things like date, place, and meta is args ($id, $version) so we're
+     * following that.h
+     *
+     * @param integer $tid Table id, aka row id akd object id
+     *
+     * @param integer $version Constellation version number
+     *
+     */
+    public function buildMeta($tid, $version)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
+         */
+        if( $rec = $this->sql->selectMeta($tid, $version))
+        {
+            $gObj = new \snac\data\SNACControlMetadata();
+            $gObj->setCitation($rec['citation']);
+            $gObj->setSubCitation($rec['sub_citation']);
+            $gObj->setSourceData($rec['source_data']);
+            $gObj->setDescriptiveRule(populateTerm($rec['rule_id']));
+            $gObj->setLanguage(populateLanguage($rec['language_id']));
+            $gObj->setNote($rec['note']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            return $gObj;
+        }
+        return null;
+    }
+
+
+    /**
+     *
+     * Populate the Subject object(s), and add it/them to an existing Constellation object.
+     *
+     * Extends AbstracteTermData
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     *
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */ 
+    private function populateSubject($vhInfo, &$cObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
+         */
+        $gRows = $this->sql->selectSubject($vhInfo);
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\Subject();
+            $gObj->setTerm($this->populateTerm($rec['term_id']));
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            /*
+             * Must call $gOjb->setDBInfo() before calling populateDate()
+             */
+            $this->populateDate($gObj);
+            $cObj->addSubject($gObj);
+        }
+    }
+
 
     /** 
      * nameEntry objects
@@ -264,7 +400,7 @@ class DBUtil
      */
     public function populateNameEntry($vhInfo, &$cObj)
     {
-        $neRows = $this->sql->selectNameEntry($vhInfo);
+        $neRows = $this->sql->selectName($vhInfo);
         foreach ($neRows as $oneName)
         {
             $neObj = new \snac\data\NameEntry();
@@ -276,9 +412,14 @@ class DBUtil
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
             $this->populateLanguage($neObj);
-            foreach ($oneName['contributors'] as $contrib)
+            $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
+            foreach ($cRows as $contrib)
             {
-                $neObj->addContributor($contrib['name_type'], $contrib['short_name']);
+                $ctObj = new \snac\data\Contributor();
+                $ctObj->setType($this->populateTerm($contrib['name_type']));
+                $ctObj->setName($contrib['short_name']);
+                $ctObj->setDBInfo($contrib['version'], $contrib['id']);
+                $neObj->addContributor($ctObj);
             }
             $this->populateDate($neObj);
             $cObj->addNameEntry($neObj);
@@ -294,9 +435,10 @@ class DBUtil
      * Note: $cObj passed by reference and changed in place.
      *
      * @param int $rowID the nrd.id actual row id from table nrd.
+     * 
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateDate($rowID, &$cObj)
+    public function populateDate(&$cObj)
     {
         /*
          * Sanity check the number of dates allowed for this object $cObj. If zero, then immediately
@@ -313,24 +455,22 @@ class DBUtil
             $breakAfterOne = true;
         }
         $dateRows = $this->sql->selectDate($cObj->getID(), $cObj->getVersion());
-        // These could be globals. Or they can stay here as local vars.
-        $fromTypeTerm = populateTerm($singleDate['from_type']);
-        $toTypeTerm = populateTerm($singleDate['to_type']);
+
         foreach ($dateRows as $singleDate)
         {
             $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
             $dateObj->setFromDate($singleDate['from_date'],
                                   $singleDate['from_date'],
-                                  $fromTypeTerm);
+                                  $this->populateTerm($dateRows['from_type']));
             $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']); 
             $dateObj->setToDate($singleDate['to_date'],
                                 $singleDate['to_date'],
-                                $toTypeTerm);
+                                $this->populateTerm($dateRows['to_type']));
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
-            // This will break for non-Constellation objects.
-            $cObj->addExistDates($dateObj);
+
+            $cObj->addDate($dateObj);
             if ($breakAfterOne)
             {
                 break;
@@ -343,29 +483,43 @@ class DBUtil
      * vocabulary "terms". We use "term" broadly in the sense of an object that meets all needs of the the
      * user interface.
      *
+     * You might be searching for new Term(). This is the only place we create Terms here.
+     *
      * @param integer $termID A unique integer record id from the database table vocabulary.
      *
      */ 
     public function populateTerm($termID)
     {
         $newObj = new \snac\data\Term();
-        $row = selectTerm($termID);
+        $row = $this->sql->selectTerm($termID);
         $newObj->setID($row['id']);
-        $newObj->setTerm($row['term']);
+        $newObj->setType($row['type']); // Was setDataType() but this is a vocaulary type. See Term.php.
+        $newObj->setTerm($row['value']);
         $newObj->setURI($row['uri']);
         $newObj->setDescription($row['description']);
-        $this->populateDate($newObj);
         return $newObj;
     }
 
-    // $this->populateConventionDeclaration($vhInfo, $cObj);
+    /**
+     * Select convention declaration from the db, and build an appropriate object which is added to
+     * Constellation.
+     *
+     * Extends AbstractTextData.
+     * 
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */
     public function populateConventionDeclaration($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectConventionDeclaration($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\ConventionDeclaration();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addConventionDeclaration($newObj);
@@ -373,29 +527,50 @@ class DBUtil
     }
 
 
-    // $this->populateStructureOrGenealogy($vhInfo, $cObj);
+    /**
+     * Select StructureOrGenealogy from database, create object, add the object to Constellation. Support
+     * multiples per Constalltion.
+     *
+     * Extends AbstractTextData.
+     *
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     */ 
     public function populateStructureOrGenealogy($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectStructureOrGenealogy($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\StructureOrGenealogy();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addStructureOrGenealogy($newObj);
         }
     }
 
-
-    // $this->populateGeneralContext($vhInfo, $cObj);
+    /**
+     * Select GeneralContext from database, create object, add the object to Constellation. Support multiples
+     * per constellation.
+     *
+     * Extends AbstractTextData
+     * 
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     */
     public function populateGeneralContext($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectGeneralContext($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\GeneralContext();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setText($item['term']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addGeneralContext($newObj);
@@ -404,8 +579,17 @@ class DBUtil
 
 
     /* 
-     * $this->populateNationality($vhInfo, $cObj);
-     * When there is only one term and that term corresponds to the table name, the field is "term_id".
+     * (What?) When there is only one term and that term corresponds to the table name, the field is "term_id".
+     */
+    /**
+     * Select nationality from database, create object, add the object to Constellation. Support multiples
+     * per constellation.
+     * 
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
     public function populateNationality($vhInfo, &$cObj)
     {
@@ -413,7 +597,7 @@ class DBUtil
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Nationality();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addNationality($newObj);
@@ -426,16 +610,22 @@ class DBUtil
      *
      * We have two term ids, language_id and script_id, so they need unique names (keys) and not the usual
      * "term_id".
+     *
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
-    public function populateLanguage($vhInfo, &$cObj)
+    public function populateLanguage(&$cObj)
     {
         $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Language();
-            $newObj->setLanguage(populateTerm($item['language_id']));
-            $newObj->setScript(populateTerm($item['script_id']));
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
             $newObj->setVocabularySource($item['vocabulary_source']);
             $newObj->setNote($item['note']);
             $newObj->setDBInfo($item['version'], $item['id']);
@@ -443,19 +633,52 @@ class DBUtil
         }
     }
 
-
     /* 
-     * $this->populateMandate($vhInfo, $cObj);
-     *  When there is only one term and that term corresponds to the table name, the field is "term_id".
+     * Select source from the database, create a source object, add the source to the object referenced by
+     * $cObj.
+     *
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * 
      */
+    public function populateSource(&$cObj)
+    {
+        $rows = $this->sql->selectSource($cObj->getID(), $cObj->getVersion());
+        foreach ($rows as $rec)
+        {
+            $newObj = new \snac\data\Source();
+            $newObj->setText($rec['text']);
+            $newObj->setNote($rec['note']);
+            $newObj->setURI($rec['uri']);
+            $newObj->setType(populateTerm($rec['type_id']));
+            $newObj->setLanguage(populateLanguage($rec['language_id']));
+            $cObj->addSource($newObj);
+        }
+    }
 
+
+    /**
+     * Select mandate from database, create object, add the object to Constellation. Support multiples
+     * per constellation.
+     *
+     * Extends AbstractTextData
+     * 
+     * Note: $cObj passed by reference and changed in place.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     */
     public function populateMandate($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectMandate($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Mandate();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addMandate($newObj);
@@ -463,11 +686,14 @@ class DBUtil
     }
     
     /**
-     * setDataType() is called by the constructor, so we don't need to worry about that.
-     * When there is only one term and that term corresponds to the table name, the field is "term_id".
+     * Select gender from database, create object, add the object to Constellation. Support multiples
+     * per constellation.
      *
+     * Note: $cObj passed by reference and changed in place.
      *
-     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
     public function populateGender($vhInfo, &$cObj)
     {
@@ -475,7 +701,7 @@ class DBUtil
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Gender();
-            $newObj->setTerm(populateTerm($item['term_id']));
+            $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateDate($newObj);
             $cObj->addGender($newObj);
@@ -483,12 +709,15 @@ class DBUtil
     }
 
     /**
-     * Get BiogHist from database, create relevant object and add to the constellation object passed as an
-     * argument.
+     * Select GeneralContext from database, create object, add the object to Constellation. Support multiples
+     * per constellation.  Get BiogHist from database, create relevant object and add to the constellation
+     * object passed as an argument.
+     * 
+     * Note: $cObj passed by reference and changed in place.
      *
-     *
-     *
-     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
     public function populateBiogHist($vhInfo, &$cObj)
     {
@@ -498,14 +727,11 @@ class DBUtil
             $newObj = new \snac\data\BiogHist();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            // $newObj->setLanguage(populateLanguage($item['language_id']));
             $this->populateLanguage($newObj);
             $this->populateDate($newObj);
             $cObj->addBiogHist($newObj);
         }
     }
-
-
 
 
     /**
@@ -534,7 +760,7 @@ class DBUtil
         foreach ($occRows as $oneOcc)
         {
             $occObj = new \snac\data\Occupation();
-            $occObj->setTerm($oneOcc['occupation_id']);
+            $occObj->setTerm($this->populateTerm($oneOcc['occupation_id']));
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
             $occObj->setDBInfo($oneOcc['version'], $oneOcc['id']);
@@ -563,6 +789,13 @@ class DBUtil
      * | setDates                            | date             |
      * | setNote                             | descriptive_note |
      * 
+     * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * php: $altType setAltType() getAltType()
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
+     *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
@@ -574,9 +807,9 @@ class DBUtil
             $relatedObj = new \snac\data\ConstellationRelation();
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
-            $relatedObj->setTargetType($oneRel['role']);
-            $relatedObj->setType($oneRel['arcrole']);
-            $relatedObj->setCPFRelationType($oneRel['relation_type']);
+            $relatedObj->setTargetType($this->populateTerm($oneRel['role']));
+            $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
+            $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setDates($oneRel['date']);
             $relatedObj->setNote($oneRel['descriptive_note']);
@@ -588,7 +821,7 @@ class DBUtil
 
 
     /**
-     * Populate the RelatedResource object(s), and add it/them to an existing Constellation object.
+     * Populate the ResourceRelation object(s), and add it/them to an existing Constellation object.
      *
      * resourceRelation
      *
@@ -610,16 +843,16 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateRelatedResource($vhInfo, &$cObj)
+    public function populateResourceRelation($vhInfo, &$cObj)
     {
-        $rrRows = $this->sql->selectRelatedResource($vhInfo); 
+        $rrRows = $this->sql->selectResourceRelation($vhInfo); 
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
-            $rrObj->setDocumentType($oneRes['role']);
+            $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
             $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
             $rrObj->setLink($oneRes['href']);
-            $rrObj->setRole($oneRes['arcrole']);
+            $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
@@ -644,18 +877,16 @@ class DBUtil
         {
             $fObj = new \snac\data\SNACFunction();
             $fObj->setType($oneFunc['function_type']);
-            $fObj->setTerm($oneFunc['function_id']);
+            $fObj->setTerm($this->populateTerm($oneFunc['function_id']));
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
             $fObj->setDBInfo($oneFunc['version'], $oneFunc['id']);
 
-            // Must call $fOjb->setDBInfo() before calling populateExistDate()
-            // $fDate = $this->buildDate($vhInfo, $oneFunc['date']);
-            $fDate = populateExistDate($fObj->getID(), $fObj);
-
-            $fObj->setDateRange($fDate);
+            /*
+             * Must call $fOjb->setDBInfo() before calling populateExistDate()
+             */
+            $fDate = populateDate($fObj);
             $cObj->addFunction($fObj);
-            $this->populateDate($fObj);
         }
     }
 
@@ -717,6 +948,59 @@ class DBUtil
     }
     
     /**
+     * Save a list of places to place_link, including meta data.
+     *
+     * The only way to know the related table is for it to be passed in via $relatedTable.
+     *
+     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     *
+     * @param snac\data\AbstractData Object $id An object that might have a place, and that extends
+     * AbstractData.
+     *
+     * @param string $relatedTable Name of the related table for this place.
+     *
+     */
+    private function savePlace($vhInfo, $id, $relatedTable)
+    {
+        if ($placeList = $id->getPlaces())
+        {
+            foreach($placeList as $gObj)
+            {
+                /*
+                 */ 
+                $pid = $this->sql->insertPlace($vhInfo,
+                                               $gObj->getID(),
+                                               $gObj->getConfirmed(),
+                                               $gObj->getOriginal(),
+                                               $gObj->getGeoPlaceId(),
+                                               $relateTable,
+                                               $id->GetID());
+                if ($metaObj = $gObj->getSource())
+                {
+                    /*
+                     * We want to write the citation id into our meta data record. Is getID() really the
+                     * Source object record id?
+                     *
+                     * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
+                     * appropriate table in the database. Or if not existing they can be null.
+                     */ 
+                    $this->sql->insertMeta($vhInfo,
+                                           $id,
+                                           $this->thingID($metaObj->getCitation()),
+                                           $metaObj->getSubCitation(),
+                                           $metaObj->getSourceData,
+                                           $this->thingID($metaObj->getDescriptiveRule()),
+                                           $this->thingID($metaObj->getLanguage()),
+                                           $metaObj->getNote(), 
+                                           'place_link',
+                                           $pid);
+                }
+            }
+        }
+    }
+
+
+    /**
      * Private function. Update a php constellation that is already in the database. This is called from
      * insertConstellation() or updateConstellation().
      *
@@ -757,16 +1041,21 @@ class DBUtil
                               $id->getArk(),
                               $id->getEntityType() == null ? null : $id->getEntityType()->getID());
 
+        $this->savePlace($vhInfo, $id, 'nrd');
         foreach ($id->getDateList() as $date)
         {
-            // $date is a SNACDate object.
-            // getFromType() must be a Term object
-            // getToType() must be a Term object
+            /* 
+             * $date is a SNACDate object.
+             * getFromType() must be a Term object
+             * getToType() must be a Term object
+             *
+             * What does it mean to have a date with no fromType? Could be an unparseable date, I guess.
+             */
             $this->sql->insertDate($vhInfo,
                                    $date->getID(),
                                    $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType()->getID(),
+                                   $date->getFromType()==null?null:$date->getFromType()->getID(),
                                    $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
@@ -816,7 +1105,7 @@ class DBUtil
             $this->sql->insertOtherID($vhInfo,
                                       $otherID->getID(),
                                       $otherID->getText(),
-                                      $otherID->getType()->getID(),
+                                      $otherID->getType()==null?null:$otherID->getType()->getID(),
                                       $otherID->getURI());
         }
 
@@ -831,23 +1120,27 @@ class DBUtil
 
         foreach ($id->getSources() as $fdata)
         {
-            // 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
-            // validation.
-
+            /* 
+             * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
+             * validation.
+             *
+             * Source is first order data. It is a non-authority description of a source. Each source is not a
+             * shared authority and is singular to the record to which it is attached.
+             */
             $sid = $this->sql->insertSource($vhInfo,
                                             $fdata->getID(),
                                             $fdata->getText(),
                                             $fdata->getNote(),
                                             $fdata->getURI(),
-                                            $fdata->getType()->getID(),
-                                            $fdata->getID());
+                                            $this->thingID($fdata->getType()),
+                                            $this->thingID($fdata->getLanguage()));
             $lang = $fdata->getLanguage();
             if ($lang)
             {
                 $this->sql->insertLanguage($vhInfo,
                                            $lang->getID(),
-                                           $lang->getLanguage()->getID(),
-                                           $lang->getScript()->getID(),
+                                           $this->thingID($lang->getLanguage()),
+                                           $this->thingID($lang->getScript()),
                                            $lang->getVocabularySource(),
                                            $lang->getNote(),
                                            'source',
@@ -881,7 +1174,7 @@ class DBUtil
                                              $date->getID(),
                                              $this->db->boolToPg($date->getIsRange()),
                                              $date->getFromDate(),
-                                             $date->getFromType()->getID(),
+                                             $date->getFromType()==null?null:$date->getFromType()->getID(),
                                              $this->db->boolToPg($date->getFromBc()),
                                              $date->getFromRange()['notBefore'],
                                              $date->getFromRange()['notAfter'],
@@ -913,16 +1206,21 @@ class DBUtil
          * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
          * the database. Any sanity check should happen up here.
          *
+         *
+         * Functions have a type (Term object) derived from function/@localType. The function/term is a Term object.
+         *
+         * Example files: /data/extract/anf/FRAN_NP_050744.xml
+         * 
          */
 
         foreach ($id->getFunctions() as $fdata)
         {
             $funID = $this->sql->insertFunction($vhInfo,
-                                       $fdata->getType()->getID(), // Term object
-                                       $fdata->getVocabularySource(),
-                                       $fdata->getNote(),
-                                       $fdata->getTerm()->getID(), // Term object
-                                       $fdata->getID());
+                                                $fdata->getID(), // record id
+                                                $fdata->getType()==null?null:$fdata->getType()->getID(), // function type, aka localType, Term object
+                                                $fdata->getVocabularySource(),
+                                                $fdata->getNote(),
+                                                $fdata->getTerm()->getID()); // function term id aka vocabulary.id, Term object
             /*
              * getDateList() always returns a list of SNACDate objects. If no dates then list is empty,
              * but it is still a list that we can foreach on without testing for null and count>0.
@@ -1050,13 +1348,13 @@ class DBUtil
         foreach ($id->getResourceRelations() as $fdata)
         {
             $this->sql->insertResourceRelation($vhInfo,
-                                               $fdata->getDocumentType()->getID(),
-                                               $fdata->getEntryType()== null ? null : $fdata->getEntryType()->getID(),
-                                               $fdata->getLink(),
-                                               $fdata->getRole()->getID(),
-                                               $fdata->getContent(),
-                                               $fdata->getSource(),
-                                               $fdata->getNote(),
+                                               $fdata->getDocumentType()->getID(), // xlink:role
+                                               $fdata->getEntryType()== null ? null : $fdata->getEntryType()->getID(), // relationEntry@localType
+                                               $fdata->getLink(), // xlink:href
+                                               $fdata->getRole()->getID(), // xlink:arcrole
+                                               $fdata->getContent(), // relationEntry
+                                               $fdata->getSource(), // objectXMLWrap
+                                               $fdata->getNote(), // descriptiveNote
                                                $fdata->getID());
         }
 
@@ -1153,27 +1451,36 @@ class DBUtil
      * @param \snac\data\NameEntry Name entry object
      *
      */
-    private function saveName($vhInfo, $ndata)
+    public function saveName($vhInfo, $ndata)
     {
         $nameID = $this->sql->insertName($vhInfo, 
                                          $ndata->getOriginal(),
                                          $ndata->getPreferenceScore(),
-                                         $ndata->getContributors(), // list of type/contributor values
                                          $ndata->getID());
-        if ($ndata->getLanguage() != null)
+        
+        if ($contribList = $ndata->getContributors())
         {
-            foreach ($ndata->getLanguage() as $lang)
+            foreach($contribList as $cb)
             {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $lang->getLanguage()->getID(),
-                                           $lang->getScript()->getID(),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'name',
-                                           $nameID());
+                $this->sql->insertContributor($vhInfo,
+                                              $ndata->getID(),
+                                              $cb->getName(),
+                                              $cb->getType()==null?null:$cb->getType()->getID());
             }
         }
+
+        if ($lang = $ndata->getLanguage())
+        {
+            $this->sql->insertLanguage($vhInfo,
+                                       $lang->getID(),
+                                       $lang->getLanguage()->getID(),
+                                       $lang->getScript()->getID(),
+                                       $lang->getVocabularySource(),
+                                       $lang->getNote(),
+                                       'name',
+                                       $nameID);
+        }
+        $dateList = $ndata->getDateList();
         foreach ($ndata->getDateList() as $date)
         {
             $this->sql->insertDate($vhInfo,

@@ -69,6 +69,37 @@ class SQL
     }
 
     /**
+     * Select records from table source.
+     *
+     * @param integer $fkID A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of location fields as list with keys matching the database field names:
+     * version, main_id, id, text, note, uri, type_id, language_id.
+     * 
+     */
+    public function selectSource($fkID, $version)
+    {
+        $qq = 'select_source';
+        $this->sdb->prepare($qq, 
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id
+                            from source as aa,
+                            (select fk_id,max(version) as version from source where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($fkID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
      * Insert a record into table source.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -80,7 +111,7 @@ class SQL
      * which is used by language as a foreign key.
      * 
      */
-    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID)
+    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID, $languageID)
     {
         if (! $id)
         {
@@ -89,7 +120,7 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq, 
                             'insert into source 
-                            (version, main_id, id, text, note, uri, type_id)
+                            (version, main_id, id, text, note, uri, type_id, language_id)
                             values 
                             ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq,
@@ -99,7 +130,8 @@ class SQL
                                   $text,
                                   $note,
                                   $uri, 
-                                  $typeID));
+                                  $typeID,
+                                  $languageID));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -301,10 +333,6 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param SNACDate $date Contrary to practice elsewhere, this code knows about the internal structure of
-     * SNACDate. This arg needs to be moved up to DBUtils, and wrapped with a function to translate php
-     * objects to sql tables. There shouldn't be any info about objects here, because this file is sql only.
-     *
      * @param string $fk_table The name of the table to which this date and $fk_id apply.
      *
      * @param integer $fk_id The id of the record to which this date applies.
@@ -313,7 +341,6 @@ class SQL
      * inserted.
      *
      */
-
     public function insertDate($vhInfo,
                                $id, 
                                $isRange,
@@ -392,8 +419,7 @@ class SQL
                             'select 
                             aa.id, aa.version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
                             to_date, to_bc, to_not_before, to_not_after, original, fk_table, aa.fk_id,
-                            (select value from vocabulary where id=from_type) as from_type,
-                            (select value from vocabulary where id=to_type) as to_type
+                            aa.from_type,aa.to_type
                             from date_range as aa,
                             (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -408,7 +434,184 @@ class SQL
         return $all;
     }
 
-    
+    /** 
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
+     *
+     * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
+     * place applies. We do not know or care what the other record is.
+     * 
+     * @param integer $tid A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: id,
+     * version, main_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
+     */
+    public function selectPlace($tid, $version)
+    {
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.geo_place_id, fk_table, aa.fk_id,
+                            aa.from_type, aa.to_type
+                            from place as aa,
+                            (select fk_id,max(version) as version from place where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($did, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /** 
+     * Insert into place_link. 
+     *
+     * @param integer $id The id
+     *
+     * @param string $confirmed Boolean confirmed by human
+     *
+     * @param string $geo_place_id The geo_place_id
+     *
+     * @param string $fk_id The fk_id of the related table.
+     *
+     * @param string $fk_table The fk_table name
+     *
+     * @return integer $id The id of what we (might) have inserted.
+     * 
+     */
+    public function insertPlace($vhInfo, $id, $confirmed, $geo_place_id,  $fk_table, $fk_id)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_place';
+        $this->sdb->prepare($qq, 
+                            'insert into place_link
+                            (version, main_id, id, confirmed, geo_place_id,  fk_id, fk_table)
+                            values 
+                            ($1, $2, $3, $4, $5, $6. $7)');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['main_id'],
+                                            $vhInfo['version'],
+                                            $id,
+                                            $confirmed,
+                                            $geo_place_id,
+                                            $fk_id,
+                                            $fk_table));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /** 
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
+     *
+     * Select a meta data record. We expect only one record, and will only return one (or zero). The query
+     * relies on table.id==fk_id where $tid is a foreign key of the record to which this applies. We do not
+     * know or care what the other record is.
+     * 
+     * @param integer $tid A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: id,
+     * version, main_id, citation_id, sub_citation, source_data, rule_id,
+     * language_id, note. I don't think calling code has any use for fk_id, so we don't return it.
+     */
+    public function selectMeta($tid, $version)
+    {
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
+                            aa.rule_id, aa.language_id, aa.note
+                            from scm as aa,
+                            (select fk_id,max(version) as version from scm where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($did, $version));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+    /** 
+     * Insert meta record related to the $fk_id. Table scm, php object SNACControlMetadata.
+     *
+     *
+     * @param integer $id Record id of this table.
+     *
+     * @param string $citation_id Foreign key to \snac\data\Source
+     *
+     * @param integer $fk_id A foreign key to record in another table.
+     *
+     * @param string $fk_table Name of the foreign key table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     */
+    public function insertMeta($vhInfo, $id, $citation_id, $sub_citation, $source_data,
+                               $rule_id, $language_id, $note, $fk_id, $fk_table)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'select_place';
+        $this->sdb->prepare($qq, 
+                            'insert into scm 
+                            (version, main_id, id, citation_id, sub_citation, source_data, 
+                            rule_id, language_id, note, fk_id, fk_table)
+                            values ($1, $2, $3, $4, $5, $6, $7, $8 $9)');
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'], 
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $citation_id,
+                                            $sub_citation,
+                                            $source_data,
+                                            $rule_id,
+                                            $language_id,
+                                            $note,
+                                            $fk_id,
+                                            $fk_table));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+       return $id;
+    }
+
+    /**
+     * Get a geo_place record.
+     * 
+     * @param integer $gid A geo_place.id value.
+     *
+     * @return string[] A list of fields/value as list keys matching the database field names: latitude,
+     * longitude, administrative_code, country_code, name, geoname_id.
+     */
+    public function selectGeo($gid)
+    {
+        $qq = 'select_geo_place';
+        $this->sdb->prepare($qq, 'select * from geo_place where id=$1');
+        $result = $this->sdb->execute($qq, array($gid));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
+    }
+
+
     /** 
      * Insert the non-repeating parts (non repeading data) of the constellation. No need to return a value as
      * the nrd row key is main_id,version which corresponds to the row key in all other tables being
@@ -479,7 +682,9 @@ class SQL
     }
     
     /** 
-     * Insert (or update) a name into the database. 
+     * Insert (or update) a name into the database. Language and contributors are related table on name.id,
+     * and the calling code is smart enough to call those insert functions for this name's language and
+     * contributors. Our concern here is tightly focused on writing to table name. Nothing else.
      * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -488,13 +693,6 @@ class SQL
      * @param float $preference_score The preference score for ranking this as the preferred name. This
      * concept may not work in a culturally diverse environment
      *
-     * @param string[][] $contributors List of list with keys 'contributor', 'type'. Inserted into table
-     * name_contributor.
-     *
-     * @param integer $language The language id of this name. 
-     *
-     * @param integer $scriptCode The script code id for this name. 
-     *
      * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
      * from selectID().
      *
@@ -502,7 +700,6 @@ class SQL
     public function insertName($vhInfo, 
                                $original,
                                $preferenceScore,
-                               $contributors,
                                $nameID)
     {
         if (! $nameID)
@@ -510,49 +707,53 @@ class SQL
             $nameID = $this->selectID();
         }
         $qq_1 = 'insert_name';
-        $qq_2 = 'insert_contributor';
-
         $this->sdb->prepare($qq_1,
                             'insert into name
                             (version, main_id, original, preference_score, id)
                             values
                             ($1, $2, $3, $4, $5)');
-        
         $result = $this->sdb->execute($qq_1,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $original,
                                             $preferenceScore,
                                             $nameID));
-        /* 
-         * Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
-         * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
-         * name_contributor object with a $operation like everything else.
-         *
-         * So, this will move to its own function. 
-         */
-
+        $this->sdb->deallocate($qq_1);
+        return $nameID;
+    }
+    
+    /**
+     * Insert a contributor record, related to name where contributor.name_id=name.id. This is a one-sided fk
+     * relationship also used for date and language.
+     *
+     * Old: Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
+     * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
+     * name_contributor object with a $operation like everything else.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $nameID Record id of related name
+     *
+     * @param string $name Name of the contributor
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this contributor.
+     *
+     */
+    public function insertContributor($vhInfo, $nameID, $name, $typeID)
+    {
+        $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
                             (version, main_id, name_id, short_name, name_type)
                             values
-                            ($1, $2, $3, $4,
-                            (select id from vocabulary where type=\'name_type\' and value=regexp_replace($5, \'^.*#\', \'\')))');
-
-        // foreach over $contributors executing the insert query on each.
-        foreach ($contributors as $contrib)
-        {
-            $this->sdb->execute($qq_2,
-                                array($vhInfo['version'],
-                                      $vhInfo['main_id'],
-                                      $nameID,
-                                      $contrib['contributor'],
-                                      $contrib['type']));
-        }
-
-        $this->sdb->deallocate($qq_1);
+                            ($1, $2, $3, $4, $5)');
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['version'],
+                                  $vhInfo['main_id'],
+                                  $nameID,
+                                  $name,
+                                  $typeID));
         $this->sdb->deallocate($qq_2);
-        return $nameID;
     }
     
     
@@ -567,7 +768,7 @@ class SQL
      * @param 
      *
      */
-    public function insertFunction($vhInfo, $type, $vocabularySource, $note, $term, $id)
+    public function insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
     {
         if (! $id)
         {
@@ -576,10 +777,16 @@ class SQL
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
-                            (version, main_id, function_type, vocabulary_source, note, id, function_id)
+                            (version, main_id, id, function_type, vocabulary_source, note, function_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
-        $eArgs = array($vhInfo['version'], $vhInfo['main_id'], $type, $vocabularySource, $note, $id, $term);
+        $eArgs = array($vhInfo['version'],
+                       $vhInfo['main_id'],
+                       $id,
+                       $type,
+                       $vocabularySource,
+                       $note,
+                       $term);
         $result = $this->sdb->execute($qq, $eArgs);
         $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
@@ -634,8 +841,8 @@ class SQL
         $qq = 'select_language';
         $this->sdb->prepare($qq,
                             'select aa.version, aa.main_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
-                            from language as aa
-                            (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            from language as aa,
+                            (select fk_id,max(version) as version from language where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($fkID, $version));
         $all = array();
@@ -657,12 +864,12 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param $term string that is a subject
+     * @param integer $termID Vocabulary foreign key for the term.
      *
      * @return no return value.
      * 
      */
-    public function insertSubject($vhInfo, $id, $subjectID)
+    public function insertSubject($vhInfo, $id, $termID)
     {
         if (! $id)
         {
@@ -671,7 +878,7 @@ class SQL
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
                             'insert into subject
-                            (version, main_id, id, subject_id)
+                            (version, main_id, id, term_id)
                             values
                             ($1, $2, $3, $4)');
         
@@ -679,9 +886,299 @@ class SQL
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $id,
-                                            $subjectID));
+                                            $termID));
         $this->sdb->deallocate($qq);
         return $id;
+    }
+
+    /**
+     * Insert into table nationality. Data is currently only a string from the Constellation. If $id is null, get
+     * a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertNationality($vhInfo, $id, $termID)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_nationality';
+        $this->sdb->prepare($qq,
+                            'insert into nationality
+                            (version, main_id, id, term_id)
+                            values
+                            ($1, $2, $3, $4)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $termID));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
+     * Insert into table gender. Data is currently only a string from the Constellation. If $id is null, get
+     * a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertGender($vhInfo, $id, $termID)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_gender';
+        $this->sdb->prepare($qq,
+                            'insert into gender
+                            (version, main_id, id, term_id)
+                            values
+                            ($1, $2, $3, $4)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $termID));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
+     * Select text records. Several tables have identical structure so don't copy/paste, just call
+     * this. DBUtils has code to turn the return values into objects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    protected function selectTextCore($vhInfo, $table)
+    {
+        $approved_table = array('convention_declaration' => 1,
+                                'structure_genealogy' => 1,
+                                'general_context' => 1,
+                                'mandate' => 1);
+        if (! isset($approved_table[$table]))
+        {
+            /*
+             * Trying something not approved is fatal. 
+             */ 
+            die("Tried to select on non-approved table: $table\n");
+        }
+        $qq = "select_$table";
+        /*
+         * String interpolation would require escaping $1 and $2 so just use sprintf() which always works.
+         */ 
+        $this->sdb->prepare($qq, 
+                            sprintf(
+                                'select
+                                aa.id, aa.version, aa.main_id, aa.text
+                                from %s aa,
+                                (select id, max(version) as version from %s where version<=$1 and main_id=$2 group by id) as bb
+                                where not aa.is_deleted and
+                                aa.id=bb.id
+                                and aa.version=bb.version', $table, $table));
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Insert text records. Several tables have identical structure so don't copy/paste, just call
+     * this. DBUtils has code to turn the return values into objects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id
+     *
+     * @param string $text Text value we're saving
+     *
+     * @param string $table One of the approved tables to which this data is being written. These tables are
+     * identical except for the name, so this core code saves duplication. See also selectTextCore().
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    protected function insertTextCore($vhInfo, $id, $text, $table)
+    {
+        $approved_table = array('convention_declaration' => 1,
+                                'structure_genealogy' => 1,
+                                'general_context' => 1,
+                                'mandate' => 1);
+        if (! isset($approved_table[$table]))
+        {
+            /*
+             * Trying something not approved is fatal. 
+             */
+            die("Tried to insert on non-approved table: $table\n");
+        }
+        $qq = "select_$table";
+        $this->sdb->prepare($qq, 
+                            sprintf(
+                                'insert into %s
+                                (version, main_id, id, text)
+                                values
+                                ($1, $2, $3, $4)', $table));
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $term));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
+     * Insert into table convention_declaration. Data is currently only a string from the Constellation. If
+     * $id is null, get a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $text Text value we're saving.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertConventionDeclaration($vhInfo, $id, $text)
+    {
+        return $this->insertTextCore($vhInfo, $id, $text, 'convention_declaration');
+    }
+
+        /**
+     * Insert into table mandate. Data is currently only a string from the Constellation. If
+     * $id is null, get a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $text Text value we're saving.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertMandate($vhInfo, $id, $text)
+    {
+        return $this->insertTextCore($vhInfo, $id, $text, 'mandate');
+    }
+
+    /**
+     * Insert into table structure_genealogy. Data is currently only a string from the Constellation. If $id
+     * is null, get a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $text Text value we're saving.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertStructureOrGenealogy($vhInfo, $id, $text)
+    {
+        return $this->insertTextCore($vhInfo, $id, $text, 'structure_genealogy');
+    }
+
+    /**
+     * Insert into table structure_genealogy. Data is currently only a string from the Constellation. If $id
+     * is null, get a new record id. Always return $id.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param string $text Text value we're saving.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertGeneralContext($vhInfo, $id, $text)
+    {
+        return $this->insertTextCore($vhInfo, $id, $text, 'general_context');
+    }
+
+    /**
+     *
+     * Select StructureOrGenealogy records. DBUtils has code to turn the return values into objects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectStructureOrGenealogy($vhInfo)
+    {
+        return $this->selectTextCore($vhInfo, 'structure_genealogy');
+    }
+    /**
+     * Select mandate records. DBUtils has code to turn the return values into objects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectMandate($vhInfo)
+    {
+        return $this->selectTextCore($vhInfo, 'mandate');
+    }
+
+    /**
+     * Select GeneralContext records. DBUtils has code to turn the return values into objects in a
+     * Constellation object.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectGeneralContext($vhInfo)
+    {
+        return $this->selectTextCore($vhInfo, 'general_context');
+    }
+
+    /**
+     * Select conventionDeclaration records. DBUtils has code to turn the return values into objects in a
+     * Constellation object.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectConventionDeclaration($vhInfo)
+    {
+        return $this->selectTextCore($vhInfo, 'convention_declaration');
     }
 
     /**
@@ -756,26 +1253,26 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType
-     * @param integer $entryType Vocab id value of entry type
-     * @param string $href A URI
-     * @param integer $arcRole Vocabulary id value of the arc role
-     * @param string $relationEntry Often the name of the relation
-     * @param string $objectXMLWrap Optional extra data, often an XML fragment.
-     * @param string $note A note
+     * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType aka xlink:role
+     * @param integer $entryType Vocab id value of entry type aka relationEntry@localType
+     * @param string $href A URI  aka xlink:href
+     * @param integer $arcRole Vocabulary id value of the arc role aka xlink:arcrole
+     * @param string $relationEntry Often the name of the relation aka relationEntry
+     * @param string $objectXMLWrap Optional extra data, often an XML fragment aka objectXMLWrap
+     * @param string $note A note aka descriptiveNote
      * @param integer $id The database record id 
      *
      * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
      * 
      */
     public function insertResourceRelation($vhInfo,
-                                           $relationEntryType, // aka documentType
-                                           $entryType, 
-                                           $href,
-                                           $arcRole,
-                                           $relationEntry,
-                                           $objectXMLWrap,
-                                           $note,
+                                           $relationEntryType, // aka documentType aka xlink:role
+                                           $entryType, // relationEntry@localType
+                                           $href,  // xlink:href
+                                           $arcRole,  // xlink:arcrole
+                                           $relationEntry, // relationEntry
+                                           $objectXMLWrap, // objectXMLWrap
+                                           $note, // descriptiveNote
                                            $id)
     {
         if (! $id)
@@ -805,6 +1302,27 @@ class SQL
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return $id;
+    }
+
+    /**
+     * Get a single vocabulary record
+     *
+     * @param integer $termID The record id of a vocabulary term
+     *
+     * @return string[] A list with keys: id, type, value, uri, description
+     *
+     */
+    public function selectTerm($termID)
+    {
+        $qq = 'sc';
+        $this->sdb->prepare($qq, 
+                            'select
+                            id, type, value, uri, description
+                            from vocabulary where $1=id');
+        $result = $this->sdb->execute($qq, array($termID));
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $row;
     }
 
 
@@ -847,14 +1365,19 @@ class SQL
 
 
     /**
-     * This table has biogHist text, and serves as a record for the biogHist language foreign key. Note that
-     * language (like date) relies on the fk from the original table to reside in the language table. Calling
-     * code will use a second function to retrieve the langauge of the biogHist, that is the language related
-     * to this biogHist.
+     * This table has biogHist records (possibly multiple per constellation), and serves as a record for the
+     * biogHist to relate to language via foreign key biog_hist.id. Note that language (like date) relies on
+     * the fk from the original table to reside in the language table. Calling code will use a second function
+     * to retrieve the langauge of each biogHist, that is: the language related to the biogHist.
      *
+     * Note: Even though there is only one biogHist in a given language, eventually there may be multiple
+     * translations, each in a different language. We just return all biogHist records that we find and let
+     * the calling code figure it out. As of Jan 28 2016, Constellation.php defines private var $biogHists as
+     * \snac\data\BiogHist[]. The Constellation is already supporting a list of biogHist.
+     * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] An associative list with keys: version, main_id, id, text.
+     * @return string[] A list of associative list with keys: version, main_id, id, text.
      * 
      */
     public function selectBiogHist($vhInfo)
@@ -864,7 +1387,7 @@ class SQL
                             'select
                             aa.version, aa.main_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select main_id, max(version) as version from nrd where version<=$1 and main_id=$2 group by main_id) as bb
+                            (select main_id, max(version) as version from biog_hist where version<=$1 and main_id=$2 group by main_id) as bb
                             where not aa.is_deleted and
                             aa.main_id=bb.main_id
                             and aa.version=bb.version');
@@ -874,16 +1397,20 @@ class SQL
         $result = $this->sdb->execute($qq, 
                                       array($vhInfo['version'],
                                             $vhInfo['main_id']));
-        $row = $this->sdb->fetchrow($result);
+        $rowList = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
         $this->sdb->deallocate($qq);
-        return $row;
+        return $rowList;
     }
 
 
     /** 
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
-     * helper function for selectOtherRecordID(). This deals with the possibility that a given otherid.id may
+     * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -922,32 +1449,33 @@ class SQL
      * select other IDs which were originally ID values of merged records. DBUtils has code that 
      * adds an otherRecordID to a Constellation object.
      * 
-     * Assume unique id in vocab, so don't need extra constraint type='record_type'
+     * Jan 28 2016 The query use to say "... and main_id=$2 and id=$3');" which is odd. We never constrain on
+     * table.id that way. This appears to be old and incorrect code.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, other_id,
-     * link_type.
+     * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, text, uri,
+     * type, link_type. otherid.type is an integer fk id from vocabulary, not that we need to concern
+     * ourselves with that here.
      * 
      */
-    public function selectOtherRecordID($vhInfo)
+    public function selectOtherID($vhInfo)
     {
         $matchingIDs = $this->matchORID($vhInfo);
 
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
                             'select
-                            id, version, main_id, other_id,
-                            (select value from vocabulary where id=link_type) as link_type
+                            id, version, main_id, text, uri, type
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
-                            and main_id=$2 and id=$3');
+                            and main_id=$2');
 
         $all = array();
         foreach ($matchingIDs as $orid)
         {
-            $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id'], $orid));
+            $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
             while($row = $this->sdb->fetchrow($result))
             {
                 array_push($all, $row);
@@ -975,8 +1503,7 @@ class SQL
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
                             'select
-                            aa.id, aa.version, aa.main_id,
-                            (select value from vocabulary where id=subject_id) as subject_id
+                            aa.id, aa.version, aa.main_id, aa.subject_id
                             from subject aa,
                             (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -985,6 +1512,78 @@ class SQL
         /* 
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
+     *
+     * Select gender records. DBUtils has code to turn the return values into objects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectGender($vhInfo)
+    {
+        $qq = 'select_gender';
+        $this->sdb->prepare($qq, 
+                            'select
+                            aa.id, aa.version, aa.main_id, aa.term_id
+                            from gender aa,
+                            (select id, max(version) as version from gender where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version');
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     *
+     * Select nationality records. DBUtils has code to turn the return values into objects in a Constellation
+     * object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple rows returned.
+     * 
+     */
+    public function selectNationality($vhInfo)
+    {
+        $qq = 'select_gender';
+        $this->sdb->prepare($qq, 
+                            'select
+                            aa.id, aa.version, aa.main_id, aa.term_id
+                            from nationality aa,
+                            (select id, max(version) as version from nationality where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id']));
@@ -1017,8 +1616,7 @@ class SQL
         $qq = 'socc';
         $this->sdb->prepare($qq, 
                             'select
-                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source,
-                            (select value from vocabulary where id=aa.occupation_id) as occupation_id
+                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source, aa.occupation_id
                             from occupation as aa,
                             (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1068,8 +1666,8 @@ class SQL
                             'select
                             aa.id, aa.version, aa.main_id, aa.related_id, aa.related_ark,
                             aa.relation_entry, aa.descriptive_note, aa.relation_type,
-                            (select value from vocabulary where id=aa.role) as role,
-                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            aa.role,
+                            aa.arcrole
                             from related_identity as aa,
                             (select id, max(version) as version from related_identity where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1109,15 +1707,15 @@ class SQL
      * href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */ 
-    public function selectRelatedResource($vhInfo)
+    public function selectResourceRelation($vhInfo)
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.main_id,
                             aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
-                            (select value from vocabulary where id=aa.role) as role,
-                            (select value from vocabulary where id=aa.arcrole) as arcrole
+                            aa.role,
+                            aa.arcrole
                             from related_resource as aa,
                             (select id, max(version) as version from related_resource where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1152,7 +1750,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.main_id, aa.function_type, aa.vocabulary_source, aa.note,
-                            (select value from vocabulary where id=aa.function_id) as function_id
+                            aa.function_id
                             from function as aa,
                             (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1189,63 +1787,86 @@ class SQL
       * consistent. The consistency may help testing more than UI related issues (where names should
       * consistently appear in the same order each time the record is viewed.)
       *
+      * Language is a related table where language.fk_id=name.id. Contributor is a related table where
+      * contributor.name_id=name.id. See selectLanguage(), selectContributor() both called in DBUtil.
+      *
+      * This code only knows about selecting from table name. DBUtil knows that to build a constellation it is
+      * necessary to also get information related to name.
+      *
       * @param string[] $vhInfo with keys version, main_id.
       *
       * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
-      * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
-      * version, main_id, name_id, short_name, name_type.
+      * preference_score. 
       */
-    public function selectNameEntry($vhInfo)
+    public function selectName($vhInfo)
     {
         $qq_1 = 'selname';
-        $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_1,
                             'select
-                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score,
-                            (select value from vocabulary where id=aa.language) as language,
-                            (select value from vocabulary where id=aa.script_code) as script_code
+                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score
                             from name as aa,
                             (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
                             where
                             aa.id = bb.id and not aa.is_deleted and 
                             aa.version = bb.version order by preference_score,id');
         
-        $this->sdb->prepare($qq_2,
-                            'select 
-                            aa.id,aa.version, main_id, name_id, short_name,
-                            (select value from vocabulary where id=name_type) as name_type
-                            from  name_contributor as aa,
-                            (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
-                            where not aa.is_deleted and
-                            aa.id=bb.id
-                            and aa.version=bb.version
-                            and aa.name_id=$3');
-        
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
                                                  $vhInfo['main_id']));
-        // Contributor has issues. See comments in schema.sql. This will work for now.
-        // Get each name, and for each name get each contributor.
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
-            $name_row['contributors'] = array();
-            $contributor_result = $this->sdb->execute($qq_2,
-                                                      array($vhInfo['version'],
-                                                            $vhInfo['main_id'],
-                                                            $name_row['id']));
-            $name_row['contributors'] = array();
-            while($contributor_row = $this->sdb->fetchrow($contributor_result))
-            {
-                array_push($name_row['contributors'], $contributor_row);
-            }
             array_push($all, $name_row);
         }
         $this->sdb->deallocate($qq_1);
-        $this->sdb->deallocate($qq_2);
         return $all;
     }
 
+    // Contributor has issues. See comments in schema.sql. This will work for now.
+    // Get each name, and for each name get each contributor. 
+
+    /*
+     * Select contributor of a specific name, where name_contributor.name_id=name.id.
+     *
+     * @param integer $nameID The foreign key record id from name.id
+     *
+     * @param integer $version The version number.
+     *
+     * @return string[] List of list, one inner list per contributor keys: id, version, main_id, type, name, name_id
+     * 
+     * The new query is based on selectDate.
+     *
+     * This is the old query. Unclear what the intent was, but it looks like it would heap all the
+     * contributors together, as opposed to per-name contributors which is what I recollect that we want.
+     *
+     * 'select 
+     * aa.id,aa.version, aa.main_id, aa.name_id, aa.short_name,aa.name_type
+     * from  name_contributor as aa,
+     * (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
+     * where not aa.is_deleted and
+     * aa.id=bb.id
+     * and aa.version=bb.version
+     * and aa.name_id=$3');
+     *
+     */  
+    public function selectContributor($nameID, $version)
+    {
+        $qq_2 = 'selcontributor';
+        $this->sdb->prepare($qq_2,
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.short_name, aa.name_type, aa.name_id
+                            from name_contributor as aa,
+                            (select name_id,max(version) as version from name_contributor where name_id=$1 and version<=$2 group by name_id) as bb
+                            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
+        $contributor_result = $this->sdb->execute($qq_2, array($nameID, $version));
+        $all = array();
+        while($contributor_row = $this->sdb->fetchrow($contributor_result))
+        {
+            array_push($all, $contributor_row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
 
 
     /** 
@@ -1380,8 +2001,8 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $nRow = $this->selectNameEntry(array('version' => $row['version'],
-                                                 'main_id' => $row['main_id']));
+            $nRow = $this->selectName(array('version' => $row['version'],
+                                            'main_id' => $row['main_id']));
             if (count($nRow) == 0)
             {
                 // Yikes, cannot have a constellation with zero names.

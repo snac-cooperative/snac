@@ -38,15 +38,14 @@ abstract class AbstractData {
     public static $OPERATION_INSERT = "insert";
     public static $OPERATION_UPDATE = "update";
     public static $OPERATION_DELETE = "delete";
-
-
+    
     /**
      *
      * The record id, or constellation id for this class. This has two different meanings, depending on the
      * class. For Constellation.php this is the main_id of the constellation aka version_history.main_id. For
      * all other classes this is table.id, which is the record id, not the constellation id.
      *
-     * @var int $id id for this object
+     * @var int $id 
      */
     protected $id = null;
 
@@ -57,29 +56,31 @@ abstract class AbstractData {
      * the "constellation version number" aka max(version) aka max(version_history.id). For all other classes,
      * this is the table.version which is a per-record version number, <= the constellation version number.
      * 
-     * @var int $version version number for this object 
+     * @var int $version 
      */
     protected $version = null;
 
+
     /**
      * @var \snac\data\SNACDate[] $dateList Universal date object list. 
+     *
      *
      */
     protected $dateList;
 
     /**
      * How many dates might be in the $dateList. Objects with no dates set this to some number greater than zero.
-     *
-     * @var int $maxDateCout maximum number of dates allowed in this object
+     * 
+     * @var int $maxDateCount maximum number of dates allowed in this object
      */
     protected $maxDateCount = 0;
+
     
     /**
-     * @var \snac\data\SNACControlMetadata[] $snacControlMetadata The snac control metadata entries for this piece of data.
+     * var \snac\data\SNACControlMetadata[] $snacControlMetadata The snac control metadata entries for this piece of data.
      */
     protected $snacControlMetadata;
-
-
+    
     /**
      * @var string Operation for this object.  Must be set to one of the constant values or null.
      */
@@ -118,20 +119,40 @@ abstract class AbstractData {
      * @param integer $count The number of dates supported.  
      *
      */
-    public function setMaxDateCount($count)
+    protected function setMaxDateCount($count)
     {
         $this->maxDateCount = $count;
     }
 
     /**
+     * Get the number of date objects we can have in the list of dates.
+     *
+     * @return integer $count The number of dates supported.  
+     *
+     */
+    public function getMaxDateCount()
+    {
+        return $this->maxDateCount;
+    }
+
+    /**
      * Get the list of dates. 
      *
-     * @return \snac\data\SNACDate[] Returns a list of SNACDate objects, or an empty list if there are no dates.
+     * @return \snac\data\SNACDate[] Returns a list of SNACDate objects, or an empty list if there are no
+     * dates. If someone has called unsetDateList() then it won't be a list and the calling code is expecting
+     * a list, always, even if empty.
      *
      */ 
     public function getDateList()
     {
-        return $this->dateList;
+        if ($this->dateList)
+        {
+            return $this->dateList;
+        }
+        else
+        {
+            return array();
+        }
     }
 
     /**
@@ -385,7 +406,6 @@ abstract class AbstractData {
         }
         // Note: inheriting classes should set the maxDateCount appropriately
         // based on the definition of that class.
-
     }
 
     /**

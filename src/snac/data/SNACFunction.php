@@ -79,6 +79,8 @@ class SNACFunction extends AbstractData {
 
     /**
      * Get the Term for this function 
+     * 
+     * Example files: /data/extract/anf/FRAN_NP_050744.xml
      *
      * * function/term
      * 
@@ -211,7 +213,7 @@ class SNACFunction extends AbstractData {
      * 
      * @param \snac\data\Term $type type
      */
-    public function setType($type) {
+    public function setType(\snac\data\Term $type) {
 
         $this->type = $type;
     }

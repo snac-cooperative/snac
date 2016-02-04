@@ -53,11 +53,10 @@ class NameEntry extends AbstractData {
      *
      * 'contributor' name value as a string
      *
-     * Stored as:
-     * ```
-     * [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ] 
-     * ```
-     * @var string[][] Contributors providing this name entry including their type for this name entry
+     * Stored as: ``` [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ]  ``` Originally implemented
+     * as string[][] Contributors providing this name entry including their type for this name entry
+     *
+     * @var \snac\data\Contributor[] List of Contributor
      */
     private $contributors;
     
@@ -113,7 +112,7 @@ class NameEntry extends AbstractData {
     /**
      * Get the list of contributors for this name entry 
      *
-     * @return string[][] Contributors providing this name entry including their type for this name entry
+     * @return \snac\data\Contributor[] Contributors providing this name entry including their type for this name entry
      *
      */
     public function getContributors()
@@ -124,8 +123,8 @@ class NameEntry extends AbstractData {
     /**
      * Get the language that this name entry is written in (language and script) 
      *
-     * @return \snac\data\Language Language of the entry. Language object's getLanguage() returns a Term
-     * object. Language getScript() returns a Term object for the script.
+     * @return \snac\data\Language Language of the entry. If you then call the Language object's getLanguage()
+     * it returns a Term object. Language getScript() returns a Term object for the script.
      *
      */
     public function getLanguage()
@@ -186,12 +185,14 @@ class NameEntry extends AbstractData {
             $this->preferenceScore = null;
 
         if (isset($data["contributors"]))
-            $this->contributors = $data["contributors"];
+            $this->contributors = new \snac\data\Contributor($data["contributors"]);
         else
             $this->contributors = null;
 
         if (isset($data["language"]))
+        {
             $this->language = new Language($data["language"]);
+        }
         else
             $this->language = null;
 
@@ -213,23 +214,23 @@ class NameEntry extends AbstractData {
      * 
      * @param \snac\data\Language $lang Language
      */
-    public function setLanguage($lang) {
+    public function setLanguage(\snac\data\Language $lang) {
+        if (gettype($lang) != 'object')
+        {
+            debug_print_backtrace();
+            exit();
+        }
         $this->language = $lang;
     }
     
     /**
      * Add contributor to the list of contributors.
      * 
-     * @param string $type Type associated with this name entry
-     * @param string $name Name of the contributor
+     * @param \snac\data\Contributor $contributor Contributor object
      */
-    public function addContributor($type, $name) {
+    public function addContributor(\snac\data\Contributor $contributor) {
 
-        array_push($this->contributors, 
-                array (
-                        "type" => $type,
-                        "contributor" => $name
-                ));
+        array_push($this->contributors, $contributor);
     }
     
     /**
