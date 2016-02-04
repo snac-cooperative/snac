@@ -157,7 +157,7 @@ class Place extends AbstractData {
      * 
      * @param \snac\data\Term $type Place type
      */
-    public function setType(\snac\data\Term $type) {
+    public function setType($type) {
 
         $this->type = $type;
     }
@@ -167,7 +167,7 @@ class Place extends AbstractData {
      * 
      * @param \snac\data\Term $role place role
      */
-    public function setRole(\snac\data\Term $role) {
+    public function setRole($role) {
 
         $this->role = $role;
     }
