@@ -71,7 +71,7 @@ class SNACDate extends AbstractData {
      * 
      * @var boolean If the from date is BC
      */
-    private $fromBC;
+    private $fromBC = false;
     
     /**
      * Range of fuzziness for begin date
@@ -129,7 +129,7 @@ class SNACDate extends AbstractData {
      *  
      * @var boolean If the to date is BC
      */
-    private $toBC;
+    private $toBC = false;
 
     /**
      * Fuzzy range on End date
@@ -148,7 +148,7 @@ class SNACDate extends AbstractData {
      * 
      * @var boolean If this SNACDate object contains a range or a single date
      */
-    private $isRange;
+    private $isRange = false;
 
     /**
      * Descriptive Note
