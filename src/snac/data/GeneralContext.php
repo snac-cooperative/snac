@@ -28,6 +28,7 @@ class GeneralContext extends AbstractTextData {
      */
     public function __construct($data = null) {
         $this->setDataType("GeneralContext");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

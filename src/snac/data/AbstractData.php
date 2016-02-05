@@ -32,11 +32,17 @@ abstract class AbstractData {
     /**
      * Constants associated with all data
      * @var string $OPERATION_INSERT the insert operation
-     * @var string $OPERATION_UPDATE the update operation
-     * @var string $OPERATION_DELETE the delete operation
      */
     public static $OPERATION_INSERT = "insert";
+    /**
+     * Constants associated with all data
+     * @var string $OPERATION_UPDATE the update operation
+     */
     public static $OPERATION_UPDATE = "update";
+    /**
+     * Constants associated with all data
+     * @var string $OPERATION_DELETE the delete operation
+     */
     public static $OPERATION_DELETE = "delete";
     
     /**
@@ -105,15 +111,6 @@ abstract class AbstractData {
     }
 
     /**
-     * Unset the $dateList array. This might be done to prevent an toArray() from creating an empty array in
-     * the json.
-     */
-    public function unsetDateList()
-    {
-        unset($dateList);
-    }
-
-    /**
      * Set the number of date objects we can have in the list of dates.
      *
      * @param integer $count The number of dates supported.  
@@ -145,25 +142,25 @@ abstract class AbstractData {
      */ 
     public function getDateList()
     {
-        if ($this->dateList)
-        {
-            return $this->dateList;
-        }
-        else
-        {
-            return array();
-        }
+        return $this->dateList;
     }
 
     /**
-     * Add a date object to our list of dates. 
+     * Add a date object to our list of dates. Succeeds only if the object allows dates, or has room based on
+     * maxDateCount
      *
      * @param \snac\data\SNACDate A single SNACDate that will be added to our list of dates.
+     * @return boolean true on success, false on failure
      *
      */
     public function addDate($dateObj)
     {
-        array_push($this->dateList, $dateObj);
+        if ($this->maxDateCount != 0 ||
+                (count($this->dateList) < $this->maxDateCount)) {
+            array_push($this->dateList, $dateObj);
+            return true;
+        }
+        return false;
     }
     
 
@@ -318,32 +315,11 @@ abstract class AbstractData {
             'version' => $this->getVersion(),
             'operation' => $this->getOperation()
             );
-        
-        /*
-         * We won't return any dates if we aren't suppose to have dates in the first place. And if we're only
-         * suppose to have a single date, then we will only return a single date. This supposes that any
-         * errant dates got in here via some bug, not that we care. At least we won't return dates that aren't
-         * supposed to exist. That probably means that errant dates would be invisible outside the SQL code.
-         *
-         * Constellation.php called these $existDates, getExistDates(), addExistDates()
-         *
-         * NameEntry.php called these $useDates, getUseDates(), setUseDates()?
-         *
-         * Place.php called these $dates with setDateRange(), no getter?
-         *
-         * SNACFunction.php called these $dates, getDates(), setDateRange()
-         */ 
-        if ($this->maxDateCount > 0)
+
+        $return['dates'] = array();
+        foreach ($this->dateList as $i => $v)
         {
-            $return['dates'] = array();
-            foreach ($this->dateList as $i => $v)
-            {
-                $return["dates"][$i] = $v->toArray($shorten);
-                if ($this->maxDateCount == 1)
-                {
-                    break;
-                }
-            }
+            $return["dates"][$i] = $v->toArray($shorten);
         }
         
         if (isset($this->snacControlMetadata) && !empty($this->snacControlMetadata)) {

@@ -28,6 +28,7 @@ class ConventionDeclaration extends AbstractTextData {
      */
     public function __construct($data = null) {
         $this->setDataType("ConventionDeclaration");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

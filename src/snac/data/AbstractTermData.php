@@ -16,35 +16,20 @@
 namespace snac\data;
 
 /**
- * Absract data class to hold terms. Term objects do not extend this class. A Term object is a
+ * Term-holding abstract class
  *
- * Abstract class that extends AbstractData and also hold terms
+ * Abstract class that extends AbstractData and also hold a Term object.  Extend this to use it.
  *
  * @author Robbie Hott
  */
-abstract class AbstractTermData extends AbstractData{
+abstract class AbstractTermData extends AbstractData {
 
     /**
-     * This matches up to Term->getType() and field vocabulary.type which is the type valid for an
-     * instance. Set this in the constructor of any extending classes. There should be no setter because this
-     * read only for data objects.
-     *
-     * There was a protected $dataType here, but $dataType is in the Term object and we do not want two
-     * copies. There was a setter (below, commented out) but no getter which suggests something.
-     *
-     * If you need the data type, get it from the Term object $foo->getTerm()->getDataType();
-     *
-     * Data type should only ever be used in special circumstances: building the initial vocabulary, building the
-     * UI for vocab term selection. I'm pretty sure that any other use is misguided, but if you find a valid use,
-     * please update this comment and explain.
-     *
-     * As of Jan 29 2016 the list includes: record_type, script_code, entity_type, event_type, name_type,
-     * occupation, language_code, gender, nationality, maintenance_status, agent_type, document_role,
-     * document_type, function_type, function, subject, date_type, relation_type, place_match, source_type
-     *
-     * This is not the same as the json key 'dataType'.
+     * @var string $dataType The data type of this object.
+     * 
+     * This should be overwritten by any inheriting/child class
      */
-    protected $validType;
+    protected $dataType;
 
     /**
      * @var \snac\data\Term $term The term for this object 
@@ -52,31 +37,24 @@ abstract class AbstractTermData extends AbstractData{
     protected $term;
 
     /**
-     * Return the valid type string for this object. Use it to constrain vocabulary selects
+     * Get the type of this object
      *
-     * @return string $validType The valid vocabulary type.
+     * @return string The type of this object
      *
      */
-    public function getValidType()
+    public function getDataType()
     {
-        return $this->validType;
+        return $this->dataType;
     }
-
+    
     /**
-     * Redundant, see comment for $dataType above.
+     * Set the data type for this object
      *
-     * Set the data type for this object. For some reason, this was proctected. This is the vocabulary type,
-     * and high level code that is creating Term objects needs to set this.
-     *
-     * This is not the json $data['dataType'].
-     *
-     * @param string $dataType The vocabulary data type for this object
+     * @param string $dataType the data type for this object
      */
-    /* 
-     * public function setDataType($dataType) {
-     *     $this->dataType = $dataType;
-     * }
-     */
+    protected function setDataType($dataType) {
+        $this->dataType = $dataType;
+    }
 
     /**
      * Get the term of this object
@@ -104,7 +82,7 @@ abstract class AbstractTermData extends AbstractData{
      */
     public function toArray($shorten = true) {
         $return = array(
-            'dataType' => 'term',
+            'dataType' => $this->dataType,
             'term' => $this->getTerm() == null ? null : $this->getTerm()->toArray($shorten)
         );
         
@@ -131,7 +109,7 @@ abstract class AbstractTermData extends AbstractData{
      */
     public function fromArray($data) {
 
-        if (!isset($data["dataType"]) || $data["dataType"] != 'term')
+        if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
             return false;
 
             

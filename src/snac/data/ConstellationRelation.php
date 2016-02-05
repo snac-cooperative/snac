@@ -25,6 +25,8 @@ namespace snac\data;
 class ConstellationRelation extends AbstractData {
 
     /**
+     * Source Constellation ID
+     * 
      * Postgres ID (source)
      * 
      * @var int Source constellation ID
@@ -32,9 +34,11 @@ class ConstellationRelation extends AbstractData {
     private $sourceConstellation = null;
 
     /**
+     * Target Constellation ID
+     * 
      * Postgres ID (target)
      * 
-     * @var int Target constellation ID[w
+     * @var int Target constellation ID
      */
     private $targetConstellation = null;
 
@@ -46,6 +50,8 @@ class ConstellationRelation extends AbstractData {
     private $sourceArkID = null;
 
     /**
+     * ArkID of the target
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@href
@@ -55,6 +61,8 @@ class ConstellationRelation extends AbstractData {
     private $targetArkID = null;
     
     /**
+     * Entity type of the target
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@role
@@ -64,6 +72,8 @@ class ConstellationRelation extends AbstractData {
     private $targetEntityType = null;
 
     /**
+     * Type of the relation
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@arcrole
@@ -73,6 +83,8 @@ class ConstellationRelation extends AbstractData {
     private $type = null;
 
     /**
+     * Alternate Type (unused)
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@type cpfRelation@xlink:type
@@ -85,6 +97,8 @@ class ConstellationRelation extends AbstractData {
     private $altType = null;
     
     /**
+     * Type of the relation
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@cpfRelationType
@@ -94,6 +108,8 @@ class ConstellationRelation extends AbstractData {
     private $cpfRelationType = null;
 
     /**
+     * Content in the relation tag
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/relationEntry
@@ -103,16 +119,10 @@ class ConstellationRelation extends AbstractData {
     private $content = null;
     
     /**
-     * From EAC-CPF tag(s):
+     * Descriptive Note
      * 
-     * * cpfRelation/date/*
-     * * cpfRelation/dateRange/*
+     * Descriptive note for the relation. 
      * 
-     * @var \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
-     */
-    private $dates = null;    
-    
-    /**
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/descriptiveNote
@@ -120,6 +130,14 @@ class ConstellationRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+    
+    /**
+     * Constructor
+     */
+    public function __construct($data) {
+        $this->setMaxDateCount(1);
+        parent::__construct($data);
+    }
 
     /**
      * Get the Source Constellation's ID 
@@ -192,7 +210,9 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the xlink type. This should not be used, as xlink type should always be simple
+     * Get the xlink type. 
+     * 
+     * This should not be used, as xlink type should always be simple
      * 
      * * cpfRelation/@type cpfRelation@xlink:type
      *
@@ -208,7 +228,9 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the secondary Relation type.  ANF Used this as a second way of describing
+     * Get the secondary Relation type
+     * 
+     * ANF Used this as a second way of describing
      * the normal relation type.  That is, "associative" for "associatedWith", and "temporal-after"
      * for "isSucceededBy" 
      *
@@ -236,20 +258,8 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * Get the Dates for this relation. 
-     *
-     * * cpfRelation/date/*
-     * * cpfRelation/dateRange/*
+     * Get descriptive note
      * 
-     * @return \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
-     *
-     */
-    function getDates()
-    {
-        return $this->dates;
-    }
-
-    /**
      * Get the human readable descriptive note for this relation 
      *
      * * cpfRelation/descriptiveNote
@@ -280,7 +290,6 @@ class ConstellationRelation extends AbstractData {
             "altType" => $this->altType == null ? null : $this->type->toArray($shorten),
             "cpfRelationType" => $this->cpfRelationType == null ? null : $this->type->toArray($shorten),
             "content" => $this->content,
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
         );
             
@@ -311,42 +320,42 @@ class ConstellationRelation extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["sourceConstellation"]))
+        if (isset($data["sourceConstellation"]) && $data["sourceConstellation"] != null)
             $this->sourceConstellation = $data["sourceConstellation"];
         else
             $this->sourceConstellation = null;
 
-        if (isset($data["targetConstellation"]))
+        if (isset($data["targetConstellation"]) && $data["targetConstellation"] != null)
             $this->targetConstellation = $data["targetConstellation"];
         else
             $this->targetConstellation = null;
 
-        if (isset($data["sourceArkID"]))
+        if (isset($data["sourceArkID"]) && $data["sourceArkID"] != null)
             $this->sourceArkID = $data["sourceArkID"];
         else
             $this->sourceArkID = null;
 
-        if (isset($data["targetArkID"]))
+        if (isset($data["targetArkID"]) && $data["targetArkID"] != null)
             $this->targetArkID = $data["targetArkID"];
         else
             $this->targetArkID = null;
 
-        if (isset($data["targetEntityType"]))
+        if (isset($data["targetEntityType"]) && $data["targetEntityType"] != null)
             $this->targetEntityType = new \snac\data\Term($data["targetEntityType"]);
         else
             $this->targetEntityType = null;
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new \snac\data\Term($data["type"]);
         else
             $this->type = null;
 
-        if (isset($data["altType"]))
+        if (isset($data["altType"]) && $data["altType"] != null)
             $this->altType = new \snac\data\Term($data["altType"]);
         else
             $this->altType = null;
 
-        if (isset($data["cpfRelationType"]))
+        if (isset($data["cpfRelationType"]) && $data["cpfRelationType"] != null)
             $this->cpfRelationType = new \snac\data\Term($data["cpfRelationType"]);
         else
             $this->cpfRelationType = null;
@@ -355,11 +364,6 @@ class ConstellationRelation extends AbstractData {
             $this->content = $data["content"];
         else
             $this->content = null;
-
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
 
         if (isset($data["note"]))
             $this->note = $data["note"];
@@ -440,16 +444,6 @@ class ConstellationRelation extends AbstractData {
     public function setContent($content) {
 
         $this->content = $content;
-    }
-
-
-    /**
-     * Set the dates of this relation
-     * 
-     * @param \snac\data\SNACDate $date The date or range of this relation
-     */
-    public function setDates($date) {
-        $this->dates = $date;
     }
     
     /**

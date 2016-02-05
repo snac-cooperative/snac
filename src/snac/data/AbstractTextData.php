@@ -16,9 +16,9 @@
 namespace snac\data;
 
 /**
- * Absract data class to hold text 
+ * Text-holding Abstract Class
  *
- * Abstract class that extends AbstractData and also hold text
+ * Abstract class that extends AbstractData and also holds a text string
  *
  * @author Robbie Hott
  */
@@ -28,9 +28,7 @@ abstract class AbstractTextData extends AbstractData{
     /**
      * @var string $dataType The type of this data object.
      *
-     * Need to clarify "type" in what sense. This is not json $data['dataType']. Text objects do not use
-     * table vocabulary, so this is not vocabulary.type. The value set always matches the name of the
-     * class. No getter exists, so at the moment this is write-only.
+     * This is the json $data['dataType'].
      */
     protected $dataType;
 

@@ -45,6 +45,14 @@ class Language extends AbstractData {
      * @var string Note attached to language. A simple string.
      */
     private $note = null;
+    
+    /**
+     * Constructor
+     */
+    public function __construct($data) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+    }
 
     /**
      * Get the language controlled vocab term 

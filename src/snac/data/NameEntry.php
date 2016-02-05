@@ -17,9 +17,6 @@ namespace snac\data;
 /**
  * NameEntry Class
  *
- * See the abstract parent class for common methods setDBInfo() and getDBInfo(). See the parent class for
- * date, dates, getDateList(), addDate(), setMaxDateCount() and so on.
- *
  * Storage class for name entries.
  *
  * @author Robbie Hott
@@ -28,6 +25,8 @@ namespace snac\data;
 class NameEntry extends AbstractData {
 
     /**
+     * Original string for the name
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/part
@@ -37,6 +36,8 @@ class NameEntry extends AbstractData {
     private $original;
 
     /**
+     * Preference Score
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/@preferenceScore
@@ -46,21 +47,23 @@ class NameEntry extends AbstractData {
     private $preferenceScore;
 
     /**
+     * Contributor List
+     * 
      * From EAC-CPF tag(s):
-     *'type' as a string:  
+     * 
+     * 'type' as a string:  
      * * nameEntry/alternativeForm
      * * nameEntry/authorizedForm
      *
      * 'contributor' name value as a string
-     *
-     * Stored as: ``` [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ]  ``` Originally implemented
-     * as string[][] Contributors providing this name entry including their type for this name entry
      *
      * @var \snac\data\Contributor[] List of Contributor
      */
     private $contributors;
     
     /**
+     * Language
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/@lang
@@ -71,7 +74,7 @@ class NameEntry extends AbstractData {
     private $language;
     
     /**
-     * Constructor.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
+     * Constructor.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
@@ -82,10 +85,13 @@ class NameEntry extends AbstractData {
     public function __construct($data = null) {
 
         $this->contributors = array ();
+        $this->setMaxDateCount(1);
         parent::__construct($data);
     }
     
     /**
+     * Get the original 
+     * 
      * Get the original (full combined nameString/header) for this name Entry 
      *
      * @return string Original name given in this entry
@@ -98,7 +104,9 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Get the SNAC preference score for display of this name Entry
+     * Get the SNAC preference score
+     * 
+     *  Get the preference score for display of this name Entry
      *
      * @return float Preference score given to this entry
      *
@@ -133,44 +141,23 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
-     * is added. Can't we use introspection to automate this?
-     *
-     * Feb 5 2016 Old comment said $this-contributors was "already an array". Wrong for this purpose. It is an
-     * array of Contributor objects and needs to foreach calling toArray().
-     *
-     * 
+     * Returns this object's data as an associative array. 
      * 
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
     public function toArray($shorten = true) {
-        if (gettype($this->contributors) == 'array')
-        {
-            $contribJSON = array();
-            foreach($this->contributors as $contributor)
-            {
-                /*
-                 * Convert a list of objects into a list of list. The inner list is an assoc array instead of
-                 * an object.
-                 */ 
-                array_push($contribJSON, $contributor->toArray());
-            }
-        }
-        else
-        {
-            /*
-             * Our practice is for empty data to be null, even lists. Empty lists don't exist in the json.
-             */ 
-            $contribJSON = null;
-        }
         $return = array(
             "dataType" => "NameEntry",
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
-            "contributors" => $contribJSON,
+            "contributors" => array(),
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
         );
+        
+
+        foreach ($this->contributors as $i => $v)
+            $return["contributors"][$i] = $v->toArray($shorten);
 
         $return = array_merge($return, parent::toArray($shorten));
 
@@ -208,27 +195,16 @@ class NameEntry extends AbstractData {
         else
             $this->preferenceScore = null;
         
-        if (isset($data["contributors"]) && gettype($data['contributors']) == 'array')
-        {
-            /*
-             * How and when can $data['contributors'] pass isset() and not be an array? Was that just an
-             * ephemeral bug due to reading in old json?
-             *
-             * We could call array_push() for $this->contributors, but it seems better practice to use our own
-             * setter.
-             */ 
-            foreach($data['contributors'] as $contributor)
-            {
-                $this->addContributor(new \snac\data\Contributor($contributor));
-            }
-        }
-        else
-            $this->contributors = null;
-        
-        if (isset($data["language"]))
-        {
+        unset($this->contributors);
+        $this->contributors = array();
+        if (isset($data["contributors"]))
+            foreach ($data["contributors"] as $i => $entry)
+                if ($entry != null)
+                    $this->contributors[$i] = new \snac\data\Contributor($entry);
+
+                
+        if (isset($data["language"]) && $data["language"] != null) 
             $this->language = new Language($data["language"]);
-        }
         else
             $this->language = null;
 
@@ -250,12 +226,7 @@ class NameEntry extends AbstractData {
      * 
      * @param \snac\data\Language $lang Language
      */
-    public function setLanguage(\snac\data\Language $lang) {
-        if (gettype($lang) != 'object')
-        {
-            debug_print_backtrace();
-            exit();
-        }
+    public function setLanguage($lang) {
         $this->language = $lang;
     }
     
@@ -264,7 +235,7 @@ class NameEntry extends AbstractData {
      * 
      * @param \snac\data\Contributor $contributor Contributor object
      */
-    public function addContributor(\snac\data\Contributor $contributor) {
+    public function addContributor($contributor) {
 
         array_push($this->contributors, $contributor);
     }
