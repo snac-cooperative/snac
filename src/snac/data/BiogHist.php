@@ -42,6 +42,7 @@ class BiogHist extends AbstractData {
      */ 
     public function __construct($data = null) {
         $this->setMaxDateCount(0);
+        parent::__construct($data);
     }
 
 
@@ -74,9 +75,30 @@ class BiogHist extends AbstractData {
      * @return string[][] This objects data in array form
      */
     public function toArray($shorten = true) {
+
+        if (gettype($this->language) == 'array')
+        {
+            $langJSON = array();
+            foreach($this->language as $lang)
+            {
+                /*
+                 * Convert a list of objects into a list of list. The inner list is an assoc array instead of
+                 * an object.
+                 */ 
+                array_push($langJSON, $lang->toArray());
+            }
+        }
+        else
+        {
+            /*
+             * Our practice is for empty data to be null, even lists. Empty lists don't exist in the json.
+             */ 
+            $langJSON = null;
+        }
+
         $return = array(
             "dataType" => "BiogHist",
-            "language" => $this->language == null ? null : $this->language->toArray($shorten),
+            "language" => $langJSON,
             "text" => $this->text
         );
             
@@ -107,10 +129,19 @@ class BiogHist extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["language"]))
-            $this->language = new Language($data["language"]);
-        else
-            $this->language = null;
+        if (isset($data["language"]) && gettype($data['language']) == 'array')
+        {
+            /*
+             * Can we use gettype() and skip the isset? Will php balk at missing indexes?
+             * 
+             * We could call array_push() for $this->language, but it seems better practice to use our own
+             * setter.
+             */ 
+            foreach($data['language'] as $language)
+            {
+                $this->addLanguage(new \snac\data\Language($language));
+            }
+        }
 
         if (isset($data["text"]))
             $this->text = $data["text"];
@@ -118,7 +149,6 @@ class BiogHist extends AbstractData {
             $this->text = null;
 
         return true;
-
     }
 
     /**

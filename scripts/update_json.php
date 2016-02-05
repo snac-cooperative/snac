@@ -47,15 +47,19 @@ file_put_contents("test/snac/data/json/constellation_test_v2_fromjson.json", $id
  * Parse Thomas Jefferson's EAC-CPF from the internet
  */
 $inFile = "http://socialarchive.iath.virginia.edu/snac/data/99166-w6w9576g.xml";
-printf("Reading $inFile\n");
+$outFile = "test/snac/data/json/constellation_test2_v2_fromxml.json";
+printf("Reading: $inFile\n");
 $identity = $e->parseFile($inFile);
-file_put_contents("test/snac/data/json/constellation_test2_v2_fromxml.json", $identity->toJSON(false));
-printf("Wrote: test/snac/data/json/constellation_test2_v2_fromxml.json\n");
+file_put_contents($outFile, $identity->toJSON(false));
+printf("Wrote: $outFile\n");
 
 $identity = new \snac\data\Constellation();
-$jsonIn = file_get_contents("test/snac/data/json/constellation_test2_v2_fromxml.json");
+$inFile = "test/snac/data/json/constellation_test2_v2_fromxml.json";
+$outFile = "test/snac/data/json/constellation_test2_v2_fromjson.json";
+printf("Reading: $inFile\n");
+$jsonIn = file_get_contents($inFile);
 $identity->fromJSON($jsonIn);
-file_put_contents("test/snac/data/json/constellation_test2_v2_fromjson.json", $identity->toJSON(false));
-
+file_put_contents($outFile, $identity->toJSON(false));
+printf("Wrote: $outFile\n");
 
 printf("WARNING: test/snac/data/json/constellation_simple.json cannot be automatically updated.\n");

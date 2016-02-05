@@ -136,15 +136,39 @@ class NameEntry extends AbstractData {
      * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
      * is added. Can't we use introspection to automate this?
      *
+     * Feb 5 2016 Old comment said $this-contributors was "already an array". Wrong for this purpose. It is an
+     * array of Contributor objects and needs to foreach calling toArray().
+     *
+     * 
+     * 
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
     public function toArray($shorten = true) {
+        if (gettype($this->contributors) == 'array')
+        {
+            $contribJSON = array();
+            foreach($this->contributors as $contributor)
+            {
+                /*
+                 * Convert a list of objects into a list of list. The inner list is an assoc array instead of
+                 * an object.
+                 */ 
+                array_push($contribJSON, $contributor->toArray());
+            }
+        }
+        else
+        {
+            /*
+             * Our practice is for empty data to be null, even lists. Empty lists don't exist in the json.
+             */ 
+            $contribJSON = null;
+        }
         $return = array(
             "dataType" => "NameEntry",
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
-            "contributors" => $this->contributors,      // already an array
+            "contributors" => $contribJSON,
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
         );
 
@@ -183,12 +207,24 @@ class NameEntry extends AbstractData {
             $this->preferenceScore = $data["preferenceScore"];
         else
             $this->preferenceScore = null;
-
-        if (isset($data["contributors"]))
-            $this->contributors = new \snac\data\Contributor($data["contributors"]);
+        
+        if (isset($data["contributors"]) && gettype($data['contributors']) == 'array')
+        {
+            /*
+             * How and when can $data['contributors'] pass isset() and not be an array? Was that just an
+             * ephemeral bug due to reading in old json?
+             *
+             * We could call array_push() for $this->contributors, but it seems better practice to use our own
+             * setter.
+             */ 
+            foreach($data['contributors'] as $contributor)
+            {
+                $this->addContributor(new \snac\data\Contributor($contributor));
+            }
+        }
         else
             $this->contributors = null;
-
+        
         if (isset($data["language"]))
         {
             $this->language = new Language($data["language"]);

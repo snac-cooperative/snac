@@ -345,6 +345,23 @@ abstract class AbstractData {
             foreach ($data["snacControlMetadata"] as $i => $entry)
                 $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
         }
+
+        if (isset($data['maxDateCount']))
+        {
+            $this->maxDateCount = $data['maxDateCount'];
+        }
+
+        if ($this->maxDateCount > 0 && isset($data['dates']))
+        {
+            foreach ($data['dates'] as $date)
+            {
+                $this->addDate(new \snac\data\SNACDate($date));
+                if ($this->maxDateCount == 1)
+                {
+                    break;
+                }
+            }
+        }
     }
 
     /**

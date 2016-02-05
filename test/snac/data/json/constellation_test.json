@@ -22,7 +22,7 @@
             "version": null
         }
     ],
-    "maintenanceStatus": {},
+    "maintenanceStatus": [],
     "maintenanceAgency": "Archives nationales de France",
     "maintenanceEvents": [
         {
@@ -112,9 +112,7 @@
             "dataType": "NameEntry",
             "original": "Notice Test Collectivit\u00e9",
             "preferenceScore": null,
-            "contributors": [
-                {}
-            ],
+            "contributors": {},
             "language": {
                 "dataType": "Language",
                 "language": {
@@ -141,7 +139,7 @@
             "dataType": "NameEntry",
             "original": "Test Collectivit\u00e9",
             "preferenceScore": null,
-            "contributors": [],
+            "contributors": {},
             "language": null,
             "id": null,
             "version": null
@@ -150,7 +148,7 @@
             "dataType": "NameEntry",
             "original": "Collectivit\u00e9 test",
             "preferenceScore": null,
-            "contributors": [],
+            "contributors": {},
             "language": null,
             "id": null,
             "version": null
@@ -174,26 +172,8 @@
     "biogHists": [
         {
             "dataType": "BiogHist",
-            "language": {
-                "dataType": "Language",
-                "language": {
-                    "id": "144",
-                    "term": "fre",
-                    "uri": null,
-                    "description": "French"
-                },
-                "script": {
-                    "id": "586",
-                    "term": "Latn",
-                    "uri": null,
-                    "description": "Latin"
-                },
-                "vocabularySource": null,
-                "note": null,
-                "id": null,
-                "version": null
-            },
-            "text": "<biogHist>\n            <p>Cet \n     <span style=\"underline\">organisme fictif<\/span> est cr\u00e9\u00e9 pour faire des \n     <span style=\"bold\">tests aux Archives nationales<\/span>. \n    <\/p>\n            <p>Insertion de \n     <span style=\"italic\">caract\u00e8res sp\u00e9ciaux<\/span> : \u00ab blah \u00bb \n    <\/p>\n            <p>Pas possible de mettre un lien hypertexte ici.<\/p>\n            <p>Caract\u00e8res en exposant ?<\/p>\n            <p>Liste<\/p>\n            <list>\n               <item>item 1<\/item>\n               <item>item 2<\/item>\n            <\/list>\n         <citation>Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)<\/citation><\/biogHist>",
+            "language": null,
+            "text": null,
             "id": null,
             "version": null
         }
@@ -468,36 +448,6 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
-            "dates": [
-                {
-                    "dataType": "SNACDate",
-                    "fromDate": "2012-01-01",
-                    "fromDateOriginal": "2012",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "fromBC": false,
-                    "fromRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "toDate": null,
-                    "toDateOriginal": null,
-                    "toType": null,
-                    "toBC": null,
-                    "toRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "isRange": true,
-                    "note": null,
-                    "id": null,
-                    "version": null
-                }
-            ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
@@ -536,36 +486,6 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
-            "dates": [
-                {
-                    "dataType": "SNACDate",
-                    "fromDate": "2012-01-01",
-                    "fromDateOriginal": "2012",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "fromBC": false,
-                    "fromRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "toDate": null,
-                    "toDateOriginal": null,
-                    "toType": null,
-                    "toBC": null,
-                    "toRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "isRange": true,
-                    "note": null,
-                    "id": null,
-                    "version": null
-                }
-            ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
@@ -596,41 +516,6 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
-            "dates": [
-                {
-                    "dataType": "SNACDate",
-                    "fromDate": "2003-01-01",
-                    "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "fromBC": false,
-                    "fromRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "toDate": "2012-12-31",
-                    "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "toBC": false,
-                    "toRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "isRange": true,
-                    "note": null,
-                    "id": null,
-                    "version": null
-                }
-            ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
@@ -669,41 +554,6 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
-            "dates": [
-                {
-                    "dataType": "SNACDate",
-                    "fromDate": "2003-01-01",
-                    "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "fromBC": false,
-                    "fromRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "toDate": "2012-12-31",
-                    "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "toBC": false,
-                    "toRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "isRange": true,
-                    "note": null,
-                    "id": null,
-                    "version": null
-                }
-            ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
@@ -742,41 +592,6 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
-            "dates": [
-                {
-                    "dataType": "SNACDate",
-                    "fromDate": "2003-01-01",
-                    "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "fromBC": false,
-                    "fromRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "toDate": "2012-12-31",
-                    "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
-                    "toBC": false,
-                    "toRange": {
-                        "notBefore": null,
-                        "notAfter": null
-                    },
-                    "isRange": true,
-                    "note": null,
-                    "id": null,
-                    "version": null
-                }
-            ],
             "snacControlMetadata": [
                 {
                     "dataType": "SNACControlMetadata",
@@ -820,35 +635,5 @@
         }
     ],
     "id": null,
-    "version": null,
-    "dates": [
-        {
-            "dataType": "SNACDate",
-            "fromDate": "2003-01-01",
-            "fromDateOriginal": "2003",
-            "fromType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "fromBC": false,
-            "fromRange": {
-                "notBefore": null,
-                "notAfter": null
-            },
-            "toDate": null,
-            "toDateOriginal": null,
-            "toType": null,
-            "toBC": null,
-            "toRange": {
-                "notBefore": null,
-                "notAfter": null
-            },
-            "isRange": true,
-            "note": "\n               \n            ",
-            "id": null,
-            "version": null
-        }
-    ]
+    "version": null
 }

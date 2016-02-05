@@ -792,8 +792,12 @@ class Constellation extends AbstractData {
         unset($this->biogHists);
         $this->biogHists = array();
         if (isset($data["biogHists"]))
+        {
             foreach ($data["biogHists"] as $i => $entry)
+            {
                 $this->biogHists[$i] = new BiogHist($entry);
+            }
+        }
 
         unset($this->subjects);
         $this->subjects = array();
