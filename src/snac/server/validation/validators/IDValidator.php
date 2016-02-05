@@ -87,6 +87,217 @@ class IDValidator extends \snac\server\validation\validators\Validator {
     }
     
     /**
+     * Check whether IDs persist down SCM
+     * 
+     * @param \snac\data\AbstractData $object
+     * @return boolean
+     */
+    private function checkSCM($object) {
+        $success = true;
+        foreach ($object->getSNACControlMetadata() as $scm) {
+            if ($scm != null && $scm->getID() != null) {
+                $this->addError("Object with no ID has SNACControlMetadata with ID", $object);
+                $success = false;
+            } else if ($scm != null && $scm->getID() == null && 
+                    (($scm->getCitation() != null && $scm->getCitation()->getID() != null) ||
+                     ($scm->getLanguage() != null && $scm->getLanguage()->getID() != null))) {
+                $this->addError("Object with no ID has SNACControlMetadata with no ID with subelements that have ID", $object);
+                $success = false;
+            }
+        }
+        return $success;
+    }
+    
+    
+    /**
+     * Check an object for language with ID
+     * 
+     * Checks that the object has no language object with an ID
+     * 
+     * @param \snac\data\AbstractData $object object to check
+     * @return boolean true if no langauge with ID, false otherwise
+     */
+    private function checkLanguage($object) {
+        if ($object->getLanguage() != null) {
+            if ($object->getLanguage()->getID() != null) {
+                $this->addError("Object with no ID has Language with ID", $object);
+                return false;
+            } else {
+                return $this->checkSCM($object->getLanguage());
+            }
+        }
+        return true;
+    }
+    
+
+    /**
+     * Check an object for dates with ID
+     * 
+     * Checks that the object has no date objects with IDs
+     * 
+     * @param \snac\data\AbstractData $object object to check
+     * @return boolean true if no dates with ID, false otherwise
+     */
+    private function checkDates($object) {
+        $success = true;
+        if ($object->getDateList() != null) {
+            foreach ($object->getDateList() as $date) {
+                if ($date != null) {
+                    if ($date->getID() != null) {
+                        $this->addError("Object with no ID has a Date with ID", $object);
+                        $success = false;   
+                    } else {
+                        $success = $success && $this->checkSCM($date);
+                    }
+                }
+            }
+        }
+        return $success;
+    }
+    
+    /**
+     * Validate all SCMetadata
+     * 
+     * Loops over each SCM of an object, and validates it individually
+     * 
+     * @param \snac\data\AbstractData $object Object to be validated
+     * @param \snac\data\AbstractData $realObject The real object to validate against
+     * @return boolean true if all SCM validate, false otherwise
+     */
+    private function validateAllSCM($object, $realObject) {
+        $success = true;
+        foreach ($object->getSNACControlMetadata() as $scm) {
+            $success = $success && $this->validateSNACControlMetadata($scm, $realObject);
+        }
+        return $success;
+    }
+    
+    /**
+     * Validate all Dates
+     * 
+     * Loops over each Date of an object, and validates it individually
+     * 
+     * @param \snac\data\AbstractData $object Object to be validated
+     * @param \snac\data\AbstractData $realObject The real object to validate against
+     * @return boolean true if all dates validate, false otherwise
+     */
+    private function validateAllDates($object, $realObject) {
+        $success = true;
+        foreach ($object->getDateList() as $date) {
+            $success = $success && $this->validateDate($date, $realObject);
+        }
+        return $success;
+    }
+    
+
+    /**
+     * Validate a Generic AbstractData Object
+     * 
+     * This method will validate any object that just has SCM and no other sub-objects.  This method takes
+     * the object to be validated, an array of objects that may contain this object (this should be the list
+     * from a validated parent object), and the type of the object (to check for no duplicates).  
+     * 
+     * This generic function also makes use of the fact that all AbstractData objects have the getDateList method that
+     * always returns an array, even if empty.  This therefore automatically checks dates on any object that has them.
+     * 
+     * @param \snac\data\AbstractData $object The object to validate
+     * @param \snac\data\AbstractData[] $realObjects A list (from a valid constellation part) possibly containing the object
+     * @param string $type Sting shorthand type of this object
+     * @return boolean true if valid, false otherwise.
+     */
+    private function validateGeneric($object, $realObjects, $type, $preID = "") {
+        // If the object is null, stop and succeed (leaf node)
+        if ($object == null) {
+            return true;
+        }
+    
+        // Set success to be true by default
+        $success = true;
+    
+        // If this object has no ID, but a subobject does, then success is false
+        if ($object->getID() == null) {
+            $success = $success && $this->checkDates($object);
+            $success = $success && $this->checkSCM($object);
+            return $success;
+        }
+    
+        // If this object has already been seen, then success is false
+        if (in_array($preID . $object->getID(), $this->seen[$type])) {
+            $this->addError("ID used multiple times", $object);
+            $success = false;
+        }
+    
+        // Validate this object's ID against the real object from the database, and
+        // validate all it's subelements against their counterparts from the database
+        foreach ($realObjects as $i => $current) {
+            if ($object->getID() == $current->getID()) {
+                array_push($this->seen[$type], $preID . $object->getID());
+                // Validate the subelements
+                $success = $success && $this->validateAllDates($object, $current);
+                $success = $success && $this->validateAllSCM($object, $current);
+            }
+        }
+    
+        // Return success
+        return $success;
+    }
+
+    /**
+     * Validate a Generic AbstractData Object with Language
+     *
+     * This method will validate any object that just has SCM and no other sub-objects.  This method takes
+     * the object to be validated, an array of objects that may contain this object (this should be the list
+     * from a validated parent object), and the type of the object (to check for no duplicates).  This method
+     * also tests the Language of the object (so, only use this with objects that have Languages)
+     * 
+     * This generic function also makes use of the fact that all AbstractData objects have the getDateList method that
+     * always returns an array, even if empty.  This therefore automatically checks dates on any object that has them.
+     *
+     * @param \snac\data\AbstractData $object The object to validate
+     * @param \snac\data\AbstractData[] $realObjects A list (from a valid constellation part) possibly containing the object
+     * @param string $type Sting shorthand type of this object
+     * @return boolean true if valid, false otherwise.
+     */
+    private function validateGenericWithLanguage($object, $realObjects, $type, $preID = "") {
+        // If the object is null, stop and succeed (leaf node)
+        if ($object == null) {
+            return true;
+        }
+    
+        // Set success to be true by default
+        $success = true;
+    
+        // If this object has no ID, but a subobject does, then success is false
+        if ($object->getID() == null) {
+            $success = $success && $this->checkLanguage($object);
+            $success = $success && $this->checkDates($object);
+            $success = $success && $this->checkSCM($object);
+            return $success;
+        }
+    
+        // If this object has already been seen, then success is false
+        if (in_array($preID . $object->getID(), $this->seen[$type])) {
+            $this->addError("ID used multiple times", $object);
+            $success = false;
+        }
+    
+        // Validate this object's ID against the real object from the database, and
+        // validate all it's subelements against their counterparts from the database
+        foreach ($realObjects as $i => $current) {
+            if ($object->getID() == $current->getID()) {
+                array_push($this->seen[$type], $preID . $object->getID());
+                // Validate the subelements
+                $success = $success && $this->validateLanguage($object->getLanguage(), $current);
+                $success = $success && $this->validateAllDates($object, $current);
+                $success = $success && $this->validateAllSCM($object, $current);
+            }
+        }
+    
+        // Return success
+        return $success;
+    }
+    
+    /**
      * Validate a biog hist
      * 
      * @param \snac\data\BiogHist $biogHist BiogHist to validate
@@ -94,32 +305,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateBiogHist($biogHist, $context=null) {
-        if ($biogHist == null) 
-            return true;
-        
-        if ($biogHist->getID() == null) {
-            if ($biogHist->getLanguage() == null)
-                return true;
-            else {
-                $this->addError("BiogHist with no ID has Language with ID", $biogHist);
-                return false;
-            }
-        }
-        
-        if (in_array($biogHist->getID(), $this->seen["biogHist"])) {
-            $this->addError("ID used multiple times", $biogHist);
-            return false;
-        }
-        
-        foreach ($this->constellation->getBiogHistList() as $i => $current) {
-            if ($biogHist->getID() == $current->getID()) {
-                array_push($this->seen["biogHist"], $biogHist->getID());
-                // Validate the subelement
-                return $this->validateLanguage($biogHist->getLanguage(), $current);
-            }
-        }
-        
-        return false;
+        return $this->validateGenericWithLanguage($biogHist, $this->constellation->getBiogHistList(), "biogHist");
     }
     
     /**
@@ -130,22 +316,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateConventionDeclaration($cd, $context=null) {
-        if ($cd == null || $cd->getID() == null)
-            return true;
-        
-        if (in_array($cd->getID(), $this->seen["cd"])) {
-            $this->addError("ID used multiple times", $cd);
-            return false;
-        }
-        
-        foreach ($this->constellation->getConventionDeclarations() as $i => $current) {
-            if ($cd->getID() == $current->getID()) {
-                array_push($this->seen["cd"], $cd->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($cd, $this->constellation->getConventionDeclarations(), "cd");
     }
     
     /**
@@ -156,34 +327,18 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateDate($date, $context=null) {
-        if ($date == null || $date->getID() == null)
-            return true;
+
+        $preID = "";
         
-        $preID = "";    
-        if ($context != null)
-            $preID = $context->getID() . ":";
-    
-        if (in_array($date->getID(), $preID . $this->seen["date"])) {
-            $this->addError("ID used multiple times", $date);
-            return false;
-        }
+        // Get languages from the constellation
+        $list = $this->constellation->getDateList();
+        // If there is a context, use that (in list form) instead, and add pre-id
         if ($context != null) {
-            foreach ($context->getDateList() as $i => $current) {
-                if ($date->getID() == $current->getID()) {
-                    array_push($preID . $this->seen["date"], $date->getID());
-                    return true;
-                }
-            }
-        } else {
-            foreach ($this->constellation->getDateList() as $i => $current) {
-                if ($date->getID() == $current->getID()) {
-                    array_push($this->seen["date"], $date->getID());
-                    return true;
-                }
-            }
+            $list = $context->getDateList();
+            $preID = $context->getID() . ":";
         }
-    
-        return false;
+        
+        return $this->validateGeneric($date, $list, "date", $preID);
     }
     
     /**
@@ -194,22 +349,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateFunction($fn, $context=null) {
-        if ($fn == null || $fn->getID() == null)
-            return true;
-        
-        if (in_array($fn->getID(), $this->seen["fn"])) {
-            $this->addError("ID used multiple times", $fn);
-            return false;
-        }
-        
-        foreach ($this->constellation->getFunctions() as $i => $current) {
-            if ($fn->getID() == $current->getID()) {
-                array_push($this->seen["fn"], $fn->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($fn, $this->constellation->getFunctions(), "fn");
     }
     
     /**
@@ -220,22 +360,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateGender($gender, $context=null) {
-        if ($gender == null || $gender->getID() == null)
-            return true;
-        
-        if (in_array($gender->getID(), $this->seen["gender"])) {
-            $this->addError("ID used multiple times", $gender);
-            return false;
-        }
-        
-        foreach ($this->constellation->getGenders() as $i => $current) {
-            if ($gender->getID() == $current->getID()) {
-                array_push($this->seen["gender"], $gender->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($gender, $this->constellation->getGenders(), "gender");
     }
     
     /**
@@ -246,22 +371,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateGeneralContext($gc, $context=null) {
-        if ($gc == null || $gc->getID() == null)
-            return true;
-        
-        if (in_array($gc->getID(), $this->seen["gc"])) {
-            $this->addError("ID used multiple times", $gc);
-            return false;
-        }
-        
-        foreach ($this->constellation->getGeneralContexts() as $i => $current) {
-            if ($gc->getID() == $current->getID()) {
-                array_push($this->seen["gc"], $gc->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($gc, $this->constellation->getGeneralContexts(), "gc");
     }
     
     /**
@@ -272,32 +382,17 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateLanguage($lang, $context=null) {
-        if ($lang == null || $lang->getID() == null)
-            return true;
-        
-        $preID = "";    
-        if ($context != null)
-            $preID = $context->getID() . ":";
-    
-        if (in_array($lang->getID(), $preID . $this->seen["lang"])) {
-            $this->addError("ID used multiple times", $lang);
-            return false;
-        }
+        $preID = "";
+
+        // Get languages from the constellation
+        $list = $this->constellation->getLanguagesUsed();
+        // If there is a context, use that (in list form) instead, and add pre-id
         if ($context != null) {
-            if ($context->getLanguage()->getID() == $current->getID()) {
-                    array_push($preID . $this->seen["lang"], $lang->getID());
-                    return true;
-            }
-        } else {
-            foreach ($this->constellation->getLanguagesUsed() as $i => $current) {
-                if ($lang->getID() == $current->getID()) {
-                    array_push($this->seen["lang"], $lang->getID());
-                    return true;
-                }
-            }
+            $list = array($context->getLanguage());
+            $preID = $context->getID() . ":";
         }
-    
-        return false;
+        
+        return $this->validateGeneric($lang, $list, "lang", $preID);
     }
     
     /**
@@ -308,23 +403,10 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateLegalStatus($legalStatus, $context=null) {
-        if ($legalStatus == null || $legalStatus->getID() == null)
-            return true;
-        
-        if (in_array($legalStatus->getID(), $this->seen["legalStatus"])) {
-            $this->addError("ID used multiple times", $legalStatus);
-            return false;
-        }
-        
-        foreach ($this->constellation->getLegalStatuses() as $i => $current) {
-            if ($legalStatus->getID() == $current->getID()) {
-                array_push($this->seen["legalStatus"], $legalStatus->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($legalStatus, $this->constellation->getLegalStatuses(), "legalStatus");
     }
+    
+
     
     /**
      * Validate a Maintenance Event
@@ -334,22 +416,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateMaintenanceEvent($event, $context=null) {
-        if ($event == null || $event->getID() == null)
-            return true;
-        
-        if (in_array($event->getID(), $this->seen["event"])) {
-            $this->addError("ID used multiple times", $event);
-            return false;
-        }
-        
-        foreach ($this->constellation->getMaintenanceEvents() as $i => $current) {
-            if ($event->getID() == $current->getID()) {
-                array_push($this->seen["event"], $event->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($event, $this->constellation->getMaintenanceEvents(), "event");
     }
     
     /**
@@ -360,22 +427,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateMandate($mandate, $context=null) {
-        if ($mandate == null || $mandate->getID() == null)
-            return true;
-        
-        if (in_array($mandate->getID(), $this->seen["mandate"])) {
-            $this->addError("ID used multiple times", $mandate);
-            return false;
-        }
-        
-        foreach ($this->constellation->getMandates() as $i => $current) {
-            if ($mandate->getID() == $current->getID()) {
-                array_push($this->seen["mandate"], $mandate->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($mandate, $this->constellation->getMandates(), "mandate");
     }
     
     /**
@@ -386,37 +438,55 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateNameEntry($nameEntry, $context=null) {
-        if ($nameEntry == null)
+        // If the nameEntry is null, stop and succeed (leaf node)
+        if ($nameEntry == null) {
             return true;
-
-        if ($nameEntry->getID() == null) {
-            if (empty($nameEntry->getDateList()) && $nameEntry->getLanguage() == null)
-                return true;
-            else {
-                $this->addError("NameEntry with no ID has elements with IDs", $nameEntry);
-                return false;
-            }
         }
         
+        // Set success to be true by default
+        $success = true;
+        
+        // If this nameEntry has no ID, but a subobject does, then success is false
+        if ($nameEntry->getID() == null) {
+            $success = $success && $this->checkLanguage($nameEntry);
+            $success = $success && $this->checkDates($nameEntry);
+            $success = $success && $this->checkSCM($nameEntry);
+            foreach($nameEntry->getContributors() as $contributor) {
+                if ($contributor != null) {
+                    if ($contributor->getID() != null) {
+                        $this->addError("NameEntry without ID has Contributor with ID", $nameEntry);
+                        $success = false;
+                    } else {
+                        $success = $success && $this->checkSCM($contributor);
+                    }
+                }
+            }
+            return $success;
+        }
+        
+        // If this nameEntry has already been seen, then success is false
         if (in_array($nameEntry->getID(), $this->seen["nameEntry"])) {
             $this->addError("ID used multiple times", $nameEntry);
-            return false;
+            $success = false;
         }
-    
+        
+        // Validate this nameEntry's ID against the real nameEntry from the database, and
+        // validate all it's subelements against their counterparts from the database
         foreach ($this->constellation->getNameEntries() as $i => $current) {
             if ($nameEntry->getID() == $current->getID()) {
                 array_push($this->seen["nameEntry"], $nameEntry->getID());
-                $success = $this->validateLanguage($nameEntry->getLanguage(), $current);
-                foreach ($nameEntry->getDateList() as $date) {
-                    $success = $success && $this->validateDate($date, $current);
-                }
+                // Validate the subelements
+                $success = $success && $this->validateLanguage($nameEntry->getLanguage(), $current);
+                $success = $success && $this->validateAllDates($nameEntry, $current);
                 foreach ($nameEntry->getContributors() as $contributor) {
                     $success = $success && $this->validateContributor($contributor, $current);
                 }
-                return $success;
+                $success = $success && $this->validateAllSCM($nameEntry, $current);
             }
         }
-        return false;
+        
+        // Return success
+        return $success;
     }
     
     /**
@@ -427,20 +497,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateNationality($nationality, $context=null) {
-        if ($nationality == null || $nationality->getID() == null)
-            return true;
-        
-        if (in_array($nationality->getID(), $this->seen["nationality"])) {
-            $this->addError("ID used multiple times", $nationality);
-            return false;
-        }
-        
-        if ($this->constellation->getNationality()->getID() == $current->getID()) {
-            array_push($this->seen["nationality"], $nationality->getID());
-            return true;
-        }
-            
-        return false;
+        return $this->validateGeneric($nationality, $this->constellation->getNationalities(), "nationality");
     }
     
     /**
@@ -451,22 +508,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateOccupation($occupation, $context=null) {
-        if ($occupation == null || $occupation->getID() == null)
-            return true;
-        
-        if (in_array($occupation->getID(), $this->seen["occupation"])) {
-            $this->addError("ID used multiple times", $occupation);
-            return false;
-        }
-        
-        foreach ($this->constellation->getOccupations() as $i => $current) {
-            if ($occupation->getID() == $current->getID()) {
-                array_push($this->seen["occupation"], $occupation->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($occupation, $this->constellation->getOccupations(), "occupation");
     }
     
     /**
@@ -477,22 +519,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateOtherRecordID($other, $context=null) {
-        if ($other == null || $other->getID() == null)
-            return true;
-        
-        if (in_array($other->getID(), $this->seen["other"])) {
-            $this->addError("ID used multiple times", $other);
-            return false;
-        }
-        
-        foreach ($this->constellation->getOtherRecordIDs() as $i => $current) {
-            if ($other->getID() == $current->getID()) {
-                array_push($this->seen["other"], $other->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($other, $this->constellation->getOtherRecordIDs(), "otherID");
     }
     
     /**
@@ -503,35 +530,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validatePlace($place, $context=null) {
-        if ($place == null)
-            return true;
-        
-        if ($place->getID() == null) {
-            if (empty($place->getDateList()))
-                return true;
-            else {
-                $this->addError("Place with no ID has elements with IDs", $place);
-                return false;
-            }
-        }
-        
-        if (in_array($place->getID(), $this->seen["place"])) {
-            $this->addError("ID used multiple times", $place);
-            return false;
-        }
-    
-        foreach ($this->constellation->getPlaces() as $i => $current) {
-            if ($place->getID() == $current->getID()) {
-                array_push($this->seen["place"], $place->getID());
-                $success = true;
-                foreach ($place->getDateList() as $date) {
-                    $success = $success && $this->validateDate($date, $current);
-                }
-                return $success;
-            }
-        }
-    
-        return false;
+        return $this->validateGeneric($place, $this->constellation->getPlaces(), "place");
     }
     
     /**
@@ -542,37 +541,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateRelation($relation, $context=null) {
-        if ($relation == null)
-            return true;
-        
-        if ($relation->getID() == null) {
-            if (empty($relation->getDateList()))
-                return true;
-            else {
-                $this->addError("Constellation Relation with no ID has dates with IDs", $relation);
-                return false;
-            }
-        }
-        
-        if (in_array($relation->getID(), $this->seen["constellation_relation"])) {
-            $this->addError("ID used multiple times", $relation);
-            return false;
-        }
-    
-        foreach ($this->constellation->getRelations() as $i => $current) {
-            if ($relation->getID() == $current->getID()) {
-                array_push($this->seen["constellation_relation"], $relation->getID());
-                
-                $success = true;
-                foreach ($relation->getDateList() as $date) {
-                    $success = $success &&
-                    $this->validateDate($date, $current);
-                }
-                return $success;
-            }
-        }
-    
-        return false;
+        return $this->validateGeneric($relation, $this->constellation->getRelations(), "constellationRelation");
     }
     
     /**
@@ -583,22 +552,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateResourceRelation($relation, $context=null) {
-        if ($relation == null || $relation->getID() == null)
-            return true;
-        
-        if (in_array($relation->getID(), $this->seen["resource_relation"])) {
-            $this->addError("ID used multiple times", $relation);
-            return false;
-        }
-        
-        foreach ($this->constellation->getResourceRelations() as $i => $current) {
-            if ($relation->getID() == $current->getID()) {
-                array_push($this->seen["resource_relation"], $relation->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($relation, $this->constellation->getResourceRelations(), "resourceRelation");
     }
     
     /**
@@ -653,42 +607,19 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateSource($source, $context=null) {
-        if ($source == null)
-            return true;
-        
-        if ($source->getID() == null) {
-            if ($source->getLanguage() == null)
-                return true;
-            else {
-                $this->addError("Source with no ID has language with ID", $source);
-                return false;
-            }
-        }
-        
+
         $preID = "";
-        if ($context != null)
-            $preID = $context->getID() . ":";
         
-        if (in_array($source->getID(), $preID . $this->seen["source"])) {
-            $this->addError("ID used multiple times", $source);
-            return false;
-        }
-        
+        // Get sources from the constellation
+        $list = $this->constellation->getSources();
+        // If there is a context, use that (in list form) instead, and add pre-id
         if ($context != null) {
-            if ($source->getID() == $context->getSource()->getID()) {
-                array_push($this->seen["source"], $preID.$source->getID());
-                return $this->validateLanguage($source->getLanguage(), $context->getSource());
-            }
-        } else {
-            foreach ($this->constellation->getSources() as $i => $current) {
-                if ($source->getID() == $current->getID()) {
-                    array_push($this->seen["source"], $preID.$source->getID());
-                    return $this->validateLanguage($source->getLanguage(), $current);
-                }
-            }
+            $list = array($context->getSource());
+            $preID = $context->getID() . ":";
         }
-    
-        return false;
+        
+        return $this->validateGenericWithLanguage($source, $list, "source", $preID);
+        
     }
     
     /**
@@ -699,22 +630,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateStructureOrGenealogy($sog, $context=null) {
-        if ($sog == null || $sog->getID() == null)
-            return true;
-        
-        if (in_array($sog->getID(), $this->seen["sog"])) {
-            $this->addError("ID used multiple times", $sog);
-            return false;
-        }
-        
-        foreach ($this->constellation->getStructureOrGenealogies() as $i => $current) {
-            if ($sog->getID() == $current->getID()) {
-                array_push($this->seen["sog"], $sog->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($sog, $this->constellation->getStructureOrGenealogies(), "SoG");
     }
     
     /**
@@ -725,22 +641,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateSubject($subject, $context=null) {
-        if ($subject == null || $subject->getID() == null)
-            return true;
-        
-        if (in_array($subject->getID(), $this->seen["subject"])) {
-            $this->addError("ID used multiple times", $subject);
-            return false;
-        }
-        
-        foreach ($this->constellation->getSubjects() as $i => $current) {
-            if ($subject->getID() == $current->getID()) {
-                array_push($this->seen["subject"], $subject->getID());
-                return true;
-            }
-        }
-        
-        return false;
+        return $this->validateGeneric($subject, $this->constellation->getSubjects(), "subject");
     }
     
 
@@ -752,27 +653,15 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @return boolean true if valid, false otherwise
      */
     public function validateContributor($contributor, $context=null) {
-        if ($contributor == null || $contributor->getID() == null)
-            return true;
-        
-        if (in_array($contributor->getID(), $this->seen["contributor"])) {
-            $this->addError("ID used multiple times", $contributor);
+        // Can not get here without context
+        if ($context == null) {
+            $this->addError("Invalid placement of contributor", $contributor);
             return false;
         }
         
-        // Couldn't get here without context
-        if ($context == null)
-            return false;
-        
-        foreach ($context->getContributors() as $i => $current) {
-            if ($contributor->getID() == $current->getID()) {
-                array_push($this->seen["contributor"], $contributor->getID());
-                return true;
-            }
-        }
-        
-        return false;
-    
+        $preID = $context->getID() . ":";
+
+        return $this->validateGeneric($contributor, $context->getContributors(), "contributor", $preID);
     }
     
     /**
