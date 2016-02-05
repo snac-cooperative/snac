@@ -436,11 +436,6 @@ class SNACDate extends AbstractData {
     public function setFromDate($original, $standardDate, $type) {
         list ($this->fromBC, $this->fromDate) = $this->parseBC($standardDate);
         $this->fromDateOriginal = $original;
-        if (gettype($type) != 'object' || get_class($type) != 'snac\data\Term')
-        {
-            debug_print_backtrace();
-            die(sprintf("Passed something besides a Term in arg type: %s\nNote: add an exception for this.\n", $type));
-        }
         $this->fromType = $type;
     }
     
