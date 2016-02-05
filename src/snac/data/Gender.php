@@ -27,7 +27,7 @@ class Gender extends AbstractTermData {
      * Constructor
      */
     public function __construct($data = null) {
-        $this->validType = "gender";
+        $this->setDataType("Gender");
         $this->setMaxDateCount(0);
         parent::__construct($data);
     }
