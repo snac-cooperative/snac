@@ -104,6 +104,7 @@ abstract class AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
+
         $this->snacControlMetadata = array();
         $this->dateList = array();
         if ($data != null && is_array($data))
@@ -317,9 +318,11 @@ abstract class AbstractData {
             );
 
         $return['dates'] = array();
-        foreach ($this->dateList as $i => $v)
-        {
-            $return["dates"][$i] = $v->toArray($shorten);
+        if (isset($this->dateList) && $this->dateList != null) {
+            foreach ($this->dateList as $i => $v)
+            {
+                $return["dates"][$i] = $v->toArray($shorten);
+            }
         }
         
         if (isset($this->snacControlMetadata) && !empty($this->snacControlMetadata)) {
@@ -371,14 +374,16 @@ abstract class AbstractData {
         $this->snacControlMetadata = array();
         if (isset($data["snacControlMetadata"])) {
             foreach ($data["snacControlMetadata"] as $i => $entry)
-                $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
+                if ($entry != null)
+                    $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
         }
 
         unset($this->dateList);
         $this->dateList = array();
         if (isset($data["dates"])) {
             foreach ($data["dates"] as $i => $entry)
-                $this->dateList[$i] = new SNACDate($entry);
+                if ($entry != null)
+                    $this->dateList[$i] = new SNACDate($entry);
         }
         // Note: inheriting classes should set the maxDateCount appropriately
         // based on the definition of that class.

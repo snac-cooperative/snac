@@ -49,7 +49,7 @@ class Language extends AbstractData {
     /**
      * Constructor
      */
-    public function __construct($data) {
+    public function __construct($data = null) {
         $this->setMaxDateCount(0);
         parent::__construct($data);
     }

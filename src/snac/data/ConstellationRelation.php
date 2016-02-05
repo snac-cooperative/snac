@@ -134,7 +134,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Constructor
      */
-    public function __construct($data) {
+    public function __construct($data = null) {
         $this->setMaxDateCount(1);
         parent::__construct($data);
     }

@@ -68,7 +68,7 @@ class Constellation extends AbstractData {
      * 
      * * eac-cpf/control/maintenanceStatus
      * 
-     * @var string Current maintenance status
+     * @var \snac\data\Term Current maintenance status
      */
     private $maintenanceStatus = null;
 
@@ -363,7 +363,7 @@ class Constellation extends AbstractData {
     /**
      * Get the maintenance Status
      * 
-     * @return string Current maintenance status
+     * @return \snac\data\Term Current maintenance status
      *
      */
     public function getMaintenanceStatus()
@@ -679,7 +679,7 @@ class Constellation extends AbstractData {
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
             "otherRecordIDs" => array(), 
-            "maintenanceStatus" => $this->maintenanceStatus,
+            "maintenanceStatus" => $this->maintenanceStatus == null ? null : $this->maintenanceStatus->toArray($shorten),
             "maintenanceAgency" => $this->maintenanceAgency,
             "maintenanceEvents" => array(),
             "sources" => array(),
@@ -808,8 +808,8 @@ class Constellation extends AbstractData {
                     $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
 
         unset($this->maintenanceStatus);
-        if (isset($data["maintenanceStatus"]))
-            $this->maintenanceStatus = $data["maintenanceStatus"];
+        if (isset($data["maintenanceStatus"]) && $data["maintenanceStatus"] != null)
+            $this->maintenanceStatus = new \snac\data\Term($data["maintenanceStatus"]);
         else
             $this->maintenanceStatus = null;
 
@@ -990,7 +990,7 @@ class Constellation extends AbstractData {
     /**
      * Set maintenance status
      *
-     * @param string $status status
+     * @param \snac\data\Term $status status
      */
     public function setMaintenanceStatus($status) {
 

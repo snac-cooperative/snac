@@ -37,6 +37,15 @@ class SameAs extends AbstractData {
      * @var \snac\data\Term Type of this sameAs or otherRecordID
      */
     private $type;
+    
+
+    /**
+     * Constructor
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+    }
 
     /**
      * Get the text of this sameAs or otherRecordID
