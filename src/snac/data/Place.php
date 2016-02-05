@@ -381,12 +381,12 @@ class Place extends AbstractData {
         else
             $this->type = null;
 
-        if (isset($data["role"]) && $data["type"] != null)
+        if (isset($data["role"]) && $data["role"] != null)
             $this->role = new \snac\data\Term($data["role"]);
         else
             $this->role = null;
 
-        if (isset($data["geoplace"]) && $data["type"] != null)
+        if (isset($data["geoplace"]) && $data["geoplace"] != null)
             $this->geoTerm = new \snac\data\GeoTerm($data["geoplace"]);
         else
             $this->geoTerm = null;
