@@ -38,6 +38,7 @@ drop table if exists appuser;
 drop table if exists source;
 drop table if exists split_merge_history;
 drop table if exists subject;
+drop table if exists legal_status;
 drop table if exists appuser_role_link;
 drop table if exists version_history;
 drop table if exists language;
@@ -547,6 +548,17 @@ create table subject (
     );
 
 create unique index subject_idx1 on subject(id,main_id,version);
+
+create table legal_status (
+    id         int default nextval('id_seq'),
+    version    int not null,
+    main_id    int not null,
+    is_deleted boolean default false,
+    term_id int, -- (fk to vocabulary.id)
+    primary key(id, version)
+    );
+
+create unique index legal_status_idx1 on legal_status(id,main_id,version);
 
 -- Jan 28 2016. This is newer than nationality, subject. I considered naming term_id vocab_id because "term"
 -- is overused. However, term_id is conventional and descriptive.

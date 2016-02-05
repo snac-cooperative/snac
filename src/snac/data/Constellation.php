@@ -611,7 +611,7 @@ class Constellation extends AbstractData {
      */
     public function getMandate()
     {
-        return $this->mandate;
+        return $this->mandates;
     }
 
     /**

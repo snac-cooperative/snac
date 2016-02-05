@@ -453,13 +453,15 @@ class SQL
     }
 
     /** 
+     * Select from place_link
+     *
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
      * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
      *
      * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
      * place applies. We do not know or care what the other record is.
      * 
-     * @param integer $tid A foreign key to record in another table.
+     * @param integer $tid A foreign key to record in the other table.
      *
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
@@ -472,13 +474,12 @@ class SQL
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.geo_place_id, fk_table, aa.fk_id,
-                            aa.from_type, aa.to_type
-                            from place as aa,
-                            (select fk_id,max(version) as version from place where fk_id=$1 and version<=$2 group by fk_id) as bb
+                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, aa.geo_place_id, fk_table, aa.fk_id
+                            from place_link as aa,
+                            (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($did, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -551,7 +552,7 @@ class SQL
      */
     public function selectMeta($tid, $version)
     {
-        $qq = 'select_place';
+        $qq = 'select_meta';
         $this->sdb->prepare($qq, 
                             'select 
                             aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
@@ -605,7 +606,7 @@ class SQL
         {
             $id = $this->selectID();
         }
-        $qq = 'select_place';
+        $qq = 'insert_meta';
         $this->sdb->prepare($qq, 
                             'insert into scm 
                             (version, main_id, id, sub_citation, source_data, 
@@ -1109,7 +1110,7 @@ class SQL
         return $this->insertTextCore($vhInfo, $id, $text, 'convention_declaration');
     }
 
-        /**
+    /**
      * Insert into table mandate. Data is currently only a string from the Constellation. If
      * $id is null, get a new record id. Always return $id.
      *
@@ -1525,15 +1526,19 @@ class SQL
 
     
     /**
+     * Select subjects.
      *
-     * Select subjects. DBUtils has code to turn the return values into subjects in a Constellation object.
+     * DBUtils has code to turn the return values into subjects in a Constellation object.
      *
      * Solve the multi-version problem by joining to a subquery.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * subject_id. There may be multiple subjects returned.
+     * term_id.
+     *
+     * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
+     * list of list.
      * 
      */
     public function selectSubject($vhInfo)
@@ -1541,7 +1546,7 @@ class SQL
         $qq = 'ssubj';
         $this->sdb->prepare($qq, 
                             'select
-                            aa.id, aa.version, aa.main_id, aa.subject_id
+                            aa.id, aa.version, aa.main_id, aa.term_id
                             from subject aa,
                             (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -1562,6 +1567,80 @@ class SQL
         return $all;
     }
 
+    /**
+     * Insert legalStatus.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $termID Vocabulary foreign key for the term.
+     *
+     * @return no return value.
+     * 
+     */
+    public function insertLegalStatus($vhInfo, $id, $termID)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_subject';
+        $this->sdb->prepare($qq,
+                            'insert into legal_status
+                            (version, main_id, id, term_id)
+                            values
+                            ($1, $2, $3, $4)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $termID));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /**
+     * Select legalStatus.
+     *
+     * Like subject, these are directly linked to Constellation only, and not to any other tables. Therefore
+     * we only need version and main_id.
+     *
+     * DBUtils has code to turn the returned values into legalStatus in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * term_id. There may be multiple records returned.
+     * 
+     */
+    public function selectLegalStatus($vhInfo)
+    {
+        $qq = 'ssubj';
+        $this->sdb->prepare($qq, 
+                            'select
+                            aa.id, aa.version, aa.main_id, aa.term_id
+                            from legal_status aa,
+                            (select id, max(version) as version from legal_status where version<=$1 and main_id=$2 group by id) as bb
+                            where not aa.is_deleted and
+                            aa.id=bb.id
+                            and aa.version=bb.version');
+        /* 
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
 
     /**
      *
