@@ -18,8 +18,6 @@ namespace snac\data;
 /**
  * Maintenance Event Class
  *
- *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
- *
  * Data storage class for maintenance events on an identity constellation.
  *
  * @author Robbie Hott
@@ -28,15 +26,19 @@ namespace snac\data;
 class MaintenanceEvent extends AbstractData {
 
     /**
+     * Event type 
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/eventType 
      * 
-     * @var string Event type
+     * @var \snac\data\Term Event type
      */
     private $eventType;
 
     /**
+     * Human-Readable Time
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/eventDateTime
@@ -46,6 +48,8 @@ class MaintenanceEvent extends AbstractData {
     private $eventDateTime;
 
     /**
+     * Standard Date time
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/eventDateTime/@standardDateTime
@@ -56,15 +60,19 @@ class MaintenanceEvent extends AbstractData {
     private $standardDateTime;
     
     /**
+     * Agent Type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/agentType
      * 
-     * @var string Type of the agent performing the event
+     * @var \snac\data\Term Type of the agent performing the event
      */
     private $agentType;
 
     /**
+     * Agent
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/agent
@@ -74,6 +82,8 @@ class MaintenanceEvent extends AbstractData {
     private $agent;
 
     /**
+     * Description
+     * 
      * From EAC-CPF tag(s):
      * 
      * * maintenanceEvent/eventDescription
@@ -81,6 +91,14 @@ class MaintenanceEvent extends AbstractData {
      * @var string Description of the event
      */
     private $eventDescription;
+    
+    /**
+     * Constructor
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+    }
     
     /**
      * Returns this object's data as an associative array
@@ -91,15 +109,15 @@ class MaintenanceEvent extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "MaintenanceEvent",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
-            "eventType" => $this->eventType,
+            "eventType" => $this->eventType == null ? null : $this->eventType->toArray($shorten),
             "eventDateTime" => $this->eventDateTime,
             "standardDateTime" => $this->standardDateTime,
-            "agentType" => $this->agentType,
+            "agentType" => $this->agentType == null ? null : $this->agentType->toArray($shorten),
             "agent" => $this->agent,
             "eventDescription" => $this->eventDescription
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -123,21 +141,11 @@ class MaintenanceEvent extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "MaintenanceEvent")
             return false;
-        
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
 
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
-        if (isset($data["eventType"]))
-            $this->eventType = $data["eventType"];
+        if (isset($data["eventType"]) && $data["eventType"] != null)
+            $this->eventType = new \snac\data\Term($data["eventType"]);
         else
             $this->eventType = null;
 
@@ -156,8 +164,8 @@ class MaintenanceEvent extends AbstractData {
         else
             $this->agent = null;
 
-        if (isset($data["agentType"]))
-            $this->agentType = $data["agentType"];
+        if (isset($data["agentType"]) && $data["agentType"] != null)
+            $this->agentType = new \snac\data\Term($data["agentType"]);
         else
             $this->agentType = null;
 
@@ -172,7 +180,7 @@ class MaintenanceEvent extends AbstractData {
     /**
      * Set the event type.
      * 
-     * @param string $eventType Event type
+     * @param \snac\data\Term $eventType Event type
      */
     public function setEventType($eventType) {
 
@@ -202,7 +210,7 @@ class MaintenanceEvent extends AbstractData {
     /**
      * Set the agent type.
      * 
-     * @param string $agentType Agent type
+     * @param \snac\data\Term $agentType Agent type
      */
     public function setAgentType($agentType) {
 

@@ -1,54 +1,444 @@
 {
     "dataType": "Constellation",
-    "id": null,
-    "version": null,
-    "ark": null,
-    "entityType": null,
-    "otherRecordIDs": [],
-    "maintenanceStatus": null,
-    "maintenanceAgency": null,
-    "maintenanceEvents": [],
-    "sources": [],
-    "legalStatuses": [],
-    "conventionDeclaration": null,
-    "constellationLanguage": null,
-    "constellationLanguageCode": null,
-    "constellationScript": null,
-    "constellationScriptCode": null,
-    "language": null,
-    "languageCode": null,
-    "script": null,
-    "scriptCode": null,
+    "ark": "http:\/\/n2t.net\/ark:\/99166\/w6w9576g",
+    "entityType": {
+        "id": "12",
+        "term": "person",
+        "uri": null,
+        "description": null
+    },
     "nameEntries": [
         {
             "dataType": "NameEntry",
-            "id": null,
-            "version": null,
             "original": "Jefferson, Thomas, 1743-1826.",
             "preferenceScore": "99",
             "contributors": [
                 {
-                    "type": "authorizedForm",
-                    "contributor": "VIAF"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "VIAF",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "howard",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uct",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "aps",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "colu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "inu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uchic",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nwda",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "vah",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "taro",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "LC",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "rutu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "pu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "ncsu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nyu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "NLA",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "unc",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "WorldCat",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nara",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "crnlu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uut",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "yale",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "cjh",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nypl",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "oac",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "lc",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "umi",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "LAC",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "harvard",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "pacscl",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "language": null,
-            "scriptCode": null,
-            "useDates": null
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
         }
-    ],
-    "occupations": [],
-    "biogHists": [],
-    "existDates": [],
-    "existDatesNote": null,
-    "relations": [],
-    "resourceRelations": [],
-    "functions": [],
-    "places": [],
-    "subjects": [],
-    "nationality": null,
-    "gender": null,
-    "generalContext": null,
-    "structureOrGenealogy": null,
-    "mandate": null
+    ]
 }

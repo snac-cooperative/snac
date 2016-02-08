@@ -11,7 +11,17 @@
  * the Regents of the University of California
  */
 
+printf("basename: %s dirname: %s\n", basename(__FILE__), dirname(__FILE__));
+
+// include("src/snac/Config.php");
+
+
+// Path is relative to cwd when you launch the script, not the path of the script (this file).
+
+// The line below only works if you chdir() to the script's directory.
+chdir(dirname(__FILE__));
 include("../src/snac/Config.php");
+
 use \snac\Config as Config;
 
 // Read the configuration file
@@ -70,6 +80,24 @@ $dbHandle = pg_connect("host=$host port=$port dbname=$database user=$user passwo
 if ($dbHandle === false) {
     die("ERR: Unable to connect to database.\n");
 }
+
+echo "Would you like to drop table vocabulary and drop sequence vocabulary_id_seq;?\n  ('yes' or 'no'): ";
+$response = trim(fgets(STDIN));
+if ($response == "yes") {
+    echo "  Dropping table vocabulary and the associated sequence vocabulary_id_seq\n";
+    $res = pg_query($dbHandle, " drop sequence vocabulary_id_seq cascade; drop table vocabulary;");
+
+    if (!$res) {
+        $error = pg_last_error($dbHandle);
+        echo "  ERR: Unable to run script due to the following error:\n";
+        echo $error."\n";
+        die();
+    }
+    echo "  Successfully dropped vocabulary table and sequence.\n\n";
+} else {
+    echo "  Not dropping vocabulary or vocabulary_id_seq.\n\n";
+} 
+
 
 echo "Would you like to load the schema (tables, indicies) into the database?\n  ('yes' or 'no'): ";
 $response = trim(fgets(STDIN));

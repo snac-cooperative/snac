@@ -27,15 +27,19 @@ namespace snac\data;
 class Occupation extends AbstractData {
     
     /**
+     * Occupation Term
+     * 
      * From EAC-CPF tag(s):
      * 
      * * occupation/term
      * 
-     * @var string Occupation controlled vocabulary term
+     * @var \snac\data\Term Occupation controlled vocabulary term
      */
     private $term = null;
 
     /**
+     * Vocabulary Source
+     * 
      * From EAC-CPF tag(s):
      * 
      * occupation/term/@vocabularySource
@@ -60,15 +64,8 @@ class Occupation extends AbstractData {
     private $vocabularySource = null;
 
     /**
-     * From EAC-CPF tag(s):
+     * Descriptive Note
      * 
-     * * occupation/dateRange
-     * 
-     * @var \snac\data\SNACDate Date range for the occupation
-     */
-    private $dates = null;
-
-    /**
      * From EAC-CPF tag(s):
      * 
      * * occupation/descriptiveNote
@@ -78,9 +75,26 @@ class Occupation extends AbstractData {
     private $note = null;
 
     /**
-     * Getter for $this->term
+     * Constructor for the class. See the abstract parent class for common methods setDBInfo() and getDBInfo().
      *
-     * @return string Occupation controlled vocabulary term
+     * A setMaxDateCount(1) means a single date object.
+     *
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object. Normal use is to call the
+     * constructor without an argument, get an empty class and use the setters to fill in the properties.
+     *
+     * @return snac\data\Occupation And occuption object
+     * 
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(1);
+        parent::__construct($data);
+    }
+
+    /**
+     * Get the Occupation Term for this occupation 
+     *
+     * @return \snac\data\Term Occupation controlled vocabulary term
      * 
      */ 
     public function getTerm()
@@ -89,7 +103,7 @@ class Occupation extends AbstractData {
     }
 
     /**
-     * Getter for $this->vocabularySource.
+     * Get the vocabulary source for this occupation
      *
      * @return string Vocabulary source for the occupation
      */ 
@@ -99,25 +113,7 @@ class Occupation extends AbstractData {
     }
 
     /**
-     * Get and return \snac\data\SNACDate Date range for the occupation
-     *
-     * @return SNACDate[] An array of SNAC Date objects.
-     *
-     */ 
-    public function getDates()
-    {
-        if ($this->dates)
-        {
-            return $this->dates;
-        }
-        else
-        {
-            return array();
-        }
-    }
-
-    /**
-     * getter for $this->note
+     * Get the human readable descriptive note attached to this occupation 
      *
      * @return string Note attached to occupation
      *
@@ -137,13 +133,12 @@ class Occupation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Occupation",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
-            "term" => $this->term,
+            "term" => $this->term == null ? null : $this->term->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -168,20 +163,10 @@ class Occupation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "Occupation")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
+        parent::fromArray($data);
 
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
-
-        if (isset($data["term"]))
-            $this->term = $data["term"];
+        if (isset($data["term"]) && $data["term"] != null)
+            $this->term = new Term($data["term"]);
         else
             $this->term = null;
 
@@ -189,11 +174,6 @@ class Occupation extends AbstractData {
             $this->vocabularySource = $data["vocabularySource"];
         else
             $this->vocabularySource = null;
-
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
 
         if (isset($data["note"]))
             $this->note = $data["note"];
@@ -204,34 +184,19 @@ class Occupation extends AbstractData {
     }
     
     /**
-     * Set the occupation controlled vocabulary name
+     * Set the occupation controlled vocabulary term
      * 
-     * @param string $term The occupation term
+     * @param \snac\data\Term $term The occupation term
      */
     public function setTerm($term) {
         $this->term = $term;
     }
     
-    /**
-     * Set the date range. If the supplied arg is false for any reason (and any definition of 'false'), then
-     * set the private var to an empty SNACDate. Try checking get_class().
-     *
-     * 
-     * @param \snac\data\SNACDate $date Date object for the range
-     */
-    public function setDateRange($date) {
-        if (! $date or get_class($date) != 'SNACDate')
-        {
-            $this->dates = new \snac\data\SNACDate();
-        }
-        else
-        {
-            $this->dates = $date;
-        }
-    }
     
     /**
-     * Set the vocabulary source. These values come from a controlled vocabulary, but so far, they are not
+     * Set the vocabulary source
+     * 
+     * These values come from a controlled vocabulary, but so far, they are not
      * well defined. For example: d699msirr1g-3naumnfaswc
      * 
      * @param string $vocab Vocabulary source string
@@ -242,6 +207,7 @@ class Occupation extends AbstractData {
     
     /**
      * Set the descriptive note for this occupation
+     * 
      * @param string $note Descriptive note string
      */
     public function setNote($note) {

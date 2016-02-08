@@ -19,8 +19,6 @@ namespace snac\data;
  * SNACDate class
  * 
  * Storage class for dates.
- *
- *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  * 
  * @author Robbie Hott
  *
@@ -28,6 +26,8 @@ namespace snac\data;
 class SNACDate extends AbstractData {
 
     /**
+     * Begin Date
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/fromDate/@standardDate
@@ -38,6 +38,8 @@ class SNACDate extends AbstractData {
     private $fromDate;
 
     /**
+     * Original begin date string
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/fromDate/
@@ -48,16 +50,20 @@ class SNACDate extends AbstractData {
     private $fromDateOriginal;
 
     /**
+     * Begin type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/fromDate/@localType
      * * date/@localType
      * 
-     * @var[w string Type of the from date
+     * @var \snac\data\Term Type of the from date, a full Term object.
      */
     private $fromType;
 
     /**
+     * Begin date is in BC
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/fromDate/@standardDate (if negative)
@@ -65,9 +71,11 @@ class SNACDate extends AbstractData {
      * 
      * @var boolean If the from date is BC
      */
-    private $fromBC;
+    private $fromBC = false;
     
     /**
+     * Range of fuzziness for begin date
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/fromDate/@notBefore
@@ -80,6 +88,8 @@ class SNACDate extends AbstractData {
     private $fromRange = array ("notBefore" => null, "notAfter" => null);
 
     /**
+     * End date
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/toDate/@standardDate
@@ -89,6 +99,8 @@ class SNACDate extends AbstractData {
     private $toDate;
 
     /**
+     * End date original string
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/toDate/
@@ -98,24 +110,30 @@ class SNACDate extends AbstractData {
     private $toDateOriginal;
 
     /**
+     * End date type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/toDate/@localType
      * 
-     * @var string Type of the to date
+     * @var \snac\data\Term Type of the "to date", a full Term object.
      */
     private $toType;
 
     /**
+     * End date is in BC
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/toDate/@standardDate (if negative)
      *  
      * @var boolean If the to date is BC
      */
-    private $toBC;
+    private $toBC = false;
 
     /**
+     * Fuzzy range on End date
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/toDate/@notBefore
@@ -130,26 +148,24 @@ class SNACDate extends AbstractData {
      * 
      * @var boolean If this SNACDate object contains a range or a single date
      */
-    private $isRange;
+    private $isRange = false;
 
     /**
+     * Descriptive Note
+     * 
      * From EAC-CPF tag(s):
      * 
      * * dateRange/descriptiveNote
      * * date/descriptiveNote
-     * 
-     * (currently not used)
      * 
      * @var string Note about this date
      */
     private $note;
 
     /**
-     * getter for $this->fromDate
+     * Get the machine-parseable from date 
      *
      * @return string Begin date (if range)
-     *
-     *
      */
     function getFromDate()
     {
@@ -157,11 +173,9 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromDateOriginal
+     * Get the originally-entered human from date 
      *
      * @return string Original string given for the from date
-     *
-     *
      */
     function getFromDateOriginal()
     {
@@ -169,11 +183,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromType
+     * Get from date type
+     * 
+     * Get the type of the from date, such as "Birth" 
      *
-     * @return string Original string given for the from date
-     *
-     *
+     * @return \snac\data\Term The type for the "from date", a full Term object.
      */
     function getFromType()
     {
@@ -182,15 +196,11 @@ class SNACDate extends AbstractData {
 
 
     /**
-     * getter for $this->fromBC
-     *
-     * This works as expected. A boolean is returns (in as much as php vars have a type). However, Postgres
-     * expects bools to be 't' or 'f' and pg_execute() doesn't mogrify boolean that way. We transform boolean
-     * ourselves with DatabaseConnector->boolToPg().
+     * Is From date BC?
+     * 
+     * Tells if the from date is a BC date. True if in BC, false otherwise.
      *
      * @return boolean If the from date is BC
-     *
-     *
      */
     function getFromBC()
     {
@@ -198,11 +208,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->fromRange
+     * Get Begin date fuzzy range
+     * 
+     * Get the fuzziness range on the from date, if it exists 
      *
      * @return string[] From date range, array ("notBefore" => null, "notAfter" => null);
-     *
-     *
      */
     function getFromRange()
     {
@@ -210,11 +220,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toDate
+     * Get End date
+     * 
+     * Get the machine-actionable to/end date 
      *
      * @return string End date (if range)
-     *
-     *
      */
     function getToDate()
     {
@@ -222,11 +232,9 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toDateOriginal
+     * Get the human-entered end date 
      *
      * @return string Original string given for the to date
-     *
-     *
      */
     function getToDateOriginal()
     {
@@ -234,11 +242,11 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toType
+     * Get End date type
+     * 
+     * Get the type of the end date, such as "Death" 
      *
-     * @return string Type of the to date
-     *
-     *
+     * @return \snac\data\Term Type of the "to date", a full Term object.
      */
     function getToType()
     {
@@ -246,30 +254,23 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->toBC
+     * Is To date BC?
+     * 
+     * Tells whether the end date is in BC. True if in BC, false otherwise.
      *
      * @return boolean If the to date is BC
-     *
-     *
      */
     function getToBC()
     {
-        if ($this->toBC)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return $this->toBC;
     }
 
     /**
-     * getter for $this->toRange
+     * Get End date fuzzy range
+     * 
+     * Get the fuzziness range for the end date, if it exists
      *
      * @return string[] To date range, array ("notBefore" => null, "notAfter" => null);
-     *
-     *
      */
     function getToRange()
     {
@@ -277,32 +278,22 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * getter for $this->isRange
+     * Is this date a range
+     * 
+     * Tells whether this SNACDate object contains a range (from-to) or just a single date (from) 
      *
      * @return boolean If this SNACDate object contains a range or a single date
-     *
-     *
      */
     function getIsRange()
     {
-        if ($this->isRange)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return $this->isRange;
     }
 
     /**
-     * getter for $this->note
+     * Get descriptive note for this date 
      *
-     * (currently not used)
      *
      * @return string Note about this date
-     *
-     *
      */
     function getNote()
     {
@@ -318,21 +309,21 @@ class SNACDate extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "SNACDate",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "fromDate" => $this->fromDate,
             "fromDateOriginal" => $this->fromDateOriginal,
-            "fromType" => $this->fromType,
+            "fromType" => $this->fromType == null ? null : $this->fromType->toArray($shorten),
             "fromBC" => $this->fromBC,
             "fromRange" => $this->fromRange,
             "toDate" => $this->toDate,
             "toDateOriginal" => $this->toDateOriginal,
-            "toType" => $this->toType,
+            "toType" => $this->toType == null ? null : $this->toType->toArray($shorten),
             "toBC" => $this->toBC,
             "toRange" => $this->toRange,
             "isRange" => $this->isRange,
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -357,17 +348,7 @@ class SNACDate extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACDate")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
+        parent::fromArray($data);
 
         if (isset($data["fromDate"]))
             $this->fromDate = $data["fromDate"];
@@ -379,20 +360,20 @@ class SNACDate extends AbstractData {
         else
             $this->fromDateOriginal = null;
 
-        if (isset($data["fromType"]))
-            $this->fromType = $data["fromType"];
+        if (isset($data["fromType"]) && $data["fromType"] != null)
+            $this->fromType = new \snac\data\Term($data["fromType"]);
         else
             $this->fromType = null;
 
         if (isset($data["fromBC"]))
             $this->fromBC = $data["fromBC"];
         else
-            $this->fromBC = null;
+            $this->fromBC = false;
 
         if (isset($data["fromRange"]))
             $this->fromRange = $data["fromRange"];
         else
-            $this->fromRange = null;
+            $this->fromRange = array("notBefore"=> null, "notAfter"=> "");
 
         if (isset($data["toDate"]))
             $this->toDate = $data["toDate"];
@@ -404,25 +385,25 @@ class SNACDate extends AbstractData {
         else
             $this->toDateOriginal = null;
 
-        if (isset($data["toType"]))
-            $this->toType = $data["toType"];
+        if (isset($data["toType"]) && $data["toType"] != null)
+            $this->toType = new \snac\data\Term($data["toType"]);
         else
             $this->toType = null;
 
         if (isset($data["toBC"]))
             $this->toBC = $data["toBC"];
         else
-            $this->toBC = null;
+            $this->toBC = false;
 
         if (isset($data["toRange"]))
             $this->toRange = $data["toRange"];
         else
-            $this->toRange = null;
+            $this->toRange = array("notBefore"=> null, "notAfter"=>null);
 
         if (isset($data["isRange"]))
             $this->isRange = $data["isRange"];
         else
-            $this->isRange = null;
+            $this->isRange = false;
 
         if (isset($data["note"]))
             $this->note = $data["note"];
@@ -444,14 +425,15 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the from date in this object
+     * Set the "from date"
+     * 
+     * Set the from date in this object, as well as setting some related private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setFromDate($original, $standardDate, $type) {
-
         list ($this->fromBC, $this->fromDate) = $this->parseBC($standardDate);
         $this->fromDateOriginal = $original;
         $this->fromType = $type;
@@ -469,11 +451,13 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the to date in this object
+     * Set the "to date"
+     *  
+     * Set the to date in this object, as well as setting some related private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setToDate($original, $standardDate, $type) {
 
@@ -494,20 +478,22 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Set the single date in this object
+     * Set the "single date"
+     * 
+     * Set this object as a single date. Single date is current the from date, and the date isRange is set
+     * to false. This sets several private variables.
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date
-     * @param string $type Type of the date
+     * @param \snac\data\Term $type Type of the date, a full Term object.
      */
     public function setDate($original, $standardDate, $type) {
-
         $this->setFromDate($original, $standardDate, $type);
         $this->isRange = false;
     }
     
     /**
-     * Set the fuzzy range around the date
+     * Set the fuzzy range around the single date
      * 
      * @param string $notBefore Beginning of fuzzy range
      * @param string $notAfter End of fuzzy range
@@ -526,7 +512,9 @@ class SNACDate extends AbstractData {
     }
     
     /**
-     * Parse the given standard date string and determine if the date is BC and strip the date out if possible
+     * Parse a date for BC
+     * 
+     * Parse the given standard date string and determine if the date is BC and strip the date out if possible.
      * 
      * @param string $standardDate The standard date
      * @return [boolean, string] Whether is BC or not and the standard date without negative.

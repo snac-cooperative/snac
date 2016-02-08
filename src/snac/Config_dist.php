@@ -89,4 +89,9 @@ class Config {
             "redirect_uri" => 'XXXXXXX',
         )
     );
+
+    /**
+     * @var int The maximum number of objects allowed in a list of objects.
+     */
+    public static $MAX_LIST_SIZE = 50000;
 }

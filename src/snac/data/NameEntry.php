@@ -17,8 +17,6 @@ namespace snac\data;
 /**
  * NameEntry Class
  *
- * See the abstract parent class for common methods setDBInfo() and getDBInfo().
- *
  * Storage class for name entries.
  *
  * @author Robbie Hott
@@ -27,6 +25,8 @@ namespace snac\data;
 class NameEntry extends AbstractData {
 
     /**
+     * Original string for the name
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/part
@@ -36,6 +36,8 @@ class NameEntry extends AbstractData {
     private $original;
 
     /**
+     * Preference Score
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/@preferenceScore
@@ -45,50 +47,34 @@ class NameEntry extends AbstractData {
     private $preferenceScore;
 
     /**
+     * Contributor List
+     * 
      * From EAC-CPF tag(s):
-     *'type' as a string:  
+     * 
+     * 'type' as a string:  
      * * nameEntry/alternativeForm
      * * nameEntry/authorizedForm
      *
      * 'contributor' name value as a string
      *
-     * Stored as:
-     * ```
-     * [ [ "type"=> "alternativeForm", "contributor"=>val ], ... ] 
-     * ```
-     * @var string[][] Contributors providing this name entry including their type for this name entry
+     * @var \snac\data\Contributor[] List of Contributor
      */
     private $contributors;
     
     /**
+     * Language
+     * 
      * From EAC-CPF tag(s):
      * 
      * * nameEntry/@lang
+     * * nameEntry/@scriptcode
      * 
-     * @var string Language of the entry
+     * @var \snac\data\Language Language of the entry
      */
     private $language;
     
     /**
-     * From EAC-CPF tag(s):
-     * 
-     * * nameEntry/@scriptcode
-     * 
-     * @var string Script code of the entry
-     */
-    private $scriptCode;
-    
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * nameEntry/useDates
-     * 
-     * @var \snac\data\SNACDate Use dates of the name entry
-     */
-    private $useDates;
-
-    /**
-     * Constructor.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
+     * Constructor.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
@@ -99,99 +85,81 @@ class NameEntry extends AbstractData {
     public function __construct($data = null) {
 
         $this->contributors = array ();
+        $this->setMaxDateCount(1);
         parent::__construct($data);
     }
     
     /**
-     * Getter for $this->original
+     * Get the original 
+     * 
+     * Get the original (full combined nameString/header) for this name Entry 
      *
      * @return string Original name given in this entry
      *
      *
      */
-    function getOriginal()
+    public function getOriginal()
     {
         return $this->original;
     }
 
     /**
-     * Getter for $this->preferenceScore
+     * Get the SNAC preference score
+     * 
+     *  Get the preference score for display of this name Entry
      *
      * @return float Preference score given to this entry
      *
      *
      */ 
-    function getPreferenceScore()
+    public function getPreferenceScore()
     {
         return $this->preferenceScore;
     }
 
     /**
-     * getter for $this->contributors
+     * Get the list of contributors for this name entry 
      *
-     * @return string[][] Contributors providing this name entry including their type for this name entry
+     * @return \snac\data\Contributor[] Contributors providing this name entry including their type for this name entry
      *
      */
-    function getContributors()
+    public function getContributors()
     {
         return $this->contributors;
     }
 
     /**
-     * getter for $this->language
+     * Get the language that this name entry is written in (language and script) 
      *
-     * @return string Language of the entry
+     * @return \snac\data\Language Language of the entry. If you then call the Language object's getLanguage()
+     * it returns a Term object. Language getScript() returns a Term object for the script.
      *
      */
-    function getLanguage()
+    public function getLanguage()
     {
         return $this->language;
     }
 
     /**
-     * getter for $this->scriptCode
-     *
-     * @return string Script code of the entry
-     *
-     */
-    function getScriptCode()
-    {
-        return $this->scriptCode;
-    }
-
-    /**
-     * getter for $this->useDates
-     *
-     *
-     * @return \snac\data\SNACDate[] Use dates of the name entry, returned as an array of SNACDate objects.
-     *
-     */
-    function getUseDates()
-    {
-        return $this->useDates;
-    }
-
-
-
-    /**
-     * Returns this object's data as an associative array. I'm tired of modifying this every time a private var
-     * is added. Can't we use introspection to automate this?
-     *
+     * Returns this object's data as an associative array. 
+     * 
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "NameEntry",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
-            "contributors" => $this->contributors,      // already an array
-            "language" => $this->language,
-            "scriptCode" => $this->scriptCode,
-            "useDates" => $this->useDates == null ? null : $this->useDates->toArray($shorten)
+            "contributors" => array(),
+            "language" => $this->language == null ? null : $this->language->toArray($shorten),
         );
+        
+
+        foreach ($this->contributors as $i => $v)
+            $return["contributors"][$i] = $v->toArray($shorten);
+
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -202,8 +170,6 @@ class NameEntry extends AbstractData {
             unset($return);
             $return = $return2;
         }
-
-
         return $return;
     }
 
@@ -216,19 +182,9 @@ class NameEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
             return false;
-        
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
-
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
-        
+       
+        parent::fromArray($data);
+            
         if (isset($data["original"]))
             $this->original = $data["original"];
         else
@@ -238,27 +194,19 @@ class NameEntry extends AbstractData {
             $this->preferenceScore = $data["preferenceScore"];
         else
             $this->preferenceScore = null;
-
+        
+        unset($this->contributors);
+        $this->contributors = array();
         if (isset($data["contributors"]))
-            $this->contributors = $data["contributors"];
-        else
-            $this->contributors = null;
+            foreach ($data["contributors"] as $i => $entry)
+                if ($entry != null)
+                    $this->contributors[$i] = new \snac\data\Contributor($entry);
 
-        if (isset($data["language"]))
-            $this->language = $data["language"];
+                
+        if (isset($data["language"]) && $data["language"] != null) 
+            $this->language = new Language($data["language"]);
         else
             $this->language = null;
-
-        if (isset($data["scriptCode"]))
-            $this->scriptCode = $data["scriptCode"];
-        else
-            $this->scriptCode = null;
-
-        if (isset($data["useDates"]))
-            $this->useDates = new SNACDate($data["useDates"]);
-        else
-            $this->useDates = null;
-
 
         return true;
     }
@@ -276,45 +224,22 @@ class NameEntry extends AbstractData {
     /**
      * Set the language
      * 
-     * @param string $lang Language
+     * @param \snac\data\Language $lang Language
      */
     public function setLanguage($lang) {
         $this->language = $lang;
     }
     
     /**
-     * Set the script code of the name entry
-     * 
-     * @param string $code Script code
-     */
-    public function setScriptCode($code) {
-        $this->scriptCode = $code;
-    }
-
-    /**
      * Add contributor to the list of contributors.
      * 
-     * @param string $type Type associated with this name entry
-     * @param string $name Name of the contributor
+     * @param \snac\data\Contributor $contributor Contributor object
      */
-    public function addContributor($type, $name) {
+    public function addContributor($contributor) {
 
-        array_push($this->contributors, 
-                array (
-                        "type" => $type,
-                        "contributor" => $name
-                ));
+        array_push($this->contributors, $contributor);
     }
     
-    /**
-     * Set the use dates of the entry
-     * 
-     * @param \snac\data\SNACDate $date Dates
-     */
-    public function setUseDates($date) {
-        $this->useDates = $date;
-    }
-
     /**
      * Set the preference score.
      * 

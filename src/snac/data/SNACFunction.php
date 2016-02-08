@@ -26,34 +26,31 @@ namespace snac\data;
 class SNACFunction extends AbstractData {
 
     /**
+     * Vocabulary Term
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/term
      * 
-     * @var string Function controlled vocabulary term
+     * @var \snac\data\Term Function controlled vocabulary term
      */
     private $term;
 
     /**
+     * Type of Function
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/@localType
      * 
-     * @var string Type of the function
+     * @var \snac\data\Term Type of the function
      */
     private $type;
 
-    /**
-     * From EAC-CPF tag(s):
-     * 
-     * * function/dateRange
-     * 
-     * @var \snac\data\SNACDate Date range of the function. As far as I can tell, this is a single date, so
-     * ignore the pluralization.
-     */
-    private $dates;
 
     /**
+     * Descriptive Note
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/descriptiveNote
@@ -63,6 +60,8 @@ class SNACFunction extends AbstractData {
     private $note;
 
     /**
+     * Vocabulary Source
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/term/@vocabularySource
@@ -72,66 +71,71 @@ class SNACFunction extends AbstractData {
     private $vocabularySource = '';
 
     /**
-     * getter for $this->term
+     * Constructor
+     *
+     * Functions may only have one date object.
+     * 
+     * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
+     * send objects around the system, not for generally creating a new object.
+     * 
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(1);
+        parent::__construct($data);
+    }
+
+
+    /**
+     * Get the Term for this function 
      *
      * * function/term
      * 
-     * @return string Function controlled vocabulary term
+     * @return \snac\data\Term Function controlled vocabulary term
      *
      */
-    function getTerm()
+    public function getTerm()
     {
         return $this->term;
     }
     
     /**
-     * getter for $this->type
+     * Get the type of this function 
      *
      * * function/@localType
      * 
-     * @return string Type of the function
+     * @return \snac\data\Term Type of the function
      *
      */
-    function getType()
+    public function getType()
     {
         return $this->type;
     }
 
-    /**
-     * getter for $this->dates. This is only one date, not an array.
-     *
-     * * function/dateRange
-     * 
-     * @return \snac\data\SNACDate Date range of the function. One date, not a list of dates.
-     *
-     */
-    function getDates()
-    {
-        return $this->dates;
-    }
 
     /**
-     * getter for $this->note
+     * Get Descriptive Note
+     * 
+     * Get the human-readable descriptive note for this function 
      *
      * * function/descriptiveNote
      * 
      * @return string Descriptive note for the function
      *
      */
-    function getNote()
+    public function getNote()
     {
         return $this->note;
     }
 
     /**
-     * getter for $this->vocabularySource
+     * Get the vocabulary source
      *
      * * function/term/@vocabularySource
      * 
      * @return string Vocabulary source for the function
      *
      */
-    function getVocabularySource()
+    public function getVocabularySource()
     {
         return $this->vocabularySource;
     }
@@ -145,14 +149,13 @@ class SNACFunction extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "SNACFunction",
-            'id' => $this->getID(),
-            'version' => $this->getVersion(),
-            "term" => $this->term,
-            "type" => $this->type,
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
+            "term" => $this->term == null ? null : $this->term->toArray($shorten),
+            "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "vocabularySource" => $this->vocabularySource,
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -177,32 +180,17 @@ class SNACFunction extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "SNACFunction")
             return false;
 
-        unset($this->id);
-        if (isset($data["id"]))
-            $this->id = $data["id"];
-        else
-            $this->id = null;
+        parent::fromArray($data);
 
-        unset($this->version);
-        if (isset($data["version"]))
-            $this->version = $data["version"];
-        else
-            $this->version = null;
-
-        if (isset($data["term"]))
-            $this->term = $data["term"];
+        if (isset($data["term"]) && $data["term"] != null)
+            $this->term = new Term($data["term"]);
         else
             $this->term = null;
 
-        if (isset($data["type"]))
-            $this->type = $data["type"];
+        if (isset($data["type"]) && $data["type"] != null)
+            $this->type = new Term($data["type"]);
         else
             $this->type = null;
-
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
 
         if (isset($data["vocabularySource"]))
             $this->vocabularySource = $data["vocabularySource"];
@@ -219,9 +207,11 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Set the term of this function (controlled vocabulary)
+     * Set the term of this function
      * 
-     * @param string $term term
+     * This comes from the controlled vocabulary
+     * 
+     * @param \snac\data\Term $term term
      */
     public function setTerm($term) {
 
@@ -231,21 +221,11 @@ class SNACFunction extends AbstractData {
     /**
      * Set the type of this function
      * 
-     * @param string $type type
+     * @param \snac\data\Term $type type
      */
     public function setType($type) {
 
         $this->type = $type;
-    }
-
-    /**
-     * Set the date range
-     *
-     * @param \snac\data\SNACDate $date Date object for the range
-     */
-    public function setDateRange($date) {
-
-        $this->dates = $date;
     }
 
     /**
