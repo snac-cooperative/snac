@@ -18,8 +18,9 @@ namespace snac\data;
 /**
  * Identity Constellation
  *
- * Stores all the information related to an identity constellation. Can be built in pieces, or imported
- * from an associative array.
+ * Stores all the information related to an identity constellation.  This is the root of an identity
+ * constellation, and has fields and methods to store all parts of the constellation.  Any of them may be left
+ * null, if they are unused.
  *
  * @author Robbie Hott
  *        
@@ -27,6 +28,8 @@ namespace snac\data;
 class Constellation extends AbstractData {
 
     /**
+     * ARK ID
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/recordId
@@ -36,6 +39,8 @@ class Constellation extends AbstractData {
     private $ark = null;
 
     /**
+     * Entity Type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/identity/entityType
@@ -45,6 +50,8 @@ class Constellation extends AbstractData {
     private $entityType = null;
 
     /**
+     * Other Record ID List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/otherRecordId
@@ -55,15 +62,19 @@ class Constellation extends AbstractData {
     private $otherRecordIDs = null;
 
     /**
+     * Maintenace Status
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/maintenanceStatus
      * 
-     * @var string Current maintenance status
+     * @var \snac\data\Term Current maintenance status
      */
     private $maintenanceStatus = null;
 
     /**
+     * Maintenance Agency
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/maintenanceAgency/agencyName
@@ -73,6 +84,8 @@ class Constellation extends AbstractData {
     private $maintenanceAgency = null;
 
     /**
+     * Maintenance Event List
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/maintenanceHistory/maintenanceEvent/*
@@ -82,6 +95,8 @@ class Constellation extends AbstractData {
     private $maintenanceEvents = null;
 
     /**
+     * Source list
+     * 
      * From EAC-CPF tag(s):
      * 
      * * /eac-cpf/control/sources/source/@type
@@ -92,6 +107,8 @@ class Constellation extends AbstractData {
     private $sources = null;
     
     /**
+     * Legal Status List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/legalStatus/term
@@ -103,6 +120,8 @@ class Constellation extends AbstractData {
     private $legalStatuses = null;
 
     /**
+     * Convention Declaration List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/control/conventionDeclaration
@@ -112,6 +131,8 @@ class Constellation extends AbstractData {
     private $conventionDeclarations = null;
     
     /**
+     * Languages Used List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/languageUsed/language
@@ -124,6 +145,8 @@ class Constellation extends AbstractData {
     private $languagesUsed = null;
 
     /**
+     * Name Entry List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/identity/nameEntry
@@ -133,6 +156,8 @@ class Constellation extends AbstractData {
     private $nameEntries = null;
 
     /**
+     * Occupation List
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/occupation/*
@@ -142,6 +167,8 @@ class Constellation extends AbstractData {
     private $occupations = null;
 
     /**
+     * BiogHist List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/biogHist
@@ -151,6 +178,8 @@ class Constellation extends AbstractData {
     private $biogHists = null;
 
     /**
+     * Constellation Relation List
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/relations/cpfRelation/*
@@ -160,6 +189,8 @@ class Constellation extends AbstractData {
     private $relations = null;
 
     /**
+     * Resource Relation List
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/relations/resourceRelation/*
@@ -169,6 +200,8 @@ class Constellation extends AbstractData {
     private $resourceRelations = null;
 
     /**
+     * Function list
+     *
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/function/*
@@ -178,6 +211,8 @@ class Constellation extends AbstractData {
     private $functions = null;
 
     /**
+     * Place list
+     *
      * A list of Place objects. 
      *
      * From EAC-CPF tag(s):
@@ -189,6 +224,8 @@ class Constellation extends AbstractData {
     private $places = null;
     
     /**
+     * Subject List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=AssociatedSubject/term
@@ -198,6 +235,8 @@ class Constellation extends AbstractData {
     private $subjects = null;
     
     /**
+     * Nationality List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=nationalityOfEntity/term
@@ -207,6 +246,8 @@ class Constellation extends AbstractData {
     private $nationalities = null;
     
     /**
+     * Gender List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/localDescription/@localType=gender/term
@@ -216,6 +257,8 @@ class Constellation extends AbstractData {
     private $genders = null;
     
     /**
+     * General Contexts List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/generalContext
@@ -225,6 +268,8 @@ class Constellation extends AbstractData {
     private $generalContexts = null;
     
     /**
+     * Structure or Genealogies List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/structureOrGenealogy
@@ -234,6 +279,8 @@ class Constellation extends AbstractData {
     private $structureOrGenealogies = null;
     
     /**
+     * Mandate List
+     * 
      * From EAC-CPF tag(s):
      * 
      * * eac-cpf/cpfDescription/description/mandate
@@ -243,9 +290,7 @@ class Constellation extends AbstractData {
     private $mandates = null;
 
     /**
-     * Constructor for the class. See the abstract parent class for common methods setDBInfo() and getDBInfo().
-     *
-     * Any value for setMaxDateCount() >1 means any number of date objects.
+     * Constructor for the class.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object. Normal use is to call the
@@ -255,9 +300,9 @@ class Constellation extends AbstractData {
      * 
      */
     public function __construct($data = null) {
-        $this->setMaxDateCount(2);
+        $this->setMaxDateCount(\snac\Config::$MAX_LIST_SIZE);
         if ($data == null) {
-            $this->entityType = new \snac\data\Term();
+            $this->entityType = null;
             $this->otherRecordIDs = array ();
             $this->sources = array ();
             $this->maintenanceEvents = array ();
@@ -277,12 +322,13 @@ class Constellation extends AbstractData {
             $this->generalContexts = array();
             $this->structureOrGenealogies = array();
             $this->mandates = array();
-        } else
-            parent::__construct($data);
+        }
+        // always call the parent constructor
+        parent::__construct($data);
     }
 
     /**
-     * Get the ARK identifier URI for this constellation 
+     * Get the ARK identifier URI
      * 
      * @return string ARK identifier
      *
@@ -293,7 +339,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the entity type of this constellation
+     * Get the entity type
      *
      * @return \snac\data\Term Entity type
      *
@@ -304,7 +350,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the other record IDs (SameAs) for this constellation 
+     * Get the other record IDs
      *
      * @return \snac\data\SameAs[] Other record IDs by which this constellation may be known
      *
@@ -315,9 +361,9 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the maintenance Status for this constellation 
+     * Get the maintenance Status
      * 
-     * @return string Current maintenance status
+     * @return \snac\data\Term Current maintenance status
      *
      */
     public function getMaintenanceStatus()
@@ -326,7 +372,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the maintenance agency for this constellation
+     * Get the maintenance agency
      *
      * @return string Latest maintenance agency
      *
@@ -337,7 +383,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the list of maintenance events for this constellation 
+     * Get the list of maintenance events
      *
      * @return \snac\data\MaintenanceEvent[] List of maintenance events performed on this constellation
      *
@@ -348,7 +394,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the list of sources for this constellation 
+     * Get the list of sources
      * 
      * @return \snac\data\Source[] List of sources
      *
@@ -359,7 +405,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the list of legal statuses for this constellation 
+     * Get the list of legal statuses
      * 
      * @return \snac\data\LegalStatus[] List of legal statuses
      *
@@ -370,7 +416,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the convention declarations for this constellation
+     * Get the convention declarations
      *
      * @return \snac\data\ConventionDeclaration[] Convention declarations
      *
@@ -392,10 +438,12 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Alias function for getLanguagesUsed(). Get the Languages Used. Called in DBUtil.
+     * Alias function for getLanguagesUsed(). 
+     * 
+     * Get the Languages Used. Called in DBUtil.
      *
      * @return \snac\data\Language[] Languages and scripts used by the identity described
-     *
+     * @deprecated
      */
     public function getLanguage()
     {
@@ -405,7 +453,7 @@ class Constellation extends AbstractData {
 
 
     /**
-     * Get the name entries for this constellation
+     * Get the name entries
      *
      * @return \snac\data\NameEntry[] List of name entries for this constellation
      *
@@ -416,7 +464,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the occupations for this constellation
+     * Get the occupations
      * 
      * @return \snac\data\Occupation[] List of occupations
      *
@@ -427,8 +475,9 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the list of BiogHist for this constellation. Each BiogHist is presumed to be a translation in a
-     * specific language. See getBiogHist() which returns only a single BiogHist.
+     * Get the list of BiogHists
+     * Each BiogHist is presumed to be a translation in a
+     * specific language.
      *
      * @return \snac\data\BiogHist[] An array of BiogHist ordered by language 3 letter code, or an empty list
      * if no BiogHist exists for this Constellation
@@ -440,7 +489,7 @@ class Constellation extends AbstractData {
 
 
     /**
-     * Get the BiogHist for this constellation.
+     * Get the BiogHist
      *
      * This will by default get the first BiogHist for the entity.  If another
      * language is desired, it may be passed as a parameter.  In that case,
@@ -476,7 +525,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the constellation relations for this constellation
+     * Get the constellation relations
      *
      * @return \snac\data\ConstellationRelation[] Constellation relations
      *
@@ -487,7 +536,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the resource relations for this constellation
+     * Get the resource relations
      *
      * @var \snac\data\ResourceRelation[] Resource relations
      */
@@ -497,7 +546,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the Functions for this constellation 
+     * Get the Functions
      *
      * @return \snac\data\SNACFunction[] Functions
      *
@@ -508,7 +557,9 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the places associated with this constellation
+     * Get the places
+     * 
+     * Get the places associated with this identity constellation
      *
      * @return \snac\data\Place[] Places
      *
@@ -519,7 +570,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the subjects associated with this constellation
+     * Get the subjects
      *
      * @return \snac\data\Subject[] Subjects
      *
@@ -530,7 +581,10 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the first nationality associated with this constellation
+     * Get the nationality
+     * 
+     * Get the first nationality associated with this constellation.  If there are more than one,
+     * this will return the first.
      *
      * @return \snac\data\Nationality nationality
      *
@@ -544,7 +598,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get all nationalities associated with this constellation 
+     * Get all nationalities
      *
      * @return \snac\data\Nationality[] nationalities
      *
@@ -555,8 +609,8 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the gender for this constellation.  If there are multiple, this
-     * will return the first gender in the list.
+     * Get the gender
+     * If there are multiple, this will return the first gender in the list.
      *
      * @return \snac\data\Gender First Gender stored for this constellation
      *
@@ -570,7 +624,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get all genders associated with this constellation. 
+     * Get all genders
      *
      * @return \snac\data\Gender[] all genders
      *
@@ -581,10 +635,9 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get all the general contexts text/xml for this constellation
+     * Get all the general contexts
      *
-     *
-     * @return \snac\data\GeneralContext[]  General Contexts text/xml
+     * @return \snac\data\GeneralContext[] General Contexts
      *
      */
     public function getGeneralContexts()
@@ -593,7 +646,7 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the structureOrGenealogies for this constellation 
+     * Get the structureOrGenealogies
      *
      * @return \snac\data\StructureOrGenealogy[] list of Structure Or Genealogy information
      *
@@ -604,12 +657,12 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Get the mandates for this constellation 
+     * Get the mandates
      *
      * @return \snac\data\Mandate[] list of Mandates
      *
      */
-    public function getMandate()
+    public function getMandates()
     {
         return $this->mandates;
     }
@@ -626,7 +679,7 @@ class Constellation extends AbstractData {
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
             "otherRecordIDs" => array(), 
-            "maintenanceStatus" => $this->maintenanceStatus,
+            "maintenanceStatus" => $this->maintenanceStatus == null ? null : $this->maintenanceStatus->toArray($shorten),
             "maintenanceAgency" => $this->maintenanceAgency,
             "maintenanceEvents" => array(),
             "sources" => array(),
@@ -742,7 +795,7 @@ class Constellation extends AbstractData {
             $this->ark = null;
 
         unset($this->entityType);
-        if (isset($data["entityType"]))
+        if (isset($data["entityType"]) && $data["entityType"] != null)
             $this->entityType = new \snac\data\Term($data["entityType"]);
         else
             $this->entityType = null;
@@ -751,11 +804,12 @@ class Constellation extends AbstractData {
         $this->otherRecordIDs = array();
         if (isset($data["otherRecordIDs"]))
             foreach ($data["otherRecordIDs"] as $i => $entry)
-                $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
+                if ($entry != null)
+                    $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
 
         unset($this->maintenanceStatus);
-        if (isset($data["maintenanceStatus"]))
-            $this->maintenanceStatus = $data["maintenanceStatus"];
+        if (isset($data["maintenanceStatus"]) && $data["maintenanceStatus"] != null)
+            $this->maintenanceStatus = new \snac\data\Term($data["maintenanceStatus"]);
         else
             $this->maintenanceStatus = null;
 
@@ -769,33 +823,36 @@ class Constellation extends AbstractData {
         $this->sources = array();
         if (isset($data["sources"]))
             foreach ($data["sources"] as $i => $entry)
-                $this->sources[$i] = new Source($entry);
+                if ($entry != null)
+                    $this->sources[$i] = new Source($entry);
 
         unset($this->legalStatuses);
         $this->legalStatuses = array();
         if (isset($data["legalStatuses"]))
             foreach ($data["legalStatuses"] as $i => $entry)
-                $this->legalStatuses[$i] = new LegalStatus($entry);
+                if ($entry != null)
+                    $this->legalStatuses[$i] = new LegalStatus($entry);
 
         unset($this->conventionDeclarations);
         $this->conventionDeclarations = array();
         if (isset($data["conventionDeclarations"]))
             foreach ($data["conventionDeclarations"] as $i => $entry)
-                $this->conventionDeclarations[$i] = new \snac\data\ConventionDeclaration($entry);
+                if ($entry != null)
+                    $this->conventionDeclarations[$i] = new \snac\data\ConventionDeclaration($entry);
 
         unset($this->languagesUsed);
         $this->languagesUsed = array();
         if (isset($data["languagesUsed"]))
             foreach ($data["languagesUsed"] as $i => $entry)
-                $this->languagesUsed[$i] = new Language($entry);
+                if ($entry != null)
+                    $this->languagesUsed[$i] = new Language($entry);
 
         unset($this->biogHists);
         $this->biogHists = array();
-        if (isset($data["biogHists"]))
-        {
-            foreach ($data["biogHists"] as $i => $entry)
-            {
-                $this->biogHists[$i] = new BiogHist($entry);
+        if (isset($data["biogHists"])) {
+            foreach ($data["biogHists"] as $i => $entry) {
+                if ($entry != null)
+                    $this->biogHists[$i] = new BiogHist($entry);
             }
         }
 
@@ -803,85 +860,98 @@ class Constellation extends AbstractData {
         $this->subjects = array();
         if (isset($data["subjects"]))
             foreach ($data["subjects"] as $i => $entry)
-                $this->subjects[$i] = new Subject($entry);
+                if ($entry != null)
+                    $this->subjects[$i] = new Subject($entry);
 
         unset($this->nationalities);
         $this->nationalities = array();
         if (isset($data["nationalities"]))
             foreach ($data["nationalities"] as $i => $entry)
-                $this->nationalities[$i] = new Nationality($entry);
+                if ($entry != null)
+                    $this->nationalities[$i] = new Nationality($entry);
 
         unset($this->genders);
         $this->genders = array();
         if (isset($data["genders"]))
             foreach ($data["genders"] as $i => $entry)
-                $this->genders[$i] = new Gender($entry);
+                if ($entry != null)
+                    $this->genders[$i] = new Gender($entry);
 
         unset($this->generalContexts);
         $this->generalContexts = array();
         if (isset($data["generalContexts"]))
             foreach ($data["generalContexts"] as $i => $entry)
-                $this->generalContexts[$i] = new GeneralContext($entry);
+                if ($entry != null)
+                    $this->generalContexts[$i] = new GeneralContext($entry);
 
         unset($this->structureOrGenealogies);
         $this->structureOrGenealogies = array();
         if (isset($data["structureOrGenealogies"]))
             foreach ($data["structureOrGenealogies"] as $i => $entry)
-                $this->structureOrGenealogies[$i] = new StructureOrGenealogy($entry);
+                if ($entry != null)
+                    $this->structureOrGenealogies[$i] = new StructureOrGenealogy($entry);
 
         unset($this->mandates);
         $this->mandates = array();
         if (isset($data["mandates"]))
             foreach ($data["mandates"] as $i => $entry)
-                $this->mandates[$i] = new Mandate($entry);
+                if ($entry != null)
+                    $this->mandates[$i] = new Mandate($entry);
 
         unset($this->maintenanceEvents);
         $this->maintenanceEvents = array();
         if (isset($data["maintenanceEvents"])) {
             foreach ($data["maintenanceEvents"] as $i => $entry)
-                $this->maintenanceEvents[$i] = new MaintenanceEvent($entry);
+                if ($entry != null)
+                    $this->maintenanceEvents[$i] = new MaintenanceEvent($entry);
         }
 
         unset($this->nameEntries);
         $this->nameEntries = array();
         if (isset($data["nameEntries"])) {
             foreach ($data["nameEntries"] as $i => $entry)
-                $this->nameEntries[$i] = new NameEntry($entry);
+                if ($entry != null)
+                    $this->nameEntries[$i] = new NameEntry($entry);
         }
 
         unset($this->occupations);
         $this->occupations = array();
         if (isset($data["occupations"])) {
             foreach ($data["occupations"] as $i => $entry)
-                $this->occupations[$i] = new Occupation($entry);
+                if ($entry != null)
+                    $this->occupations[$i] = new Occupation($entry);
         }
 
         unset($this->relations);
         $this->relations = array();
         if (isset($data["relations"])) {
             foreach ($data["relations"] as $i => $entry)
-                $this->relations[$i] = new ConstellationRelation($entry);
+                if ($entry != null)
+                    $this->relations[$i] = new ConstellationRelation($entry);
         }
 
         unset($this->resourceRelations);
         $this->resourceRelations = array();
         if (isset($data["resourceRelations"])) {
             foreach ($data["resourceRelations"] as $i => $entry)
-                $this->resourceRelations[$i] = new ResourceRelation($entry);
+                if ($entry != null)
+                    $this->resourceRelations[$i] = new ResourceRelation($entry);
         }
 
         unset($this->functions);
         $this->functions = array();
         if (isset($data["functions"])) {
             foreach ($data["functions"] as $i => $entry)
-                $this->functions[$i] = new SNACFunction($entry);
+                if ($entry != null)
+                    $this->functions[$i] = new SNACFunction($entry);
         }
 
         unset($this->places);
         $this->places = array();
         if (isset($data["places"])) {
             foreach ($data["places"] as $i => $entry)
-                $this->places[$i] = new Place($entry);
+                if ($entry != null)
+                    $this->places[$i] = new Place($entry);
         }
 
         return true;
@@ -902,7 +972,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Term $type Entity type
      */
-    public function setEntityType(\snac\data\Term $type) {
+    public function setEntityType($type) {
 
         $this->entityType = $type;
     }
@@ -912,7 +982,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\SameAs $other The other record ID in a SameAs object
      */
-    public function addOtherRecordID(\snac\data\SameAs $other) {
+    public function addOtherRecordID($other) {
 
         array_push($this->otherRecordIDs, $other); 
     }
@@ -920,7 +990,7 @@ class Constellation extends AbstractData {
     /**
      * Set maintenance status
      *
-     * @param string $status status
+     * @param \snac\data\Term $status status
      */
     public function setMaintenanceStatus($status) {
 
@@ -942,7 +1012,7 @@ class Constellation extends AbstractData {
      *
      * @param \snac\data\Source $source Source to add 
      */
-    public function addSource(\snac\data\Source $source) {
+    public function addSource($source) {
 
         array_push($this->sources, $source);
     }
@@ -1008,16 +1078,19 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Add Language Used by this constellation's identity. (You might be tempted to call this
-     * setLanguagesUsed() or the singular setLanguageUsed() as the converse of getLanguagesUsed().)
+     * Add Language Used 
+     * 
+     * Add a language used by this constellation's identity.
      *
      * @param  \snac\data\Language Language and script used by this identity
      */
-    public function addLanguageUsed(\snac\data\Language $language) {
+    public function addLanguageUsed($language) {
         array_push($this->languagesUsed, $language);
     }
 
     /**
+     * Alias for Add Language Used
+     * 
      * Calls addLanguageUsed() and serves as an alias in DBUtil.
      *
      * In retrospect it doesn't help that much because DBUtil populateLanguage() needs to test the class
@@ -1027,7 +1100,7 @@ class Constellation extends AbstractData {
      * setLanguages() or the singular setLanguage() as the converse of getLanguages().)
      *
      * @param  \snac\data\Language Language and script used by this identity
-     *
+     * @deprecated
      */ 
     public function addLanguage(\snac\data\Language $language) {
         $this->addLanguageUsed($language);
@@ -1036,25 +1109,25 @@ class Constellation extends AbstractData {
 
 
     /**
-     * Add the subject to this Constellation
+     * Add a subject
      *
      * @param \snac\data\Subject $subject Subject to add.
      */
-    public function addSubject(\snac\data\Subject $subject) {
+    public function addSubject($subject) {
         array_push($this->subjects, $subject);
     }
 
     /**
-     * Add a nationality to this Constellation
+     * Add a nationality
      *
      * @param \snac\data\Nationality $nationality Nationality
      */
-    public function addNationality(\snac\data\Nationality $nationality) {
+    public function addNationality($nationality) {
         array_push($this->nationalities, $nationality);
     }
 
     /**
-     * Add a gender of this Constellation
+     * Add a gender
      *
      * @param \snac\data\Gender $gender Gender to set
      */
@@ -1063,8 +1136,10 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Set the gender 
+     * 
      * Set the gender of this Constellation to be this sole gender.
-     * Removes all the other genders
+     * Removes all the other genders.
      *
      * @param \snac\data\Gender $gender Gender to set
      */
@@ -1095,17 +1170,17 @@ class Constellation extends AbstractData {
     }
 
     /**
-     * Add a place to the constellation
+     * Add a place
      * 
      * @param \snac\data\Place $place Place to add
      */
-    public function addPlace(\snac\data\Place $place) {
+    public function addPlace($place) {
 
         array_push($this->places, $place);
     }
     
     /**
-     * Add a general context for this constellation
+     * Add a general context
      * 
      * @param \snac\data\GeneralContext $context General context
      */
@@ -1114,7 +1189,7 @@ class Constellation extends AbstractData {
     }
     
     /**
-     * Add a structure or genealogy for this constellation
+     * Add a structure or genealogy
      * 
      * @param \snac\data\StructureOrGenealogy $structure StructureOrGenealogy information
      */
@@ -1123,7 +1198,7 @@ class Constellation extends AbstractData {
     }
     
     /**
-     * Add a legal status to this constellation
+     * Add a legal status
      * 
      * @param \snac\data\LegalStatus $legalStatus The legal status to add 
      */
@@ -1132,7 +1207,7 @@ class Constellation extends AbstractData {
     }
     
     /**
-     * Add a mandate of this constellation
+     * Add a mandate
      * 
      * @param \snac\data\Mandate $mandate Mandate information
      */

@@ -28,6 +28,7 @@ class StructureOrGenealogy extends AbstractTextData {
      */
     public function __construct($data = null) {
         $this->setDataType("StructureOrGenealogy");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

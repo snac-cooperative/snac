@@ -376,17 +376,17 @@ class Place extends AbstractData {
         else
             $this->confirmed = null;
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new \snac\data\Term($data["type"]);
         else
             $this->type = null;
 
-        if (isset($data["role"]))
+        if (isset($data["role"]) && $data["role"] != null)
             $this->role = new \snac\data\Term($data["role"]);
         else
             $this->role = null;
 
-        if (isset($data["geoplace"]))
+        if (isset($data["geoplace"]) && $data["geoplace"] != null)
             $this->geoTerm = new \snac\data\GeoTerm($data["geoplace"]);
         else
             $this->geoTerm = null;

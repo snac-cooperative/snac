@@ -29,19 +29,22 @@ namespace snac\data;
  */
 abstract class AbstractData {
 
-
     /**
-     * Universal date object list. 
-     *
+     * Constants associated with all data
+     * @var string $OPERATION_INSERT the insert operation
      */
-    protected $dateList = array();
-
+    public static $OPERATION_INSERT = "insert";
     /**
-     * How many dates might be in the $dateList. Objects with no dates set this to some number greater than zero.
-     *
+     * Constants associated with all data
+     * @var string $OPERATION_UPDATE the update operation
      */
-    protected $maxDateCount = 0;
-
+    public static $OPERATION_UPDATE = "update";
+    /**
+     * Constants associated with all data
+     * @var string $OPERATION_DELETE the delete operation
+     */
+    public static $OPERATION_DELETE = "delete";
+    
     /**
      *
      * The record id, or constellation id for this class. This has two different meanings, depending on the
@@ -62,11 +65,32 @@ abstract class AbstractData {
      * @var int $version 
      */
     protected $version = null;
+
+
+    /**
+     * @var \snac\data\SNACDate[] $dateList Universal date object list. 
+     *
+     *
+     */
+    protected $dateList;
+
+    /**
+     * How many dates might be in the $dateList. Objects with no dates set this to some number greater than zero.
+     * 
+     * @var int $maxDateCount maximum number of dates allowed in this object
+     */
+    protected $maxDateCount = 0;
+
     
     /**
      * var \snac\data\SNACControlMetadata[] $snacControlMetadata The snac control metadata entries for this piece of data.
      */
     protected $snacControlMetadata;
+    
+    /**
+     * @var string Operation for this object.  Must be set to one of the constant values or null.
+     */
+    protected $operation;
 
     /**
      * Constructor
@@ -80,18 +104,11 @@ abstract class AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
+
         $this->snacControlMetadata = array();
+        $this->dateList = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
-    }
-
-    /**
-     * Unset the $dateList array. This might be done to prevent an toArray() from creating an empty array in
-     * the json.
-     */
-    public function unsetDateList()
-    {
-        unset($dateList);
     }
 
     /**
@@ -126,25 +143,25 @@ abstract class AbstractData {
      */ 
     public function getDateList()
     {
-        if ($this->dateList)
-        {
-            return $this->dateList;
-        }
-        else
-        {
-            return array();
-        }
+        return $this->dateList;
     }
 
     /**
-     * Add a date object to our list of dates. 
+     * Add a date object to our list of dates. Succeeds only if the object allows dates, or has room based on
+     * maxDateCount
      *
      * @param \snac\data\SNACDate A single SNACDate that will be added to our list of dates.
+     * @return boolean true on success, false on failure
      *
      */
     public function addDate($dateObj)
     {
-        array_push($this->dateList, $dateObj);
+        if ($this->maxDateCount != 0 ||
+                (count($this->dateList) < $this->maxDateCount)) {
+            array_push($this->dateList, $dateObj);
+            return true;
+        }
+        return false;
     }
     
 
@@ -261,6 +278,31 @@ abstract class AbstractData {
     public function getSNACControlMetadata() {
         return $this->snacControlMetadata;
     }
+
+    /**
+     * Set the operation for this data
+     *
+     * @param string $operation The constant for the operation
+     * @return boolean true on success, false on failure
+     */
+    public function setOperation($operation) {
+        if ($operation == AbstractData::$OPERATION_UPDATE ||
+            $operation == AbstractData::$OPERATION_DELETE ||
+            $operation == AbstractData::$OPERATION_INSERT) {
+                $this->operation = $operation;
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get the operation for this data object
+     *
+     * @return string the operation, or null if no operation
+     */
+    public function getOperation() {
+        return $this->operation;
+    }
     
     /**
      * Required method to convert this data object to an array
@@ -271,32 +313,15 @@ abstract class AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             'id' => $this->getID(),
-            'version' => $this->getVersion()
+            'version' => $this->getVersion(),
+            'operation' => $this->getOperation()
             );
-        
-        /*
-         * We won't return any dates if we aren't suppose to have dates in the first place. And if we're only
-         * suppose to have a single date, then we will only return a single date. This supposes that any
-         * errant dates got in here via some bug, not that we care. At least we won't return dates that aren't
-         * supposed to exist. That probably means that errant dates would be invisible outside the SQL code.
-         *
-         * Constellation.php called these $existDates, getExistDates(), addExistDates()
-         *
-         * NameEntry.php called these $useDates, getUseDates(), setUseDates()?
-         *
-         * Place.php called these $dates with setDateRange(), no getter?
-         *
-         * SNACFunction.php called these $dates, getDates(), setDateRange()
-         */ 
-        if ($this->maxDateCount > 0)
-        {
+
+        $return['dates'] = array();
+        if (isset($this->dateList) && $this->dateList != null) {
             foreach ($this->dateList as $i => $v)
             {
                 $return["dates"][$i] = $v->toArray($shorten);
-                if ($this->maxDateCount == 1)
-                {
-                    break;
-                }
             }
         }
         
@@ -338,30 +363,30 @@ abstract class AbstractData {
             $this->version = $data["version"];
         else
             $this->version = null;
+
+        unset($this->operation);
+        if (isset($data["operation"]))
+            $this->operation = $data["operation"];
+        else
+            $this->operation = null;
         
         unset($this->snacControlMetadata);
         $this->snacControlMetadata = array();
         if (isset($data["snacControlMetadata"])) {
             foreach ($data["snacControlMetadata"] as $i => $entry)
-                $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
+                if ($entry != null)
+                    $this->snacControlMetadata[$i] = new SNACControlMetadata($entry);
         }
 
-        if (isset($data['maxDateCount']))
-        {
-            $this->maxDateCount = $data['maxDateCount'];
+        unset($this->dateList);
+        $this->dateList = array();
+        if (isset($data["dates"])) {
+            foreach ($data["dates"] as $i => $entry)
+                if ($entry != null)
+                    $this->dateList[$i] = new SNACDate($entry);
         }
-
-        if ($this->maxDateCount > 0 && isset($data['dates']))
-        {
-            foreach ($data['dates'] as $date)
-            {
-                $this->addDate(new \snac\data\SNACDate($date));
-                if ($this->maxDateCount == 1)
-                {
-                    break;
-                }
-            }
-        }
+        // Note: inheriting classes should set the maxDateCount appropriately
+        // based on the definition of that class.
     }
 
     /**

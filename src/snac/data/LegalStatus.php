@@ -27,8 +27,8 @@ class LegalStatus extends AbstractTermData {
      * Constructor
      */
     public function __construct($data = null) {
-        // $this->setDataType("LegalStatus");
-        $this->validType = "legal_status";
+        $this->setDataType("legalStatus");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

@@ -1,7 +1,8 @@
 {
     "dataType": "Constellation",
+    "ark": "http:\/\/n2t.net\/ark:\/99166\/w6w9576g",
     "entityType": {
-        "id": null,
+        "id": "12",
         "term": "person",
         "uri": null,
         "description": null
@@ -13,129 +14,431 @@
             "preferenceScore": "99",
             "contributors": [
                 {
-                    "type": "authorizedForm",
-                    "contributor": "VIAF"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "VIAF",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "howard"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "howard",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "uct"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uct",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "aps"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "aps",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "colu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "colu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "inu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "inu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "uchic"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uchic",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "nwda"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nwda",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "vah"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "vah",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "taro"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "taro",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "LC"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "LC",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "rutu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "rutu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "pu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "pu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "ncsu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "ncsu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "nyu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nyu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "NLA"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "NLA",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "unc"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "unc",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "WorldCat"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "WorldCat",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "nara"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nara",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "crnlu"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "crnlu",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "uut"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "uut",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "yale"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "yale",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "cjh"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "cjh",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "nypl"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "nypl",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "oac"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "oac",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "lc"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "lc",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "umi"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "umi",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "LAC"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "LAC",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "harvard"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "harvard",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 },
                 {
-                    "type": "authorizedForm",
-                    "contributor": "pacscl"
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
+                    },
+                    "name": "pacscl",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "language": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ]
 }

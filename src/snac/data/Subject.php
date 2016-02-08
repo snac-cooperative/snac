@@ -27,8 +27,8 @@ class Subject extends AbstractTermData {
      * Constructor
      */
     public function __construct($data = null) {
-        // $this->setDataType("Subject");
-        $this->validType = 'subject';
+        $this->setDataType("Subject");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

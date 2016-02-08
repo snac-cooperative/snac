@@ -9,6 +9,10 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+
+/**
+ * Load and instantiate the rest api
+ */
 include ("../../../vendor/autoload.php");
 
 // Namespace shortcuts

@@ -7,7 +7,8 @@
  * License:
  *
  *
- * @author Tom Laudeman, Robbie Hott
+ * @author Tom Laudeman
+ * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
@@ -17,17 +18,17 @@ namespace snac\data;
 /**
  * Contributor Class
  *
- *  See the abstract parent class for common methods setDBInfo() and getDBInfo().
- * 
  * Stores the contributor name (string) and type (a Term object)
  * 
- * @author Tom Laudeman, Robbie Hott
+ * @author Tom Laudeman
+ * @author Robbie Hott
  *
  */
 class Contributor extends AbstractData {
 
     /**
-     * @var \snac\data\Term Script, a controlled vocabulary term object.
+     * @var \snac\data\Term Type of the contributor
+     * 
      *
      * From EAC-CPF tag(s):
      * vocabulary id for strings:
@@ -38,26 +39,24 @@ class Contributor extends AbstractData {
     private $type = null;
 
     /**
-     * @var string Name of the contributor. A simple string.
+     * @var string Name of the contributor.
+     * 
+     * A simple string.
      */
     private $name = null;
-
-
+    
     /**
-     * Return our data type. Seems like something that would be a property in AbstractData, and we would set
-     * it in our constructor. This is sort of an experiment. Other objects don't (yet?) have this.
-     *
-     * The alternative is having test values for $data['dataType'] hard coded in at least two places:
-     * toArray() and fromArray()
+     * Constructor
      */
-    protected function dataType()
-    {
-        return "Contributor";
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
     }
+
     /**
      * Get the type controlled vocab
      *
-     * @return \snac\data\Term Script controlled vocabulary term
+     * @return \snac\data\Term Type controlled vocabulary term
      * 
      */ 
     public function getType()
@@ -68,10 +67,10 @@ class Contributor extends AbstractData {
     /**
      * Set the type controlled vocab
      *
-     * @param \snac\data\Term $type Script controlled vocabulary term
+     * @param \snac\data\Term $type Type controlled vocabulary term
      * 
      */ 
-    public function setType(\snac\data\Term $type)
+    public function setType($type)
     {
         $this->type = $type;
     }
@@ -107,7 +106,7 @@ class Contributor extends AbstractData {
      */
     public function toArray($shorten = true) {
         $return = array(
-            "dataType" => $this->dataType(),
+            "dataType" => "Contributor",
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "name" => $this->name
         );
@@ -134,12 +133,12 @@ class Contributor extends AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
-        if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType())
+        if (!isset($data["dataType"]) || $data["dataType"] != "Contributor")
             return false;
 
         parent::fromArray($data);
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new Term($data["type"]);
         else
             $this->type = null;

@@ -2,7 +2,7 @@
     "dataType": "Constellation",
     "ark": "FRAN_NP_050744",
     "entityType": {
-        "id": "696",
+        "id": "10",
         "term": "corporateBody",
         "uri": null,
         "description": null
@@ -19,10 +19,17 @@
             "text": null,
             "uri": "Un seul identifiant",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
-    "maintenanceStatus": [],
+    "maintenanceStatus": {
+        "id": null,
+        "term": null,
+        "uri": null,
+        "description": null
+    },
     "maintenanceAgency": "Archives nationales de France",
     "maintenanceEvents": [
         {
@@ -44,12 +51,14 @@
             "agent": "Florence CLAVAUD",
             "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
-                "id": "699",
+                "id": "13",
                 "term": "revised",
                 "uri": null,
                 "description": null
@@ -57,7 +66,7 @@
             "eventDateTime": "2015-10-05",
             "standardDateTime": null,
             "agentType": {
-                "id": "687",
+                "id": "1",
                 "term": "machine",
                 "uri": null,
                 "description": null
@@ -65,29 +74,28 @@
             "agent": "cpf_norm.pl",
             "eventDescription": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "sources": [
         {
             "dataType": "Source",
             "language": null,
-            "type": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "type": null,
             "text": null,
             "note": "<descriptiveNote>\n               <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n               <p>Nota : champ ancien identifiant pas accessible<\/p>\n               <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n            <\/descriptiveNote>",
             "uri": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "legalStatuses": [
         {
-            "dataType": "term",
+            "dataType": "legalStatus",
             "term": {
                 "id": null,
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
@@ -95,7 +103,9 @@
                 "description": null
             },
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "conventionDeclarations": [
@@ -103,7 +113,9 @@
             "dataType": "ConventionDeclaration",
             "text": "<conventionDeclaration>\n         <citation> Notice \u00e9tablie conform\u00e9ment \u00e0 la norme ICA-ISAAR (CPF) 2004, aux normes ISO 8601 pour le syst\u00e8me de normalisation des dates utilis\u00e9, ainsi que AFNOR NF Z44-061 juin 1986 Catalogage : forme et structure des vedettes noms de personne, des vedettes titres, des rubriques de classement et des titres forg\u00e9s et NF Z 44-060, d\u00e9cembre 1996 Catalogue d'auteurs et d'anonymes \u2013 Forme et structure des vedettes de collectivit\u00e9s-auteurs. <\/citation>\n      <\/conventionDeclaration>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "languagesUsed": [],
@@ -116,33 +128,43 @@
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "7650",
-                        "term": "authorizedForm"
+                        "id": "14846",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "description": null
                     },
-                    "name": "ANF"
+                    "name": "ANF",
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "language": {
                 "dataType": "Language",
                 "language": {
-                    "id": "144",
+                    "id": "8916",
                     "term": "fre",
                     "uri": null,
                     "description": "French"
                 },
                 "script": {
-                    "id": "586",
+                    "id": "35491",
                     "term": "Latn",
                     "uri": null,
-                    "description": "Latin"
+                    "description": null
                 },
                 "vocabularySource": null,
                 "note": null,
                 "id": null,
-                "version": null
+                "version": null,
+                "operation": null,
+                "dates": []
             },
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "NameEntry",
@@ -151,7 +173,35 @@
             "contributors": [],
             "language": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2012-01-01",
+                    "fromDateOriginal": "2012",
+                    "fromType": null,
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": "2014-03-03",
+                    "toDateOriginal": "03\/03\/2014",
+                    "toType": null,
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ]
         },
         {
             "dataType": "NameEntry",
@@ -160,14 +210,42 @@
             "contributors": [],
             "language": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2003-01-01",
+                    "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ]
         }
     ],
     "occupations": [
         {
             "dataType": "Occupation",
             "term": {
-                "id": "9470",
+                "id": "16666",
                 "term": "archiviste",
                 "uri": null,
                 "description": null
@@ -175,16 +253,40 @@
             "vocabularySource": "d699msirr1g-3naumnfaswc",
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "biogHists": [
         {
             "dataType": "BiogHist",
-            "language": null,
+            "language": {
+                "dataType": "Language",
+                "language": {
+                    "id": "8916",
+                    "term": "fre",
+                    "uri": null,
+                    "description": "French"
+                },
+                "script": {
+                    "id": "35491",
+                    "term": "Latn",
+                    "uri": null,
+                    "description": null
+                },
+                "vocabularySource": null,
+                "note": null,
+                "id": null,
+                "version": null,
+                "operation": null,
+                "dates": []
+            },
             "text": "<biogHist>\n            <p>Cet \n     <span style=\"underline\">organisme fictif<\/span> est cr\u00e9\u00e9 pour faire des \n     <span style=\"bold\">tests aux Archives nationales<\/span>. \n    <\/p>\n            <p>Insertion de \n     <span style=\"italic\">caract\u00e8res sp\u00e9ciaux<\/span> : \u00ab blah \u00bb \n    <\/p>\n            <p>Pas possible de mettre un lien hypertexte ici.<\/p>\n            <p>Caract\u00e8res en exposant ?<\/p>\n            <p>Liste<\/p>\n            <list>\n               <item>item 1<\/item>\n               <item>item 2<\/item>\n            <\/list>\n         <citation>Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)<\/citation><\/biogHist>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "relations": [
@@ -193,7 +295,7 @@
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
-            "targetArkID": "",
+            "targetArkID": null,
             "targetEntityType": {
                 "id": null,
                 "term": null,
@@ -219,17 +321,44 @@
                 "description": null
             },
             "content": "Service interminist\u00e9riel des archives de France",
-            "dates": null,
             "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2010-01-01",
+                    "fromDateOriginal": "2010",
+                    "fromType": null,
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ]
         },
         {
             "dataType": "ConstellationRelation",
             "sourceConstellation": null,
             "targetConstellation": null,
             "sourceArkID": null,
-            "targetArkID": "",
+            "targetArkID": null,
             "targetEntityType": {
                 "id": null,
                 "term": null,
@@ -237,28 +366,55 @@
                 "description": null
             },
             "type": {
-                "id": "28214",
+                "id": "35410",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "altType": {
-                "id": "28214",
+                "id": "35410",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "cpfRelationType": {
-                "id": "28214",
+                "id": "35410",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
             "content": "Rocard, Michel",
-            "dates": null,
             "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": [
+                {
+                    "dataType": "SNACDate",
+                    "fromDate": "2003-01-01",
+                    "fromDateOriginal": "2003",
+                    "fromType": null,
+                    "fromBC": false,
+                    "fromRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "toDate": null,
+                    "toDateOriginal": null,
+                    "toType": null,
+                    "toBC": false,
+                    "toRange": {
+                        "notBefore": null,
+                        "notAfter": null
+                    },
+                    "isRange": true,
+                    "note": null,
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ]
         },
         {
             "dataType": "ConstellationRelation",
@@ -286,10 +442,11 @@
             },
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
-            "dates": null,
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "ConstellationRelation",
@@ -317,17 +474,18 @@
             },
             "cpfRelationType": null,
             "content": "Notice Test Collectivit\u00e9",
-            "dates": null,
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "resourceRelations": [
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "694",
+                "id": "8",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
@@ -346,7 +504,7 @@
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
             "role": {
-                "id": "692",
+                "id": "6",
                 "term": "creatorOf",
                 "uri": null,
                 "description": null
@@ -355,12 +513,14 @@
             "source": null,
             "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "694",
+                "id": "8",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
@@ -379,7 +539,7 @@
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
             "role": {
-                "id": "693",
+                "id": "7",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -388,12 +548,14 @@
             "source": null,
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         },
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "694",
+                "id": "8",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
@@ -412,7 +574,7 @@
             },
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
             "role": {
-                "id": "693",
+                "id": "7",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -421,14 +583,16 @@
             "source": null,
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "functions": [
         {
             "dataType": "SNACFunction",
             "term": {
-                "id": "2657",
+                "id": "1971",
                 "term": "culture",
                 "uri": null,
                 "description": null
@@ -437,7 +601,9 @@
             "vocabularySource": "d5bhviikk9--y6te63k761ib",
             "note": null,
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "places": [
@@ -457,17 +623,13 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2012-01-01",
                     "fromDateOriginal": "2012",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "fromType": null,
                     "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
@@ -476,7 +638,7 @@
                     "toDate": null,
                     "toDateOriginal": null,
                     "toType": null,
-                    "toBC": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
@@ -484,7 +646,9 @@
                     "isRange": true,
                     "note": null,
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
@@ -497,7 +661,9 @@
                     "language": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -525,17 +691,13 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2012-01-01",
                     "fromDateOriginal": "2012",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "fromType": null,
                     "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
@@ -544,7 +706,7 @@
                     "toDate": null,
                     "toDateOriginal": null,
                     "toType": null,
-                    "toBC": null,
+                    "toBC": false,
                     "toRange": {
                         "notBefore": null,
                         "notAfter": null
@@ -552,7 +714,9 @@
                     "isRange": true,
                     "note": null,
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
@@ -565,7 +729,9 @@
                     "language": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -585,17 +751,13 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "fromType": null,
                     "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
@@ -603,12 +765,7 @@
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "toType": null,
                     "toBC": false,
                     "toRange": {
                         "notBefore": null,
@@ -617,7 +774,9 @@
                     "isRange": true,
                     "note": null,
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
@@ -630,7 +789,9 @@
                     "language": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -658,17 +819,13 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "fromType": null,
                     "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
@@ -676,12 +833,7 @@
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "toType": null,
                     "toBC": false,
                     "toRange": {
                         "notBefore": null,
@@ -690,7 +842,9 @@
                     "isRange": true,
                     "note": null,
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
@@ -703,7 +857,9 @@
                     "language": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ]
         },
@@ -731,17 +887,13 @@
             "note": "\n                  \n               ",
             "id": null,
             "version": null,
+            "operation": null,
             "dates": [
                 {
                     "dataType": "SNACDate",
                     "fromDate": "2003-01-01",
                     "fromDateOriginal": "2003",
-                    "fromType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "fromType": null,
                     "fromBC": false,
                     "fromRange": {
                         "notBefore": null,
@@ -749,12 +901,7 @@
                     },
                     "toDate": "2012-12-31",
                     "toDateOriginal": "2012",
-                    "toType": {
-                        "id": null,
-                        "term": null,
-                        "uri": null,
-                        "description": null
-                    },
+                    "toType": null,
                     "toBC": false,
                     "toRange": {
                         "notBefore": null,
@@ -763,7 +910,9 @@
                     "isRange": true,
                     "note": null,
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ],
             "snacControlMetadata": [
@@ -776,7 +925,9 @@
                     "language": null,
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
-                    "version": null
+                    "version": null,
+                    "operation": null,
+                    "dates": []
                 }
             ]
         }
@@ -789,7 +940,9 @@
             "dataType": "GeneralContext",
             "text": "<generalContext>\n            <p>idem<\/p>\n         <\/generalContext>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "structureOrGenealogies": [
@@ -797,7 +950,9 @@
             "dataType": "StructureOrGenealogy",
             "text": "<structureOrGenealogy>\n            <p>idem<\/p>\n         <\/structureOrGenealogy>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "mandates": [
@@ -805,22 +960,20 @@
             "dataType": "Mandate",
             "text": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
     "id": null,
     "version": null,
+    "operation": null,
     "dates": [
         {
             "dataType": "SNACDate",
             "fromDate": "2003-01-01",
             "fromDateOriginal": "2003",
-            "fromType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "fromType": null,
             "fromBC": false,
             "fromRange": {
                 "notBefore": null,
@@ -829,7 +982,7 @@
             "toDate": null,
             "toDateOriginal": null,
             "toType": null,
-            "toBC": null,
+            "toBC": false,
             "toRange": {
                 "notBefore": null,
                 "notAfter": null
@@ -837,7 +990,9 @@
             "isRange": true,
             "note": "\n               \n            ",
             "id": null,
-            "version": null
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ]
 }

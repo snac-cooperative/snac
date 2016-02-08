@@ -26,6 +26,8 @@ namespace snac\data;
 class SNACFunction extends AbstractData {
 
     /**
+     * Vocabulary Term
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/term
@@ -35,6 +37,8 @@ class SNACFunction extends AbstractData {
     private $term;
 
     /**
+     * Type of Function
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/@localType
@@ -45,6 +49,8 @@ class SNACFunction extends AbstractData {
 
 
     /**
+     * Descriptive Note
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/descriptiveNote
@@ -54,6 +60,8 @@ class SNACFunction extends AbstractData {
     private $note;
 
     /**
+     * Vocabulary Source
+     * 
      * From EAC-CPF tag(s):
      * 
      * * function/term/@vocabularySource
@@ -65,8 +73,8 @@ class SNACFunction extends AbstractData {
     /**
      * Constructor
      *
-     * A setMaxDateCount(1) means a single date for this class.
-     *
+     * Functions may only have one date object.
+     * 
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
      * send objects around the system, not for generally creating a new object.
      * 
@@ -79,8 +87,6 @@ class SNACFunction extends AbstractData {
 
     /**
      * Get the Term for this function 
-     * 
-     * Example files: /data/extract/anf/FRAN_NP_050744.xml
      *
      * * function/term
      * 
@@ -107,6 +113,8 @@ class SNACFunction extends AbstractData {
 
 
     /**
+     * Get Descriptive Note
+     * 
      * Get the human-readable descriptive note for this function 
      *
      * * function/descriptiveNote
@@ -120,7 +128,7 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Get the vocabulary source for this function 
+     * Get the vocabulary source
      *
      * * function/term/@vocabularySource
      * 
@@ -174,12 +182,12 @@ class SNACFunction extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["term"]))
+        if (isset($data["term"]) && $data["term"] != null)
             $this->term = new Term($data["term"]);
         else
             $this->term = null;
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new Term($data["type"]);
         else
             $this->type = null;
@@ -199,7 +207,9 @@ class SNACFunction extends AbstractData {
     }
 
     /**
-     * Set the term of this function (controlled vocabulary)
+     * Set the term of this function
+     * 
+     * This comes from the controlled vocabulary
      * 
      * @param \snac\data\Term $term term
      */
@@ -213,7 +223,7 @@ class SNACFunction extends AbstractData {
      * 
      * @param \snac\data\Term $type type
      */
-    public function setType(\snac\data\Term $type) {
+    public function setType($type) {
 
         $this->type = $type;
     }

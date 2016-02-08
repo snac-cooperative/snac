@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Snac Source. A "source" is a source in the sense of a citation, and has qualities of an authority file.
+ * Snac Source File
  *
  * Contains the data class for source information
  *
@@ -16,15 +15,12 @@
 namespace snac\data;
 
 /**
- * Source data storage class.
+ * Source
  *
- * Snac Source File. A "source" is a citation source, and has qualities of an authority file although every
+ * A "source" is a citation source, and has qualities of an authority file although every
  * source is independent, even if it seems to be a duplicate.  This appears to derive from
  * /eac-cpf/control/source in the CPF. Going forward we use it for all sources.  For example,
  * SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
- *
- * Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
- * just like date. 
  *
  * @author Robbie Hott
  *        
@@ -32,14 +28,14 @@ namespace snac\data;
 class Source extends AbstractData {
 
     /**
-     * Langage object 
+     * Language
      * 
      * @var \snac\data\Language The language this source was written in
      */
     private $language;
 
     /**
-     * @var string text of this source. 
+     * @var string Text of this source. 
      */
     private $text;
 
@@ -57,8 +53,18 @@ class Source extends AbstractData {
      * @var \snac\data\Term Type of this source
      */
     private $type;
+    
+    /**
+     * Constructor
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+    }
 
     /**
+     * Get Language
+     * 
      * Get the language this source was written in
      * 
      * @return \snac\data\Language Language of this source
@@ -152,12 +158,12 @@ class Source extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["language"]))
+        if (isset($data["language"]) && $data["language"] != null)
             $this->language = new Language($data["language"]);
         else
             $this->language = null;
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new Term($data["type"]);
         else
             $this->type = null;
@@ -186,7 +192,7 @@ class Source extends AbstractData {
      * 
      * @param \snac\data\Language $language the language of this source
      */
-    public function setLanguage(\snac\data\Language $language) {
+    public function setLanguage($language) {
 
         $this->language = $language;
     }

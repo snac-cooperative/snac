@@ -38,6 +38,8 @@ class SNACControlMetadata extends AbstractData {
     private $subCitation;
 
     /**
+     * Source Data
+     * 
      * We put original strings in here. For example an original place string.
      *
      * @var string source data, the "as recorded" data: exactly what was found in the source
@@ -124,17 +126,17 @@ class SNACControlMetadata extends AbstractData {
         // Metadata should never have metadata
         unset ($this->snacControlMetadata);
 
-        if (isset($data["language"]))
+        if (isset($data["language"]) && $data["language"] != null)
             $this->language = new Language($data["language"]);
         else
             $this->language = null;
 
-        if (isset($data["citation"]))
+        if (isset($data["citation"]) && $data["citation"] != null)
             $this->citation = new Source($data["citation"]);
         else
             $this->citation = null;
         
-        if (isset($data["descriptiveRule"]))
+        if (isset($data["descriptiveRule"]) && $data["descriptiveRule"] != null)
             $this->descriptiveRule = new Term($data["descriptiveRule"]);
         else
             $this->descriptiveRule = null;
@@ -216,7 +218,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param \snac\data\Source $citation the citation source
      */
-    public function setCitation(\snac\data\Source $citation) {
+    public function setCitation($citation) {
         $this->citation = $citation;
     }
 
@@ -234,7 +236,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param string $sourceData source data, the "as recorded" data: exactly what was found in the source
      */
-    public function setSourceData(string $sourceData) {
+    public function setSourceData($sourceData) {
         $this->sourceData = $sourceData;
     }
 
@@ -252,7 +254,7 @@ class SNACControlMetadata extends AbstractData {
      *
      * @param \snac\data\Language $language the language associated with this citation/data
      */
-    public function setLanguage(\snac\data\Language $language) {
+    public function setLanguage($language) {
         $this->language = $language;
     }
 

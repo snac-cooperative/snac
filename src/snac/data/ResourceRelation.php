@@ -16,7 +16,7 @@
 namespace snac\data;
 
 /**
- * Resource Relationship.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
+ * Resource Relation
  *
  * Data storage class for relationships of an Identity Constellation to an external Resource.
  *
@@ -26,6 +26,8 @@ namespace snac\data;
 class ResourceRelation extends AbstractData {
 
     /**
+     * Document Type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/@role
@@ -35,6 +37,8 @@ class ResourceRelation extends AbstractData {
     private $documentType = null;
 
     /**
+     * Link Type
+     * 
      * From EAC-CPF tag(s):
      *
      * Daniel says this is only a hard coded 'simple' and we don't need to store it, but we will hard code it
@@ -50,6 +54,8 @@ class ResourceRelation extends AbstractData {
     private $linkType = null;
     
     /**
+     * Entry Type
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/relationEntry/@localType
@@ -60,6 +66,8 @@ class ResourceRelation extends AbstractData {
     private $entryType = null;
 
     /**
+     * Link URI
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/@href
@@ -69,6 +77,8 @@ class ResourceRelation extends AbstractData {
     private $link = null;
 
     /**
+     * Role
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/@arcrole
@@ -78,6 +88,8 @@ class ResourceRelation extends AbstractData {
     private $role = null;
 
     /**
+     * Content
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/resourceEntry
@@ -87,6 +99,8 @@ class ResourceRelation extends AbstractData {
     private $content = null;
 
     /**
+     * XML source
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/objectXMLWrap
@@ -96,6 +110,8 @@ class ResourceRelation extends AbstractData {
     private $source = null;
 
     /**
+     * Descriptive Note
+     * 
      * From EAC-CPF tag(s):
      * 
      * * resourceRelation/descriptiveNote
@@ -105,7 +121,9 @@ class ResourceRelation extends AbstractData {
     private $note = null;
 
     /**
-     * Get the document type for the document pointed to by this relation, such as "ArchivalResource" 
+     * Get the document type
+     * 
+     *  Get the document type for the document pointed to by this relation, such as "ArchivalResource" 
      *
      * * resourceRelation/@role
      * 
@@ -118,7 +136,9 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
-     * Get the xlink type.  This should not be used, as it is always "simple" 
+     * Get the xlink type
+     * 
+     * This should not be used, as it is always "simple" 
      *
      * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
      * in the export template.
@@ -129,6 +149,7 @@ class ResourceRelation extends AbstractData {
      * 'linkType' => 'simple',
      * 
      * @return \snac\data\Term Link type
+     * @deprecated
      *
      */
     function getLinkType()
@@ -137,6 +158,8 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
+     * Get Secondary Type
+     * 
      * Get the secondary type of the document pointed to by this relation.  The ANF use
      * this field to repeat (in short form) the document type from @role, such as
      * "archival" for "ArchivalResource"
@@ -152,6 +175,8 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
+     * Get URI Link
+     * 
      * Get the URI link for the document pointed to by this relation
      *
      * * resourceRelation/@href
@@ -165,6 +190,8 @@ class ResourceRelation extends AbstractData {
     }
 
     /**
+     * Get Role
+     * 
      * Get the role the constellation played with respect to this resource,
      * such as "authorOf" or ""
      *
@@ -263,17 +290,17 @@ class ResourceRelation extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["documentType"]))
+        if (isset($data["documentType"]) && $data["documentType"] != null)
             $this->documentType = new \snac\data\Term($data["documentType"]);
         else
             $this->documentType = null;
 
-        if (isset($data["linkType"]))
+        if (isset($data["linkType"]) && $data["linkType"] != null)
             $this->linkType = new \snac\data\Term($data["linkType"]);
         else
             $this->linkType = null;
 
-        if (isset($data["entryType"]))
+        if (isset($data["entryType"]) && $data["entryType"] != null)
             $this->entryType = new \snac\data\Term($data["entryType"]);
         else
             $this->entryType = null;
@@ -283,7 +310,7 @@ class ResourceRelation extends AbstractData {
         else
             $this->link = null;
 
-        if (isset($data["role"]))
+        if (isset($data["role"]) && $data["role"] != null)
             $this->role = new \snac\data\Term($data["role"]);
         else
             $this->role = null;

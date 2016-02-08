@@ -27,6 +27,8 @@ namespace snac\data;
 class Occupation extends AbstractData {
     
     /**
+     * Occupation Term
+     * 
      * From EAC-CPF tag(s):
      * 
      * * occupation/term
@@ -36,6 +38,8 @@ class Occupation extends AbstractData {
     private $term = null;
 
     /**
+     * Vocabulary Source
+     * 
      * From EAC-CPF tag(s):
      * 
      * occupation/term/@vocabularySource
@@ -60,6 +64,8 @@ class Occupation extends AbstractData {
     private $vocabularySource = null;
 
     /**
+     * Descriptive Note
+     * 
      * From EAC-CPF tag(s):
      * 
      * * occupation/descriptiveNote
@@ -82,14 +88,7 @@ class Occupation extends AbstractData {
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(1);
-        if ($data == null) 
-        {
-            // Occupation doesn't have any special null initializers
-        } 
-        else
-        {
-            parent::__construct($data);
-        }
+        parent::__construct($data);
     }
 
     /**
@@ -166,7 +165,7 @@ class Occupation extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["term"]))
+        if (isset($data["term"]) && $data["term"] != null)
             $this->term = new Term($data["term"]);
         else
             $this->term = null;
@@ -185,17 +184,19 @@ class Occupation extends AbstractData {
     }
     
     /**
-     * Set the occupation controlled vocabulary name
+     * Set the occupation controlled vocabulary term
      * 
      * @param \snac\data\Term $term The occupation term
      */
-    public function setTerm(\snac\data\Term $term) {
+    public function setTerm($term) {
         $this->term = $term;
     }
     
     
     /**
-     * Set the vocabulary source. These values come from a controlled vocabulary, but so far, they are not
+     * Set the vocabulary source
+     * 
+     * These values come from a controlled vocabulary, but so far, they are not
      * well defined. For example: d699msirr1g-3naumnfaswc
      * 
      * @param string $vocab Vocabulary source string
@@ -206,6 +207,7 @@ class Occupation extends AbstractData {
     
     /**
      * Set the descriptive note for this occupation
+     * 
      * @param string $note Descriptive note string
      */
     public function setNote($note) {

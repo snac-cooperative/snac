@@ -27,8 +27,8 @@ class Nationality extends AbstractTermData {
      * Constructor
      */
     public function __construct($data = null) {
-        // $this->setDataType("Nationality");
-        $this->validType = "nationality";
+        $this->setDataType("Nationality");
+        $this->setMaxDateCount(0);
         parent::__construct($data);
     }
 

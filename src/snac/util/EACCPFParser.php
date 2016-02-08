@@ -336,13 +336,14 @@ class EACCPFParser {
                         foreach ($this->getChildren($control) as $source) {
                             $satts = $this->getAttributes($source);
                             $sourceObj = new \snac\data\Source();
-                            /* 
-                             * File /data/merge/99166-w6df9ps1.xml ok.
-                             * PHP Notice:  Undefined index: type in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 308
-                             * PHP Notice:  Undefined index: href in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 309
-                             */
-                            $sourceObj->setType($this->getTerm($this->getValue($satts['type']), "source_type"));
-                            $sourceObj->setURI($satts['href']);
+                            if (isset($satts["type"])) {
+                                $sourceObj->setType($this->getTerm($this->getValue($satts['type']), "source_type"));
+                                unset($satts["type"]);
+                            }
+                            if (isset($satts["href"])) {
+                                $sourceObj->setURI($satts['href']);
+                                unset($satts["href"]);
+                            }
                             foreach ($this->getChildren($source) as $innerSource) {
                                 if ($innerSource->getName() == "objectXMLWrap")
                                     $sourceObj->setText($innerSource->asXML());
@@ -1315,9 +1316,13 @@ class EACCPFParser {
                 switch ($dateTag->getName()) {
                 case "fromDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
+                        $dateType = null;
+                        if (isset($dateAtts["localType"]))
+                            $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                            
                         $date->setFromDate((string) $dateTag, 
                                            $dateAtts["standardDate"], 
-                                           $this->getTerm($this->getValue($dateAtts["localType"]), "date_type"));
+                                           $dateType);
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1340,7 +1345,12 @@ class EACCPFParser {
                     break;
                 case "toDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "date_type"));
+                        $dateType = null;
+                        if (isset($dateAtts["localType"]))
+                            $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                        $date->setToDate((string) $dateTag, 
+                                $dateAtts["standardDate"], 
+                                $dateType);
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1383,7 +1393,13 @@ class EACCPFParser {
                 // Handle the single date that appears
                 $date->setRange(false);
                 $dateAtts = $this->getAttributes($dateElement);
-                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getTerm($this->getValue($dateAtts["localType"]), "date_type"));
+
+                $dateType = null;
+                if (isset($dateAtts["localType"]))
+                    $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                $date->setDate((string) $dateElement, 
+                        $dateAtts["standardDate"], 
+                        $dateType);
                 $notBefore = null;
                 $notAfter = null;
                 if (isset($dateAtts["notBefore"]))

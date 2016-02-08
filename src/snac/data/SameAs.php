@@ -24,7 +24,7 @@ namespace snac\data;
 class SameAs extends AbstractData {
 
     /**
-     * @var string text of this sameAs or otherRecordID. 
+     * @var string text of this sameAs or otherRecordID
      */
     private $text;
 
@@ -37,6 +37,15 @@ class SameAs extends AbstractData {
      * @var \snac\data\Term Type of this sameAs or otherRecordID
      */
     private $type;
+    
+
+    /**
+     * Constructor
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+    }
 
     /**
      * Get the text of this sameAs or otherRecordID
@@ -108,7 +117,7 @@ class SameAs extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["type"]))
+        if (isset($data["type"]) && $data["type"] != null)
             $this->type = new Term($data["type"]);
         else
             $this->type = null;
