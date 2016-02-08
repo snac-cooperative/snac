@@ -88,22 +88,139 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testDemoConstellation()
     {
         $vhInfo = $this->dbu->demoConstellation();
+
         $cObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
         $this->assertNotNull($cObj);
 
         /* 
          * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
          */ 
+
         $vhInfo = $this->dbu->demoConstellation();
         $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
                                'version' => $vhInfo['version']);
+
         $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
         $this->assertNotNull($reverseCObj);
 
         // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
         $this->assertTrue(count($demo) == 100);
-        // printf("%s\n", $demo);
+
+        /* 
+         * Delete a name and verify it. 
+         * Need a helper function somewhere to associate object type with database table. 
+         */
+        $mNObj = $this->dbu->multiNameConstellation($this->appUserID);
+
+        $preDeleteNameCount = count($mNObj->getNameEntries());
+        
+        /* 
+         * printf("\npre count: %s using main_id: %s recordid: %s\n", 
+         *        $preDeleteNameCount,
+         *        $mNObj->getID(),
+         *        $mNObj->getNameEntries()[0]->getID() );
+         */
+        
+        /*
+         * We need the new version of the deleted record, which becomes the max(version) of the constellation.
+         *
+         * Older code used $mNObj->getNameEntries()[0]->getMainID() for the mainID, but it is better that
+         * mainID aka main_id exist only in the Constellation object. Or that we have a variable outside the
+         * object as we do here.
+         *
+         * On the other hand, it might be best to delete by sending a complete php object to setDeleted() and
+         * that object would contain id, version, mainID (available via getters). This would allow
+         * setDeleted() to work without any out-of-band information.
+         * 
+         */  
+        $newVersion = $this->dbu->setDeleted($this->appUserID,
+                                             $this->role,
+                                             'bulk ingest',
+                                             'delete a name, that is: set is_deleted to true',
+                                             $mNObj->getID(), // constellation main_id
+                                             'name',
+                                             $mNObj->getNameEntries()[0]->getID());
+
+        /* 
+         * Post delete. The delete operation mints a new version number which is returned by setDeleted().  We
+         * combine the new version and the known (and unchanged main_id) to create a new vhInfo associative
+         * list. Then we pass that to selectConstellation() to get the current copy of the constellation from
+         * the database.
+         *
+         * Note: constellation object getID() returns the constellation id, not the pre-record id as with
+         * getID() for all other data objects.
+         * 
+         */
+        $postDVhInfo = array('version' => $newVersion,
+                             'main_id' => $mNObj->getID());
+        $postDObj = $this->dbu->selectConstellation($postDVhInfo, $this->appUserID);
+        $postDeleteNameCount = count($postDObj->getNameEntries());
+        $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
+
+        $undelVersion = $this->dbu->clearDeleted($this->appUserID,
+                                             $this->role,
+                                             'bulk ingest',
+                                             'un-delete a name, that is: set is_deleted to false',
+                                             $mNObj->getID(), // constellation main_id
+                                             'name',
+                                             $mNObj->getNameEntries()[0]->getID());
+        
+        /*
+         * Undelete the name we just deleted, and check that we're not back to the original number of names.
+         */ 
+
+        $undeleteDVhInfo = array('version' => $undelVersion,
+                                 'main_id' => $mNObj->getID());
+        $unDObj = $this->dbu->selectConstellation($undeleteDVhInfo, $this->appUserID);
+        $unDeleteNameCount = count($unDObj->getNameEntries());
+        $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
+
+        /*
+         * Modify a name and save the modified name only. No other parts of the constellation are updated,
+         * which is reasonable because no other parts have been modified. After saving, re-read the entire
+         * constellation and check that the number of names is unchanged, and that we have the modified
+         * name. An early bug caused names to multiply on update.
+         *
+         * Note: getNameEntries() returns a reference, and changes to that reference modify $unDObj in place.
+         * 
+         * Use that name reference so we can modify the name in place without asking for it a second time.
+         */ 
+
+        $neNameListRef = $unDObj->getNameEntries();
+
+        $origNCount = count($neNameListRef);
+        $name = $neNameListRef[0]->getOriginal();
+        $modName = preg_replace('/(^.*) /', '$1xx ', $name);
+        $neNameListRef[0]->setOriginal($modName);
+
+        $modVhInfo = $this->dbu->updatePrepare($unDObj,
+                                               $this->appUserID,
+                                               $this->role,
+                                               'needs review',
+                                               'modified first alt name');
+        // printf("\n: test save name\n");
+        $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+
+        $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
+
+        // printf("\n mod: $modName db: %s\n", $modObj->getNameEntries()[0]->getOriginal());
+
+        $this->assertTrue($modName == $modObj->getNameEntries()[0]->getOriginal());
+
+        /* 
+         * printf("\n");
+         * foreach ($modObj->getNameEntries() as $ne)
+         * {
+         *     printf("id: %s version: %s main_id: %s %s\n",
+         *            $ne->getID(),
+         *            $ne->getVersion(),
+         *            $modObj->getID(),
+         *            $ne->getOriginal());
+         * }
+         */
+
+        $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
         
     public function testParseToDB()
@@ -124,19 +241,26 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($selectedConstellationObj);
 
         /*
-         * Check a couple of dbInfo values for the Constellation and sub-objects.
+         * Check a couple of db info values for the Constellation. This is the constellation version aka
+         * max(version) aka max(version_history.id) for the constellation. This is also
+         * version_history.main_id aka the constellation id (which is not the per-table record id since there
+         * is no singular table for a constellation).
          */
-        $this->assertTrue($selectedConstellationObj->getDBInfo()['version'] > 0);
-        $this->assertTrue($selectedConstellationObj->getDBInfo()['main_id'] > 0);
+        $this->assertTrue($selectedConstellationObj->getVersion() > 0);
+        $this->assertTrue($selectedConstellationObj->getID() > 0);
 
         /*
          * Optional assertions, depending on if our constellation has function.  This is kind of a
          * weak idea, but until we have a test constellation with all sub-object, this is it.
+         *
+         * Since this is a function, getVersion() returns the version of this function which may be <= the constellation.
+         *
+         * Also, this is the per-table record id aka table.id (not the constellation main_id).
          */
         if (($fObj = $selectedConstellationObj->getFunctions()))
         {
-            $this->assertTrue($fObj->getDBInfo()['version'] > 0);
-            $this->assertTrue($fObj->getDBInfo()['main_id'] > 0);
+            $this->assertTrue($fObj->getVersion() > 0);
+            $this->assertTrue($fObj->getID() > 0);
         }
         
         /*

@@ -146,7 +146,10 @@ class DatabaseConnector {
     }
 
     /**
-     * Prepare and Execute a database statement
+     * Prepare and Execute a database statement. From the php docs on prepare(): [The first argument] stmtname
+     * may be "" to create an unnamed statement, in which case any pre-existing unnamed statement is
+     * automatically replaced; otherwise it is an error if the statement name is already defined in the
+     * current session.
      *
      * Handles both the prepare and execute stages.
      * 
