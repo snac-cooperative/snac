@@ -983,7 +983,13 @@ class EACCPFParser {
                                 $relation = new \snac\data\ConstellationRelation();
                                 $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
                                 $relation->setTargetArkID($ratts['href']);
-                                $relation->setTargetType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+                                /*
+                                 * This method name did not match the var or getter. Fixed. The old name
+                                 * mismatch caused a fair amount of confusion over in DBUtil
+                                 * 
+                                 * $relation->setTargetType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+                                 */
+                                $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
                                 /*
                                  * cpfRelation/@type cpfRelation@xlink:type
                                  *

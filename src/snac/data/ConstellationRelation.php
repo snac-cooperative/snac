@@ -420,10 +420,13 @@ class ConstellationRelation extends AbstractData {
     
     /**
      * Set the target entity type
+     *
+     * Feb 8 2016 renamed from setTargetType() to setTargetEntityType() in order to match the variable name,
+     * and to match getTargetEntityType().
      * 
      * @param \snac\data\Term $type Target's entity type
      */
-    public function setTargetType(\snac\data\Term $type) {
+    public function setTargetEntityType(\snac\data\Term $type) {
         $this->targetEntityType = $type;
     }
 

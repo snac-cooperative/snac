@@ -977,19 +977,19 @@ class DBUtil
      * test with: scripts/get_constellation_demo.php 2 10
      *
      * 
-     * | php                                 | sql              |
-     * |-------------------------------------+------------------|
-     * | setDBInfo                           | id               |
-     * | setDBInfo                           | version          |
-     * | setDBInfo                           | main_id          |
-     * | setTargetConstellation              | related_id       |
-     * | setTargetArkID                      | related_ark      |
-     * | setTargetType  aka targetEntityType | role             |
-     * | setType                             | arcrole          |
-     * | setCPFRelationType                  | relation_type    |
-     * | setContent                          | relation_entry   |
-     * | setDates                            | date             |
-     * | setNote                             | descriptive_note |
+     * | php                                    | sql              |
+     * |----------------------------------------+------------------|
+     * | setDBInfo                              | id               |
+     * | setDBInfo                              | version          |
+     * | setDBInfo                              | main_id          |
+     * | setTargetConstellation                 | related_id       |
+     * | setTargetArkID                         | related_ark      |
+     * | setTargetEntityType  was setTargetType | role             |
+     * | setType                                | arcrole          |
+     * | setCPFRelationType                     | relation_type    |
+     * | setContent                             | relation_entry   |
+     * | setDates                               | date             |
+     * | setNote                                | descriptive_note |
      * 
      * cpfRelation/@type cpfRelation@xlink:type
      *
@@ -1013,13 +1013,12 @@ class DBUtil
              *
              * Unclear why those methods (and their properties) exist, but fill them in regardless.
              */
-            $relatedObj->setsetSourceConstellation($cObj->getID());
+            $relatedObj->setSourceConstellation($cObj->getID());
             $relatedObj->setSourceArkID($cObj->getARK());
-            $relatedObj->setTargetEntityType(foo);
              
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
-            $relatedObj->setTargetType($this->populateTerm($oneRel['role']));
+            $relatedObj->setTargetEntityType($this->populateTerm($oneRel['role']));
             $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
             /*
              * Not using setAltType(). It is never used. See ConstellationRelation.php
@@ -1611,7 +1610,7 @@ class DBUtil
             $relID = $this->sql->insertRelation($vhInfo,
                                                 $fdata->getTargetConstellation(),
                                                 $fdata->getTargetArkID(),
-                                                $fdata->getTargetEntityType()->getID(),
+                                                $this->thingID($fdata->getTargetEntityType()),
                                                 $fdata->getType()->getID(),
                                                 $cpfRelTypeID,
                                                 $fdata->getContent(),
