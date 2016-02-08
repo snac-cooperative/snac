@@ -876,7 +876,7 @@ class DBUtil
      */
     public function saveMandate($vhInfo, $cObj)
     {
-        if ($gList = $cObj->getMandate())
+        if ($gList = $cObj->getMandates())
         {
             foreach ($gList as $term)
             {
