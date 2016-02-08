@@ -582,7 +582,7 @@ class DBUtil
         {
             foreach ($gList as $term)
             {
-                insertConventionDeclaration($vhInfo, 
+                $this->sql->insertConventionDeclaration($vhInfo, 
                                             $term->getID(),
                                             $term->getText());
             }
@@ -631,7 +631,7 @@ class DBUtil
         {
             foreach ($gList as $item)
             {
-                insertStructureOrGenealogy($vhInfo,
+                $this->sql->insertStructureOrGenealogy($vhInfo,
                                            $item->getID(),
                                            $item->getText());
             }
@@ -678,7 +678,7 @@ class DBUtil
         {
             foreach ($gList as $item)
             {
-                insertGeneralContext($vhInfo,
+                $this->sql->insertGeneralContext($vhInfo,
                                      $item->getID(),
                                      $item->getText());
             }
@@ -723,7 +723,7 @@ class DBUtil
         {
             foreach ($gList as $item)
             {
-                insertNationality($vhInfo,
+                $this->sql->insertNationality($vhInfo,
                                   $item->getID(),
                                   $this->thingID($item->getTerm()));
             }
@@ -876,7 +876,7 @@ class DBUtil
         {
             foreach ($gList as $term)
             {
-                $mid = insertMandate($vhInfo,
+                $mid = $this->sql->insertMandate($vhInfo,
                                      $term->getID(),
                                      $term->getText());
             }

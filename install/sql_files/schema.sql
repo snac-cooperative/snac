@@ -789,15 +789,19 @@ create unique index geo_place_idx1 on geo_place (id,version);
 
 -- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
 -- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
---
 
--- create table vocabulary (
---     id          int primary key default nextval('vocabulary_id_seq'),
---     type        text,        -- Type of the vocab
---     value       text,        -- Value of the controlled vocab term
---     uri         text,        -- URI for this controlled vocab term, if it exists
---     description text         -- Textual description of this vocab term
---     );
+-- Feb 8 2016 add "if not exists" just so we don't get a warning from Postgres. This needs to be moved to a
+-- separate schema file. In a simple world the whole schema would always be run on an empty database, but that
+-- is not the case. Our controlled vocabulary and authority data will often not be reloaded when the rest of
+-- the database is reset.
+
+create table if not exists vocabulary (
+        id          int primary key default nextval('vocabulary_id_seq'),
+        type        text,        -- Type of the vocab
+        value       text,        -- Value of the controlled vocab term
+        uri         text,        -- URI for this controlled vocab term, if it exists
+        description text         -- Textual description of this vocab term
+        );
 
 -- create unique index vocabulary_idx on vocabulary(id);
 -- create index vocabulary_type_idx on vocabulary(type);

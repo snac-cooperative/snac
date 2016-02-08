@@ -38,7 +38,9 @@ class SQL
     private $sdb = null;
 
     /**
-     * The constructor makes the outside $db a local variable. I did this out of a general sense of avoiding
+     * The constructor
+     *
+     * Makes the outside $db a local variable. I did this out of a general sense of avoiding
      * globals, but I'm unclear if this is really any better than using a globale $db variable. $db is
      * critical to the application, and is read-only after intialization. Breaking it or changing it in any
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
@@ -54,7 +56,9 @@ class SQL
     }
 
     /**
-     * Mint a new record id. We always insert a new record, even on update. However, new objects do not have a
+     * Mint a new record id.
+     *
+     * We always insert a new record, even on update. However, new objects do not have a
      * record id, so we create a table.id from the main sequence id_seq. This is just a centralized place to
      * do that. 
      *
@@ -156,7 +160,9 @@ class SQL
 
 
     /**
-     * Insert a biogHist. If the $id arg is null, get a new id. Always return $id.
+     * Insert a biogHist.
+     *
+     * If the $id arg is null, get a new id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -228,7 +234,9 @@ class SQL
 
 
     /**
-     * Select the id and role for a given appuser. Maybe this should be called selectAppUserInfo() in keeping
+     * Select the id and role for a given appuser.
+     *
+     * Maybe this should be called selectAppUserInfo() in keeping
      * with naming conventions for the other methods. Also the return values are in a flat array, and might
      * better be return in an assoc list where the keys are based on our usual conventions.
      *
@@ -262,7 +270,9 @@ class SQL
     }
     
     /**
-     * Insert a version_history record. Current this increments the id which is the version number. That needs
+     * Insert a version_history record.
+     *
+     * Current this increments the id which is the version number. That needs
      * to not be incremented in some cases.
      *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
@@ -299,8 +309,10 @@ class SQL
     }
 
     /**
-     * Update a version_history record by getting a new version but keeping the existing main_id. This also
-     * uses DatabaseConnector->query() in an attempt to be more efficient, or perhaps just less verbose.
+     * Update a version_history record
+     *
+     * Get a new version but keeping the existing main_id. This also uses DatabaseConnector->query() in an
+     * attempt to be more efficient, or perhaps just less verbose.
      *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
      *
@@ -340,6 +352,8 @@ class SQL
 
 
     /** 
+     * Insert date
+     *
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      *
@@ -414,6 +428,8 @@ class SQL
 
 
     /** 
+     * Select list of dates
+     * 
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
      * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
      *
@@ -453,7 +469,7 @@ class SQL
     }
 
     /** 
-     * Select from place_link
+     * Select list of place_link
      *
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
      * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
@@ -534,6 +550,8 @@ class SQL
 
 
     /** 
+     * Select a snac control meta data record
+     * 
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
      * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
      *
@@ -646,7 +664,9 @@ class SQL
     }
 
 
-    /** 
+    /**
+     * Insert nrd record
+     * 
      * Insert the non-repeating parts (non repeading data) of the constellation. No need to return a value as
      * the nrd row key is main_id,version which corresponds to the row key in all other tables being
      * id,version. Table nrd is the 1:1 table for the constellation, therefore it is logical (and consistent)
@@ -675,6 +695,8 @@ class SQL
     }
 
     /**
+     * Insert otherID record
+     * 
      * Insert an ID from records that were merged into this constellation. For the sake of convention, we put
      * the SQL columns in the same order as the function args.
      *
@@ -716,9 +738,11 @@ class SQL
     }
     
     /** 
-     * Insert (or update) a name into the database. Language and contributors are related table on name.id,
-     * and the calling code is smart enough to call those insert functions for this name's language and
-     * contributors. Our concern here is tightly focused on writing to table name. Nothing else.
+     * Insert (or update) a name
+     *
+     * Language and contributors are related table on name.id, and the calling code is smart enough to call
+     * those insert functions for this name's language and contributors. Our concern here is tightly focused
+     * on writing to table name. Nothing else.
      * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -757,8 +781,10 @@ class SQL
     }
     
     /**
-     * Insert a contributor record, related to name where contributor.name_id=name.id. This is a one-sided fk
-     * relationship also used for date and language.
+     * Insert a contributor record
+     *
+     * Related to name where contributor.name_id=name.id. This is a one-sided fk relationship also used for
+     * date and language.
      *
      * Old: Contributor has issues. See comments in schema.sql. This will work for now.  Need to fix insert
      * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
@@ -792,14 +818,24 @@ class SQL
     
     
     /**
-     * Insert into table function. The SQL returns the inserted id which is used when inserting a date into
-     * table date_range. Function uses the same vocabulary terms as occupation.
+     * Insert a function record
+     *
+     * The SQL returns the inserted id which is used when inserting a date into table date_range. Function
+     * uses the same vocabulary terms as occupation.
      *
      * If the $id arg is null, get a new id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-     * @param 
+     * @param integer $id Record id
+     *
+     * @param integer $type Function type controlled vocab term id
+     *
+     * @param string $vocabularySource The vocabulary source
+     *
+     * @param string $note Note for this function
+     *
+     * @param integer $term Function term controlled vocab id 
      *
      */
     public function insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
@@ -827,6 +863,27 @@ class SQL
         return $id;
     }
 
+    /**
+     * Insert a Language link record
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     * 
+     * @param integer $id Record id of this languae link
+     *
+     * @param integer $languageID Language controlled vocab id
+     *
+     * @param integer $scriptID Scrip controlled vocab id
+     *
+     * @param string $vocabularySource Vocabulary source of this language link
+     *
+     * @param string $note A note
+     *
+     * @param string $fkTable Related table name
+     *
+     * @param integer $fkID Related table record id, foreign key
+     *
+     * @return integer $id The record id of this record.
+     */
     public function insertLanguage($vhInfo, $id, $languageID, $scriptID, $vocabularySource, $note, $fkTable, $fkID)
     {
         if (! $id)
@@ -898,7 +955,8 @@ class SQL
 
     
     /**
-     * Insert into table subject. Data is currently only a string from the Constellation. If $id is null, get
+     * Insert into table subject.
+     * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -931,7 +989,9 @@ class SQL
     }
 
     /**
-     * Insert into table nationality. Data is currently only a string from the Constellation. If $id is null, get
+     * Insert into table nationality.
+     *
+     * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -964,7 +1024,9 @@ class SQL
     }
 
     /**
-     * Insert into table gender. Data is currently only a string from the Constellation. If $id is null, get
+     * Insert into table gender.
+     *
+     * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1047,8 +1109,11 @@ class SQL
     }
 
     /**
-     * Insert text records. Several tables have identical structure so don't copy/paste, just call
-     * this. DBUtils has code to turn the return values into objects in a Constellation object.
+     * Insert text records.
+     *
+     * Generic core function supports insert into identically structured tables. Several tables have identical
+     * structure so don't copy/paste, just call this. DBUtils has code to turn the return values into objects
+     * in a Constellation object.
      *
      * Solve the multi-version problem by joining to a subquery.
      *
@@ -1089,13 +1154,15 @@ class SQL
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $id,
-                                            $term));
+                                            $text));
         $this->sdb->deallocate($qq);
         return $id;
     }
 
     /**
-     * Insert into table convention_declaration. Data is currently only a string from the Constellation. If
+     * Insert into table convention_declaration.
+     *
+     * Data is currently only a string from the Constellation. If
      * $id is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1111,7 +1178,9 @@ class SQL
     }
 
     /**
-     * Insert into table mandate. Data is currently only a string from the Constellation. If
+     * Insert into table mandate.
+     *
+     * Data is currently only a string from the Constellation. If
      * $id is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1127,7 +1196,9 @@ class SQL
     }
 
     /**
-     * Insert into table structure_genealogy. Data is currently only a string from the Constellation. If $id
+     * Insert into table structure_genealogy.
+     *
+     * Data is currently only a string from the Constellation. If $id
      * is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1143,7 +1214,9 @@ class SQL
     }
 
     /**
-     * Insert into table structure_genealogy. Data is currently only a string from the Constellation. If $id
+     * Insert into table structure_genealogy.
+     *
+     * Data is currently only a string from the Constellation. If $id
      * is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1191,7 +1264,9 @@ class SQL
     }
 
     /**
-     * Select GeneralContext records. DBUtils has code to turn the return values into objects in a
+     * Select GeneralContext records.
+     *
+     * DBUtils has code to turn the return values into objects in a
      * Constellation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1206,7 +1281,9 @@ class SQL
     }
 
     /**
-     * Select conventionDeclaration records. DBUtils has code to turn the return values into objects in a
+     * Select conventionDeclaration records.
+     *
+     * DBUtils has code to turn the return values into objects in a
      * Constellation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
@@ -1221,9 +1298,10 @@ class SQL
     }
 
     /**
-     * Insert a related identity aka table related_identity, aka constellation relation, aka cpf relation, aka
-     * ConstellationRelation object. We first insert into related_identity saving the inserted record
-     * id.
+     * Insert a related identity
+     *
+     * related identity is also known as table related_identity, aka constellation relation, aka cpf relation,
+     * aka ConstellationRelation object. We first insert into related_identity saving the inserted record id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      * 
@@ -1287,8 +1365,10 @@ class SQL
     }
 
     /**
-     * Insert into table related_resource using data from php ResourceRelation object. It is assumed that the
-     * calling code in DBUtils knows the php to sql fields. Note keys in $argList have a fixed order.
+     * Insert into table related_resource
+     *
+     * Use data from php ResourceRelation object. It is assumed that the calling code in DBUtils knows the php
+     * to sql fields. Note keys in $argList have a fixed order.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1367,9 +1447,11 @@ class SQL
 
     /**
      *
-     * Select from table nrd which has 1:1 fields for the constellation. We keep 1:1 fields here, although
-     * table version_history is the center of everything. A class DBUtils method also called
-     * selectConstellation() knows all the SQL methods to call to get the full constellation.
+     * Select from table nrd
+     *
+     * Table nrd has 1:1 fields for the constellation. We keep 1:1 fields here, although table version_history
+     * is the center of everything. A class DBUtils method also called selectConstellation() knows all the SQL
+     * methods to call to get the full constellation.
      *
      * It is intentional that the fields are not retrieved in any particular order because the row will be
      * saved as an associative list. That allows us to write the sql query in a more legible format.
@@ -1404,6 +1486,8 @@ class SQL
 
 
     /**
+     * Select biogHist
+     * 
      * This table has biogHist records (possibly multiple per constellation), and serves as a record for the
      * biogHist to relate to language via foreign key biog_hist.id. Note that language (like date) relies on
      * the fk from the original table to reside in the language table. Calling code will use a second function
@@ -1446,7 +1530,8 @@ class SQL
     }
 
 
-    /** 
+    /**
+     * Helper for selectOtherID()
      *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
      * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
@@ -1485,8 +1570,10 @@ class SQL
 
 
     /** 
-     * select other IDs which were originally ID values of merged records. DBUtils has code that 
-     * adds an otherRecordID to a Constellation object.
+     * select other IDs
+     *
+     * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
+     * Constellation object.
      * 
      * Jan 28 2016 The query use to say "... and main_id=$2 and id=$3');" which is odd. We never constrain on
      * table.id that way. This appears to be old and incorrect code.
@@ -1644,7 +1731,9 @@ class SQL
 
     /**
      *
-     * Select gender records. DBUtils has code to turn the return values into objects in a Constellation object.
+     * Select gender records.
+     *
+     * DBUtils has code to turn the return values into objects in a Constellation object.
      *
      * Solve the multi-version problem by joining to a subquery.
      *
@@ -1679,8 +1768,9 @@ class SQL
 
     /**
      *
-     * Select nationality records. DBUtils has code to turn the return values into objects in a Constellation
-     * object.
+     * Select nationality records.
+     *
+     * DBUtils has code to turn the return values into objects in a Constellation object.
      *
      * Solve the multi-version problem by joining to a subquery.
      *
@@ -1716,8 +1806,10 @@ class SQL
 
     /** 
      *
-     * Select occupation, returning a list of lists. Code in DBUtils foreach's over the outer list, turning
-     * each inner list into an Occupation object.
+     * Select occupation
+     *
+     * Return a list of lists. Code in DBUtils foreach's over the outer list, turning each inner list into an
+     * Occupation object.
      *
      * Nov 24 2015 New convention: the table we're working on is 'aa', and the subquery is 'bb'. This makes
      * the query more of a standard template.  Assuming this works and is a good idea, we should port this to
@@ -1767,7 +1859,10 @@ class SQL
     }
 
     /**
-     * Select a related identity (aka cpf relation). Code in DBUtils turns the returned array into a ConstellationRelation object. 
+     * Select a related identity
+     *
+     * Related identity aka cpf relation. Code in DBUtils turns the returned array into a
+     * ConstellationRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1815,8 +1910,10 @@ class SQL
     }
 
     /**
-     * select related archival resource records given $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to
-     * turn the return value into a pgp ResourceRelation object.
+     * select related archival resource records
+     *
+     * Where $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to turn the return value into a pgp
+     * ResourceRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1852,8 +1949,9 @@ class SQL
     }
 
     /**
-     * Select all function records for the given version and main_id. Code in DBUtils turns the return value into a
-     * SNACFunction object.
+     * Select all function records
+     *
+     * Constrain on version and main_id. Code in DBUtils turns the return value into a SNACFunction object.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1898,11 +1996,13 @@ class SQL
 
 
      /** 
-      * Select all names for the given version and main_id. Code in DBUtils turns each returned list into a
-      * NameEntry object. Order the returned records by preference_score descending so that preferred names
-      * are at the beginning of the returned list. For ties, we also order by id, just so we'll be
-      * consistent. The consistency may help testing more than UI related issues (where names should
-      * consistently appear in the same order each time the record is viewed.)
+      * Select all names
+      *
+      * Constrain on version and main_id. Code in DBUtils turns each returned list into a NameEntry
+      * object. Order the returned records by preference_score descending so that preferred names are at the
+      * beginning of the returned list. For ties, we also order by id, just so we'll be consistent. The
+      * consistency may help testing more than UI related issues (where names should consistently appear in
+      * the same order each time the record is viewed.)
       *
       * Language is a related table where language.fk_id=name.id. Contributor is a related table where
       * contributor.name_id=name.id. See selectLanguage(), selectContributor() both called in DBUtil.
@@ -1987,6 +2087,8 @@ class SQL
 
 
     /** 
+     * Return a test constellation
+     *
      * This is used for testing. Not really random. Get a record that has a date_range record. The query
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
@@ -2017,6 +2119,8 @@ class SQL
     }
     
     /**
+     * Return most recent version
+     * 
      * Helper function to return the most recent version for a given main_id.
      *
      * @param integer $mainID id value matching version_history.main_id.
@@ -2034,6 +2138,8 @@ class SQL
     }
 
     /**
+     * Return the lowest main_id
+     *
      * Return the lowest main_id for a multi-name constellation with 2 or more non-deleted names. Returns a
      * version and main_id for the constelletion to which this name belongs.
      *
@@ -2077,6 +2183,7 @@ class SQL
 
 
     /**
+     * Count vocabulary rows
      *
      * Small utility function to count rows in table vocabulary. Currently only used in DBUtilTest.php
      *
@@ -2097,7 +2204,9 @@ class SQL
     }
 
     /**
-     * Get a set of 100 records, but only return data (version, main_id) that might be necessary for display
+     * Get a set of 100 records
+     *
+     * Only return data (version, main_id) that might be necessary for display
      * in the dashboard. Version and main_id are sufficient to call selectConstellation(). The name is added
      * on the off chance that this could be used in some UI that needed a name displayed for the
      * constellation.
@@ -2123,7 +2232,7 @@ class SQL
             if (count($nRow) == 0)
             {
                 // Yikes, cannot have a constellation with zero names.
-                printf("No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
+                printf("\nSQL.php No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
             }
 
             /* 
@@ -2211,6 +2320,8 @@ class SQL
     }
 
     /**
+     * Core function for delete
+     *
      * Do the real work for set/clear is_deleted. The only difference between setting and clearing is the
      * value put into is_deleted, so it makes sense to have one function doing both.
      *
@@ -2316,7 +2427,9 @@ class SQL
     }
 
     /**
-     * Select all vocabulary from the database.  This returns the vocabulary in a
+     * Select all vocabulary from the database.
+     *
+     * This returns the vocabulary in a
      * 2D array, with keys:
      *  * id
      *  * type
