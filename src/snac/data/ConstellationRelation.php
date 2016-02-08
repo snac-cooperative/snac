@@ -26,6 +26,9 @@ class ConstellationRelation extends AbstractData {
 
     /**
      * Postgres ID (source)
+     *
+     * Add commentary. Why is this necessary? This should be parent::getARK() and if that is true, we can get
+     * it at any time. 
      * 
      * @var int Source constellation ID
      */
@@ -131,6 +134,18 @@ class ConstellationRelation extends AbstractData {
     {
         return $this->sourceConstellation;
     }
+
+    /**
+     * Set the Source Constellation's ID 
+     *
+     * @param int $sourceConstellation Source constellation ID
+     *
+     */
+    function setSourceConstellation($sourceConstellation)
+    {
+        $this->sourceConstellation = $sourceConstellation;
+    }
+
         
     /**
      * Get the Target Constellation's ID 
@@ -144,7 +159,9 @@ class ConstellationRelation extends AbstractData {
     }
             
     /**
-     * Get the Source Constellation's ARK ID 
+     * Get the Source Constellation's ARK ID
+     *
+     * Needs more commentary. Why does this exist instead of using parent::getARK()?
      *
      * @return string Source constellation ARK ID
      *
@@ -153,7 +170,19 @@ class ConstellationRelation extends AbstractData {
     {
         return $this->sourceArkID;
     }
-    
+
+    /**
+     * Set the Source Constellation's ARK ID
+     *
+     * Needs more commentary. Why does this exist instead of using parent::setARK()?
+     *
+     * @param string $sourceArkID Source constellation ARK ID
+     */
+    function setSourceArkID($sourceArkID)
+    {
+        $this->sourceArkID = $sourceArkID;
+    }
+
     /**
      * Get the Target Constellation's ARK ID 
      *
@@ -445,7 +474,9 @@ class ConstellationRelation extends AbstractData {
 
     /**
      * Set the dates of this relation
-     * 
+     *
+     * Deprecated when we added dates to AbstractData.
+     *
      * @param \snac\data\SNACDate $date The date or range of this relation
      */
     public function setDates($date) {
