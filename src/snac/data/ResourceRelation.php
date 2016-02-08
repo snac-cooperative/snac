@@ -37,7 +37,7 @@ class ResourceRelation extends AbstractData {
     /**
      * From EAC-CPF tag(s):
      *
-     * Daniel says this is only a hard code 'simple' and we don't need to store it, but we will hard code it
+     * Daniel says this is only a hard coded 'simple' and we don't need to store it, but we will hard code it
      * in the export template.
      *
      * (old comment:) resourceRelation/@type

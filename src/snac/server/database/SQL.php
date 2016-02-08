@@ -647,6 +647,8 @@ class SQL
 
     /**
      * Get a geo_place record.
+     *
+     * Also known as GeoTerm
      * 
      * @param integer $gid A geo_place.id value.
      *
