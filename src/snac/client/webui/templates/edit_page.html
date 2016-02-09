@@ -288,7 +288,7 @@ body {
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
 
-                        <p><textarea id="biogHist" name="biogHist" style="height: auto">{{ data.biogHists[0]|e }}</textarea></p>
+                        <p><textarea id="biogHist" name="biogHist" style="height: auto">{{ data.biogHists[0].text|e }}</textarea></p>
 
                     </div>
 
@@ -304,7 +304,7 @@ body {
                                         Type
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="otherID_type_{{i}}" name="otherID_type_{{i}}" type="text" class="form-control" value="{{ other.type }}"/>
+                                        <input id="otherID_type_{{i}}" name="otherID_type_{{i}}" type="text" class="form-control" value="{{ other.type.term }}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -334,7 +334,7 @@ body {
                                         Link
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="source_href_{{i}}" name="source_href_{{i}}" type="text" class="form-control" value="{{ source.href }}"/>
+                                        <input id="source_href_{{i}}" name="source_href_{{i}}" type="text" class="form-control" value="{{ source.uri }}"/>
                                     </div>
                                 </div>
                             </div>
@@ -366,7 +366,7 @@ body {
                                         Role
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role }}"/>
+                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role.term }}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -382,7 +382,7 @@ body {
                                         Document Type
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType }}"/>
+                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType.term }}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -430,7 +430,7 @@ body {
                                         Target Entity Type
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="text" class="form-control" value="{{ relation.targetEntityType }}" disabled="disabled"/>
+                                        <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="text" class="form-control" value="{{ relation.targetEntityType.term }}" disabled="disabled"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -438,7 +438,7 @@ body {
                                         Type
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="constellationRelation_type_{{i}}" name="constellationRelation_type_{{i}}" type="text" class="form-control" value="{{ relation.type }}"/>
+                                        <input id="constellationRelation_type_{{i}}" name="constellationRelation_type_{{i}}" type="text" class="form-control" value="{{ relation.type.term }}"/>
                                     </div>
                                 </div>
                             </div>
@@ -457,7 +457,7 @@ body {
                             <div class="col-xs-10">
                                 <select id="subject_{{i}}" name="subject_{{i}}" class="form-control">
                                     <option></option>
-                                    <option value="{{ subject }}" selected>{{ subject }}</option>
+                                    <option value="{{ subject.term.id }}" selected>{{ subject.term.id }}</option>
                                 </select>
                             </div>
                         </div>
@@ -477,7 +477,7 @@ body {
                             <div class="col-xs-10">
                                 <select id="function_term_{{i}}" name="function_term_{{i}}" class="form-control">
                                     <option></option>
-                                    <option value="{{ function.term }}" selected>{{ function.term }}</option>
+                                    <option value="{{ function.term.id }}" selected>{{ function.term.term }}</option>
                                 </select>
                             </div>
                         </div>
@@ -497,7 +497,7 @@ body {
                             <div class="col-xs-10">
                                 <select id="occupation_term_{{i}}" name="occupation_term_{{i}}" class="form-control">
                                     <option></option>
-                                    <option value="{{ occupation.term }}" selected>{{ occupation.term }}</option>
+                                    <option value="{{ occupation.term.id }}" selected>{{ occupation.term.term }}</option>
                                 </select>
                             </div>
                         </div>
