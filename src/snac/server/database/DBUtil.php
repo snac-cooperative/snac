@@ -1522,7 +1522,7 @@ class DBUtil
                                                 $this->thingID($fdata->getType()), // function type, aka localType, Term object
                                                 $fdata->getVocabularySource(),
                                                 $fdata->getNote(),
-                                                $this->$thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
+                                                $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
             /*
              * getDateList() always returns a list of SNACDate objects. If no dates then list is empty,
              * but it is still a list that we can foreach on without testing for null and count>0.
@@ -1533,7 +1533,7 @@ class DBUtil
                                                   $date->getID(),
                                                   $this->db->boolToPg($date->getIsRange()),
                                                   $date->getFromDate(),
-                                                  $date->getFromType()->getID(),
+                                                  $this->thingID($date->getFromType()),
                                                   $this->db->boolToPg($date->getFromBc()),
                                                   $date->getFromRange()['notBefore'],
                                                   $date->getFromRange()['notAfter'],
@@ -1611,7 +1611,7 @@ class DBUtil
                                                 $fdata->getTargetConstellation(),
                                                 $fdata->getTargetArkID(),
                                                 $this->thingID($fdata->getTargetEntityType()),
-                                                $fdata->getType()->getID(),
+                                                $this->thingID($fdata->getType()),
                                                 $cpfRelTypeID,
                                                 $fdata->getContent(),
                                                 $fdata->getNote(),
@@ -1619,21 +1619,21 @@ class DBUtil
             foreach ($fdata->getDateList() as $date)
             {
                 $date_fk = $this->sql->insertDate($vhInfo, 
-                                             $date->getID(),
-                                             $this->db->boolToPg($date->getIsRange()),
-                                             $date->getFromDate(),
-                                             $date->getFromType()->getID(),
-                                             $this->db->boolToPg($date->getFromBc()),
-                                             $date->getFromRange()['notBefore'],
-                                             $date->getFromRange()['notAfter'],
-                                             $date->getToDate(),
-                                             $date->getToType()==null?null:$date->getToType()->getID(),
-                                             $this->db->boolToPg($date->getToBc()),
-                                             $date->getToRange()['notBefore'],
-                                             $date->getToRange()['notAfter'],
-                                             $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                             'related_identity',
-                                             $relID);
+                                                  $date->getID(),
+                                                  $this->db->boolToPg($date->getIsRange()),
+                                                  $date->getFromDate(),
+                                                  $this->thingID($date->getFromType()),
+                                                  $this->db->boolToPg($date->getFromBc()),
+                                                  $date->getFromRange()['notBefore'],
+                                                  $date->getFromRange()['notAfter'],
+                                                  $date->getToDate(),
+                                                  $date->getToType()==null?null:$date->getToType()->getID(),
+                                                  $this->db->boolToPg($date->getToBc()),
+                                                  $date->getToRange()['notBefore'],
+                                                  $date->getToRange()['notAfter'],
+                                                  $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
+                                                  'related_identity',
+                                                  $relID);
             }
         }
 
@@ -1663,7 +1663,7 @@ class DBUtil
                                                $fdata->getDocumentType()->getID(), // xlink:role
                                                $fdata->getEntryType()== null ? null : $fdata->getEntryType()->getID(), // relationEntry@localType
                                                $fdata->getLink(), // xlink:href
-                                               $fdata->getRole()->getID(), // xlink:arcrole
+                                               $this->thingID($fdata->getRole()), // xlink:arcrole
                                                $fdata->getContent(), // relationEntry
                                                $fdata->getSource(), // objectXMLWrap
                                                $fdata->getNote(), // descriptiveNote
@@ -1704,7 +1704,7 @@ class DBUtil
                                    $date->getID(),
                                    $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType()->getID(),
+                                   $this->thingID($date->getFromType()),
                                    $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],
@@ -1800,7 +1800,7 @@ class DBUtil
                                    $date->getID(),
                                    $this->db->boolToPg($date->getIsRange()),
                                    $date->getFromDate(),
-                                   $date->getFromType()->getID(),
+                                   $this->thingID($date->getFromType()),
                                    $this->db->boolToPg($date->getFromBc()),
                                    $date->getFromRange()['notBefore'],
                                    $date->getFromRange()['notAfter'],

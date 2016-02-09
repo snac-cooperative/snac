@@ -74,7 +74,7 @@ CREATE SEQUENCE "id_seq";
 -- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
 --
 -- Sequence for controlled vocabulary
--- CREATE SEQUENCE "vocabulary_id_seq";
+CREATE SEQUENCE "vocabulary_id_seq";
 
 CREATE SEQUENCE "version_history_id_seq";
 
@@ -803,9 +803,9 @@ create table if not exists vocabulary (
         description text         -- Textual description of this vocab term
         );
 
--- create unique index vocabulary_idx on vocabulary(id);
--- create index vocabulary_type_idx on vocabulary(type);
--- create index vocabulary_value_idx on vocabulary(value);
+create unique index vocabulary_idx on vocabulary(id);
+create index vocabulary_type_idx on vocabulary(type);
+create index vocabulary_value_idx on vocabulary(value);
 
 -- We need a way for the data to sanity check that vocabulary is being used in the correct context.  If a
 -- given vocabulary value can be used in multiple contexts, we need a linking table.
