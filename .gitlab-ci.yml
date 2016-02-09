@@ -1,7 +1,7 @@
 before_script:
   - php composer.phar install
   - cp ~/Config.php src/snac/Config.php
-  - rm ~/public_html/snac_server
+  - rm -rf ~/public_html/snac_server
   - ln -s src/virtualhosts ~/public_html/snac_server
 
 stages:
