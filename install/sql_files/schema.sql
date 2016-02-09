@@ -38,6 +38,7 @@ drop table if exists appuser;
 drop table if exists source;
 drop table if exists split_merge_history;
 drop table if exists subject;
+drop table if exists legal_status;
 drop table if exists appuser_role_link;
 drop table if exists version_history;
 drop table if exists language;
@@ -47,10 +48,6 @@ drop table if exists gender;
 drop table if exists mandate;
 drop table if exists general_context;
 drop table if exists structure_genealogy;
-
--- There is data in table vocabulary. If you really need to drop it, so so manually and reload the data.
--- drop table if exists vocabulary;
--- drop sequence vocabulary_id_seq;
 
 drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -548,6 +545,17 @@ create table subject (
 
 create unique index subject_idx1 on subject(id,main_id,version);
 
+create table legal_status (
+    id         int default nextval('id_seq'),
+    version    int not null,
+    main_id    int not null,
+    is_deleted boolean default false,
+    term_id int, -- (fk to vocabulary.id)
+    primary key(id, version)
+    );
+
+create unique index legal_status_idx1 on legal_status(id,main_id,version);
+
 -- Jan 28 2016. This is newer than nationality, subject. I considered naming term_id vocab_id because "term"
 -- is overused. However, term_id is conventional and descriptive.
 
@@ -777,15 +785,19 @@ create unique index geo_place_idx1 on geo_place (id,version);
 
 -- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
 -- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
---
 
--- create table vocabulary (
---     id          int primary key default nextval('vocabulary_id_seq'),
---     type        text,        -- Type of the vocab
---     value       text,        -- Value of the controlled vocab term
---     uri         text,        -- URI for this controlled vocab term, if it exists
---     description text         -- Textual description of this vocab term
---     );
+-- Feb 8 2016 add "if not exists" just so we don't get a warning from Postgres. This needs to be moved to a
+-- separate schema file. In a simple world the whole schema would always be run on an empty database, but that
+-- is not the case. Our controlled vocabulary and authority data will often not be reloaded when the rest of
+-- the database is reset.
+
+create table if not exists vocabulary (
+        id          int primary key default nextval('vocabulary_id_seq'),
+        type        text,        -- Type of the vocab
+        value       text,        -- Value of the controlled vocab term
+        uri         text,        -- URI for this controlled vocab term, if it exists
+        description text         -- Textual description of this vocab term
+        );
 
 -- create unique index vocabulary_idx on vocabulary(id);
 -- create index vocabulary_type_idx on vocabulary(type);
