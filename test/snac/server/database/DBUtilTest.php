@@ -31,7 +31,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     private $appUserID = null;
 
-    /*
+    /**
+     * Constructor
+     *
+     * Note about how things are different here in testing world vs normal execution:
+     * 
      * Any vars that aren't set up in the constructor won't be initialized, even though the other functions
      * appear to run in order. Initializing instance vars anywhere except the constructor does not initialize
      * for the whole class. phpunit behaves as though the class where being instantiated from scratch for each
@@ -199,8 +203,15 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                $this->role,
                                                'needs review',
                                                'modified first alt name');
-        // printf("\n: test save name\n");
-        $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+        /*
+         * Feb 9 2016 This will save all names of the constellation, but that's fine for testing that saving
+         * name or names does not change the number of names associated with the constellation. When we
+         * implement AbstractData->$operation and setOperation() we can use that feature to only save a
+         * name. When that happens we will call setOperation() on the name, and send the entire constellation
+         * off for processing.
+         */ 
+        // $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+        $this->dbu->saveName($modVhInfo, $unDObj);
 
         $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
 
