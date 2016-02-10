@@ -17,7 +17,9 @@
 
 -- drop table if existss and sequences that may already exist, and create everything from scratch
 
-drop table if exists control;
+-- drop table if exists control;
+-- drop table if exists pre_snac_maintenance_history;
+
 drop table if exists date_range;
 drop table if exists function;
 drop table if exists place_link;
@@ -30,7 +32,6 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
-drop table if exists pre_snac_maintenance_history;
 drop table if exists related_identity;
 drop table if exists related_resource;
 drop table if exists role;
@@ -145,6 +146,9 @@ create table role (
         description text         -- description of this role
         );
 
+-- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the uses of this
+-- have been moved to table version_history.
+
 create table split_merge_history (
     from_id             int, -- fk nrd.id, also version_history.main_id
     to_id               int, -- fk nrd.id, also version_history.main_id
@@ -252,22 +256,26 @@ create unique index biog_hist_idx2 on biog_hist(id,main_id,version);
 
 -- For authorizedForm or alternativeForm, see related table name_contributor.
 
+-- Feb 10 2016 These fields aren't being used, so I've removed them. The rationale for corporate_name is
+-- unclear, but there was a reason for this. There is no corporate_name equivalent in the NameEntry class.
+
+-- The other fields are name components, and that is being handled by table name_component.
+
+-- corporate_name   text,
+-- prefix           text,
+-- first            text,
+-- middle           text,
+-- last             text,
+-- suffix           text,
+-- additional_parts text,
+
 create table name (
     id               int default nextval('id_seq'),
     version          int not null,
     main_id          int not null,
     is_deleted       boolean default false,
-    language         int,   -- (fk to vocabulary.id) 
-    script_code       int,   -- fk to vocabulary.id
     preference_score float, -- Preference to use this name
     original         text,  -- actual name (in <part>)
-    corporate_name   text,
-    prefix           text,
-    first            text,
-    middle           text,
-    last             text,
-    suffix           text,
-    additional_parts text,
     primary key(id, version)
     );
 
@@ -459,39 +467,42 @@ create unique index source_idx2 on source (id,version,main_id);
 --     primary key(id, version)
 --     );
 
+-- Feb 10 2016 Data in <control> is planned to be stored elsewhere, probably version_history.
+
 -- Some of the elements from <control>. Multiple control records per identity_constellation.  The XML
 -- accumulated these over time, but we have versioning, so we can add records with a version. This kind of
 -- begs the question what to do with multiple existing maintenance events.
 
-create table control (
-    id                  int default nextval('id_seq'),
-    version             int not null,
-    main_id             int not null,
-    is_deleted          boolean default false,
-    maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
-    maintenance_status  int,  -- (fk to vocabulary.id) 
-    conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
-    primary key(id, version)
-    );
+-- create table control (
+--     id                  int default nextval('id_seq'),
+--     version             int not null,
+--     main_id             int not null,
+--     is_deleted          boolean default false,
+--     maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
+--     maintenance_status  int,  -- (fk to vocabulary.id) 
+--     conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
+--     primary key(id, version)
+--     );
+-- create unique index control_idx1 on control(id,main_id,version);
 
-create unique index control_idx1 on control(id,main_id,version);
+-- Feb 10 2016. Table pre_snac_maintenance_history not used. I think all of the pre-merge history was thrown
+-- out. Also, history and status will be captured in table version_history.
 
 -- maintenanceHistory before the record was imported into the database?
 
-create table pre_snac_maintenance_history (
-    id                  int default nextval('id_seq'),
-    version             int not null,
-    main_id int not null,
-    is_deleted boolean default false,
-    modified_time       date,
-    event_type          int,  -- (fk to vocabulary.id)     
-    agent_type          int,  -- (fk to vocabulary.id)     
-    agent               text,
-    description         text,
-    primary key(id, version)
-    );
-
-create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,main_id,version);
+-- create table pre_snac_maintenance_history (
+--     id                  int default nextval('id_seq'),
+--     version             int not null,
+--     main_id int not null,
+--     is_deleted boolean default false,
+--     modified_time       date,
+--     event_type          int,  -- (fk to vocabulary.id)     
+--     agent_type          int,  -- (fk to vocabulary.id)     
+--     agent               text,
+--     description         text,
+--     primary key(id, version)
+--     );
+-- create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,main_id,version);
 
 -- Are all these controlled vocabulary-type of things really the same, and should be in a unified
 -- tagging/markup table? (occupation, function, nationality, subject
