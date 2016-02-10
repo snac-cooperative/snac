@@ -50,10 +50,6 @@ drop table if exists mandate;
 drop table if exists general_context;
 drop table if exists structure_genealogy;
 
--- There is data in table vocabulary. If you really need to drop it, so so manually and reload the data.
--- drop table if exists vocabulary;
--- drop sequence vocabulary_id_seq;
-
 drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
 
