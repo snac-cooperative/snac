@@ -81,11 +81,11 @@ if ($dbHandle === false) {
     die("ERR: Unable to connect to database.\n");
 }
 
-echo "Would you like to drop table vocabulary and drop sequence vocabulary_id_seq;?\n  ('yes' or 'no'): ";
+echo "Would you like to load the vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = trim(fgets(STDIN));
 if ($response == "yes") {
-    echo "  Dropping table vocabulary and the associated sequence vocabulary_id_seq\n";
-    $res = pg_query($dbHandle, " drop sequence vocabulary_id_seq cascade; drop table vocabulary;");
+    echo "  Dropping vocabulary, if exists, and creating new tables\n";
+    $res = pg_query($dbHandle, file_get_contents("sql_files/vocabulary_init.sql"));
 
     if (!$res) {
         $error = pg_last_error($dbHandle);
@@ -93,9 +93,9 @@ if ($response == "yes") {
         echo $error."\n";
         die();
     }
-    echo "  Successfully dropped vocabulary table and sequence.\n\n";
+    echo "  Successfully refreshed the vocabulary schema.  You must load the data into these tables later.\n\n";
 } else {
-    echo "  Not dropping vocabulary or vocabulary_id_seq.\n\n";
+    echo "  Not updating the vocabulary schema.  The schema can be found in sql_files/vocabulary_init.sql.\n\n";
 } 
 
 
