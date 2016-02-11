@@ -67,11 +67,13 @@ drop sequence if exists id_seq;
 -- keys. (And might break other foreign keys and sql queries as well.)
 CREATE SEQUENCE "id_seq";
 
+-- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
+--
 -- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
 -- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
 --
 -- Sequence for controlled vocabulary
-CREATE SEQUENCE "vocabulary_id_seq";
+-- CREATE SEQUENCE "vocabulary_id_seq";
 
 CREATE SEQUENCE "version_history_id_seq";
 
@@ -718,6 +720,8 @@ create table place_link (
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
         confirmed    boolean default false, -- true after confirmation by a human
         original     text,                  -- original as seen text from CPF import
+        role         integer,               -- fk to vocabulary.id, from cpf place/placeRole
+        score        float,                 -- matching confidence score
         geo_place_id int,                   -- fk to geo_place.id, might be null
         primary key(id, version)
     );
@@ -802,27 +806,22 @@ create unique index geo_place_idx1 on geo_place (id,version);
 -- is not the case. Our controlled vocabulary and authority data will often not be reloaded when the rest of
 -- the database is reset.
 
-create table if not exists vocabulary (
-        id          int primary key default nextval('vocabulary_id_seq'),
-        type        text,        -- Type of the vocab
-        value       text,        -- Value of the controlled vocab term
-        uri         text,        -- URI for this controlled vocab term, if it exists
-        description text         -- Textual description of this vocab term
-        );
+-- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
+--
 
-create unique index vocabulary_idx on vocabulary(id);
-create index vocabulary_type_idx on vocabulary(type);
-create index vocabulary_value_idx on vocabulary(value);
+-- create table if not exists vocabulary (
+--         id          int primary key default nextval('vocabulary_id_seq'),
+--         type        text,        -- Type of the vocab
+--         value       text,        -- Value of the controlled vocab term
+--         uri         text,        -- URI for this controlled vocab term, if it exists
+--         description text         -- Textual description of this vocab term
+--         );
 
--- We need a way for the data to sanity check that vocabulary is being used in the correct context.  If a
--- given vocabulary value can be used in multiple contexts, we need a linking table.
+-- create unique index vocabulary_idx on vocabulary(id);
+-- create index vocabulary_type_idx on vocabulary(type);
+-- create index vocabulary_value_idx on vocabulary(value);
 
-create table vocabulary_use (
-    id       int primary key default nextval('vocabulary_id_seq'),
-    vocab_id int,     -- fk to vocabulary.id
-    db_table    text, -- table in this database, table is a Pg reserved word
-    db_field    text  -- field in that table in this database
-);
+-- Moved table vocabulary_use to vocabulary_init.sql, just in case you're looking for it.
 
 -- Link constellation to original imported record id, aka extract record id. Probably does not need version
 -- since this is not user-editable, but we give everything id, version, and main_id for the sake of

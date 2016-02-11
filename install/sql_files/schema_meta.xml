@@ -190,7 +190,8 @@
               </column>
           </table>
         -->
-        <table name="control">
+        <!--
+            <table name="control">
             <column name="version">
                 <foreignKey table="version_history" column="id"/>
             </column>
@@ -200,8 +201,10 @@
               <column name="maintenance_status">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
-        </table>
-        <table name="pre_snac_maintenance_history">
+            </table>
+        -->
+        <!--
+            <table name="pre_snac_maintenance_history">
             <column name="version">
                 <foreignKey table="version_history" column="id"/>
             </column>
@@ -214,7 +217,8 @@
               <column name="agent_type">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
-        </table>
+            </table>
+        -->
         <table name="occupation">
             <column name="version">
                 <foreignKey table="version_history" column="id"/>
@@ -226,14 +230,14 @@
                 <foreignKey table="vocabulary" column="id"/>
             </column>
         </table>
-        <table name="place">
+        <table name="place_link">
             <column name="version">
                 <foreignKey table="version_history" column="id"/>
             </column>
             <column name="main_id">
                 <foreignKey table="version_history" column="main_id"/>
             </column>
-              <column name="place_id">
+              <column name="geo_place_id">
                 <foreignKey table="geoplace" column="id"/>
             </column>
               <column name="place_match_type">

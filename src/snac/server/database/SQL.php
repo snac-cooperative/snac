@@ -490,7 +490,8 @@ class SQL
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, aa.geo_place_id, fk_table, aa.fk_id
+                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
+                            aa.geo_place_id, aa.role, aa.score, fk_table, aa.fk_id
                             from place_link as aa,
                             (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -522,7 +523,7 @@ class SQL
      * @return integer $id The id of what we (might) have inserted.
      * 
      */
-    public function insertPlace($vhInfo, $id, $confirmed, $original,  $geo_place_id,  $fk_table, $fk_id)
+    public function insertPlace($vhInfo, $id, $confirmed, $original,  $geo_place_id, $roleID, $score, $fk_table, $fk_id)
     {
         if (! $id)
         {
@@ -531,9 +532,9 @@ class SQL
         $qq = 'insert_place';
         $this->sdb->prepare($qq, 
                             'insert into place_link
-                            (version, main_id, id, confirmed, original, geo_place_id,  fk_id, fk_table)
+                            (version, main_id, id, confirmed, original, geo_place_id, role, score,  fk_id, fk_table)
                             values 
-                            ($1, $2, $3, $4, $5, $6, $7, $8)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['main_id'],
@@ -542,6 +543,8 @@ class SQL
                                             $confirmed,
                                             $original,
                                             $geo_place_id,
+                                            $roleID,
+                                            $score,
                                             $fk_id,
                                             $fk_table));
         $this->sdb->deallocate($qq);

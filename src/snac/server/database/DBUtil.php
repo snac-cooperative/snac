@@ -312,13 +312,16 @@ class DBUtil
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Place();
+            $gObj->setRole($this->populateTerm($rec['role']));
+            $gObj->setScore($rec['score']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $metaObj = $this->buildMeta($rec['id'], $vhInfo['version']);
             $gObj->setSource($metaObj);
 
             /*
              * You might be looking for GeoTerm. We don't create GeoTerm objects because php Place is
-             * denormalized compared to the database.
+             * denormalized compared to the database. This is good, and a totally rational optimization
+             * related to the realities of data necessary for building a user interface.
              */  
             $geo = selectGeo($rec['geo_place_id']);
             $gObj->setLatitude($geo['latitude']);
@@ -407,8 +410,6 @@ class DBUtil
             $cObj->addLegalStatus($gObj);
         }
     }
-
-
 
 
     /**
@@ -558,6 +559,9 @@ class DBUtil
      * Return a vocabulary term object selected from database using vocabulary id key. \src\snac\data\Term
      * which is used by many objects for controlled vocabulary "terms". We use "term" broadly in the sense of
      * an object that meets all needs of the the user interface.
+     *
+     * Most of the populate* functions build an object and add it to another existing object. This returns the
+     * object, so it might better be called buildTerm() since we have already used that nameing convention.
      *
      * You might be searching for new Term(). This is the only place we create Terms here.
      *
@@ -975,7 +979,7 @@ class DBUtil
     {
         foreach ($cObj->getDateList() as $date)
         {
-            $this->saveDate($vhInfo, $dateObj, 'nrd', $vhInfo['main_id']);
+            $this->saveDate($vhInfo, $date, 'nrd', $vhInfo['main_id']);
         }
     }
 
@@ -1640,6 +1644,8 @@ class DBUtil
                                                $this->db->boolToPg($gObj->getConfirmed()),
                                                $gObj->getOriginal(),
                                                $this->thingID($gObj->getGeoTerm()),
+                                               $this->thingID($gObj->getRole()),
+                                               $gObj->getScore(),
                                                $relatedTable,
                                                $id->GetID());
                 if ($metaObjList = $gObj->getSNACControlMetadata())
