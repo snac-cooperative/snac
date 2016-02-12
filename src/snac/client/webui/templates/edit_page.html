@@ -208,9 +208,9 @@ body {
                             <div class="col-xs-10">
                                 <select id="entityType" name="entityType" class="form-control selectpicker">
                                     <option></option>
-                                    <option value="person" {{ data.entityType == 'person' ? 'selected' }}>Person</option>
-                                    <option value="corporateBody" {{ data.entityType == 'corporateBody' ? 'selected' }}>Corporate Body</option>
-                                    <option value="family" {{ data.entityType == 'family' ? 'selected' }}>Family</option>
+                                    <option value="person" {{ data.entityType.term == 'person' ? 'selected' }}>Person</option>
+                                    <option value="corporateBody" {{ data.entityType.term == 'corporateBody' ? 'selected' }}>Corporate Body</option>
+                                    <option value="family" {{ data.entityType.term == 'family' ? 'selected' }}>Family</option>
                                 </select>
                             </div>
                         </div>
@@ -222,8 +222,8 @@ body {
                             <div class="col-xs-10">
                                 <select id="gender" name="gender" class="form-control selectpicker">
                                     <option></option>
-                                    <option value="Female" {{ data.gender == 'Female' ? 'selected' }}>Female</option>
-                                    <option value="Male" {{ data.gender == 'Male' ? 'selected' }}>Male</option>
+                                    <option value="Female" {{ data.gender.term == 'Female' ? 'selected' }}>Female</option>
+                                    <option value="Male" {{ data.gender.term == 'Male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
                         </div>
@@ -232,7 +232,7 @@ body {
                                 Nationality
                             </label>
                             <div class="col-xs-10">
-                                <input id="nationality" name="nationality" type="text" class="form-control" value="{{ data.nationality }}"/>
+                                <input id="nationality" name="nationality" type="text" class="form-control" value="{{ data.nationality.text }}"/>
                             </div>
                         </div>
                         <div class="form-group">
@@ -242,8 +242,8 @@ body {
                             <div class="col-xs-10">
                                 <select id="languageCode" name="languageCode" class="form-control selectpicker">
                                     <option></option>
-                                    <option value="eng" {{ data.languageCode == 'eng' ? 'selected' }}>English</option>
-                                    <option value="fre" {{ data.languageCode == 'fre' ? 'selected' }}>French</option>
+                                    <option value="eng" {{ data.languagesUsed.language.term == 'eng' ? 'selected' }}>English</option>
+                                    <option value="fre" {{ data.languagesUsed.language.term == 'fre' ? 'selected' }}>French</option>
                                 </select>
                             </div>
                         </div>
@@ -254,8 +254,8 @@ body {
                             <div class="col-xs-10">
                                 <select id="scriptCode" name="scriptCode" class="form-control selectpicker">
                                     <option></option>
-                                    <option value="Latn" {{ data.scriptCode == 'Latn' ? 'selected' }}>Latin Alphabet</option>
-                                    <option value="Zyyy" {{ data.scriptCode == 'Zyyy' ? 'selected' }}>Unknown Script</option>
+                                    <option value="Latn" {{ data.languagesUsed.script.term == 'Latn' ? 'selected' }}>Latin Alphabet</option>
+                                    <option value="Zyyy" {{ data.languagesUsed.script.term == 'Zyyy' ? 'selected' }}>Unknown Script</option>
                                 </select>
                             </div>
                         </div>
@@ -312,7 +312,7 @@ body {
                                         Link
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="otherID_href_{{i}}" name="otherID_href_{{i}}" type="text" class="form-control" value="{{ other.href }}"/>
+                                        <input id="otherID_href_{{i}}" name="otherID_href_{{i}}" type="text" class="form-control" value="{{ other.uri }}"/>
                                     </div>
                                 </div>
                             </div>
@@ -457,7 +457,7 @@ body {
                             <div class="col-xs-10">
                                 <select id="subject_{{i}}" name="subject_{{i}}" class="form-control">
                                     <option></option>
-                                    <option value="{{ subject.term.id }}" selected>{{ subject.term.id }}</option>
+                                    <option value="{{ subject.term.id }}" selected>{{ subject.term.term }}</option>
                                 </select>
                             </div>
                         </div>
@@ -522,17 +522,15 @@ body {
                                         Original
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.entries.0.original }}"/>
+                                        <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}"/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <input id="place_bestMatchid_{{i}}" name="place_bestMatchid_{{i}}" type="hidden" value="{{ place.entries.0.bestMatch.id }}"/>
-                                    <input version="place_bestMatchversion_{{i}}" name="place_bestMatchversion_{{i}}" type="hidden" value="{{ place.entries.0.bestMatch.version }}"/>
                                     <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
                                         Geonames
                                     </label>
                                     <div class="col-xs-10">
-                                        <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.entries.0.bestMatch.original }}"/>
+                                        <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.geoTerm.name }}"/>
                                     </div>
                                 </div>
                             </div>
