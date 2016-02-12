@@ -579,12 +579,12 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select 
                             aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
-                            aa.rule_id, aa.language_id, aa.note
+                            aa.rule_id, aa.note
                             from scm as aa,
                             (select fk_id,max(version) as version from scm where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($did, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1011,9 +1011,6 @@ class SQL
         return $all;
     }
 
-
-
-
     
     /**
      * Insert into table subject.
@@ -1128,7 +1125,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
+     * text. There may be multiple rows returned.
      * 
      */
     protected function selectTextCore($vhInfo, $table)
@@ -1305,7 +1302,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
+     * text. There may be multiple rows returned.
      * 
      */
     public function selectStructureOrGenealogy($vhInfo)
@@ -1320,7 +1317,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
+     * text. There may be multiple rows returned.
      * 
      */
     public function selectMandate($vhInfo)
@@ -1337,7 +1334,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
+     * text. There may be multiple rows returned.
      * 
      */
     public function selectGeneralContext($vhInfo)
@@ -1354,7 +1351,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
+     * text. There may be multiple rows returned.
      * 
      */
     public function selectConventionDeclaration($vhInfo)

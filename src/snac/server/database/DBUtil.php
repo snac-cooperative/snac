@@ -671,7 +671,7 @@ class DBUtil
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
             $this->populateDate($newObj);
-            $cObj->addStructureOrGenealogy($newObj);
+            $cObj->addConventionDeclaration($newObj);
         }
     }
 
@@ -698,6 +698,32 @@ class DBUtil
             }
         }
     }
+
+    /**
+     * Select StructureOrGenealogy from database
+     *
+     * Create object, add the object to Constellation
+     *
+     * Extends AbstractTextData.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */ 
+    private function populateStructureOrGenealogy($vhInfo, &$cObj)
+    {
+        $rows = $this->sql->selectStructureOrGenealogy($vhInfo);
+        foreach ($rows as $item)
+        {
+            $newObj = new \snac\data\StructureOrGenealogy();
+            $newObj->setText($item['text']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($newObj);
+            $cObj->addStructureOrGenealogy($newObj);
+        }
+    }
+
+
     
     /**
      * Select GeneralContext from database
@@ -975,6 +1001,29 @@ class DBUtil
                 $rid = $this->sql->insertMandate($vhInfo,
                                                  $term->getID(),
                                                  $term->getText());
+                $this->saveMeta($vhInfo, $term, 'mandate', $rid);
+            }
+        }
+    }
+
+    /**
+     * Save conventionDeclaration to database
+     *
+     * Extends AbstractTextData
+     * 
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveConventionDeclaration($vhInfo, $cObj)
+    {
+        if ($gList = $cObj->getConventionDeclarations())
+        {
+            foreach ($gList as $term)
+            {
+                $rid = $this->sql->insertConventionDeclaration($vhInfo,
+                                                               $term->getID(),
+                                                               $term->getText());
                 $this->saveMeta($vhInfo, $term, 'mandate', $rid);
             }
         }

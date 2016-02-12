@@ -155,7 +155,7 @@ function foo_main ()
             $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
             check_vocabulary($constellationObj);
             // $msg = sprintf("File $file ok. vhInfo: %s", var_export($vhInfo, 1));
-            $msg = sprintf("File $file ok.");
+            $msg = sprintf("$xx File $file ok.");
             quick_stderr($msg); // no terminal \n, the code will add that later
         }
         else
