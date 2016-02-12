@@ -46,9 +46,7 @@ class SQL
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
      * any clear need.
      *
-     * @param DatabaseConnector $db A working, initialized DatabaseConnector object.
-     *
-     * 
+     * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
      */
     public function __construct($db)
     {
@@ -380,50 +378,53 @@ class SQL
                                $fromType, // fk to vocabulary
                                $fromBC, 
                                $fromNotBefore,
-                               $fromNotAfter, 
+                               $fromNotAfter,
+                               $fromOriginal,
                                $toDate,
                                $toType, // fk to vocabulary
                                $toBC, 
                                $toNotBefore, 
                                $toNotAfter,
-                               $original, 
+                               $toOriginal, 
                                $fk_table,
                                $fk_id)
     {
         if (! $id)
-        {
-            $id = $this->selectID();
-        }
+            {
+                $id = $this->selectID();
+            }
         $qq = 'insert_date';
         $this->sdb->prepare($qq, 
                             'insert into date_range
-                            (version, main_id, id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
-                            to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
+                            (version, main_id, id, is_range, 
+                            from_date, from_type, from_bc, from_not_before, from_not_after, from_original,
+                            to_date, to_type, to_bc, to_not_before, to_not_after, to_original, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'], 
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $isRange,
+                                            $fromDate,
+                                            $fromType,
+                                            $fromBC,
+                                            $fromNotBefore,
+                                            $fromNotAfter,
+                                            $fromOriginal,
+                                            $toDate,
+                                            $toType,
+                                            $toBC,
+                                            $toNotBefore, 
+                                            $toNotAfter,
+                                            $toOriginal, 
+                                            $fk_table,
+                                            $fk_id));
 
-       $result = $this->sdb->execute($qq,
-                                     array($vhInfo['version'], 
-                                           $vhInfo['main_id'],
-                                           $id,
-                                           $isRange,
-                                           $fromDate,
-                                           $fromType,
-                                           $fromBC,
-                                           $fromNotBefore,
-                                           $fromNotAfter, 
-                                           $toDate,
-                                           $toType,
-                                           $toBC,
-                                           $toNotBefore, 
-                                           $toNotAfter,
-                                           $original, 
-                                           $fk_table,
-                                           $fk_id));
-
-       $row = $this->sdb->fetchrow($result);
-       $this->sdb->deallocate($qq);
-       return $id;
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
@@ -451,8 +452,9 @@ class SQL
         $qq = 'select_date';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
-                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, aa.fk_id,
+                            aa.id, aa.version, main_id, is_range, 
+                            from_date, from_bc, from_not_before, from_not_after, from_original,
+                            to_date, to_bc, to_not_before, to_not_after, to_original, fk_table, aa.fk_id,
                             aa.from_type,aa.to_type
                             from date_range as aa,
                             (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
@@ -567,9 +569,9 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
-     * @return string[] A list of fields/value as list keys matching the database field names: id,
-     * version, main_id, citation_id, sub_citation, source_data, rule_id,
-     * language_id, note. I don't think calling code has any use for fk_id, so we don't return it.
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
+     * version, main_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
+     * calling code has any use for fk_id, so we don't return it.
      */
     public function selectMeta($tid, $version)
     {
@@ -583,9 +585,13 @@ class SQL
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq, array($did, $version));
-        $row = $this->sdb->fetchrow($result);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
         $this->sdb->deallocate($qq);
-        return $row;
+        return $all;
     }
 
     /** 
@@ -649,14 +655,14 @@ class SQL
     }
 
     /**
-     * Get a geo_place record.
+     * Get a geo_place record
      *
      * Also known as GeoTerm
      * 
      * @param integer $gid A geo_place.id value.
      *
-     * @return string[] A list of fields/value as list keys matching the database field names: latitude,
-     * longitude, administrative_code, country_code, name, geoname_id.
+     * @return string[] A list of fields/value as list keys matching the database field names: id, uri,
+     * latitude, longitude, admin_code, country_code, name.
      */
     public function selectGeo($gid)
     {
@@ -666,6 +672,56 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
+    }
+
+    /**
+     * Insert geo_place
+     *
+     * Also known as GeoTerm
+     * 
+     * @param integer $gid A geo_place.id value.
+     *
+     * @param integer $id The id. If null, the system will assign a new id.
+     *
+     * @param string $version  The version 
+     *
+     * @param string $uri  The uri 
+     *
+     * @param string $name  The name 
+     *
+     * @param string $latitude  The latitude maybe a string in php, but really a number(10,7)
+     *
+     * @param string $longitude  The longitude maybe a string in php, but really a number(10,7)
+     *
+     * @param string $admin_code  The admin_code 
+     *
+     * @param string $country_code  The country_code 
+     *
+     * @return integer $id Existing or new record id 
+     */
+    public function insertGeo($id, $version, $uri, $name, $latitude, $longitude, $admin_code, $country_code)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_geo_place';
+        $this->sdb->prepare($qq,
+                            'insert into geo_place
+                            (id, version, uri, name, latitude, longitude, admin_code, country_code)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
+        $result = $this->sdb->execute($qq,
+                                      array($id,
+                                            $version,
+                                            $uri,
+                                            $name,
+                                            $latitude,
+                                            $longitude,
+                                            $admin_code,
+                                            $country_code));
+        $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
@@ -1144,9 +1200,13 @@ class SQL
         if (! isset($approved_table[$table]))
         {
             /*
-             * Trying something not approved is fatal. 
+             * Trying something not approved is fatal.  Add an exception for this.
              */
             die("Tried to insert on non-approved table: $table\n");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
         }
         $qq = "select_$table";
         $this->sdb->prepare($qq, 
