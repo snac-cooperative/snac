@@ -23,6 +23,56 @@
             <column name="role_id">
                 <foreignKey table="role" column="id"/>
             </column>
+            <column name="main_id">
+                <foreignKey table="structure_genealogy" column="main_id"/>
+                <foreignKey table="general_context" column="main_id"/>
+                <foreignKey table="nationality" column="main_id"/>
+                <foreignKey table="nrd" column="main_id"/>
+                <foreignKey table="mandate" column="main_id"/>
+                <foreignKey table="convention_declaration" column="main_id"/>
+                <foreignKey table="gender" column="main_id"/>
+                <!--
+                    date_range has an fk back to the related table so it is not directly related via main_id.
+                    <foreignKey table="date_range" column="main_id"/>
+                -->
+                <foreignKey table="language" column="main_id"/>
+                <foreignKey table="otherid" column="main_id"/>
+                <foreignKey table="legal_status" column="main_id"/>
+                <foreignKey table="occupation" column="main_id"/>
+                <foreignKey table="function" column="main_id"/>
+                <foreignKey table="subject" column="main_id"/>
+                <foreignKey table="related_identity" column="main_id"/>
+                <foreignKey table="related_resource" column="main_id"/>
+                <foreignKey table="place_link" column="main_id"/>
+                <foreignKey table="source" column="main_id"/>
+                <foreignKey table="biog_hist" column="main_id"/>
+                <foreignKey table="name" column="main_id"/>
+            </column>
+            <column name="id">
+                <foreignKey table="structure_genealogy" column="version"/>
+                <foreignKey table="general_context" column="version"/>
+                <foreignKey table="nationality" column="version"/>
+                <foreignKey table="nrd" column="version"/>
+                <foreignKey table="mandate" column="version"/>
+                <foreignKey table="convention_declaration" column="version"/>
+                <foreignKey table="gender" column="version"/>
+                <!--
+                    date_range has an fk back to the related table so it is not directly related via main_id.
+                    <foreignKey table="date_range" column="version"/>
+                -->
+                <foreignKey table="language" column="version"/>
+                <foreignKey table="otherid" column="version"/>
+                <foreignKey table="legal_status" column="version"/>
+                <foreignKey table="occupation" column="version"/>
+                <foreignKey table="function" column="version"/>
+                <foreignKey table="subject" column="version"/>
+                <foreignKey table="related_identity" column="version"/>
+                <foreignKey table="related_resource" column="version"/>
+                <foreignKey table="place_link" column="version"/>
+                <foreignKey table="source" column="version"/>
+                <foreignKey table="biog_hist" column="version"/>
+                <foreignKey table="name" column="version"/>
+            </column>
         </table>
         <table name="appuser_role_link">
             <column name="uid">
@@ -165,16 +215,17 @@
                 <foreignKey table="version_history" column="main_id"/>
             </column>
             <column name="type_id">
-                <foreignKey table="vocabulary" column="main_id"/>
+                <foreignKey table="vocabulary" column="id"/>
             </column>
             <column name="language_id">
-                <foreignKey table="vocabulary" column="main_id"/>
+                <foreignKey table="vocabulary" column="id"/>
             </column>
             <column name="fk_id">
                 <foreignKey table="nrd" column="main_id"/>
             </column>
-            <column name="fk_id">
-                <foreignKey table="scm" column="main_id"/>
+            <column name="id">
+                <foreignKey table="scm" column="citation_id"/>
+                <foreignKey table="scm" column="id"/>
             </column>
         </table>
         <!-- 
@@ -238,11 +289,14 @@
                 <foreignKey table="version_history" column="main_id"/>
             </column>
               <column name="geo_place_id">
-                <foreignKey table="geoplace" column="id"/>
+                <foreignKey table="geo_place" column="id"/>
             </column>
-              <column name="place_match_type">
+              <column name="role">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
+            <!--
+                fk_id relates to tables that can have place info
+            -->
         </table>
         <table name="function">
             <column name="version">
@@ -262,7 +316,7 @@
             <column name="main_id">
                 <foreignKey table="version_history" column="main_id"/>
             </column>
-              <column name="nationality_id">
+              <column name="term_id">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
         </table>
@@ -273,7 +327,7 @@
             <column name="main_id">
                 <foreignKey table="version_history" column="main_id"/>
             </column>
-              <column name="subject_id">
+              <column name="term_id">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
         </table>
@@ -319,9 +373,18 @@
             </column>
         </table>
 
-        <table name="geoplace">
+        <table name="geo_place">
             <column name="version">
                 <foreignKey table="version_history" column="id"/>
+            </column>
+        </table>
+
+        <table name="convention_declaration">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
             </column>
         </table>
 
@@ -332,10 +395,10 @@
             <column name="main_id">
                 <foreignKey table="version_history" column="main_id"/>
             </column>
-              <column name="other_id">
+              <column name="uri">
                 <foreignKey table="version_history" column="main_id"/>
             </column>
-              <column name="link_type">
+              <column name="type">
                 <foreignKey table="vocabulary" column="id"/>
             </column>
         </table>
@@ -362,10 +425,38 @@
                 <foreignKey table="biog_hist" column="id"/>
             </column>
             <column name="fk_id">
-                <foreignKey table="scm" column="id"/>
+                <foreignKey table="source" column="id"/>
+            </column>
+        </table>
+
+        <table name="scm">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
             </column>
             <column name="fk_id">
+                <foreignKey table="structure_genealogy" column="id"/>
+                <foreignKey table="general_context" column="id"/>
+                <foreignKey table="nationality" column="id"/>
+                <foreignKey table="nrd" column="id"/>
+                <foreignKey table="mandate" column="id"/>
+                <foreignKey table="convention_declaration" column="id"/>
+                <foreignKey table="gender" column="id"/>
+                <foreignKey table="date_range" column="id"/>
+                <foreignKey table="language" column="id"/>
+                <foreignKey table="otherid" column="id"/>
+                <foreignKey table="legal_status" column="id"/>
+                <foreignKey table="occupation" column="id"/>
+                <foreignKey table="function" column="id"/>
+                <foreignKey table="subject" column="id"/>
+                <foreignKey table="related_identity" column="id"/>
+                <foreignKey table="related_resource" column="id"/>
+                <foreignKey table="place_link" column="id"/>
                 <foreignKey table="source" column="id"/>
+                <foreignKey table="biog_hist" column="id"/>
+                <foreignKey table="name" column="id"/>
             </column>
         </table>
     </tables>

@@ -407,9 +407,6 @@ class DBUtil
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($gObj);
-            /*
-             * Must call $gOjb->setDBInfo() before calling populateDate()
-             */
             $cObj->addLegalStatus($gObj);
         }
     }
@@ -439,10 +436,6 @@ class DBUtil
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($gObj);
-            /*
-             * Must call $gOjb->setDBInfo() before calling populateDate()
-             */
-            $this->populateDate($gObj);
             $cObj->addSubject($gObj);
         }
     }
@@ -670,7 +663,6 @@ class DBUtil
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
-            $this->populateDate($newObj);
             $cObj->addConventionDeclaration($newObj);
         }
     }
@@ -747,7 +739,6 @@ class DBUtil
             $newObj->setText($item['term']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
-            $this->populateDate($newObj);
             $cObj->addGeneralContext($newObj);
         }
     }
@@ -796,7 +787,6 @@ class DBUtil
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
-            $this->populateDate($newObj);
             $cObj->addNationality($newObj);
         }
     }
@@ -977,8 +967,6 @@ class DBUtil
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
-            // Dunno where date came from. Class mandate seems to have no dates (does not setMaxDate)
-            // $this->populateDate($newObj);
             $cObj->addMandate($newObj);
         }
     }
@@ -1024,7 +1012,7 @@ class DBUtil
                 $rid = $this->sql->insertConventionDeclaration($vhInfo,
                                                                $term->getID(),
                                                                $term->getText());
-                $this->saveMeta($vhInfo, $term, 'mandate', $rid);
+                $this->saveMeta($vhInfo, $term, 'convention_declaration', $rid);
             }
         }
     }
@@ -1443,7 +1431,6 @@ class DBUtil
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
-            $this->populateDate($newObj);
             $cObj->addGender($newObj);
         }
     }
@@ -1470,7 +1457,6 @@ class DBUtil
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
             $this->populateLanguage($newObj);
-            $this->populateDate($newObj);
             $cObj->addBiogHist($newObj);
         }
     }
@@ -1508,7 +1494,7 @@ class DBUtil
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
             $occObj->setDBInfo($oneOcc['version'], $oneOcc['id']);
-            $this->populateMeta($newObj);
+            $this->populateMeta($occObj);
             $this->populateDate($occObj);
             $cObj->addOccupation($occObj);
         }
@@ -1626,7 +1612,6 @@ class DBUtil
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $this->populateMeta($rrObj);
-            $this->populateDate($rrObj);
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -1981,10 +1966,6 @@ class DBUtil
                                            $lang->getNote(),
                                            'biog_hist',
                                            $bid);
-            }
-            foreach ($biogHist->getDateList() as $date)
-            {
-                $this->saveDate($vhInfo, $date, 'biog_hist', $bid);
             }
         }
     }

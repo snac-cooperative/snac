@@ -157,12 +157,14 @@ create table split_merge_history (
 -- Data tables
 --
 
--- Note1: table.version is always the same as some identity_constellation.version. This won't be commented in every table.
+-- Note1: table.version is always the same as nrd.version (constellation version). This won't be commented in
+-- every table.
 
 -- Note2: table.main_id is always the same as the related version_history.main_id. This won't be commented in
 -- every table.
 
--- Table of data 1:1 to the identity. The glue of the identity is table version_history.
+-- Table nrd is data with a 1:1 to the constellation. The glue of the constellation is table version_history,
+-- although in historical times (before versioning) table nrd was "the" central CPF table.
 
 -- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, main_id.
 -- Move to table: 
