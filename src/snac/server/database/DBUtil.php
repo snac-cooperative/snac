@@ -1305,7 +1305,11 @@ class DBUtil
     
     
     /**
-     * Save ConstellationRelation
+     * Save Relation aka  ConstellationRelation
+     *
+     * "ConstellationRelation" has had many names: cpfRelation related_resource, relation,
+     * related_identity. We're attempting to make that more consistent, although the class is
+     * ConstellationRelation and the SQL table is related_identity.
      * 
      * ignored: we know our own id value: sourceConstellation, // id fk
      * ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
@@ -1342,21 +1346,23 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveConstellationRelation($vhInfo, $cObj)
+    private function saveRelation($vhInfo, $cObj)
     {
         foreach ($cObj->getRelations() as $fdata)
         {
-            $cpfRelTypeID = null;
-            if ($cr = $fdata->getcpfRelationType())
-            {
-                $cpfRelTypeID = $cr->getID();
-            }
+            /* 
+             * $cpfRelTypeID = null;
+             * if ($cr = $fdata->getcpfRelationType())
+             * {
+             *     $cpfRelTypeID = $cr->getID();
+             * }
+             */
             $relID = $this->sql->insertRelation($vhInfo,
                                                 $fdata->getTargetConstellation(),
                                                 $fdata->getTargetArkID(),
                                                 $this->thingID($fdata->getTargetEntityType()),
                                                 $this->thingID($fdata->getType()),
-                                                $cpfRelTypeID,
+                                                $this->thingID($fdata->getcpfRelationType()), // $cpfRelTypeID,
                                                 $fdata->getContent(),
                                                 $fdata->getNote(),
                                                 $fdata->getID());
@@ -1388,7 +1394,6 @@ class DBUtil
      * Final arg is a list of all the scalar values that will eventually be passed to execute() in the SQL
      * function. This convention is already in use in a couple of places, but needs to be done for some
      * existing functions.  
-     *
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
@@ -1524,6 +1529,12 @@ class DBUtil
      * 
      * cpfRelation/@type cpfRelation@xlink:type
      *
+     * Note:
+     * setsourceConstellation() is parent::getID()
+     * setSourceArkID() is parent::getARK()
+     *
+     * Unclear why those methods (and their properties) exist, but fill them in regardless.
+     *
      * php: $altType setAltType() getAltType()
      *
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
@@ -1538,34 +1549,19 @@ class DBUtil
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
-            /*
-             * setsourceConstellation() is parent::getID()
-             * setSourceArkID() is parent::getARK()
-             *
-             * Unclear why those methods (and their properties) exist, but fill them in regardless.
-             */
             $relatedObj->setSourceConstellation($cObj->getID());
             $relatedObj->setSourceArkID($cObj->getARK());
-             
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
             $relatedObj->setTargetEntityType($this->populateTerm($oneRel['role']));
             $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
-            /*
-             * Not using setAltType(). It is never used. See ConstellationRelation.php
-             */ 
+            /* Not using setAltType(). It is never used. See ConstellationRelation.php */ 
             $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
             $this->populateMeta($relatedObj);
-
-            /*
-             * Deprecated
-             * $relatedObj->setDates($oneRel['date']);
-             */
             $this->populateDate($relatedObj);
-
             $cObj->addRelation($relatedObj);
         }
     }
@@ -1602,9 +1598,7 @@ class DBUtil
             $rrObj = new \snac\data\ResourceRelation();
             $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
             $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
-            /*
-             * setLinkType() Not used. Always "simple" See ResourceRelation.php
-             */ 
+            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */ 
             $rrObj->setLink($oneRes['href']);
             $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
@@ -1930,7 +1924,7 @@ class DBUtil
         $this->saveOccupation($vhInfo, $id);
         $this->saveFunction($vhInfo, $id);
         $this->saveSubject($vhInfo, $id);
-        $this->saveConstellationRelation($vhInfo, $id);
+        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
         $this->saveResourceRelation($vhInfo, $id);
         return $vhInfo;
     } // end saveConstellation
