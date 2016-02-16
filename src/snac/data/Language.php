@@ -210,6 +210,41 @@ class Language extends AbstractData {
     public function setNote($note) {
         $this->note = $note;
     }
-    
+
+    /**
+     * is Equal
+     *
+     * Checks whether the given parameter is the same as this object. If
+     * the IDs match, then that is taken as priority above any other data.  Else,
+     * everything must match.
+     *
+     * @param \snac\data\Language $other the Other Language object
+     * @return boolean true if equal, false otherwise
+     */
+    public function equals($other) {
+        // Don't consider it if it's not a Source object
+        if ($other != null && $other instanceOf \snac\data\Language) { 
+            // Check IDs first
+            if ($other->getID() != null && $this->getID() != null) {
+                if ($other->getID() == $this->getID())
+                    return true;
+                else
+                    // If they both have IDs, but they are different, no match
+                    return false;
+            }
+
+            if ($this->getVocabularySource() == $other->getVocabularySource() &&
+                $this->getNote() == $other->getNote()) {
+                if ( $this->getScript() != null && 
+                    !$this->getScript()->equals($other->getScript()))
+                    return false;
+                if ( $this->getLanguage() != null &&
+                    !$this->getLanguage()->equals($other->getLanguage())) 
+                    return false;
+                return true;
+            }
+        }
+        return false;
+    }
     
 }
