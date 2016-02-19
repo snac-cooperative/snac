@@ -245,10 +245,9 @@ class SQL
      * @return integer[] A flat list of the appuser.id and related role.id, both are numeric. 
      *
      */ 
-    public function getAppUserInfo($userid)
+    public function selectAppUserInfo($userString)
     {
         $qq = 'get_app_user_info';
-        // select id from appuser where userid=$userid
         $this->sdb->prepare($qq, 
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
                             where 
@@ -261,7 +260,7 @@ class SQL
          * $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
          * used.
          */
-        $result = $this->sdb->execute($qq, array($userid));
+        $result = $this->sdb->execute($qq, array($userString));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return array($row['id'], $row['role']);
@@ -293,16 +292,43 @@ class SQL
     {
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
-        $this->sdb->prepare('insert_version_history', 
+        $this->sdb->prepare($qq, 
                             'insert into version_history 
                             (user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5)
                             returning id as version, main_id;');
 
-        $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
         $vhInfo = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate('insert_version_history');
+        $this->sdb->deallocate($qq);
+        return $vhInfo;
+    }
+
+
+    /**
+     * New insert into version_history
+     *
+     * We already know the version_history.id aka version, and main_id, so we are not relying on the default
+     * values. This all happens because we are using the same main_id across an entire constellation. And we
+     * might be using the same version across many Constellations and other inserts all in this current
+     * session.
+     *
+     */
+    public function insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note)
+    {
+        $qq = 'insert_into_version_history';
+        $this->sdb->prepare($qq, 
+                            'insert into version_history 
+                            (id, main_id, user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5, $6, $7)
+                            returning id as version, main_id;');
+
+        $result = $this->sdb->execute($qq
+                                      array($vhInfo['version'], $vhInfo['main_id'], $appUserID, $roleID, $status, true, $note));
+        $vhInfo = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
         return $vhInfo;
     }
 
@@ -328,7 +354,7 @@ class SQL
      * returning it as 'version'. Note the "returning ..." part of the query.
      *
      */
-    public function updateVersionHistory($userid, $role, $status, $note, $main_id)
+    public function updateVersionHistory($appUserID, $roleID, $status, $note, $main_id)
     {
         /*
          * Note: query() as opposed to prepare() and execute()
@@ -343,7 +369,7 @@ class SQL
                                     ($1, $2, $3, $4, $5, $6)
                                     returning id as version'
                                     ,
-                                    array($main_id, $userid, $role, $status, true, $note));
+                                    array($main_id, $appUserID, $roleID, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
         return $row['version'];
     }

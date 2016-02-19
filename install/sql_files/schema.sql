@@ -20,11 +20,18 @@
 -- drop table if exists control;
 -- drop table if exists pre_snac_maintenance_history;
 
+drop table if exists appuser;
+drop table if exists appuser_role_link;
+drop table if exists biog_hist;
+drop table if exists convention_declaration;
 drop table if exists date_range;
 drop table if exists function;
-drop table if exists place_link;
-drop table if exists scm;
+drop table if exists gender;
+drop table if exists general_context;
 drop table if exists geo_place;
+drop table if exists language;
+drop table if exists legal_status;
+drop table if exists mandate;
 drop table if exists name;
 drop table if exists name_component;
 drop table if exists name_contributor;
@@ -32,29 +39,24 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
+drop table if exists place_link;
 drop table if exists related_identity;
 drop table if exists related_resource;
 drop table if exists role;
-drop table if exists appuser;
-drop table if exists source;
-drop table if exists split_merge_history;
-drop table if exists subject;
-drop table if exists legal_status;
-drop table if exists appuser_role_link;
-drop table if exists version_history;
-drop table if exists language;
-drop table if exists biog_hist;
-drop table if exists convention_declaration;
-drop table if exists gender;
-drop table if exists mandate;
-drop table if exists general_context;
+drop table if exists scm;
 drop table if exists structure_genealogy;
+drop table if exists source;
+-- drop table if exists split_merge_history;
+drop table if exists subject;
+drop table if exists version_history;
 
-drop table if exists vocabulary_use;
+-- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
 
+-- Feb 19 2016 stop using type icstatus 
 -- drop data types after any tables using them have been dropped.
-drop type if exists icstatus;
+-- drop type if exists icstatus;
+
 drop sequence if exists id_seq;
 
 --
@@ -93,8 +95,15 @@ CREATE SEQUENCE "version_history_id_seq";
 
 -- A record must be inserted into version_history for every change of data or change of status.
 
+-- Feb 19 2016: Commenting out icstatus. Too difficult to manage for no benefits. Just use text.
 -- enum type for Identity Constellation status (thus type icstatus)
-create type icstatus as enum ('published', 'needs review', 'rejected', 'being edited', 'bulk ingest');
+-- create type icstatus as enum ('published', 'needs review', 'rejected', 'being edited', 'bulk ingest');
+
+
+-- By convention, limit status to certain values: published, needs review, rejected, being edited, bulk ingest, deleted
+--
+-- This list is expected to grow over time, but we probably shouldn't remove any items without careful
+-- testing.
 
 create table version_history (
         id int default nextval('version_history_id_seq'),
@@ -103,7 +112,7 @@ create table version_history (
         user_id int,                           -- fk to appuser.id
         role_id int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
         timestamp timestamp default now(),     -- now()
-        status icstatus,                       -- enum icstatus note: an enum is a data type like int or text
+        status text,                           -- a curated list of status terms.
         is_current boolean,                    -- most current published, optional field to enhance performance
         note text,                             -- checkin message
         primary key (id, main_id)
@@ -144,14 +153,14 @@ create table role (
         description text         -- description of this role
         );
 
--- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the uses of this
--- have been moved to table version_history.
+-- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the split/merge
+-- data has been moved to table version_history. Or somewhere else? Where?
 
-create table split_merge_history (
-    from_id             int, -- fk nrd.id, also version_history.main_id
-    to_id               int, -- fk nrd.id, also version_history.main_id
-    timestamp           timestamp default now()
-    );
+-- create table split_merge_history (
+--     from_id             int, -- fk nrd.id, also version_history.main_id
+--     to_id               int, -- fk nrd.id, also version_history.main_id
+--     timestamp           timestamp default now()
+--     );
 
 --
 -- Data tables
@@ -213,7 +222,7 @@ create table mandate (
     version       int not null,
     main_id       int not null, -- fk to version_history.main_id
     is_deleted    boolean default false,
-    text text                  -- the text term
+    text text                   -- the text term
 );
 
 create unique index mandate_idx1 on mandate(id,main_id,version);
@@ -682,16 +691,18 @@ create table scm (
 
 -- Example values:
 --
--- <placeRole>Lieu de Paris</placeRole>
--- <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv5k4th--1kog8v18wrm89">02e arrondissement</placeEntry>
--- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
--- <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
+-- <place>
+--   <placeRole>Lieu de Paris</placeRole>
+--   <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv5k4th--1kog8v18wrm89">02e arrondissement</placeEntry>
+--   <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
+--   <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
+-- </place>
+
 -- <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
 -- /data/merge/99166-w60v9g87.xml:            <placeEntry countryCode="FR"/>
 -- /data/merge/99166-w6r24hfw.xml:            <placeEntry>Pennsylvania--Chester County</placeEntry>
 -- /data/merge/99166-w6p37bxz.xml:            <placeEntry>Bermuda Islands, North Atlantic Ocean</placeEntry>
 -- /data/merge/99166-w6rr6xvw.xml:            <placeEntry>Australia</placeEntry>
-
 
 -- Feb 2 2016 table place unused. Stuff humans previously typed is in meta data related to place_link. First
 -- order data which needs place uses place_link to relate to geo_place authority records.

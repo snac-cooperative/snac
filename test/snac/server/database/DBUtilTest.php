@@ -47,7 +47,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        list($this->appUserID, $this->role) = $this->dbu->getAppUserInfo('system');
+        /*
+         * Feb 19 2016 Holy cow. This needed to be in DBUtil. This is being down there and here. Only
+         * deprecated code will use the values here.
+         *
+         * A flat list of the appuser.id and related role.id, both are numeric. 
+         */ 
+        list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
     }
 
     /*
@@ -240,7 +246,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $this->dbu->insertConstellation($constellationObj, $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
+        $vhInfo = $this->dbu->insertConstellation($constellationObj,
+                                                  $this->appUserID,
+                                                  $this->role,
+                                                  'bulk ingest',
+                                                  'bulk ingest of merged');
 
         $this->assertNotNull($vhInfo);
 

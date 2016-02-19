@@ -64,12 +64,30 @@ class DBUtil
      */ 
     private $canDelete = null; 
 
+    private $ourVersion = null;
+    private $haveVersion = false;
+
     /**
      * Database connector object
      * 
      * @var \snac\server\database\DatabaseConnector object.
      */
     private $db = null;
+
+    /**
+     * Class var to hold the appUserID
+     * 
+     * @var integer $appUserID holds the numeric application user id, an integer.
+     */ 
+    private $appUserID = null;
+
+    /**
+     * Class var to hold the current user role
+     * 
+     * @var integer $roleID holds the integer role id, the id of the current user's primary role. Or in the
+     * future will be one of the user's roles chosen for the current task.
+     */ 
+    private $roleID = null;
 
     /** 
      * Constructor
@@ -80,21 +98,33 @@ class DBUtil
     {
         $this->db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($this->db);
-        $this->canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
-                                                 'contributor', 'date_range', 'source', 
-                                                 'source_link', 'control', 'pre_snac_maintenance_history',
-                                                 'occupation', 'place', 'function', 
-                                                 'nationality', 'subject', 
-                                                 'related_identity', 'related_resource'), 1);
+        /*
+         * DBUtil needs user id and role id for the current user. We may perform several reads and writes, and
+         * they will all be done using the same user info.
+         */ 
+        list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
 
+        $this->canDelete = array_fill_keys(array('biog_hist', 'convention_declaration',
+                                                 'date_range', 'function',
+                                                 'gender', 'general_context',
+                                                 'language', 'legal_status',
+                                                 'mandate', 'name',
+                                                 'name_component', 'name_contributor',
+                                                 'nationality', 'occupation',
+                                                 'otherid', 'place_link',
+                                                 'related_identity', 'related_resource',
+                                                 'scm', 'structure_genealogy',
+                                                 'source', 'subject'), 1);
     }
+
 
     /**
      * Safely call object getID method
      *
-     * Call this so we don't have to sprinkle ternary ops in our code. The alternative to using this is for
-     * every call to getID() from a Language, Ter, or Source to be made in the same ternary that is inside
-     * this.  Works for any class that has a getID() method. Intended to use with Language, Term, Source,
+     * Call this so we don't have to sprinkle ternary ops throughout our code. The alternative to using this
+     * is for every call to getID() from a Language, Term, or Source to be made in the same ternary that is
+     * inside this.  Works for any class that has a getID() method. Intended to use with Language, Term,
+     * Source,
      * 
      * @param mixed $thing Some object that when not null has a getID() method.
      *
@@ -141,14 +171,14 @@ class DBUtil
      *
      * Hard coded for now to return id and role.
      *
-     * @param string $userid The text userid, sql table appuser.userid, used to get the appuser.id and the
-     * user's primary role.
+     * @param string $userString The text user identifier corresponds to sql table appuser.userid, used to get
+     * the appuser.id and the user's primary role.
      *
-     * @return string[] Associative list of user info data.
+     * @return integer[] A flat list of two integers, appuser.id and role.id.
      */
-    public function getAppUserInfo($userid)
+    public function getAppUserInfo($userString)
     {
-        $uInfo = $this->sql->getAppUserInfo($userid);
+        $uInfo = $this->sql->selectAppUserInfo($userString);
         return $uInfo;
     }
     
@@ -169,6 +199,52 @@ class DBUtil
     }
 
     /**
+     * Fill in a Constellation.
+     * 
+     * @param integer $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     *
+     * @return \snac\data\Constellation A PHP constellation object.
+     * 
+     */
+    public function selectConstellation($vhInfo, $appUserID)
+    {
+        $cObj = new \snac\data\Constellation();
+        /*
+         * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
+         * $vhInfo arg, but populateDate(), populateSource(), and populateLanguage() rely on the internals of
+         * the constellation object.
+         */ 
+        $this->populateNrd($vhInfo, $cObj);
+        $this->populateBiogHist($vhInfo, $cObj);
+        $this->populateDate($cObj); // "Constellation Date" in SQL these dates are linked to table nrd.
+        $this->populateSource($cObj); // "Constellation Source" in the order of statements here
+        $this->populateConventionDeclaration($vhInfo, $cObj);
+        $this->populateFunction($vhInfo, $cObj);
+        $this->populateGender($vhInfo, $cObj);
+        $this->populateGeneralContext($vhInfo, $cObj);
+        $this->populateLanguage($cObj);
+        $this->populateLegalStatus($vhInfo, $cObj);
+        $this->populateMandate($vhInfo, $cObj);
+        $this->populateNameEntry($vhInfo, $cObj);
+        $this->populateNationality($vhInfo, $cObj);
+        $this->populateOccupation($vhInfo, $cObj);
+        $this->populateOtherRecordID($vhInfo, $cObj);
+        $this->populatePlace($vhInfo, $cObj);
+        $this->populateStructureOrGenealogy($vhInfo, $cObj);
+        $this->populateSubject($vhInfo, $cObj);
+        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
+        /* 
+         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
+         */
+        return $cObj;
+    } // end selectConstellation
+
+    /**
+     * Populate Constellation properties
+     * 
+     * Populate the Constellation's 1:1 properties. An existing (empty) constellation is changed in place.
+     *
      * Get a constellation from the database
      *
      * Select a given constellation from the database based on version and main_id.
@@ -179,20 +255,6 @@ class DBUtil
      * |--------------------------------------------------------+------------------------|
      * | setArkID                                               | ark_id                 |
      * | setEntityType                                          | entity_type            |
-     * | setGender                                              | gender                 |
-     * | addLanguagesUsed($langObj)                             | language               |
-     * | n/a, use a language object                             | language_code          |
-     * | n/a, use a language object                             | script                 |
-     * | n/a, use a language object                             | script_code            |
-     * | setLanguageUsed('language_used_code', 'language_used') | language_used          |
-     * | setScriptUsed('script_used_code', 'script_used')       | script_used            |
-     * | setNationality                                         | nationality            |
-     * | addBiogHist                                            | biog_hist              |
-     * | addExistDates                                          | exist_date             |
-     * | setGeneralContext                                      | general_context        |
-     * | setStructureOrGenealogy                                | structure_or_genealogy |
-     * | setConventionDeclaration                               | convention_declaration |
-     * | setMandate                                             | mandate                |
      * |                                                        |                        |
      *
      * @param string[] $vhInfo associative list with keys 'version', 'main_id', 'id'. The version and main_id you
@@ -200,44 +262,20 @@ class DBUtil
      * the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
      *
-     * @param string $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
-     * @return \snac\data\Constellation A PHP constellation object.
-     * 
-     */
-    public function selectConstellation($vhInfo, $appUserID)
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */ 
+    private function populateNrd($vhInfo, &$cObj)
     {
-        $cObj = new \snac\data\Constellation();
-
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($this->populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
-        $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
-        $this->populateLanguage($cObj);
-        $this->populateSource($cObj);
-        $this->populateBiogHist($vhInfo, $cObj);
-        $this->populateGender($vhInfo, $cObj);
-        $this->populateMandate($vhInfo, $cObj);
-        $this->populateConventionDeclaration($vhInfo, $cObj);
-        $this->populateStructureOrGenealogy($vhInfo, $cObj);
-        $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateNationality($vhInfo, $cObj);
-        $this->populateNameEntry($vhInfo, $cObj);
-        $this->populateOccupation($vhInfo, $cObj);
-        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
-        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
-        $this->populateFunction($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj);
-        $this->populateSubject($vhInfo, $cObj);
-        $this->populateLegalStatus($vhInfo, $cObj);
-        $this->populateOtherRecordID($vhInfo, $cObj);
-        /* 
-         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
-         */
-        return $cObj;
-    } // end selectConstellation
+        $this->populateMeta($cObj);
+    }
 
     /**
      * Populate OtherRecordID
@@ -839,7 +877,9 @@ class DBUtil
             $newObj->setDBInfo($item['version'], $item['id']);
             $this->populateMeta($newObj);
             $class = get_class($cObj);
-            // SNACControlMetadata
+            /*
+             * Class specific method for setting/adding a language.
+             */
             if ($class == 'snac\data\SNACControlMetadata' ||
                 $class == 'snac\data\Source' ||
                 $class == 'snac\data\BiogHist')
@@ -1093,7 +1133,8 @@ class DBUtil
                                       $tableName,
                                       $tableID);
         /*
-         * We decided that DBUtil doesn't know (much) about dates as first order, so write the SCM if there is any.
+         * We decided that DBUtil doesn't know (much) about dates as first order data, so write the SCM if
+         * there is any. If no SCM, nothing will happen in saveMeta().
          */
         $this->saveMeta($vhInfo, $date, 'date_range', $rid);
     }
@@ -1109,7 +1150,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveLanguage($vhInfo, $cObj)
+    private function saveLanguage($vhInfo, $cObj, $table)
     {
         foreach ($cObj->getLanguage() as $lang)
         {
@@ -1119,8 +1160,12 @@ class DBUtil
                                               $this->thingID($lang->getScript()),
                                               $lang->getVocabularySource(),
                                               $lang->getNote(),
-                                              'nrd',
+                                              $table,
                                               $vhInfo['main_id']);
+            /*
+             * Try saving meta data, even though some language objects are not first order data and have no
+             * meta data. If there is no meta data, nothing will happen.
+             */ 
             $this->saveMeta($vhInfo, $lang, 'language', $rid);
         }
     }
@@ -1266,8 +1311,9 @@ class DBUtil
                                                 $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
             $this->saveMeta($vhInfo, $fdata, 'function', $funID);
             /*
-             * getDateList() always returns a list of SNACDate objects. If no dates then list is empty,
-             * but it is still a list that we can foreach on without testing for null and count>0.
+             * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
+             * is still a list that we can foreach on without testing for null and count>0. All of which
+             * should go without saying.
              */ 
             foreach ($fdata->getDateList() as $date)
             {
@@ -1635,9 +1681,93 @@ class DBUtil
 
             /*
              * Must call $fOjb->setDBInfo() before calling populateDate()
+             *
+             * Why is $fDate assigned but never used?
              */
             $fDate = populateDate($fObj);
             $cObj->addFunction($fObj);
+        }
+    }
+
+    private function saveVersionHistory($vhInfo, $status, $note, $appUserID, $roleID)
+    {
+        insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note);
+    }
+
+    /**
+     * New write constellation
+     *
+     * We already have a version and main_id, but must write a version_history record. We got the new version
+     * from selectNewVersion() and the new main_id from selectNewID().
+     *
+     * 
+     */ 
+    private function coreWrite($vhInfo, $cObj, $status, $note)
+    {
+        $this->saveVersionHistory($vhInfo, $status, $note, $this->appUserID, $this->roleID);
+        $this->saveBiogHist($vhInfo, $id);
+        $this->saveConstellationDate($vhInfo, $id);
+        $this->saveConstellationSource($vhInfo, $id);
+        $this->saveConventionDeclaration($vhInfo, $id);
+        $this->saveFunction($vhInfo, $id);
+        $this->saveGender($vhInfo, $id);
+        $this->saveGeneralContext($vhInfo, $id);
+        $this->saveLegalStatus($vhInfo, $id);
+        $this->saveLanguage($vhInfo, $id, 'nrd');
+        $this->saveMandate($vhInfo, $id);
+        $this->saveName($vhInfo, $id);
+        $this->saveNationality($vhInfo, $id);
+        $this->saveNrd($vhInfo, $id);
+        $this->saveOccupation($vhInfo, $id);
+        $this->saveOtherRecordID($vhInfo, $id);
+        $this->savePlace($vhInfo, $id, 'nrd');
+        $this->saveStructureOrGenealogy($vhInfo, $id);
+        $this->saveSubject($vhInfo, $id);
+        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
+        $this->saveResourceRelation($vhInfo, $id);
+        return $vhInfo;
+    }
+
+    /**
+     *
+     * Use option 2.
+     * 
+     * Two options:
+     * 1) get a new version number every time.
+     * 2) reuse an existing version number from this session
+     *
+     * Only making them when necessary makes the data records easier to read as a version number is the same
+     * across an entire set of inserts.
+     *
+     */
+    public function writeConstellation($cObj, $status, $note)
+    {
+        if (! $this->haveVersion)
+        {
+            $this->ourVersion = $this->sql->selectNewVersion();
+            $this->haveVersion = true;
+        }
+        if ($cObj->getOperation() == $OPERATION_INSERT)
+        {
+            // Have a version, but might need a new main_id
+            $mainID = $this->sql->selectNewID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+        }
+        elseif ($cObj->getOperation() == $OPERATION_UPDATE)
+        {
+            $mainID = $cObj->getID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+        }
+        elseif ($cObj->getOperation() == $OPERATION_DELETE)
+        {
+            $mainID = $cObj->getID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreDelete($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
         }
     }
 
@@ -1651,9 +1781,9 @@ class DBUtil
      *  
      * @param Constallation $id A PHP Constellation object.
      *
-     * @param string $userid The user's appuser.id value from the db. 
+     * @param integer $appUserID The user appuser.id value from the db. 
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1664,10 +1794,10 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      * 
      */
-    public function insertConstellation($id, $userid, $role, $icstatus, $note)
+    public function insertConstellation($id, $appUserID, $roleID, $icstatus, $note)
     {
-        $vhInfo = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
-        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $vhInfo = $this->sql->insertVersionHistory($appUserID, $roleID, $icstatus, $note);
+        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
         return $vhInfo;
     } // end insertConstellation
 
@@ -1680,9 +1810,9 @@ class DBUtil
      *  
      * @param \snac\data\Constellation $id A PHP Constellation object.
      *
-     * @param string $userid The user's appuser.id value from the db. 
+     * @param integer $appUserID The user's appuser.id value from the db. 
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1695,11 +1825,11 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      * 
      */
-    public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
+    public function updateConstellation($id, $appUserID, $roleID, $icstatus, $note, $main_id)
     {
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $vhInfo = array('version' => $newVersion, 'main_id' => $main_id);
-        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
         return $vhInfo;
     }
     
@@ -1787,14 +1917,7 @@ class DBUtil
                                              $fkID);
             if ($lang = $metaObj->getLanguage())
             {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $this->thingID($lang->getLanguage()),
-                                           $this->thingID($lang->getScript()),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'scm',
-                                           $metaID);
+                saveLanguage($vhInfo, $lang, 'scm');
             }
             $citeID = null;
             if ($cite = $metaObj->getCitation())
@@ -1855,15 +1978,8 @@ class DBUtil
          */ 
         if ($lang = $gObj->getLanguage())
         {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $this->thingID($lang->getLanguage()),
-                                       $this->thingID($lang->getScript()),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'source',
-                                       $genericRecordID);
-         }
+            saveLanguage($vhInfo, $lang, 'source');
+        }
     }
 
 
@@ -1889,9 +2005,9 @@ class DBUtil
      *  
      * @param \snac\data\Constellation $id A PHP Constellation object.
      *
-     * @param string $userid The user's appuser.id value from the db. 
+     * @param integer $appUserID The user's appuser.id value from the db. 
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1904,25 +2020,25 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      * 
      */
-    private function saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo)
+    private function saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo)
     {
-        $this->saveNrd($vhInfo, $id);
-        $this->savePlace($vhInfo, $id, 'nrd');
-        $this->saveConventionDeclaration($vhInfo, $id);
-        $this->saveNationality($vhInfo, $id);
-        $this->saveGeneralContext($vhInfo, $id);
-        $this->saveStructureOrGenealogy($vhInfo, $id);
-        $this->saveMandate($vhInfo, $id);
-        $this->saveGender($vhInfo, $id);
-        $this->saveConstellationDate($vhInfo, $id);
-        $this->saveLanguage($vhInfo, $id);
         $this->saveBiogHist($vhInfo, $id);
-        $this->saveOtherRecordID($vhInfo, $id);
-        $this->saveName($vhInfo, $id);
+        $this->saveConstellationDate($vhInfo, $id);
         $this->saveConstellationSource($vhInfo, $id);
-        $this->saveLegalStatus($vhInfo, $id);
-        $this->saveOccupation($vhInfo, $id);
+        $this->saveConventionDeclaration($vhInfo, $id);
         $this->saveFunction($vhInfo, $id);
+        $this->saveGender($vhInfo, $id);
+        $this->saveGeneralContext($vhInfo, $id);
+        $this->saveLegalStatus($vhInfo, $id);
+        $this->saveLanguage($vhInfo, $id, 'nrd');
+        $this->saveMandate($vhInfo, $id);
+        $this->saveName($vhInfo, $id);
+        $this->saveNationality($vhInfo, $id);
+        $this->saveNrd($vhInfo, $id);
+        $this->saveOccupation($vhInfo, $id);
+        $this->saveOtherRecordID($vhInfo, $id);
+        $this->savePlace($vhInfo, $id, 'nrd');
+        $this->saveStructureOrGenealogy($vhInfo, $id);
         $this->saveSubject($vhInfo, $id);
         $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
         $this->saveResourceRelation($vhInfo, $id);
@@ -1952,14 +2068,7 @@ class DBUtil
             $this->saveMeta($vhInfo, $biogHist, 'biog_hist', $bid);
             if ($lang = $biogHist->getLanguage())
             {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $this->thingID($lang->getLanguage()),
-                                           $this->thingID($lang->getScript()),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'biog_hist',
-                                           $bid);
+                saveLanguage($vhInfo, $lang, 'biog_hist');
             }
         }
     }
@@ -1976,9 +2085,9 @@ class DBUtil
      *
      * @param snac\data\Constellation $pObj object that we are preparing to write all or part of back to the database.
      *
-     * @param string $appUserID Application user id string, for example "system" or "mst3k".
+     * @param integer $appUserID Application user integer id.
      *
-     * @param string $role SNAC role
+     * @param integer $roleID User numeric role id, from the appuser table.
      *
      * @param string $icstatus A version history status string.
      *
@@ -1989,12 +2098,12 @@ class DBUtil
      */
     public function updatePrepare($pObj,
                                   $appUserID,
-                                  $role,
+                                  $roleID,
                                   $icstatus,
                                   $note)
     {
         $mainID = $pObj->getID(); // Note: constellation id is the main_id
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $role, $icstatus, $note, $mainID);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $mainID);
         $vhInfo = array('version' => $newVersion, 'main_id' => $mainID);
         return $vhInfo;
     }
@@ -2046,14 +2155,7 @@ class DBUtil
             }
             if ($lang = $ndata->getLanguage())
             {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $this->thingID($lang->getLanguage()),
-                                           $this->thingID($lang->getScript()),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'name',
-                                           $nameID);
+                saveLanguage($vhInfo, $lang, 'name');
             }
             $dateList = $ndata->getDateList();
             foreach ($ndata->getDateList() as $date)
@@ -2085,7 +2187,7 @@ class DBUtil
      * The constellation must have 2 or more non-delted names. This is a helper function for testing purposes
      * only.
      *
-     * @param string $appUserID A user id string. When testing this comes from getAppUserInfo().
+     * @param integer $appUserID A user id integer. When testing this comes from getAppUserInfo().
      * 
      * @return \snac\data\Constellation A PHP constellation object.
      *
@@ -2115,10 +2217,10 @@ class DBUtil
      * allow setDeleted() to work without any out-of-band information.
      * 
      *
-     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
-     * create a new version_history record.
+     * @param integer $appUserID Integer user id corresponds to table appuser.id, Historically it was used
+     * when creating a new version_history record.
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      * 
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of
      * the inserted constellation. Pass a null if unchanged. Lower level code will preserved the existing
@@ -2138,7 +2240,7 @@ class DBUtil
      * should be the same as $id.
      * 
      */
-    public function setDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    public function setDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
         if (! isset($this->canDelete[$table]))
         {
@@ -2152,7 +2254,7 @@ class DBUtil
             printf("Cannot delete the only name for main_id: $main_id count: %s\n", $this->sql->CountNames($main_id) );
             return null;
         }
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $this->sql->sqlSetDeleted($table, $id, $newVersion);
         return $newVersion;
     }
@@ -2160,14 +2262,11 @@ class DBUtil
     /**
      * Undelete a record. 
      *
-     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
-     * create a new version_history record.
+     * @param integer $appUserID Integer user id
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current integer role.id value of the user. Comes from role.id and table appuser_role_link.
      * 
      * @param string $icstatus Status of this record. Pass a null if unchanged. Lower level code will preserved the existing setting.
-     *
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
@@ -2181,7 +2280,7 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function clearDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    public function clearDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
         if (! isset($this->canDelete[$table]))
         {
@@ -2189,7 +2288,7 @@ class DBUtil
             printf("Cannot clear deleted on table: $table\n");
             return null;
         }
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $this->sql->sqlClearDeleted($table, $id, $newVersion);
         return $newVersion;
     }
