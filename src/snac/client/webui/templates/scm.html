@@ -1,0 +1,31 @@
+{% macro scmButton(short) %}
+<div class="col-xs-2">
+	<button type="button" class="btn btn-default" data-toggle="modal"
+		data-target="#{{short}}_scm_modal">
+		<span class="glyphicon glyphicon-leaf"></span> SCM
+	</button>
+</div>
+{% endmacro %}
+
+{% macro scmModal(short, title, type, scm) %}
+<div class="modal fade" id="{{short}}_scm_modal" tabindex="-1" role="dialog" aria-labelledby="{{short}}_scm_modal_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header primary">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="{{short}}_scm_modal_label">SNAC Control Metadata</h4>
+            <ol class="breadcrumb">
+                <li>{{type}}</li>
+                <li class="active">{{title}}</li>
+            </ol>
+      </div>
+      <div class="modal-body">
+        <div>Information about the SCM will go here</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endmacro %}

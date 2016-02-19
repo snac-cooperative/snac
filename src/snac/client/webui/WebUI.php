@@ -47,10 +47,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
     /**
      * Constructor
-     * 
+     *
      * Takes the input parameters to the web server as an associative array.  These will likely
      * be the GET or POST variables from the user's web browser.
-     * 
+     *
      * @param array $input web input as an associative array
      */
     public function __construct($input) {
@@ -64,25 +64,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
     /**
      * Run Function
-     * 
+     *
      * Runs the web server on the input and produces the response.
-     * 
+     *
      * {@inheritDoc}
      * @see \snac\interfaces\ServerInterface::run()
      */
     public function run() {
 
         $connect = new ServerConnect();
-        
-        
+
+
         // Start the session
         session_name("SNACWebUI");
         session_start();
 
-        
+
         // Create the display for local templates
         $display = new display\Display();
-        
+
         // Replace these with your token settings
         // Create a project at https://console.developers.google.com/
         $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
@@ -97,7 +97,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         if (empty($_SESSION['token'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
-            if (!empty($this->input["command"]) && 
+            if (!empty($this->input["command"]) &&
                 ($this->input["command"] != "login" && $this->input["command"] != "login2"))
                 $this->input["command"] = "";
 
@@ -119,8 +119,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
         if ($this->input["command"] == "edit") {
             $serverResponse = $connect->query($this->input);
             $display->setTemplate("edit_page");
-            if (isset($serverResponse["constellation"]))
-                $display->setData($serverResponse["constellation"]);
+            if (isset($serverResponse["constellation"])) {
+                $constellation = $serverResponse["constellation"];
+                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                $display->setData($constellation);
+            }
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
             // Ask the server for a list of records to edit
@@ -133,7 +137,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Restart the session
             session_name("SNACWebUI");
             session_start();
-            
+
             // if the user wants to log in, then send them to the login server
             $authUrl = $provider->getAuthorizationUrl();
             header('Location: ' . $authUrl);
@@ -146,13 +150,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 array('code' => $_GET['code']));
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
-            
+
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
 
             // Set the user details in the session
             $_SESSION['user_details'] = serialize($ownerDetails);
-            
+
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
         } else if ($this->input["command"] == "logout") {
@@ -162,27 +166,22 @@ class WebUI implements \snac\interfaces\ServerInterface {
             session_name("SNACWebUI");
             session_start();
 
-            // Go to the homepage 
+            // Go to the homepage
             header('Location: index.php');
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
-            
+
+            // Get the constellation object
             $constellation = $this->serializeToConstellation();
 
             // Build a data structure to send to the server
             $request = array("command"=>"update_constellation");
-            
-            
-
-
 
             // Send the query to the server
             $request["constellation"] = $constellation->toArray();
             $serverResponse = $connect->query($request);
-            
 
             // Generate response to the user's web browser
-            //$response = array(); 
             $response = $serverResponse;
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
@@ -194,11 +193,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $request["command"] = "vocabulary";
             $request["type"] = $this->input["type"];
             $request["query_string"] = $this->input["q"];
-            
+
             // Send the query to the server
             $serverResponse = $connect->query($request);
 
-            foreach ($serverResponse["results"] as $k => $v) 
+            foreach ($serverResponse["results"] as $k => $v)
                 $serverResponse["results"][$k]["text"] = $v["value"];
 
             // Send the response back to the web client
@@ -217,7 +216,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
     /**
      * Returns the web server's response (as a string)
-     * 
+     *
      * {@inheritDoc}
      * @see \snac\interfaces\ServerInterface::getResponse()
      */
@@ -228,7 +227,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
     /**
      * Returns the headers for the web server's response (as array of strings)
-     * 
+     *
      * {@inheritDoc}
      * @see \snac\interfaces\ServerInterface::getResponseHeaders()
      */
@@ -239,18 +238,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "Content-Type: text/html"
         );
     }
-    
+
     /**
      * Serialize post data to Constellation
-     * 
+     *
      * Takes the POST data from a SAVE operation and generates
      * a Constellation object to be used by the rest of the system
-     * 
+     *
      * @return \snac\data\Constellation
      */
     private function serializeToConstellation() {
         $constellation = new \snac\data\Constellation();
-        
+
         // Rework the input into arrays of sections
         $nested = array();
         $nested["nameEntry"] = array();
@@ -261,7 +260,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $nested["subject"] = array();
         $nested["occupation"] = array();
         $nested["place"] = array();
-        
+
         foreach ($this->input as $k => $v) {
             // Try to split on underscore
             $parts = explode("_", $k);
@@ -281,7 +280,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $nested[$parts[0]][$parts[2]][$parts[1]] = $v;
             }
         }
-        
+
         // TODO
         if (isset($nested["ark"]))
             $constellation->setArkID($nested["ark"]);
@@ -368,7 +367,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $place->addPlaceEntry($placeEntry);
             $constellation->addPlace($place);
         }
-        
+
         return $constellation;
     }
 }

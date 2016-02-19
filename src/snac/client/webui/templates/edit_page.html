@@ -31,8 +31,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
 
 <!-- Select Upgrades -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0-rc.1/css/select2.min.css" rel="stylesheet" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.0-rc.1/js/select2.min.js"></script>
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 <!-- SNAC Javascript -->
@@ -89,6 +89,8 @@ body {
 </head>
 <body role="document" onLoad="updatePage();">
 {% from 'date_entry.html' import dateEntry %}
+{% from 'scm.html' import scmButton %}
+{% from 'scm.html' import scmModal %}
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -125,7 +127,7 @@ body {
             </div>
         </div><!--/.nav-collapse -->
     </div>
-</nav>  
+</nav>
 
 
 <div class="container snac" role="main">
@@ -154,6 +156,7 @@ body {
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Controlled Vocabs <span class="caret"></span></a>
                     <ul class="dropdown-menu">
+                        <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
                         <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
                         <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
                         <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
@@ -205,27 +208,29 @@ body {
                             <label for="entityType" class="control-label col-xs-2">
                                 Entity Type
                             </label>
-                            <div class="col-xs-10">
+                            <div class="col-xs-8">
                                 <select id="entityType" name="entityType" class="form-control selectpicker">
                                     <option></option>
-                                    <option value="person" {{ data.entityType.term == 'person' ? 'selected' }}>Person</option>
-                                    <option value="corporateBody" {{ data.entityType.term == 'corporateBody' ? 'selected' }}>Corporate Body</option>
-                                    <option value="family" {{ data.entityType.term == 'family' ? 'selected' }}>Family</option>
+                                    <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
                                 </select>
                             </div>
+                            {{ scmButton('entityType') }}
+                            {{ scmModal('entityType', 'Entity Type', "Basic Info", data.entityType) }}
                         </div>
 
                         <div class="form-group">
                             <label for="gender" class="control-label col-xs-2">
                                 Gender
                             </label>
-                            <div class="col-xs-10">
+                            <div class="col-xs-8">
                                 <select id="gender" name="gender" class="form-control selectpicker">
                                     <option></option>
                                     <option value="Female" {{ data.gender.term == 'Female' ? 'selected' }}>Female</option>
                                     <option value="Male" {{ data.gender.term == 'Male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
+                            {{ scmButton('gender') }}
+                            {{ scmModal('gender', 'Gender', "Basic Info", data.gender) }}
                         </div>
                         <div class="form-group">
                             <label for="nationality" class="control-label col-xs-2">
@@ -448,24 +453,73 @@ body {
 
                     </div>
 
-                    <div class="tab-pane" id="subjects">
-                        <h2>Subjects</h2>
+
+                    <div class="tab-pane" id="languagesUsed">
+                        <h2>Languages Used</h2>
 
                         {% set i = 0 %}
-                        {% for subject in data.subjects %}
-                        <div class="form-group">
-                            <div class="col-xs-10">
-                                <select id="subject_{{i}}" name="subject_{{i}}" class="form-control">
-                                    <option></option>
-                                    <option value="{{ subject.term.id }}" selected>{{ subject.term.term }}</option>
-                                </select>
+                        {% for language in data.languagesUsed %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
+                                <input version="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
+                                <div class="form-group">
+                                    <label for="language_language_{{i}}" class="control-label col-xs-2">
+                                        Language
+                                    </label>
+                                    <div class="col-xs-10">
+											<select id="language_language_{{i}}" name="language_language_{{i}}"
+												class="form-control">
+												<option></option>
+												<option value="{{ language.language.id }}" selected>{{ language.language.description }}</option>
+											</select>
+										</div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language_script_{{i}}" class="control-label col-xs-2">
+                                        Script
+                                    </label>
+                                    <div class="col-xs-10">
+                                            <select id="language_script_{{i}}" name="language_script_{{i}}"
+                                                class="form-control">
+                                                <option></option>
+                                                <option value="{{ language.script.id }}" selected>{{ language.script.description }}</option>
+                                            </select>
+                                        </div>
+                                </div>
                             </div>
                         </div>
                         {% set i = i + 1 %}
                         {% endfor %}
 
                     </div>
-                    
+
+                    <div class="tab-pane" id="subjects">
+                        <h2>Subjects</h2>
+
+                        {% set i = 0 %}
+                        {% for subject in data.subjects %}
+                        <div class="panel panel-default">
+                            <div class="panel-body">
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <div class="col-xs-10">
+                                            <select id="subject_{{i}}" name="subject_{{i}}" class="form-control">
+                                                <option></option>
+                                                <option value="{{ subject.term.id }}" selected>{{ subject.term.term }}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{ scmButton("subject_#{i}") }}
+                                {{ scmModal("subject_#{i}", subject.term.term, "Subject", subject) }}
+                            </div>
+                        </div>
+                        {% set i = i + 1 %}
+                        {% endfor %}
+
+                    </div>
+
                     <div class="tab-pane" id="functions">
                         <h2>Functions</h2>
 
@@ -485,7 +539,7 @@ body {
                         {% endfor %}
 
                     </div>
-                    
+
                     <div class="tab-pane" id="occupations">
                         <h2>Occupations</h2>
 
@@ -549,10 +603,10 @@ body {
                     <div class="panel-body">
                         <p>You may perform any of the following actions on this constellation.</p>
                         <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-info" id="save_and_continue">Save &amp; Continue</a>
-                            <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard">Save &amp; Dashboard</a>
-                            <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit">Save &amp; Submit</a>
-                            <a href="#" class="list-group-item list-group-item-danger" id="cancel">Cancel</a>
+                            <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue</a>
+                            <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard</a>
+                            <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Submit</a>
+                            <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</a>
                         </div>
                     </div>
                 </div>
@@ -572,13 +626,61 @@ body {
                         </div>
                     </div>
                 </div>
+                <div class="panel panel-danger">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Debugging</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>The following are debugging options.</p>
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
+                            <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
+                  <div class="modal-dialog" role="document" style="width:90%;">
+                    <div class="modal-content">
+                      <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
+                      </div>
+                      <div class="modal-body">
+                        <pre>{{debug.constellationSource}}
+                        </pre>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+                  <div class="modal-dialog" role="document" style="width:90%;">
+                    <div class="modal-content">
+                      <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                      </div>
+                      <div class="modal-body">
+                        <pre>{{debug.serverResponse}}
+                        </pre>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
             </div>
         </div>
     </form>
-                        
-    
-    
+
+
+
 
 
 

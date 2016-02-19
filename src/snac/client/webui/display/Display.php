@@ -1,6 +1,6 @@
 <?php
 /**
- * Display Interface File 
+ * Display Interface File
  *
  * File for the display interface
  *
@@ -26,9 +26,9 @@ class Display {
 
     /**
      * Constructor
-     * 
+     *
      * Creates the object.  May pass the template filename as a parameter to build the template.
-     * 
+     *
      * @param string optional $template Filename of the template to load
      */
     public function __construct($template = null) {
@@ -43,6 +43,12 @@ class Display {
 
     public function setUserData($data) {
         $this->data["user"] = $data;
+    }
+
+    public function addDebugData($name, $data) {
+        if (!isset($this->data["debug"]))
+            $this->data["debug"] = array();
+        $this->data["debug"][$name] = $data;
     }
 
     public function setTemplate($template) {
@@ -60,7 +66,7 @@ class Display {
         $twig = new \Twig_Environment($loader, array(
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
-        
+
         return $twig->render($this->templateFileName, $this->data);
 
         $template = create_function('$data', file_get_contents($this->templateFileName()));
