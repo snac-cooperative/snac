@@ -42,16 +42,59 @@
 
 <!-- Code to run once the body has been loaded -->
 <script language="javascript">
-var editor = null;
+var biogHistEditor = null;
 function updatePage() {
     $('.selectpicker').selectpicker();
-        editor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
+    /*
+        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
+              lineNumbers: true,
+              lineWrapping: true,
+              viewportMargin: Infinity,
+              mode: {name: "xml"}
+          });*/
+}
+
+function updateBiogHist() {
+    if (biogHistEditor == null) {
+        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
               lineNumbers: true,
               lineWrapping: true,
               viewportMargin: Infinity,
               mode: {name: "xml"}
               });
+    }
+    biogHistEditor.setSize("100%", null);
+    biogHistEditor.refresh();
 }
+
+function makeEditable(short, i) {
+    var idstr = "_" + i;
+    $("input[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.removeAttr("readonly");
+        }
+    });
+    $("textarea[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.removeAttr("readonly");
+        }
+    });
+    $("select[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.removeAttr("readonly");
+        }
+    });
+    $("#" + short + "_operation_" + i).val("update");
+    return false;
+}
+
+function setDeleted(short, i) {
+    return false;
+}
+
 </script>
 
 <style>
@@ -88,6 +131,7 @@ body {
 </style>
 </head>
 <body role="document" onLoad="updatePage();">
+{% import 'widgets.html' as widgets %}
 {% from 'date_entry.html' import dateEntry %}
 {% from 'scm.html' import scmButton %}
 {% from 'scm.html' import scmModal %}
@@ -151,7 +195,7 @@ body {
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="active"><a href="#nrd" role="tab" data-toggle="tab">Basic Info</a></li>
                     <li><a href="#nameEntries" role="tab" data-toggle="tab">Name Entries</a></li>
-                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
+                    <li><a href="#biogHists" role="tab" data-toggle="tab" onMouseUp="updateBiogHist()">BiogHist</a></li>
                     <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Controlled Vocabs <span class="caret"></span></a>
@@ -214,8 +258,8 @@ body {
                                     <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
                                 </select>
                             </div>
-                            {{ scmButton('entityType') }}
-                            {{ scmModal('entityType', 'Entity Type', "Basic Info", data.entityType) }}
+                            {{ scmButton('entityType', '1') }}
+                            {{ scmModal('entityType', '1', 'Entity Type', "Basic Info", data.entityType) }}
                         </div>
 
                         <div class="form-group">
@@ -229,8 +273,8 @@ body {
                                     <option value="Male" {{ data.gender.term == 'Male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
-                            {{ scmButton('gender') }}
-                            {{ scmModal('gender', 'Gender', "Basic Info", data.gender) }}
+                            {{ scmButton('gender', '1') }}
+                            {{ scmModal('gender', '1', 'Gender', "Basic Info", data.gender) }}
                         </div>
                         <div class="form-group">
                             <label for="nationality" class="control-label col-xs-2">
@@ -352,52 +396,65 @@ body {
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
 
+                        <div class="form-group">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+                            </div>
+                        </div>
+
+
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
-                                <input version="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
                                 <div class="form-group">
-                                    <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-2">
+                                    <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
                                         Relation Text
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-2">
+                                    <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
                                         Role
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role.term }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role.term }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-2">
+                                    <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
                                         Link
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-2">
+                                    <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
                                         Document Type
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType.term }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType.term }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-2">
+                                    <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
                                         Source
                                     </label>
-                                    <div class="col-xs-10">
-                                        <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control">{{ relation.source }}</textarea>
+                                    <div class="col-xs-8">
+                                        <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
                                     </div>
                                 </div>
+                            </div>
+
+                            {{ scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
+                            {{ widgets.optionsList("resourceRelation", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -497,22 +554,43 @@ body {
                     <div class="tab-pane" id="subjects">
                         <h2>Subjects</h2>
 
+
+                        <div class="form-group">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Subject</button>
+                            </div>
+                        </div>
+
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="col-xs-10">
                                     <div class="form-group">
-                                        <div class="col-xs-10">
-                                            <select id="subject_{{i}}" name="subject_{{i}}" class="form-control">
-                                                <option></option>
-                                                <option value="{{ subject.term.id }}" selected>{{ subject.term.term }}</option>
-                                            </select>
+                                        <label for="subject_{{i}}" class="control-label col-xs-2">
+                                            Term
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
+                                            <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
+                                            <p class="form-control-static">{{ subject.term.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="subject_{{i}}" class="control-label col-xs-2">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-8">
+                                            {{ widgets.displayURI(subject.term.uri) }}
                                         </div>
                                     </div>
                                 </div>
-                                {{ scmButton("subject_#{i}") }}
-                                {{ scmModal("subject_#{i}", subject.term.term, "Subject", subject) }}
+                                {{ scmModal("subject", i, subject.term.term, "Subject", subject) }}
+                                {{ widgets.optionsList("subject", i) }}
+                                <!--
+                                {{ scmButton("subject", i) }}
+                                {{ scmModal("subject", i, subject.term.term, "Subject", subject) }}
+                            -->
                             </div>
                         </div>
                         {% set i = i + 1 %}
