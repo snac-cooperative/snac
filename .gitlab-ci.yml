@@ -1,5 +1,5 @@
 before_script:
-  - php composer.phar install
+  - php composer.phar -n -q install
   - cp ~/Config.php src/snac/Config.php
   - rm -rf ~/public_html/snac_server
   - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
