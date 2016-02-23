@@ -38,64 +38,7 @@
 <!-- SNAC Javascript -->
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
-
-
-<!-- Code to run once the body has been loaded -->
-<script language="javascript">
-var biogHistEditor = null;
-function updatePage() {
-    $('.selectpicker').selectpicker();
-    /*
-        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
-              lineNumbers: true,
-              lineWrapping: true,
-              viewportMargin: Infinity,
-              mode: {name: "xml"}
-          });*/
-}
-
-function updateBiogHist() {
-    if (biogHistEditor == null) {
-        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
-              lineNumbers: true,
-              lineWrapping: true,
-              viewportMargin: Infinity,
-              mode: {name: "xml"}
-              });
-    }
-    biogHistEditor.setSize("100%", null);
-    biogHistEditor.refresh();
-}
-
-function makeEditable(short, i) {
-    var idstr = "_" + i;
-    $("input[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.removeAttr("readonly");
-        }
-    });
-    $("textarea[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.removeAttr("readonly");
-        }
-    });
-    $("select[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.removeAttr("readonly");
-        }
-    });
-    $("#" + short + "_operation_" + i).val("update");
-    return false;
-}
-
-function setDeleted(short, i) {
-    return false;
-}
-
-</script>
+<script src="javascript/scripts.js"></script>
 
 <style>
 body {
@@ -423,8 +366,12 @@ body {
                                     <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
                                         Role
                                     </label>
-                                    <div class="col-xs-8">
-                                        <input id="resourceRelation_role_{{i}}" name="resourceRelation_role_{{i}}" type="text" class="form-control" value="{{ relation.role.term }}" readonly/>
+                                    <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
+                                        <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
+                                        <input id="resourceRelation_role_term_{{i}}" name="resourceRelation_role_term_{{i}}" type="hidden" class="form-control" value="{{ relation.role.term }}"/>
+                                        <input id="resourceRelation_role_vocabtype_{{i}}" name="resourceRelation_role_vocabtype_{{i}}" type="hidden" class="form-control" value="document_role"/>
+                                        <input id="resourceRelation_role_minlength_{{i}}" name="resourceRelation_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ relation.role.term }}</p>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -439,8 +386,12 @@ body {
                                     <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
                                         Document Type
                                     </label>
-                                    <div class="col-xs-8">
-                                        <input id="resourceRelation_documentType_{{i}}" name="resourceRelation_documentType_{{i}}" type="text" class="form-control" value="{{ relation.documentType.term }}" readonly/>
+                                    <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
+                                        <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
+                                        <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
+                                        <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
+                                        <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ relation.documentType.term }}</p>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -566,13 +517,15 @@ body {
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <div class="col-xs-10">
+                                    <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
                                     <div class="form-group">
                                         <label for="subject_{{i}}" class="control-label col-xs-2">
                                             Term
                                         </label>
-                                        <div class="col-xs-8">
-                                            <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
+                                        <div class="col-xs-8" id="select_subject_term_{{i}}">
                                             <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
+                                            <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
+                                            <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
                                             <p class="form-control-static">{{ subject.term.term }}</p>
                                         </div>
                                     </div>

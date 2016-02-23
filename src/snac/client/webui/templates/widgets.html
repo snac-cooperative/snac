@@ -2,8 +2,8 @@
 <div class="col-xs-2">
     <div class="list-group">
         <a href="#" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}"><span class="glyphicon glyphicon-leaf"></span> SCM</a>
-        <a href="#" class="list-group-item list-group-item-info" onClick="makeEditable('{{short}}', {{i}});"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-        <a href="#" class="list-group-item list-group-item-danger" onClick="setDeleted('{{short}}', {{i}});"><span class="glyphicon glyphicon-trash"></span> Trash</a>
+        <a href="#" class="list-group-item list-group-item-info" onClick="event.preventDefault(); makeEditable('{{short}}', {{i}});"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
+        <a href="#" class="list-group-item list-group-item-danger" onClick="event.preventDefault(); setDeleted('{{short}}', {{i}});"><span class="glyphicon glyphicon-trash"></span> Trash</a>
     </div>
 </div>
 {% endmacro %}

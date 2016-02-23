@@ -1,5 +1,5 @@
 
-function select_replace(selectItem, idMatch, type, minLength = 4) {
+function vocab_select_replace(selectItem, idMatch, type, minLength = 4) {
         if(selectItem.attr('id').indexOf(idMatch) != -1
             && selectItem.attr('id').indexOf("ZZ") == -1) {
                 selectItem.select2({
@@ -18,9 +18,10 @@ function select_replace(selectItem, idMatch, type, minLength = 4) {
                         },
                         cache: true
                     },
-                width: '100%',
-                minimumInputLength: minLength,
-                allowClear: false
+                    width: '100%',
+                    minimumInputLength: minLength,
+                    allowClear: true,
+                    theme: 'classic'
                 });
             }
 }
@@ -33,21 +34,21 @@ $(document).ready(function() {
     $("select").each(function() {
 
         // Replace the subject selects
-        select_replace($(this), "language_language_", "language_code", 1);
+        vocab_select_replace($(this), "language_language_", "language_code", 1);
 
         // Replace the subject selects
-        select_replace($(this), "language_script_", "script_code", 1);
+        vocab_select_replace($(this), "language_script_", "script_code", 1);
 
         // Replace the subject selects
-        select_replace($(this), "subject_", "subject");
+        vocab_select_replace($(this), "subject_", "subject");
 
         // Replace the function selects
-        select_replace($(this), "function_", "function");
+        vocab_select_replace($(this), "function_", "function");
 
         // Replace the occupation selects
-        select_replace($(this), "occupation_", "occupation");
+        vocab_select_replace($(this), "occupation_", "occupation");
 
         // Replace the entityType select
-        select_replace($(this), "entityType", "entity_type", 0);
+        vocab_select_replace($(this), "entityType", "entity_type", 0);
     });
 });
