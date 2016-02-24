@@ -23,9 +23,15 @@ namespace snac;
  * the configuration settings and avoid global variables and constants.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class Config {
+
+
+    /**
+     * @var boolean Whether the system is in DEBUG mode
+     */
+    public static $DEBUG_MODE = true;
 
     /**
      * @var the full path of this project (to the root of the repository)
@@ -39,7 +45,7 @@ class Config {
     public static $INTERNAL_SERVERURL = "http://localhost:82";
 
     /**
-     * Full database connection information 
+     * Full database connection information
      *
      * Connection information for the POSTGRES database
      *
@@ -64,10 +70,10 @@ class Config {
      * database calls will only be logged and not committed to the database.
      *
      * @var boolean Database in testing mode.
-     * 
+     *
      */
     public static $DATABASE_TESTING = false;
-    
+
     /**
      * @var string Location of the template directory
      */
