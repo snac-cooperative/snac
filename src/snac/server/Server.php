@@ -110,7 +110,7 @@ class Server implements \snac\interfaces\ServerInterface {
             case "edit":
                 if (isset($this->input["arkid"])) {
                     // Editing the given ark id by reading querying the current HRT
-                    
+
                     // split on ark:/
                     $tmp = explode("ark:/", $this->input["arkid"]);
                     if (isset($tmp[1])) {
@@ -130,15 +130,23 @@ class Server implements \snac\interfaces\ServerInterface {
                     $constellation = $db->selectConstellation(
                         array(
                             "version"=> $this->input["version"],
-                            "main_id" => $this->input["constellationid"] 
+                            "main_id" => $this->input["constellationid"]
                         ), // version number -- how do I get this??
                         "system"); // no idea how to get this now
                     $this->response["constellation"] = $constellation->toArray();
                     return;
+                } else if (isset($this->input["testid"])) {
+                    if ($this->input["testid"] == 1) {
+                        // Create new parser for this file and parse it
+                        $parser = new \snac\util\EACCPFParser();
+                        $id = $parser->parseFile("http://shannonvm.village.virginia.edu/~jh2jf/test_record.xml");
+                        $this->response["constellation"] = $id->toArray();
+                        return;
+                    }
                 }
                 // break; // no longer breaking to allow the default case to give an error if neither matches
             default:
-                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);    
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
 
         }
 
