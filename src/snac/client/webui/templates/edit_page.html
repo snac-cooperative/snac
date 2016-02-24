@@ -76,8 +76,7 @@ body {
 <body role="document" onLoad="updatePage();">
 {% import 'widgets.html' as widgets %}
 {% from 'date_entry.html' import dateEntry %}
-{% from 'scm.html' import scmButton %}
-{% from 'scm.html' import scmModal %}
+
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -143,6 +142,7 @@ body {
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Controlled Vocabs <span class="caret"></span></a>
                     <ul class="dropdown-menu">
+                        <li><a href="#nationalities" role="tab" data-toggle="tab">Nationalities</a></li>
                         <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
                         <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
                         <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
@@ -201,8 +201,8 @@ body {
                                     <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
                                 </select>
                             </div>
-                            {{ scmButton('entityType', '1') }}
-                            {{ scmModal('entityType', '1', 'Entity Type', "Basic Info", data.entityType) }}
+                            {{ widgets.scmButton('entityType', '1') }}
+                            {{ widgets.scmModal('entityType', '1', 'Entity Type', "Basic Info", data.entityType) }}
                         </div>
 
                         <div class="form-group">
@@ -216,41 +216,10 @@ body {
                                     <option value="Male" {{ data.gender.term == 'Male' ? 'selected' }}>Male</option>
                                 </select>
                             </div>
-                            {{ scmButton('gender', '1') }}
-                            {{ scmModal('gender', '1', 'Gender', "Basic Info", data.gender) }}
+                            {{ widgets.scmButton('gender', '1') }}
+                            {{ widgets.scmModal('gender', '1', 'Gender', "Basic Info", data.gender) }}
                         </div>
-                        <div class="form-group">
-                            <label for="nationality" class="control-label col-xs-2">
-                                Nationality
-                            </label>
-                            <div class="col-xs-10">
-                                <input id="nationality" name="nationality" type="text" class="form-control" value="{{ data.nationality.text }}"/>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="languageCode" class="control-label col-xs-2">
-                                Language
-                            </label>
-                            <div class="col-xs-10">
-                                <select id="languageCode" name="languageCode" class="form-control selectpicker">
-                                    <option></option>
-                                    <option value="eng" {{ data.languagesUsed.language.term == 'eng' ? 'selected' }}>English</option>
-                                    <option value="fre" {{ data.languagesUsed.language.term == 'fre' ? 'selected' }}>French</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="scriptCode" class="control-label col-xs-2">
-                                Script
-                            </label>
-                            <div class="col-xs-10">
-                                <select id="scriptCode" name="scriptCode" class="form-control selectpicker">
-                                    <option></option>
-                                    <option value="Latn" {{ data.languagesUsed.script.term == 'Latn' ? 'selected' }}>Latin Alphabet</option>
-                                    <option value="Zyyy" {{ data.languagesUsed.script.term == 'Zyyy' ? 'selected' }}>Unknown Script</option>
-                                </select>
-                            </div>
-                        </div>
+
                         {{ dateEntry('Exist Dates', 'exist', data.existDates.0) }}
                     </div>
 
@@ -279,7 +248,8 @@ body {
 
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
-
+                        <input type="hidden" id="biogHist_id" name="biogHist_id" value="{{data.biogHists[0].id}}"/>
+                        <input type="hidden" id="biogHist_version" name="biogHist_version" value="{{data.biogHists[0].version}}"/>
                         <p><textarea id="biogHist" name="biogHist" style="height: auto">{{ data.biogHists[0].text|e }}</textarea></p>
 
                     </div>
@@ -353,59 +323,59 @@ body {
                                 <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                <div class="form-group">
-                                    <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
-                                        Relation Text
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
+                                            Relation Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
+                                            Role
+                                        </label>
+                                        <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
+                                            <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
+                                            <input id="resourceRelation_role_term_{{i}}" name="resourceRelation_role_term_{{i}}" type="hidden" class="form-control" value="{{ relation.role.term }}"/>
+                                            <input id="resourceRelation_role_vocabtype_{{i}}" name="resourceRelation_role_vocabtype_{{i}}" type="hidden" class="form-control" value="document_role"/>
+                                            <input id="resourceRelation_role_minlength_{{i}}" name="resourceRelation_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ relation.role.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
+                                            Link
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
+                                            Document Type
+                                        </label>
+                                        <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
+                                            <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
+                                            <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
+                                            <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
+                                            <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ relation.documentType.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
+                                            ObjectXMLWrap
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
-                                        Role
-                                    </label>
-                                    <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
-                                        <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
-                                        <input id="resourceRelation_role_term_{{i}}" name="resourceRelation_role_term_{{i}}" type="hidden" class="form-control" value="{{ relation.role.term }}"/>
-                                        <input id="resourceRelation_role_vocabtype_{{i}}" name="resourceRelation_role_vocabtype_{{i}}" type="hidden" class="form-control" value="document_role"/>
-                                        <input id="resourceRelation_role_minlength_{{i}}" name="resourceRelation_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ relation.role.term }}</p>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
-                                        Link
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
-                                        Document Type
-                                    </label>
-                                    <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
-                                        <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
-                                        <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
-                                        <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
-                                        <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ relation.documentType.term }}</p>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
-                                        Source
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
 
-                            {{ scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
-                            {{ widgets.optionsList("resourceRelation", i) }}
+                                {{ widgets.scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
+                                {{ widgets.optionsList("resourceRelation", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -421,7 +391,7 @@ body {
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
-                                <input version="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <div class="form-group">
                                     <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-2">
                                         Relation Text
@@ -470,30 +440,30 @@ body {
                         <div class="panel panel-default">
                             <div class="panel-body">
                                 <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
-                                <input version="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
+                                <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
                                 <div class="form-group">
                                     <label for="language_language_{{i}}" class="control-label col-xs-2">
                                         Language
                                     </label>
                                     <div class="col-xs-10">
-											<select id="language_language_{{i}}" name="language_language_{{i}}"
-												class="form-control">
-												<option></option>
-												<option value="{{ language.language.id }}" selected>{{ language.language.description }}</option>
-											</select>
-										</div>
+                                        <select id="language_language_{{i}}" name="language_language_{{i}}"
+                                            class="form-control">
+                                            <option></option>
+                                            <option value="{{ language.language.id }}" selected>{{ language.language.description }}</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label for="language_script_{{i}}" class="control-label col-xs-2">
                                         Script
                                     </label>
                                     <div class="col-xs-10">
-                                            <select id="language_script_{{i}}" name="language_script_{{i}}"
-                                                class="form-control">
-                                                <option></option>
-                                                <option value="{{ language.script.id }}" selected>{{ language.script.description }}</option>
-                                            </select>
-                                        </div>
+                                        <select id="language_script_{{i}}" name="language_script_{{i}}"
+                                            class="form-control">
+                                            <option></option>
+                                            <option value="{{ language.script.id }}" selected>{{ language.script.description }}</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -516,205 +486,306 @@ body {
                         {% for subject in data.subjects %}
                         <div class="panel panel-default">
                             <div class="panel-body">
-                                <div class="col-xs-10">
                                     <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
+                                    <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
+                                    <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value=""/>
+                                    <div class="col-xs-10">
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-2">
+                                                Term
+                                            </label>
+                                            <div class="col-xs-10" id="select_subject_term_{{i}}">
+                                                <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
+                                                <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
+                                                <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
+                                                <p class="form-control-static">{{ subject.term.term }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-2">
+                                                URI
+                                            </label>
+                                            <div class="col-xs-10">
+                                                {{ widgets.displayURI(subject.term.uri) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{ widgets.scmModal("subject", i, subject.term.term, "Subject", subject) }}
+                                    {{ widgets.optionsList("subject", i) }}
+                        </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="tab-pane" id="nationalities">
+                            <h2>Nationalities</h2>
+
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for nationality in data.nationalities %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
+                                        <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
+                                        <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_nationality_term_{{i}}">
+                                                    <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
+                                                    <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
+                                                    <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
+                                                    <p class="form-control-static">{{ nationality.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(nationality.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("nationality", i, nationality.term.term, "Nationality", nationality) }}
+                                        {{ widgets.optionsList("nationality", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="tab-pane" id="functions">
+                            <h2>Functions</h2>
+
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for function in data.functions %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
+                                        <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
+                                        <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_function_term_{{i}}">
+                                                    <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
+                                                    <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
+                                                    <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
+                                                    <p class="form-control-static">{{ function.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(function.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("function", i, function.term.term, "Function", function) }}
+                                        {{ widgets.optionsList("function", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="tab-pane" id="occupations">
+                            <h2>Occupations</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for occupation in data.occupations %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
+                                        <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
+                                        <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_occupation_term_{{i}}">
+                                                    <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
+                                                    <input type="hidden" id="occupation_term_term_{{i}}" name="occupation_term_term_{{i}}" value="{{occupation.term.term}}"/>
+                                                    <input type="hidden" id="occupation_term_vocabtype_{{i}}" name="occupation_term_vocabtype_{{i}}" value="occupation"/>
+                                                    <p class="form-control-static">{{ occupation.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(occupation.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("occupation", i, occupation.term.term, "Occupation", occupation) }}
+                                        {{ widgets.optionsList("occupation", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+
+                        </div>
+
+                        <div class="tab-pane" id="places">
+                            <h2>Places</h2>
+
+                            {% set i = 0 %}
+                            {% for place in data.places %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                    <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
+                                    <input version="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
                                     <div class="form-group">
-                                        <label for="subject_{{i}}" class="control-label col-xs-2">
-                                            Term
+                                        <input id="place_originalid_{{i}}" name="place_originalid_{{i}}" type="hidden" value="{{ place.entries.0.id }}"/>
+                                        <input version="place_originalversion_{{i}}" name="place_originalversion_{{i}}" type="hidden" value="{{ place.entries.0.version }}"/>
+                                        <label for="place_original_{{ i }}" class="control-label col-xs-2">
+                                            Original
                                         </label>
-                                        <div class="col-xs-8" id="select_subject_term_{{i}}">
-                                            <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
-                                            <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
-                                            <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
-                                            <p class="form-control-static">{{ subject.term.term }}</p>
+                                        <div class="col-xs-10">
+                                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="subject_{{i}}" class="control-label col-xs-2">
-                                            URI
+                                        <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
+                                            Geonames
                                         </label>
-                                        <div class="col-xs-8">
-                                            {{ widgets.displayURI(subject.term.uri) }}
+                                        <div class="col-xs-10">
+                                            <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.geoTerm.name }}"/>
                                         </div>
                                     </div>
                                 </div>
-                                {{ scmModal("subject", i, subject.term.term, "Subject", subject) }}
-                                {{ widgets.optionsList("subject", i) }}
-                                <!--
-                                {{ scmButton("subject", i) }}
-                                {{ scmModal("subject", i, subject.term.term, "Subject", subject) }}
-                            -->
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">User Actions</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>You may perform any of the following actions on this constellation.</p>
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue</a>
+                                <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard</a>
+                                <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Submit</a>
+                                <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</a>
                             </div>
                         </div>
-                        {% set i = i + 1 %}
-                        {% endfor %}
-
                     </div>
-
-                    <div class="tab-pane" id="functions">
-                        <h2>Functions</h2>
-
-                        {% set i = 0 %}
-                        {% for function in data.functions %}
-                        <div class="form-group">
-                            <input id="function_id_{{i}}" name="function_id_{{i}}" type="hidden" value="{{ function.id }}"/>
-                            <input version="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
-                            <div class="col-xs-10">
-                                <select id="function_term_{{i}}" name="function_term_{{i}}" class="form-control">
-                                    <option></option>
-                                    <option value="{{ function.term.id }}" selected>{{ function.term.term }}</option>
-                                </select>
-                            </div>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Constellation Info</h3>
                         </div>
-                        {% set i = i + 1 %}
-                        {% endfor %}
-
-                    </div>
-
-                    <div class="tab-pane" id="occupations">
-                        <h2>Occupations</h2>
-
-                        {% set i = 0 %}
-                        {% for occupation in data.occupations %}
-                        <div class="form-group">
-                            <input id="occupation_id_{{i}}" name="occupation_id_{{i}}" type="hidden" value="{{ occupation.id }}"/>
-                            <input version="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
-                            <div class="col-xs-10">
-                                <select id="occupation_term_{{i}}" name="occupation_term_{{i}}" class="form-control">
-                                    <option></option>
-                                    <option value="{{ occupation.term.id }}" selected>{{ occupation.term.term }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        {% set i = i + 1 %}
-                        {% endfor %}
-
-                    </div>
-
-                    <div class="tab-pane" id="places">
-                        <h2>Places</h2>
-
-                        {% set i = 0 %}
-                        {% for place in data.places %}
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
-                                <input version="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
-                                <div class="form-group">
-                                    <input id="place_originalid_{{i}}" name="place_originalid_{{i}}" type="hidden" value="{{ place.entries.0.id }}"/>
-                                    <input version="place_originalversion_{{i}}" name="place_originalversion_{{i}}" type="hidden" value="{{ place.entries.0.version }}"/>
-                                    <label for="place_original_{{ i }}" class="control-label col-xs-2">
-                                        Original
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}"/>
-                                    </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="ark" class="control-label col-xs-2">
+                                    Ark
+                                </label>
+                                <div class="col-xs-10">
+                                    <p class="form-control-static">{{ data.ark }}</p>
                                 </div>
-                                <div class="form-group">
-                                    <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
-                                        Geonames
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.geoTerm.name }}"/>
-                                    </div>
+                                <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if debug %}
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Debugging</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>The following are debugging options.</p>
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.constellationSource}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
                                 </div>
                             </div>
                         </div>
-                        {% set i = i + 1 %}
-                        {% endfor %}
+                    </div>
 
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">User Actions</h3>
-                    </div>
-                    <div class="panel-body">
-                        <p>You may perform any of the following actions on this constellation.</p>
-                        <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue</a>
-                            <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard</a>
-                            <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Submit</a>
-                            <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-primary">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Constellation Info</h3>
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <label for="ark" class="control-label col-xs-2">
-                                Ark
-                            </label>
-                            <div class="col-xs-10">
-                                <p class="form-control-static">{{ data.ark }}</p>
+                    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.serverResponse}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                                </div>
                             </div>
-                            <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
                         </div>
                     </div>
-                </div>
-                <div class="panel panel-danger">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Debugging</h3>
-                    </div>
-                    <div class="panel-body">
-                        <p>The following are debugging options.</p>
-                        <div class="list-group">
-                            <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
-                            <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
-                  <div class="modal-dialog" role="document" style="width:90%;">
-                    <div class="modal-content">
-                      <div class="modal-header primary">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
-                      </div>
-                      <div class="modal-body">
-                        <pre>{{debug.constellationSource}}
-                        </pre>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                    {% endif %}
 
-                <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
-                  <div class="modal-dialog" role="document" style="width:90%;">
-                    <div class="modal-content">
-                      <div class="modal-header primary">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
-                      </div>
-                      <div class="modal-body">
-                        <pre>{{debug.serverResponse}}
-                        </pre>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-
             </div>
-        </div>
-    </form>
+        </form>
 
 
 
 
 
 
-</div>
-</body>
-</html>
+    </div>
+    </body>
+    </html>

@@ -1,5 +1,5 @@
 {% macro dateEntry(name, short, snacDate) %}
-    {% import 'scm.html' as scm %} 
+    {% import 'widgets.html' as widgets %}
 <div class="panel panel-default">
 	<div class="panel-heading">{{ name }}</div>
 	<div class="panel-body">
@@ -68,9 +68,9 @@
 			</div>
 		</div>
 
-		{{ scm.scmButton(short) }} 
-		{{ scm.scmModal(short, name, snacDate) }}
+        <!-- TODO: need to fix this up! -->
+        {{ widgets.scmModal(short, 1, "Dates", "Dates2", snacDate) }}
+        {{ widgets.optionsList(short, 1) }}
 	</div>
 </div>
 {% endmacro %}
-
