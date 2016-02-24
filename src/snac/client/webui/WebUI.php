@@ -121,8 +121,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $display->setTemplate("edit_page");
             if (isset($serverResponse["constellation"])) {
                 $constellation = $serverResponse["constellation"];
-                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
                 $display->setData($constellation);
             }
         } else if ($this->input["command"] == "dashboard") {
