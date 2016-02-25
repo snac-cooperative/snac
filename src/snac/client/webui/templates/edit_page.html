@@ -245,20 +245,66 @@ body {
 
                     <div class="tab-pane" id="nameEntries">
                         <h2>Name Entries</h2>
+
+                        <div class="form-group">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Name Entry</button>
+                            </div>
+                        </div>
+
                         {% set i = 0 %}
                         {% for nameEntry in data.nameEntries %}
                         <div class="panel panel-default">
                             <div class="panel-body">
-                                <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
-                                <input version="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
-                                <div class="form-group">
-                                    <label for="nameEntry_original_{{ i }}" class="control-label col-xs-2">
-                                        Original
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="text" class="form-control" value="{{ nameEntry.original }}"/>
+                                <div class="col-xs-10">
+                                    <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
+                                    <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
+                                    <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value=""/>
+                                    <div class="form-group">
+                                        <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4">
+                                            Original
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="text" class="form-control" value="{{ nameEntry.original }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4">
+                                            Preference Score
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="nameEntry_language_id_0" name="nameEntry_language_id_0" value="{{nameEntry.language.id}}"/>
+                                    <input type="hidden" id="nameEntry_language_version_0" name="nameEntry_language_version_0" value="{{nameEntrys.language.version}}"/>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_nameEntry_languagelanguage_{{i}}">
+                                            <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
+                                            <input id="nameEntry_languagelanguage_term_{{i}}" name="nameEntry_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.term }}"/>
+                                            <input id="nameEntry_languagelanguage_vocabtype_{{i}}" name="nameEntry_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="nameEntry_languagelanguage_minlength_{{i}}" name="nameEntry_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ nameEntry.language.language.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_nameEntry_languagescript_{{i}}">
+                                            <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
+                                            <input id="nameEntry_languagescript_term_{{i}}" name="nameEntry_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.term }}"/>
+                                            <input id="nameEntry_languagescript_vocabtype_{{i}}" name="nameEntry_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="nameEntry_languagescript_minlength_{{i}}" name="nameEntry_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
+                                        </div>
                                     </div>
                                 </div>
+                                {{ widgets.scmModal("nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
+                                {{ widgets.optionsList("nameEntry", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -271,45 +317,45 @@ body {
                         <h2>Biographical History</h2>
 
                         <div class="panel-body">
-                        <div class="col-xs-10">
-                            <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
-                            <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
-                            <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
-                            <p><textarea id="biogHist_text_0" name="biogHist_text_0" style="height: 450px; width: 100%;"  readonly>{{ data.biogHists[0].text|e }}</textarea></p>
+                            <div class="col-xs-10">
+                                <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
+                                <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
+                                <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
+                                <p><textarea id="biogHist_text_0" name="biogHist_text_0" style="height: 450px; width: 100%;"  readonly>{{ data.biogHists[0].text|e }}</textarea></p>
 
 
                                 <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
                                 <input type="hidden" id="biogHist_language_version_0" name="biogHist_language_version_0" value="{{data.biogHists[0].language.version}}"/>
-                            <div class="form-group">
-                                <label class="control-label col-xs-4">
-                                    Language
-                                </label>
-                                <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
-                                    <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
-                                    <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.term }}"/>
-                                    <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                    <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                    <p class="form-control-static">{{ data.biogHists[0].language.language.term }}</p>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Language
+                                    </label>
+                                    <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
+                                        <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
+                                        <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.term }}"/>
+                                        <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                        <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ data.biogHists[0].language.language.term }}</p>
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Script
+                                    </label>
+                                    <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
+                                        <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
+                                        <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.term }}"/>
+                                        <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                        <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ data.biogHists[0].language.script.term }}</p>
+                                    </div>
                                 </div>
                             </div>
 
-
-                            <div class="form-group">
-                                <label class="control-label col-xs-4">
-                                    Script
-                                </label>
-                                <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
-                                    <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
-                                    <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.term }}"/>
-                                    <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                    <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                    <p class="form-control-static">{{ data.biogHists[0].language.script.term }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{ widgets.scmModal("biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
-                        {{ widgets.optionsList("biogHist", i) }}
+                            {{ widgets.scmModal("biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
+                            {{ widgets.optionsList("biogHist", i) }}
                         </div>
 
                     </div>
@@ -555,30 +601,38 @@ body {
                             <div class="panel-body">
                                 <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
                                 <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
-                                <div class="form-group">
-                                    <label for="language_language_{{i}}" class="control-label col-xs-2">
-                                        Language
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <select id="language_language_{{i}}" name="language_language_{{i}}"
-                                            class="form-control">
-                                            <option></option>
-                                            <option value="{{ language.language.id }}" selected>{{ language.language.description }}</option>
-                                        </select>
+                                <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_language_language_{{i}}">
+                                            <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
+                                            <input id="language_language_term_{{i}}" name="language_language_term_{{i}}" type="hidden" class="form-control" value="{{ language.language.term }}"/>
+                                            <input id="language_language_vocabtype_{{i}}" name="language_language_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="language_language_minlength_{{i}}" name="language_language_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ language.language.term }}</p>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_language_script_{{i}}">
+                                            <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
+                                            <input id="language_script_term_{{i}}" name="language_script_term_{{i}}" type="hidden" class="form-control" value="{{ language.script.term }}"/>
+                                            <input id="language_script_vocabtype_{{i}}" name="language_script_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="language_script_minlength_{{i}}" name="language_script_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ language.script.term }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="language_script_{{i}}" class="control-label col-xs-2">
-                                        Script
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <select id="language_script_{{i}}" name="language_script_{{i}}"
-                                            class="form-control">
-                                            <option></option>
-                                            <option value="{{ language.script.id }}" selected>{{ language.script.description }}</option>
-                                        </select>
-                                    </div>
-                                </div>
+
+                                {{ widgets.scmModal("language", i, language.language.term, "Language", language) }}
+                                {{ widgets.optionsList("language", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
