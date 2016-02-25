@@ -266,41 +266,109 @@ body {
 
                     </div>
 
+                    {% set i = 0 %}
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
-                        <input type="hidden" id="biogHist_id" name="biogHist_id" value="{{data.biogHists[0].id}}"/>
-                        <input type="hidden" id="biogHist_version" name="biogHist_version" value="{{data.biogHists[0].version}}"/>
-                        <p><textarea id="biogHist" name="biogHist" style="height: auto">{{ data.biogHists[0].text|e }}</textarea></p>
+
+                        <div class="panel-body">
+                        <div class="col-xs-10">
+                            <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
+                            <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
+                            <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
+                            <p><textarea id="biogHist_text_0" name="biogHist_text_0" style="height: 450px; width: 100%;"  readonly>{{ data.biogHists[0].text|e }}</textarea></p>
+
+
+                                <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
+                                <input type="hidden" id="biogHist_language_version_0" name="biogHist_language_version_0" value="{{data.biogHists[0].language.version}}"/>
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    Language
+                                </label>
+                                <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
+                                    <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
+                                    <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.term }}"/>
+                                    <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                    <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ data.biogHists[0].language.language.term }}</p>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group">
+                                <label class="control-label col-xs-4">
+                                    Script
+                                </label>
+                                <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
+                                    <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
+                                    <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.term }}"/>
+                                    <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                    <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                    <p class="form-control-static">{{ data.biogHists[0].language.script.term }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{ widgets.scmModal("biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
+                        {{ widgets.optionsList("biogHist", i) }}
+                        </div>
 
                     </div>
 
                     <div class="tab-pane" id="sameAs">
                         <h2>Same As</h2>
 
+                        <div class="form-group">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
+                            </div>
+                        </div>
+
+
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
                         <div class="panel panel-default">
                             <div class="panel-body">
-                                <div class="form-group">
-                                    <label for="otherID_type_{{ i }}" class="control-label col-xs-2">
-                                        Type
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="otherID_type_{{i}}" name="otherID_type_{{i}}" type="text" class="form-control" value="{{ other.type.term }}"/>
+                                <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
+                                <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
+                                <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
+                                            Relation Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4">
+                                            Role
+                                        </label>
+                                        <div class="col-xs-8" id="select_sameAs_type_{{i}}">
+                                            <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
+                                            <input id="sameAs_type_term_{{i}}" name="sameAs_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
+                                            <input id="sameAs_type_vocabtype_{{i}}" name="sameAs_type_vocabtype_{{i}}" type="hidden" class="form-control" value="record_type"/>
+                                            <input id="sameAs_type_minlength_{{i}}" name="sameAs_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ other.type.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="otherID_href_{{ i }}" class="control-label col-xs-2">
-                                        Link
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="otherID_href_{{i}}" name="otherID_href_{{i}}" type="text" class="form-control" value="{{ other.uri }}"/>
-                                    </div>
-                                </div>
+
+                                {{ widgets.scmModal("sameAs", i, other.uri, "Same-As Relation", other) }}
+                                {{ widgets.optionsList("sameAs", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
                         {% endfor %}
+
 
                     </div>
 
@@ -420,38 +488,56 @@ body {
                             <div class="panel-body">
                                 <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
+                                <div class="col-xs-10">
                                 <div class="form-group">
-                                    <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-2">
+                                    <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-4">
                                         Relation Text
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="constellationRelation_targetArkID_{{ i }}" class="control-label col-xs-2">
+                                    <label for="constellationRelation_targetID_{{ i }}" class="control-label col-xs-4">
+                                        Target Constellation ID
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetED_{{i}}" type="text" class="form-control" value="{{ relation.targetConstellation }}" readonly/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_targetArkID_{{ i }}" class="control-label col-xs-4">
                                         Target ArkID
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="text" class="form-control" value="{{ relation.targetArkID }}"/>
+                                    <div class="col-xs-8">
+                                        <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="text" class="form-control" value="{{ relation.targetArkID }}" readonly/>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="constellationRelation_targetEntityType_{{ i }}" class="control-label col-xs-2">
-                                        Target Entity Type
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="text" class="form-control" value="{{ relation.targetEntityType.term }}" disabled="disabled"/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-2">
+                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-4">
                                         Type
                                     </label>
-                                    <div class="col-xs-10">
-                                        <input id="constellationRelation_type_{{i}}" name="constellationRelation_type_{{i}}" type="text" class="form-control" value="{{ relation.type.term }}"/>
+                                    <div class="col-xs-8" id="select_constellationRelation_type_{{i}}">
+                                        <input id="constellationRelation_type_id_{{i}}" name="constellationRelation_type_id_{{i}}" type="hidden" class="form-control" value="{{ relation.type.id }}"/>
+                                        <input id="constellationRelation_type_term_{{i}}" name="constellationRelation_type_term_{{i}}" type="hidden" class="form-control" value="{{ relation.type.term }}"/>
+                                        <input id="constellationRelation_type_vocabtype_{{i}}" name="constellationRelation_type_vocabtype_{{i}}" type="hidden" class="form-control" value="relation_type"/>
+                                        <input id="constellationRelation_type_minlength_{{i}}" name="constellationRelation_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ relation.type.term }}</p>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4">
+                                        Descriptive Note
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{ widgets.scmModal("constellationRelation", i, relation.content, "Constellation Relation", relation) }}
+                            {{ widgets.optionsList("constellationRelation", i) }}
                             </div>
                         </div>
                         {% set i = i + 1 %}
