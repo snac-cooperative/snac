@@ -3,6 +3,10 @@
     {% set i = 0 %}
 <div class="panel panel-default">
 	<div class="panel-heading">{{ name }}</div>
+
+            <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
+            <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
+            <input id="{{short}}_operation_{{i}}" name="{{short}}_operation_{{i}}" type="hidden" value=""/>
 	<div class="panel-body">
 		<div class="col-xs-10">
 			<div class="form-group">
@@ -95,6 +99,16 @@
 						value="{{ snacDate.toRange.notAfter }}" readonly/>
 				</div>
 			</div>
+
+
+            <div class="form-group">
+                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4">
+                    Descriptive Note
+                </label>
+                <div class="col-xs-8">
+                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>
+                </div>
+            </div>
 		</div>
 
         <!-- TODO: need to fix this up! -->
