@@ -1,76 +1,105 @@
 {% macro dateEntry(name, short, snacDate) %}
     {% import 'widgets.html' as widgets %}
+    {% set i = 0 %}
 <div class="panel panel-default">
 	<div class="panel-heading">{{ name }}</div>
 	<div class="panel-body">
 		<div class="col-xs-10">
 			<div class="form-group">
-				<label for="{{short}}_start" class="control-label col-xs-2">
+				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
 					Start </label>
-				<div class="col-xs-10">
-					<input id="{{short}}_start" name="{{short}}_start" type="text"
-						class="form-control" value="{{ snacDate.fromDate }}" />
+				<div class="col-xs-8">
+					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="text"
+						class="form-control" value="{{ snacDate.fromDate }}" readonly/>
 				</div>
 			</div>
+
+    			<div class="form-group">
+    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4">
+    					Original Start </label>
+    				<div class="col-xs-8">
+    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
+    						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
+    				</div>
+    			</div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-4">
+                    Start Type
+                </label>
+                <div class="col-xs-8" id="select_{{short}}_starttype_{{i}}">
+                    <input type="hidden" id="{{short}}_starttype_id_{{i}}" name="{{short}}_starttype_id_{{i}}" value="{{snacDate.fromType.id}}"/>
+                    <input type="hidden" id="{{short}}_starttype_term_{{i}}" name="{{short}}_starttype_term_{{i}}" value="{{snacDate.fromType.term}}"/>
+                    <input type="hidden" id="{{short}}_starttype_vocabtype_{{i}}" name="{{short}}_starttype_vocabtype_{{i}}" value="date_type"/>
+                    <input type="hidden" id="{{short}}_starttype_minlength_{{i}}" name="{{short}}_starttype_minlength_{{i}}" value="0"/>
+                    <p class="form-control-static">{{ snacDate.fromType.term }}</p>
+                </div>
+            </div>
 			<div class="form-group">
-				<label for="{{short}}_start_type" class="control-label col-xs-2">
-					Start Type </label>
-				<div class="col-xs-10">
-					<input id="{{short}}_start_type" name="{{short}}_start_type"
-						type="text" class="form-control" value="{{ snacDate.fromType }}" />
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="{{short}}_start_type" class="control-label col-xs-2">
+				<label for="{{short}}_startvotBefore_{{i}}" class="control-label col-xs-4">
 					Start Range </label>
-				<div class="col-xs-4">
-					<input id="{{short}}_start_notBefore"
-						name="{{short}}_start_notBefore" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notBefore }}" />
+				<div class="col-xs-3">
+					<input id="{{short}}_startnotBefore_{{i}}"
+						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
+						value="{{ snacDate.fromRange.notBefore }}" readonly/>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
-				<div class="col-xs-4">
-					<input id="{{short}}_start_notAfter"
-						name="{{short}}_start_notAfter" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notAfter }}" />
+				<div class="col-xs-3">
+					<input id="{{short}}_startnotAfter_{{i}}"
+						name="{{short}}_startnotAfter_{{i}}" type="text" class="form-control"
+						value="{{ snacDate.fromRange.notAfter }}" readonly/>
 				</div>
 			</div>
 			<div class="form-group">
-				<label for="{{short}}_end" class="control-label col-xs-2">
+				<label for="{{short}}_end_{{i}}" class="control-label col-xs-4">
 					End </label>
-				<div class="col-xs-10">
-					<input id="{{short}}_end" name="{{short}}_end" type="text"
-						class="form-control" value="{{ snacDate.toDate }}" />
+				<div class="col-xs-8">
+					<input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="text"
+						class="form-control" value="{{ snacDate.toDate }}" readonly/>
 				</div>
 			</div>
+
+            <div class="form-group">
+                <label for="{{short}}_endoriginal_{{i}}" class="control-label col-xs-4">
+                    Original End </label>
+                <div class="col-xs-8">
+                    <input id="{{short}}_endoriginal_{{i}}" name="{{short}}_endoriginal_{{i}}" type="text"
+                        class="form-control" value="{{ snacDate.toDateOriginal }}" readonly/>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-4">
+                    End Type
+                </label>
+                <div class="col-xs-8" id="select_{{short}}_endtype_{{i}}">
+                    <input type="hidden" id="{{short}}_endtype_id_{{i}}" name="{{short}}_endtype_id_{{i}}" value="{{snacDate.toType.id}}"/>
+                    <input type="hidden" id="{{short}}_endtype_term_{{i}}" name="{{short}}_endtype_term_{{i}}" value="{{snacDate.toType.term}}"/>
+                    <input type="hidden" id="{{short}}_endtype_vocabtype_{{i}}" name="{{short}}_endtype_vocabtype_{{i}}" value="date_type"/>
+                    <input type="hidden" id="{{short}}_endtype_minlength_{{i}}" name="{{short}}_endtype_minlength_{{i}}" value="0"/>
+                    <p class="form-control-static">{{ snacDate.toType.term }}</p>
+                </div>
+            </div>
 			<div class="form-group">
-				<label for="{{short}}_end_type" class="control-label col-xs-2">
-					End Type </label>
-				<div class="col-xs-10">
-					<input id="{{short}}_end_type" name="{{short}}_end_type"
-						type="text" class="form-control" value="{{ snacDate.toType }}" />
-				</div>
-			</div>
-			<div class="form-group">
-				<label for="{{short}}_end_type" class="control-label col-xs-2">
+				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4">
 					End Range </label>
-				<div class="col-xs-4">
-					<input id="{{short}}_end_notBefore" name="{{short}}_end_notBefore"
+				<div class="col-xs-3">
+					<input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endnotBefore_{{i}}"
 						type="text" class="form-control"
-						value="{{ snacDate.toRange.notBefore }}" />
+						value="{{ snacDate.toRange.notBefore }}" readonly/>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
-				<div class="col-xs-4">
-					<input id="{{short}}_end_notAfter" name="{{short}}_end_notAfter"
+				<div class="col-xs-3">
+					<input id="{{short}}_endnotAfter_{{i}}" name="{{short}}_endnotAfter_{{i}}"
 						type="text" class="form-control"
-						value="{{ snacDate.toRange.notAfter }}" />
+						value="{{ snacDate.toRange.notAfter }}" readonly/>
 				</div>
 			</div>
 		</div>
 
         <!-- TODO: need to fix this up! -->
-        {{ widgets.scmModal(short, 1, "Dates", "Dates2", snacDate) }}
-        {{ widgets.optionsList(short, 1) }}
+        {{ widgets.scmModal(short, i, name, name, snacDate) }}
+        {{ widgets.optionsList(short, i) }}
 	</div>
 </div>
 {% endmacro %}

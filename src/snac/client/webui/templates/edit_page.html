@@ -174,63 +174,73 @@ body {
                 <div class="tab-content">
 
                     <div class="tab-pane active" id="nrd">
-                        <h2>Non-Repeating Data</h2>
-                        <!--
-                        <div class="form-group">
-                            <label for="ark" class="control-label col-xs-2">
-                                Ark ID
-                            </label>
-                            <div class="col-xs-10">
-                                <input id="ark" name="ark" type="text" class="form-control"  value="{{ ark }}" disabled="disabled"/>
-                            </div>
-                        </div>
-                        -->
-
-                        <!-- Sample text input
-                        <div class="form-group">
-                            <label for="entityType" class="control-label col-xs-2">
-                                Entity Type
-                            </label>
-                            <div class="col-xs-10">
-                                <input id="entityType" name="entityType" type="text" class="form-control" value="{{ entityType }}"/>
-                            </div>
-                        </div>
-                        -->
+                        <h2>Basic Information</h2>
 
                         <!-- Constellation Data -->
                         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
                         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
 
-                        <div class="form-group">
-                            <label for="entityType" class="control-label col-xs-2">
-                                Entity Type
-                            </label>
-                            <div class="col-xs-8">
-                                <select id="entityType" name="entityType" class="form-control selectpicker">
-                                    <option></option>
-                                    <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
-                                </select>
+                        <div class="panel-body">
+                            <div class="col-xs-10">
+                                <div class="form-group">
+                                    <label for="entityType" class="control-label col-xs-4">
+                                        Entity Type
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <select id="entityType" name="entityType" class="form-control selectpicker">
+                                            <option></option>
+                                            <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            {{ widgets.scmButton('entityType', '1') }}
-                            {{ widgets.scmModal('entityType', '1', 'Entity Type', "Basic Info", data.entityType) }}
+                            {{ widgets.scmButton('constellation', '1') }}
+                            {{ widgets.scmModal('constellation', '1', 'Basic Info', "Constellation", data) }}
                         </div>
 
-                        <div class="form-group">
-                            <label for="gender" class="control-label col-xs-2">
-                                Gender
-                            </label>
-                            <div class="col-xs-8">
-                                <select id="gender" name="gender" class="form-control selectpicker">
-                                    <option></option>
-                                    <option value="Female" {{ data.gender.term == 'Female' ? 'selected' }}>Female</option>
-                                    <option value="Male" {{ data.gender.term == 'Male' ? 'selected' }}>Male</option>
-                                </select>
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Genders</div>
+                        	<div class="panel-body">
+
+                            {% set i = 0 %}
+                            {% for gender in data.genders %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
+                                        <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version }}"/>
+                                        <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-8" id="select_gender_term_{{i}}">
+                                                    <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
+                                                    <input type="hidden" id="gender_term_term_{{i}}" name="gender_term_term_{{i}}" value="{{gender.term.term}}"/>
+                                                    <input type="hidden" id="gender_term_vocabtype_{{i}}" name="gender_term_vocabtype_{{i}}" value="gender"/>
+                                                    <input type="hidden" id="gender_term_minlength_{{i}}" name="gender_term_minlength_{{i}}" value="0"/>
+                                                    <p class="form-control-static">{{ gender.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-8">
+                                                    {{ widgets.displayURI(gender.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("gender", i, gender.term.term, "Gender", gender) }}
+                                        {{ widgets.optionsList("gender", i) }}
+                                    </div>
+                                </div>
+                                {% set i = i + 1 %}
+                                {% endfor %}
                             </div>
-                            {{ widgets.scmButton('gender', '1') }}
-                            {{ widgets.scmModal('gender', '1', 'Gender', "Basic Info", data.gender) }}
                         </div>
 
-                        {{ dateEntry('Exist Dates', 'exist', data.existDates.0) }}
+                        {{ dateEntry('Exist Dates', 'exist', data.dates.0) }}
                     </div>
 
                     <div class="tab-pane" id="nameEntries">
@@ -530,7 +540,7 @@ body {
                                     </div>
                                     {{ widgets.scmModal("subject", i, subject.term.term, "Subject", subject) }}
                                     {{ widgets.optionsList("subject", i) }}
-                        </div>
+                                </div>
                             </div>
                             {% set i = i + 1 %}
                             {% endfor %}
@@ -675,7 +685,7 @@ body {
                             {% endfor %}
 
                         </div>
-                        
+
                         <div class="tab-pane" id="legalStatuses">
                             <h2>Legal Statuses</h2>
 
