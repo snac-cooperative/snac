@@ -147,6 +147,7 @@ body {
                         <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
                         <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
                         <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
+                        <li><a href="#legalStatuses" role="tab" data-toggle="tab">Legal Statuses</a></li>
                     </ul>
                     </li>
                     <li class="dropdown">
@@ -155,6 +156,15 @@ body {
                         <li><a href="#sameAs" role="tab" data-toggle="tab">External Same As</a></li>
                         <li><a href="#constellationRelations" role="tab" data-toggle="tab">Constellation Relations</a></li>
                         <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
+                    </ul>
+                    </li>
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Texts <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#conventionDeclarations" role="tab" data-toggle="tab">Convention Declarations</a></li>
+                        <li><a href="#generalContexts" role="tab" data-toggle="tab">General Contexts</a></li>
+                        <li><a href="#mandates" role="tab" data-toggle="tab">Mandates</a></li>
+                        <li><a href="#structureOrGenealogies" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
                     </ul>
                     </li>
                     <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
@@ -362,6 +372,14 @@ body {
                                             <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
                                             <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
                                             <p class="form-control-static">{{ relation.documentType.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4">
+                                            Descriptive Note
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -657,6 +675,52 @@ body {
                             {% endfor %}
 
                         </div>
+                        
+                        <div class="tab-pane" id="legalStatuses">
+                            <h2>Legal Statuses</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Legal Status</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for legalStatus in data.legalStatuses %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
+                                        <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
+                                        <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
+                                                    <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
+                                                    <input type="hidden" id="legalStatus_term_term_{{i}}" name="legalStatus_term_term_{{i}}" value="{{legalStatus.term.term}}"/>
+                                                    <input type="hidden" id="legalStatus_term_vocabtype_{{i}}" name="legalStatus_term_vocabtype_{{i}}" value="legal_status"/>
+                                                    <p class="form-control-static">{{ legalStatus.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(legalStatus.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
+                                        {{ widgets.optionsList("legalStatus", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+
+                        </div>
 
                         <div class="tab-pane" id="places">
                             <h2>Places</h2>
@@ -691,6 +755,145 @@ body {
                             {% endfor %}
 
                         </div>
+
+                        <div class="tab-pane" id="conventionDeclarations">
+                            <h2>Convention Declarations</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for conventionDeclaration in data.conventionDeclarations %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="conventionDeclaration_id_{{i}}" name="conventionDeclaration_id_{{i}}" value="{{conventionDeclaration.id}}"/>
+                                        <input id="conventionDeclaration_version_{{i}}" name="conventionDeclaration_version_{{i}}" type="hidden" value="{{ conventionDeclaration.version }}"/>
+                                        <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" readonly>{{ conventionDeclaration.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
+                                        {{ widgets.optionsList("conventionDeclaration", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="tab-pane" id="generalContexts">
+                            <h2>General Contexts</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New General Context</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for generalContext in data.generalContexts %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
+                                        <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
+                                        <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="generalContext_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" readonly>{{ generalContext.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
+                                        {{ widgets.optionsList("generalContext", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="tab-pane" id="structureOrGenealogies">
+                            <h2>Structure or Genealogies</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Structure or Genealogy</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for structureOrGenealogy in data.structureOrGenealogies %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
+                                        <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
+                                        <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" readonly>{{ structureOrGenealogy.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
+                                        {{ widgets.optionsList("structureOrGenealogy", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="tab-pane" id="mandates">
+                            <h2>Mandates</h2>
+
+                            <div class="form-group">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
+                                </div>
+                            </div>
+
+                            {% set i = 0 %}
+                            {% for mandate in data.mandates %}
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
+                                        <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>
+                                        <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="mandate_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" readonly>{{ mandate.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
+                                        {{ widgets.optionsList("mandate", i) }}
+                                </div>
+                            </div>
+                            {% set i = i + 1 %}
+                            {% endfor %}
+                        </div>
+
+
+
                     </div>
                 </div>
                 <div class="col-md-4">
