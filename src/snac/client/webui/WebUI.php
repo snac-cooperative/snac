@@ -240,6 +240,22 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "Content-Type: text/html"
         );
     }
+    
+    private function getOperation($data) {
+        if (isset($data['operation'])) {
+            $op = $data["operation"];
+            if ($op == "insert") {
+                return \snac\data\AbstractData::$OPERATION_INSERT;
+            } else if ($op == "update") {
+                return \snac\data\AbstractData::$OPERATION_UPDATE;
+            } else if ($op == "delete") {
+                return \snac\data\AbstractData::$OPERATION_DELETE;
+            }
+            
+            return null;
+        }
+        return null;
+    }
 
     /**
      * Serialize post data to Constellation
@@ -254,8 +270,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Rework the input into arrays of sections
         $nested = array();
+        $nested["gender"] = array();
+        $nested["exist"] = array();
+        $nested["biogHist"] = array();
+        $nested["language"] = array();
+        $nested["nationality"] = array();
+        $nested["function"] = array();
+        $nested["legalStatus"] = array();
+        $nested["conventionDeclaration"] = array();
+        $nested["generalContext"] = array();
+        $nested["structureOrGenealogy"] = array();
+        $nested["mandate"] = array();
         $nested["nameEntry"] = array();
-        $nested["otherID"] = array();
+        $nested["sameAs"] = array();
         $nested["source"] = array();
         $nested["resourceRelation"] = array();
         $nested["constellationRelation"] = array();
@@ -280,6 +307,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($nested[$parts[0]][$parts[2]]))
                     $nested[$parts[0]][$parts[2]] = array();
                     $nested[$parts[0]][$parts[2]][$parts[1]] = $v;
+            } else if (count($parts) == 4) {
+                // four parts: controlled vocabulary repeating
+                // key_subkey_subsubkey_index => value ==> nested[key][index][subkey][subsubkey] = value
+                if (!isset($nested[$parts[0]][$parts[3]]))
+                    $nested[$parts[0]][$parts[2]] = array();
+                if (!isset($nested[$parts[0]][$parts[3]][$parts[1]]))
+                    $nested[$parts[0]][$parts[3]][$parts[1]] = array();
+                $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
             }
         }
 
@@ -290,10 +325,71 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $constellation->setID($nested["constellationid"]);
         if (isset($nested["version"]))
             $constellation->setVersion($nested["version"]);
-        if (isset($nested["entityType"]))
-            $constellation->setEntityType($nested["entityType"]);
-        if (isset($nested["gender"]))
-            $constellation->setGender($nested["gender"]);
+        if (isset($nested["operation"]))
+            $constellation->setOperation($this->getOperation($nested));
+        if (isset($nested["entityType"])) {
+            $term = new \snac\data\Term();
+            $term->setID($nested["entityType"]);
+            $constellation->setEntityType($term);
+        }
+        foreach ($nested["gender"] as $data) {
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $gender = new \snac\data\Gender();
+            $gender->setID($data["id"]);
+            $gender->setVersion($data["id"]);
+            $gender->setTerm($term);
+            $gender->setOperation($this->getOperation($data));
+            $constellation->setGender($gender);
+        }
+
+        foreach ($nested["exist"] as $data) {
+            $date = new \snac\data\SNACDate();
+            $date->setID($data["id"]);
+            $date->setVersion($data["version"]);
+            $date->setOperation($this->getOperation($data));
+
+            $date->setNote($data["note"]);
+            $type = new \snac\data\Term();
+            $type->setID($data["starttype"]["id"]);
+            $date->setFromDate($data["startoriginal"], $data["start"], $type);
+            $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
+            $type = new \snac\data\Term();
+            $type->setID($data["endtype"]["id"]);
+            $date->setFromDate($data["endoriginal"], $data["end"], $type);
+            $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
+            
+            $constellation->addDate($date);
+        }
+        
+
+        foreach ($nested["biogHist"] as $data) {
+            $bh = new \snac\data\BiogHist();
+            $bh->setID($data["id"]);
+            $bh->setVersion($data["version"]);
+            $bh->setOperation($this->getOperation($data));
+            
+            $bh->setText($data["text"]);
+            
+            $lang = new \snac\data\Language();
+            $lang->setID($data["language"]["id"]);
+            $lang->setVersion($data["language"]["version"]);
+            $lang->setOperation($this->getOperation($data));
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagelanguage"]["id"]);
+            $lang->setLanguage($term);
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagescript"]["id"]);
+            $lang->setScript($term);
+            
+            $bh->setLanguage($lang);
+            
+            $constellation->addBiogHist($bh);
+        }
+
+        /*
         if (isset($nested["nationality"]))
             $constellation->setNationality($nested["nationality"]);
         if (isset($nested["languageCode"]))
@@ -369,6 +465,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $place->addPlaceEntry($placeEntry);
             $constellation->addPlace($place);
         }
+        */
 
         return $constellation;
     }
