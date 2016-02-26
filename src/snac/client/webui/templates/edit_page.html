@@ -140,7 +140,7 @@ body {
                     <li><a href="#biogHists" role="tab" data-toggle="tab" onMouseUp="updateBiogHist()">BiogHist</a></li>
                     <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
                     <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Controlled Vocabs <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Vocabs <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="#nationalities" role="tab" data-toggle="tab">Nationalities</a></li>
                         <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
@@ -276,8 +276,8 @@ body {
                                             <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
                                         </div>
                                     </div>
-                                    <input type="hidden" id="nameEntry_language_id_0" name="nameEntry_language_id_0" value="{{nameEntry.language.id}}"/>
-                                    <input type="hidden" id="nameEntry_language_version_0" name="nameEntry_language_version_0" value="{{nameEntrys.language.version}}"/>
+                                    <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
+                                    <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
                                     <div class="form-group">
                                         <label class="control-label col-xs-4">
                                             Language
@@ -425,14 +425,67 @@ body {
                         {% for source in data.sources %}
                         <div class="panel panel-default">
                             <div class="panel-body">
-                                <div class="form-group">
-                                    <label for="source_href_{{ i }}" class="control-label col-xs-2">
-                                        Link
-                                    </label>
-                                    <div class="col-xs-10">
-                                        <input id="source_href_{{i}}" name="source_href_{{i}}" type="text" class="form-control" value="{{ source.uri }}"/>
+                                <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
+                                <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
+                                <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
+                                        </div>
                                     </div>
+                                    <div class="form-group">
+                                        <label for="source_text_{{ i }}" class="control-label col-xs-4">
+                                            Source Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" id="source_language_id_{{i}}" name="source_language_id_{{i}}" value="{{source.language.id}}"/>
+                                    <input type="hidden" id="source_language_version_{{i}}" name="source_language_version_{{i}}" value="{{sources.language.version}}"/>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
+                                            <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
+                                            <input id="source_languagelanguage_term_{{i}}" name="source_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.term }}"/>
+                                            <input id="source_languagelanguage_vocabtype_{{i}}" name="source_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="source_languagelanguage_minlength_{{i}}" name="source_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ source.language.language.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_source_languagescript_{{i}}">
+                                            <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
+                                            <input id="source_languagescript_term_{{i}}" name="source_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.term }}"/>
+                                            <input id="source_languagescript_vocabtype_{{i}}" name="source_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="source_languagescript_minlength_{{i}}" name="source_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ source.language.script.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="source_note_{{ i }}" class="control-label col-xs-4">
+                                            Descriptive Note
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
+                                        </div>
+                                    </div>
+
+
                                 </div>
+                                {{ widgets.scmModal("source", i, source.uri, "Source", source) }}
+                                {{ widgets.optionsList("source", i) }}
+
                             </div>
                         </div>
                         {% set i = i + 1 %}
@@ -880,25 +933,86 @@ body {
                             <div class="panel panel-default">
                                 <div class="panel-body">
                                     <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
-                                    <input version="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
-                                    <div class="form-group">
-                                        <input id="place_originalid_{{i}}" name="place_originalid_{{i}}" type="hidden" value="{{ place.entries.0.id }}"/>
-                                        <input version="place_originalversion_{{i}}" name="place_originalversion_{{i}}" type="hidden" value="{{ place.entries.0.version }}"/>
-                                        <label for="place_original_{{ i }}" class="control-label col-xs-2">
-                                            Original
-                                        </label>
-                                        <div class="col-xs-10">
-                                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}"/>
+                                    <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
+                                    <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value=""/>
+                                    <div class="col-xs-10">
+                                        <div class="form-group">
+                                            <label for="place_original_{{ i }}" class="control-label col-xs-4">
+                                                Original
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}" readonly/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                Type
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_type_{{i}}">
+                                                <input id="place_type_id_{{i}}" name="place_type_id_{{i}}" type="hidden" class="form-control" value="{{ place.type.id }}"/>
+                                                <input id="place_type_term_{{i}}" name="place_type_term_{{i}}" type="hidden" class="form-control" value="{{ place.type.term }}"/>
+                                                <input id="place_type_vocabtype_{{i}}" name="place_type_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                                                <input id="place_type_minlength_{{i}}" name="place_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                                <p class="form-control-static">{{ place.type.term }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                Role
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_role_{{i}}">
+                                                <input id="place_role_id_{{i}}" name="place_role_id_{{i}}" type="hidden" class="form-control" value="{{ place.role.id }}"/>
+                                                <input id="place_role_term_{{i}}" name="place_role_term_{{i}}" type="hidden" class="form-control" value="{{ place.role.term }}"/>
+                                                <input id="place_role_vocabtype_{{i}}" name="place_role_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                                                <input id="place_role_minlength_{{i}}" name="place_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                                <p class="form-control-static">{{ place.role.term }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                GeoPlace Term
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_geoplace_{{i}}">
+                                                <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                                                <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
+                                                <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="place"/>
+                                                <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="4"/>
+                                                <p class="form-control-static">{{ place.geoplace.name }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_score_{{ i }}" class="control-label col-xs-4">
+                                                GeoPlace Score
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <input id="place_score_{{i}}" name="place_score_{{i}}" type="text" class="form-control" value="{{ place.score }}" readonly/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_confirmed_{{ i }}" class="control-label col-xs-4">
+                                                GeoPlace Confirmed
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
+                                                    {{ place.confirmed ? 'checked' : '' }}
+                                                    readonly/> True</label> 
+                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false" 
+                                                    {{ place.confirmed ? '' : 'checked' }}
+                                                    readonly/> False</label> 
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_note_{{ i }}" class="control-label col-xs-4">
+                                                Descriptive Note
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" readonly>{{ place.note }}</textarea>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="place_bestMatch_{{ i }}" class="control-label col-xs-2">
-                                            Geonames
-                                        </label>
-                                        <div class="col-xs-10">
-                                            <input id="place_bestMatch_{{i}}" name="place_bestMatch_{{i}}" type="text" class="form-control" value="{{ place.geoTerm.name }}"/>
-                                        </div>
-                                    </div>
+                                    {{ widgets.scmModal("place", i, place.original, "Place", place) }}
+                                    {{ widgets.optionsList("place", i) }}
+
                                 </div>
                             </div>
                             {% set i = i + 1 %}
