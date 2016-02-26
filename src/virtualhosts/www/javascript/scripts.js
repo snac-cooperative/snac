@@ -11,6 +11,8 @@ function updatePage() {
 }
 
 function updateBiogHist() {
+    return; // right now, not doing this
+    
     if (biogHistEditor == null) {
         biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
               lineNumbers: true,
