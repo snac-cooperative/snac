@@ -317,7 +317,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
             }
         }
-
+        
+ 
         // TODO
         if (isset($nested["ark"]))
             $constellation->setArkID($nested["ark"]);
@@ -389,84 +390,270 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $constellation->addBiogHist($bh);
         }
 
-        /*
-        if (isset($nested["nationality"]))
-            $constellation->setNationality($nested["nationality"]);
-        if (isset($nested["languageCode"]))
-            $constellation->setLanguageUsed($nested["languageCode"], ""); // TODO
-        if (isset($nested["scriptCode"]))
-            $constellation->setScriptUsed($nested["scriptCode"], ""); // TODO
-        if (isset($nested["biogHist"]))
-            $constellation->addBiogHist($nested["biogHist"]);
+        foreach ($nested["language"] as $data) {
+            $lang = new \snac\data\Language();
+            $lang->setID($data["id"]);
+            $lang->setVersion($data["version"]);
+            $lang->setOperation($this->getOperation($data));
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["language"]["id"]);
+            $lang->setLanguage($term);
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["script"]["id"]);
+            $lang->setScript($term);
+
+            $constellation->addLanguageUsed($lang);
+        }
+
+        foreach ($nested["nationality"] as $data) {
+            $nationality = new \snac\data\Nationality();
+            $nationality->setID($data["id"]);
+            $nationality->setVersion($data["version"]);
+            $nationality->setOperation($this->getOperation($data));
+
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $nationality->setTerm($term);
+
+            $constellation->addNationality($nationality);
+        }
+
+        foreach ($nested["function"] as $data) {
+            $fun = new \snac\data\SNACFunction();
+            $fun->setID($data["id"]);
+            $fun->setVersion($data["version"]);
+            $fun->setOperation($this->getOperation($data));
+
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $fun->setTerm($term);
+
+            $constellation->addFunction($fun);
+        }
+
+        foreach ($nested["legalStatus"] as $data) {
+            $legalStatus = new \snac\data\LegalStatus();
+            $legalStatus->setID($data["id"]);
+            $legalStatus->setVersion($data["version"]);
+            $legalStatus->setOperation($this->getOperation($data));
+
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $legalStatus->setTerm($term);
+
+            $constellation->addLegalStatus($legalStatus);
+        }
+
+        foreach ($nested["conventionDeclaration"] as $data) {
+            $conventionDeclaration = new \snac\data\ConventionDeclaration();
+            $conventionDeclaration->setID($data["id"]);
+            $conventionDeclaration->setVersion($data["version"]);
+            $conventionDeclaration->setOperation($this->getOperation($data));
+            
+            $conventionDeclaration->setText($data["text"]);
+            
+            $constellation->addConventionDeclaration($conventionDeclaration);
+        }
+
+        foreach ($nested["generalContext"] as $data) {
+            $generalContext = new \snac\data\GeneralContext();
+            $generalContext->setID($data["id"]);
+            $generalContext->setVersion($data["version"]);
+            $generalContext->setOperation($this->getOperation($data));
+            
+            $generalContext->setText($data["text"]);
+            
+            $constellation->addGeneralContext($generalContext);
+        }
+
+        foreach ($nested["structureOrGenealogy"] as $data) {
+            $structureOrGenealogy = new \snac\data\StructureOrGenealogy();
+            $structureOrGenealogy->setID($data["id"]);
+            $structureOrGenealogy->setVersion($data["version"]);
+            $structureOrGenealogy->setOperation($this->getOperation($data));
+            
+            $structureOrGenealogy->setText($data["text"]);
+            
+            $constellation->addStructureOrGenealogy($structureOrGenealogy);
+        }
+
+        foreach ($nested["mandate"] as $data) {
+            $mandate = new \snac\data\Mandate();
+            $mandate->setID($data["id"]);
+            $mandate->setVersion($data["version"]);
+            $mandate->setOperation($this->getOperation($data));
+            
+            $mandate->setText($data["text"]);
+            
+            $constellation->addMandate($mandate);
+        }
+
         foreach ($nested["nameEntry"] as $data) {
             $nameEntry = new \snac\data\NameEntry();
             $nameEntry->setID($data["id"]);
             $nameEntry->setVersion($data["version"]);
+            $nameEntry->setOperation($this->getOperation($data));
+
             $nameEntry->setOriginal($data["original"]);
+            $nameEntry->setPreferenceScore($data["preferenceScore"]);
+
+            $lang = new \snac\data\Language();
+            $lang->setID($data["language"]["id"]);
+            $lang->setVersion($data["language"]["version"]);
+            $lang->setOperation($this->getOperation($data));
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagelanguage"]["id"]);
+            $lang->setLanguage($term);
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagescript"]["id"]);
+            $lang->setScript($term);
+            
+            $nameEntry->setLanguage($lang);
+
             $constellation->addNameEntry($nameEntry);
         }
-        foreach ($nested["otherID"] as $data) {
-            $constellation->addOtherRecordID($data["type"], $data["href"]);
+
+        foreach ($nested["sameAs"] as $data) {
+            $sameas = new \snac\data\SameAs();
+            $sameas->setID($data["id"]);
+            $sameas->setVersion($data["version"]);
+            $sameas->setOperation($this->getOperation($data));
+
+            $sameas->setText($data["text"]);
+            $sameas->setURI($data["uri"]);
+
+            $type = new \snac\data\Term();
+            $type->setID($data["type"]["id"]);
+            $sameas->setType($type);
+
+            $constellation->addOtherRecordID($sameas);
         }
+
         foreach ($nested["source"] as $data) {
-            $constellation->addSource("simple", $data["href"]); // TODO
+            $source = new \snac\data\Source();
+            $source->setID($data["id"]);
+            $source->setVersion($data["version"]);
+            $source->setOperation($this->getOperation($data));
+
+            $source->setText($data["text"]);
+            $source->setURI($data["uri"]);
+            $source->setNote($data["note"]);
+
+            $lang = new \snac\data\Language();
+            $lang->setID($data["language"]["id"]);
+            $lang->setVersion($data["language"]["version"]);
+            $lang->setOperation($this->getOperation($data));
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagelanguage"]["id"]);
+            $lang->setLanguage($term);
+            
+            $term = new \snac\data\Term();
+            $term->setID($data["languagescript"]["id"]);
+            $lang->setScript($term);
+            
+            $source->setLanguage($lang);
+
+            $constellation->addSource($source);
         }
+
         foreach ($nested["resourceRelation"] as $data) {
             $relation = new \snac\data\ResourceRelation();
             $relation->setID($data["id"]);
             $relation->setVersion($data["version"]);
+            $relation->setOperation($this->getOperation($data));
+
             $relation->setContent($data["content"]);
-            $relation->setRole($data["role"]);
             $relation->setLink($data["link"]);
-            $relation->setDocumentType($data["documentType"]);
             $relation->setSource($data["source"]);
+            $relation->setNote($data["note"]);
+
+            $type = new \snac\data\Term();
+            $type->setID($data["documentType"]["id"]);
+            $relation->setDocumentType($type);
+
+            $role = new \snac\data\Term();
+            $role->setID($data["role"]["id"]);
+            $relation->setRole($role);
+
             $constellation->addResourceRelation($relation);
         }
+
         foreach ($nested["constellationRelation"] as $data) {
             $relation = new \snac\data\ConstellationRelation();
             $relation->setID($data["id"]);
             $relation->setVersion($data["version"]);
-            $relation->setContent($data["content"]);
+            $relation->setOperation($this->getOperation($data));
+
+            $relation->setTargetConstellation($data["targetID"]);
             $relation->setTargetArkID($data["targetArkID"]);
-            $relation->setTargetType($data["targetEntityType"]);
-            $relation->setType($data["type"]);
+            $relation->setContent($data["content"]);
+            $relation->setNote($data["note"]);
+
+            $type = new \snac\data\Term();
+            $type->setID($data["type"]["id"]);
+            $relation->setType($type);
+
             $constellation->addRelation($relation);
         }
+
         foreach ($nested["subject"] as $data) {
-            $constellation->addSubject($data);
+            $subject = new \snac\data\Subject();
+            $subject->setID($data["id"]);
+            $subject->setVersion($data["version"]);
+            $subject->setOperation($this->getOperation($data));
+
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $subject->setTerm($term);
+
+            $constellation->addSubject($subject);
         }
-        foreach ($nested["function"] as $data) {
-            $fn = new \snac\data\SNACFunction();
-            $fn->setID($data["id"]);
-            $fn->setVersion($data["version"]);
-            $fn->setTerm($data["term"]);
-            $constellation->addFunction($fn);
-        }
+
         foreach ($nested["occupation"] as $data) {
             $occupation = new \snac\data\Occupation();
             $occupation->setID($data["id"]);
             $occupation->setVersion($data["version"]);
-            $occupation->setTerm($data["term"]);
+            $occupation->setOperation($this->getOperation($data));
+
+            $term = new \snac\data\Term();
+            $term->setID($data["term"]["id"]);
+            $occupation->setTerm($term);
+
             $constellation->addOccupation($occupation);
         }
+
         foreach ($nested["place"] as $data) {
             $place = new \snac\data\Place();
             $place->setID($data["id"]);
             $place->setVersion($data["version"]);
-            $placeEntry = new \snac\data\PlaceEntry();
-            $placeEntry->setOriginal($data["original"]);
-            $placeEntry->setID($data["originalid"]);
-            $placeEntry->setVersion($data["originalversion"]);
-            $bestMatch = new \snac\data\PlaceEntry();
-            $bestMatch->setOriginal($data["bestMatch"]);
-            $bestMatch->setID($data["bestMatchid"]);
-            $bestMatch->setVersion($data["bestMatchversion"]);
-            $placeEntry->setBestMatch($bestMatch);
-            $place->addPlaceEntry($placeEntry);
+            $place->setOperation($this->getOperation($data));
+
+            $place->setOriginal($data["original"]);
+            $place->setScore($data["score"]);
+            $place->setConfirmed($data["confirmed"]);
+            $place->setNote($data["note"]);
+
+            $term = new \snac\data\Term();
+            $term->setID($data["type"]["id"]);
+            $place->setType($term);
+
+            $term = new \snac\data\Term();
+            $term->setID($data["role"]["id"]);
+            $place->setRole($term);
+
+            $geoterm = new \snac\data\GeoTerm();
+            $geoterm->setID($data["geoplace"]["id"]);
+            $place->setGeoTerm($geoterm);
+
             $constellation->addPlace($place);
         }
-        */
-
+        
+  
         return $constellation;
     }
 }
