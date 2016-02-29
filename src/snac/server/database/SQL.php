@@ -478,9 +478,9 @@ class SQL
         $qq = 'select_date';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, main_id, is_range, 
-                            from_date, from_bc, from_not_before, from_not_after, from_original,
-                            to_date, to_bc, to_not_before, to_not_after, to_original, fk_table, aa.fk_id,
+                            aa.id, aa.version, aa.main_id, aa.is_range, 
+                            aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+                            aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
                             aa.from_type,aa.to_type
                             from date_range as aa,
                             (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
@@ -519,7 +519,7 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select 
                             aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
-                            aa.geo_place_id, aa.role, aa.score, fk_table, aa.fk_id
+                            aa.geo_place_id, aa.role, aa.score, aa.fk_table, aa.fk_id
                             from place_link as aa,
                             (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -565,8 +565,8 @@ class SQL
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['main_id'],
-                                            $vhInfo['version'],
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
                                             $id,
                                             $confirmed,
                                             $original,
@@ -1611,7 +1611,7 @@ class SQL
         $rowList = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            array_push($rowList, $row);
         }
         $this->sdb->deallocate($qq);
         return $rowList;
@@ -1684,7 +1684,7 @@ class SQL
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
-                            and main_id=$2');
+                            and main_id=$2 order by id');
 
         $all = array();
         foreach ($matchingIDs as $orid)

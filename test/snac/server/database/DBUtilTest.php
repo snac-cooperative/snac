@@ -56,6 +56,35 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
     }
 
+    public function testFullCPF()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $cObj = $eParser->parseFile("test_record.xml");
+        $firstJSON = $cObj->toJSON();
+        $vhInfo = $this->dbu->insertConstellation($cObj,
+                                                  $this->appUserID,
+                                                  $this->roleID,
+                                                  'bulk ingest',
+                                                  'bulk ingest of merged');
+
+        $this->assertNotNull($vhInfo);
+
+        // read the object we just wrote
+        $readObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        $secondJSON = $readObj->toJSON();
+        // printf("%s\n", xdiff_string_diff($firstJSON, $secondJSON));
+
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
+
+        $this->assertEquals($firstJSON, $secondJSON);
+        
+    }
+
     /*
      * Make sure that table vocabulary has many entries. The real number is probably far larger than 100k, but
      * at least 100k means that someone tried to init the table.
@@ -261,7 +290,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                   $this->appUserID,
                                                   $this->roleID,
                                                   'bulk ingest',
-                                                  'bulk ingest of merged');
+                                                  'machine ingest of hand-crafted, full CPF test record');
 
         $this->assertNotNull($vhInfo);
 
