@@ -325,7 +325,7 @@ class SQL
                             ($1, $2, $3, $4, $5, $6, $7)
                             returning id as version, main_id;');
 
-        $result = $this->sdb->execute($qq
+        $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'], $vhInfo['main_id'], $appUserID, $roleID, $status, true, $note));
         $vhInfo = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);

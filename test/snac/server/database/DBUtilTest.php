@@ -73,17 +73,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
 
-    /*
-     * Can we get a random Constellation?
-     *
-     * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
-     *
-     * Maybe use @dataProvider to test various records from the db for function, subject, etc.
-     *
-     * Check expected output: $this->expectOutputString()
-     *
-     * 
-     */
     public function testDBUtilAll() 
     {
         $this->assertNotNull($this->dbu);
@@ -95,6 +84,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($this->appUserID);
     }
 
+    /*
+     * Can we get a random Constellation?
+     * Can we reverse the order of keys in $vhInfo?
+     * Can we get 100 constellations from the db?
+     * Can we delete 1 name from a multiname constellation?
+     * Can we undelete the name we just deleted?
+     *
+     * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
+     *
+     * Maybe use @dataProvider to test various records from the db for function, subject, etc.
+     *
+     * Check expected output: $this->expectOutputString()
+     * 
+     */
     public function testDemoConstellation()
     {
         $vhInfo = $this->dbu->demoConstellation();
@@ -145,7 +148,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * 
          */  
         $newVersion = $this->dbu->setDeleted($this->appUserID,
-                                             $this->role,
+                                             $this->roleID,
                                              'bulk ingest',
                                              'delete a name, that is: set is_deleted to true',
                                              $mNObj->getID(), // constellation main_id
@@ -169,7 +172,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
 
         $undelVersion = $this->dbu->clearDeleted($this->appUserID,
-                                             $this->role,
+                                             $this->roleID,
                                              'bulk ingest',
                                              'un-delete a name, that is: set is_deleted to false',
                                              $mNObj->getID(), // constellation main_id
@@ -206,7 +209,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $modVhInfo = $this->dbu->updatePrepare($unDObj,
                                                $this->appUserID,
-                                               $this->role,
+                                               $this->roleID,
                                                'needs review',
                                                'modified first alt name');
         /*
@@ -240,6 +243,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
         
+    /*
+     * Parse a file, and write to the db.
+     * Get the just-inserted constellation back from the db.
+     * Verify versoin and id of constellation read from db.
+     * If the constellation has a function, verify non-zero version and id for the function.
+     * Update the constellation, and quickly check version and id.
+     *
+     */
     public function testParseToDB()
     {
         // Parse a file, write the data into the db.
@@ -248,7 +259,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
         $vhInfo = $this->dbu->insertConstellation($constellationObj,
                                                   $this->appUserID,
-                                                  $this->role,
+                                                  $this->roleID,
                                                   'bulk ingest',
                                                   'bulk ingest of merged');
 
@@ -293,7 +304,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $existingMainId = $vhInfo['main_id'];
         $updatedVhInfo = $this->dbu->updateConstellation($constellationObj,
                                                          $this->appUserID,
-                                                         $this->role,
+                                                         $this->roleID,
                                                          'needs review',
                                                          'updating constellation for test',
                                                          $existingMainId);

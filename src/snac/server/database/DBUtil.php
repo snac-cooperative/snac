@@ -102,7 +102,7 @@ class DBUtil
          * DBUtil needs user id and role id for the current user. We may perform several reads and writes, and
          * they will all be done using the same user info.
          */ 
-        list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
+        list($this->appUserID, $this->roleID) = $this->getAppUserInfo('system');
 
         $this->canDelete = array_fill_keys(array('biog_hist', 'convention_declaration',
                                                  'date_range', 'function',
