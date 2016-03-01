@@ -59,7 +59,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testFullCPF()
     {
         $eParser = new \snac\util\EACCPFParser();
-        $cObj = $eParser->parseFile("test_record.xml");
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
         $vhInfo = $this->dbu->insertConstellation($cObj,
                                                   $this->appUserID,
