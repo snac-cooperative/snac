@@ -85,7 +85,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
 
         $this->assertEquals(831, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1040, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(980, substr_count( $secondJSON, "\n" ));
 
         // There is no way the two JSON strings will ever be equal.
         // $this->assertEquals($firstJSON, $secondJSON);

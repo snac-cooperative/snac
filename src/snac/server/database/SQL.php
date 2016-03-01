@@ -1652,6 +1652,9 @@ class SQL
      * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
+     * Mar 1 2016: The comment above is incomplete because we have lots of cases where there could be multiple
+     * versions. All these queries deal with that. Why is otherid any different?
+     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return integer[] Return a list of record id values meeting the version and main_id constriants.
@@ -1690,8 +1693,11 @@ class SQL
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
      * 
-     * Jan 28 2016 The query use to say "... and main_id=$2 and id=$3');" which is odd. We never constrain on
-     * table.id that way. This appears to be old and incorrect code.
+     * Mar 1 2016: For reasons I don't fully understand, doing a select on otherid can return duplicate
+     * rows. It is necessary to use matchORID() to get a list of distinct otherid.id values, and constrain the
+     * query on those. If you figure it out, update this comment. In any case, it currently works.
+     *
+     * Maybe there wouldn't be a problem if the execute() wasn't inside a loop?
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1702,7 +1708,7 @@ class SQL
      */
     public function selectOtherID($vhInfo)
     {
-        $matchingIDs = $this->matchORID($vhInfo);
+        // $matchingIDs = $this->matchORID($vhInfo);
 
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
@@ -1712,16 +1718,25 @@ class SQL
                             where
                             version=(select max(version) from otherid where version<=$1)
                             and main_id=$2 order by id');
+        // and main_id=$2 and id=$3 order by id');
 
         $all = array();
-        foreach ($matchingIDs as $orid)
+        /* 
+         * foreach ($matchingIDs as $orid)
+         * {
+         *     $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id'], $orid));
+         *     while($row = $this->sdb->fetchrow($result))
+         *     {
+         *         array_push($all, $row);
+         *     }
+         * }
+         */
+        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
+        while($row = $this->sdb->fetchrow($result))
         {
-            $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
-            while($row = $this->sdb->fetchrow($result))
-            {
-                array_push($all, $row);
-            }
+            array_push($all, $row);
         }
+
         $this->sdb->deallocate($qq);
         return $all;
     }
@@ -2140,7 +2155,7 @@ class SQL
                             (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
                             where
                             aa.id = bb.id and not aa.is_deleted and 
-                            aa.version = bb.version order by preference_score,id');
+                            aa.version = bb.version order by preference_score desc,id asc');
         
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
