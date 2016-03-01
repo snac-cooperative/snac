@@ -348,16 +348,14 @@ class DBUtil
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible. 
          */
-        printf("\nTrying to selectPlace fkID: $fkID version: %s\n", $vhInfo['version']);
         $gRows = $this->sql->selectPlace($fkID, $vhInfo['version']);
         foreach ($gRows as $rec)
         {
-            printf("\npopulatePlace fkID: %s place_link.id: %s\n", $rec['fk_id'], $rec['id']);
             $gObj = new \snac\data\Place();
             $gObj->setOriginal($rec['original']);
             $gObj->setType($this->populateTerm($rec['type']));
             $gObj->setRole($this->populateTerm($rec['role']));
-            $gObj->setGeoTerm(buildGeoTerm($rec['geo_place_id']));
+            $gObj->setGeoTerm($this->buildGeoTerm($rec['geo_place_id']));
             $gObj->setScore($rec['score']);
             $gObj->setConfirmed($rec['confirmed']);
             $gObj->setNote($rec['note']);
@@ -412,16 +410,16 @@ class DBUtil
                  * Prior to creating the Language object, language was strange and not fully functional. Now
                  * language is a related record that links back here via our record id as a foreign key.
                  */ 
-                $this->populateLanguage($gObj, rec['id']);
+                $this->populateLanguage($gObj, $rec['id']);
                 /*
                  * populateSource() will call setCitation() for SNACControlMetadata objects
                  */ 
-                $this->populateSource($rec['id'], $gObj);
+                $this->populateSource($gObj); // ?Why was there: $rec['id'], 
                 $cObj->addSNACControlMetadata($gObj);
             }
         }
     }
-
+    
 
     /**
      * Populate LegalStatus
@@ -520,9 +518,13 @@ class DBUtil
              * $neObj->setScriptCode($oneName['script_code']);
              */
             $neObj->setPreferenceScore($oneName['preference_score']);
-            $neObj->setDBInfo($oneName['version'], $oneName['id']);
+            $neObj->setDBInfo($oneName['version'], $oneName['id']); 
             $this->populateMeta($neObj);
             $this->populateLanguage($neObj, $oneName['id']);
+            /*
+             * This line works because $oneName['id'] == $neObj->getID(). Both are record id, not
+             * constellation id. Both are non-null when reading from the database.
+             */ 
             $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
             foreach ($cRows as $contrib)
             {
@@ -638,8 +640,8 @@ class DBUtil
     {
         $gObj = new \snac\data\GeoTerm();
         $rec = $this->sql->selectGeoTerm($termID);
-        $gObj->setID($row['id']);
-        $gObj->setURI($row['uri']);
+        $gObj->setID($rec['id']);
+        $gObj->setURI($rec['uri']);
         $gObj->setName($rec['name']);
         $gObj->setLatitude($rec['latitude']);
         $gObj->setLongitude($rec['longitude']);
@@ -1915,7 +1917,6 @@ class DBUtil
     {
         if ($placeList = $cObj->getPlaces())
         {
-            printf("\nSaveing %s places for object main_id: %s fkID: $fkID\n", count($placeList), $vhInfo['main_id']);
             foreach($placeList as $gObj)
             {
                 $pid = $this->sql->insertPlace($vhInfo,
@@ -1923,11 +1924,12 @@ class DBUtil
                                                $this->db->boolToPg($gObj->getConfirmed()),
                                                $gObj->getOriginal(),
                                                $this->thingID($gObj->getGeoTerm()),
+                                               $this->thingID($gObj->getType()),
                                                $this->thingID($gObj->getRole()),
+                                               $gObj->getNote(),
                                                $gObj->getScore(),
                                                $relatedTable,
                                                $fkID);
-                printf("\nsaved place pid: $pid\n");
                 $this->saveMeta($vhInfo, $gObj, 'place_link', $pid);
                 if ($dObj = $gObj->getDateList())
                 {
@@ -1939,7 +1941,7 @@ class DBUtil
             }
         }
     }
-
+    
     /**
      * Save SNACControlMetadata to database
      *
@@ -2201,10 +2203,20 @@ class DBUtil
             $this->saveMeta($vhInfo, $ndata, 'name', $nameID);
             if ($contribList = $ndata->getContributors())
             {
+                /*
+                 * $ndata->getID() is null for inserted name. $nameID is walways non-null.
+                 * 
+                 * $nameID and $ndata->getID() will be the same for a name that is being updated. getID() will
+                 * be null for inserted names since there's no id until after insert. $nameID will always be
+                 * non-null.
+                 *
+                 * Both ids are the record id, not the constellation id.
+                 *
+                 */ 
                 foreach($contribList as $cb)
                 {
                     $this->sql->insertContributor($vhInfo,
-                                                  $ndata->getID(),
+                                                  $nameID,
                                                   $cb->getName(),
                                                   $this->thingID($cb->getType()));
                 }

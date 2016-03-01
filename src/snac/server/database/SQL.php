@@ -519,7 +519,7 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select 
                             aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
-                            aa.geo_place_id, aa.role, aa.score, aa.fk_table, aa.fk_id
+                            aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
                             from place_link as aa,
                             (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -544,6 +544,12 @@ class SQL
      *
      * @param string $geo_place_id The geo_place_id
      *
+     * @param integer $typeID Vocabulary ID of the place@localType
+     *
+     * @param integer $roleID Vocabulary ID of the role
+     *
+     * @param float $score The geoname matching score
+     *
      * @param string $fk_id The fk_id of the related table.
      *
      * @param string $fk_table The fk_table name
@@ -551,7 +557,17 @@ class SQL
      * @return integer $id The id of what we (might) have inserted.
      * 
      */
-    public function insertPlace($vhInfo, $id, $confirmed, $original,  $geo_place_id, $roleID, $score, $fk_table, $fk_id)
+    public function insertPlace($vhInfo, 
+                                $id,
+                                $confirmed,
+                                $original,
+                                $geo_place_id,
+                                $typeID,
+                                $roleID,
+                                $note,
+                                $score,
+                                $fk_table,
+                                $fk_id)
     {
         if (! $id)
         {
@@ -560,9 +576,9 @@ class SQL
         $qq = 'insert_place';
         $this->sdb->prepare($qq, 
                             'insert into place_link
-                            (version, main_id, id, confirmed, original, geo_place_id, role, score,  fk_id, fk_table)
+                            (version, main_id, id, confirmed, original, geo_place_id, type, role, note, score,  fk_id, fk_table)
                             values 
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
@@ -571,7 +587,9 @@ class SQL
                                             $confirmed,
                                             $original,
                                             $geo_place_id,
+                                            $typeID,
                                             $roleID,
+                                            $note,
                                             $score,
                                             $fk_id,
                                             $fk_table));
@@ -690,7 +708,7 @@ class SQL
      * @return string[] A list of fields/value as list keys matching the database field names: id, uri,
      * latitude, longitude, admin_code, country_code, name.
      */
-    public function selectGeo($gid)
+    public function selectGeoTerm($gid)
     {
         $qq = 'select_geo_place';
         $this->sdb->prepare($qq, 'select * from geo_place where id=$1');
@@ -888,6 +906,15 @@ class SQL
      */
     public function insertContributor($vhInfo, $nameID, $name, $typeID)
     {
+        if ($nameID == null)
+        {
+            /*
+             * This did happen, but once we have good tests it should never happen again. Perhaps better to
+             * add a "not null" to the db schema.
+             */ 
+            printf("Fatal: \$nameID must not be null\n");
+            exit();
+        }
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor

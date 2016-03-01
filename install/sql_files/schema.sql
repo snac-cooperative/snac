@@ -739,7 +739,9 @@ create table place_link (
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
         confirmed    boolean default false, -- true after confirmation by a human
         original     text,                  -- original as seen text from CPF import
+        type         integer,               -- fk to vocabulary.id from place@localType
         role         integer,               -- fk to vocabulary.id, from cpf place/placeRole
+        note         text,
         score        float,                 -- matching confidence score
         geo_place_id int,                   -- fk to geo_place.id, might be null
         primary key(id, version)
@@ -809,7 +811,7 @@ create unique index place_link_idx1 on place_link(id,main_id,version);
 
 create table geo_place (
     id                  int default nextval('id_seq'),
-    version             int not null,  -- not an fk to version_history.id. 
+    version             int not null,  -- not an fk to version_history.id. Currently unused.
     uri                 text,          -- URI/URL, geoname_id, or vocabularySource attribute
     name                text,          -- The geonames name; we do not have alt names yet
     latitude            numeric(10,7), -- Fixed precision
