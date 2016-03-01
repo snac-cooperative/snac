@@ -811,7 +811,6 @@ create unique index place_link_idx1 on place_link(id,main_id,version);
 
 create table geo_place (
     id                  int default nextval('id_seq'),
-    version             int not null,  -- not an fk to version_history.id. Currently unused.
     uri                 text,          -- URI/URL, geoname_id, or vocabularySource attribute
     name                text,          -- The geonames name; we do not have alt names yet
     latitude            numeric(10,7), -- Fixed precision

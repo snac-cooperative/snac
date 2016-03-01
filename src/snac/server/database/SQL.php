@@ -1648,12 +1648,14 @@ class SQL
     /**
      * Helper for selectOtherID()
      *
+     * Mar 1 2016: The comment below is incomplete because we have lots of cases where there could be multiple
+     * versions. All queries deal with multiple version by using a subquery. This function is probably
+     * redundant.
+     *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
      * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
-     * Mar 1 2016: The comment above is incomplete because we have lots of cases where there could be multiple
-     * versions. All these queries deal with that. Why is otherid any different?
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1693,12 +1695,12 @@ class SQL
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
      * 
-     * Mar 1 2016: For reasons I don't fully understand, doing a select on otherid can return duplicate
-     * rows. It is necessary to use matchORID() to get a list of distinct otherid.id values, and constrain the
-     * query on those. If you figure it out, update this comment. In any case, it currently works.
-     *
-     * Maybe there wouldn't be a problem if the execute() wasn't inside a loop?
-     *
+     * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
+     * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
+     * was all fairly odd, but worked. This code now follows our idiom for main_id and version constraint via
+     * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
+     * database versions, and the otherRecordID JSON looks correct.
+     * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, text, uri,
@@ -1708,8 +1710,6 @@ class SQL
      */
     public function selectOtherID($vhInfo)
     {
-        // $matchingIDs = $this->matchORID($vhInfo);
-
         $qq = 'sorid';
         $this->sdb->prepare($qq, 
                             'select
@@ -1718,19 +1718,8 @@ class SQL
                             where
                             version=(select max(version) from otherid where version<=$1)
                             and main_id=$2 order by id');
-        // and main_id=$2 and id=$3 order by id');
 
         $all = array();
-        /* 
-         * foreach ($matchingIDs as $orid)
-         * {
-         *     $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id'], $orid));
-         *     while($row = $this->sdb->fetchrow($result))
-         *     {
-         *         array_push($all, $row);
-         *     }
-         * }
-         */
         $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
         while($row = $this->sdb->fetchrow($result))
         {
