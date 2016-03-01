@@ -81,6 +81,23 @@ if ($dbHandle === false) {
     die("ERR: Unable to connect to database.\n");
 }
 
+echo "Would you like to load the schema (tables, indicies) into the database?\n  ('yes' or 'no'): ";
+$response = trim(fgets(STDIN));
+if ($response == "yes") {
+    echo "  Running the SQL initialization script\n";
+    $res = pg_query($dbHandle, file_get_contents("sql_files/schema.sql"));
+
+    if (!$res) {
+        $error = pg_last_error($dbHandle);
+        echo "  ERR: Unable to run script due to the following error:\n";
+        echo $error."\n";
+        die();
+    }
+    echo "  Successfully loaded the schema.\n\n";
+} else {
+    echo "  Not loading the schema. The schema can be found in sql_files/schema.sql.\n\n";
+} 
+
 echo "Would you like to load the vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = trim(fgets(STDIN));
 if ($response == "yes") {
@@ -98,12 +115,11 @@ if ($response == "yes") {
     echo "  Not updating the vocabulary schema.  The schema can be found in sql_files/vocabulary_init.sql.\n\n";
 } 
 
-
-echo "Would you like to load the schema (tables, indicies) into the database?\n  ('yes' or 'no'): ";
+echo "Would you like to load the place vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";
 $response = trim(fgets(STDIN));
 if ($response == "yes") {
-    echo "  Running the SQL initialization script\n";
-    $res = pg_query($dbHandle, file_get_contents("sql_files/schema.sql"));
+    echo "  Dropping place vocabulary, if exists, and creating new tables\n";
+    $res = pg_query($dbHandle, file_get_contents("sql_files/places_vocabulary_init.sql"));
 
     if (!$res) {
         $error = pg_last_error($dbHandle);
@@ -111,10 +127,12 @@ if ($response == "yes") {
         echo $error."\n";
         die();
     }
-    echo "  Successfully loaded the schema.\n\n";
+    echo "  Successfully refreshed the place vocabulary schema.  You must load the data into these tables later.\n\n";
 } else {
-    echo "  Not loading the schema. The schema can be found in sql_files/schema.sql.\n\n";
+    echo "  Not updating the place vocabulary schema.  The schema can be found in sql_files/places_vocabulary_init.sql.\n\n";
 } 
+
+
 
 echo "Would you like to load the initial users into the database?\n  ('yes' or 'no'): ";
 $response = trim(fgets(STDIN));
@@ -188,6 +206,25 @@ if ($response == "yes") {
     echo "  Successfully loaded the controlled vocabulary.\n\n";
 } else {
     echo "  Not loading the controlled vocabulary. They can be found in sql_files/vocabulary.sql.\n\n";
+}
+
+
+echo "Would you like to load the controlled place vocabulary into the database?\n  ('yes' or 'no'): ";
+$response = trim(fgets(STDIN));
+if ($response == "yes") {
+    echo "  Adding controlled place vocabulary to the database\n";
+    $res = pg_query($dbHandle, file_get_contents("sql_files/places_vocabulary.sql"));
+
+    if (!$res) {
+        $error = pg_last_error($dbHandle);
+        echo "  ERR: Unable to run script due to the following error:\n";
+        echo $error."\n";
+        die();
+    }
+
+    echo "  Successfully loaded the controlled place vocabulary.\n\n";
+} else {
+    echo "  Not loading the controlled place vocabulary. They can be found in sql_files/places_vocabulary.sql.\n\n";
 }
 
 
