@@ -817,10 +817,10 @@ create table geo_place (
     longitude           numeric(10,7), -- Fixed precision
     admin_code          text,          -- later change to an fk to geo_place.id for the encompassing admin_code?
     country_code        text,          -- later change to an geo_place.id for the encompassing country_code?
-    primary key(id, version)
+    primary key(id)
     );
 
-create unique index geo_place_idx1 on geo_place (id,version);
+create unique index geo_place_idx1 on geo_place (id);
 
 -- Controlled Vocabulary. Will be superceded by multilingual controlled vocabularies for: occupation,
 -- function, topical subject, nationality, language, language code, gender, script, name component labels,
