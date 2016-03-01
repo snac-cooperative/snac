@@ -113,7 +113,7 @@ class EACCPFParser {
      *
      *  record_type, script_code, entity_type, event_type, name_type, occupation, language_code, gender,
      *  nationality, maintenance_status, agent_type, document_role, document_type, function_type, function,
-     *  subject, date_type, relation_type, place_match, source_type
+     *  subject, date_type, relation_type, place_match, place_type, place_role, source_type
      *
      *  Contributor uses name_type. Find the type 'name_type' for contributor by querying the vocabulary
      *  table. We know that a contributor type could be authorizedForm, therefore:
