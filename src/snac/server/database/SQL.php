@@ -58,7 +58,10 @@ class SQL
      *
      * We always insert a new record, even on update. However, new objects do not have a
      * record id, so we create a table.id from the main sequence id_seq. This is just a centralized place to
-     * do that. 
+     * do that.
+     *
+     * Also, when inserting a constellation we need a new id, and those ids are generated from the same
+     * sequence, so this is used there as well.
      *
      * @return integer A table id from sequence id_seq.
      *
@@ -69,6 +72,31 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
+
+    /**
+     *
+     * This is very similar to insertVersionHistory(). Why do we have both? What is insertVersionHistory()
+     * used for? Is it still relevant?
+     *
+     */ 
+    public function not_used_insertNewVersion($mainID, $status, $note)
+    {
+        $qq = 'insert_version_history';
+        // We need version_history.id and version_history.main_id returned.
+        $this->sdb->prepare($qq, 
+                            'insert into version_history 
+                            (user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5)
+                            returning id as version, main_id;');
+
+        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
+        $vhInfo = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $vhInfo;
+        
+    }
+
 
     /**
      * Select records from table source.
@@ -269,8 +297,9 @@ class SQL
     /**
      * Insert a version_history record.
      *
-     * Current this increments the id which is the version number. That needs
-     * to not be incremented in some cases.
+     * Current this increments the id which is the version number. That needs to not be incremented in some
+     * cases. This mints a new version number (version_history.id) and a new constellation id
+     * (version_history.main_id)
      *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
      *
@@ -288,8 +317,12 @@ class SQL
      * returning it as 'version'. Note the "returning ..." part of the query.
      *
      */
-    public function insertVersionHistory($userid, $role, $status, $note)
+    public function insertVersionHistory($mainID, $userid, $role, $status, $note)
     {
+        if (! $mainID)
+        {
+            $mainID = $this->selectID();
+        }
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
         $this->sdb->prepare($qq, 

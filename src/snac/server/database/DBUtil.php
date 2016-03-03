@@ -64,8 +64,8 @@ class DBUtil
      */ 
     private $canDelete = null; 
 
-    private $ourVersion = null;
-    private $haveVersion = false;
+    // private $ourVersion = null;
+    // private $haveVersion = false;
 
     /**
      * Database connector object
@@ -138,12 +138,11 @@ class DBUtil
      *
      * Read published by ID
      *
-     * Read a published constellation by ID from the database.
+     * Read a published constellation by constellation ID (aka main_id, mainID) from the database.
      *
      * @param integer $mainID A constellation id
      *
      * @return \snac\data\Constellation A PHP constellation object.
-     *
      */ 
     public function publishedConstellationByID($mainID)
     {
@@ -154,21 +153,20 @@ class DBUtil
     /**
      * Build list of id,version
      *
-     * Build a list of id,verion for records that I'm editing. "Me" is $this->appUserID;
+     * Build a list of id,verion for records that I'm editing. "I" am $this->appUserID;
      *
      * @return string[] A list of associative lists. Each inner list has keys 'main_id', 'version'
-     *
      */ 
     private function editist()
     {
-        // Use $this->appUserID;
+        // When you implement this, use $this->appUserID;
         return array();
     }
     
     /**
+     * Constellations user is edting
      *
-     *
-     *
+     * Build a list of constellations that the user is editing. That is: user has locked for edit.
      *
      * @return \snac\data\Constellation[] A list of  PHP constellation object.
      * 
@@ -1825,36 +1823,83 @@ class DBUtil
      * Only making them when necessary makes the data records easier to read as a version number is the same
      * across an entire set of inserts.
      *
+     * @param \snac\data\Constellation $cObj A constellation object
+     *
+     * @param string $status The status of this version.
+     *
+     * @param string $note Human written note from the person who edit this data. This is a version commit
+     * message.
+     *
+     * @return \snac\data\Constellation $cObj the original constellation object modified to include id and version.
+     *
      */
     public function writeConstellation($cObj, $status, $note)
     {
-        if (! $this->haveVersion)
-        {
-            $this->ourVersion = $this->sql->selectNewVersion();
-            $this->haveVersion = true;
-        }
+        /*
+         * There is only one instance where we mint a new constellation id: Constellation insert.
+         *
+         * When doing component insert for an existing constellation, all new components use the constellation
+         * ID, thus no new ID is minted.
+         *
+         * We assume that something will happen so we always mint a new version number, as well as writing
+         * $status and $note to the version_history.
+         *
+         */  
+        $mainID = null;
         if ($cObj->getOperation() == $OPERATION_INSERT)
         {
-            // Have a version, but might need a new main_id
-            $mainID = $this->sql->selectNewID();
-            $vhInfo = array('version' => $this->ourVersion,
-                            'main_id' => $mainID);
-            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+            $mainID = null;
         }
-        elseif ($cObj->getOperation() == $OPERATION_UPDATE)
+        else
         {
+            /*
+             * Both update and delete use the existing constellation ID
+             */ 
             $mainID = $cObj->getID();
-            $vhInfo = array('version' => $this->ourVersion,
-                            'main_id' => $mainID);
-            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
         }
-        elseif ($cObj->getOperation() == $OPERATION_DELETE)
-        {
-            $mainID = $cObj->getID();
-            $vhInfo = array('version' => $this->ourVersion,
-                            'main_id' => $mainID);
-            $this->coreDelete($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
-        }
+        /* 
+         * elseif ($cObj->getOperation() == $OPERATION_UPDATE)
+         * {
+         *     $mainID = $cObj->getID();
+         * }
+         * elseif ($cObj->getOperation() == $OPERATION_DELETE)
+         * {
+         *     $mainID = $cObj->getID();
+         * }
+         */
+
+        /*
+         * The $status and $note need to go to selectNewVersion(). There is a single version here, and the
+         * status and note are used only for this write. If at some future time you create private vars for
+         * version, main_id, status, and note here in DBUtil, then clear the main_id, version, status, and
+         * note before returning. Always set all version info.
+         * function.
+         *
+         * What won't happen here is two records edited simultaneously being saved. We assume that is
+         * impossible. And if it were possible, both updates would (logically?) have the same status, and share
+         * the same note.
+         *
+         * Also, even on bulk ingest there will not be two version numbers that are the same. A new
+         * version_history record is created for each write. It is (sort of) coincidence that status and note
+         * are the same in one or more version_history records.
+         *
+         * A single version_history record does (and must) apply to all components of a constellation.
+         *
+         * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
+         *
+         */
+        $vhInfo = $this->sql->insertVersionHistory($mainID, $appUserID, $roleID, $status, $note);
+
+        /*
+         *
+         * $cObj is passed by reference, and changed in place.
+         *
+         * The only changes are adding id and version as necessary. 
+         */
+        $this->coreWrite($vhInfo, $cObj);
+        // $this->ourVersion = null;
+        // $this->haveVersion = false;
+        return $cObj;
     }
 
     /**
@@ -1863,31 +1908,34 @@ class DBUtil
      * We already have a version and main_id, but must write a version_history record. We got the new version
      * from selectNewVersion() and the new main_id from selectNewID().
      *
+     * @param int[] $vhInfo A list with keys 'main_id' and 'version'
+     *
+     * @param \snac\data\Constellation &$cObj a constellation object passed by reference.
      * 
      */ 
-    private function coreWrite($vhInfo, $cObj, $status, $note)
+    private function coreWrite($vhInfo, &$cObj)
     {
-        $this->saveVersionHistory($vhInfo, $status, $note, $this->appUserID, $this->roleID);
-        $this->saveBiogHist($vhInfo, $id);
-        $this->saveConstellationDate($vhInfo, $id);
-        $this->saveConstellationSource($vhInfo, $id);
-        $this->saveConventionDeclaration($vhInfo, $id);
-        $this->saveFunction($vhInfo, $id);
-        $this->saveGender($vhInfo, $id);
-        $this->saveGeneralContext($vhInfo, $id);
-        $this->saveLegalStatus($vhInfo, $id);
-        $this->saveLanguage($vhInfo, $id, 'nrd', $vhInfo['main_id']);
-        $this->saveMandate($vhInfo, $id);
-        $this->saveName($vhInfo, $id);
-        $this->saveNationality($vhInfo, $id);
-        $this->saveNrd($vhInfo, $id);
-        $this->saveOccupation($vhInfo, $id);
-        $this->saveOtherRecordID($vhInfo, $id);
-        $this->savePlace($vhInfo, $id, 'nrd', $vhInfo['main_id']);
-        $this->saveStructureOrGenealogy($vhInfo, $id);
-        $this->saveSubject($vhInfo, $id);
-        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
-        $this->saveResourceRelation($vhInfo, $id);
+        // $this->saveVersionHistory($vhInfo, $status, $note, $this->appUserID, $this->roleID);
+        $this->saveBiogHist($vhInfo, $cObj);
+        $this->saveConstellationDate($vhInfo, $cObj);
+        $this->saveConstellationSource($vhInfo, $cObj);
+        $this->saveConventionDeclaration($vhInfo, $cObj);
+        $this->saveFunction($vhInfo, $cObj);
+        $this->saveGender($vhInfo, $cObj);
+        $this->saveGeneralContext($vhInfo, $cObj);
+        $this->saveLegalStatus($vhInfo, $cObj);
+        $this->saveLanguage($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+        $this->saveMandate($vhInfo, $cObj);
+        $this->saveName($vhInfo, $cObj);
+        $this->saveNationality($vhInfo, $cObj);
+        $this->saveNrd($vhInfo, $cObj);
+        $this->saveOccupation($vhInfo, $cObj);
+        $this->saveOtherRecordID($vhInfo, $cObj);
+        $this->savePlace($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+        $this->saveStructureOrGenealogy($vhInfo, $cObj);
+        $this->saveSubject($vhInfo, $cObj);
+        $this->saveRelation($vhInfo, $cObj); // aka cpfRelation, constellationRelation, related_identity
+        $this->saveResourceRelation($vhInfo, $cObj);
         return $vhInfo;
     }
 
@@ -1935,7 +1983,10 @@ class DBUtil
      */
     public function insertConstellation($id, $appUserID, $roleID, $icstatus, $note)
     {
-        $vhInfo = $this->sql->insertVersionHistory($appUserID, $roleID, $icstatus, $note);
+        // Quick hack for backward compatibility, even though this function is being deprecated. Pass a null
+        // $mainID to insertVersionHistory().
+        $mainID = null;
+        $vhInfo = $this->sql->insertVersionHistory($mainID, $appUserID, $roleID, $icstatus, $note);
         $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
         return $vhInfo;
     } // end insertConstellation
