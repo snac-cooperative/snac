@@ -61,6 +61,18 @@ abstract class Validator {
     }
     
     /**
+     * Post-Validation tear-down
+     * 
+     * This method should be run after the Validator is used, to clean up any
+     * validation issues that may cut across the pieces of the constellation.
+     * 
+     * Child classes may overwrite the method with required pieces of tear-down.
+     */
+    public function postValidation() {
+        return;
+    }
+    
+    /**
      * Get the errors as an associative array
      * 
      * @return \snac\server\validation\ValidationError[] Array of validation errors associated with this validator

@@ -169,6 +169,8 @@ class ValidationEngine {
                 $validator->validateSubject($subject);
             }
             
+            $validator->postValidation();
+            
             if ($validator->errorOccurred()) {
                 $this->errors[$validator->getName()] = $validator->getErrorArray();
             }
