@@ -39,7 +39,13 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     private $responseHeaders = array (
             "Content-Type: application/json"
-    );
+        );
+
+    /**
+     * Response Array
+     * @var string[] Response
+     */
+    private $response = array();
 
     /**
      *
@@ -58,6 +64,9 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $this->input = $input;
         $this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
+        $this->response = array(
+                "request" => $this->input,
+        );
     }
 
     /**
@@ -66,6 +75,83 @@ class Server implements \snac\interfaces\ServerInterface {
      * Starts the server
      */
     public function run() {
+
+        // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
+
+        switch ($this->input["command"]) {
+
+            case "vocabulary":
+                $db = new \snac\server\database\DBUtil();
+                $this->response["results"] = $db->searchVocabulary(
+                    $this->input["type"],
+                    $this->input["query_string"]);
+                break;
+            case "reconcile":
+
+                break;
+            case "user_information":
+                $this->response["user"] = array();
+                $db = new \snac\server\database\DBUtil();
+                $this->response["user"]["editing"] = $db->demoConstellationList();
+                break;
+            case "update_constellation":
+                $db = new \snac\server\database\DBUtil();
+                if (isset($this->input["constellation"]) && isset($this->input["constellation"]["id"])) {
+                    $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                    $result = $db->updateConstellation($constellation, 6, 1, "being edited", "Demo updates for now", $constellation->getID());
+                    if (isset($result["main_id"]))
+                        $this->response["result"] = "success";
+                    else
+                        $this->response["result"] = "failure";
+                } else {
+                    $this->response["result"] = "failure";
+                }
+                break;
+            case "edit":
+                if (isset($this->input["arkid"])) {
+                    // Editing the given ark id by reading querying the current HRT
+
+                    // split on ark:/
+                    $tmp = explode("ark:/", $this->input["arkid"]);
+                    if (isset($tmp[1])) {
+                        $pieces = explode("/", $tmp[1]);
+                        if (count($pieces) == 2) {
+                            $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
+                            // Create new parser for this file and parse it
+                            $parser = new \snac\util\EACCPFParser();
+                            $id = $parser->parseFile($filename);
+                            $this->response["constellation"] = $id->toArray();
+                            return;
+                        }
+                    }
+                } else if (isset($this->input["constellationid"])) {
+                    // Editing the given constellation id by reading the database
+                    $db = new \snac\server\database\DBUtil();
+                    
+                    try {
+                        // Read the constellation
+                        $constellation = $db->readConstellation(
+                            $this->input["constellationid"], 
+                            $this->input["version"]);
+                        $this->response["constellation"] = $constellation->toArray();
+                    } catch (Exception $e) {
+                        $this->response["error"] = $e;
+                    }
+                    return;
+                } else if (isset($this->input["testid"])) {
+                    if ($this->input["testid"] == 1) {
+                        // Create new parser for this file and parse it
+                        $parser = new \snac\util\EACCPFParser();
+                        $id = $parser->parseFile("http://shannonvm.village.virginia.edu/~jh2jf/test_record.xml");
+                        $this->response["constellation"] = $id->toArray();
+                        return;
+                    }
+                }
+                // break; // no longer breaking to allow the default case to give an error if neither matches
+            default:
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
+
+        }
 
         return;
     }
@@ -96,11 +182,7 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function getResponse() {
         // TODO: Fill in body
-        $response = array (
-                "message" => "Successfully Queried",
-                "request" => $this->input,
-                "timing" => round((microtime(true) - $this->timing) * 1000, 2)
-        );
-        return json_encode($response, JSON_PRETTY_PRINT);
+        $this->response["timing"] =round((microtime(true) - $this->timing) * 1000, 2);
+        return json_encode($this->response, JSON_PRETTY_PRINT);
     }
 }

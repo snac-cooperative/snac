@@ -10,6 +10,7 @@
  *            the Regents of the University of California
  */
 
+
 /**
  * Load and instantiate the web ui
  */
@@ -18,8 +19,9 @@ include ("../../../vendor/autoload.php");
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
 
-// Use the GET variables as input
-$input = $_GET;
+
+// Use the REQUEST (GET, POST, COOKIE) variables as input
+$input = $_REQUEST;
 
 // Instantiate and run the server
 $server = new WebUI($input);

@@ -49,6 +49,14 @@ drop table if exists source;
 -- drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists version_history;
+drop table if exists source_link;
+drop table if exists control;
+drop table if exists pre_snac_maintenance_history;
+drop table if exists contributor;
+-- these shouldn't even be in the database anymore
+drop table if exists place;
+drop table if exists geoplace;
+
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -672,6 +680,22 @@ create table scm (
     fk_table     text  -- table name of the related foreign table. This field exists as backup
 );
 
+
+-- Link constellation to original imported record id, aka extract record id. Probably does not need version
+-- since this is not user-editable, but we give everything id, version, and main_id for the sake of
+-- consistency.
+
+create table otherid (
+        id         int default nextval('id_seq'),
+        version    int not null,
+        main_id    int not null,
+        text text, -- unclear what this is parse from in CPF. See SameAs.php.
+        uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.main_id
+        type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
+        primary    key(id, version)
+    );
+
+
 -- Tables needing place data use place_link to relate to geo_place. Table place_link also relates to snac meta
 -- data in order to capture original strings. The php denormalizes (using more space, but optimising i/o) by
 -- combining fields from place_link and geo_place into PlaceEntry.
@@ -748,125 +772,3 @@ create table place_link (
     );
 
 create unique index place_link_idx1 on place_link(id,main_id,version);
-
---
--- Meta data, authority data, system link tables
--- 
-
--- There could be a normalization problem here with administration_code and country_code. Those might best
--- link to other records in this table, or to a controlled vocab/authority table.
---
--- Place records link here via place_link.
-
--- Based on research, lat and lon need no more than fix precision (10,7) numbers.
-
--- This quotes Google Maps docs: From the Google Maps documentation: "To keep the storage space required for
--- your table at a minimum, you can specify that the lat and lng attributes are floats of size (10,6)". This
--- is a bit odd/interesting since the last url below gives an example of needing 7 decimal places at high latitudes.
---
--- http://stackoverflow.com/questions/1196174/correct-datatype-for-latitude-and-longitude-in-activerecord
-
--- If stored numerically, fixed precision, perhaps: lat 9,7 and lon 9.6. Or perhaps not. Strings are safe,
--- although non-optimal for calculations.
--- 
--- http://stackoverflow.com/questions/1196415/what-datatype-to-use-when-storing-latitude-and-longitude-data-in-sql-databases
-
--- Contrary to the 6 decimal places some people suggest, this says explains why 7 decimal places are necessary
--- above (greater than) 41.7 degrees latitude
--- 
--- https://groups.google.com/forum/#!topic/google-maps-api/uSi1-8U1GCE
-
--- http://api.geonames.org/postalCodeSearch?postalcode=9011&maxRows=10&username=demo
--- <lat>47.60764</lat>
--- <lng>17.78194</lng>
-
--- http://api.geonames.org/get?geonameId=6295630&username=demo&style=full
---
--- <geonameId>6295630</geonameId>
---
--- The forum post gives the id for "Earth".  Geonames id values appear to be integer. Note singular name of
--- the element. However, the integer is not used for math, and we may want to join other authorities to this
--- table. Therefore we store geoname_id as text.
-
--- We have some geographic names from AnF's geographic vocab. They aren't geonames entries, but might still
--- fit in this table. Might. localType is admin code or country code. vocabularySource seems to be a
--- persistent id which could be geoname_id.
---
--- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
-
--- For the time being we can get away without having vocabulary source in this table. It appears that AnF's
--- use of @vocabularySource is an XML implementation of authority control applied to CPF <place> elements.
--- AnF and Robbie's geonames search creates @vocabularySource attribute in place_link.
-
--- The elements for admin_code are named:
---
--- <adminCode1/> <adminName1/> <adminCode2/> <adminName2/>
---
--- We will keep to that convention and name our field admin_code as opposed to the longer administrative_code
--- or administration_code. Note that the GeoTerm object calls this administrationCode.
-
--- Instead of a field for ID, lets just leap forward to assuming it will become a URI, so we name the field
--- 'uri', and put the best identifier we have in that field.
-
-
-create table geo_place (
-    id                  int default nextval('id_seq'),
-    uri                 text,          -- URI/URL, geoname_id, or vocabularySource attribute
-    name                text,          -- The geonames name; we do not have alt names yet
-    latitude            numeric(10,7), -- Fixed precision
-    longitude           numeric(10,7), -- Fixed precision
-    admin_code          text,          -- later change to an fk to geo_place.id for the encompassing admin_code?
-    country_code        text,          -- later change to an geo_place.id for the encompassing country_code?
-    primary key(id)
-    );
-
-create unique index geo_place_idx1 on geo_place (id);
-
--- Controlled Vocabulary. Will be superceded by multilingual controlled vocabularies for: occupation,
--- function, topical subject, nationality, language, language code, gender, script, name component labels,
--- date-predicates (from, to, born, died), maintenance status, maintenance event type, maintenance agent type,
--- place match type, function term, function type (e.g. DerivedFromRole), and more.
-
--- Context for use is in a separate table (perhaps vocabulary_use) because some (like entity_type) can be used
--- in several contexts.
-
--- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
--- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
-
--- Feb 8 2016 add "if not exists" just so we don't get a warning from Postgres. This needs to be moved to a
--- separate schema file. In a simple world the whole schema would always be run on an empty database, but that
--- is not the case. Our controlled vocabulary and authority data will often not be reloaded when the rest of
--- the database is reset.
-
--- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
---
-
--- create table if not exists vocabulary (
---         id          int primary key default nextval('vocabulary_id_seq'),
---         type        text,        -- Type of the vocab
---         value       text,        -- Value of the controlled vocab term
---         uri         text,        -- URI for this controlled vocab term, if it exists
---         description text         -- Textual description of this vocab term
---         );
-
--- create unique index vocabulary_idx on vocabulary(id);
--- create index vocabulary_type_idx on vocabulary(type);
--- create index vocabulary_value_idx on vocabulary(value);
-
--- Moved table vocabulary_use to vocabulary_init.sql, just in case you're looking for it.
-
--- Link constellation to original imported record id, aka extract record id. Probably does not need version
--- since this is not user-editable, but we give everything id, version, and main_id for the sake of
--- consistency.
-
-create table otherid (
-        id         int default nextval('id_seq'),
-        version    int not null,
-        main_id    int not null,
-        text text, -- unclear what this is parse from in CPF. See SameAs.php.
-        uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.main_id
-        type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
-        primary    key(id, version)
-    );
-
-

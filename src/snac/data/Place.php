@@ -369,12 +369,12 @@ class Place extends AbstractData {
         if (isset($data["score"]))
             $this->score = $data["score"];
         else
-            $this->score = null;
+            $this->score = 0;
 
         if (isset($data["confirmed"]))
             $this->confirmed = $data["confirmed"];
         else
-            $this->confirmed = null;
+            $this->confirmed = false;
 
         if (isset($data["type"]) && $data["type"] != null)
             $this->type = new \snac\data\Term($data["type"]);

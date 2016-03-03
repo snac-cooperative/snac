@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Editing {{ ark }}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+</style>
+</head>
+<body role="document">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">SNAC</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="?">Home</a></li>
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="#">Ning</a></li>
+            </ul>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.name }} <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">{{ user.email }}</a></li>
+                        <li><a href="#">action</a></li>
+                        <li><a href="#">Something else here</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">User Options</li>
+                        <li><a href="#">Settings</a></li>
+                        <li><a href="?command=logout">Logout</a></li>
+                    </ul>
+                    </li>
+                </ul>
+            </div>
+        </div><!--/.nav-collapse -->
+
+    </div>
+</nav>
+
+
+<div class="container snac" role="main">
+
+    <h1>Welcome, {{ user.first }}!</h1>
+
+    <p>Short snippet of interesting text to welcome the user to the site.  Should be witty and engaging.</p>
+
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">In Progress Edits</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Continue where you left off on one of the following Constellations.</p>
+                    <div class="list-group">
+                        {% for link in data.user.editing %}
+                        <a href="?command=edit&constellationid={{link.main_id}}&version={{link.version}}" class="list-group-item">{{link.formatted_name}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Needs Review</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Review and publish the following Constellations.</p>
+                    <div class="list-group">
+                        <a href="?command=edit&arkid=http://n2t.net/ark:/99166/w6v1266v" class="list-group-item">Oppenheimer, Robert J. (eac-cpf)</a>
+                        <a href="?command=edit&arkid=http://n2t.net/ark:/99166/w6sf3424" class="list-group-item">Wilson, James Harrison. (eac-cpf)</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recently Updated</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently updated Constellations..</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item">Brown, Emmett.</a>
+                        <a href="#" class="list-group-item">Doctor, The.</a>
+                        <a href="#" class="list-group-item">Tyler, Rose.</a>
+                        <a href="#" class="list-group-item">Oswald, Clara.</a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Special Records</h3>
+                </div>
+                <div class="panel-body">
+                    <p>These are special test records.</p>
+                    <div class="list-group">
+                        <a href="?command=edit&testid=1" class="list-group-item">Snac Test Record</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">User Edit History</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Here is a list of your recent edits and submissions.</p>
+                    <div class="list-group">
+                        <a href="?command=edit" class="list-group-item">Oppenheimer, Robert J.</a>
+                        <a href="#" class="list-group-item">McFly, Martin J.</a>
+                        <a href="#" class="list-group-item">Simpson, Marge</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

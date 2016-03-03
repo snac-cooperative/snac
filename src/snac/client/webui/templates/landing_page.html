@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Editing {{ ark }}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+</style>
+</head>
+<body role="document">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">SNAC</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="?command=dashboard">Dashboard</a></li>
+            </ul>
+            <div class="navbar-right">
+                <ul class="nav navbar-nav">
+                    <li><a href="?command=login">Login</a></li>
+                </ul>
+            </div>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>  
+
+
+<div class="container snac" role="main">
+
+    <h1>Snac Landing Page</h1>
+
+    <p>This is only a sample landing page that should be replaced.</p>
+
+    <p class="text-center">
+    <a href="?command=login" class="btn btn-lg btn-warning">Login</a>
+    </p>
+</div>
+</body>
+</html>

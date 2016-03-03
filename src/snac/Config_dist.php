@@ -23,9 +23,20 @@ namespace snac;
  * the configuration settings and avoid global variables and constants.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class Config {
+
+
+    /**
+     * @var boolean Whether the system is in DEBUG mode
+     */
+    public static $DEBUG_MODE = true;
+
+    /**
+     * @var the full path of this project (to the root of the repository)
+     */
+    public static $PROJECT_DIR = "";
 
     /**
      *
@@ -34,18 +45,18 @@ class Config {
     public static $INTERNAL_SERVERURL = "http://localhost:82";
 
     /**
-     * Full database connection information 
+     * Full database connection information
      *
      * Connection information for the POSTGRES database
      *
      * @var array database connection information
      */
     public static $DATABASE = array (
-            "database" => "db_name",
-            "host" => "hostname.com",
-            "port" => 5432,
-            "user" => "user_id",
-            "password" => "full_password"
+        "database" => "db_name",
+        "host" => "hostname.com",
+        "port" => 5432,
+        "user" => "user_id",
+        "password" => "full_password"
     );
 
     /**
@@ -59,10 +70,32 @@ class Config {
      * database calls will only be logged and not committed to the database.
      *
      * @var boolean Database in testing mode.
-     * 
+     *
      */
     public static $DATABASE_TESTING = false;
-    
+
+    /**
+     * @var string Location of the template directory
+     */
+    public static $TEMPLATE_DIR = "full/path/to/src/snac/client/webui/templates";
+
+    /**
+     * @var string Location of the template cache directory
+     */
+    public static $TEMPLATE_CACHE = "/tmp/";
+
+    /**
+     * @var string[][] OAuth connection information.  Each entry should have all the
+     *      required information to connect to that provider.
+     */
+    public static $OAUTH_CONNECTION = array (
+        "google" => array(
+            "client_id" => 'XXXXXXXXX',
+            "client_secret" => 'XXXXXXXX',
+            "redirect_uri" => 'XXXXXXX',
+        )
+    );
+
     /**
      * @var int The maximum number of objects allowed in a list of objects.
      */

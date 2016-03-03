@@ -1,6 +1,7 @@
 -- Drop the vocabulary table and sequence
 
 drop table if exists vocabulary;
+drop table if exists vocabulary_use;
 drop sequence if exists vocabulary_id_seq;
 
 -- Create the vocabulary table, sequence, and indices
@@ -39,6 +40,19 @@ create unique index vocabulary_idx on vocabulary(id);
 create index vocabulary_type_idx on vocabulary(type);
 create index vocabulary_value_idx on vocabulary(value);
 
+-- create unique index vocabulary_idx on vocabulary(id);
+-- create index vocabulary_type_idx on vocabulary(type);
+-- create index vocabulary_value_idx on vocabulary(value);
+
+-- We need a way for the data to sanity check that vocabulary is being used in the correct context.  If a
+-- given vocabulary value can be used in multiple contexts, we need a linking table.
+
+create table if not exists vocabulary_use (
+    id       int primary key default nextval('vocabulary_id_seq'),
+    vocab_id int,     -- fk to vocabulary.id
+    db_table    text, -- table in this database, table is a Pg reserved word
+    db_field    text  -- field in that table in this database
+);
 
 -- Not yet implemented: We need a way for the data to sanity check that vocabulary is being used in the
 -- correct context.  If a given vocabulary value can be used in multiple contexts, we need a linking table.
