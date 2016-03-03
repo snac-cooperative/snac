@@ -414,16 +414,22 @@ class SQL
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      *
-     * Need to add later:
-     * 
-     *  $date->getMissingFrom(),
-     *  $date->getMissingTo(),
-     *  $date->getToPresent(),
-     *
      * @param string[] $vhInfo associative list with keys: version, main_id
-     *
+     * @param integer $id Record id. If null a new one will be minted.
+     * @param integer $isRange Boolean if this is a date range
+     * @param string $fromDate The from date
+     * @param string $fromType, Type of from date, fk to vocabulary.id
+     * @param integer $fromBC Boolean if this is a BC date
+     * @param string $fromNotBefore Not before this date
+     * @param string $fromNotAfter Not after this date
+     * @param string $fromOriginal What we got from the CPF
+     * @param string $toDate The to date
+     * @param integer $toType Type of the date, fk to vocabulary.id
+     * @param integer $toBC Boolean, true if BC
+     * @param string $toNotBefore Not before this date
+     * @param string $toNotAfter Not after this date
+     * @param string $toOriginal What we got from the CPF
      * @param string $fk_table The name of the table to which this date and $fk_id apply.
-     *
      * @param integer $fk_id The id of the record to which this date applies.
      *
      * @return integer date_range record id, in case some other code is interested in what record id was
@@ -587,7 +593,7 @@ class SQL
      *
      * @param string $fk_table The fk_table name
      *
-     * @return integer $id The id of what we (might) have inserted.
+     * @return integer $id The id, possibly new. 
      * 
      */
     public function insertPlace($vhInfo, 
@@ -930,14 +936,17 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id if this contributor. If null one will be minted. The id (existing or new) is always returned.
+     *
      * @param integer $nameID Record id of related name
      *
      * @param string $name Name of the contributor
      *
      * @param integer $typeID Vocabulary fk id of the type of this contributor.
-     *
+     * 
+     * @return integer $id Return the existing id, or the newly minted id. 
      */
-    public function insertContributor($vhInfo, $nameID, $name, $typeID)
+    public function insertContributor($vhInfo, $id, $nameID, $name, $typeID)
     {
         if ($nameID == null)
         {
@@ -948,20 +957,27 @@ class SQL
             printf("Fatal: \$nameID must not be null\n");
             exit();
         }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
-                            (version, main_id, name_id, short_name, name_type)
+                            (version, id, main_id, name_id, short_name, name_type)
                             values
-                            ($1, $2, $3, $4, $5)');
+                            ($1, $2, $3, $4, $5, $6)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
+                                  $id,
                                   $nameID,
                                   $name,
                                   $typeID));
         $this->sdb->deallocate($qq_2);
+        return $id;
     }
+
     
     
     /**

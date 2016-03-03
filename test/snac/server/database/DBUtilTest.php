@@ -53,7 +53,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          *
          * A flat list of the appuser.id and related role.id, both are numeric. 
          */ 
-        list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
+        // list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
     }
 
     public function testFullCPF()
@@ -61,11 +61,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
-        $vhInfo = $this->dbu->insertConstellation($cObj,
-                                                  $this->appUserID,
-                                                  $this->roleID,
-                                                  'bulk ingest',
-                                                  'bulk ingest of merged');
+        $vhInfo = $this->dbu->writeConstellation($cObj,
+                                                 'bulk ingest',
+                                                 'bulk ingest of merged');
 
         $this->assertNotNull($vhInfo);
 
@@ -298,13 +296,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $this->dbu->insertConstellation($constellationObj,
-                                                  $this->appUserID,
-                                                  $this->roleID,
-                                                  'bulk ingest',
-                                                  'machine ingest of hand-crafted, full CPF test record');
-
-        $this->assertNotNull($vhInfo);
+        $retObj = $this->dbu->writeConstellation($constellationObj,
+                                                 'bulk ingest',
+                                                 'machine ingest of hand-crafted, full CPF test record');
+        $this->assertNotNull($retObj);
 
         /* 
          * Get the constellation that was just inserted. As of Dec 2015, the inserted and selected
