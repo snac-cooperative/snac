@@ -65,7 +65,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         $dbutil = new \snac\server\database\DBUtil();
         
         //TODO Replace this with the actual code to get the constellation out of the database
-        $this->constellation = $constellation;
+        $this->constellation = $dbutil->readConstellation($id);
         
         return true;
             
