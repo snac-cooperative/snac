@@ -119,6 +119,76 @@ class DBUtil
 
 
     /**
+     * Read published by ARK
+     *
+     * Read a published constellation by ARK from the database.
+     *
+     * @param string $arkID An ARK
+     *
+     * @return \snac\data\Constellation A PHP constellation object.
+     *
+     */
+    public function publishedConstellationByARK($arkID)
+    {
+        return null;
+    }
+
+
+    /**
+     *
+     * Read published by ID
+     *
+     * Read a published constellation by ID from the database.
+     *
+     * @param integer $mainID A constellation id
+     *
+     * @return \snac\data\Constellation A PHP constellation object.
+     *
+     */ 
+    public function publishedConstellationByID($mainID)
+    {
+        return null;
+    }
+
+
+    /**
+     * Build list of id,version
+     *
+     * Build a list of id,verion for records that I'm editing. "Me" is $this->appUserID;
+     *
+     * @return string[] A list of associative lists. Each inner list has keys 'main_id', 'version'
+     *
+     */ 
+    private function editist()
+    {
+        // Use $this->appUserID;
+        return array();
+    }
+    
+    /**
+     *
+     *
+     *
+     *
+     * @return \snac\data\Constellation[] A list of  PHP constellation object.
+     * 
+     */
+    function editConstellationList()
+    {
+        $idVersionList = editList();
+        
+        $constellationList = array();
+        foreach ($idVersionList as $iver)
+        {
+            $cObj = readConstellation($iver['main_id'], $iver['version']);
+            array_push($constellationList, $cObj);              
+        }
+        return $constellationList;
+    }
+
+
+
+    /**
      * Safely call object getID method
      *
      * Call this so we don't have to sprinkle ternary ops throughout our code. The alternative to using this
@@ -200,13 +270,15 @@ class DBUtil
 
     /**
      * Fill in a Constellation.
-     * 
+     *
+     * This is private. Use readConstellation() as the public API 
+     *
      * @param integer $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
      *
      * @return \snac\data\Constellation A PHP constellation object.
      * 
      */
-    public function selectConstellation($vhInfo, $appUserID)
+    private function selectConstellation($vhInfo, $appUserID)
     {
         $cObj = new \snac\data\Constellation();
         /*
@@ -1828,8 +1900,10 @@ class DBUtil
      * If we need to do any read related bookkeeping, do it here, and not in the wrapped code.
      *
      */
-    public function readConstellation($mainID)
+    public function readConstellation($mainID, $version)
     {
+        $vhInfo = array('version' => $version,
+                        'main_id' => $mainID);
         $cObj = $this->selectConstellation($vhInfo, $this->appUserID);
         return $cObj;
     }
