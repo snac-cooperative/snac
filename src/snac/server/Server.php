@@ -127,10 +127,16 @@ class Server implements \snac\interfaces\ServerInterface {
                 } else if (isset($this->input["constellationid"])) {
                     // Editing the given constellation id by reading the database
                     $db = new \snac\server\database\DBUtil();
-
-                    // Read the constellation
-                    $constellation = $db->readConstellation($this->input["constellationid"]);
-                    $this->response["constellation"] = $constellation->toArray();
+                    
+                    try {
+                        // Read the constellation
+                        $constellation = $db->readConstellation(
+                            $this->input["constellationid"], 
+                            $this->input["version"]);
+                        $this->response["constellation"] = $constellation->toArray();
+                    } catch (Exception $e) {
+                        $this->response["error"] = $e;
+                    }
                     return;
                 } else if (isset($this->input["testid"])) {
                     if ($this->input["testid"] == 1) {

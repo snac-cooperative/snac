@@ -293,6 +293,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
         foreach ($this->input as $k => $v) {
             // Try to split on underscore
             $parts = explode("_", $k);
+            
+            // Empty should be null
+            if ($v == "")
+                $v = null;
+            
             if (count($parts) == 1) {
                 // only one piece: non-repeating
                 // key => value ==> nested[key] = value
