@@ -48,7 +48,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         $this->dbu = new snac\server\database\DBUtil();
         /*
-         * Feb 19 2016 Holy cow. This needed to be in DBUtil. This is being down there and here. Only
+         * Feb 19 2016 Holy cow. This needs to be in DBUtil, only. This is being done there and here. Only
          * deprecated code will use the values here.
          *
          * A flat list of the appuser.id and related role.id, both are numeric. 
@@ -70,7 +70,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($vhInfo);
 
         // read from the db what we just wrote to the db
-        $readObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        // $readObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        $readObj = $this->dbu->readConstellation($vhInfo['main_id'], $vhInfo['version']);
+                                                
         $secondJSON = $readObj->toJSON();
 
         $cfile = fopen('first_json.txt', 'w');
@@ -137,19 +139,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         $vhInfo = $this->dbu->demoConstellation();
 
-        $cObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        // $cObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        $cObj = $this->dbu->readConstellation($vhInfo['main_id'], $vhInfo['version']);
         $this->assertNotNull($cObj);
 
         /* 
          * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
          */ 
-
-        $vhInfo = $this->dbu->demoConstellation();
-        $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
-                               'version' => $vhInfo['version']);
-
-        $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
-        $this->assertNotNull($reverseCObj);
+        /* Mar 2 2016 selectConstellation() will no longer be public, so this test is not meaningful.
+         * $vhInfo = $this->dbu->demoConstellation();
+         * $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
+         *                        'version' => $vhInfo['version']);
+         * $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
+         * $this->assertNotNull($reverseCObj);
+         */
 
         // The returned value is a json string, with 100 top level elements.
         $demo = $this->dbu->demoConstellationList();
@@ -202,7 +205,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
         $postDVhInfo = array('version' => $newVersion,
                              'main_id' => $mNObj->getID());
-        $postDObj = $this->dbu->selectConstellation($postDVhInfo, $this->appUserID);
+        // $postDObj = $this->dbu->selectConstellation($postDVhInfo, $this->appUserID);
+        $postDObj = $this->dbu->readConstellation($postDVhInfo['main_id'], $postDVhInfo['version']);
         $postDeleteNameCount = count($postDObj->getNameEntries());
         $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
 
@@ -220,7 +224,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $undeleteDVhInfo = array('version' => $undelVersion,
                                  'main_id' => $mNObj->getID());
-        $unDObj = $this->dbu->selectConstellation($undeleteDVhInfo, $this->appUserID);
+        // $unDObj = $this->dbu->selectConstellation($undeleteDVhInfo, $this->appUserID);
+        $unDObj = $this->dbu->readConstellation($undeleteDVhInfo['main_id'], $undeleteDVhInfo['version']);
         $unDeleteNameCount = count($unDObj->getNameEntries());
         $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
 
@@ -257,7 +262,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
         $this->dbu->saveName($modVhInfo, $unDObj);
 
-        $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
+        // $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
+        $modObj = $this->dbu->readConstellation($modVhInfo['main_id'], $modVhInfo['version']);
 
         // printf("\n mod: $modName db: %s\n", $modObj->getNameEntries()[0]->getOriginal());
 
@@ -304,7 +310,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Get the constellation that was just inserted. As of Dec 2015, the inserted and selected
          * constellation won't be identical due to unresolved treatment of place and maintenance data.
          */
-        $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        // $selectedConstellationObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        $selectedConstellationObj = $this->dbu->readConstellation($vhInfo['main_id'], $vhInfo['version']);
         $this->assertNotNull($selectedConstellationObj);
 
         /*
