@@ -173,7 +173,9 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Get the originally-entered human from date 
+     * Get the originally-entered human from date
+     *
+     * There intentionally is no setFromDateOriginal(). Instead call setFromDate() or setDate()
      *
      * @return string Original string given for the from date
      */
@@ -232,7 +234,9 @@ class SNACDate extends AbstractData {
     }
 
     /**
-     * Get the human-entered end date 
+     * Get the human-entered end date
+     *
+     * There intentionally is no setToDateOriginal(). Instead call setToDate().
      *
      * @return string Original string given for the to date
      */

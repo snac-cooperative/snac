@@ -1319,7 +1319,11 @@ class EACCPFParser {
                         $dateType = null;
                         if (isset($dateAtts["localType"]))
                             $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
-                            
+
+                        if (! isset($dateAtts['standardDate']))
+                        {
+                            $dateAtts['standardDate'] = '';   
+                        }
                         $date->setFromDate((string) $dateTag, 
                                            $dateAtts["standardDate"], 
                                            $dateType);
@@ -1348,6 +1352,10 @@ class EACCPFParser {
                         $dateType = null;
                         if (isset($dateAtts["localType"]))
                             $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                        if (! isset($dateAtts['standardDate']))
+                        {
+                            $dateAtts['standardDate'] = '';   
+                        }
                         $date->setToDate((string) $dateTag, 
                                 $dateAtts["standardDate"], 
                                 $dateType);

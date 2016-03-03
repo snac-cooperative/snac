@@ -17,12 +17,21 @@
 
 -- drop table if existss and sequences that may already exist, and create everything from scratch
 
-drop table if exists control;
+-- drop table if exists control;
+-- drop table if exists pre_snac_maintenance_history;
+
+drop table if exists appuser;
+drop table if exists appuser_role_link;
+drop table if exists biog_hist;
+drop table if exists convention_declaration;
 drop table if exists date_range;
 drop table if exists function;
-drop table if exists place_link;
-drop table if exists scm;
+drop table if exists gender;
+drop table if exists general_context;
 drop table if exists geo_place;
+drop table if exists language;
+drop table if exists legal_status;
+drop table if exists mandate;
 drop table if exists name;
 drop table if exists name_component;
 drop table if exists name_contributor;
@@ -30,30 +39,24 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
-drop table if exists pre_snac_maintenance_history;
+drop table if exists place_link;
 drop table if exists related_identity;
 drop table if exists related_resource;
 drop table if exists role;
-drop table if exists appuser;
-drop table if exists source;
-drop table if exists split_merge_history;
-drop table if exists subject;
-drop table if exists legal_status;
-drop table if exists appuser_role_link;
-drop table if exists version_history;
-drop table if exists language;
-drop table if exists biog_hist;
-drop table if exists convention_declaration;
-drop table if exists gender;
-drop table if exists mandate;
-drop table if exists general_context;
+drop table if exists scm;
 drop table if exists structure_genealogy;
+drop table if exists source;
+-- drop table if exists split_merge_history;
+drop table if exists subject;
+drop table if exists version_history;
 
-drop table if exists vocabulary_use;
+-- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
 
+-- Feb 19 2016 stop using type icstatus 
 -- drop data types after any tables using them have been dropped.
-drop type if exists icstatus;
+-- drop type if exists icstatus;
+
 drop sequence if exists id_seq;
 
 --
@@ -66,6 +69,8 @@ drop sequence if exists id_seq;
 -- keys. (And might break other foreign keys and sql queries as well.)
 CREATE SEQUENCE "id_seq";
 
+-- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
+--
 -- Jan 29 2016 Just as with table vocabulary above not being dropped, do not drop the vocabulary_id_seq.
 -- Really, all the vocabulary schema should be in a separate file because we initialize it separately, often.
 --
@@ -90,8 +95,15 @@ CREATE SEQUENCE "version_history_id_seq";
 
 -- A record must be inserted into version_history for every change of data or change of status.
 
+-- Feb 19 2016: Commenting out icstatus. Too difficult to manage for no benefits. Just use text.
 -- enum type for Identity Constellation status (thus type icstatus)
-create type icstatus as enum ('published', 'needs review', 'rejected', 'being edited', 'bulk ingest');
+-- create type icstatus as enum ('published', 'needs review', 'rejected', 'being edited', 'bulk ingest');
+
+
+-- By convention, limit status to certain values: published, needs review, rejected, being edited, bulk ingest, deleted
+--
+-- This list is expected to grow over time, but we probably shouldn't remove any items without careful
+-- testing.
 
 create table version_history (
         id int default nextval('version_history_id_seq'),
@@ -100,7 +112,7 @@ create table version_history (
         user_id int,                           -- fk to appuser.id
         role_id int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
         timestamp timestamp default now(),     -- now()
-        status icstatus,                       -- enum icstatus note: an enum is a data type like int or text
+        status text,                           -- a curated list of status terms.
         is_current boolean,                    -- most current published, optional field to enhance performance
         note text,                             -- checkin message
         primary key (id, main_id)
@@ -141,22 +153,27 @@ create table role (
         description text         -- description of this role
         );
 
-create table split_merge_history (
-    from_id             int, -- fk nrd.id, also version_history.main_id
-    to_id               int, -- fk nrd.id, also version_history.main_id
-    timestamp           timestamp default now()
-    );
+-- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the split/merge
+-- data has been moved to table version_history. Or somewhere else? Where?
+
+-- create table split_merge_history (
+--     from_id             int, -- fk nrd.id, also version_history.main_id
+--     to_id               int, -- fk nrd.id, also version_history.main_id
+--     timestamp           timestamp default now()
+--     );
 
 --
 -- Data tables
 --
 
--- Note1: table.version is always the same as some identity_constellation.version. This won't be commented in every table.
+-- Note1: table.version is always the same as nrd.version (constellation version). This won't be commented in
+-- every table.
 
 -- Note2: table.main_id is always the same as the related version_history.main_id. This won't be commented in
 -- every table.
 
--- Table of data 1:1 to the identity. The glue of the identity is table version_history.
+-- Table nrd is data with a 1:1 to the constellation. The glue of the constellation is table version_history,
+-- although in historical times (before versioning) table nrd was "the" central CPF table.
 
 -- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, main_id.
 -- Move to table: 
@@ -205,7 +222,7 @@ create table mandate (
     version       int not null,
     main_id       int not null, -- fk to version_history.main_id
     is_deleted    boolean default false,
-    text text                  -- the text term
+    text text                   -- the text term
 );
 
 create unique index mandate_idx1 on mandate(id,main_id,version);
@@ -248,22 +265,26 @@ create unique index biog_hist_idx2 on biog_hist(id,main_id,version);
 
 -- For authorizedForm or alternativeForm, see related table name_contributor.
 
+-- Feb 10 2016 These fields aren't being used, so I've removed them. The rationale for corporate_name is
+-- unclear, but there was a reason for this. There is no corporate_name equivalent in the NameEntry class.
+
+-- The other fields are name components, and that is being handled by table name_component.
+
+-- corporate_name   text,
+-- prefix           text,
+-- first            text,
+-- middle           text,
+-- last             text,
+-- suffix           text,
+-- additional_parts text,
+
 create table name (
     id               int default nextval('id_seq'),
     version          int not null,
     main_id          int not null,
     is_deleted       boolean default false,
-    language         int,   -- (fk to vocabulary.id) 
-    script_code       int,   -- fk to vocabulary.id
     preference_score float, -- Preference to use this name
     original         text,  -- actual name (in <part>)
-    corporate_name   text,
-    prefix           text,
-    first            text,
-    middle           text,
-    last             text,
-    suffix           text,
-    additional_parts text,
     primary key(id, version)
     );
 
@@ -361,6 +382,11 @@ create unique index name_contributor_idx1 on name_contributor(id,main_id,version
 -- There may be multiple date ranges for a single record in a related table. For example, multiple dates for a
 -- single occupation. However, the reciprocal is not true, therefore a linking table is not necessary.
 
+-- Note about originals: from_original, to_original: These are not CPF original exactly. These are values of
+-- <fromDate> and <toDate> which are themselves created by the XLST date parser. For this reason we have no
+-- singular original string such as "1901-1989" as can be found in name strings.
+
+
 create table date_range (
         id              int default nextval('id_seq'),
         version         int not null,
@@ -373,6 +399,7 @@ create table date_range (
         from_bc         boolean default false, -- just in case we ever run into a BC date
         from_not_before text,
         from_not_after  text,
+        from_original   text,                  -- from date tag value
         missing_to      boolean default false, -- to date is missing or unknown, only is_range=t
         to_date         text,
         to_type         int,                   -- (fk to vocabulary.id) birth, death, active
@@ -380,9 +407,9 @@ create table date_range (
         to_not_before   text,
         to_not_after    text,
         to_present      boolean,
-        original        text,                  -- the original string, if entered as a single field
+        to_original     text,                  -- the to date tag value 
         fk_table        text,                  -- table name of the related foreign table. Exists only as a backup
-        fk_id           int,                    -- table.id of the related record
+        fk_id           int,                   -- table.id of the related record
         primary         key(id, version)
         );
 
@@ -455,39 +482,42 @@ create unique index source_idx2 on source (id,version,main_id);
 --     primary key(id, version)
 --     );
 
+-- Feb 10 2016 Data in <control> is planned to be stored elsewhere, probably version_history.
+
 -- Some of the elements from <control>. Multiple control records per identity_constellation.  The XML
 -- accumulated these over time, but we have versioning, so we can add records with a version. This kind of
 -- begs the question what to do with multiple existing maintenance events.
 
-create table control (
-    id                  int default nextval('id_seq'),
-    version             int not null,
-    main_id             int not null,
-    is_deleted          boolean default false,
-    maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
-    maintenance_status  int,  -- (fk to vocabulary.id) 
-    conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
-    primary key(id, version)
-    );
+-- create table control (
+--     id                  int default nextval('id_seq'),
+--     version             int not null,
+--     main_id             int not null,
+--     is_deleted          boolean default false,
+--     maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
+--     maintenance_status  int,  -- (fk to vocabulary.id) 
+--     conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
+--     primary key(id, version)
+--     );
+-- create unique index control_idx1 on control(id,main_id,version);
 
-create unique index control_idx1 on control(id,main_id,version);
+-- Feb 10 2016. Table pre_snac_maintenance_history not used. I think all of the pre-merge history was thrown
+-- out. Also, history and status will be captured in table version_history.
 
 -- maintenanceHistory before the record was imported into the database?
 
-create table pre_snac_maintenance_history (
-    id                  int default nextval('id_seq'),
-    version             int not null,
-    main_id int not null,
-    is_deleted boolean default false,
-    modified_time       date,
-    event_type          int,  -- (fk to vocabulary.id)     
-    agent_type          int,  -- (fk to vocabulary.id)     
-    agent               text,
-    description         text,
-    primary key(id, version)
-    );
-
-create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,main_id,version);
+-- create table pre_snac_maintenance_history (
+--     id                  int default nextval('id_seq'),
+--     version             int not null,
+--     main_id int not null,
+--     is_deleted boolean default false,
+--     modified_time       date,
+--     event_type          int,  -- (fk to vocabulary.id)     
+--     agent_type          int,  -- (fk to vocabulary.id)     
+--     agent               text,
+--     description         text,
+--     primary key(id, version)
+--     );
+-- create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,main_id,version);
 
 -- Are all these controlled vocabulary-type of things really the same, and should be in a unified
 -- tagging/markup table? (occupation, function, nationality, subject
@@ -661,16 +691,18 @@ create table scm (
 
 -- Example values:
 --
--- <placeRole>Lieu de Paris</placeRole>
--- <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv5k4th--1kog8v18wrm89">02e arrondissement</placeEntry>
--- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
--- <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
+-- <place>
+--   <placeRole>Lieu de Paris</placeRole>
+--   <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv5k4th--1kog8v18wrm89">02e arrondissement</placeEntry>
+--   <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
+--   <placeEntry localType="nomLieu">7 rue Louis-le-Grand</placeEntry>
+-- </place>
+
 -- <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
 -- /data/merge/99166-w60v9g87.xml:            <placeEntry countryCode="FR"/>
 -- /data/merge/99166-w6r24hfw.xml:            <placeEntry>Pennsylvania--Chester County</placeEntry>
 -- /data/merge/99166-w6p37bxz.xml:            <placeEntry>Bermuda Islands, North Atlantic Ocean</placeEntry>
 -- /data/merge/99166-w6rr6xvw.xml:            <placeEntry>Australia</placeEntry>
-
 
 -- Feb 2 2016 table place unused. Stuff humans previously typed is in meta data related to place_link. First
 -- order data which needs place uses place_link to relate to geo_place authority records.
@@ -707,6 +739,10 @@ create table place_link (
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
         confirmed    boolean default false, -- true after confirmation by a human
         original     text,                  -- original as seen text from CPF import
+        type         integer,               -- fk to vocabulary.id from place@localType
+        role         integer,               -- fk to vocabulary.id, from cpf place/placeRole
+        note         text,
+        score        float,                 -- matching confidence score
         geo_place_id int,                   -- fk to geo_place.id, might be null
         primary key(id, version)
     );
@@ -717,15 +753,12 @@ create unique index place_link_idx1 on place_link(id,main_id,version);
 -- Meta data, authority data, system link tables
 -- 
 
--- Most (all?) of these fields should be coming out of a controlled vocabulary, probably geo names. Place
--- records link here via place_link.
+-- There could be a normalization problem here with administration_code and country_code. Those might best
+-- link to other records in this table, or to a controlled vocab/authority table.
+--
+-- Place records link here via place_link.
 
--- If we fully normalize place, then we don't want to repleat country_code (and administrative_code) In that
--- case, both country_code and administrative_code will be self related foreign keys to other records in
--- geo_place.
-
--- We don't know the max decimal places in geoname lat and lon, so save them as text. Also, we don't want
--- Postgres or php to truncate or round the numbers. We could investigate GIS data types.
+-- Based on research, lat and lon need no more than fix precision (10,7) numbers.
 
 -- This quotes Google Maps docs: From the Google Maps documentation: "To keep the storage space required for
 -- your table at a minimum, you can specify that the lat and lng attributes are floats of size (10,6)". This
@@ -739,7 +772,7 @@ create unique index place_link_idx1 on place_link(id,main_id,version);
 -- http://stackoverflow.com/questions/1196415/what-datatype-to-use-when-storing-latitude-and-longitude-data-in-sql-databases
 
 -- Contrary to the 6 decimal places some people suggest, this says explains why 7 decimal places are necessary
--- >41.7 degrees latitude
+-- above (greater than) 41.7 degrees latitude
 -- 
 -- https://groups.google.com/forum/#!topic/google-maps-api/uSi1-8U1GCE
 
@@ -748,32 +781,46 @@ create unique index place_link_idx1 on place_link(id,main_id,version);
 -- <lng>17.78194</lng>
 
 -- http://api.geonames.org/get?geonameId=6295630&username=demo&style=full
--- The forum post gives the id for "Earth".
--- Geonames id values appear to be integer. Note singular name of the element.
+--
 -- <geonameId>6295630</geonameId>
+--
+-- The forum post gives the id for "Earth".  Geonames id values appear to be integer. Note singular name of
+-- the element. However, the integer is not used for math, and we may want to join other authorities to this
+-- table. Therefore we store geoname_id as text.
 
 -- We have some geographic names from AnF's geographic vocab. They aren't geonames entries, but might still
--- fit in this table. Might.
+-- fit in this table. Might. localType is admin code or country code. vocabularySource seems to be a
+-- persistent id which could be geoname_id.
 --
 -- <placeEntry localType="voie" vocabularySource="d3nzbt224g-1wpyx0m9bwiae">louis-le-grand (rue)</placeEntry>
 
--- We don't need vocabulary source because that was a CPF hold over prior to using a geo authority.
--- vocabularySource text, -- AnF and Robbie's geonames search creates @vocabularySource attribute.
+-- For the time being we can get away without having vocabulary source in this table. It appears that AnF's
+-- use of @vocabularySource is an XML implementation of authority control applied to CPF <place> elements.
+-- AnF and Robbie's geonames search creates @vocabularySource attribute in place_link.
+
+-- The elements for admin_code are named:
+--
+-- <adminCode1/> <adminName1/> <adminCode2/> <adminName2/>
+--
+-- We will keep to that convention and name our field admin_code as opposed to the longer administrative_code
+-- or administration_code. Note that the GeoTerm object calls this administrationCode.
+
+-- Instead of a field for ID, lets just leap forward to assuming it will become a URI, so we name the field
+-- 'uri', and put the best identifier we have in that field.
 
 
 create table geo_place (
     id                  int default nextval('id_seq'),
-    version             int not null,  -- fk to version_history.id, sequence is unique foreign key
-    latitude            numeric(10,7), -- Fixed precision, perhaps more precise than we will need.
-    longitude           numeric(10,7), -- Fixed precision, perhaps more precise than we will need.
-    administrative_code text,          -- Should be an fk to geo_place.id for the encompassing administrative_code?
-    country_code        text,          -- Should be an fk to geo_place.id for the encompassing country_code?
-    name                text,          -- The (canonical?) geonames name of this place?
-    geoname_id          text,          -- Persistent id, integer, text, or URI. vocabularySource goes here.
-    primary key(id, version)
+    uri                 text,          -- URI/URL, geoname_id, or vocabularySource attribute
+    name                text,          -- The geonames name; we do not have alt names yet
+    latitude            numeric(10,7), -- Fixed precision
+    longitude           numeric(10,7), -- Fixed precision
+    admin_code          text,          -- later change to an fk to geo_place.id for the encompassing admin_code?
+    country_code        text,          -- later change to an geo_place.id for the encompassing country_code?
+    primary key(id)
     );
 
-create unique index geo_place_idx1 on geo_place (id,version);
+create unique index geo_place_idx1 on geo_place (id);
 
 -- Controlled Vocabulary. Will be superceded by multilingual controlled vocabularies for: occupation,
 -- function, topical subject, nationality, language, language code, gender, script, name component labels,
@@ -791,27 +838,22 @@ create unique index geo_place_idx1 on geo_place (id,version);
 -- is not the case. Our controlled vocabulary and authority data will often not be reloaded when the rest of
 -- the database is reset.
 
-create table if not exists vocabulary (
-        id          int primary key default nextval('vocabulary_id_seq'),
-        type        text,        -- Type of the vocab
-        value       text,        -- Value of the controlled vocab term
-        uri         text,        -- URI for this controlled vocab term, if it exists
-        description text         -- Textual description of this vocab term
-        );
+-- Feb 11 2016 This was removed and came back apparently via a bad git merge. See vocabulary_init.sql
+--
+
+-- create table if not exists vocabulary (
+--         id          int primary key default nextval('vocabulary_id_seq'),
+--         type        text,        -- Type of the vocab
+--         value       text,        -- Value of the controlled vocab term
+--         uri         text,        -- URI for this controlled vocab term, if it exists
+--         description text         -- Textual description of this vocab term
+--         );
 
 -- create unique index vocabulary_idx on vocabulary(id);
 -- create index vocabulary_type_idx on vocabulary(type);
 -- create index vocabulary_value_idx on vocabulary(value);
 
--- We need a way for the data to sanity check that vocabulary is being used in the correct context.  If a
--- given vocabulary value can be used in multiple contexts, we need a linking table.
-
-create table vocabulary_use (
-    id       int primary key default nextval('vocabulary_id_seq'),
-    vocab_id int,     -- fk to vocabulary.id
-    db_table    text, -- table in this database, table is a Pg reserved word
-    db_field    text  -- field in that table in this database
-);
+-- Moved table vocabulary_use to vocabulary_init.sql, just in case you're looking for it.
 
 -- Link constellation to original imported record id, aka extract record id. Probably does not need version
 -- since this is not user-editable, but we give everything id, version, and main_id for the sake of

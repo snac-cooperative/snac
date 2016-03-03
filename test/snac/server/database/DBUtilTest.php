@@ -31,7 +31,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     private $appUserID = null;
 
-    /*
+    /**
+     * Constructor
+     *
+     * Note about how things are different here in testing world vs normal execution:
+     * 
      * Any vars that aren't set up in the constructor won't be initialized, even though the other functions
      * appear to run in order. Initializing instance vars anywhere except the constructor does not initialize
      * for the whole class. phpunit behaves as though the class where being instantiated from scratch for each
@@ -43,7 +47,48 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        list($this->appUserID, $this->role) = $this->dbu->getAppUserInfo('system');
+        /*
+         * Feb 19 2016 Holy cow. This needed to be in DBUtil. This is being down there and here. Only
+         * deprecated code will use the values here.
+         *
+         * A flat list of the appuser.id and related role.id, both are numeric. 
+         */ 
+        list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
+    }
+
+    public function testFullCPF()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $firstJSON = $cObj->toJSON();
+        $vhInfo = $this->dbu->insertConstellation($cObj,
+                                                  $this->appUserID,
+                                                  $this->roleID,
+                                                  'bulk ingest',
+                                                  'bulk ingest of merged');
+
+        $this->assertNotNull($vhInfo);
+
+        // read from the db what we just wrote to the db
+        $readObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        $secondJSON = $readObj->toJSON();
+
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
+
+        /*
+         * Lacking a JSON diff, use a simple sanity check on the number of lines.
+         */ 
+
+        $this->assertEquals(831, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(980, substr_count( $secondJSON, "\n" ));
+
+        // There is no way the two JSON strings will ever be equal.
+        // $this->assertEquals($firstJSON, $secondJSON);
     }
 
     /*
@@ -63,17 +108,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
 
-    /*
-     * Can we get a random Constellation?
-     *
-     * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
-     *
-     * Maybe use @dataProvider to test various records from the db for function, subject, etc.
-     *
-     * Check expected output: $this->expectOutputString()
-     *
-     * 
-     */
     public function testDBUtilAll() 
     {
         $this->assertNotNull($this->dbu);
@@ -85,6 +119,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($this->appUserID);
     }
 
+    /*
+     * Can we get a random Constellation?
+     * Can we reverse the order of keys in $vhInfo?
+     * Can we get 100 constellations from the db?
+     * Can we delete 1 name from a multiname constellation?
+     * Can we undelete the name we just deleted?
+     *
+     * https://phpunit.de/manual/current/en/writing-tests-for-phpunit.html#writing-tests-for-phpunit.data-providers
+     *
+     * Maybe use @dataProvider to test various records from the db for function, subject, etc.
+     *
+     * Check expected output: $this->expectOutputString()
+     * 
+     */
     public function testDemoConstellation()
     {
         $vhInfo = $this->dbu->demoConstellation();
@@ -135,7 +183,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * 
          */  
         $newVersion = $this->dbu->setDeleted($this->appUserID,
-                                             $this->role,
+                                             $this->roleID,
                                              'bulk ingest',
                                              'delete a name, that is: set is_deleted to true',
                                              $mNObj->getID(), // constellation main_id
@@ -159,7 +207,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($preDeleteNameCount == ($postDeleteNameCount+1));
 
         $undelVersion = $this->dbu->clearDeleted($this->appUserID,
-                                             $this->role,
+                                             $this->roleID,
                                              'bulk ingest',
                                              'un-delete a name, that is: set is_deleted to false',
                                              $mNObj->getID(), // constellation main_id
@@ -196,11 +244,18 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $modVhInfo = $this->dbu->updatePrepare($unDObj,
                                                $this->appUserID,
-                                               $this->role,
+                                               $this->roleID,
                                                'needs review',
                                                'modified first alt name');
-        // printf("\n: test save name\n");
-        $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+        /*
+         * Feb 9 2016 This will save all names of the constellation, but that's fine for testing that saving
+         * name or names does not change the number of names associated with the constellation. When we
+         * implement AbstractData->$operation and setOperation() we can use that feature to only save a
+         * name. When that happens we will call setOperation() on the name, and send the entire constellation
+         * off for processing.
+         */ 
+        // $this->dbu->saveName($modVhInfo, $unDObj->getNameEntries()[0]);
+        $this->dbu->saveName($modVhInfo, $unDObj);
 
         $modObj = $this->dbu->selectConstellation($modVhInfo, $this->appUserID);
 
@@ -223,13 +278,25 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
         
+    /*
+     * Parse a file, and write to the db.
+     * Get the just-inserted constellation back from the db.
+     * Verify versoin and id of constellation read from db.
+     * If the constellation has a function, verify non-zero version and id for the function.
+     * Update the constellation, and quickly check version and id.
+     *
+     */
     public function testParseToDB()
     {
         // Parse a file, write the data into the db.
 
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
-        $vhInfo = $this->dbu->insertConstellation($constellationObj, $this->appUserID, $this->role, 'bulk ingest', 'bulk ingest of merged');
+        $vhInfo = $this->dbu->insertConstellation($constellationObj,
+                                                  $this->appUserID,
+                                                  $this->roleID,
+                                                  'bulk ingest',
+                                                  'machine ingest of hand-crafted, full CPF test record');
 
         $this->assertNotNull($vhInfo);
 
@@ -272,7 +339,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $existingMainId = $vhInfo['main_id'];
         $updatedVhInfo = $this->dbu->updateConstellation($constellationObj,
                                                          $this->appUserID,
-                                                         $this->role,
+                                                         $this->roleID,
                                                          'needs review',
                                                          'updating constellation for test',
                                                          $existingMainId);

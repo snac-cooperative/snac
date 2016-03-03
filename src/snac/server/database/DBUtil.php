@@ -26,10 +26,15 @@ namespace snac\server\database;
  * Functions populateFoo() create an object and add it to an existing object. These functions know about
  * column names from the database (but not how SQL managed to get the column names).
  *
- * Functions saveFoo() are broad wrappers that traverse objects save to the database via more granular
+ * Functions saveFoo() are broad wrappers that traverse objects and save to the database via more granular
  * functions.
  *
  * Need: high level "populate", "build", "read" equivalent to saveFoo() like readFoo().
+ *
+ * Need: lockConstellation()
+ *
+ * We need a way to select the unlocked, published version. Probably best to get the version number of the
+ * published, and call existing functions with the appropriate version number. 
  *
  * Functions buildFoo() create and return an object using data selected from the database
  *
@@ -59,6 +64,9 @@ class DBUtil
      */
     private $canDelete = null;
 
+    private $ourVersion = null;
+    private $haveVersion = false;
+
     /**
      * Database connector object
      *
@@ -67,6 +75,21 @@ class DBUtil
     private $db = null;
 
     /**
+     * Class var to hold the appUserID
+     * 
+     * @var integer $appUserID holds the numeric application user id, an integer.
+     */ 
+    private $appUserID = null;
+
+    /**
+     * Class var to hold the current user role
+     * 
+     * @var integer $roleID holds the integer role id, the id of the current user's primary role. Or in the
+     * future will be one of the user's roles chosen for the current task.
+     */ 
+    private $roleID = null;
+
+    /** 
      * Constructor
      *
      * The constructor for the DBUtil class.
@@ -75,21 +98,34 @@ class DBUtil
     {
         $this->db = new \snac\server\database\DatabaseConnector();
         $this->sql = new SQL($this->db);
-        $this->canDelete = array_fill_keys(array('name', 'name_component', 'name_contributor',
-                                                 'contributor', 'date_range', 'source',
-                                                 'source_link', 'control', 'pre_snac_maintenance_history',
-                                                 'occupation', 'place', 'function',
-                                                 'nationality', 'subject',
-                                                 'related_identity', 'related_resource'), 1);
+        /*
+         * DBUtil needs user id and role id for the current user. We may perform several reads and writes, and
+         * they will all be done using the same user info.
+         */ 
+        list($this->appUserID, $this->roleID) = $this->getAppUserInfo('system');
 
+        $this->canDelete = array_fill_keys(array('biog_hist', 'convention_declaration',
+                                                 'date_range', 'function',
+                                                 'gender', 'general_context',
+                                                 'language', 'legal_status',
+                                                 'mandate', 'name',
+                                                 'name_component', 'name_contributor',
+                                                 'nationality', 'occupation',
+                                                 'otherid', 'place_link',
+                                                 'related_identity', 'related_resource',
+                                                 'scm', 'structure_genealogy',
+                                                 'source', 'subject'), 1);
     }
+
 
     /**
      * Safely call object getID method
      *
-     * Call this so we don't have to sprinkle ternary ops in our code.
-     * Works for any class that has a getID() method. Intended to use with Language, Term, Source,
-     *
+     * Call this so we don't have to sprinkle ternary ops throughout our code. The alternative to using this
+     * is for every call to getID() from a Language, Term, or Source to be made in the same ternary that is
+     * inside this.  Works for any class that has a getID() method. Intended to use with Language, Term,
+     * Source,
+     * 
      * @param mixed $thing Some object that when not null has a getID() method.
      *
      * @return integer The record id of the thing
@@ -127,18 +163,22 @@ class DBUtil
     /**
      * Get user info
      *
+     * This is a short term helper function which will be removed once we have real user/account
+     * management. Call this as your first step after creating a new DBUtil object. See DBUtilTest.php for
+     * examples.
+     * 
      * Access some system-wide authentication and/or current user info.
      *
      * Hard coded for now to return id and role.
      *
-     * @param string $userid The text userid, sql table appuser.userid, used to get the appuser.id and the
-     * user's primary role.
+     * @param string $userString The text user identifier corresponds to sql table appuser.userid, used to get
+     * the appuser.id and the user's primary role.
      *
-     * @return string[] Associative list of user info data.
+     * @return integer[] A flat list of two integers, appuser.id and role.id.
      */
-    public function getAppUserInfo($userid)
+    public function getAppUserInfo($userString)
     {
-        $uInfo = $this->sql->getAppUserInfo($userid);
+        $uInfo = $this->sql->selectAppUserInfo($userString);
         return $uInfo;
     }
 
@@ -159,6 +199,52 @@ class DBUtil
     }
 
     /**
+     * Fill in a Constellation.
+     * 
+     * @param integer $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     *
+     * @return \snac\data\Constellation A PHP constellation object.
+     * 
+     */
+    public function selectConstellation($vhInfo, $appUserID)
+    {
+        $cObj = new \snac\data\Constellation();
+        /*
+         * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
+         * $vhInfo arg, but populateDate(), populateSource(), and populateLanguage() rely on the internals of
+         * the constellation object.
+         */ 
+        $this->populateNrd($vhInfo, $cObj);
+        $this->populateBiogHist($vhInfo, $cObj);
+        $this->populateDate($cObj); // "Constellation Date" in SQL these dates are linked to table nrd.
+        $this->populateSource($cObj); // "Constellation Source" in the order of statements here
+        $this->populateConventionDeclaration($vhInfo, $cObj);
+        $this->populateFunction($vhInfo, $cObj);
+        $this->populateGender($vhInfo, $cObj);
+        $this->populateGeneralContext($vhInfo, $cObj);
+        $this->populateLanguage($cObj, $cObj->getID()); // getID only works here because nrd.id=nrd.main_id
+        $this->populateLegalStatus($vhInfo, $cObj);
+        $this->populateMandate($vhInfo, $cObj);
+        $this->populateNameEntry($vhInfo, $cObj);
+        $this->populateNationality($vhInfo, $cObj);
+        $this->populateOccupation($vhInfo, $cObj);
+        $this->populateOtherRecordID($vhInfo, $cObj);
+        $this->populatePlace($vhInfo, $cObj, $cObj->getID()); // getID only works here because nrd.id=nrd.main_id
+        $this->populateStructureOrGenealogy($vhInfo, $cObj);
+        $this->populateSubject($vhInfo, $cObj);
+        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
+        /* 
+         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
+         */
+        return $cObj;
+    } // end selectConstellation
+
+    /**
+     * Populate Constellation properties
+     * 
+     * Populate the Constellation's 1:1 properties. An existing (empty) constellation is changed in place.
+     *
      * Get a constellation from the database
      *
      * Select a given constellation from the database based on version and main_id.
@@ -169,20 +255,6 @@ class DBUtil
      * |--------------------------------------------------------+------------------------|
      * | setArkID                                               | ark_id                 |
      * | setEntityType                                          | entity_type            |
-     * | setGender                                              | gender                 |
-     * | addLanguagesUsed($langObj)                             | language               |
-     * | n/a, use a language object                             | language_code          |
-     * | n/a, use a language object                             | script                 |
-     * | n/a, use a language object                             | script_code            |
-     * | setLanguageUsed('language_used_code', 'language_used') | language_used          |
-     * | setScriptUsed('script_used_code', 'script_used')       | script_used            |
-     * | setNationality                                         | nationality            |
-     * | addBiogHist                                            | biog_hist              |
-     * | addExistDates                                          | exist_date             |
-     * | setGeneralContext                                      | general_context        |
-     * | setStructureOrGenealogy                                | structure_or_genealogy |
-     * | setConventionDeclaration                               | convention_declaration |
-     * | setMandate                                             | mandate                |
      * |                                                        |                        |
      *
      * @param string[] $vhInfo associative list with keys 'version', 'main_id', 'id'. The version and main_id you
@@ -190,62 +262,57 @@ class DBUtil
      * the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
      *
-     * @param string $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
-     * @return \snac\data\Constellation A PHP constellation object.
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
-     */
-    public function selectConstellation($vhInfo, $appUserID)
+     */ 
+    private function populateNrd($vhInfo, &$cObj)
     {
-        $cObj = new \snac\data\Constellation();
-
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
         $cObj->setEntityType($this->populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
-        $this->populateDate($cObj); // exist dates for the constellation; in SQL these dates are linked to table nrd.
-        $this->populateLanguage($cObj);
-        $this->populateSource($cObj);
-        $this->populateBiogHist($vhInfo, $cObj);
-        $this->populateGender($vhInfo, $cObj);
-        $this->populateMandate($vhInfo, $cObj);
-        $this->populateConventionDeclaration($vhInfo, $cObj);
-        $this->populateStructureOrGenealogy($vhInfo, $cObj);
-        $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateNationality($vhInfo, $cObj);
-        $this->populateNameEntry($vhInfo, $cObj);
-        $this->populateOccupation($vhInfo, $cObj);
-        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
-        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
-        $this->populateFunction($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj);
-        $this->populateSubject($vhInfo, $cObj);
-        $this->populateLegalStatus($vhInfo, $cObj);
+        $this->populateMeta($cObj);
+    }
 
-        /*
-         * Other record id can be found in the SameAs class.
-         *
-         * Here $otherID is a SameAs object. SameAs->getType() is a Term object. SameAs->getURI() is a string.
-         * Term->getTerm() is a string. SameAs->getText() is a string.
-         */
-        $oridRows = $this->sql->selectOtherID($vhInfo);
+    /**
+     * Populate OtherRecordID
+     * 
+     * Populate the OtherRecordID object(s), and add it/them to an existing Constellation object.
+     *
+     * OtherRecordID is an array of SameAs \snac\data\SameAs[]
+     *
+     * Other record id can be found in the SameAs class.
+     *
+     * Here $otherID is a SameAs object. SameAs->setType() is a Term object and thus it takes populateTerm()
+     * as an argument. SameAs->setURI() takes a string. Term->setTerm() takes a string. SameAs->setText()
+     * takes a string.
+     *
+     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     *
+     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     *
+     */ 
+    private function populateOtherRecordID($vhInfo, &$cObj)
+    {
+        $oridRows = $this->sql->selectOtherID($vhInfo); 
         foreach ($oridRows as $rec)
         {
             $gObj = new \snac\data\SameAs();
             $gObj->setText($rec['text']); // the text of this sameAs or otherRecordID
             $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
             $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $this->populateMeta($gObj);
             $cObj->addOtherRecordID($gObj);
         }
-
-        /*
-         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
-         */
-        return $cObj;
-    } // end selectConstellation
+    }
 
     /**
+     * Populate Place object
+     * 
      * Build class Place objects for this constellation, selecting from the database. Place gets data from
      * place_link, scm, and geo_place.
      *
@@ -276,77 +343,83 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populatePlace($vhInfo, &$cObj)
+    private function populatePlace($vhInfo, &$cObj, $fkID)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectPlace($cObj->getID(), $vhInfo['version']);
+        $gRows = $this->sql->selectPlace($fkID, $vhInfo['version']);
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Place();
+            $gObj->setOriginal($rec['original']);
+            $gObj->setType($this->populateTerm($rec['type']));
+            $gObj->setRole($this->populateTerm($rec['role']));
+            $gObj->setGeoTerm($this->buildGeoTerm($rec['geo_place_id']));
+            $gObj->setScore($rec['score']);
+            $gObj->setConfirmed($rec['confirmed']);
+            $gObj->setNote($rec['note']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $metaObj = $this->buildMeta($rec['id'], $vhInfo['version']);
-            $gObj->setSource($metaObj);
-
+            $this->populateMeta($gObj);
             /*
-             * You might be looking for GeoTerm. We don't create GeoTerm objects because php Place is
-             * denormalized compared to the database.
+             * Feb 11 2016 At some point, probably in the last few days, setSource() disappeared from class
+             * Place. This is probably due to all AbstractData getting SNACControlMetadata (SCM) properties.
+             * 
+             * $metaObj = $this->buildMeta($rec['id'], $vhInfo['version']);
+             * $gObj->setSource($metaObj);
+             *
+             * A whole raft of place related properties have been moved from Place to GeoTerm.
              */
-            $geo = selectGeo($rec['geo_place_id']);
-            $gObj->setLatitude($geo['latitude']);
-            $gObj->setLongitude($geo['longitude']);
-            $gObj->setAdministrationCode($geo['administrative_code']);
-            $gObj->setCountryCode($geo['country_code']);
-            $gObj->setName($geo['name']);
-            $gObj->setGetNameId($geo['geoname_id']);
-
+            $this->populateDate($gObj);
             $cObj->addPlace($gObj);
         }
     }
 
     /**
-     * Return a snac meta object. Perhaps populateMeta() will replace this when we have a consistent API
-     * for adding snac meta to all objects. See the discussion in populateSource(). That would be setSource() for all objects, or equivalent.
+     * Populate the SNACControlMetadata (SCM)
+     *
+     * Read the SCM from the database and add it to the object in &$cObj.
      *
      * Don't be confused by setSource() that uses a Source object and setSource() that uses a
      * SNACControlMetadata object.
      *
      * The convention for related things like date, place, and meta is args ($id, $version) so we're
-     * following that.h
+     * following that.
      *
      * @param integer $tid Table id, aka row id akd object id
      *
      * @param integer $version Constellation version number
      *
      */
-    public function buildMeta($tid, $version)
+    private function populateMeta(&$cObj)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        if( $rec = $this->sql->selectMeta($tid, $version))
+        if( $recList = $this->sql->selectMeta($cObj->getID(), $cObj->getVersion()))
         {
-            $gObj = new \snac\data\SNACControlMetadata();
-            $gObj->setSubCitation($rec['sub_citation']);
-            $gObj->setSourceData($rec['source_data']);
-            $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
-            $gObj->setNote($rec['note']);
-            $gObj->setDBInfo($rec['version'], $rec['id']);
-            /*
-             * Prior to creating the Language object, language was strange and not fully functional. Now
-             * language is a related record that links back here via our record id as a foreign key.
-             */
-            $this->populateLanguage($gObj);
-            /*
-             * populateSource() will call setCitation() for SNACControlMetadata objects
-             */
-            $this->populateSource($rec['id'], $gObj);
-            return $gObj;
+            foreach($recList as $rec)
+            {
+                $gObj = new \snac\data\SNACControlMetadata();
+                $gObj->setSubCitation($rec['sub_citation']);
+                $gObj->setSourceData($rec['source_data']);
+                $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
+                $gObj->setNote($rec['note']);
+                $gObj->setDBInfo($rec['version'], $rec['id']);
+                /*
+                 * Prior to creating the Language object, language was strange and not fully functional. Now
+                 * language is a related record that links back here via our record id as a foreign key.
+                 */ 
+                $this->populateLanguage($gObj, $rec['id']);
+                /*
+                 * populateSource() will call setCitation() for SNACControlMetadata objects
+                 */ 
+                $this->populateSource($gObj); // ?Why was there: $rec['id'], 
+                $cObj->addSNACControlMetadata($gObj);
+            }
         }
-        return null;
     }
-
+    
 
     /**
      * Populate LegalStatus
@@ -371,19 +444,16 @@ class DBUtil
             $gObj = new \snac\data\LegalStatus();
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            /*
-             * Must call $gOjb->setDBInfo() before calling populateDate()
-             */
+            $this->populateMeta($gObj);
             $cObj->addLegalStatus($gObj);
         }
     }
 
 
-
-
     /**
+     * Populate the Subject object(s)
      *
-     * Populate the Subject object(s), and add it/them to an existing Constellation object.
+     * Select subjects from db, create objects, add them to an existing Constellation.
      *
      * Extends AbstracteTermData
      *
@@ -403,17 +473,14 @@ class DBUtil
             $gObj = new \snac\data\Subject();
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            /*
-             * Must call $gOjb->setDBInfo() before calling populateDate()
-             */
-            $this->populateDate($gObj);
+            $this->populateMeta($gObj);
             $cObj->addSubject($gObj);
         }
     }
 
 
-    /**
-     * nameEntry objects
+    /** 
+     * Populate nameEntry objects
      *
      * test with: scripts/get_constellation_demo.php 2 10
      *
@@ -439,7 +506,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateNameEntry($vhInfo, &$cObj)
+    private function populateNameEntry($vhInfo, &$cObj)
     {
         $neRows = $this->sql->selectName($vhInfo);
         foreach ($neRows as $oneName)
@@ -451,8 +518,13 @@ class DBUtil
              * $neObj->setScriptCode($oneName['script_code']);
              */
             $neObj->setPreferenceScore($oneName['preference_score']);
-            $neObj->setDBInfo($oneName['version'], $oneName['id']);
-            $this->populateLanguage($neObj);
+            $neObj->setDBInfo($oneName['version'], $oneName['id']); 
+            $this->populateMeta($neObj);
+            $this->populateLanguage($neObj, $oneName['id']);
+            /*
+             * This line works because $oneName['id'] == $neObj->getID(). Both are record id, not
+             * constellation id. Both are non-null when reading from the database.
+             */ 
             $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
             foreach ($cRows as $contrib)
             {
@@ -468,6 +540,8 @@ class DBUtil
     }
 
     /**
+     * Populate dates
+     * 
      * Select date range(s) from db, foreach create SNACDate object, add to the object $cObj, which may be any
      * kind of object that extends AbstractData.
      *
@@ -479,7 +553,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateDate(&$cObj)
+    private function populateDate(&$cObj)
     {
         /*
          * Sanity check the number of dates allowed for this object $cObj. If zero, then immediately
@@ -499,17 +573,20 @@ class DBUtil
 
         foreach ($dateRows as $singleDate)
         {
+            
+
             $dateObj = new \snac\data\SNACDate();
             $dateObj->setRange($singleDate['is_range']);
-            $dateObj->setFromDate($singleDate['from_date'],
+            $dateObj->setFromDate($singleDate['from_original'],
                                   $singleDate['from_date'],
-                                  $this->populateTerm($dateRows['from_type']));
+                                  $this->populateTerm($singleDate['from_type'])); // $type
             $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
-            $dateObj->setToDate($singleDate['to_date'],
+            $dateObj->setToDate($singleDate['to_original'],
                                 $singleDate['to_date'],
-                                $this->populateTerm($dateRows['to_type']));
+                                $this->populateTerm($singleDate['to_type']));
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
+            $this->populateMeta($dateObj);
 
             $cObj->addDate($dateObj);
             if ($breakAfterOne)
@@ -520,11 +597,14 @@ class DBUtil
     }
 
     /**
-     * Create Term
+     * Populate Term
      *
      * Return a vocabulary term object selected from database using vocabulary id key. \src\snac\data\Term
      * which is used by many objects for controlled vocabulary "terms". We use "term" broadly in the sense of
      * an object that meets all needs of the the user interface.
+     *
+     * Most of the populate* functions build an object and add it to another existing object. This returns the
+     * object, so it might better be called buildTerm() since we have already used that nameing convention.
      *
      * You might be searching for new Term(). This is the only place we create Terms here.
      *
@@ -540,12 +620,74 @@ class DBUtil
         $newObj->setTerm($row['value']);
         $newObj->setURI($row['uri']);
         $newObj->setDescription($row['description']);
+        /*
+         * Class Term has no SNACControlMetadata
+         */ 
         return $newObj;
     }
 
     /**
-     * Select convention declaration from the db, and build an appropriate object which is added to
-     * Constellation.
+     * Build a GeoTerm
+     *
+     * Return a GeoTerm object selected from database. Outside code can (and will, sometimes) call this, but
+     * primarily this is used to build GeoTerm objects as part of Place in a Constellation.
+     *
+     * @param integer $termID A unique integer record id from the database table geo_place.
+     *
+     * @return \snac\data\GeoTerm $gObj A GeoTerm object.
+     */ 
+    public function buildGeoTerm($termID)
+    {
+        $gObj = new \snac\data\GeoTerm();
+        $rec = $this->sql->selectGeoTerm($termID);
+        $gObj->setID($rec['id']);
+        $gObj->setURI($rec['uri']);
+        $gObj->setName($rec['name']);
+        $gObj->setLatitude($rec['latitude']);
+        $gObj->setLongitude($rec['longitude']);
+        $gObj->setAdministrationCode($rec['admin_code']);
+        $gObj->setCountryCode($rec['country_code']);
+        /*
+         * Class GeoTerm has no SNACControlMetadata
+         */ 
+        return $gObj;
+    }
+
+    /**
+     * Save a GeoTerm
+     *
+     * Insert a GeoTerm object into the database. This is a public function that outside code is expected to
+     * call.
+     *
+     * @param \snac\data\GeoTerm $term A GeoTerm object
+     *
+     * @param integer $version A version number, defaults to 1
+     *
+     * The ID may be null or the empty string in which case the database will assign a new value.
+     */ 
+    public function saveGeoTerm(\snac\data\GeoTerm $term, $version)
+    {
+        if (! $version)
+        {
+            $version = 1;
+        }
+        $id = insertGeo($term->getID(),
+                        $version,
+                        $term->getURI(),
+                        $term->getName(),
+                        $term->getLatitude(),
+                        $term->getLongitude(),
+                        $term->getAdministrationCode(),
+                        $term->getCountryCode());
+        return $id;
+    }
+
+
+
+    /**
+     * Select (populate) ConventionDeclaration
+     *
+     * Build an appropriate object which is added to Constellation.
      *
      * Extends AbstractTextData.
      *
@@ -556,7 +698,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateConventionDeclaration($vhInfo, &$cObj)
+    private function populateConventionDeclaration($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectConventionDeclaration($vhInfo);
         foreach ($rows as $item)
@@ -564,58 +706,8 @@ class DBUtil
             $newObj = new \snac\data\ConventionDeclaration();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($newObj);
             $cObj->addConventionDeclaration($newObj);
-        }
-    }
-
-    /**
-     * Insert convention declaration
-     *
-     * Extends AbstractTextData.
-     *
-     * Note: $cObj passed by reference and changed in place.
-     *
-     * @param integer[] $vhInfo list with keys version, main_id.
-     *
-     * @param $cObj snac\data\Constellation object
-     *
-     */
-    public function saveConventionDeclaration($vhInfo, $cObj)
-    {
-        if ($gList = $cObj->getConventionDeclarations())
-        {
-            foreach ($gList as $term)
-            {
-                $this->sql->insertConventionDeclaration($vhInfo,
-                                            $term->getID(),
-                                            $term->getText());
-            }
-        }
-    }
-
-
-    /**
-     * Select StructureOrGenealogy from database, create object, add the object to Constellation. Support
-     * multiples per Constalltion.
-     *
-     * Extends AbstractTextData.
-     *
-     * Note: $cObj passed by reference and changed in place.
-     *
-     * @param integer[] $vhInfo list with keys version, main_id.
-     *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
-     */
-    public function populateStructureOrGenealogy($vhInfo, &$cObj)
-    {
-        $rows = $this->sql->selectStructureOrGenealogy($vhInfo);
-        foreach ($rows as $item)
-        {
-            $newObj = new \snac\data\StructureOrGenealogy();
-            $newObj->setText($item['text']);
-            $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateDate($newObj);
-            $cObj->addStructureOrGenealogy($newObj);
         }
     }
 
@@ -628,23 +720,50 @@ class DBUtil
      * @param integer[] $vhInfo list with keys version, main_id.
      *
      * @param $cObj snac\data\Constellation object
-     */
-    public function saveStructureOrGenealogy($vhInfo, $cObj)
+     */ 
+    private function saveStructureOrGenealogy($vhInfo, $cObj)
     {
         if ($gList = $cObj->getStructureOrGenealogies())
         {
             foreach ($gList as $item)
             {
-                $this->sql->insertStructureOrGenealogy($vhInfo,
-                                           $item->getID(),
-                                           $item->getText());
+                $rid = $this->sql->insertStructureOrGenealogy($vhInfo,
+                                                              $item->getID(),
+                                                              $item->getText());
+                $this->saveMeta($vhInfo, $item, 'structure_genealogy', $rid);
             }
         }
     }
 
     /**
-     * Select GeneralContext from database, create object, add the object to Constellation. Support multiples
-     * per constellation.
+     * Select StructureOrGenealogy from database
+     *
+     * Create object, add the object to Constellation
+     *
+     * Extends AbstractTextData.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */ 
+    private function populateStructureOrGenealogy($vhInfo, &$cObj)
+    {
+        $rows = $this->sql->selectStructureOrGenealogy($vhInfo);
+        foreach ($rows as $item)
+        {
+            $newObj = new \snac\data\StructureOrGenealogy();
+            $newObj->setText($item['text']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($newObj);
+            $cObj->addStructureOrGenealogy($newObj);
+        }
+    }
+
+
+    /**
+     * Select GeneralContext from database
+     *
+     * Create object, add the object to Constellation. Support multiples per constellation.
      *
      * Extends AbstractTextData
      *
@@ -654,15 +773,15 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateGeneralContext($vhInfo, &$cObj)
+    private function populateGeneralContext($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectGeneralContext($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\GeneralContext();
-            $newObj->setText($item['term']);
+            $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateDate($newObj);
+            $this->populateMeta($newObj);
             $cObj->addGeneralContext($newObj);
         }
     }
@@ -676,15 +795,16 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    public function saveGeneralContext($vhInfo, $cObj)
+    private function saveGeneralContext($vhInfo, $cObj)
     {
         if ($gList = $cObj->getGeneralContexts())
         {
             foreach ($gList as $item)
             {
-                $this->sql->insertGeneralContext($vhInfo,
-                                                 $item->getID(),
-                                                 $item->getText());
+                $rid = $this->sql->insertGeneralContext($vhInfo,
+                                                        $item->getID(),
+                                                        $item->getText());
+                $this->saveMeta($vhInfo, $item, 'general_context', $rid);
             }
         }
     }
@@ -701,7 +821,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateNationality($vhInfo, &$cObj)
+    private function populateNationality($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectNationality($vhInfo);
         foreach ($rows as $item)
@@ -709,7 +829,7 @@ class DBUtil
             $newObj = new \snac\data\Nationality();
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateDate($newObj);
+            $this->populateMeta($newObj);
             $cObj->addNationality($newObj);
         }
     }
@@ -721,15 +841,16 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    public function saveNationality($vhInfo, $cObj)
+    private function saveNationality($vhInfo, $cObj)
     {
         if ($gList = $cObj->getNationalities())
         {
             foreach ($gList as $item)
             {
-                $this->sql->insertNationality($vhInfo,
-                                  $item->getID(),
-                                  $this->thingID($item->getTerm()));
+                $rid = $this->sql->insertNationality($vhInfo,
+                                                     $item->getID(),
+                                                     $this->thingID($item->getTerm()));
+                $this->saveMeta($vhInfo, $item, 'nationality', $rid);
             }
         }
     }
@@ -748,9 +869,14 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateLanguage(&$cObj)
+    private function populateLanguage(&$cObj, $fkID)
     {
-        $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
+        // getID() is the constellation ID. In reality, these tables are related on table.id
+        // $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
+
+        // This reflects reality table.id=language.fk_id
+        $rows = $this->sql->selectLanguage($fkID, $cObj->getVersion());
+
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\Language();
@@ -759,8 +885,11 @@ class DBUtil
             $newObj->setVocabularySource($item['vocabulary_source']);
             $newObj->setNote($item['note']);
             $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($newObj);
             $class = get_class($cObj);
-            // SNACControlMetadata
+            /*
+             * Class specific method for setting/adding a language.
+             */
             if ($class == 'snac\data\SNACControlMetadata' ||
                 $class == 'snac\data\Source' ||
                 $class == 'snac\data\BiogHist')
@@ -803,7 +932,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateSource(&$cObj)
+    private function populateSource(&$cObj)
     {
         $rows = $this->sql->selectSource($cObj->getID(), $cObj->getVersion());
         foreach ($rows as $rec)
@@ -814,10 +943,11 @@ class DBUtil
             $newObj->setURI($rec['uri']);
             $newObj->setType($this->populateTerm($rec['type_id']));
             $newObj->setDBInfo($rec['version'], $rec['id']);
+            $this->populateMeta($newObj);
             /*
              * setLanguage() is a Language object.
              */
-            $this->populateLanguage($newObj);
+            $this->populateLanguage($newObj, $rec['id']);
 
             $class = get_class($cObj);
             if ($class == 'snac\data\Constellation')
@@ -838,10 +968,37 @@ class DBUtil
         }
     }
 
+    /**
+     * Save nrd
+     *
+     * Unlike other insert functions, insertNrd() does not return the id value. The id for nrd is the
+     * constellation id, aka $vhInfo['main_id'] aka main_id aka version_history.main_id, and as always,
+     * $id->getID() once the Constellation has been saved to the database. The $vhInfo arg is created by
+     * accessing the database, so it is guaranteed to be "new" or at least, up-to-date.
+     *
+     * The entityType may be null because toArray() can't tell the differnce between an empty class and a
+     * non-empty class, leading to empty classes littering the JSON with empty json. To avoid that, we use
+     * null for an empty class, and test with the ternary operator.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveNrd($vhInfo, $cObj)
+    {
+        $this->sql->insertNrd($vhInfo,
+                              $cObj->getArk(),
+                              $this->thingID($cObj->getEntityType()));
+        /*
+         * Table nrd is special, and the id is main_id.
+         */ 
+        $this->saveMeta($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+    }
 
     /**
-     * Select mandate from database, create object, add the object to Constellation. Support multiples
-     * per constellation.
+     * Select mandate from database
+     *
+     * Create object, add the object to Constellation. Support multiples per constellation.
      *
      * Extends AbstractTextData
      *
@@ -851,7 +1008,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateMandate($vhInfo, &$cObj)
+    private function populateMandate($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectMandate($vhInfo);
         foreach ($rows as $item)
@@ -859,8 +1016,7 @@ class DBUtil
             $newObj = new \snac\data\Mandate();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            // Dunno where date came from. Class mandate seems to have no dates (does not setMaxDate)
-            // $this->populateDate($newObj);
+            $this->populateMeta($newObj);
             $cObj->addMandate($newObj);
         }
     }
@@ -874,30 +1030,493 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    public function saveMandate($vhInfo, $cObj)
+    private function saveMandate($vhInfo, $cObj)
     {
         if ($gList = $cObj->getMandates())
         {
             foreach ($gList as $term)
             {
-                $mid = $this->sql->insertMandate($vhInfo,
+                $rid = $this->sql->insertMandate($vhInfo,
                                                  $term->getID(),
                                                  $term->getText());
+                $this->saveMeta($vhInfo, $term, 'mandate', $rid);
             }
         }
     }
 
     /**
-     * Select gender from database, create object, add the object to Constellation. Support multiples
-     * per constellation.
+     * Save conventionDeclaration to database
+     *
+     * Extends AbstractTextData
+     * 
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveConventionDeclaration($vhInfo, $cObj)
+    {
+        if ($gList = $cObj->getConventionDeclarations())
+        {
+            foreach ($gList as $term)
+            {
+                $rid = $this->sql->insertConventionDeclaration($vhInfo,
+                                                               $term->getID(),
+                                                               $term->getText());
+                $this->saveMeta($vhInfo, $term, 'convention_declaration', $rid);
+            }
+        }
+    }
+
+    /**
+     * Save gender data
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveGender($vhInfo, $cObj)
+    {
+        foreach ($cObj->getGenders() as $fdata)
+        {
+            $rid = $this->sql->insertGender($vhInfo,
+                                            $fdata->getID(),
+                                            $this->thingID($fdata->getTerm()));
+            $this->saveMeta($vhInfo, $fdata, 'gender', $rid);
+        }
+    }
+
+    /**
+     * Save date list of constellation
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveConstellationDate($vhInfo, $cObj)
+    {
+        foreach ($cObj->getDateList() as $date)
+        {
+            $this->saveDate($vhInfo, $date, 'nrd', $vhInfo['main_id']);
+            /*
+             * We don't saveMeta() after save functions, only after insert functions. saveDate() calls
+             * saveMeta() internally.
+             */ 
+        }
+    }
+
+    /**
+     * Save date object to database
+     * 
+     * Save a date to the database, relating it to the table and foreign key id in $tableName and $tableID.
+     *
+     * $date is a SNACDate object.
+     * getFromType() must be a Term object
+     * getToType() must be a Term object
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     *
+     * @param \snac\data\SNACDate $date A single date object
+     *
+     * @param string $tableName Name of the related table
+     *
+     * @param integer $tableID Record id of the related table
+     *
+     * What does it mean to have a date with no fromType? Could be an unparseable date, I guess.
+     */
+    private function saveDate($vhInfo, $date, $tableName,  $tableID)
+    {
+        $rid = $this->sql->insertDate($vhInfo,
+                                      $date->getID(),
+                                      $this->db->boolToPg($date->getIsRange()),
+                                      $date->getFromDate(),
+                                      $this->thingID($date->getFromType()),
+                                      $this->db->boolToPg($date->getFromBc()),
+                                      $date->getFromRange()['notBefore'],
+                                      $date->getFromRange()['notAfter'],
+                                      $date->getFromDateOriginal(),
+                                      $date->getToDate(),
+                                      $this->thingID($date->getToType()),
+                                      $this->db->boolToPg($date->getToBc()),
+                                      $date->getToRange()['notBefore'],
+                                      $date->getToRange()['notAfter'],
+                                      $date->getToDateOriginal(),
+                                      $tableName,
+                                      $tableID);
+        /*
+         * We decided that DBUtil doesn't know (much) about dates as first order data, so write the SCM if
+         * there is any. If no SCM, nothing will happen in saveMeta().
+         */
+        $this->saveMeta($vhInfo, $date, 'date_range', $rid);
+    }
+
+
+    /**
+     * Save language
+     *
+     * Constellation getLanguage() returns a list of Language objects. That's very reasonable in this
+     * context.
+     *
+     * Typical confusion over table.main_id and table.id. What is necessary here is the table.id values which
+     * is not part of the constellation. It is managed here in DBUtil via a return value from an insert
+     * function, and passed to saveLanguage() as $fkID.
+     * 
+     * Old (wrong) $vhInfo['main_id'] New: $fkID
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param snac\data\Constellation $cObj snac\data\Constellation object
+     *
+     * @param string $table Table name of the related table
+     *
+     * @param integer $fkID Foreign key row id aka table.id from the related table.
+     */
+    private function saveLanguage($vhInfo, $cObj, $table, $fkID)
+    {
+        /*
+         * Classes are not consistent in whether language is returned as a list or scalar, so we need to
+         * change them all to a list. If only one language, then we make a list of one element. If we didn't
+         * do this, we would have to copy/paste the insertLanguage() call or otherwise wrap it. Class
+         * Constellation already has a wrapper function getLanguage() which calls the "read" function
+         * getLanguagesUsed(). That wrapper function was created so this code didn't have to do that.
+         */ 
+        $langList = array();
+        $scalarOrList = $cObj->getLanguage();
+        if (! $scalarOrList)
+        {
+            // Be lazy and return from the middle of the function if there is no language info.
+            return;
+        }
+        elseif (is_object($scalarOrList))
+        {
+            array_push($langList, $scalarOrList);
+        }
+        else
+        {
+            $langList = $scalarOrList;
+        }
+        
+        foreach ($langList as $lang)
+        {
+            $rid = $this->sql->insertLanguage($vhInfo,
+                                              $lang->getID(),
+                                              $this->thingID($lang->getLanguage()),
+                                              $this->thingID($lang->getScript()),
+                                              $lang->getVocabularySource(),
+                                              $lang->getNote(),
+                                              $table,
+                                              $fkID);
+            /*
+             * Try saving meta data, even though some language objects are not first order data and have no
+             * meta data. If there is no meta data, nothing will happen.
+             */ 
+            $this->saveMeta($vhInfo, $lang, 'language', $rid);
+        }
+    }
+
+    /**
+     * Save otherRecordID
+     *
+     * Other record id can be found in the SameAs class.
+     *
+     * Here $otherID is a SameAs object. SameAs->getType() is a Term object. SameAs->getURI() is a string.
+     * Term->getTerm() is a string. SameAs->getText() is a string.
+     * 
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveOtherRecordID($vhInfo, $cObj)
+    {
+        foreach ($cObj->getOtherRecordIDs() as $otherID)
+        {
+            if ($otherID->getType()->getTerm() != 'MergedRecord' and
+                $otherID->getType()->getTerm() != 'viafID')
+            {
+                $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
+                               $otherID->getType()->getTerm(),
+                               $otherID->getURI());
+                // TODO: Throw warning or log
+            }
+            $rid = $this->sql->insertOtherID($vhInfo,
+                                             $otherID->getID(),
+                                             $otherID->getText(),
+                                             $this->thingID($otherID->getType()),
+                                             $otherID->getURI());
+            $this->saveMeta($vhInfo, $otherID, 'otherid', $rid);
+        }
+    }
+
+    /**
+     * Save Source of constellation
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveConstellationSource($vhInfo, $cObj)
+    {
+        foreach ($cObj->getSources() as $fdata)
+        {
+            $this->saveSource($vhInfo, $fdata, 'nrd', $vhInfo['main_id']);
+            /*
+             * No saveMeta() here, because saveSource() calls saveMeta() internally. This particular Source
+             * may be first order data, but that is not a concern of DBUtil.
+             */ 
+        }
+    }
+
+    /**
+     * Save legalStatus
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveLegalStatus($vhInfo, $cObj)
+    {
+        foreach ($cObj->getLegalStatuses() as $fdata)
+        {
+            $rid = $this->sql->insertLegalStatus($vhInfo,
+                                                 $fdata->getID(),
+                                                 $this->thingID($fdata->getTerm()));
+            $this->saveMeta($vhInfo, $fdata, 'legal_status', $rid);
+        }
+    }
+
+    /**
+     * Save Occupation
+     *
+     * Insert an occupation. If this is a new occupation, or a new constellation we will get a new
+     * occupation id which we save in $occID and use for the related dates.
+     *
+     * fdata is foreach data. Just a notation that the generic variable is for local use in this loop. 
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveOccupation($vhInfo, $cObj)
+    {
+        foreach ($cObj->getOccupations() as $fdata)
+        {
+            $occID = $this->sql->insertOccupation($vhInfo,
+                                                  $fdata->getID(),
+                                                  $this->thingID($fdata->getTerm()),
+                                                  $fdata->getVocabularySource(),
+                                                  $fdata->getNote());
+            $this->saveMeta($vhInfo, $fdata, 'occupation', $occID);
+            foreach ($fdata->getDateList() as $date)
+            {
+                $this->saveDate($vhInfo, $date, 'occupation', $occID);
+            }
+        }
+    }
+
+    /**
+     * Save Function
+     *
+     *  | php function        | sql               | cpf                             |
+     *  |---------------------+-------------------+---------------------------------|
+     *  | getType             | function_type     | function/@localType             |
+     *  | getTerm             | function_id       | function/term                   |
+     *  | getVocabularySource | vocabulary_source | function/term/@vocabularySource |
+     *  | getNote             | note              | function/descriptiveNote        |
+     *  | getDateList         | table date_range  | function/dateRange              |
+     *
+     *
+     * I considered adding keys for the second arg, but is not clear that using them for sanity checking
+     * would gain anything. The low level code would become more fragile, and would break "separation of
+     * concerns". The sanity check would require that the low level code have knowledge about the
+     * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
+     * the database. Any sanity check should happen up here.
+     *
+     *
+     * Functions have a type (Term object) derived from function/@localType. The function/term is a Term object.
+     *
+     * prototype: insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
+     *
+     * Example files: /data/extract/anf/FRAN_NP_050744.xml
+     * 
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveFunction($vhInfo, $cObj)
+    {
+        foreach ($cObj->getFunctions() as $fdata)
+        {
+            $funID = $this->sql->insertFunction($vhInfo,
+                                                $fdata->getID(), // record id
+                                                $this->thingID($fdata->getType()), // function type, aka localType, Term object
+                                                $fdata->getVocabularySource(),
+                                                $fdata->getNote(),
+                                                $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
+            $this->saveMeta($vhInfo, $fdata, 'function', $funID);
+            /*
+             * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
+             * is still a list that we can foreach on without testing for null and count>0. All of which
+             * should go without saying.
+             */ 
+            foreach ($fdata->getDateList() as $date)
+            {
+                $this->saveDate($vhInfo, $date, 'function', $funID);
+            }
+        }
+    }
+
+
+    /**
+     * Save subject
+     *
+     * Save subject term
+     *
+     * getID() is the subject object record id.
+     *
+     * $this->thingID($term->getTerm()) more robust form of $term->getTerm()->getID() is the vocabulary id
+     * of the Term object inside subject.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveSubject($vhInfo, $cObj)
+    {
+        foreach ($cObj->getSubjects() as $term)
+        {
+            $rid = $this->sql->insertSubject($vhInfo, 
+                                             $term->getID(),
+                                             $this->thingID($term->getTerm())); 
+            $this->saveMeta($vhInfo, $term, 'subject', $rid);
+        }
+        
+    }
+    
+    
+    /**
+     * Save Relation aka  ConstellationRelation
+     *
+     * "ConstellationRelation" has had many names: cpfRelation related_resource, relation,
+     * related_identity. We're attempting to make that more consistent, although the class is
+     * ConstellationRelation and the SQL table is related_identity.
+     * 
+     * ignored: we know our own id value: sourceConstellation, // id fk
+     * ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
+     * ignored: always 'simple', altType, cpfRelation@xlink:type vocab source_type, .type
+     * 
+     * | placeholder | php                 | what                                                       | sql               |
+     * |-------------+---------------------+------------------------------------------------------------+-------------------|
+     * |           1 | $vhInfo['version']  |                                                            | version           |
+     * |           2 | $vhInfo['main_id']  |                                                            | main_id           |
+     * |           3 | targetConstellation | id fk to version_history                                   | .related_id       |
+     * |           4 | targetArkID         | ark                                                        | .related_ark      |
+     * |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type, Term object     | .role             |
+     * |           6 | type                | cpfRelation@xlink:arcrole vocab relation_type, Term object | .arcrole          |
+     * |           7 | cpfRelationType     | AnF only, so far                                           | .relation_type    |
+     * |           8 | content             | cpfRelation/relationEntry, usually a name                  | .relation_entry   |
+     * |           9 | dates               | cpfRelation/date (or dateRange)                            | .date             |
+     * |          10 | note                | cpfRelation/descriptiveNote                                | .descriptive_note |
+     * 
+     * New convention: when there are dates, make them the second arg. Final arg is a list of all the
+     * scalar values that will eventually be passed to execute() in the SQL function. This convention
+     * is already in use in a couple of places, but needs to be done for some existing functions.
+     * 
+     * Ignore ConstellationRelation->$altType. It was always "simple".
+     * 
+     * altType is cpfRelationType, at least in the CPF.
+     *
+     * Don't save the source info, because we are the source and have already saved the source data as
+     * part of ourself.
+     *
+     * getRelations() returns \snac\data\ConstellationRelation[]
+     * $fdata is \snac\data\ConstellationRelation
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveRelation($vhInfo, $cObj)
+    {
+        foreach ($cObj->getRelations() as $fdata)
+        {
+            /* 
+             * $cpfRelTypeID = null;
+             * if ($cr = $fdata->getcpfRelationType())
+             * {
+             *     $cpfRelTypeID = $cr->getID();
+             * }
+             */
+            $relID = $this->sql->insertRelation($vhInfo,
+                                                $fdata->getTargetConstellation(),
+                                                $fdata->getTargetArkID(),
+                                                $this->thingID($fdata->getTargetEntityType()),
+                                                $this->thingID($fdata->getType()),
+                                                $this->thingID($fdata->getcpfRelationType()), // $cpfRelTypeID,
+                                                $fdata->getContent(),
+                                                $fdata->getNote(),
+                                                $fdata->getID());
+            $this->saveMeta($vhInfo, $fdata, 'related_identity', $relID);
+            foreach ($fdata->getDateList() as $date)
+            {
+                $this->saveDate($vhInfo, $date, 'related_identity', $relID);
+            }
+        }
+    }
+
+    /**
+     * Save resourceRelation
+     * 
+     * ignored: $this->linkType, @xlink:type always 'simple', vocab source_type, .type
+     * 
+     * | placeholder | php                 | what, CPF                                        | sql                  |
+     * |-------------+---------------------+--------------------------------------------------+----------------------|
+     * |           1 | $vhInfo['version']  |                                                  | .version             |
+     * |           2 | $vhInfo['main_id']  |                                                  | .main_id             |
+     * |           3 | documentType        | @xlink:role id fk to vocab document_type         | .role                |
+     * |           4 | entryType           | relationEntry@localType, AnF, always 'archival'? | .relation_entry_type |
+     * |           5 | link                | @xlink:href                                      | .href                |
+     * |           6 | role                | @xlink:arcrole vocab document_role               | .arcrole             |
+     * |           7 | content             | relationEntry, usually a name                    | .relation_entry      |
+     * |           8 | source              | objectXMLWrap                                    | .object_xml_wrap     |
+     * |           9 | note                | descriptiveNote                                  | .descriptive_note    |
+     * 
+     * Final arg is a list of all the scalar values that will eventually be passed to execute() in the SQL
+     * function. This convention is already in use in a couple of places, but needs to be done for some
+     * existing functions.  
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     * 
+     * @param $cObj snac\data\Constellation object
+     */
+    private function saveResourceRelation($vhInfo, $cObj)
+    {
+        foreach ($cObj->getResourceRelations() as $fdata)
+        {
+            $rid = $this->sql->insertResourceRelation($vhInfo,
+                                                      $fdata->getDocumentType()->getID(), // xlink:role
+                                                      $this->thingID($fdata->getEntryType()), // relationEntry@localType
+                                                      $fdata->getLink(), // xlink:href
+                                                      $this->thingID($fdata->getRole()), // xlink:arcrole
+                                                      $fdata->getContent(), // relationEntry
+                                                      $fdata->getSource(), // objectXMLWrap
+                                                      $fdata->getNote(), // descriptiveNote
+                                                      $fdata->getID());
+            $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
+        }
+    }
+
+    /**
+     * Select gender from database
+     *
+     * Create object, add the object to Constellation. Support multiples per constellation.
      *
      * Note: $cObj passed by reference and changed in place.
      *
      * @param integer[] $vhInfo list with keys version, main_id.
-     *
+     * 
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateGender($vhInfo, &$cObj)
+    private function populateGender($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectGender($vhInfo);
         foreach ($rows as $item)
@@ -905,23 +1524,24 @@ class DBUtil
             $newObj = new \snac\data\Gender();
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateDate($newObj);
+            $this->populateMeta($newObj);
             $cObj->addGender($newObj);
         }
     }
 
     /**
-     * Select GeneralContext from database, create object, add the object to Constellation. Support multiples
-     * per constellation.  Get BiogHist from database, create relevant object and add to the constellation
-     * object passed as an argument.
+     * Select GeneralContext from database
      *
+     * Create object, add the object to Constellation. Support multiples per constellation.  Get BiogHist from
+     * database, create relevant object and add to the constellation object passed as an argument.
+     * 
      * Note: $cObj passed by reference and changed in place.
      *
      * @param integer[] $vhInfo list with keys version, main_id.
-     *
+     * 
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateBiogHist($vhInfo, &$cObj)
+    private function populateBiogHist($vhInfo, &$cObj)
     {
         $rows = $this->sql->selectBiogHist($vhInfo);
         foreach ($rows as $item)
@@ -929,20 +1549,22 @@ class DBUtil
             $newObj = new \snac\data\BiogHist();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateLanguage($newObj);
-            $this->populateDate($newObj);
+            $this->populateMeta($newObj);
+            $this->populateLanguage($newObj, $item['id']);
             $cObj->addBiogHist($newObj);
         }
     }
 
 
     /**
-     * Get Occupation from the db, populate occupation object(s), add to Constellation object passed by
+     * Get Occupation from the db
+     *
+     * Populate occupation object(s), add to Constellation object passed by
      * reference.
      *
      * Need to add date range
      * Need to add vocabulary source
-     *
+     * 
      * | php                 | sql               |
      * |---------------------+-------------------|
      * | setDBInfo           | id                |
@@ -954,9 +1576,9 @@ class DBUtil
      *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
-     *
+     * 
      */
-    public function populateOccupation($vhInfo, &$cObj)
+    private function populateOccupation($vhInfo, &$cObj)
     {
         $occRows = $this->sql->selectOccupation($vhInfo);
         foreach ($occRows as $oneOcc)
@@ -966,13 +1588,16 @@ class DBUtil
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
             $occObj->setDBInfo($oneOcc['version'], $oneOcc['id']);
+            $this->populateMeta($occObj);
             $this->populateDate($occObj);
             $cObj->addOccupation($occObj);
         }
     }
 
     /**
-     * Populate relation object(s), and add to existing Constellation object.
+     * Populate relation object(s)
+     *
+     * Select from db then add to existing Constellation object.
      *
      * test with: scripts/get_constellation_demo.php 2 10
      *
@@ -993,6 +1618,12 @@ class DBUtil
      *
      * cpfRelation/@type cpfRelation@xlink:type
      *
+     * Note:
+     * setsourceConstellation() is parent::getID()
+     * setSourceArkID() is parent::getARK()
+     *
+     * Unclear why those methods (and their properties) exist, but fill them in regardless.
+     *
      * php: $altType setAltType() getAltType()
      *
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
@@ -1001,39 +1632,25 @@ class DBUtil
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    public function populateRelation($vhInfo, &$cObj)
+    private function populateRelation($vhInfo, &$cObj)
     {
         $relRows = $this->sql->selectRelation($vhInfo);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
-            /*
-             * setsourceConstellation() is parent::getID()
-             * setSourceArkID() is parent::getARK()
-             *
-             * Unclear why those methods (and their properties) exist, but fill them in regardless.
-             */
             $relatedObj->setSourceConstellation($cObj->getID());
             $relatedObj->setSourceArkID($cObj->getARK());
-
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
             $relatedObj->setTargetEntityType($this->populateTerm($oneRel['role']));
             $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
-            /*
-             * Not using setAltType(). It is never used. See ConstellationRelation.php
-             */
+            /* Not using setAltType(). It is never used. See ConstellationRelation.php */ 
             $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
-
-            /*
-             * Deprecated
-             * $relatedObj->setDates($oneRel['date']);
-             */
+            $this->populateMeta($relatedObj);
             $this->populateDate($relatedObj);
-
             $cObj->addRelation($relatedObj);
         }
     }
@@ -1062,7 +1679,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateResourceRelation($vhInfo, &$cObj)
+    private function populateResourceRelation($vhInfo, &$cObj)
     {
         $rrRows = $this->sql->selectResourceRelation($vhInfo);
         foreach ($rrRows as $oneRes)
@@ -1070,29 +1687,29 @@ class DBUtil
             $rrObj = new \snac\data\ResourceRelation();
             $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
             $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
-            /*
-             * setLinkType() Not used. Always "simple" See ResourceRelation.php
-             */
+            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */ 
             $rrObj->setLink($oneRes['href']);
             $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
-            $this->populateDate($rrObj);
+            $this->populateMeta($rrObj);
             $cObj->addResourceRelation($rrObj);
         }
     }
 
 
     /**
-     * Populate the SNACFunction object(s), and add it/them to an existing Constellation object.
+     * Populate the SNACFunction object(s)
+     *
+     * Select, create object, then add to an existing Constellation object.
      *
      * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    public function populateFunction($vhInfo, &$cObj)
+    private function populateFunction($vhInfo, &$cObj)
     {
         $funcRows = $this->sql->selectFunction($vhInfo);
         foreach ($funcRows as $oneFunc)
@@ -1103,26 +1720,132 @@ class DBUtil
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
             $fObj->setDBInfo($oneFunc['version'], $oneFunc['id']);
+            $this->populateMeta($fObj);
 
             /*
              * Must call $fOjb->setDBInfo() before calling populateDate()
+             *
+             * Why is $fDate assigned but never used?
              */
-            $fDate = populateDate($fObj);
+            $fDate = $this->populateDate($fObj);
             $cObj->addFunction($fObj);
         }
     }
 
+    private function saveVersionHistory($vhInfo, $status, $note, $appUserID, $roleID)
+    {
+        insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note);
+    }
+
     /**
-     * Write a PHP Constellation object to the database.
+     * Write a constellation to the database. 
+     *
+     * Both insert and update are "write". Insert is "do not yet have a version number." Update is "have
+     * version number."
+     * 
+     * Use option 2.
+     * 
+     * Two options:
+     * 1) get a new version number every time.
+     * 2) reuse an existing version number from this session
+     *
+     * Only making them when necessary makes the data records easier to read as a version number is the same
+     * across an entire set of inserts.
+     *
+     */
+    public function writeConstellation($cObj, $status, $note)
+    {
+        if (! $this->haveVersion)
+        {
+            $this->ourVersion = $this->sql->selectNewVersion();
+            $this->haveVersion = true;
+        }
+        if ($cObj->getOperation() == $OPERATION_INSERT)
+        {
+            // Have a version, but might need a new main_id
+            $mainID = $this->sql->selectNewID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+        }
+        elseif ($cObj->getOperation() == $OPERATION_UPDATE)
+        {
+            $mainID = $cObj->getID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreWrite($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+        }
+        elseif ($cObj->getOperation() == $OPERATION_DELETE)
+        {
+            $mainID = $cObj->getID();
+            $vhInfo = array('version' => $this->ourVersion,
+                            'main_id' => $mainID);
+            $this->coreDelete($vhInfo, $cObj, $status, $note); // Needs to write a version_history record
+        }
+    }
+
+    /**
+     * Middle layer write constellation to db (new)
+     *
+     * We already have a version and main_id, but must write a version_history record. We got the new version
+     * from selectNewVersion() and the new main_id from selectNewID().
+     *
+     * 
+     */ 
+    private function coreWrite($vhInfo, $cObj, $status, $note)
+    {
+        $this->saveVersionHistory($vhInfo, $status, $note, $this->appUserID, $this->roleID);
+        $this->saveBiogHist($vhInfo, $id);
+        $this->saveConstellationDate($vhInfo, $id);
+        $this->saveConstellationSource($vhInfo, $id);
+        $this->saveConventionDeclaration($vhInfo, $id);
+        $this->saveFunction($vhInfo, $id);
+        $this->saveGender($vhInfo, $id);
+        $this->saveGeneralContext($vhInfo, $id);
+        $this->saveLegalStatus($vhInfo, $id);
+        $this->saveLanguage($vhInfo, $id, 'nrd', $vhInfo['main_id']);
+        $this->saveMandate($vhInfo, $id);
+        $this->saveName($vhInfo, $id);
+        $this->saveNationality($vhInfo, $id);
+        $this->saveNrd($vhInfo, $id);
+        $this->saveOccupation($vhInfo, $id);
+        $this->saveOtherRecordID($vhInfo, $id);
+        $this->savePlace($vhInfo, $id, 'nrd', $vhInfo['main_id']);
+        $this->saveStructureOrGenealogy($vhInfo, $id);
+        $this->saveSubject($vhInfo, $id);
+        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
+        $this->saveResourceRelation($vhInfo, $id);
+        return $vhInfo;
+    }
+
+    /**
+     * Read a constellation from the database.
+     *
+     * This is intended to be the public exposed interface function to read data from the db. Perhaps not
+     * necessary. Currently just a wrapper for selectConstellation(). The word "select" is reserved for SQL
+     * functions, so selectConstellation() really should be renamed.
+     *
+     * If we need to do any read related bookkeeping, do it here, and not in the wrapped code.
+     *
+     */
+    public function readConstellation($mainID)
+    {
+        $cObj = $this->selectConstellation($vhInfo, $this->appUserID);
+        return $cObj;
+    }
+
+
+    /**
+     * Insert a constellation
+     * 
+     * Public exposed function to write a new PHP Constellation object to the database. 
      *
      * This is a new constellation, and will get new version and main_id values. Calls saveConstellation() to
      * call a sql function to do the actual writing.
      *
-     * @param \snac\data\Constellation $id A PHP Constellation object.
+     * @param integer $appUserID The user appuser.id value from the db. 
      *
-     * @param string $userid The user's appuser.id value from the db.
-     *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1133,24 +1856,25 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      *
      */
-
-    public function insertConstellation($id, $userid, $role, $icstatus, $note)
+    public function insertConstellation($id, $appUserID, $roleID, $icstatus, $note)
     {
-        $vhInfo = $this->sql->insertVersionHistory($userid, $role, $icstatus, $note);
-        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $vhInfo = $this->sql->insertVersionHistory($appUserID, $roleID, $icstatus, $note);
+        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
         return $vhInfo;
     } // end insertConstellation
 
 
     /**
-     * Update a php constellation that is already in the database. Calls saveConstellation() to call lower
-     * level code to update the database.
-     *
+     * Update a constellation
+     * 
+     * Public, exposed function to update a php constellation that is already in the database. Calls
+     * saveConstellation() to call lower level code to update the database.
+     *  
      * @param \snac\data\Constellation $id A PHP Constellation object.
      *
-     * @param string $userid The user's appuser.id value from the db.
+     * @param integer $appUserID The user's appuser.id value from the db. 
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1163,11 +1887,11 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      *
      */
-    public function updateConstellation($id, $userid, $role, $icstatus, $note, $main_id)
+    public function updateConstellation($id, $appUserID, $roleID, $icstatus, $note, $main_id)
     {
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $vhInfo = array('version' => $newVersion, 'main_id' => $main_id);
-        $this->saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo);
+        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
         return $vhInfo;
     }
 
@@ -1186,9 +1910,9 @@ class DBUtil
      * @param string $relatedTable Name of the related table for this place.
      *
      */
-    private function savePlace($vhInfo, $id, $relatedTable)
+    private function savePlace($vhInfo, $cObj, $relatedTable, $fkID)
     {
-        if ($placeList = $id->getPlaces())
+        if ($placeList = $cObj->getPlaces())
         {
             foreach($placeList as $gObj)
             {
@@ -1197,22 +1921,43 @@ class DBUtil
                                                $this->db->boolToPg($gObj->getConfirmed()),
                                                $gObj->getOriginal(),
                                                $this->thingID($gObj->getGeoTerm()),
+                                               $this->thingID($gObj->getType()),
+                                               $this->thingID($gObj->getRole()),
+                                               $gObj->getNote(),
+                                               $gObj->getScore(),
                                                $relatedTable,
-                                               $id->GetID());
-                if ($metaObjList = $gObj->getSNACControlMetadata())
+                                               $fkID);
+                $this->saveMeta($vhInfo, $gObj, 'place_link', $pid);
+                if ($dObj = $gObj->getDateList())
                 {
-                    $this->saveMeta($vhInfo, $metaObjList, 'place_link', $pid);
+                    foreach ($ndata->getDateList() as $date)
+                    {
+                        $this->saveDate($vhInfo, $date, 'place_link', $pid);
+                    }
                 }
             }
         }
     }
-
+    
     /**
+     * Save SNACControlMetadata to database
      *
-     */
-    private function saveMeta($vhInfo, $metaObjList, $fkTable, $fkID)
+     * Might have been called saveSCM().
+     *
+     * Save the metadata to table scm in the database. Saved record is related to table $fkTable, and record id $fkID.
+     *
+     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     *
+     * @param \snac\data\SNACControlMetadata[] $metaObjList List of SNAC control meta data
+     *
+     * @param string $fkTable Name of the table to which this meta data relates
+     *
+     * @param integer $fkID Record id aka table.id of the record to which this meta data relates.
+     *
+     */ 
+    private function saveMeta($vhInfo, $gObj, $fkTable, $fkID)
     {
-        if (! $metaObjList)
+        if (! $metaObjList = $gObj->getSNACControlMetadata())
         {
             return;
         }
@@ -1234,17 +1979,7 @@ class DBUtil
                                              $metaObj->getNote(),
                                              $fkTable,
                                              $fkID);
-            if ($lang = $metaObj->getLanguage())
-            {
-                $this->sql->insertLanguage($vhInfo,
-                                           $lang->getID(),
-                                           $this->thingID($lang->getLanguage()),
-                                           $this->thingID($lang->getScript()),
-                                           $lang->getVocabularySource(),
-                                           $lang->getNote(),
-                                           'scm',
-                                           $metaID);
-            }
+            $this->saveLanguage($vhInfo, $metaObj, 'scm', $metaID);
             $citeID = null;
             if ($cite = $metaObj->getCitation())
             {
@@ -1263,7 +1998,17 @@ class DBUtil
      * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
      * validation.
      *
-     * Source is first order data. It is a non-authority description of a source. Each source is not a
+     * SNACControlMetadata is part of a source, so calling saveMeta() here would recursion until there was a
+     * null SCM. I'm not sure we an call Source first order data, but I'm also not sure DBUtil should care. If
+     * the upstream code puts an SCM on an object, we can write the SCM to the db.
+     *
+     * Or if we have one case of Source as first order, we need an additional argument to control that. Source
+     * extends AbstractData, so source can have a SNACControlMetadata object.
+     *
+     * Note: saveSource() is a primitive called by saveConstellationSource() which probably does need
+     * SNACControlMetadata.
+     *
+     * Is Source first order data? It is a non-authority description of a source. Each source is not a
      * shared authority and is singular to the record to which it is attached. That is: each Source is
      * related back to a record. There can be multiple sources all related back to a single record, as
      * is the case here in Constellation (nrd).
@@ -1286,25 +2031,22 @@ class DBUtil
                                                     $fkTable,
                                                     $fkID);
         /*
-         * Source only has a single language.
-         */
-        if ($lang = $gObj->getLanguage())
-        {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $this->thingID($lang->getLanguage()),
-                                       $this->thingID($lang->getScript()),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'source',
-                                       $genericRecordID);
-         }
+         * Some non-first-order Source objects won't have meta data, but that is not really our concern.
+         */  
+        $this->saveMeta($vhInfo, $gObj, 'source', $genericRecordID);
+        $this->saveLanguage($vhInfo, $gObj, 'source', $genericRecordID);
     }
 
 
     /**
-     * Private function. Update a php constellation that is already in the database. This is called from
-     * insertConstellation() or updateConstellation().
+     * Update a php constellation
+     *
+     * This core function writes a constellation to the database. Insert and update both do SQL insert, so
+     * there is not difference at this level. However, the calling code will do different things prior. Prior
+     * to insert, the calling code gets a new version_history record. Prior to update, the alling code gets a
+     * new version number for an existing version_history record.
+     *
+     * This is called from insertConstellation() or updateConstellation().
      *
      * The id->getID() has been populated by the calling code, whether this is new or exists in the
      * database. This is due to constellation id values coming out of table version_history, unlike all other
@@ -1318,9 +2060,9 @@ class DBUtil
      *
      * @param \snac\data\Constellation $id A PHP Constellation object.
      *
-     * @param string $userid The user's appuser.id value from the db.
+     * @param integer $appUserID The user's appuser.id value from the db. 
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
      *
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
@@ -1333,343 +2075,28 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      *
      */
-    private function saveConstellation($id, $userid, $role, $icstatus, $note, $vhInfo)
+    private function saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo)
     {
-        /*
-         * Unlike other insert functions, insertNrd() does not return the id value. The id for nrd is the
-         * constellation id, aka $vhInfo['main_id'] aka main_id aka version_history.main_id, and as always,
-         * $id->getID() once the Constellation has been saved to the database. The $vhInfo arg is created by
-         * accessing the database, so it is guaranteed to be "new" or at least, up-to-date.
-         *
-         * The entityType may be null because toArray() can't tell the differnce between an empty class and a
-         * non-empty class, leading to empty classes littering the JSON with empty json. To avoid that, we use
-         * null for an empty class, and test with the ternary operator.
-         */
-        $this->sql->insertNrd($vhInfo,
-                              $id->getArk(),
-                              $id->getEntityType() == null ? null : $id->getEntityType()->getID());
-
-        $this->savePlace($vhInfo, $id, 'nrd');
+        $this->saveBiogHist($vhInfo, $id);
+        $this->saveConstellationDate($vhInfo, $id);
+        $this->saveConstellationSource($vhInfo, $id);
         $this->saveConventionDeclaration($vhInfo, $id);
-        $this->saveNationality($vhInfo, $id);
+        $this->saveFunction($vhInfo, $id);
+        $this->saveGender($vhInfo, $id);
         $this->saveGeneralContext($vhInfo, $id);
-        $this->saveStructureOrGenealogy($vhInfo, $id);
+        $this->saveLegalStatus($vhInfo, $id);
+        $this->saveLanguage($vhInfo, $id, 'nrd', $vhInfo['main_id']);
         $this->saveMandate($vhInfo, $id);
-
-        foreach ($id->getGenders() as $fdata)
-        {
-            $this->sql->insertGender($vhInfo,
-                                     $fdata->getID(),
-                                     $this->thingID($fdata->getTerm()));
-        }
-
-        foreach ($id->getDateList() as $date)
-        {
-            /*
-             * $date is a SNACDate object.
-             * getFromType() must be a Term object
-             * getToType() must be a Term object
-             *
-             * What does it mean to have a date with no fromType? Could be an unparseable date, I guess.
-             */
-            $this->sql->insertDate($vhInfo,
-                                   $date->getID(),
-                                   $this->db->boolToPg($date->getIsRange()),
-                                   $date->getFromDate(),
-                                   $date->getFromType()==null?null:$date->getFromType()->getID(),
-                                   $this->db->boolToPg($date->getFromBc()),
-                                   $date->getFromRange()['notBefore'],
-                                   $date->getFromRange()['notAfter'],
-                                   $date->getToDate(),
-                                   $date->getToType()==null?null:$date->getToType()->getID(),
-                                   $this->db->boolToPg($date->getToBc()),
-                                   $date->getToRange()['notBefore'],
-                                   $date->getToRange()['notAfter'],
-                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                   'nrd',
-                                   $vhInfo['main_id']);
-        }
-
-        /*
-         * Constellation getLanguage() returns a list of Language objects. That's very reasonable in this
-         * context.
-         */
-        foreach ($id->getLanguage() as $lang)
-        {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $this->thingID($lang->getLanguage()),
-                                       $this->thingID($lang->getScript()),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'nrd',
-                                       $vhInfo['main_id']);
-        }
-
-        foreach ($id->getBiogHistList() as $biogHist)
-        {
-            $this->saveBiogHist($vhInfo, $biogHist);
-        }
-
-        /*
-         * Other record id can be found in the SameAs class.
-         *
-         * Here $otherID is a SameAs object. SameAs->getType() is a Term object. SameAs->getURI() is a string.
-         * Term->getTerm() is a string. SameAs->getText() is a string.
-         */
-        foreach ($id->getOtherRecordIDs() as $otherID)
-        {
-            if ($otherID->getType()->getTerm() != 'MergedRecord' and
-                $otherID->getType()->getTerm() != 'viafID')
-            {
-                $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
-                               $otherID->getType()->getTerm(),
-                               $otherID->getURI());
-                // TODO: Throw warning or log
-            }
-            $this->sql->insertOtherID($vhInfo,
-                                      $otherID->getID(),
-                                      $otherID->getText(),
-                                      $this->thingID($otherID->getType()),
-                                      $otherID->getURI());
-        }
-
-        /*
-         * Constellation name entry data is already an array of name entry data.
-         * getUseDates() returns SNACDate[] (An array of SNACDate objects.)
-         */
-        foreach ($id->getNameEntries() as $ndata)
-        {
-            $this->saveName($vhInfo, $ndata);
-        }
-
-        foreach ($id->getSources() as $fdata)
-        {
-            $this->saveSource($vhInfo, $fdata, 'nrd', $vhInfo['main_id']);
-        }
-
-        foreach ($id->getLegalStatuses() as $fdata)
-        {
-            $this->sql->insertLegalStatus($vhInfo,
-                                          $fdata->getID(),
-                                          $this->thingID($fdata->getTerm()));
-        }
-
-        /*
-         * Insert an occupation. If this is a new occupation, or a new constellation we will get a new
-         * occupation id which we save in $occID and use for the related dates.
-         *
-         * fdata is foreach data. Just a notation that the generic variable is for local use in this loop.
-         */
-        foreach ($id->getOccupations() as $fdata)
-        {
-            $occID = $this->sql->insertOccupation($vhInfo,
-                                                  $fdata->getID(),
-                                                  $this->thingID($fdata->getTerm()),
-                                                  $fdata->getVocabularySource(),
-                                                  $fdata->getNote());
-            foreach ($fdata->getDateList() as $date)
-            {
-                $date_fk = $this->sql->insertDate($vhInfo,
-                                                  $date->getID(),
-                                                  $this->db->boolToPg($date->getIsRange()),
-                                                  $date->getFromDate(),
-                                                  $this->thingID($date->getFromType()),
-                                                  $this->db->boolToPg($date->getFromBC()),
-                                                  $date->getFromRange()['notBefore'],
-                                                  $date->getFromRange()['notAfter'],
-                                                  $date->getToDate(),
-                                                  $this->thingID($date->getToType()),
-                                                  $this->db->boolToPg($date->getToBC()),
-                                                  $date->getToRange()['notBefore'],
-                                                  $date->getToRange()['notAfter'],
-                                                  $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                                  'occupation',
-                                                  $occID);
-            }
-        }
-
-
-        /*
-         *  | php function        | sql               | cpf                             |
-         *  |---------------------+-------------------+---------------------------------|
-         *  | getType             | function_type     | function/@localType             |
-         *  | getTerm             | function_id       | function/term                   |
-         *  | getVocabularySource | vocabulary_source | function/term/@vocabularySource |
-         *  | getNote             | note              | function/descriptiveNote        |
-         *  | getDateList         | table date_range  | function/dateRange              |
-         *
-         *
-         * I considered adding keys for the second arg, but is not clear that using them for sanity checking
-         * would gain anything. The low level code would become more fragile, and would break "separation of
-         * concerns". The sanity check would require that the low level code have knowledge about the
-         * structure of things that aren't really low level. Remember: SQL code only knows how to put data in
-         * the database. Any sanity check should happen up here.
-         *
-         *
-         * Functions have a type (Term object) derived from function/@localType. The function/term is a Term object.
-         *
-         * prototype: insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
-         *
-         * Example files: /data/extract/anf/FRAN_NP_050744.xml
-         *
-         */
-
-        foreach ($id->getFunctions() as $fdata)
-        {
-            $funID = $this->sql->insertFunction($vhInfo,
-                                                $fdata->getID(), // record id
-                                                $this->thingID($fdata->getType()), // function type, aka localType, Term object
-                                                $fdata->getVocabularySource(),
-                                                $fdata->getNote(),
-                                                $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
-            /*
-             * getDateList() always returns a list of SNACDate objects. If no dates then list is empty,
-             * but it is still a list that we can foreach on without testing for null and count>0.
-             */
-            foreach ($fdata->getDateList() as $date)
-            {
-                $date_fk = $this->sql->insertDate($vhInfo,
-                                                  $date->getID(),
-                                                  $this->db->boolToPg($date->getIsRange()),
-                                                  $date->getFromDate(),
-                                                  $date->getFromType()->getID(),
-                                                  $this->db->boolToPg($date->getFromBc()),
-                                                  $date->getFromRange()['notBefore'],
-                                                  $date->getFromRange()['notAfter'],
-                                                  $date->getToDate(),
-                                                  $date->getToType()==null?null:$date->getToType()->getID(),
-                                                  $this->db->boolToPg($date->getToBc()),
-                                                  $date->getToRange()['notBefore'],
-                                                  $date->getToRange()['notAfter'],
-                                                  $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                                  'function',
-                                                  $funID);
-            }
-        }
-
-        /*
-         * Save subject term
-         *
-         * getID() is the subject object record id.
-         *
-         * $this->thingID($term->getTerm()) more robust form of $term->getTerm()->getID() is the vocabulary id
-         * of the Term object inside subject.
-         */
-        foreach ($id->getSubjects() as $term)
-        {
-            $this->sql->insertSubject($vhInfo,
-                                      $term->getID(),
-                                      $this->thingID($term->getTerm()));
-        }
-
-
-        /*
-          ConstellationRelation
-
-          ignored: we know our own id value: sourceConstellation, // id fk
-          ignored: we know our own ark: sourceArkID,  // ark why are we repeating this?
-          ignored: always 'simple', altType, cpfRelation@xlink:type vocab source_type, .type
-
-          | placeholder | php                 | what                                                       | sql               |
-          |-------------+---------------------+------------------------------------------------------------+-------------------|
-          |           1 | $vhInfo['version']  |                                                            | version           |
-          |           2 | $vhInfo['main_id']  |                                                            | main_id           |
-          |           3 | targetConstellation | id fk to version_history                                   | .related_id       |
-          |           4 | targetArkID         | ark                                                        | .related_ark      |
-          |           5 | targetEntityType    | cpfRelation@xlink:role, vocab entity_type, Term object     | .role             |
-          |           6 | type                | cpfRelation@xlink:arcrole vocab relation_type, Term object | .arcrole          |
-          |           7 | cpfRelationType     | AnF only, so far                                           | .relation_type    |
-          |           8 | content             | cpfRelation/relationEntry, usually a name                  | .relation_entry   |
-          |           9 | dates               | cpfRelation/date (or dateRange)                            | .date             |
-          |          10 | note                | cpfRelation/descriptiveNote                                | .descriptive_note |
-
-          New convention: when there are dates, make them the second arg. Final arg is a list of all the
-          scalar values that will eventually be passed to execute() in the SQL function. This convention
-          is already in use in a couple of places, but needs to be done for some existing functions.
-
-          Ignore ConstellationRelation->$altType. It was always "simple".
-
-          getRelations() returns \snac\data\ConstellationRelation[]
-          $fdata is \snac\data\ConstellationRelation
-        */
-
-        foreach ($id->getRelations() as $fdata)
-        {
-            /*
-             * altType is cpfRelationType, at least in the CPF.
-             *
-             * Don't save the source info, because we are the source and have already saved the source data as
-             * part of ourself.
-             */
-            $cpfRelTypeID = null;
-            if ($cr = $fdata->getcpfRelationType())
-            {
-                $cpfRelTypeID = $cr->getID();
-            }
-            $relID = $this->sql->insertRelation($vhInfo,
-                                                $fdata->getTargetConstellation(),
-                                                $fdata->getTargetArkID(),
-                                                $this->thingID($fdata->getTargetEntityType()),
-                                                $fdata->getType()->getID(),
-                                                $cpfRelTypeID,
-                                                $fdata->getContent(),
-                                                $fdata->getNote(),
-                                                $fdata->getID());
-            foreach ($fdata->getDateList() as $date)
-            {
-                $date_fk = $this->sql->insertDate($vhInfo,
-                                             $date->getID(),
-                                             $this->db->boolToPg($date->getIsRange()),
-                                             $date->getFromDate(),
-                                             $date->getFromType()->getID(),
-                                             $this->db->boolToPg($date->getFromBc()),
-                                             $date->getFromRange()['notBefore'],
-                                             $date->getFromRange()['notAfter'],
-                                             $date->getToDate(),
-                                             $date->getToType()==null?null:$date->getToType()->getID(),
-                                             $this->db->boolToPg($date->getToBc()),
-                                             $date->getToRange()['notBefore'],
-                                             $date->getToRange()['notAfter'],
-                                             $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                             'related_identity',
-                                             $relID);
-            }
-        }
-
-        /*
-          ignored: $this->linkType, @xlink:type always 'simple', vocab source_type, .type
-
-          | placeholder | php                 | what, CPF                                        | sql                  |
-          |-------------+---------------------+--------------------------------------------------+----------------------|
-          |           1 | $vhInfo['version']  |                                                  | .version             |
-          |           2 | $vhInfo['main_id']  |                                                  | .main_id             |
-          |           3 | documentType        | @xlink:role id fk to vocab document_type         | .role                |
-          |           4 | entryType           | relationEntry@localType, AnF, always 'archival'? | .relation_entry_type |
-          |           5 | link                | @xlink:href                                      | .href                |
-          |           6 | role                | @xlink:arcrole vocab document_role               | .arcrole             |
-          |           7 | content             | relationEntry, usually a name                    | .relation_entry      |
-          |           8 | source              | objectXMLWrap                                    | .object_xml_wrap     |
-          |           9 | note                | descriptiveNote                                  | .descriptive_note    |
-
-          Final arg is a list of all the scalar values that will eventually be passed to execute() in the SQL
-          function. This convention is already in use in a couple of places, but needs to be done for some
-          existing functions.
-          */
-
-        foreach ($id->getResourceRelations() as $fdata)
-        {
-            $this->sql->insertResourceRelation($vhInfo,
-                                               $fdata->getDocumentType()->getID(), // xlink:role
-                                               $fdata->getEntryType()== null ? null : $fdata->getEntryType()->getID(), // relationEntry@localType
-                                               $fdata->getLink(), // xlink:href
-                                               $fdata->getRole()->getID(), // xlink:arcrole
-                                               $fdata->getContent(), // relationEntry
-                                               $fdata->getSource(), // objectXMLWrap
-                                               $fdata->getNote(), // descriptiveNote
-                                               $fdata->getID());
-        }
-
+        $this->saveName($vhInfo, $id);
+        $this->saveNationality($vhInfo, $id);
+        $this->saveNrd($vhInfo, $id);
+        $this->saveOccupation($vhInfo, $id);
+        $this->saveOtherRecordID($vhInfo, $id);
+        $this->savePlace($vhInfo, $id, 'nrd', $vhInfo['main_id']);
+        $this->saveStructureOrGenealogy($vhInfo, $id);
+        $this->saveSubject($vhInfo, $id);
+        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
+        $this->saveResourceRelation($vhInfo, $id);
         return $vhInfo;
     } // end saveConstellation
 
@@ -1679,61 +2106,48 @@ class DBUtil
         return $this->sql->searchVocabulary($type, $query);
     }
     /**
-     * Save the biogHist, biogHist language, and biogHist date(s?). This is a private function that exists to
+     * Save the biogHist
+     *
+     * Constellation biogHist is currently a list, although the expectation is that it only has a single
+     * element.
+     *
+     * biogHist language, and biogHist date(s?). This is a private function that exists to
      * keep the code organized. It is probably only called from saveConstellation().
      *
      * @param array[] $vhInfo Associative list with keys version, main_id
      *
      * @param \snac\data\BiogHist A single BiogHist object.
-     */
-    private function saveBiogHist($vhInfo, $biogHist)
+     */ 
+    private function saveBiogHist($vhInfo, $cObj)
     {
-        $bid = $this->sql->insertBiogHist($vhInfo,
-                              $biogHist->getID(),
-                              $biogHist->getText());
-
-        if ($lang = $biogHist->getLanguage())
+        foreach ($cObj->getBiogHistList() as $biogHist)
         {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $this->thingID($lang->getLanguage()),
-                                       $this->thingID($lang->getScript()),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'biog_hist',
-                                       $bid);
-        }
-        foreach ($biogHist->getDateList() as $date)
-        {
-            $this->sql->insertDate($vhInfo,
-                                   $date->getID(),
-                                   $this->db->boolToPg($date->getIsRange()),
-                                   $date->getFromDate(),
-                                   $date->getFromType()->getID(),
-                                   $this->db->boolToPg($date->getFromBc()),
-                                   $date->getFromRange()['notBefore'],
-                                   $date->getFromRange()['notAfter'],
-                                   $date->getToDate(),
-                                   $date->getToType()==null?null:$date->getToType()->getID(),
-                                   $this->db->boolToPg($date->getToBc()),
-                                   $date->getToRange()['notBefore'],
-                                   $date->getToRange()['notAfter'],
-                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                   'biog_hist',
-                                   $bid);
+            $bid = $this->sql->insertBiogHist($vhInfo,
+                                              $biogHist->getID(),
+                                              $biogHist->getText());
+            $this->saveMeta($vhInfo, $biogHist, 'biog_hist', $bid);
+            if ($lang = $biogHist->getLanguage())
+            {
+                $this->saveLanguage($vhInfo, $biogHist, 'biog_hist', $bid);
+            }
         }
     }
 
     /**
-     * Get ready to update by creating a new version_history record, and getting the new version number
-     * back. The constellation id (main_id) is unchanged. Each table.id is also unchanged. Both main_id and
-     * table.id *must* not change.
+     * Get ready to update
+     *
+     * Only used for testing. This creates a new version history record, and returns the $vhInfo for something
+     * else to use in doing an update. This calls updateVersionHistory() just like updateConstellation(), but
+     * doesn't do the saving part. This function will be deprecated by the setOperation() feature.
+     * 
+     * Create a new version_history record, and getting the new version number back. The constellation id
+     * (main_id) is unchanged. Each table.id is also unchanged. Both main_id and table.id *must* not change.
      *
      * @param snac\data\Constellation $pObj object that we are preparing to write all or part of back to the database.
      *
-     * @param string $appUserID Application user id string, for example "system" or "mst3k".
+     * @param integer $appUserID Application user integer id.
      *
-     * @param string $role SNAC role
+     * @param integer $roleID User numeric role id, from the appuser table.
      *
      * @param string $icstatus A version history status string.
      *
@@ -1744,22 +2158,33 @@ class DBUtil
      */
     public function updatePrepare($pObj,
                                   $appUserID,
-                                  $role,
+                                  $roleID,
                                   $icstatus,
                                   $note)
     {
         $mainID = $pObj->getID(); // Note: constellation id is the main_id
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $role, $icstatus, $note, $mainID);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $mainID);
         $vhInfo = array('version' => $newVersion, 'main_id' => $mainID);
         return $vhInfo;
     }
 
     /**
-     * Save a name entry to the database. This exists primarily to make the code here in DBUtil more legible.
+     * Save a name
+     *
+     * Once we have AbstractData->$operation implemented, make this method private, and fix DBUtilTest to use
+     * setOperation() to update only the name of a constellation. In the meantime, saveName() needs to be public.
+     *
+     * In the declarative sense "name" is all name data, here a list of name objects, as well as related
+     * contributor data, language data, date data.
+     *
+     * This exists primarily to make the code here in DBUtil more legible.
      *
      * Note about \snac\data\Language objects. This is the Language of the entry. Language object's
      * getLanguage() returns a Term object. Language getScript() returns a Term object for the script. The
      * database only uses the id of each Term.
+     *
+     * Constellation name entry data is already an array of name entry data. 
+     * getUseDates() returns SNACDate[] (An array of SNACDate objects.)
      *
      * When saving a name, the database assigns it a new id, and returns that id. We must be sure to use
      * $nameID for related dates, etc.
@@ -1769,62 +2194,51 @@ class DBUtil
      * @param \snac\data\NameEntry Name entry object
      *
      */
-    public function saveName($vhInfo, $ndata)
+    public function saveName($vhInfo, $cObj)
     {
-        $nameID = $this->sql->insertName($vhInfo,
-                                         $ndata->getOriginal(),
-                                         $ndata->getPreferenceScore(),
-                                         $ndata->getID());
-
-        if ($contribList = $ndata->getContributors())
+        foreach ($cObj->getNameEntries() as $ndata)
         {
-            foreach($contribList as $cb)
+            $nameID = $this->sql->insertName($vhInfo, 
+                                             $ndata->getOriginal(),
+                                             $ndata->getPreferenceScore(),
+                                             $ndata->getID());
+            $this->saveMeta($vhInfo, $ndata, 'name', $nameID);
+            if ($contribList = $ndata->getContributors())
             {
-                $this->sql->insertContributor($vhInfo,
-                                              $ndata->getID(),
-                                              $cb->getName(),
-                                              $this->thingID($cb->getType()));
+                /*
+                 * $ndata->getID() is null for inserted name. $nameID is walways non-null.
+                 * 
+                 * $nameID and $ndata->getID() will be the same for a name that is being updated. getID() will
+                 * be null for inserted names since there's no id until after insert. $nameID will always be
+                 * non-null.
+                 *
+                 * Both ids are the record id, not the constellation id.
+                 *
+                 */ 
+                foreach($contribList as $cb)
+                {
+                    $this->sql->insertContributor($vhInfo,
+                                                  $nameID,
+                                                  $cb->getName(),
+                                                  $this->thingID($cb->getType()));
+                }
             }
+            $this->saveLanguage($vhInfo, $ndata, 'name', $nameID);
+            $dateList = $ndata->getDateList();
+            foreach ($ndata->getDateList() as $date)
+            {
+                $this->saveDate($vhInfo, $date, 'name', $nameID);
+            }
+        
         }
-
-        if ($lang = $ndata->getLanguage())
-        {
-            $this->sql->insertLanguage($vhInfo,
-                                       $lang->getID(),
-                                       $this->thingID($lang->getLanguage()),
-                                       $this->thingID($lang->getScript()),
-                                       $lang->getVocabularySource(),
-                                       $lang->getNote(),
-                                       'name',
-                                       $nameID);
-        }
-        $dateList = $ndata->getDateList();
-        foreach ($ndata->getDateList() as $date)
-        {
-            $this->sql->insertDate($vhInfo,
-                                   $date->getID(),
-                                   $this->db->boolToPg($date->getIsRange()),
-                                   $date->getFromDate(),
-                                   $date->getFromType()->getID(),
-                                   $this->db->boolToPg($date->getFromBc()),
-                                   $date->getFromRange()['notBefore'],
-                                   $date->getFromRange()['notAfter'],
-                                   $date->getToDate(),
-                                   $date->getToType()==null?null:$date->getToType()->getID(),
-                                   $this->db->boolToPg($date->getToBc()),
-                                   $date->getToRange()['notBefore'],
-                                   $date->getToRange()['notAfter'],
-                                   $date->getFromDateOriginal() . ' - ' . $date->getToDateOriginal(),
-                                   'name',
-                                   $nameID);
-        }
-
     }
 
 
     /**
-     * Return 100 constellations as a json string. Only 3 fields are included: version, main_id, formatted
-     * name. The idea it to return enough for the UI to allow selection of a record to edit.
+     * Return 100 constellations as a json string
+     *
+     * Only 3 fields are included: version, main_id, formatted name. The idea it to return enough for the UI
+     * to allow selection of a record to edit.
      *
      * @return string[] A list of 100 records, each with key: 'version', 'main_id', 'formatted_name'
      */
@@ -1835,10 +2249,13 @@ class DBUtil
     }
 
     /**
-     * Return a constellation object that has 2 or more non-delted names. This is a helper function for testing purposes only.
+     * Return a test constellation object
      *
-     * @param string $appUserID A user id string. When testing this comes from getAppUserInfo().
+     * The constellation must have 2 or more non-delted names. This is a helper function for testing purposes
+     * only.
      *
+     * @param integer $appUserID A user id integer. When testing this comes from getAppUserInfo().
+     * 
      * @return \snac\data\Constellation A PHP constellation object.
      *
      */
@@ -1851,9 +2268,14 @@ class DBUtil
 
 
     /**
-     * Delete a single record of a single table. We need the id here because we only want a single record. The
-     * other code here just gets all the records (keeping their id values) and throws them into an
-     * Constellation object. Delete is different and delete has single-record granularity.
+     * Delete a single record of a single table.
+     *
+     * Used only for testing. When we implement operations via AbstractData::setOperation() this will become
+     * private, and may change dramatically.
+     *
+     * We need the id here because we only want a single record. The other code here just gets all the records
+     * (keeping their id values) and throws them into an Constellation object. Delete is different and delete
+     * has single-record granularity.
      *
      * Need a helper function somewhere to associate object type with database table.
      *
@@ -1862,11 +2284,11 @@ class DBUtil
      * allow setDeleted() to work without any out-of-band information.
      *
      *
-     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
-     * create a new version_history record.
+     * @param integer $appUserID Integer user id corresponds to table appuser.id, Historically it was used
+     * when creating a new version_history record.
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     *
+     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
+     * 
      * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of
      * the inserted constellation. Pass a null if unchanged. Lower level code will preserved the existing
      * setting.
@@ -1885,7 +2307,7 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function setDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    public function setDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
         if (! isset($this->canDelete[$table]))
         {
@@ -1899,7 +2321,7 @@ class DBUtil
             printf("Cannot delete the only name for main_id: $main_id count: %s\n", $this->sql->CountNames($main_id) );
             return null;
         }
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $this->sql->sqlSetDeleted($table, $id, $newVersion);
         return $newVersion;
     }
@@ -1907,14 +2329,11 @@ class DBUtil
     /**
      * Undelete a record.
      *
-     * @param string $userid Text userid corresponds to table appuser.userid, like a Linux username. Used to
-     * create a new version_history record.
+     * @param integer $appUserID Integer user id
      *
-     * @param string $role The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     *
+     * @param integer $roleID The current integer role.id value of the user. Comes from role.id and table appuser_role_link.
+     * 
      * @param string $icstatus Status of this record. Pass a null if unchanged. Lower level code will preserved the existing setting.
-     *
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
@@ -1928,7 +2347,7 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function clearDeleted($userid, $role, $icstatus, $note, $main_id, $table, $id)
+    public function clearDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
         if (! isset($this->canDelete[$table]))
         {
@@ -1936,7 +2355,7 @@ class DBUtil
             printf("Cannot clear deleted on table: $table\n");
             return null;
         }
-        $newVersion = $this->sql->updateVersionHistory($userid, $role, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
         $this->sql->sqlClearDeleted($table, $id, $newVersion);
         return $newVersion;
     }

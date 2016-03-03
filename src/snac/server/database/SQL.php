@@ -46,9 +46,7 @@ class SQL
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
      * any clear need.
      *
-     * @param DatabaseConnector $db A working, initialized DatabaseConnector object.
-     *
-     *
+     * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
      */
     public function __construct($db)
     {
@@ -246,12 +244,11 @@ class SQL
      *
      * @return integer[] A flat list of the appuser.id and related role.id, both are numeric.
      *
-     */
-    public function getAppUserInfo($userid)
+     */ 
+    public function selectAppUserInfo($userString)
     {
         $qq = 'get_app_user_info';
-        // select id from appuser where userid=$userid
-        $this->sdb->prepare($qq,
+        $this->sdb->prepare($qq, 
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
                             where
                             appuser.userid=$1
@@ -263,7 +260,7 @@ class SQL
          * $result behaves a bit like a cursor. Php docs say the data is in memory, and that a cursor is not
          * used.
          */
-        $result = $this->sdb->execute($qq, array($userid));
+        $result = $this->sdb->execute($qq, array($userString));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return array($row['id'], $row['role']);
@@ -295,16 +292,43 @@ class SQL
     {
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
-        $this->sdb->prepare('insert_version_history',
-                            'insert into version_history
+        $this->sdb->prepare($qq, 
+                            'insert into version_history 
                             (user_id, role_id, status, is_current, note)
                             values
                             ($1, $2, $3, $4, $5)
                             returning id as version, main_id;');
 
-        $result = $this->sdb->execute('insert_version_history', array($userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
         $vhInfo = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate('insert_version_history');
+        $this->sdb->deallocate($qq);
+        return $vhInfo;
+    }
+
+
+    /**
+     * New insert into version_history
+     *
+     * We already know the version_history.id aka version, and main_id, so we are not relying on the default
+     * values. This all happens because we are using the same main_id across an entire constellation. And we
+     * might be using the same version across many Constellations and other inserts all in this current
+     * session.
+     *
+     */
+    public function insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note)
+    {
+        $qq = 'insert_into_version_history';
+        $this->sdb->prepare($qq, 
+                            'insert into version_history 
+                            (id, main_id, user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5, $6, $7)
+                            returning id as version, main_id;');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'], $vhInfo['main_id'], $appUserID, $roleID, $status, true, $note));
+        $vhInfo = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
         return $vhInfo;
     }
 
@@ -330,7 +354,7 @@ class SQL
      * returning it as 'version'. Note the "returning ..." part of the query.
      *
      */
-    public function updateVersionHistory($userid, $role, $status, $note, $main_id)
+    public function updateVersionHistory($appUserID, $roleID, $status, $note, $main_id)
     {
         /*
          * Note: query() as opposed to prepare() and execute()
@@ -345,7 +369,7 @@ class SQL
                                     ($1, $2, $3, $4, $5, $6)
                                     returning id as version'
                                     ,
-                                    array($main_id, $userid, $role, $status, true, $note));
+                                    array($main_id, $appUserID, $roleID, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
         return $row['version'];
     }
@@ -381,49 +405,52 @@ class SQL
                                $fromBC,
                                $fromNotBefore,
                                $fromNotAfter,
+                               $fromOriginal,
                                $toDate,
                                $toType, // fk to vocabulary
                                $toBC,
                                $toNotBefore,
                                $toNotAfter,
-                               $original,
+                               $toOriginal, 
                                $fk_table,
                                $fk_id)
     {
         if (! $id)
-        {
-            $id = $this->selectID();
-        }
+            {
+                $id = $this->selectID();
+            }
         $qq = 'insert_date';
         $this->sdb->prepare($qq,
                             'insert into date_range
-                            (version, main_id, id, is_range, from_date, from_type, from_bc, from_not_before, from_not_after,
-                            to_date, to_type, to_bc, to_not_before, to_not_after, original, fk_table, fk_id)
+                            (version, main_id, id, is_range, 
+                            from_date, from_type, from_bc, from_not_before, from_not_after, from_original,
+                            to_date, to_type, to_bc, to_not_before, to_not_after, to_original, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)');
+        
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'], 
+                                            $vhInfo['main_id'],
+                                            $id,
+                                            $isRange,
+                                            $fromDate,
+                                            $fromType,
+                                            $fromBC,
+                                            $fromNotBefore,
+                                            $fromNotAfter,
+                                            $fromOriginal,
+                                            $toDate,
+                                            $toType,
+                                            $toBC,
+                                            $toNotBefore, 
+                                            $toNotAfter,
+                                            $toOriginal, 
+                                            $fk_table,
+                                            $fk_id));
 
-       $result = $this->sdb->execute($qq,
-                                     array($vhInfo['version'],
-                                           $vhInfo['main_id'],
-                                           $id,
-                                           $isRange,
-                                           $fromDate,
-                                           $fromType,
-                                           $fromBC,
-                                           $fromNotBefore,
-                                           $fromNotAfter,
-                                           $toDate,
-                                           $toType,
-                                           $toBC,
-                                           $toNotBefore,
-                                           $toNotAfter,
-                                           $original,
-                                           $fk_table,
-                                           $fk_id));
-
-       $row = $this->sdb->fetchrow($result);
-       $this->sdb->deallocate($qq);
-       return $id;
+        $row = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
@@ -449,10 +476,11 @@ class SQL
     public function selectDate($did, $version)
     {
         $qq = 'select_date';
-        $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, main_id, is_range, from_date, from_bc, from_not_before, from_not_after,
-                            to_date, to_bc, to_not_before, to_not_after, original, fk_table, aa.fk_id,
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.is_range, 
+                            aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+                            aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
                             aa.from_type,aa.to_type
                             from date_range as aa,
                             (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
@@ -488,9 +516,10 @@ class SQL
     public function selectPlace($tid, $version)
     {
         $qq = 'select_place';
-        $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, aa.geo_place_id, fk_table, aa.fk_id
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
+                            aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
                             from place_link as aa,
                             (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -515,6 +544,12 @@ class SQL
      *
      * @param string $geo_place_id The geo_place_id
      *
+     * @param integer $typeID Vocabulary ID of the place@localType
+     *
+     * @param integer $roleID Vocabulary ID of the role
+     *
+     * @param float $score The geoname matching score
+     *
      * @param string $fk_id The fk_id of the related table.
      *
      * @param string $fk_table The fk_table name
@@ -522,7 +557,17 @@ class SQL
      * @return integer $id The id of what we (might) have inserted.
      *
      */
-    public function insertPlace($vhInfo, $id, $confirmed, $original,  $geo_place_id,  $fk_table, $fk_id)
+    public function insertPlace($vhInfo, 
+                                $id,
+                                $confirmed,
+                                $original,
+                                $geo_place_id,
+                                $typeID,
+                                $roleID,
+                                $note,
+                                $score,
+                                $fk_table,
+                                $fk_id)
     {
         if (! $id)
         {
@@ -531,17 +576,21 @@ class SQL
         $qq = 'insert_place';
         $this->sdb->prepare($qq,
                             'insert into place_link
-                            (version, main_id, id, confirmed, original, geo_place_id,  fk_id, fk_table)
-                            values
-                            ($1, $2, $3, $4, $5, $6, $7, $8)');
+                            (version, main_id, id, confirmed, original, geo_place_id, type, role, note, score,  fk_id, fk_table)
+                            values 
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['main_id'],
-                                            $vhInfo['version'],
+                                      array($vhInfo['version'],
+                                            $vhInfo['main_id'],
                                             $id,
                                             $confirmed,
                                             $original,
                                             $geo_place_id,
+                                            $typeID,
+                                            $roleID,
+                                            $note,
+                                            $score,
                                             $fk_id,
                                             $fk_table));
         $this->sdb->deallocate($qq);
@@ -564,25 +613,29 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
-     * @return string[] A list of fields/value as list keys matching the database field names: id,
-     * version, main_id, citation_id, sub_citation, source_data, rule_id,
-     * language_id, note. I don't think calling code has any use for fk_id, so we don't return it.
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
+     * version, main_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
+     * calling code has any use for fk_id, so we don't return it.
      */
     public function selectMeta($tid, $version)
     {
         $qq = 'select_meta';
-        $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data,
-                            aa.rule_id, aa.language_id, aa.note
+        $this->sdb->prepare($qq, 
+                            'select 
+                            aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
+                            aa.rule_id, aa.note
                             from scm as aa,
                             (select fk_id,max(version) as version from scm where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($did, $version));
-        $row = $this->sdb->fetchrow($result);
+        $result = $this->sdb->execute($qq, array($tid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
         $this->sdb->deallocate($qq);
-        return $row;
+        return $all;
     }
 
     /**
@@ -646,16 +699,16 @@ class SQL
     }
 
     /**
-     * Get a geo_place record.
+     * Get a geo_place record
      *
      * Also known as GeoTerm
      *
      * @param integer $gid A geo_place.id value.
      *
-     * @return string[] A list of fields/value as list keys matching the database field names: latitude,
-     * longitude, administrative_code, country_code, name, geoname_id.
+     * @return string[] A list of fields/value as list keys matching the database field names: id, uri,
+     * latitude, longitude, admin_code, country_code, name.
      */
-    public function selectGeo($gid)
+    public function selectGeoTerm($gid)
     {
         $qq = 'select_geo_place';
         $this->sdb->prepare($qq, 'select * from geo_place where id=$1');
@@ -663,6 +716,56 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
+    }
+
+    /**
+     * Insert geo_place
+     *
+     * Also known as GeoTerm
+     * 
+     * @param integer $gid A geo_place.id value.
+     *
+     * @param integer $id The id. If null, the system will assign a new id.
+     *
+     * @param string $version  The version 
+     *
+     * @param string $uri  The uri 
+     *
+     * @param string $name  The name 
+     *
+     * @param string $latitude  The latitude maybe a string in php, but really a number(10,7)
+     *
+     * @param string $longitude  The longitude maybe a string in php, but really a number(10,7)
+     *
+     * @param string $admin_code  The admin_code 
+     *
+     * @param string $country_code  The country_code 
+     *
+     * @return integer $id Existing or new record id 
+     */
+    public function insertGeo($id, $version, $uri, $name, $latitude, $longitude, $admin_code, $country_code)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_geo_place';
+        $this->sdb->prepare($qq,
+                            'insert into geo_place
+                            (id, version, uri, name, latitude, longitude, admin_code, country_code)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
+        $result = $this->sdb->execute($qq,
+                                      array($id,
+                                            $version,
+                                            $uri,
+                                            $name,
+                                            $latitude,
+                                            $longitude,
+                                            $admin_code,
+                                            $country_code));
+        $this->sdb->deallocate($qq);
+        return $id;
     }
 
 
@@ -803,6 +906,15 @@ class SQL
      */
     public function insertContributor($vhInfo, $nameID, $name, $typeID)
     {
+        if ($nameID == null)
+        {
+            /*
+             * This did happen, but once we have good tests it should never happen again. Perhaps better to
+             * add a "not null" to the db schema.
+             */ 
+            printf("Fatal: \$nameID must not be null\n");
+            exit();
+        }
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
@@ -952,10 +1064,6 @@ class SQL
         return $all;
     }
 
-
-
-
-
     /**
      * Insert into table subject.
      * Data is currently only a string from the Constellation. If $id is null, get
@@ -1069,8 +1177,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
-     *
+     * text. There may be multiple rows returned.
+     * 
      */
     protected function selectTextCore($vhInfo, $table)
     {
@@ -1141,9 +1249,13 @@ class SQL
         if (! isset($approved_table[$table]))
         {
             /*
-             * Trying something not approved is fatal.
+             * Trying something not approved is fatal.  Add an exception for this.
              */
             die("Tried to insert on non-approved table: $table\n");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
         }
         $qq = "select_$table";
         $this->sdb->prepare($qq,
@@ -1242,8 +1354,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
-     *
+     * text. There may be multiple rows returned.
+     * 
      */
     public function selectStructureOrGenealogy($vhInfo)
     {
@@ -1257,8 +1369,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
-     *
+     * text. There may be multiple rows returned.
+     * 
      */
     public function selectMandate($vhInfo)
     {
@@ -1274,8 +1386,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
-     *
+     * text. There may be multiple rows returned.
+     * 
      */
     public function selectGeneralContext($vhInfo)
     {
@@ -1291,8 +1403,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-     * term_id. There may be multiple rows returned.
-     *
+     * text. There may be multiple rows returned.
+     * 
      */
     public function selectConventionDeclaration($vhInfo)
     {
@@ -1525,7 +1637,7 @@ class SQL
         $rowList = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            array_push($rowList, $row);
         }
         $this->sdb->deallocate($qq);
         return $rowList;
@@ -1535,9 +1647,14 @@ class SQL
     /**
      * Helper for selectOtherID()
      *
+     * Mar 1 2016: The comment below is incomplete because we have lots of cases where there could be multiple
+     * versions. All queries deal with multiple version by using a subquery. This function is probably
+     * redundant.
+     *
      * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
      * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
+     *
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -1576,10 +1693,13 @@ class SQL
      *
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
-     *
-     * Jan 28 2016 The query use to say "... and main_id=$2 and id=$3');" which is odd. We never constrain on
-     * table.id that way. This appears to be old and incorrect code.
-     *
+     * 
+     * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
+     * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
+     * was all fairly odd, but worked. This code now follows our idiom for main_id and version constraint via
+     * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
+     * database versions, and the otherRecordID JSON looks correct.
+     * 
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, text, uri,
@@ -1589,8 +1709,6 @@ class SQL
      */
     public function selectOtherID($vhInfo)
     {
-        $matchingIDs = $this->matchORID($vhInfo);
-
         $qq = 'sorid';
         $this->sdb->prepare($qq,
                             'select
@@ -1598,17 +1716,15 @@ class SQL
                             from otherid
                             where
                             version=(select max(version) from otherid where version<=$1)
-                            and main_id=$2');
+                            and main_id=$2 order by id');
 
         $all = array();
-        foreach ($matchingIDs as $orid)
+        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
+        while($row = $this->sdb->fetchrow($result))
         {
-            $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
-            while($row = $this->sdb->fetchrow($result))
-            {
-                array_push($all, $row);
-            }
+            array_push($all, $row);
         }
+
         $this->sdb->deallocate($qq);
         return $all;
     }
@@ -2026,9 +2142,9 @@ class SQL
                             from name as aa,
                             (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
                             where
-                            aa.id = bb.id and not aa.is_deleted and
-                            aa.version = bb.version order by preference_score,id');
-
+                            aa.id = bb.id and not aa.is_deleted and 
+                            aa.version = bb.version order by preference_score desc,id asc');
+        
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
                                                  $vhInfo['main_id']));
