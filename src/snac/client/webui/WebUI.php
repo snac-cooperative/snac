@@ -256,6 +256,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
         return null;
     }
+    
+    private function parseSCM($scm) {
+        // parse through the SCM array
+        //TODO
+        return array();
+    }
 
     /**
      * Serialize post data to Constellation
@@ -316,10 +322,37 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // four parts: controlled vocabulary repeating
                 // key_subkey_subsubkey_index => value ==> nested[key][index][subkey][subsubkey] = value
                 if (!isset($nested[$parts[0]][$parts[3]]))
-                    $nested[$parts[0]][$parts[2]] = array();
+                    $nested[$parts[0]][$parts[3]] = array();
                 if (!isset($nested[$parts[0]][$parts[3]][$parts[1]]))
                     $nested[$parts[0]][$parts[3]][$parts[1]] = array();
                 $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
+            } else if (count($parts) == 5) {
+                // four parts: scm repeating
+                // key_scm_subkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey] = value
+                if (!isset($nested[$parts[0]][$parts[4]]))
+                    $nested[$parts[0]][$parts[4]] = array();
+                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]]))
+                    $nested[$parts[0]][$parts[4]][$parts[1]] = array();
+                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]]))
+                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]] = array();
+                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]]))
+                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]] = array();
+                $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]] = $v;
+            } else if (count($parts) == 6) {
+                // four parts: scm repeating
+                // key_scm_subkey_subsubkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey][subsubkey] = value
+                //{{short}}_scm_languagescript_id_{{j}}_{{i}}
+                if (!isset($nested[$parts[0]][$parts[5]]))
+                    $nested[$parts[0]][$parts[5]] = array();
+                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]] = array();
+                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]] = array();
+                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]] = array();
+                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]] = array();
+                $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]] = $v;
             }
         }
         
@@ -346,6 +379,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $gender->setVersion($data["id"]);
             $gender->setTerm($term);
             $gender->setOperation($this->getOperation($data));
+            
+            // Example
+            $gender->setAllSNACControlMetadata($this->parseSCM($gender["scm"]));
+            
             $constellation->setGender($gender);
         }
 
@@ -640,7 +677,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             $place->setOriginal($data["original"]);
             $place->setScore($data["score"]);
-            $place->setConfirmed($data["confirmed"]);
             $place->setNote($data["note"]);
 
             $term = new \snac\data\Term();
@@ -654,6 +690,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $geoterm = new \snac\data\GeoTerm();
             $geoterm->setID($data["geoplace"]["id"]);
             $place->setGeoTerm($geoterm);
+            
+
+            if ($data["confirmed"] === "true")
+                $place->confirm();
+            else
+                $place->deconfirm();
 
             $constellation->addPlace($place);
         }

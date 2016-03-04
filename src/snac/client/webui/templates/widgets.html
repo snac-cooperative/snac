@@ -25,30 +25,121 @@
 </div>
 {% endmacro %}
 
-{% macro scmModal(short, i, title, type, scm) %}
-<div class="modal fade" id="{{short}}_scm_modal_{{i}}" tabindex="-1" role="dialog" aria-labelledby="{{short}}_scm_modal_label_{{i}}">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="{{short}}_scm_modal_label_{{i}}">SNAC Control Metadata</h4>
-            </div>
-            <div class="modal-body">
-                <ol class="breadcrumb">
-                    <li>{{type}}</li>
-                    <li>{{title}}</li>
-                </ol>
-                <div class="col-xs-12 text-center">
-                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New SNAC Control Metadata</button>
-                </div>
-                <div>
-                    <p>Current SCM Blocks will be listed here.
+{% macro scmModal(short, i, title, type, data) %}
+<div class="modal fade" id="{{short}}_scm_modal_{{i}}" tabindex="-1"
+	role="dialog" aria-labelledby="{{short}}_scm_modal_label_{{i}}">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"
+					aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+				<h4 class="modal-title" id="{{short}}_scm_modal_label_{{i}}">SNAC Control Metadata</h4>
+			</div>
+			<div class="modal-body col-xs-12">
+				<ol class="breadcrumb">
+					<li>{{type}}</li>
+					<li>{{title}}</li>
+				</ol>
+				<div class="col-xs-12 text-center">
+					<button class="btn btn-success">
+						<span class="glyphicon glyphicon-plus"></span> Add New SNAC Control Metadata
+					</button>
+				</div>
+				<div class="col-xs-12">
+
+                    {% set j = 0 %}
+                    {% for scm in data.snacControlMetadata %}
+                    <div class="panel panel-default">
+                        <div class="panel-body">
+                            <input id="{{short}}_scm_id_{{j}}_{{i}}" name="{{short}}_scm_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
+                            <input id="{{short}}_scm_version_{{j}}_{{i}}" name="{{short}}_scm_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
+                            <input id="{{short}}_scm_operation_{{j}}_{{i}}" name="{{short}}_scm_operation_{{j}}_{{i}}" type="hidden" value=""/>
+                            <div class="col-xs-10">
+                                <div class="form-group">
+                                    <label for="{{short}}_scm_sourceData_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Source Data
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="{{short}}_scm_sourceData_{{j}}_{{i}}" name="{{short}}_scm_sourceData_{{j}}_{{i}}" class="form-control" readonly>{{ scm.sourceData }}</textarea>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="form-group">
+                                    <label for="{{short}}_scm_subCitation_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Sub Citation
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="{{short}}_scm_subCitation_{{j}}_{{i}}" name="{{short}}_scm_subCitation_{{j}}_{{i}}" class="form-control" readonly>{{ scm.subCitation }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Descriptive Rule
+                                        </label>
+                                    <div class="col-xs-8" id="select_{{short}}_scm_descriptiveRule_{{j}}_{{i}}">
+                                        <input id="{{short}}_scm_descriptiveRule_id_{{j}}_{{i}}" name="{{short}}_scm_descriptiveRule_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.id }}"/>
+                                        <input id="{{short}}_scm_descriptiveRule_term_{{j}}_{{i}}" name="{{short}}_scm_descriptiveRule_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.term }}"/>
+                                        <input id="{{short}}_scm_descriptiveRule_vocabtype_{{j}}_{{i}}" name="{{short}}_scm_descriptiveRule_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="descriptive_rule"/>
+                                        <input id="{{short}}_scm_descriptiveRule_minlength_{{j}}_{{i}}" name="{{short}}_scm_descriptiveRule_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.language.language.term }}</p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="{{short}}_scm_language_id_{{i}}" name="{{short}}_scm_language_id_{{i}}" value="{{source.language.id}}"/>
+                                <input type="hidden" id="{{short}}_scm_language_version_{{i}}" name="{{short}}_scm_language_version_{{i}}" value="{{sources.language.version}}"/>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Language
+                                    </label>
+                                    <div class="col-xs-8" id="select_{{short}}_scm_languagelanguage_{{j}}_{{i}}">
+                                        <input id="{{short}}_scm_languagelanguage_id_{{j}}_{{i}}" name="{{short}}_scm_languagelanguage_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.language.id }}"/>
+                                        <input id="{{short}}_scm_languagelanguage_term_{{j}}_{{i}}" name="{{short}}_scm_languagelanguage_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.language.language.term }}"/>
+                                        <input id="{{short}}_scm_languagelanguage_vocabtype_{{j}}_{{i}}" name="{{short}}_scm_languagelanguage_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                        <input id="{{short}}_scm_languagelanguage_minlength_{{j}}_{{i}}" name="{{short}}_scm_languagelanguage_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.language.language.term }}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Script
+                                    </label>
+                                    <div class="col-xs-8" id="select_{{short}}_scm_languagescript_{{j}}_{{i}}">
+                                        <input id="{{short}}_scm_languagescript_id_{{j}}_{{i}}" name="{{short}}_scm_languagescript_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.id }}"/>
+                                        <input id="{{short}}_scm_languagescript_term_{{j}}_{{i}}" name="{{short}}_scm_languagescript_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.term }}"/>
+                                        <input id="{{short}}_scm_languagescript_vocabtype_{{j}}_{{i}}" name="{{short}}_scm_languagescript_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                        <input id="{{short}}_scm_languagescript_minlength_{{j}}_{{i}}" name="{{short}}_scm_languagescript_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.language.script.term }}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="{{short}}_scm_note_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Descriptive Note
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="{{short}}_scm_note_{{j}}_{{i}}" name="{{short}}_scm_note_{{j}}_{{i}}" class="form-control" readonly>{{ scm.note }}</textarea>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    {% endmacro %}
+                    {% set i = i + 1 %}
+                    {% endfor %}
+
+
+
+
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+			</div>
+		</div>
+	</div>
+</div>
+{% endmacro %}
