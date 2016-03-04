@@ -82,6 +82,18 @@ class DBUtil
     private $appUserID = null;
 
     /**
+     * Return the appUserID
+     *
+     * Probably no reason to use this outside of testing.
+     *
+     * @return integer $appUserID
+     */
+    public function getAppUserID()
+    {
+        return $this->appUserID;
+    }
+
+    /**
      * Class var to hold the current user role
      * 
      * @var integer $roleID holds the integer role id, the id of the current user's primary role. Or in the
@@ -104,19 +116,84 @@ class DBUtil
          */ 
         list($this->appUserID, $this->roleID) = $this->getAppUserInfo('system');
 
-        $this->canDelete = array_fill_keys(array('biog_hist', 'convention_declaration',
-                                                 'date_range', 'function',
-                                                 'gender', 'general_context',
-                                                 'language', 'legal_status',
-                                                 'mandate', 'name',
-                                                 'name_component', 'name_contributor',
-                                                 'nationality', 'occupation',
-                                                 'otherid', 'place_link',
-                                                 'related_identity', 'related_resource',
-                                                 'scm', 'structure_genealogy',
-                                                 'source', 'subject'), 1);
+        /*
+         * Mar 4 2016 Here's a little suprise: we don't have an object for name component. How this will work
+         * is not determined, so I guess we're ignoring it for now.
+         *
+         * 'snac\data\Foo' => 'name_component',
+         *
+         */ 
+
+        /*
+         * This is a list of php class and SQL table, but only classes which supported by setDeleted(). All
+         * the save* and populate* functions are unique and essentially hard coded. However, setDeleted() and
+         * clearDeleted() are generalized so they use this to figure out what table is associated with a given
+         * class. See prepOperation(), setDeleted(), and clearDeleted().
+         *
+         * Table nrd and the constellation have a different mechanism, so they are not listed here.
+         */ 
+        $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
+                                 'snac\data\ConventionDeclaration' => 'convention_declaration',
+                                 'snac\data\SNACDate' => 'date_range',
+                                 'snac\data\SNACFunction' => 'function',
+                                 'snac\data\Gender' => 'gender',
+                                 'snac\data\GeneralContext' => 'general_context',
+                                 'snac\data\Language' => 'language',
+                                 'snac\data\LegalStatus' => 'legal_status',
+                                 'snac\data\Mandate' => 'mandate',
+                                 'snac\data\NameEntry' => 'name',
+                                 'snac\data\Contributor' => 'name_contributor',
+                                 'snac\data\Nationality' => 'nationality',
+                                 'snac\data\Occupation' => 'occupation',
+                                 'snac\data\SameAs' => 'otherid',
+                                 'snac\data\Place' => 'place_link',
+                                 'snac\data\ConstellationRelation' => 'related_identity',
+                                 'snac\data\ResourceRelation' => 'related_resource',
+                                 'snac\data\SNACControlMetadata' => 'scm',
+                                 'snac\data\StructureOrGenealogy' => 'structure_genealogy',
+                                 'snac\data\Source' => 'source',
+                                 'snac\data\Subject' => 'subject');
     }
 
+    /**
+     * Table name for a given class.
+     *
+     * This does two things:
+     *
+     * 1) return the SQL table for a class
+     *
+     * 2) return null if the class in question can't be deleted
+     *
+     * @param object $cObj Some object that we think has an associated SQL table.
+     */
+    private function deleteOK($cObj)
+    {
+        if (isset($this->canDelete[get_class($cObj)]))
+        {
+            return $this->canDelete[get_class($cObj)];
+        }
+        return null;
+    }
+
+    private function prepOperation($vhInfo, $cObj)
+    {
+        if ($cObj->getOperation() == \snac\data\AbstractData::$OPERATION_DELETE)
+        {
+            /* 
+             * printf("\nhave delete for object main_id %s id: %s o-version: %s v-version: %s\n",
+             *        $vhInfo['main_id'],
+             *        $cObj->getID(),
+             *        $cObj->getVersion(),
+             *        $vhInfo['version']);
+             */
+            $this->setDeleted($vhInfo, $cObj);
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 
     /**
      * Read published by ARK
@@ -263,6 +340,10 @@ class DBUtil
     public function demoConstellation()
     {
         list($version, $mainID) = $this->sql->randomConstellationID();
+        if (! $version  || ! $mainID)
+        {
+            printf("Error: got null(s) from randomConstellation() version: $version mainID: $mainID\n");
+        }
         return array('version' => $version, 'main_id' => $mainID);
     }
 
@@ -800,8 +881,8 @@ class DBUtil
                 $rid = $this->sql->insertStructureOrGenealogy($vhInfo,
                                                               $item->getID(),
                                                               $item->getText());
-                $cObj->setID($rid);
-                $cObj->setVersion($vhInfo['version']);
+                $item->setID($rid);
+                $item->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $item, 'structure_genealogy', $rid);
             }
         }
@@ -876,8 +957,8 @@ class DBUtil
                 $rid = $this->sql->insertGeneralContext($vhInfo,
                                                         $item->getID(),
                                                         $item->getText());
-                $cObj->setID($rid);
-                $cObj->setVersion($vhInfo['version']);
+                $item->setID($rid);
+                $item->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $item, 'general_context', $rid);
             }
         }
@@ -924,8 +1005,8 @@ class DBUtil
                 $rid = $this->sql->insertNationality($vhInfo,
                                                      $item->getID(),
                                                      $this->thingID($item->getTerm()));
-                $cObj->setID($rid);
-                $cObj->setVersion($vhInfo['version']);
+                $item->setID($rid);
+                $item->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $item, 'nationality', $rid);
             }
         }
@@ -1117,8 +1198,8 @@ class DBUtil
                 $rid = $this->sql->insertMandate($vhInfo,
                                                  $term->getID(),
                                                  $term->getText());
-                $cObj->setID($rid);
-                $cObj->setVersion($vhInfo['version']);
+                $term->setID($rid);
+                $term->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $term, 'mandate', $rid);
             }
         }
@@ -1142,8 +1223,8 @@ class DBUtil
                 $rid = $this->sql->insertConventionDeclaration($vhInfo,
                                                                $term->getID(),
                                                                $term->getText());
-                $cObj->setID($rid);
-                $cObj->setVersion($vhInfo['version']);
+                $term->setID($rid);
+                $term->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $term, 'convention_declaration', $rid);
             }
         }
@@ -1163,8 +1244,8 @@ class DBUtil
             $rid = $this->sql->insertGender($vhInfo,
                                             $fdata->getID(),
                                             $this->thingID($fdata->getTerm()));
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($rid);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'gender', $rid);
         }
     }
@@ -1176,7 +1257,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function old_saveConstellationDate($vhInfo, &$cObj)
+    private function saveConstellationDate($vhInfo, &$cObj)
     {
         foreach ($cObj->getDateList() as $date)
         {
@@ -1291,8 +1372,8 @@ class DBUtil
                                               $lang->getNote(),
                                               $table,
                                               $fkID);
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $lang->setID($rid);
+            $lang->setVersion($vhInfo['version']);
             /*
              * Try saving meta data, even though some language objects are not first order data and have no
              * meta data. If there is no meta data, nothing will happen.
@@ -1330,8 +1411,8 @@ class DBUtil
                                              $otherID->getText(),
                                              $this->thingID($otherID->getType()),
                                              $otherID->getURI());
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $otherID->setID($rid);
+            $otherID->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $otherID, 'otherid', $rid);
         }
     }
@@ -1369,8 +1450,8 @@ class DBUtil
             $rid = $this->sql->insertLegalStatus($vhInfo,
                                                  $fdata->getID(),
                                                  $this->thingID($fdata->getTerm()));
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($rid);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'legal_status', $rid);
         }
     }
@@ -1396,8 +1477,8 @@ class DBUtil
                                                   $this->thingID($fdata->getTerm()),
                                                   $fdata->getVocabularySource(),
                                                   $fdata->getNote());
-            $cObj->setID($occID);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($occID);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'occupation', $occID);
             foreach ($fdata->getDateList() as $date)
             {
@@ -1446,8 +1527,8 @@ class DBUtil
                                                 $fdata->getVocabularySource(),
                                                 $fdata->getNote(),
                                                 $this->thingID($fdata->getTerm())); // function term id aka vocabulary.id, Term object
-            $cObj->setID($funID);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($funID);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'function', $funID);
             /*
              * getDateList() always returns a list of SNACDate objects. If no dates then list is empty, but it
@@ -1483,8 +1564,8 @@ class DBUtil
             $rid = $this->sql->insertSubject($vhInfo, 
                                              $term->getID(),
                                              $this->thingID($term->getTerm())); 
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $term->setID($rid);
+            $term->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $term, 'subject', $rid);
         }
         
@@ -1553,8 +1634,8 @@ class DBUtil
                                                 $fdata->getContent(),
                                                 $fdata->getNote(),
                                                 $fdata->getID());
-            $cObj->setID($relID);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($relID);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'related_identity', $relID);
             foreach ($fdata->getDateList() as $date)
             {
@@ -1601,8 +1682,8 @@ class DBUtil
                                                       $fdata->getSource(), // objectXMLWrap
                                                       $fdata->getNote(), // descriptiveNote
                                                       $fdata->getID());
-            $cObj->setID($rid);
-            $cObj->setVersion($vhInfo['version']);
+            $fdata->setID($rid);
+            $fdata->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
         }
     }
@@ -1844,16 +1925,28 @@ class DBUtil
      *
      * Both insert and update are "write". Insert is "do not yet have a version number." Update is "have
      * version number."
-     * 
-     * Use option 2.
-     * 
-     * Two options:
-     * 1) get a new version number every time.
-     * 2) reuse an existing version number from this session
      *
-     * Only making them when necessary makes the data records easier to read as a version number is the same
-     * across an entire set of inserts.
+     * We get a new version number for every write.
      *
+     * The returned constellation is what was passed in, but with any null id and version filled. So, if a
+     * constellation with only a new inserted name is written to the db, that is what is returned: an empty
+     * constellation with nothing but a name. This was decided on Mar 3 2016 after much discussion.
+     *
+     * The web UI will send a partial constellation with appropriate operation set. Only the modified parts of
+     * the constellation are send from the web UI to the server.
+     *
+     * There is only one instance where we mint a new constellation id: Constellation insert.
+     *
+     * When doing component insert for an existing constellation, all new components use the constellation
+     * ID, thus no new ID is minted.
+     *
+     * We assume that something will happen so we always mint a new version number, as well as writing
+     * $status and $note to the version_history.
+     *
+     * As of php 5 objects are passed by reference. It is therefore redundant for a function prototype to say
+     * foo(&$cObj). It is necessary to clone() the object if you want to mess with it and not have it changed
+     * in place.
+     * 
      * @param \snac\data\Constellation $cObj A constellation object
      *
      * @param string $status The status of this version.
@@ -1864,43 +1957,55 @@ class DBUtil
      * @return \snac\data\Constellation $cObj the original constellation object modified to include id and version.
      *
      */
-    public function writeConstellation($cObj, $status, $note)
+    public function writeConstellation($argObj, $status, $note)
     {
-        /*
-         * There is only one instance where we mint a new constellation id: Constellation insert.
-         *
-         * When doing component insert for an existing constellation, all new components use the constellation
-         * ID, thus no new ID is minted.
-         *
-         * We assume that something will happen so we always mint a new version number, as well as writing
-         * $status and $note to the version_history.
-         *
-         */  
+        $cObj = clone($argObj);
         $mainID = null;
         $op = $cObj->getOperation();
-        if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
-        {
-            $mainID = null;
-        }
-        elseif ($op == \snac\data\AbstractData::$OPERATION_INSERT || 
-                $op == \snac\data\AbstractData::$OPERATION_UPDATE)
+        if ($op == \snac\data\AbstractData::$OPERATION_UPDATE)
         {
             /*
              * Both update and delete use the existing constellation ID
              */ 
+            // printf("\nwrite doing update\n");
+            $mainID = $cObj->getID();
+        }
+        elseif ($op == \snac\data\AbstractData::$OPERATION_DELETE)
+        {
+            /*
+             * Both update and delete use the existing constellation ID
+             */ 
+            // printf("\nwrite doing delete\n");
+            $mainID = $cObj->getID();
+        }
+        // elseif ($op == null || $op == \snac\data\AbstractData::$OPERATION_INSERT)
+        elseif ($op == \snac\data\AbstractData::$OPERATION_INSERT)
+        {
+            // printf("\nwrite doing insert\n");
+            $mainID = null;
+        }
+        elseif ($op == null)
+        {
+            /*
+             * This must be an existing constellation with no change at the top, but some operation inside.
+             *
+             * A new insert would not have an ID, so this wouldn't work in that case. Note: we assume the
+             * constellation already has a valid ID.
+             */
+            // printf("\nNo operation at top; we assume there are internal operations.\n");
             $mainID = $cObj->getID();
         }
         else
         {
             $json = $cObj->toJSON();
-            printf("\nBad operation: $op\n%s\n", $json);
+            printf("\nError: Bad operation: $op\n%s\n", $json);
             die();
         }
 
         /*
-         * There is a single version here, and the status and note are used only for this write. If at some
-         * future time you create private vars for version, main_id, status, and note here in DBUtil, then
-         * clear the main_id, version, status, and note before returning. Always set all version info.
+         * Version, status, and note are used only for this write. If at some future time you create private
+         * vars for version, main_id, status, and note here in DBUtil, then clear the main_id, version,
+         * status, and note before returning. Always set all version info.
          *
          * What won't happen here is two records edited simultaneously being saved. We assume that is
          * impossible. And if it were possible, both updates would (logically?) have the same status, and share
@@ -1918,7 +2023,7 @@ class DBUtil
          * $vhInfo is array('version' => 123, 'main_id' => 456);
          *
          */
-        $vhInfo = $this->sql->insertVersionHistory($mainID, $appUserID, $roleID, $status, $note);
+        $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
 
         /*
          * $cObj is passed by reference, and changed in place.
@@ -1926,6 +2031,14 @@ class DBUtil
          * The only changes to $cObj are adding id and version as necessary. 
          */
         $this->coreWrite($vhInfo, $cObj);
+
+        /* 
+         * foreach ($cObj->getNameEntries() as $ndata)
+         * {
+         *     printf("\ngetting id: %s version: %s\n", $ndata->getID(), $ndata->getVersion());
+         * }
+         */
+
         return $cObj;
     }
 
@@ -2081,8 +2194,8 @@ class DBUtil
                                                $gObj->getScore(),
                                                $relatedTable,
                                                $fkID);
-                $cObj->setID($pid);
-                $cObj->setVersion($vhInfo['version']);
+                $gObj->setID($pid);
+                $gObj->setVersion($vhInfo['version']);
                 $this->saveMeta($vhInfo, $gObj, 'place_link', $pid);
                 if ($dObj = $gObj->getDateList())
                 {
@@ -2135,8 +2248,8 @@ class DBUtil
                                              $metaObj->getNote(),
                                              $fkTable,
                                              $fkID);
-            $gObj->setID($metaID);
-            $gObj->setVersion($vhInfo['version']);
+            $metaObj->setID($metaID);
+            $metaObj->setVersion($vhInfo['version']);
             $this->saveLanguage($vhInfo, $metaObj, 'scm', $metaID);
             $citeID = null;
             if ($cite = $metaObj->getCitation())
@@ -2188,8 +2301,8 @@ class DBUtil
                                                     $this->thingID($gObj->getType()),
                                                     $fkTable,
                                                     $fkID);
-        $cObj->setID($genericRecordID);
-        $cObj->setVersion($vhInfo['version']);
+        $gObj->setID($genericRecordID);
+        $gObj->setVersion($vhInfo['version']);
         /*
          * Some non-first-order Source objects won't have meta data, but that is not really our concern.
          */  
@@ -2235,7 +2348,7 @@ class DBUtil
      * system-wide user message class that we haven't written yet.
      *
      */
-    private function saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo)
+    private function old_saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo)
     {
         $this->saveBiogHist($vhInfo, $id);
         $this->saveConstellationDate($vhInfo, $id);
@@ -2285,8 +2398,8 @@ class DBUtil
             $bid = $this->sql->insertBiogHist($vhInfo,
                                               $biogHist->getID(),
                                               $biogHist->getText());
-            $cObj->setID($bid);
-            $cObj->setVersion($vhInfo['version']);
+            $biogHist->setID($bid);
+            $biogHist->setVersion($vhInfo['version']);
             $this->saveMeta($vhInfo, $biogHist, 'biog_hist', $bid);
             if ($lang = $biogHist->getLanguage())
             {
@@ -2360,12 +2473,16 @@ class DBUtil
     {
         foreach ($cObj->getNameEntries() as $ndata)
         {
-            $nameID = $this->sql->insertName($vhInfo, 
-                                             $ndata->getOriginal(),
-                                             $ndata->getPreferenceScore(),
-                                             $ndata->getID());
-            $cObj->setID($nameID);
-            $cObj->setVersion($vhInfo['version']);
+            $nameID = $cObj->getID();
+            if ($this->prepOperation($vhInfo, $ndata, 'name_entry'))
+            {
+                $nameID = $this->sql->insertName($vhInfo, 
+                                                 $ndata->getOriginal(),
+                                                 $ndata->getPreferenceScore(),
+                                                 $ndata->getID());
+                $ndata->setID($nameID);
+                $ndata->setVersion($vhInfo['version']);
+            }
             $this->saveMeta($vhInfo, $ndata, 'name', $nameID);
             if ($contribList = $ndata->getContributors())
             {
@@ -2386,8 +2503,8 @@ class DBUtil
                                                          $nameID,
                                                          $cb->getName(),
                                                          $this->thingID($cb->getType()));
-                    $cObj->setID($rid);
-                    $cObj->setVersion($vhInfo['version']);
+                    $cb->setID($rid);
+                    $cb->setVersion($vhInfo['version']);
                 }
             }
             $this->saveLanguage($vhInfo, $ndata, 'name', $nameID);
@@ -2474,23 +2591,35 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function setDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
+    public function setDeleted($vhInfo, $cObj)
     {
-        if (! isset($this->canDelete[$table]))
+        /*
+         * If this object is associated with a table that allows delete, then deleteOK() will return a
+         * non-null $table, else it returns null and the if() will fail.
+         */
+        $table = null;
+        if ($table = $this->deleteOK($cObj))
+        {
+            $snCount = $this->sql->siblingNameCount($cObj->getID());
+            if (($table == 'name') && ($snCount <= 1))
+            {
+                // Need a message and logging for this.
+                printf("Error: Cannot delete the only name for id: %s count: %s\n",
+                       $cObj->getID(),
+                       $this->sql->siblingNameCount($cObj->getID()));
+                return false;
+            }
+            $this->sql->sqlSetDeleted($table, $cObj->getID(), $vhInfo['version']);
+            $postNCount = $this->sql->siblingNameCount($cObj->getID());
+            // printf("startnc: $snCount postnc: $postNCount\n");
+            return true;
+        }
+        else
         {
             // Hmmm. Need to warn the user and write into the log.
-            printf("Cannot set deleted on table: $table\n");
-            return null;
+            printf("Error: Cannot set deleted on table: $table\n");
+            return false;
         }
-        if ($table == 'name' & $this->sql->CountNames($main_id) <= 1)
-        {
-            // Need a message and logging for this.
-            printf("Cannot delete the only name for main_id: $main_id count: %s\n", $this->sql->CountNames($main_id) );
-            return null;
-        }
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
-        $this->sql->sqlSetDeleted($table, $id, $newVersion);
-        return $newVersion;
     }
 
     /**

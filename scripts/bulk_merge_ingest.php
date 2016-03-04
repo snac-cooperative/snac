@@ -152,7 +152,7 @@ function foo_main ()
 
         if (empty($unparsedTags))
         {
-            $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+            $cObj = $dbu->writeConstellation($constellationObj, 'bulk ingest', 'bulk ingest of merged');
             check_vocabulary($constellationObj);
             // $msg = sprintf("File $file ok. vhInfo: %s", var_export($vhInfo, 1));
             $msg = sprintf("$xx File $file ok.");
