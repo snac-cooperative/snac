@@ -2545,6 +2545,29 @@ class SQL
     }
 
     /**
+     * Get Place By URI
+     *
+     * This method searches the database for a place URI and returns the entry
+     *
+     * @param string $term The "type" term for what type of vocabulary to search
+     * @param string $query The string to search through the vocabulary
+     */
+    public function getPlaceByURI($uri) 
+    {
+        $result = $this->sdb->query('select *
+                                    from geo_place
+                                    where uri = $1 limit 1;',
+                                    array($uri));
+
+        while($row = $this->sdb->fetchrow($result))
+        {
+            return $row;
+        }
+        return null;
+
+    }
+    
+    /**
      * Search Vocabulary
      *
      * This method allows searching the vocabulary table for a given type and value
@@ -2557,14 +2580,14 @@ class SQL
         $result = $this->sdb->query('select id,value
                                     from vocabulary
                                     where type=$1 and value ilike $2 order by value asc limit 100;',
-                                    array($term, "%".$query."%"));
+                array($term, "%".$query."%"));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
-
+    
     }
 
     /**

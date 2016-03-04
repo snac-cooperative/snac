@@ -35,5 +35,13 @@ interface Vocabulary {
      * @return \snac\data\Term The Term object for the id
      */
     public function getTermByID($id, $type);
+    
+    /**
+     * Get a GeoTerm by URI
+     * 
+     * @param string $uri The uri to look up
+     * @return \snac\data\GeoTerm The GeoTerm object for the uri
+     */
+    public function getGeoTermByURI($uri);
 }
 
