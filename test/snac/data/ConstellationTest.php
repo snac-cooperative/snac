@@ -90,7 +90,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
     
     /**
      * Test that reading a larger JSON object multiple times does not result in memory error
-     *
+     */
     public function testJSONExtreme() {
 
         for ($i = 0; $i < 100; $i++) {
@@ -104,7 +104,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
             unset($arrayIn);
         }
     }
-    */
+    
     
     /**
      * Test that reading a partial JSON Object works 
