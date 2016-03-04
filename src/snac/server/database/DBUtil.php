@@ -2186,6 +2186,17 @@ class DBUtil
      */
     public function searchVocabulary($type, $query) {
 
+        if ($type == 'geo_place') {
+            $results = $this->sql->searchPlaceVocabulary($query);
+            $retVal = array();
+            foreach ($results as $res) {
+                $item = array();
+                $item["id"] = $res["id"];
+                $item["value"] = $res["name"] . " (" . $res["admin_code"] . ", " . $res["country_code"] . ")";
+                array_push($retVal, $item);
+            }
+            return $retVal;
+        }
         return $this->sql->searchVocabulary($type, $query);
     }
     

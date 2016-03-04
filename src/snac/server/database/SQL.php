@@ -2566,6 +2566,28 @@ class SQL
         return null;
 
     }
+
+    /**
+     * Search Place Vocabulary
+     *
+     * This method allows searching the geo_place table for a given type and value
+     *
+     * @param string $query The string to search through the vocabulary
+     */
+    public function searchPlaceVocabulary($query)
+    {
+        $result = $this->sdb->query('select *
+                                    from geo_place
+                                    where name ilike $1 order by name asc limit 100;',
+                array("%".$query."%"));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    
+    }
     
     /**
      * Search Vocabulary
