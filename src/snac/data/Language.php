@@ -212,39 +212,35 @@ class Language extends AbstractData {
     }
 
     /**
-     * is Equal
      *
-     * Checks whether the given parameter is the same as this object. If
-     * the IDs match, then that is taken as priority above any other data.  Else,
-     * everything must match.
+     * {@inheritDoc}
      *
-     * @param \snac\data\Language $other the Other Language object
-     * @return boolean true if equal, false otherwise
+     * @param \snac\data\Language $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other) {
-        // Don't consider it if it's not a Source object
-        if ($other != null && $other instanceOf \snac\data\Language) { 
-            // Check IDs first
-            if ($other->getID() != null && $this->getID() != null) {
-                if ($other->getID() == $this->getID())
-                    return true;
-                else
-                    // If they both have IDs, but they are different, no match
-                    return false;
-            }
+    public function equals($other, $strict = true) {
 
-            if ($this->getVocabularySource() == $other->getVocabularySource() &&
-                $this->getNote() == $other->getNote()) {
-                if ( $this->getScript() != null && 
-                    !$this->getScript()->equals($other->getScript()))
-                    return false;
-                if ( $this->getLanguage() != null &&
-                    !$this->getLanguage()->equals($other->getLanguage())) 
-                    return false;
-                return true;
-            }
-        }
-        return false;
+        if ($other == null || ! ($other instanceof \snac\data\Language))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getVocabularySource() != $other->getVocabularySource())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+                
+        if ( ($this->getScript() != null && !$this->getScript()->equals($other->getScript())) ||
+                ($this->getScript() == null && $other->getScript() != null))
+            return false;
+        if ( ($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage())) ||
+                ($this->getLanguage() == null && $other->getLanguage() != null))
+            return false;
+
+        
+        return true;
     }
     
 }

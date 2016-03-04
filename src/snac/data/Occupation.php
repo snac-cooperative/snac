@@ -213,6 +213,34 @@ class Occupation extends AbstractData {
     public function setNote($note) {
         $this->note = $note;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\Occupation $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\Occupation))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getVocabularySource() != $other->getVocabularySource())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getTerm() != null && !$this->getTerm()->equals($other->getTerm())) ||
+                ($this->getTerm() == null && $other->getTerm() != null))
+            return false;
+        
+        return true;
+    }
     
     
 }

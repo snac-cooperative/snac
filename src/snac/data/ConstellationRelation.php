@@ -487,4 +487,43 @@ class ConstellationRelation extends AbstractData {
 
         $this->note = $note;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\ConstellationRelation $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\ConstellationRelation))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getSourceConstellation() != $other->getSourceConstellation() ||
+                $this->getSourceArkID() != $other->getSourceArkID() ||
+                $this->getTargetConstellation() != $other->getTargetConstellation() ||
+                $this->getTargetArkID() != $other->getTargetArkID() ||
+                $this->getContent() != $other->getContent() ||
+                $this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
+                ($this->getType() == null && $other->getType() != null))
+            return false;
+                
+        if (($this->getAltType() != null && !($this->getAltType()->equals($other->getAltType()))) ||
+                ($this->getAltType() == null && $other->getAltType() != null))
+            return false;
+                
+        if (($this->getCpfRelationType() != null && !($this->getCpfRelationType()->equals($other->getCpfRelationType()))) ||
+                ($this->getCpfRelationType() == null && $other->getCpfRelationType() != null))
+            return false;
+        
+        return true;
+    }
 }

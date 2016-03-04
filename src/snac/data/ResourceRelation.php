@@ -412,4 +412,45 @@ class ResourceRelation extends AbstractData {
     public function setRelationEntryType($type) {
         $this->entryType = $type;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\ResourceRelation $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\ResourceRelation))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getSource() != $other->getSource())
+            return false;
+        if ($this->getLink() != $other->getLink())
+            return false;
+        if ($this->getContent() != $other->getContent())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getDocumentType() != null && ! $this->getDocumentType()->equals($other->getDocumentType())) ||
+                 ($this->getDocumentType() == null && $other->getDocumentType() != null))
+            return false;
+        if (($this->getLinkType() != null && ! $this->getLinkType()->equals($other->getLinkType())) ||
+                 ($this->getLinkType() == null && $other->getLinkType() != null))
+            return false;
+        if (($this->getEntryType() != null && ! $this->getEntryType()->equals($other->getEntryType())) ||
+                 ($this->getEntryType() == null && $other->getEntryType() != null))
+            return false;
+        if (($this->getRole() != null && ! $this->getRole()->equals($other->getRole())) ||
+                 ($this->getRole() == null && $other->getRole() != null))
+            return false;
+        
+        return true;
+    }
 }

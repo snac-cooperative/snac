@@ -110,6 +110,90 @@ abstract class AbstractData {
         if ($data != null && is_array($data))
             $this->fromArray($data);
     }
+    
+    /**
+     * Is Equal
+     * 
+     * This function tests whether the current object is equal to the parameter.  They
+     * must match exactly.  It allows for a parameter to enable skipping of the ID/version/operation
+     * matching.
+     * 
+     * @param \snac\data\AbstractData $other The other object to compare
+     * @param boolean $strict optional Whether to disable strict checking (skip id)
+     * 
+     * @return boolean true if equal, false if not
+     */
+    public function equals($other, $strict = true) {
+        if ($other == null || !($other instanceOf \snac\data\AbstractData))
+            return false;
+        
+        if ($strict) {
+            if ($this->getID() != $other->getID())
+                return false;
+            if ($this->getVersion() != $other->getVersion())
+                return false;
+            if ($this->getOperation() != $other->getOperation())
+                return false;
+        }
+        
+        if ($this->getMaxDateCount() != $other->getMaxDateCount()) 
+            return false;
+        
+        if ($this->getMaxDateCount() > 0) {
+            $tmp = array();
+            
+            if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList()))
+                return false;
+        }
+        
+        if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata()))
+            return false;
+        
+        
+        
+        // If all the tests pass, they are equal
+        return true;
+    }
+    
+    /**
+     * Array Equality
+     * 
+     * Checks that two arrays are equal.  Specifically, tests that the second array has all
+     * the same objects as the first.
+     * 
+     * @param \snac\data\AbstractData[] $first first array
+     * @param \snac\data\AbstractData[] $second second array
+     * @param boolean $strict optional whether or not to check ID/Version/Operation
+     * @return boolean true if equal, false otherwise
+     */
+    protected function checkArrayEqual($first, $second, $strict = true) {
+        if ($first == null && $second == null)
+            return true;
+        if ($first == null || $second == null)
+            return false;
+        if (count($first) != count($second))
+            return false;
+        
+        $tmp = array();
+        
+        foreach ($first as $data) {
+            foreach ($second as $k => $odata) {
+                if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict))) 
+                        && !isset($tmp[$k])) {
+                    $tmp[$k] = true;
+                }
+            }
+        }
+        
+        $count = count($tmp);
+        unset($tmp);
+        
+        if ($count != count($second))
+            return false;
+        
+        return true;
+        
+    }
 
     /**
      * Set the number of date objects we can have in the list of dates.
@@ -276,7 +360,9 @@ abstract class AbstractData {
      * @return \snac\data\SNACControlMetadata[] Array of snac control metadata about this data
      */
     public function getSNACControlMetadata() {
-        return $this->snacControlMetadata;
+        if (isset($this->snacControlMetadata))
+            return $this->snacControlMetadata;
+        return null;
     }
 
     /**

@@ -1214,4 +1214,74 @@ class Constellation extends AbstractData {
     public function addMandate($mandate) {
         array_push($this->mandates, $mandate);
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\Constellation $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\Constellation))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getArk() != $other->getArk())
+            return false;
+        if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
+            return false;
+        
+        if (($this->getEntityType() != null && ! $this->getEntityType()->equals($other->getEntityType())) ||
+                 ($this->getEntityType() == null && $other->getEntityType() != null))
+            return false;
+        if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
+                 ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
+            return false;
+                 
+        if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getLegalStatuses(), $other->getLegalStatuses(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getNameEntries(), $other->getNameEntries(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getOccupations(), $other->getOccupations(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getBiogHistList(), $other->getBiogHistList(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getRelations(), $other->getRelations(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getResourceRelations(), $other->getResourceRelations(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getFunctions(), $other->getFunctions(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getPlaces(), $other->getPlaces(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getSubjects(), $other->getSubjects(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getNationalities(), $other->getNationalities(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getGenders(), $other->getGenders(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getGeneralContexts(), $other->getGeneralContexts(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getMandates(), $other->getMandates(), $strict))
+            return false;
+        
+        return true;
+    }
 }

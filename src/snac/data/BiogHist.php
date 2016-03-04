@@ -140,4 +140,30 @@ class BiogHist extends AbstractData {
 
         $this->text = $text;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\BiogHist $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || !($other instanceof \snac\data\BiogHist))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getText() != $other->getText())
+            return false;
+        
+        if (($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage(), $strict)) ||
+                ($this->getLanguage() == null && $other->getLanguage() != null))
+            return false;
+        
+        return true;
+    }
 }

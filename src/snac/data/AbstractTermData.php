@@ -121,5 +121,26 @@ abstract class AbstractTermData extends AbstractData {
         else
             $this->term = null;
     }
+    
+    /**
+     * {@inheritDoc}
+     * 
+     * @param \snac\data\AbstractTermData $other Other object
+     * 
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+        if ($other == null || !($other instanceof \snac\data\AbstractTermData))
+            return false;
+        
+        if (!parent::equals($other, $strict))
+            return false;
+        
+        if (($this->getTerm() != null && !$this->getTerm()->equals($other->getTerm())) ||
+                ($this->getTerm() == null && $other->getTerm() != null))
+            return false;
+        
+        return true;
+    }
 
 }

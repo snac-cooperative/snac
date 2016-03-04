@@ -163,4 +163,32 @@ class SameAs extends AbstractData {
     public function setType($type) {
         $this->type = $type;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\SameAs $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\SameAs))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getText() != $other->getText())
+            return false;
+        if ($this->getURI() != $other->getURI())
+            return false;
+
+        if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
+                 ($this->getType() == null && $other->getType() != null))
+            return false;
+        
+        return true;
+    }
 }

@@ -267,4 +267,40 @@ class SNACControlMetadata extends AbstractData {
         $this->note = $note;
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\SNACControlMetadata $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\SNACControlMetadata))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getSubCitation() != $other->getSubCitation())
+            return false;        
+        if ($this->getSourceData() != $other->getSourceData())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getCitation() != null && ! $this->getCitation()->equals($other->getCitation(), $strict)) ||
+                 ($this->getCitation() == null && $other->getCitation() != null))
+            return false;
+        if (($this->getDescriptiveRule() != null && ! $this->getDescriptiveRule()->equals($other->getDescriptiveRule())) ||
+                 ($this->getDescriptiveRule() == null && $other->getDescriptiveRule() != null))
+            return false;
+        if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
+                 ($this->getLanguage() == null && $other->getLanguage() != null))
+            return false;
+        
+        return true;
+    }
+
 }
