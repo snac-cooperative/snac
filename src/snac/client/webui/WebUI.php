@@ -327,32 +327,32 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $nested[$parts[0]][$parts[3]][$parts[1]] = array();
                 $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
             } else if (count($parts) == 5) {
-                // four parts: scm repeating
-                // key_scm_subkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey] = value
-                if (!isset($nested[$parts[0]][$parts[4]]))
-                    $nested[$parts[0]][$parts[4]] = array();
-                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]]))
-                    $nested[$parts[0]][$parts[4]][$parts[1]] = array();
-                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]]))
-                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]] = array();
-                if (!isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]]))
-                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]] = array();
-                $nested[$parts[0]][$parts[4]][$parts[1]][$parts[3]][$parts[2]] = $v;
+                // five parts: scm repeating
+                // scm_key_subkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey] = value
+                if (!isset($nested[$parts[1]][$parts[4]]))
+                    $nested[$parts[1]][$parts[4]] = array();
+                if (!isset($nested[$parts[1]][$parts[4]][$parts[0]]))
+                    $nested[$parts[1]][$parts[4]][$parts[0]] = array();
+                if (!isset($nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]]))
+                    $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]] = array();
+                if (!isset($nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]]))
+                    $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]] = array();
+                $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]] = $v;
             } else if (count($parts) == 6) {
-                // four parts: scm repeating
-                // key_scm_subkey_subsubkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey][subsubkey] = value
+                // six parts: scm repeating
+                // scm_key_subkey_subsubkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey][subsubkey] = value
                 //{{short}}_scm_languagescript_id_{{j}}_{{i}}
-                if (!isset($nested[$parts[0]][$parts[5]]))
-                    $nested[$parts[0]][$parts[5]] = array();
-                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]]))
-                    $nested[$parts[0]][$parts[5]][$parts[1]] = array();
-                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]]))
-                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]] = array();
-                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]]))
-                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]] = array();
-                if (!isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]]))
-                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]] = array();
-                $nested[$parts[0]][$parts[5]][$parts[1]][$parts[4]][$parts[2]][$parts[3]] = $v;
+                if (!isset($nested[$parts[1]][$parts[5]]))
+                    $nested[$parts[1]][$parts[5]] = array();
+                if (!isset($nested[$parts[1]][$parts[5]][$parts[0]]))
+                    $nested[$parts[1]][$parts[5]][$parts[0]] = array();
+                if (!isset($nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]]))
+                    $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]] = array();
+                if (!isset($nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]]))
+                    $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]] = array();
+                if (!isset($nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]]))
+                    $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]] = array();
+                $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]] = $v;
             }
         }
         
