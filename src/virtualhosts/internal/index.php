@@ -17,6 +17,11 @@ include ("../../../vendor/autoload.php");
 
 // Namespace shortcuts
 use \snac\server\Server as Server;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
+
+// Set up the global log stream
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 try {
     // Get the request body for processing

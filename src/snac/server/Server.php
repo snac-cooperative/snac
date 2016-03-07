@@ -52,6 +52,11 @@ class Server implements \snac\interfaces\ServerInterface {
      * @var int Timing information (ms)
      */
     private $timing = 0;
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
 
     /**
      * Constructor
@@ -61,12 +66,18 @@ class Server implements \snac\interfaces\ServerInterface {
      * @param array $input Input to the server
      */
     public function __construct($input) {
+        global $log;
 
         $this->input = $input;
         $this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
         $this->response = array(
                 "request" => $this->input,
         );
+        
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('Server');
+        $this->logger->pushHandler($log);
     }
 
     /**

@@ -44,6 +44,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
     private $responseHeaders = null;
 
 
+    /**
+     * @var \Monolog\Logger $logger Logger for this server
+     */
+    private $logger = null;
 
     /**
      * Constructor
@@ -54,11 +58,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
      * @param array $input web input as an associative array
      */
     public function __construct($input) {
+        global $log;
 
         $this->responseHeaders = array();
         $this->input = $input;
         if (!isset($this->input["command"]))
             $this->input["command"] = "";
+        
+
+        // create a log channel
+        $this->logger = new \Monolog\Logger('WebUI');
+        $this->logger->pushHandler($log);
+        
         return;
     }
 

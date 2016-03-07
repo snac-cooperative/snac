@@ -61,10 +61,34 @@ class Config {
 
     /**
      *
-     * @var string location of database logfile
+     * @var string directory to write the log files
      */
-    public static $DATABASE_LOG = "";
-
+    public static $LOG_DIR = "";
+    
+    /**
+     *
+     * @var string filename for the Server log
+     */
+    public static $SERVER_LOGFILE = "server.log";
+    
+    /**
+     *
+     * @var string filename for the WebUI log
+     */
+    public static $WEBUI_LOGFILE = "webui.log";
+    
+    /**
+     *
+     * @var string filename for the REST log
+     */
+    public static $REST_LOGFILE = "rest.log";
+    
+    /**
+     *
+     * @var string filename for the UnitTesting log
+     */
+    public static $UNITTEST_LOGFILE = "unit_test.log";
+    
     /**
      * Whether or not the database is in testing mode. In testing mode,
      * database calls will only be logged and not committed to the database.
