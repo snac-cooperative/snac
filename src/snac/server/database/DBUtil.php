@@ -228,13 +228,13 @@ class DBUtil
 
 
     /**
-     * Build list of id,version
+     * List main_id, verion user is editing
      *
-     * Build a list of id,verion for records that I'm editing. "I" am $this->appUserID;
+     * Build a list of main_id,version user has locked for edit by $appUserID.
      *
-     * @return string[] A list of associative lists. Each inner list has keys 'main_id', 'version'
+     * @return integer[] A list with keys 'main_id', 'version' of constellations locked for edit by $appUserID
      */ 
-    private function editist()
+    private function editList()
     {
         // When you implement this, use $this->appUserID;
         return array();
@@ -1978,19 +1978,25 @@ class DBUtil
             // printf("\nwrite doing delete\n");
             $mainID = $cObj->getID();
         }
-        // elseif ($op == null || $op == \snac\data\AbstractData::$OPERATION_INSERT)
         elseif ($op == \snac\data\AbstractData::$OPERATION_INSERT)
         {
+            /*
+             * Insert require a new ID. Passing a null mainID (aka main_id) to insertVersionHistory() will
+             * cause a new mainID to be minted.
+             */ 
             // printf("\nwrite doing insert\n");
             $mainID = null;
         }
         elseif ($op == null)
         {
             /*
-             * This must be an existing constellation with no change at the top, but some operation inside.
+             * This must be an update. That is: an existing constellation with no change at the top, but some
+             * operation(s) inside. Since the constellation exists, we assume the ID is good, and there's no
+             * need to mint a new ID.
              *
-             * A new insert would not have an ID, so this wouldn't work in that case. Note: we assume the
-             * constellation already has a valid ID.
+             * Question: why isn't this simply part of the update branch above?
+             *
+             * A new constellation must have operation insert, and is handled above.
              */
             // printf("\nNo operation at top; we assume there are internal operations.\n");
             $mainID = $cObj->getID();
@@ -2004,15 +2010,15 @@ class DBUtil
 
         /*
          * Version, status, and note are used only for this write. If at some future time you create private
-         * vars for version, main_id, status, and note here in DBUtil, then clear the main_id, version,
-         * status, and note before returning. Always set all version info.
+         * vars for version, main_id, status, and note here in DBUtil, then you must clear the main_id, version,
+         * status, and note before returning. Always set all version info explicitly.
          *
          * What won't happen here is two records edited simultaneously being saved. We assume that is
          * impossible. And if it were possible, both updates would (logically?) have the same status, and share
          * the same note.
          *
-         * Likewise, even on bulk ingest version numbers are not reused for constellations ingested in the
-         * same "transaction". A new version_history record is created for each write. It is (sort of)
+         * Even on bulk ingest version numbers are not reused for constellations ingested in the same
+         * "transaction". A new version_history record is created for each write. It is (sort of) a
          * coincidence that status and note are the same in one or more version_history records.
          *
          * A single version_history record does (and must) apply to all new/modified components of a single
@@ -2020,7 +2026,7 @@ class DBUtil
          *
          * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
          *
-         * $vhInfo is array('version' => 123, 'main_id' => 456);
+         * A reminder: the structure of $vhInfo is array('version' => 123, 'main_id' => 456);
          *
          */
         $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
@@ -2031,14 +2037,6 @@ class DBUtil
          * The only changes to $cObj are adding id and version as necessary. 
          */
         $this->coreWrite($vhInfo, $cObj);
-
-        /* 
-         * foreach ($cObj->getNameEntries() as $ndata)
-         * {
-         *     printf("\ngetting id: %s version: %s\n", $ndata->getID(), $ndata->getVersion());
-         * }
-         */
-
         return $cObj;
     }
 
@@ -2554,38 +2552,22 @@ class DBUtil
     /**
      * Delete a single record of a single table.
      *
-     * Used only for testing. When we implement operations via AbstractData::setOperation() this will become
-     * private, and may change dramatically.
+     * Public for testing until we implement "operation". When we implement operations via
+     * AbstractData::setOperation() this will become private.
      *
-     * We need the id here because we only want a single record. The other code here just gets all the records
-     * (keeping their id values) and throws them into an Constellation object. Delete is different and delete
-     * has single-record granularity.
+     * Pass a single record object $cObj. The other code here just gets all the records (keeping their id
+     * values) and throws them into an Constellation object. Delete is different and delete has single-record
+     * granularity.
      *
-     * Need a helper function somewhere to associate object type with database table.
+     * By calling deleteOK() as we use the associative list $canDelete to associate each class with a table.
      *
-     * Instead of what we have implemented here, it might be best to delete by sending a complete php object
-     * to setDeleted() and that object would contain id, version, mainID (available via getters). This would
-     * allow setDeleted() to work without any out-of-band information.
+     * Name is special because a constellation must have at least one name. Everything else can be zero per constellation.
      *
+     * @param integer[] $vhInfo Associative list with keys 'main_id', 'version'. These are the new version of the
+     * delete, and the constellation main_id.
      *
-     * @param integer $appUserID Integer user id corresponds to table appuser.id, Historically it was used
-     * when creating a new version_history record.
-     *
-     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     * 
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of
-     * the inserted constellation. Pass a null if unchanged. Lower level code will preserved the existing
-     * setting.
-     *
-     * @param string $note A user-created note for what was done to the constellation. A check-in note.
-     *
-     * @param integer $main_id The constellation id.
-     *
-     * @param string $table Name of the table we are deleting from. This might be changed to object typeof()
-     * and we will figure out what SQL table that corresponds to, using an associative list lookup. The
-     * calling programmer should not have to know table names.
-     *
-     * @param integer $id The record id of the record being deleted. Corresponds to table.id.
+     * @param \snac\data\Constellation $cObj An object to be deleted. This is any non-Constellation
+     * object. Constellation delete is special and handled elsewhere (or at least that is the plan.)
      *
      * @return string Non-null is success, null is failure. On succeess returns the deleted row id, which
      * should be the same as $id.
@@ -2611,7 +2593,6 @@ class DBUtil
             }
             $this->sql->sqlSetDeleted($table, $cObj->getID(), $vhInfo['version']);
             $postNCount = $this->sql->siblingNameCount($cObj->getID());
-            // printf("startnc: $snCount postnc: $postNCount\n");
             return true;
         }
         else
