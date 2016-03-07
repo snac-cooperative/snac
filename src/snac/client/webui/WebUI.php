@@ -257,10 +257,55 @@ class WebUI implements \snac\interfaces\ServerInterface {
         return null;
     }
     
-    private function parseSCM($scm) {
+    private function parseSCM($objectWithSCM) {
         // parse through the SCM array
-        //TODO
-        return array();
+
+        if (!isset($objectWithSCM) || $objectWithSCM == null || !isset($objectWithSCM["scm"]) || 
+                $objectWithSCM["scm"] == null || $objectWithSCM["scm"] == "")
+            return array();
+        
+        $scmArray = array();
+        
+        foreach ($objectWithSCM["scm"] as $scm) {
+            $scmObject = new \snac\data\SNACControlMetadata();
+            if ($scm["id"] != "")
+                $scmObject->setID($scm["id"]);
+            if ($scm["version"] != "")
+                $scmObject->setVersion($scm["version"]);
+            $scmObject->setOperation($this->getOperation($scm));
+            $scmObject->setSubCitation($scm["subCitation"]);
+            $scmObject->setSourceData($scm["sourceData"]);
+            $scmObject->setNote($scm["note"]);
+            
+            if (isset($scm["descriptiveRule"]) && isset($scm["descriptiveRule"]["id"]) && $scm["descriptiveRule"]["id"] != "") {
+                $term = new \snac\data\Term();
+                $term->setID($scm["descriptiveRule"]["id"]);
+                $scmObject->setDescriptiveRule($term);
+            }
+            
+            $lang = new \snac\data\Language();
+            if ($scm["language"]["id"] != "")
+                $lang->setID($scm["language"]["id"]);
+            if ($scm["language"]["version"] != "")
+                $lang->setVersion($scm["language"]["version"]);
+            $lang->setOperation($this->getOperation($scm));
+            // May need to set the operation to insert if the id is null and there is an update...
+            
+            $term = new \snac\data\Term();
+            $term->setID($scm["languagelanguage"]["id"]);
+            $lang->setLanguage($term);
+            
+            $term = new \snac\data\Term();
+            $term->setID($scm["languagescript"]["id"]);
+            $lang->setScript($term);
+            
+            $scmObject->setLanguage($lang);
+            
+            array_push($scmArray, $scmObject);
+            
+        }
+        
+        return $scmArray;
     }
 
     /**
@@ -357,7 +402,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
         
  
-        // TODO
+        // NRD-level Information
         if (isset($nested["ark"]))
             $constellation->setArkID($nested["ark"]);
         if (isset($nested["constellationid"]))
@@ -371,6 +416,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term->setID($nested["entityType"]);
             $constellation->setEntityType($term);
         }
+        
+        // Constellation SCM
+
+        $constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"]));
+        
+        
         foreach ($nested["gender"] as $data) {
             $term = new \snac\data\Term();
             $term->setID($data["term"]["id"]);
@@ -379,9 +430,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $gender->setVersion($data["id"]);
             $gender->setTerm($term);
             $gender->setOperation($this->getOperation($data));
-            
-            // Example
-            $gender->setAllSNACControlMetadata($this->parseSCM($gender["scm"]));
+
+            $gender->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->setGender($gender);
         }
@@ -401,6 +451,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $type->setID($data["endtype"]["id"]);
             $date->setFromDate($data["endoriginal"], $data["end"], $type);
             $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
+            
+            $date->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addDate($date);
         }
@@ -428,6 +480,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $lang->setScript($term);
             
             $bh->setLanguage($lang);
+
+            $bh->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addBiogHist($bh);
         }
@@ -446,6 +500,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term->setID($data["script"]["id"]);
             $lang->setScript($term);
 
+            $lang->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addLanguageUsed($lang);
         }
 
@@ -458,6 +514,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term = new \snac\data\Term();
             $term->setID($data["term"]["id"]);
             $nationality->setTerm($term);
+            
+            $nationality->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addNationality($nationality);
         }
@@ -472,6 +530,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term->setID($data["term"]["id"]);
             $fun->setTerm($term);
 
+            $fun->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addFunction($fun);
         }
 
@@ -485,6 +545,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term->setID($data["term"]["id"]);
             $legalStatus->setTerm($term);
 
+            $legalStatus->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addLegalStatus($legalStatus);
         }
 
@@ -495,6 +557,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $conventionDeclaration->setOperation($this->getOperation($data));
             
             $conventionDeclaration->setText($data["text"]);
+
+            $conventionDeclaration->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addConventionDeclaration($conventionDeclaration);
         }
@@ -506,6 +570,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $generalContext->setOperation($this->getOperation($data));
             
             $generalContext->setText($data["text"]);
+
+            $generalContext->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addGeneralContext($generalContext);
         }
@@ -517,6 +583,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $structureOrGenealogy->setOperation($this->getOperation($data));
             
             $structureOrGenealogy->setText($data["text"]);
+
+            $structureOrGenealogy->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addStructureOrGenealogy($structureOrGenealogy);
         }
@@ -528,6 +596,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $mandate->setOperation($this->getOperation($data));
             
             $mandate->setText($data["text"]);
+
+            $mandate->setAllSNACControlMetadata($this->parseSCM($data));
             
             $constellation->addMandate($mandate);
         }
@@ -556,6 +626,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             $nameEntry->setLanguage($lang);
 
+            $nameEntry->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addNameEntry($nameEntry);
         }
 
@@ -571,6 +643,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $type = new \snac\data\Term();
             $type->setID($data["type"]["id"]);
             $sameas->setType($type);
+            
+            $sameas->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addOtherRecordID($sameas);
         }
@@ -599,6 +673,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $lang->setScript($term);
             
             $source->setLanguage($lang);
+            
+            $source->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addSource($source);
         }
@@ -621,6 +697,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $role = new \snac\data\Term();
             $role->setID($data["role"]["id"]);
             $relation->setRole($role);
+            
+            $relation->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addResourceRelation($relation);
         }
@@ -640,6 +718,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $type->setID($data["type"]["id"]);
             $relation->setType($type);
 
+            $relation->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addRelation($relation);
         }
 
@@ -653,6 +733,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term->setID($data["term"]["id"]);
             $subject->setTerm($term);
 
+            $subject->setAllSNACControlMetadata($this->parseSCM($data));
+
             $constellation->addSubject($subject);
         }
 
@@ -665,6 +747,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $term = new \snac\data\Term();
             $term->setID($data["term"]["id"]);
             $occupation->setTerm($term);
+
+            $occupation->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addOccupation($occupation);
         }
@@ -690,15 +774,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $geoterm = new \snac\data\GeoTerm();
             $geoterm->setID($data["geoplace"]["id"]);
             $place->setGeoTerm($geoterm);
-            
 
             if ($data["confirmed"] === "true")
                 $place->confirm();
             else
                 $place->deconfirm();
+            
+            $place->setAllSNACControlMetadata($this->parseSCM($data));
 
             $constellation->addPlace($place);
         }
+        
+        
         
   
         return $constellation;
