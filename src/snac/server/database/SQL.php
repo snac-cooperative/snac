@@ -60,6 +60,9 @@ class SQL
      * record id, so we create a table.id from the main sequence id_seq. This is just a centralized place to
      * do that.
      *
+     * Also, when inserting a constellation we need a new id, and those ids are generated from the same
+     * sequence, so this is used there as well.
+     *
      * @return integer A table id from sequence id_seq.
      *
      */
@@ -69,6 +72,31 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
+
+    /**
+     *
+     * This is very similar to insertVersionHistory(). Why do we have both? What is insertVersionHistory()
+     * used for? Is it still relevant?
+     *
+     */ 
+    public function not_used_insertNewVersion($mainID, $status, $note)
+    {
+        $qq = 'insert_version_history';
+        // We need version_history.id and version_history.main_id returned.
+        $this->sdb->prepare($qq, 
+                            'insert into version_history 
+                            (user_id, role_id, status, is_current, note)
+                            values 
+                            ($1, $2, $3, $4, $5)
+                            returning id as version, main_id;');
+
+        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
+        $vhInfo = $this->sdb->fetchrow($result);
+        $this->sdb->deallocate($qq);
+        return $vhInfo;
+        
+    }
+
 
     /**
      * Select records from table source.
@@ -269,8 +297,12 @@ class SQL
     /**
      * Insert a version_history record.
      *
-     * Current this increments the id which is the version number. That needs
-     * to not be incremented in some cases.
+     * This always increments the version_history.id which is the version number. An old comment said: "That
+     * needs to not be incremented in some cases." That is certainly not possible now. Our rule is: always
+     * increment version on any database operation.
+     *
+     * The $mainID aka main_id may not be minted. If we have an existing $mainID we do not create a new
+     * one. This would be the case for update and delete.
      *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
      *
@@ -288,19 +320,25 @@ class SQL
      * returning it as 'version'. Note the "returning ..." part of the query.
      *
      */
-    public function insertVersionHistory($userid, $role, $status, $note)
+    public function insertVersionHistory($mainID, $userid, $role, $status, $note)
     {
+        if (! $mainID)
+        {
+            $mainID = $this->selectID();
+        }
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.main_id returned.
         $this->sdb->prepare($qq, 
                             'insert into version_history 
-                            (user_id, role_id, status, is_current, note)
+                            (main_id, user_id, role_id, status, is_current, note)
                             values
-                            ($1, $2, $3, $4, $5)
-                            returning id as version, main_id;');
+                            ($1, $2, $3, $4, $5, $6)
+                            returning id as version');
 
-        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
-        $vhInfo = $this->sdb->fetchrow($result);
+        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note));
+        $row = $this->sdb->fetchrow($result);
+        $vhInfo['version'] = $row['version'];
+        $vhInfo['main_id'] = $mainID;
         $this->sdb->deallocate($qq);
         return $vhInfo;
     }
@@ -381,16 +419,22 @@ class SQL
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      *
-     * Need to add later:
-     *
-     *  $date->getMissingFrom(),
-     *  $date->getMissingTo(),
-     *  $date->getToPresent(),
-     *
      * @param string[] $vhInfo associative list with keys: version, main_id
-     *
+     * @param integer $id Record id. If null a new one will be minted.
+     * @param integer $isRange Boolean if this is a date range
+     * @param string $fromDate The from date
+     * @param string $fromType, Type of from date, fk to vocabulary.id
+     * @param integer $fromBC Boolean if this is a BC date
+     * @param string $fromNotBefore Not before this date
+     * @param string $fromNotAfter Not after this date
+     * @param string $fromOriginal What we got from the CPF
+     * @param string $toDate The to date
+     * @param integer $toType Type of the date, fk to vocabulary.id
+     * @param integer $toBC Boolean, true if BC
+     * @param string $toNotBefore Not before this date
+     * @param string $toNotAfter Not after this date
+     * @param string $toOriginal What we got from the CPF
      * @param string $fk_table The name of the table to which this date and $fk_id apply.
-     *
      * @param integer $fk_id The id of the record to which this date applies.
      *
      * @return integer date_range record id, in case some other code is interested in what record id was
@@ -897,14 +941,17 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id if this contributor. If null one will be minted. The id (existing or new) is always returned.
+     *
      * @param integer $nameID Record id of related name
      *
      * @param string $name Name of the contributor
      *
      * @param integer $typeID Vocabulary fk id of the type of this contributor.
-     *
+     * 
+     * @return integer $id Return the existing id, or the newly minted id. 
      */
-    public function insertContributor($vhInfo, $nameID, $name, $typeID)
+    public function insertContributor($vhInfo, $id, $nameID, $name, $typeID)
     {
         if ($nameID == null)
         {
@@ -915,21 +962,26 @@ class SQL
             printf("Fatal: \$nameID must not be null\n");
             exit();
         }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
-                            (version, main_id, name_id, short_name, name_type)
+                            (version, main_id, id, name_id, short_name, name_type)
                             values
-                            ($1, $2, $3, $4, $5)');
+                            ($1, $2, $3, $4, $5, $6)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
+                                  $id,
                                   $nameID,
                                   $name,
                                   $typeID));
         $this->sdb->deallocate($qq_2);
+        return $id;
     }
-
 
     /**
      * Insert a function record
@@ -2151,6 +2203,14 @@ class SQL
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
+            /* 
+             * printf("\nsn: id: %s version: %s main_id: %s original: %s is_deleted: %s\n",
+             *        $name_row['id'],
+             *        $name_row['version'],
+             *        $name_row['main_id'],
+             *        $name_row['original'],
+             *        $name_row['is_deleted']);
+             */
             array_push($all, $name_row);
         }
         $this->sdb->deallocate($qq_1);
@@ -2213,6 +2273,10 @@ class SQL
      *
      * Note: Must select max(version_history.id) as version. The max() version is the Constellation version.
      *
+     * Mar 4 2016: Changed "nrd.id=date_range.fk_id" to "nrd.main_id=date_range.fk_id" because getID of
+     * nrd is main_id not id as with other tables and other objects. We changed this a while back, but
+     * (oddly?) this didn't break until today.
+     * 
      * @return string[] Return a flat array. This seems like a function that should return an associative
      * list. Currently, is only called in one place.
      */
@@ -2223,7 +2287,7 @@ class SQL
                             'select max(version_history.id) as version, version_history.main_id
                             from nrd,date_range, version_history
                             where
-                            nrd.id=date_range.fk_id and
+                            nrd.main_id=date_range.fk_id and
                             nrd.main_id=version_history.main_id
                             and not date_range.is_deleted
                             group by version_history.main_id
@@ -2283,7 +2347,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'select max(vh.id) as version, vh.main_id
                             from version_history as vh,
-                            (select count(aa.id),aa.main_id from name as aa
+                            (select count(distinct(aa.id)),aa.main_id from name as aa
                             where aa.id not in (select id from name where is_deleted) group by main_id order by main_id) as zz
                             where
                             vh.main_id=zz.main_id and
@@ -2336,12 +2400,12 @@ class SQL
      */
     public function selectDemoRecs()
     {
-        $qq =
+        $sql =
             'select max(id) as version,main_id
             from version_history
             group by main_id order by main_id limit 100';
 
-        $result = $this->sdb->query($qq, array());
+        $result = $this->sdb->query($sql, array());
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2350,7 +2414,7 @@ class SQL
             if (count($nRow) == 0)
             {
                 // Yikes, cannot have a constellation with zero names.
-                printf("\nSQL.php No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
+                printf("\nError: SQL.php No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
             }
 
             /*
@@ -2457,13 +2521,26 @@ class SQL
      */
     public function sqlCoreDeleted($table, $id, $newVersion, $operation)
     {
+        // printf("\ntable: $table id: $id newVersion: $newVersion\n");
         $selectSQL =
                    "select aa.* from $table as aa,
                    (select id, max(version) as version from $table where version<=$1 and id=$2 group by id) as bb
                    where aa.version=bb.version and aa.id=bb.id";
 
         $result = $this->sdb->query($selectSQL, array($newVersion, $id));
+        $xx = 0;
         $row = $this->sdb->fetchrow($result);
+        if ($secondRow = $this->sdb->fetchrow($result))
+        {
+            /* This is a crude way to test for multiple rows.
+             * 
+             * This happened when some inserts during testing went wrong. Might be something to test for,
+             * and/or add a primary key constraint. There can be only one main_id for a given id.
+             */  
+            printf("Error: sqlSetDeleted() selects multiple rows: %s for table: $table id: $id newVersion: $newVersion \n",
+                   count($row));
+            return;
+        }
 
         if (count($row) == 0)
         {
@@ -2508,9 +2585,50 @@ class SQL
             $tween = ", ";
         }
         $updateSQL = "insert into $table ($columnString) values ($placeHolderString) returning id";
+        // printf("del SQL: $updateSQL array: %s\n", var_export($row, 1));
         $newResult = $this->sdb->query($updateSQL, array_values($row));
     }
 
+    /**
+     * Count sibling name records
+     *
+     * Counts only the most recent.
+     */
+    public function siblingNameCount($recID)
+    {
+        /*
+         * Get the main_id for $recID
+         */ 
+        $result = $this->sdb->query(
+            "select aa.main_id from name as aa,
+            (select id, main_id, max(version) as version from name group by id,main_id) as bb
+            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.main_id=bb.main_id and aa.id=$1",
+            array($recID));
+
+        $row = $this->sdb->fetchrow($result);
+        $mainID = $row['main_id'];
+
+        /*
+         * Use the main_id to find not is_deleted sibling names.
+         */ 
+        $result = $this->sdb->query(
+            "select count(*) as count from name as aa,
+            (select id, max(version) as version from name where main_id=$1 group by id) as bb
+            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version",
+            array($mainID));
+
+        $row = $this->sdb->fetchrow($result);
+        if ($row and isset($row['count']))
+        {
+            return $row['count'];
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    
     /**
      * Count names, current version, not deleted, for a single constellation.
      *
@@ -2520,19 +2638,19 @@ class SQL
      * Note that Postgres names the column from the count() function 'count', so we do not need to alias the
      * column. I used the explicit alias just to make intent clear.
      *
-     * @param $main_id Integer constellation id usually from version_history.main_id.
+     * @param $mainID Integer constellation id usually from version_history.main_id.
      *
      * @return interger Number of names meeting the criteria. Zero if no names or if the query fails.
      *
      */
-    public function CountNames($main_id)
+    public function parentCountNames($mainID)
     {
         $selectSQL =
             "select count(*) as count from name as aa,
             (select id, main_id, max(version) as version from name group by id,main_id) as bb
             where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.main_id=bb.main_id and aa.main_id=$1";
 
-        $result = $this->sdb->query($selectSQL, array($main_id));
+        $result = $this->sdb->query($selectSQL, array($mainID));
         $row = $this->sdb->fetchrow($result);
         if ($row and isset($row['count']))
         {
