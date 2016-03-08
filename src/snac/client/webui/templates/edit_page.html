@@ -204,7 +204,7 @@ body {
 
                             {% set i = 0 %}
                             {% for gender in data.genders %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="gender_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
                                         <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version }}"/>
@@ -254,7 +254,7 @@ body {
 
                         {% set i = 0 %}
                         {% for nameEntry in data.nameEntries %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="nameEntry_panel_{{i}}">
                             <div class="panel-body">
                                 <div class="col-xs-10">
                                     <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
@@ -372,7 +372,7 @@ body {
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="sameAs_panel_{{i}}">
                             <div class="panel-body">
                                 <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                                 <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
@@ -423,7 +423,7 @@ body {
 
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default"  id="source_panel_{{i}}">
                             <div class="panel-body">
                                 <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
                                 <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
@@ -505,7 +505,7 @@ body {
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
                             <div class="panel-body">
                                 <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
@@ -583,7 +583,7 @@ body {
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
                             <div class="panel-body">
                                 <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
@@ -650,7 +650,7 @@ body {
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="language_panel_{{i}}">
                             <div class="panel-body">
                                 <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
                                 <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
@@ -705,7 +705,7 @@ body {
 
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                        <div class="panel panel-default">
+                        <div class="panel panel-default" id="subject_panel_{{i}}">
                             <div class="panel-body">
                                     <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
                                     <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
@@ -752,7 +752,7 @@ body {
 
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="nationality_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
                                         <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
@@ -798,7 +798,7 @@ body {
 
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="function_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
                                         <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
@@ -844,7 +844,7 @@ body {
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="occupation_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
                                         <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
@@ -890,7 +890,7 @@ body {
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="legalStatus_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
                                         <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
@@ -930,7 +930,7 @@ body {
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="place_panel_{{i}}">
                                 <div class="panel-body">
                                     <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
                                     <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
@@ -1024,7 +1024,7 @@ body {
                             <h2>Convention Declarations</h2>
 
                             <div class="form-group">
-                                <div class="col-xs-12 text-center">
+                                <div class="col-xs-12 text-center" id="conventionDeclaration_panel_{{i}}">
                                     <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
                                 </div>
                             </div>
@@ -1065,7 +1065,7 @@ body {
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="generalContext_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
                                         <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
@@ -1099,7 +1099,7 @@ body {
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
                                         <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
@@ -1133,7 +1133,7 @@ body {
 
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                            <div class="panel panel-default">
+                            <div class="panel panel-default" id="mandate_panel_{{i}}">
                                 <div class="panel-body">
                                         <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
                                         <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>

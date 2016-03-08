@@ -29,6 +29,11 @@ function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
         return false;
+    
+    // If it's deleted, then you better undelete it first
+    if ($("#" + short + "_operation_" + i).val() == "delete")
+        setDeleted(short, i);
+
 
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
@@ -43,22 +48,34 @@ function makeEditable(short, i) {
             obj.removeAttr("readonly");
         }
     });
-    $("div[id^='select_"+short+"']").each(function() {
-        var cont = $(this);
-        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-            var split = cont.attr('id').split("_");
-            var name = split[2];
-            var id = $("#"+short+"_"+name+"_id_"+i).val();
-            var term = $("#"+short+"_"+name+"_term_"+i).val();
-            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
-            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
-            cont.html("<select id='"+short+"_"+name+"_id_"+i+"' name='"+short+"_"+name+"_id_"+i+"' class='form-control'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-                    "</select>");
-            vocab_select_replace($("#"+short+"_"+name+"_id_"+i), i, vocabtype, minlength);
+    var sawSelect = false;
+    $("select[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            sawSelect = true;
         }
     });
+    
+    if (!sawSelect) {
+	    $("div[id^='select_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[2];
+	            var id = $("#"+short+"_"+name+"_id_"+i).val();
+	            var term = $("#"+short+"_"+name+"_term_"+i).val();
+	            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
+	            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
+	        
+	            cont.html("<select id='"+short+"_"+name+"_id_"+i+"' name='"+short+"_"+name+"_id_"+i+"' class='form-control'>"+
+	                    "<option></option>"+
+	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+	                    "</select>");
+	            vocab_select_replace($("#"+short+"_"+name+"_id_"+i), i, vocabtype, minlength);
+	            
+	        }
+	    });
+    }
     $("#" + short + "_operation_" + i).val("update");
     return false;
 }
@@ -102,5 +119,35 @@ function makeSCMEditable(short, i, j) {
 }
 
 function setDeleted(short, i) {
+    if ($("#" + short + "_operation_" + i).val() != "delete") {
+    	// set deleted
+    	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger");
+        $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+    	
+        $("#" + short + "_operation_" + i).val("delete");
+    	
+    } else {
+    	// set undelete
+    	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default");
+        $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-trash\"></span> Trash");
+        
+
+        // If this thing was deleted but is supposed to be an update, then return it back to update status
+        var sawSelect = false;
+        $("select[id^='"+short+"_']").each(function() {
+            var obj = $(this);
+            if(obj.attr('id').indexOf("_" + i) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+                sawSelect = true;
+            }
+        });
+        if (sawSelect) {
+        	 $("#" + short + "_operation_" + i).val("update");
+        } else {
+        	$("#" + short + "_operation_" + i).val("");
+        }
+    	
+    }
     return false;
 }
