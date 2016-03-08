@@ -205,7 +205,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $request = array();
             $request["command"] = "vocabulary";
             $request["type"] = $this->input["type"];
-            $request["query_string"] = $this->input["q"];
+            $queryString = "";
+            if (isset ($this->input["q"]))
+                $queryString = $this->input["q"];
+            $request["query_string"] = $queryString;
 
             // Send the query to the server
             $serverResponse = $connect->query($request);
@@ -351,6 +354,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $nested["subject"] = array();
         $nested["occupation"] = array();
         $nested["place"] = array();
+        // container to hold SCM for the overall constellation
+        $nested["constellation"] = array();
 
         foreach ($this->input as $k => $v) {
             // Try to split on underscore
@@ -434,6 +439,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         
         
         foreach ($nested["gender"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $term = new \snac\data\Term();
             $term->setID($data["term"]["id"]);
             $gender = new \snac\data\Gender();
@@ -444,10 +452,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             $gender->setAllSNACControlMetadata($this->parseSCM($data));
             
-            $constellation->setGender($gender);
+            $constellation->addGender($gender);
         }
 
         foreach ($nested["exist"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $date = new \snac\data\SNACDate();
             $date->setID($data["id"]);
             $date->setVersion($data["version"]);
@@ -470,6 +481,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         
 
         foreach ($nested["biogHist"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $bh = new \snac\data\BiogHist();
             $bh->setID($data["id"]);
             $bh->setVersion($data["version"]);
@@ -498,6 +512,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["language"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $lang = new \snac\data\Language();
             $lang->setID($data["id"]);
             $lang->setVersion($data["version"]);
@@ -517,6 +534,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["nationality"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $nationality = new \snac\data\Nationality();
             $nationality->setID($data["id"]);
             $nationality->setVersion($data["version"]);
@@ -532,6 +552,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["function"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $fun = new \snac\data\SNACFunction();
             $fun->setID($data["id"]);
             $fun->setVersion($data["version"]);
@@ -547,6 +570,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["legalStatus"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $legalStatus = new \snac\data\LegalStatus();
             $legalStatus->setID($data["id"]);
             $legalStatus->setVersion($data["version"]);
@@ -562,6 +588,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["conventionDeclaration"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $conventionDeclaration = new \snac\data\ConventionDeclaration();
             $conventionDeclaration->setID($data["id"]);
             $conventionDeclaration->setVersion($data["version"]);
@@ -575,6 +604,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["generalContext"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $generalContext = new \snac\data\GeneralContext();
             $generalContext->setID($data["id"]);
             $generalContext->setVersion($data["version"]);
@@ -588,6 +620,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["structureOrGenealogy"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $structureOrGenealogy = new \snac\data\StructureOrGenealogy();
             $structureOrGenealogy->setID($data["id"]);
             $structureOrGenealogy->setVersion($data["version"]);
@@ -601,6 +636,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["mandate"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $mandate = new \snac\data\Mandate();
             $mandate->setID($data["id"]);
             $mandate->setVersion($data["version"]);
@@ -614,6 +652,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["nameEntry"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $nameEntry = new \snac\data\NameEntry();
             $nameEntry->setID($data["id"]);
             $nameEntry->setVersion($data["version"]);
@@ -643,6 +684,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["sameAs"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $sameas = new \snac\data\SameAs();
             $sameas->setID($data["id"]);
             $sameas->setVersion($data["version"]);
@@ -661,6 +705,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["source"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $source = new \snac\data\Source();
             $source->setID($data["id"]);
             $source->setVersion($data["version"]);
@@ -691,6 +738,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["resourceRelation"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $relation = new \snac\data\ResourceRelation();
             $relation->setID($data["id"]);
             $relation->setVersion($data["version"]);
@@ -715,6 +765,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["constellationRelation"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $relation = new \snac\data\ConstellationRelation();
             $relation->setID($data["id"]);
             $relation->setVersion($data["version"]);
@@ -735,6 +788,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["subject"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $subject = new \snac\data\Subject();
             $subject->setID($data["id"]);
             $subject->setVersion($data["version"]);
@@ -750,6 +806,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["occupation"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $occupation = new \snac\data\Occupation();
             $occupation->setID($data["id"]);
             $occupation->setVersion($data["version"]);
@@ -765,6 +824,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         }
 
         foreach ($nested["place"] as $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
             $place = new \snac\data\Place();
             $place->setID($data["id"]);
             $place->setVersion($data["version"]);

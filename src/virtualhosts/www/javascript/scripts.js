@@ -76,7 +76,11 @@ function makeEditable(short, i) {
 	        }
 	    });
     }
-    $("#" + short + "_operation_" + i).val("update");
+    if ($("#" + short + "_id_" + i).val() != "")
+    	$("#" + short + "_operation_" + i).val("update");
+    else
+    	$("#" + short + "_operation_" + i).val("insert");
+    		
     return false;
 }
 
@@ -143,7 +147,10 @@ function setDeleted(short, i) {
             }
         });
         if (sawSelect) {
-        	 $("#" + short + "_operation_" + i).val("update");
+    	    if ($("#" + short + "_id_" + i).val() != "")
+    	    	$("#" + short + "_operation_" + i).val("update");
+    	    else
+    	    	$("#" + short + "_operation_" + i).val("insert");
         } else {
         	$("#" + short + "_operation_" + i).val("");
         }
@@ -151,3 +158,267 @@ function setDeleted(short, i) {
     }
     return false;
 }
+
+// Attach functions to each of the "+ Add New _______" buttons
+$(document).ready(function() {
+
+	// Code to handle adding new genders to the page
+	var genderid = 1;
+	if ($('#next_gender_i').exists()) {
+	    genderid = parseInt($('#next_gender_i').text());
+	}
+	console.log("Next Gender ID: " + genderid);
+	if ($('#btn_add_gender').exists()){
+		$('#btn_add_gender').click(function(){
+			var text = $('#gender_template').clone();
+	        var html = text.html().replace(/ZZ/g, genderid);
+	        $('#gender_pane').append(html);
+	        genderid = genderid + 1;
+	        return false;
+		});
+	}
+	
+
+	var nameEntryid = 1;
+	if ($('#next_nameEntry_i').exists()) {
+	    nameEntryid = parseInt($('#next_nameEntry_i').text());
+	}
+	console.log("Next NameEntry ID: " + nameEntryid);
+	if ($('#btn_add_nameEntry').exists()){
+		$('#btn_add_nameEntry').click(function(){
+			var text = $('#nameEntry_template').clone();
+	        var html = text.html().replace(/ZZ/g, nameEntryid);
+	        $('#add_nameEntry_div').after(html);
+	        nameEntryid = nameEntryid + 1;
+	        return false;
+		});
+	}
+	
+	var sameAsid = 1;
+	if ($('#next_sameAs_i').exists()) {
+	    sameAsid = parseInt($('#next_sameAs_i').text());
+	}
+	console.log("Next sameAs ID: " + sameAsid);
+	if ($('#btn_add_sameAs').exists()){
+		$('#btn_add_sameAs').click(function(){
+			var text = $('#sameAs_template').clone();
+	        var html = text.html().replace(/ZZ/g, sameAsid);
+	        $('#add_sameAs_div').after(html);
+	        sameAsid = sameAsid + 1;
+	        return false;
+		});
+	}
+	
+	var sourceid = 1;
+	if ($('#next_source_i').exists()) {
+	    sourceid = parseInt($('#next_source_i').text());
+	}
+	console.log("Next source ID: " + sourceid);
+	if ($('#btn_add_source').exists()){
+		$('#btn_add_source').click(function(){
+			var text = $('#source_template').clone();
+	        var html = text.html().replace(/ZZ/g, sourceid);
+	        $('#add_source_div').after(html);
+	        sourceid = sourceid + 1;
+	        return false;
+		});
+	}
+	
+	var resourceRelationid = 1;
+	if ($('#next_resourceRelation_i').exists()) {
+	    resourceRelationid = parseInt($('#next_resourceRelation_i').text());
+	}
+	console.log("Next resourceRelation ID: " + resourceRelationid);
+	if ($('#btn_add_resourceRelation').exists()){
+		$('#btn_add_resourceRelation').click(function(){
+			var text = $('#resourceRelation_template').clone();
+	        var html = text.html().replace(/ZZ/g, resourceRelationid);
+	        $('#add_resourceRelation_div').after(html);
+	        resourceRelationid = resourceRelationid + 1;
+	        return false;
+		});
+	}
+	
+	var constellationRelationid = 1;
+	if ($('#next_constellationRelation_i').exists()) {
+	    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
+	}
+	console.log("Next constellationRelation ID: " + constellationRelationid);
+	if ($('#btn_add_constellationRelation').exists()){
+		$('#btn_add_constellationRelation').click(function(){
+			var text = $('#constellationRelation_template').clone();
+	        var html = text.html().replace(/ZZ/g, constellationRelationid);
+	        $('#add_constellationRelation_div').after(html);
+	        constellationRelationid = constellationRelationid + 1;
+	        return false;
+		});
+	}
+	
+	var languageid = 1;
+	if ($('#next_language_i').exists()) {
+	    languageid = parseInt($('#next_language_i').text());
+	}
+	console.log("Next language ID: " + languageid);
+	if ($('#btn_add_language').exists()){
+		$('#btn_add_language').click(function(){
+			var text = $('#language_template').clone();
+	        var html = text.html().replace(/ZZ/g, languageid);
+	        $('#add_language_div').after(html);
+	        languageid = languageid + 1;
+	        return false;
+		});
+	}
+	
+	var subjectid = 1;
+	if ($('#next_subject_i').exists()) {
+	    subjectid = parseInt($('#next_subject_i').text());
+	}
+	console.log("Next subject ID: " + subjectid);
+	if ($('#btn_add_subject').exists()){
+		$('#btn_add_subject').click(function(){
+			var text = $('#subject_template').clone();
+	        var html = text.html().replace(/ZZ/g, subjectid);
+	        $('#add_subject_div').after(html);
+	        subjectid = subjectid + 1;
+	        return false;
+		});
+	}
+	
+	var nationalityid = 1;
+	if ($('#next_nationality_i').exists()) {
+	    nationalityid = parseInt($('#next_nationality_i').text());
+	}
+	console.log("Next nationality ID: " + nationalityid);
+	if ($('#btn_add_nationality').exists()){
+		$('#btn_add_nationality').click(function(){
+			var text = $('#nationality_template').clone();
+	        var html = text.html().replace(/ZZ/g, nationalityid);
+	        $('#add_nationality_div').after(html);
+	        nationalityid = nationalityid + 1;
+	        return false;
+		});
+	}
+	
+	var functionid = 1;
+	if ($('#next_function_i').exists()) {
+	    functionid = parseInt($('#next_function_i').text());
+	}
+	console.log("Next function ID: " + functionid);
+	if ($('#btn_add_function').exists()){
+		$('#btn_add_function').click(function(){
+			var text = $('#function_template').clone();
+	        var html = text.html().replace(/ZZ/g, functionid);
+	        $('#add_function_div').after(html);
+	        functionid = functionid + 1;
+	        return false;
+		});
+	}
+	
+	var occupationid = 1;
+	if ($('#next_occupation_i').exists()) {
+	    occupationid = parseInt($('#next_occupation_i').text());
+	}
+	console.log("Next occupation ID: " + occupationid);
+	if ($('#btn_add_occupation').exists()){
+		$('#btn_add_occupation').click(function(){
+			var text = $('#occupation_template').clone();
+	        var html = text.html().replace(/ZZ/g, occupationid);
+	        $('#add_occupation_div').after(html);
+	        occupationid = occupationid + 1;
+	        return false;
+		});
+	}
+	
+	var legalStatusid = 1;
+	if ($('#next_legalStatus_i').exists()) {
+	    legalStatusid = parseInt($('#next_legalStatus_i').text());
+	}
+	console.log("Next legalStatus ID: " + legalStatusid);
+	if ($('#btn_add_legalStatus').exists()){
+		$('#btn_add_legalStatus').click(function(){
+			var text = $('#legalStatus_template').clone();
+	        var html = text.html().replace(/ZZ/g, legalStatusid);
+	        $('#add_legalStatus_div').after(html);
+	        legalStatusid = legalStatusid + 1;
+	        return false;
+		});
+	}
+	
+	var placeid = 1;
+	if ($('#next_place_i').exists()) {
+	    placeid = parseInt($('#next_place_i').text());
+	}
+	console.log("Next place ID: " + placeid);
+	if ($('#btn_add_place').exists()){
+		$('#btn_add_place').click(function(){
+			var text = $('#place_template').clone();
+	        var html = text.html().replace(/ZZ/g, placeid);
+	        $('#add_place_div').after(html);
+	        placeid = placeid + 1;
+	        return false;
+		});
+	}
+	
+	var conventionDeclarationid = 1;
+	if ($('#next_conventionDeclaration_i').exists()) {
+	    conventionDeclarationid = parseInt($('#next_conventionDeclaration_i').text());
+	}
+	console.log("Next conventionDeclaration ID: " + conventionDeclarationid);
+	if ($('#btn_add_conventionDeclaration').exists()){
+		$('#btn_add_conventionDeclaration').click(function(){
+			var text = $('#conventionDeclaration_template').clone();
+	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
+	        $('#add_conventionDeclaration_div').after(html);
+	        conventionDeclarationid = conventionDeclarationid + 1;
+	        return false;
+		});
+	}
+	
+	var generalContextid = 1;
+	if ($('#next_generalContext_i').exists()) {
+	    generalContextid = parseInt($('#next_generalContext_i').text());
+	}
+	console.log("Next generalContext ID: " + generalContextid);
+	if ($('#btn_add_generalContext').exists()){
+		$('#btn_add_generalContext').click(function(){
+			var text = $('#generalContext_template').clone();
+	        var html = text.html().replace(/ZZ/g, generalContextid);
+	        $('#add_generalContext_div').after(html);
+	        generalContextid = generalContextid + 1;
+	        return false;
+		});
+	}
+	
+	var structureOrGenealogyid = 1;
+	if ($('#next_structureOrGenealogy_i').exists()) {
+	    structureOrGenealogyid = parseInt($('#next_structureOrGenealogy_i').text());
+	}
+	console.log("Next structureOrGenealogy ID: " + structureOrGenealogyid);
+	if ($('#btn_add_structureOrGenealogy').exists()){
+		$('#btn_add_structureOrGenealogy').click(function(){
+			var text = $('#structureOrGenealogy_template').clone();
+	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
+	        $('#add_structureOrGenealogy_div').after(html);
+	        structureOrGenealogyid = structureOrGenealogyid + 1;
+	        return false;
+		});
+	}
+	
+	var mandateid = 1;
+	if ($('#next_mandate_i').exists()) {
+	    mandateid = parseInt($('#next_mandate_i').text());
+	}
+	console.log("Next mandate ID: " + mandateid);
+	if ($('#btn_add_mandate').exists()){
+		$('#btn_add_mandate').click(function(){
+			var text = $('#mandate_template').clone();
+	        var html = text.html().replace(/ZZ/g, mandateid);
+	        $('#add_mandate_div').after(html);
+	        mandateid = mandateid + 1;
+	        return false;
+		});
+	}
+	
+	
+});
+

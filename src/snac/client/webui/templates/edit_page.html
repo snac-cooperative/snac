@@ -75,6 +75,7 @@ body {
 </head>
 <body role="document" onLoad="updatePage();">
 {% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
 {% from 'date_entry.html' import dateEntry %}
 
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -200,43 +201,20 @@ body {
 
                         <div class="panel panel-default">
                         	<div class="panel-heading">Genders</div>
-                        	<div class="panel-body">
+                        	<div class="panel-body" id="gender_pane">
+                            <div class="form-group" id="add_gender_div">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success" id="btn_add_gender"><span class="glyphicon glyphicon-plus"></span> Add New Gender</button>
+                                </div>
+                            </div>
 
                             {% set i = 0 %}
                             {% for gender in data.genders %}
-                            <div class="panel panel-default" id="gender_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
-                                        <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version }}"/>
-                                        <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
-                                                </label>
-                                                <div class="col-xs-8" id="select_gender_term_{{i}}">
-                                                    <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
-                                                    <input type="hidden" id="gender_term_term_{{i}}" name="gender_term_term_{{i}}" value="{{gender.term.term}}"/>
-                                                    <input type="hidden" id="gender_term_vocabtype_{{i}}" name="gender_term_vocabtype_{{i}}" value="gender"/>
-                                                    <input type="hidden" id="gender_term_minlength_{{i}}" name="gender_term_minlength_{{i}}" value="0"/>
-                                                    <p class="form-control-static">{{ gender.term.term }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
-                                                </label>
-                                                <div class="col-xs-8">
-                                                    {{ widgets.displayURI(gender.term.uri) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("gender", i, gender.term.term, "Gender", gender) }}
-                                        {{ widgets.optionsList("gender", i) }}
-                                    </div>
-                                </div>
+                                {{ components.displayGender(gender, i) }}
                                 {% set i = i + 1 %}
-                                {% endfor %}
+                            {% endfor %}
+                            
+                            <span id='next_gender_i' style='display:none;'>{{i}}</span>
                             </div>
                         </div>
 
@@ -246,69 +224,19 @@ body {
                     <div class="tab-pane" id="nameEntries">
                         <h2>Name Entries</h2>
 
-                        <div class="form-group">
+                        <div class="form-group" id="add_nameEntry_div">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Name Entry</button>
+                                <button class="btn btn-success" id="btn_add_nameEntry"><span class="glyphicon glyphicon-plus"></span> Add New Name Entry</button>
                             </div>
                         </div>
 
                         {% set i = 0 %}
                         {% for nameEntry in data.nameEntries %}
-                        <div class="panel panel-default" id="nameEntry_panel_{{i}}">
-                            <div class="panel-body">
-                                <div class="col-xs-10">
-                                    <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
-                                    <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
-                                    <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value=""/>
-                                    <div class="form-group">
-                                        <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4">
-                                            Original
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="text" class="form-control" value="{{ nameEntry.original }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4">
-                                            Preference Score
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
-                                    <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
-                                        </label>
-                                        <div class="col-xs-8" id="select_nameEntry_languagelanguage_{{i}}">
-                                            <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
-                                            <input id="nameEntry_languagelanguage_term_{{i}}" name="nameEntry_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.term }}"/>
-                                            <input id="nameEntry_languagelanguage_vocabtype_{{i}}" name="nameEntry_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                            <input id="nameEntry_languagelanguage_minlength_{{i}}" name="nameEntry_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ nameEntry.language.language.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
-                                        </label>
-                                        <div class="col-xs-8" id="select_nameEntry_languagescript_{{i}}">
-                                            <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
-                                            <input id="nameEntry_languagescript_term_{{i}}" name="nameEntry_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.term }}"/>
-                                            <input id="nameEntry_languagescript_vocabtype_{{i}}" name="nameEntry_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                            <input id="nameEntry_languagescript_minlength_{{i}}" name="nameEntry_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                {{ widgets.scmModal("nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
-                                {{ widgets.optionsList("nameEntry", i) }}
-                            </div>
-                        </div>
+                            {{ components.displayNameEntry(nameEntry, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
+                        
 
                     </div>
 
@@ -363,333 +291,94 @@ body {
                     <div class="tab-pane" id="sameAs">
                         <h2>Same As</h2>
 
-                        <div class="form-group">
+                        <div class="form-group" id="add_sameAs_div">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
+                                <button class="btn btn-success" id="btn_add_sameAs"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
                             </div>
                         </div>
 
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                        <div class="panel panel-default" id="sameAs_panel_{{i}}">
-                            <div class="panel-body">
-                                <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
-                                <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
-                                <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
-                                    <div class="form-group">
-                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
-                                            Relation Text
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4">
-                                            Role
-                                        </label>
-                                        <div class="col-xs-8" id="select_sameAs_type_{{i}}">
-                                            <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
-                                            <input id="sameAs_type_term_{{i}}" name="sameAs_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
-                                            <input id="sameAs_type_vocabtype_{{i}}" name="sameAs_type_vocabtype_{{i}}" type="hidden" class="form-control" value="record_type"/>
-                                            <input id="sameAs_type_minlength_{{i}}" name="sameAs_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ other.type.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{ widgets.scmModal("sameAs", i, other.uri, "Same-As Relation", other) }}
-                                {{ widgets.optionsList("sameAs", i) }}
-                            </div>
-                        </div>
+                            {{ components.displaySameAs(other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
 
 
                     </div>
 
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
+                        
+                        <div class="form-group" id="add_source_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_source"><span class="glyphicon glyphicon-plus"></span> Add New Source</button>
+                            </div>
+                        </div>
 
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                        <div class="panel panel-default"  id="source_panel_{{i}}">
-                            <div class="panel-body">
-                                <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
-                                <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
-                                <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
-                                    <div class="form-group">
-                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="source_text_{{ i }}" class="control-label col-xs-4">
-                                            Source Text
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
-                                        </div>
-                                    </div>
-
-                                    <input type="hidden" id="source_language_id_{{i}}" name="source_language_id_{{i}}" value="{{source.language.id}}"/>
-                                    <input type="hidden" id="source_language_version_{{i}}" name="source_language_version_{{i}}" value="{{sources.language.version}}"/>
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
-                                        </label>
-                                        <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
-                                            <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
-                                            <input id="source_languagelanguage_term_{{i}}" name="source_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.term }}"/>
-                                            <input id="source_languagelanguage_vocabtype_{{i}}" name="source_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                            <input id="source_languagelanguage_minlength_{{i}}" name="source_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ source.language.language.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
-                                        </label>
-                                        <div class="col-xs-8" id="select_source_languagescript_{{i}}">
-                                            <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
-                                            <input id="source_languagescript_term_{{i}}" name="source_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.term }}"/>
-                                            <input id="source_languagescript_vocabtype_{{i}}" name="source_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                            <input id="source_languagescript_minlength_{{i}}" name="source_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ source.language.script.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="source_note_{{ i }}" class="control-label col-xs-4">
-                                            Descriptive Note
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
-                                        </div>
-                                    </div>
-
-
-                                </div>
-                                {{ widgets.scmModal("source", i, source.uri, "Source", source) }}
-                                {{ widgets.optionsList("source", i) }}
-
-                            </div>
-                        </div>
+                            {{ components.displaySource(source, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_source_i' style='display:none;'>{{i}}</span>
 
                     </div>
 
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
 
-                        <div class="form-group">
+                        <div class="form-group" id="add_resourceRelation_div">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+                                <button class="btn btn-success" id="btn_add_resourceRelation"><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
                             </div>
                         </div>
 
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                        <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
-                            <div class="panel-body">
-                                <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
-                                <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
-                                <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
-                                    <div class="form-group">
-                                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
-                                            Relation Text
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
-                                            Role
-                                        </label>
-                                        <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
-                                            <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
-                                            <input id="resourceRelation_role_term_{{i}}" name="resourceRelation_role_term_{{i}}" type="hidden" class="form-control" value="{{ relation.role.term }}"/>
-                                            <input id="resourceRelation_role_vocabtype_{{i}}" name="resourceRelation_role_vocabtype_{{i}}" type="hidden" class="form-control" value="document_role"/>
-                                            <input id="resourceRelation_role_minlength_{{i}}" name="resourceRelation_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ relation.role.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
-                                            Link
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
-                                            Document Type
-                                        </label>
-                                        <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
-                                            <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
-                                            <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
-                                            <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
-                                            <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ relation.documentType.term }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4">
-                                            Descriptive Note
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
-                                            ObjectXMLWrap
-                                        </label>
-                                        <div class="col-xs-8">
-                                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{ widgets.scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
-                                {{ widgets.optionsList("resourceRelation", i) }}
-                            </div>
-                        </div>
+                            {{ components.displayResourceRelation(relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
 
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Constellation Relations</h2>
+                        
+                        <div class="form-group" id="add_constellationRelation_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_constellationRelation"><span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation</button>
+                            </div>
+                        </div>
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                        <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
-                            <div class="panel-body">
-                                <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
-                                <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
-                                <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
-                                <div class="col-xs-10">
-                                <div class="form-group">
-                                    <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-4">
-                                        Relation Text
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_targetID_{{ i }}" class="control-label col-xs-4">
-                                        Target Constellation ID
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetID_{{i}}" type="text" class="form-control" value="{{ relation.targetConstellation }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_targetArkID_{{ i }}" class="control-label col-xs-4">
-                                        Target ArkID
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="text" class="form-control" value="{{ relation.targetArkID }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-4">
-                                        Type
-                                    </label>
-                                    <div class="col-xs-8" id="select_constellationRelation_type_{{i}}">
-                                        <input id="constellationRelation_type_id_{{i}}" name="constellationRelation_type_id_{{i}}" type="hidden" class="form-control" value="{{ relation.type.id }}"/>
-                                        <input id="constellationRelation_type_term_{{i}}" name="constellationRelation_type_term_{{i}}" type="hidden" class="form-control" value="{{ relation.type.term }}"/>
-                                        <input id="constellationRelation_type_vocabtype_{{i}}" name="constellationRelation_type_vocabtype_{{i}}" type="hidden" class="form-control" value="relation_type"/>
-                                        <input id="constellationRelation_type_minlength_{{i}}" name="constellationRelation_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ relation.type.term }}</p>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4">
-                                        Descriptive Note
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{ widgets.scmModal("constellationRelation", i, relation.content, "Constellation Relation", relation) }}
-                            {{ widgets.optionsList("constellationRelation", i) }}
-                            </div>
-                        </div>
+                            {{ components.displayConstellationRelation(relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
 
                     </div>
 
 
                     <div class="tab-pane" id="languagesUsed">
                         <h2>Languages Used</h2>
+                        
+                        <div class="form-group" id="add_language_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_language"><span class="glyphicon glyphicon-plus"></span> Add New Language</button>
+                            </div>
+                        </div>
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                        <div class="panel panel-default" id="language_panel_{{i}}">
-                            <div class="panel-body">
-                                <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
-                                <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
-                                <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
-                                        </label>
-                                        <div class="col-xs-8" id="select_language_language_{{i}}">
-                                            <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
-                                            <input id="language_language_term_{{i}}" name="language_language_term_{{i}}" type="hidden" class="form-control" value="{{ language.language.term }}"/>
-                                            <input id="language_language_vocabtype_{{i}}" name="language_language_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                            <input id="language_language_minlength_{{i}}" name="language_language_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ language.language.term }}</p>
-                                        </div>
-                                    </div>
-
-
-                                    <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
-                                        </label>
-                                        <div class="col-xs-8" id="select_language_script_{{i}}">
-                                            <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
-                                            <input id="language_script_term_{{i}}" name="language_script_term_{{i}}" type="hidden" class="form-control" value="{{ language.script.term }}"/>
-                                            <input id="language_script_vocabtype_{{i}}" name="language_script_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                            <input id="language_script_minlength_{{i}}" name="language_script_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                            <p class="form-control-static">{{ language.script.term }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{ widgets.scmModal("language", i, language.language.term, "Language", language) }}
-                                {{ widgets.optionsList("language", i) }}
-                            </div>
-                        </div>
+                            {{ components.displayLanguageUsed(language, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
+                        <span id='next_language_i' style='display:none;'>{{i}}</span>
 
                     </div>
 
@@ -697,46 +386,18 @@ body {
                         <h2>Subjects</h2>
 
 
-                        <div class="form-group">
+                        <div class="form-group" id="add_subject_div">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Subject</button>
+                                <button class="btn btn-success" id="btn_add_subject"><span class="glyphicon glyphicon-plus"></span> Add New Subject</button>
                             </div>
                         </div>
 
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                        <div class="panel panel-default" id="subject_panel_{{i}}">
-                            <div class="panel-body">
-                                    <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
-                                    <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
-                                    <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value=""/>
-                                    <div class="col-xs-10">
-                                        <div class="form-group">
-                                            <label class="control-label col-xs-2">
-                                                Term
-                                            </label>
-                                            <div class="col-xs-10" id="select_subject_term_{{i}}">
-                                                <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
-                                                <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
-                                                <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
-                                                <p class="form-control-static">{{ subject.term.term }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-xs-2">
-                                                URI
-                                            </label>
-                                            <div class="col-xs-10">
-                                                {{ widgets.displayURI(subject.term.uri) }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {{ widgets.scmModal("subject", i, subject.term.term, "Subject", subject) }}
-                                    {{ widgets.optionsList("subject", i) }}
-                                </div>
-                            </div>
-                            {% set i = i + 1 %}
-                            {% endfor %}
+                            {{ components.displaySubject(subject, i) }}
+                        {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_subject_i' style='display:none;'>{{i}}</span>
 
                         </div>
 
@@ -744,416 +405,159 @@ body {
                             <h2>Nationalities</h2>
 
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_nationality_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
+                                    <button class="btn btn-success" id="btn_add_nationality"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                            <div class="panel panel-default" id="nationality_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
-                                        <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
-                                        <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
-                                                </label>
-                                                <div class="col-xs-10" id="select_nationality_term_{{i}}">
-                                                    <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
-                                                    <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
-                                                    <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
-                                                    <p class="form-control-static">{{ nationality.term.term }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    {{ widgets.displayURI(nationality.term.uri) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("nationality", i, nationality.term.term, "Nationality", nationality) }}
-                                        {{ widgets.optionsList("nationality", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayNationality(nationality, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_nationality_i' style='display:none;'>{{i}}</span>
                         </div>
 
                         <div class="tab-pane" id="functions">
                             <h2>Functions</h2>
 
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_function_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
+                                    <button class="btn btn-success" id="btn_add_function"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                            <div class="panel panel-default" id="function_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
-                                        <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
-                                        <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
-                                                </label>
-                                                <div class="col-xs-10" id="select_function_term_{{i}}">
-                                                    <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
-                                                    <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
-                                                    <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
-                                                    <p class="form-control-static">{{ function.term.term }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    {{ widgets.displayURI(function.term.uri) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("function", i, function.term.term, "Function", function) }}
-                                        {{ widgets.optionsList("function", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayFunction(function, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_function_i' style='display:none;'>{{i}}</span>
 
                         </div>
 
                         <div class="tab-pane" id="occupations">
                             <h2>Occupations</h2>
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_occupation_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
+                                    <button class="btn btn-success" id="btn_add_occupation"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                            <div class="panel panel-default" id="occupation_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
-                                        <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
-                                        <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
-                                                </label>
-                                                <div class="col-xs-10" id="select_occupation_term_{{i}}">
-                                                    <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
-                                                    <input type="hidden" id="occupation_term_term_{{i}}" name="occupation_term_term_{{i}}" value="{{occupation.term.term}}"/>
-                                                    <input type="hidden" id="occupation_term_vocabtype_{{i}}" name="occupation_term_vocabtype_{{i}}" value="occupation"/>
-                                                    <p class="form-control-static">{{ occupation.term.term }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    {{ widgets.displayURI(occupation.term.uri) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("occupation", i, occupation.term.term, "Occupation", occupation) }}
-                                        {{ widgets.optionsList("occupation", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayOccupation(occupation, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_occupation_i' style='display:none;'>{{i}}</span>
 
                         </div>
 
                         <div class="tab-pane" id="legalStatuses">
                             <h2>Legal Statuses</h2>
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_legalStatus_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Legal Status</button>
+                                    <button class="btn btn-success" id="btn_add_legalStatus"><span class="glyphicon glyphicon-plus"></span> Add New Legal Status</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                            <div class="panel panel-default" id="legalStatus_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
-                                        <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
-                                        <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
-                                                </label>
-                                                <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
-                                                    <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
-                                                    <input type="hidden" id="legalStatus_term_term_{{i}}" name="legalStatus_term_term_{{i}}" value="{{legalStatus.term.term}}"/>
-                                                    <input type="hidden" id="legalStatus_term_vocabtype_{{i}}" name="legalStatus_term_vocabtype_{{i}}" value="legal_status"/>
-                                                    <p class="form-control-static">{{ legalStatus.term.term }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    {{ widgets.displayURI(legalStatus.term.uri) }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
-                                        {{ widgets.optionsList("legalStatus", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayLegalStatus(legalStatus, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
 
                         </div>
 
                         <div class="tab-pane" id="places">
                             <h2>Places</h2>
+                            
+                            <div class="form-group" id="add_place_div">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success" id="btn_add_place"><span class="glyphicon glyphicon-plus"></span> Add New Place</button>
+                                </div>
+                            </div>
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                            <div class="panel panel-default" id="place_panel_{{i}}">
-                                <div class="panel-body">
-                                    <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
-                                    <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
-                                    <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value=""/>
-                                    <div class="col-xs-10">
-                                        <div class="form-group">
-                                            <label for="place_original_{{ i }}" class="control-label col-xs-4">
-                                                Original
-                                            </label>
-                                            <div class="col-xs-8">
-                                                <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}" readonly/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                Type
-                                            </label>
-                                            <div class="col-xs-8" id="select_place_type_{{i}}">
-                                                <input id="place_type_id_{{i}}" name="place_type_id_{{i}}" type="hidden" class="form-control" value="{{ place.type.id }}"/>
-                                                <input id="place_type_term_{{i}}" name="place_type_term_{{i}}" type="hidden" class="form-control" value="{{ place.type.term }}"/>
-                                                <input id="place_type_vocabtype_{{i}}" name="place_type_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
-                                                <input id="place_type_minlength_{{i}}" name="place_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                                <p class="form-control-static">{{ place.type.term }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                Role
-                                            </label>
-                                            <div class="col-xs-8" id="select_place_role_{{i}}">
-                                                <input id="place_role_id_{{i}}" name="place_role_id_{{i}}" type="hidden" class="form-control" value="{{ place.role.id }}"/>
-                                                <input id="place_role_term_{{i}}" name="place_role_term_{{i}}" type="hidden" class="form-control" value="{{ place.role.term }}"/>
-                                                <input id="place_role_vocabtype_{{i}}" name="place_role_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
-                                                <input id="place_role_minlength_{{i}}" name="place_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                                <p class="form-control-static">{{ place.role.term }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                GeoPlace Term
-                                            </label>
-                                            <div class="col-xs-8" id="select_place_geoplace_{{i}}">
-                                                <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
-                                                <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
-                                                <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
-                                                <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="4"/>
-                                                <p class="form-control-static">{{ place.geoplace.name }}</p>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="place_score_{{ i }}" class="control-label col-xs-4">
-                                                GeoPlace Score
-                                            </label>
-                                            <div class="col-xs-8">
-                                                <input id="place_score_{{i}}" name="place_score_{{i}}" type="text" class="form-control" value="{{ place.score }}" readonly/>
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="place_confirmed_{{ i }}" class="control-label col-xs-4">
-                                                GeoPlace Confirmed
-                                            </label>
-                                            <div class="col-xs-8">
-                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
-                                                    {{ place.confirmed ? 'checked' : '' }}
-                                                    readonly/> True</label> 
-                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false" 
-                                                    {{ place.confirmed ? '' : 'checked' }}
-                                                    readonly/> False</label> 
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="place_note_{{ i }}" class="control-label col-xs-4">
-                                                Descriptive Note
-                                            </label>
-                                            <div class="col-xs-8">
-                                                <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" readonly>{{ place.note }}</textarea>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {{ widgets.scmModal("place", i, place.original, "Place", place) }}
-                                    {{ widgets.optionsList("place", i) }}
-
-                                </div>
-                            </div>
+                                {{ components.displayPlace(place, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_place_i' style='display:none;'>{{i}}</span>
 
                         </div>
 
                         <div class="tab-pane" id="conventionDeclarations">
                             <h2>Convention Declarations</h2>
 
-                            <div class="form-group">
-                                <div class="col-xs-12 text-center" id="conventionDeclaration_panel_{{i}}">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
+                            <div class="form-group" id="add_conventionDeclaration_div">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success" id="btn_add_conventionDeclaration"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for conventionDeclaration in data.conventionDeclarations %}
-                            <div class="panel panel-default">
-                                <div class="panel-body">
-                                        <input type="hidden" id="conventionDeclaration_id_{{i}}" name="conventionDeclaration_id_{{i}}" value="{{conventionDeclaration.id}}"/>
-                                        <input id="conventionDeclaration_version_{{i}}" name="conventionDeclaration_version_{{i}}" type="hidden" value="{{ conventionDeclaration.version }}"/>
-                                        <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" readonly>{{ conventionDeclaration.text }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
-                                        {{ widgets.optionsList("conventionDeclaration", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayConventionDeclaration(conventionDeclaration, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
                         </div>
 
                         <div class="tab-pane" id="generalContexts">
                             <h2>General Contexts</h2>
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_generalContext_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New General Context</button>
+                                    <button class="btn btn-success" id="btn_add_generalContext"><span class="glyphicon glyphicon-plus"></span> Add New General Context</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                            <div class="panel panel-default" id="generalContext_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
-                                        <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
-                                        <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label for="generalContext_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" readonly>{{ generalContext.text }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
-                                        {{ widgets.optionsList("generalContext", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayGeneralContext(generalContext, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
                         </div>
 
                         <div class="tab-pane" id="structureOrGenealogies">
                             <h2>Structure or Genealogies</h2>
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_structureOrGenealogy_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Structure or Genealogy</button>
+                                    <button class="btn btn-success" id="btn_add_structureOrGenealogy"><span class="glyphicon glyphicon-plus"></span> Add New Structure or Genealogy</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                            <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
-                                        <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
-                                        <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" readonly>{{ structureOrGenealogy.text }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
-                                        {{ widgets.optionsList("structureOrGenealogy", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayStructureOrGenealogy(structureOrGenealogy, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
                         </div>
 
                         <div class="tab-pane" id="mandates">
                             <h2>Mandates</h2>
 
-                            <div class="form-group">
+                            <div class="form-group" id="add_mandate_div">
                                 <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
+                                    <button class="btn btn-success" id="btn_add_mandate"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
                                 </div>
                             </div>
 
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                            <div class="panel panel-default" id="mandate_panel_{{i}}">
-                                <div class="panel-body">
-                                        <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
-                                        <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>
-                                        <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
-                                            <div class="form-group">
-                                                <label for="mandate_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
-                                                </label>
-                                                <div class="col-xs-10">
-                                                    <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" readonly>{{ mandate.text }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {{ widgets.scmModal("mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
-                                        {{ widgets.optionsList("mandate", i) }}
-                                </div>
-                            </div>
+                                {{ components.displayMandate(mandate, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
+                            <span id='next_mandate_i' style='display:none;'>{{i}}</span>
                         </div>
 
 
@@ -1249,7 +653,59 @@ body {
         </form>
 
 
-
+    <div id="hidden_field_options" style="display:none">
+    <div id="gender_template" style="display:none">
+    {{ components.displayGender(null, 'ZZ') }}
+    </div>
+    <div id="nameEntry_template" style="display:none">
+    {{ components.displayNameEntry(null, 'ZZ') }}
+    </div>
+    <div id="sameAs_template" style="display:none">
+    {{ components.displaySameAs(null, 'ZZ') }}
+    </div>
+    <div id="source_template" style="display:none">
+    {{ components.displaySource(null, 'ZZ') }}
+    </div>
+    <div id="resourceRelation_template" style="display:none">
+    {{ components.displayResourceRelation(null, 'ZZ') }}
+    </div>
+    <div id="constellationRelation_template" style="display:none">
+    {{ components.displayConstellationRelation(null, 'ZZ') }}
+    </div>
+    <div id="language_template" style="display:none">
+    {{ components.displayLanguageUsed(null, 'ZZ') }}
+    </div>
+    <div id="subject_template" style="display:none">
+    {{ components.displaySubject(null, 'ZZ') }}
+    </div>
+    <div id="nationality_template" style="display:none">
+    {{ components.displayNationality(null, 'ZZ') }}
+    </div>
+    <div id="function_template" style="display:none">
+    {{ components.displayFunction(null, 'ZZ') }}
+    </div>
+    <div id="occupation_template" style="display:none">
+    {{ components.displayOccupation(null, 'ZZ') }}
+    </div>
+    <div id="legalStatus_template" style="display:none">
+    {{ components.displayLegalStatus(null, 'ZZ') }}
+    </div>
+    <div id="place_template" style="display:none">
+    {{ components.displayPlace(null, 'ZZ') }}
+    </div>
+    <div id="conventionDeclaration_template" style="display:none">
+    {{ components.displayConventionDeclaration(null, 'ZZ') }}
+    </div>
+    <div id="generalContext_template" style="display:none">
+    {{ components.displayGeneralContext(null, 'ZZ') }}
+    </div>
+    <div id="structureOrGenealogy_template" style="display:none">
+    {{ components.displayStructureOrGenealogy(null, 'ZZ') }}
+    </div>
+    <div id="mandate_template" style="display:none">
+    {{ components.displayMandate(null, 'ZZ') }}
+    </div>
+    </div>
 
 
 
