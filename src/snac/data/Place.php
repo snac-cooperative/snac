@@ -212,7 +212,7 @@ class Place extends AbstractData {
      * @return boolean True if confirmed flag was set, false otherwise
      */
     public function confirm() {
-        if ($this->getTerm() == null)
+        if ($this->getGeoTerm() == null)
             return false;
         $this->confirmed = true;
         return true;
