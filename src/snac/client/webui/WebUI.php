@@ -215,23 +215,52 @@ class WebUI implements \snac\interfaces\ServerInterface {
             return;
 
         } else if ($this->input["command"] == "vocabulary") {
+            $this->logger->addDebug("Requesting Vocabulary");
             // Check what kind of vocabulary is wanted, and ask server for it
             $request = array();
             $request["command"] = "vocabulary";
             $request["type"] = $this->input["type"];
-            $queryString = "";
-            if (isset ($this->input["q"]))
-                $queryString = $this->input["q"];
-            $request["query_string"] = $queryString;
-
-            // Send the query to the server
-            $serverResponse = $connect->query($request);
-
-            foreach ($serverResponse["results"] as $k => $v)
-                $serverResponse["results"][$k]["text"] = $v["value"];
-
-            // Send the response back to the web client
-            $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
+            if (isset($request["type"])) {
+                if (strpos($request["type"], "ic_") !== false) {
+                    $this->logger->addDebug("Requesting Sources as Vocabulary List");
+                    // This is a query into a constellation for "vocabulary"
+                    if (isset($this->input["id"]) && isset($this->input["version"])) {
+                        $serverResponse = $connect->query(array("constellationid"=>$this->input["id"], 
+                                "version"=>$this->input["version"],
+                                "command"=>"read"));
+                        $this->logger->addDebug("tried to get the constellation with response", $serverResponse);
+                        if (isset($serverResponse["constellation"])) {
+                            $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
+                            $response = array();
+                            $response["results"] = array();
+                            foreach ($constellation->getSources() as $source) {
+                                array_push($response["results"], array(
+                                        "id" => $source->getID(),
+                                        "text" => $source->getText() . " (" . $source->getURI() . ")"
+                                ));
+                            }
+                            $this->logger->addDebug("created the following response list of sources", $response);
+                            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+                        }
+                    }
+                } else {
+                    $this->logger->addDebug("Requesting Controlled Vocabulary List");
+                    // This is a strict query for a controlled vocabulary term
+                    $queryString = "";
+                    if (isset ($this->input["q"]))
+                        $queryString = $this->input["q"];
+                    $request["query_string"] = $queryString;
+        
+                    // Send the query to the server
+                    $serverResponse = $connect->query($request);
+        
+                    foreach ($serverResponse["results"] as $k => $v)
+                        $serverResponse["results"][$k]["text"] = $v["value"];
+        
+                    // Send the response back to the web client
+                    $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
+                }
+            }
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 

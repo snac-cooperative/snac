@@ -129,6 +129,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 
                 break;
+            case "read":
             case "edit":
                 if (isset($this->input["arkid"])) {
                     // Editing the given ark id by reading querying the current HRT

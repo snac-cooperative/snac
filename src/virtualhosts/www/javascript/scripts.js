@@ -189,6 +189,20 @@ function makeSCMEditable(short, i, j) {
             vocab_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
         }
     });
+    $("div[id^='selectsource_"+short+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+            var split = cont.attr('id').split("_");
+            var name = split[3];
+            var id = $("#"+short+"_"+name+"_id"+idstr).val();
+            var term = $("#"+short+"_"+name+"_term"+idstr).val();
+            cont.html("<select id='"+short+"_"+name+"_id"+idstr+"' name='"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
+                    "<option></option>"+
+                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "</select>");
+            scm_source_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr);
+        }
+    });
     $("#" + short + "_operation_" + i).val("update");
     return false;
 }

@@ -75,6 +75,16 @@
                                         <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" readonly>{{ scm.sourceData }}</textarea>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Citation (Source)
+                                        </label>
+                                    <div class="col-xs-8" id="selectsource_scm_{{short}}_citation_{{j}}_{{i}}">
+                                        <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
+                                        <input id="scm_{{short}}_citation_term_{{j}}_{{i}}" name="scm_{{short}}_citation_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.citation.text}} ({{ scm.citation.uri }})"/>
+                                        <p class="form-control-static">{{scm.citation.text}} ({{ scm.citation.uri }})</p>
+                                    </div>
+                                </div>
                                 
                                 
                                 <div class="form-group">
