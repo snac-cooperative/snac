@@ -66,11 +66,16 @@ function makeEditable(short, i) {
 	            var term = $("#"+short+"_"+name+"_term_"+i).val();
 	            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
 	            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
-	        
+		        
 	            cont.html("<select id='"+short+"_"+name+"_id_"+i+"' name='"+short+"_"+name+"_id_"+i+"' class='form-control'>"+
 	                    "<option></option>"+
 	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-	                    "</select>");
+	                    "</select>"+
+                        "<input type=\"hidden\" id=\""+short+"_"+name+"_vocabtype_"+i+"\" " +
+                        	"name=\""+short+"_"+name+"_vocabtype_"+i+"\" value=\""+vocabtype+"\"/>" +
+                        "<input type=\"hidden\" id=\""+short+"_"+name+"_minlength_"+i+"\" " +
+                        	"name=\""+short+"_"+name+"_minlength_"+i+"\" value=\""+minlength+"\"/>");
+	            
 	            vocab_select_replace($("#"+short+"_"+name+"_id_"+i), i, vocabtype, minlength);
 	            
 	        }
@@ -81,6 +86,63 @@ function makeEditable(short, i) {
     else
     	$("#" + short + "_operation_" + i).val("insert");
     		
+    return false;
+}
+
+
+function makeUneditable(short, i) {
+
+	// Make inputs read-only
+    var idstr = "_" + i;
+    $("input[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.attr("readonly", "true");
+        }
+    });
+    // Make textareas read-only
+    $("textarea[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.attr("readonly", "true");
+        }
+    });
+    // Check for a select box
+    var sawSelect = false;
+    $("select[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            sawSelect = true;
+        }
+    });
+    // If a select box was seen, undo it
+    if (sawSelect) {
+	    $("div[id^='select_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[2];
+	            var id = $("#"+short+"_"+name+"_id_"+i).val();
+	            var term = $("#"+short+"_"+name+"_id_"+i+ " option:selected").text();
+	            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
+	            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
+	        
+	            cont.html("<input type=\"hidden\" id=\""+short+"_"+name+"_id_"+i+"\" " +
+                    	"name=\""+short+"_"+name+"_id_"+i+"\" value=\""+id+"\"/>" +
+                        "<input type=\"hidden\" id=\""+short+"_"+name+"_term_"+i+"\" " +
+                    	"name=\""+short+"_"+name+"_term_"+i+"\" value=\""+term+"\"/>" +
+                        "<input type=\"hidden\" id=\""+short+"_"+name+"_vocabtype_"+i+"\" " +
+                        	"name=\""+short+"_"+name+"_vocabtype_"+i+"\" value=\""+vocabtype+"\"/>" +
+                        "<input type=\"hidden\" id=\""+short+"_"+name+"_minlength_"+i+"\" " +
+                        	"name=\""+short+"_"+name+"_minlength_"+i+"\" value=\""+minlength+"\"/>" +
+                        	"<p class=\"form-control-static\">"+term+"</p>");
+	            
+	        }
+	    });
+    }
+    
+    // Clear the operation flag
+    $("#" + short + "_operation_" + i).val("");
     return false;
 }
 
@@ -125,7 +187,7 @@ function makeSCMEditable(short, i, j) {
 function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
-    	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger");
+    	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     	
@@ -133,7 +195,7 @@ function setDeleted(short, i) {
     	
     } else {
     	// set undelete
-    	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default");
+    	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-trash\"></span> Trash");
         

@@ -35,9 +35,41 @@ $(document).ready(function() {
                 if (data.result == "success") {
                     // If there were any new elements pre-save that have now been
                     // saved, put those IDs into the form
-                    for (var key in data.updates) {
-                        // TODO
-                    }
+                	for (var key in data.updates) {
+                		console.log("updating: " + key + " to value " + data.updates[key]);
+                		$('#' + key).val(data.updates[key]);
+                	}
+                	
+
+                	// Remove any deleted items
+                	// Note: deleted items will have the deleted-component class added to them, so 
+                	//       this line will just remove anything with that class from the DOM
+                    $('.deleted-component').remove();
+
+                	
+                	// Return edited items back to unedited state
+                	$("div[id*='_panel_']").each(function() {
+                		// for any div that has _panel_ in its name, we should check the ID
+                		// and remove anything that didn't get an ID
+                		// Note: this should be anything that the user started but didn't save.
+            	        var cont = $(this);
+            	        // Don't look at any of the ZZ hidden panels
+	            	    if (cont.attr('id').indexOf("ZZ") == -1) {
+	            	        var split = cont.attr('id').split("_");
+	            	        if (split.length = 3) {
+	            	        	var short = split[0];
+	        	            	var id = split[2];
+	        	            	if ($("#"+short+"_id_"+id).val() == "")
+	        	            		cont.remove();
+	        	            	else {
+	        	            		// Make Uneditable returns the editing item back to text and
+	        	            		// clears the operation flag.
+	        	            		makeUneditable(short, id);
+	        	            	}
+	            	        }
+            	        }
+        	            
+                	});
 
                     unsaved = false;
                     $('.alert-warning').slideUp();

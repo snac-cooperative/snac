@@ -106,17 +106,37 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"]["editing"] = $db->demoConstellationList();
                 break;
             case "update_constellation":
-                $db = new \snac\server\database\DBUtil();
-                if (isset($this->input["constellation"]) && isset($this->input["constellation"]["id"])) {
+                // Right now, just write the out put while the db is broken
+                if (isset($this->input["constellation"])) {
                     $constellation = new \snac\data\Constellation($this->input["constellation"]);
-                    $result = $db->updateConstellation($constellation, 6, 1, "being edited", "Demo updates for now", $constellation->getID());
-                    if (isset($result["main_id"]))
-                        $this->response["result"] = "success";
-                    else
+                    //$this->logger->debug($constellation->toJSON(false));
+                    //$this->logger->addDebug("Returning constellation", $constellation->toArray());
+                    //file_put_contents("/home/jh2jf/output/server-".date("Ymd-His").".json", $constellation->toJSON(false));
+                    $this->response["result"] = "success";
+                }
+                
+                try {
+                    $db = new \snac\server\database\DBUtil();
+                    if (isset($this->input["constellation"])) {
+                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                        $result = $db->writeConstellation($constellation, "being edited", "Demo updates for now");
+                        if (isset($result) && $result != null) {
+                            $this->logger->addDebug("successfully wrote constellation");
+                            $this->response["constellation"] = $result->toArray();
+                            $this->response["result"] = "success";
+                        } else {
+                            $this->logger->addDebug("writeConstellation returned a null result");
+                            $this->response["result"] = "failure";
+                        }
+                    } else {
+                        $this->logger->addDebug("Constellation input value wasn't set to write");
                         $this->response["result"] = "failure";
-                } else {
+                    }
+                } catch (Exception $e) {
+                    $this->logger->addError("writeConstellation threw an exception");
                     $this->response["result"] = "failure";
                 }
+                
                 break;
             case "edit":
                 if (isset($this->input["arkid"])) {
