@@ -106,15 +106,6 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"]["editing"] = $db->demoConstellationList();
                 break;
             case "update_constellation":
-                // Right now, just write the out put while the db is broken
-                if (isset($this->input["constellation"])) {
-                    $constellation = new \snac\data\Constellation($this->input["constellation"]);
-                    //$this->logger->debug($constellation->toJSON(false));
-                    //$this->logger->addDebug("Returning constellation", $constellation->toArray());
-                    //file_put_contents("/home/jh2jf/output/server-".date("Ymd-His").".json", $constellation->toJSON(false));
-                    $this->response["result"] = "success";
-                }
-                
                 try {
                     $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
