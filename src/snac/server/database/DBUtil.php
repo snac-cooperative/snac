@@ -755,10 +755,12 @@ class DBUtil
                 $ctObj->setName($contrib['short_name']);
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
-                printf("dbutil selecting contri version: %s got version %s nameID: %s\n",
-                       $vhInfo['version'],
-                       $contrib['version'],
-                       $neObj->getID());
+                /* 
+                 * printf("dbutil selecting contri version: %s got version %s nameID: %s\n",
+                 *        $vhInfo['version'],
+                 *        $contrib['version'],
+                 *        $neObj->getID());
+                 */
             }
             $this->populateDate($neObj);
             $cObj->addNameEntry($neObj);
@@ -1233,6 +1235,9 @@ class DBUtil
         $theOp = $cObj->getOperation();
         if (! $theOp)
         {
+            /*
+             * Table nrd is special, and the id is main_id.
+             */ 
             if (! $cObj->getID())
             {
                 $this->sql->insertNrd($vhInfo,
@@ -1240,18 +1245,6 @@ class DBUtil
                                       $this->thingID($cObj->getEntityType()));
             }
         }
-        /*
-         * Always update the constellation ID and version, even when not inserting into table nrd. The
-         * constellation ID and version are more properly connected to table version_history, but due to
-         * historical baggage we tend to conflate nrd and constellation.
-         */ 
-        printf("Setting constellation id: %s\n", $vhInfo['version']);
-        $cObj->setID($vhInfo['main_id']);
-        $cObj->setVersion($vhInfo['version']);
-        /*
-         * Table nrd is special, and the id is main_id.
-         */ 
-        $this->saveMeta($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
     }
 
     /**
@@ -2168,7 +2161,7 @@ class DBUtil
                 return false;
             }
             $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
-            printf("\ndbutil wc mints new version: %s\n", $vhInfo['version']);
+            // printf("\ndbutil wc mints new version: %s\n", $vhInfo['version']);
             return $vhInfo['version'];
         }
         else
@@ -2209,6 +2202,25 @@ class DBUtil
      * Mar 9 2016 There is no $status arg. When creating the new version, keep the existing status. If the
      * status needs to change, do that with writeConstellationStatus().
      * 
+     * Version, status, and note are used only for this write. If at some future time you create private
+     * vars for version, main_id, status, and note here in DBUtil, then you must clear the main_id, version,
+     * status, and note before returning. Always set all version info explicitly.
+     *
+     * What won't happen here is two records edited simultaneously being saved. We assume that is
+     * impossible. And if it were possible, both updates would (logically?) have the same status, and share
+     * the same note.
+     *
+     * Even on bulk ingest version numbers are not reused for constellations ingested in the same
+     * "transaction". A new version_history record is created for each write. It is (sort of) a
+     * coincidence that status and note are the same in one or more version_history records.
+     *
+     * A single version_history record does (and must) apply to all new/modified components of a single
+     * constellation.
+     *
+     * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
+     *
+     * A reminder: the structure of $vhInfo is array('version' => 123, 'main_id' => 456);
+     *
      * @param \snac\data\Constellation $cObj A constellation object
      *
      * @param string $note Human written note from the person who edit this data. This is a version commit
@@ -2225,18 +2237,17 @@ class DBUtil
         if ($op == \snac\data\AbstractData::$OPERATION_UPDATE)
         {
             /*
-             * Both update and delete use the existing constellation ID
+             * Update uses the existing constellation ID.
              */ 
-            $status = 'deleted';
-            // printf("\nwrite doing update\n");
             $mainID = $cObj->getID();
+            $status = $this->readConstellationStatus($mainID);
         }
         elseif ($op == \snac\data\AbstractData::$OPERATION_DELETE)
         {
             /*
-             * Both update and delete use the existing constellation ID
+             * Delete uses the existing constellation ID
              */ 
-            // printf("\nwrite doing delete\n");
+            $status = 'deleted';
             $mainID = $cObj->getID();
         }
         elseif ($op == \snac\data\AbstractData::$OPERATION_INSERT)
@@ -2245,22 +2256,33 @@ class DBUtil
              * Insert require a new ID. Passing a null mainID (aka main_id) to insertVersionHistory() will
              * cause a new mainID to be minted.
              */ 
-            // printf("\nwrite doing insert\n");
+            $status = 'locked editing';
             $mainID = null;
         }
         elseif ($op == null)
         {
-            /*
-             * This must be an update. That is: an existing constellation with no change at the top, but some
-             * operation(s) inside. Since the constellation exists, we assume the ID is good, and there's no
-             * need to mint a new ID.
-             *
-             * Question: why isn't this simply part of the update branch above?
-             *
-             * A new constellation must have operation insert, and is handled above.
-             */
-            // printf("\nNo operation at top; we assume there are internal operations.\n");
             $mainID = $cObj->getID();
+            if ($mainID)
+            {
+                /*
+                 * This must be an update. That is: an existing constellation with no change at the top, but some
+                 * operation(s) inside. Since the constellation exists, we assume the ID is good, and there's no
+                 * need to mint a new ID.
+                 *
+                 * Question: why isn't this simply part of the update branch above?
+                 *
+                 * A new constellation must have operation insert, and is handled above.
+                 */
+                $status = $this->readConstellationStatus($mainID);
+            }
+            else
+            {
+                /*
+                 * I guess this is an insert. We don't have a mainID, so this must be a new constellation.
+                 *
+                 */ 
+                $status = 'locked editing';
+            }
         }
         else
         {
@@ -2269,27 +2291,12 @@ class DBUtil
             die();
         }
 
-        /*
-         * Version, status, and note are used only for this write. If at some future time you create private
-         * vars for version, main_id, status, and note here in DBUtil, then you must clear the main_id, version,
-         * status, and note before returning. Always set all version info explicitly.
-         *
-         * What won't happen here is two records edited simultaneously being saved. We assume that is
-         * impossible. And if it were possible, both updates would (logically?) have the same status, and share
-         * the same note.
-         *
-         * Even on bulk ingest version numbers are not reused for constellations ingested in the same
-         * "transaction". A new version_history record is created for each write. It is (sort of) a
-         * coincidence that status and note are the same in one or more version_history records.
-         *
-         * A single version_history record does (and must) apply to all new/modified components of a single
-         * constellation.
-         *
-         * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
-         *
-         * A reminder: the structure of $vhInfo is array('version' => 123, 'main_id' => 456);
-         *
-         */
+        if (! $status)
+        {
+            printf("\nDBUtil.php Error: writeConstellation() cannot determine version status.\n");
+            printf("operation: %s mainID: %s\n",
+                   $op, $mainID);
+        }
         $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
 
         /*
@@ -2315,8 +2322,9 @@ class DBUtil
      * necessary to update/populate id and version.
      * 
      */ 
-    private function coreWrite($vhInfo, &$cObj)
+    private function coreWrite($vhInfo, $cObj)
     {
+        $this->saveMeta($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
         $this->saveBiogHist($vhInfo, $cObj);
         $this->saveConstellationDate($vhInfo, $cObj);
         $this->saveConstellationSource($vhInfo, $cObj);
@@ -2337,6 +2345,14 @@ class DBUtil
         $this->saveSubject($vhInfo, $cObj);
         $this->saveRelation($vhInfo, $cObj); // aka cpfRelation, constellationRelation, related_identity
         $this->saveResourceRelation($vhInfo, $cObj);
+        /*
+         * Always update the constellation ID and version, even when not inserting into table nrd. The
+         * constellation ID and version are more properly connected to table version_history, but due to
+         * historical baggage we tend to conflate nrd and constellation.
+         */ 
+        // printf("dbutil Setting constellation id: %s\n", $vhInfo['version']);
+        $cObj->setID($vhInfo['main_id']);
+        $cObj->setVersion($vhInfo['version']);
     }
 
     /**
@@ -2755,7 +2771,7 @@ class DBUtil
     {
         foreach ($cObj->getNameEntries() as $ndata)
         {
-            $nameID = $cObj->getID();
+            $nameID = $ndata->getID();
             if ($this->prepOperation($vhInfo, $ndata))
             {
                 $nameID = $this->sql->insertName($vhInfo, 
@@ -2780,6 +2796,7 @@ class DBUtil
                  */ 
                 foreach($contribList as $cb)
                 {
+                    // Why initialize $rid? if(true) $rid will be set and used.
                     $rid = $cb->getID();
                     if ($this->prepOperation($vhInfo, $cb))
                     {
@@ -2788,12 +2805,14 @@ class DBUtil
                                                              $nameID,
                                                              $cb->getName(),
                                                              $this->thingID($cb->getType()));
-                        printf("dbutil: after insertContributor and prepOp true\nid: %s name: %s operation: %s rid: %s new version: %s nameID %s\n",
-                               $cb->getID(),
-                               $cb->getName(),
-                               $cb->getOperation(), $rid,
-                               $vhInfo['version'],
-                               $nameID);
+             /* 
+              * printf("dbutil: after insertContributor and prepOp true\ncontrib_id: %s contrib_name: %s operation: %s contrib rid: %s new version: %s nameID %s\n",
+              *                   $cb->getID(),
+              *                   $cb->getName(),
+              *                   $cb->getOperation(), $rid,
+              *                   $vhInfo['version'],
+              *                   $nameID);
+              */
                         $cb->setID($rid);
                         $cb->setVersion($vhInfo['version']);
                     }
