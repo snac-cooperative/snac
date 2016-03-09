@@ -150,24 +150,29 @@ function foo_main ()
 
         $unparsedTags = $eparser->getMissing();
 
+        /* 
+         * Default status is published. If you want some records to have another status, this is the place to
+         * set that. See DBUtil for valid values in $statusList;
+         */
+        $status = 'published';
         if (empty($unparsedTags))
         {
-            $cObj = $dbu->writeConstellation($constellationObj, 'bulk ingest', 'bulk ingest of merged');
+            $cObj = $dbu->writeConstellation($constellationObj, $status, 'bulk ingest of merged via bulk_merge_ingest.php');
             check_vocabulary($constellationObj);
-            // $msg = sprintf("File $file ok. vhInfo: %s", var_export($vhInfo, 1));
             $msg = sprintf("$xx File $file ok.");
             quick_stderr($msg); // no terminal \n, the code will add that later
         }
         else
         {
-            // For each unparsable tag and attribute in the parsed EAC-CPF, print it out
-
-            // Print error messages to stderr, giving the user the option to io redirect to a separate log
-            // file.
+            /* 
+             * For each unparsable tag and attribute in the parsed EAC-CPF, print it out
+             * 
+             * Print error messages to stderr, giving the user the option to io redirect to a separate log
+             * file.
+             */
             foreach ($unparsedTags as $miss)
             {
                 quick_stderr($miss);
-                // fwrite($stderr,"  $miss\n");
             }
         }
     }
