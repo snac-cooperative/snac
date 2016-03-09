@@ -302,10 +302,13 @@ class DBUtil
      *
      * Build a list of constellations that the user is editing. That is: user has locked for edit.
      *
+     * @param string $status A single status to get the list of constellations
+     *
      * @return \snac\data\Constellation[] A list of  PHP constellation object.
      * 
      */
-    function editConstellationList()
+
+    function listConstellationsLockedToUser($status=null)
     {
         $infoList = $this->editList();
         if ($infoList)
