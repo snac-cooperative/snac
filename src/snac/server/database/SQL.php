@@ -38,6 +38,15 @@ class SQL
     private $sdb = null;
 
     /**
+     * Deleted status string
+     *
+     * Value of the string for deleted records. This is passed to the constructor because it seems likely to
+     * change.
+     *
+     */  
+    private $deleted = null;
+
+    /**
      * The constructor
      *
      * Makes the outside $db a local variable. I did this out of a general sense of avoiding
@@ -48,9 +57,99 @@ class SQL
      *
      * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
      */
-    public function __construct($db)
+    public function __construct($db, $deletedValue)
     {
         $this->sdb = $db;
+        $this->deleted = $deletedValue;
+    }
+
+    /**
+     * Current version by mainID
+     *
+     * The max, that is: current version for mainID regardless of status. This will return max for deleted as
+     * well as all other status values. It is important that this return status on deleted records because
+     * this function is crucial in getting the version number of records, deleted and otherwise. Ignores
+     * status, and will return records which are deleted, or have any status.
+     *
+     * aka selectMaxVersion selectMostRecentVersion selectCurrentVersion
+     *
+     * @param integer $mainID The constellation ID
+     * 
+     * @return integer Version number from version_history.id returned as 'version', as is our convention.
+     *
+     */
+    public function selectCurrentVersion($mainID)
+    {
+        $result = $this->sdb->query(
+            'select max(id) as version 
+            from version_history
+            where version_history.main_id=$1',
+            array($mainID));
+        $row = $this->sdb->fetchrow($result);
+        return $row['version'];
+    }
+
+    /**
+     * Status by mainID and version number
+     *
+     * Get the version_history status.
+     *
+     * @param integer $mainID The constellation ID
+     *
+     * @param integer $version A specific version number. We assume that you have called some function to get
+     * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
+     *
+     * @return string The status string of that version for the given mainID.
+     */ 
+    public function selectStatus($mainID, $version)
+    {
+        $result = $this->sdb->query(
+            'select status from version_history where main_id=$1 and id=$2',
+            array($mainID, $version));
+        $row = $this->sdb->fetchrow($result);
+        return $row['status'];
+    }
+
+    /**
+     * Select edit records for user
+     *
+     * All status values are exclusive, so if a record's most recent status is 'locked editing' then it cannot
+     * not possibly also be deleted.
+     *
+     * Get the version and main_id for each non-deleted record the user has locked for edit.
+     *
+     * @param integer $appUserID User numeric ID
+     *
+     * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
+     */ 
+    public function selectEditList($appUserID)
+    {
+        $status = 'locked editing';
+        $result = $this->sdb->query(
+            'select aa.id as version, aa.main_id
+            from version_history as aa,
+            (select max(bb.id) as id,bb.main_id from version_history as bb where bb.user_id=$1 group by bb.main_id) as cc
+            where
+            aa.main_id=cc.main_id and
+            aa.id=cc.id
+            and aa.status = $2',
+            array($appUserID, $status));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $mainID = $row['main_id'];
+            $version = $row['version'];
+            /*
+             * I think the query above works, returning the max() only when that version also has the required
+             * status. However, the check below will confirm that the returned version really is the max.
+             */ 
+            $maxVersion = $this->selectCurrentVersion($mainID);
+            if ($maxVersion == $version)
+            {
+                array_push($all, $row);
+            }
+        }
+        return $all;
     }
 
     /**
@@ -71,6 +170,26 @@ class SQL
         $result = $this->sdb->query('select nextval(\'id_seq\') as id',array());
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
+    }
+
+    /**
+     * select mainID by arkID
+     *
+     * @param string $arkID The ARK id of a constellation
+     *
+     * @return integer The constellation ID aka mainID akd main_id aka version_history.main_id.
+     */
+    public function selectMainID($arkID)
+    {
+        $result = $this->sdb->query(
+            'select main_id
+            from version_history, nrd
+            where
+            nrd.ark_id=$1
+            and version_history.main_id=nrd.id',
+            array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['main_id'];
     }
 
     /**
@@ -959,7 +1078,7 @@ class SQL
              * This did happen, but once we have good tests it should never happen again. Perhaps better to
              * add a "not null" to the db schema.
              */ 
-            printf("Fatal: \$nameID must not be null\n");
+            printf("SQL.php Fatal: \$nameID must not be null\n");
             exit();
         }
         if (! $id)
@@ -1625,8 +1744,6 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] An associative list with keys: version, main_id, ark_id, entity_type.
-     *
-     *
      */
     public function selectNrd($vhInfo)
     {
@@ -2289,35 +2406,63 @@ class SQL
                             where
                             nrd.main_id=date_range.fk_id and
                             nrd.main_id=version_history.main_id
-                            and not date_range.is_deleted
+                            and not date_range.is_deleted 
+                            and version_history.status <> $1
                             group by version_history.main_id
                             order by version_history.main_id
                             limit 1');
 
-        $result = $this->sdb->execute($qq, array());
+        $result = $this->sdb->execute($qq, array($this->deleted));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return array($row['version'], $row['main_id']);
     }
 
+
     /**
-     * Return most recent version
+     * Most recent version by status
      *
-     * Helper function to return the most recent version for a given main_id.
+     * Helper function to return the most recent status version for a given main_id. If the status is anything
+     * except deleted, then the version number must be greater than any existing deleted version. If the
+     * deleted version is greater, then whatever status we were asked for was deleted.
+     *
+     * This can deal with situations where a record was deleted, then undeleted, but never published after
+     * undelete. There is no current published for that record.
+     *
+     * v1:published
+     * v2:deleted
+     * v3:undelete 
+     * v4:locked editing
      *
      * @param integer $mainID id value matching version_history.main_id.
      *
      * @return integer Version number from version_history.id returned as 'version', as is our convention.
      *
      */
-
-    public function sqlCurrentVersion($mainID)
+    public function selectCurrentVersionByStatus($mainID, $status)
     {
-        $result = $this->sdb->query('select max(id) as version from version_history where main_id=$1',
-                                    array($mainID));
+        $deletedVersion = null;
+        if ($status != $this->deleted)
+        {
+            $deletedVersion = $this->selectCurrentVersionByStatus($mainID, $this->deleted);
+        }
+        $result = $this->sdb->query(
+            'select max(id) as version
+            from version_history
+            where 
+            version_history.main_id=$1 and status=$2',
+            array($mainID, $status));
+
         $row = $this->sdb->fetchrow($result);
-        return $row['version'];
+        $version = $row['version'];
+
+        if ($version && (! $deletedVersion || $version > $deletedVersion))
+        {
+            return $version;
+        }
+        return false;
     }
+
 
     /**
      * Return the lowest main_id
@@ -2335,7 +2480,7 @@ class SQL
      *
      * @return integer[] Returns a vhInfo associateve list of integers with key names 'version' and
      * 'main_id'. The main_id is from table 'name' for the multi-alt string name. That main_id is a
-     * constellation id, so we call sqlCurrentVersion() to get the current version for that
+     * constellation id, so we call selectCurrentVersion() to get the current version for that
      * constellation. This allows us to return a conventional vhInfo associative list which is conventient
      * return value. (Convenient, in that we do extra work so the calling code is simpler.)
      *
@@ -2351,12 +2496,13 @@ class SQL
                             where aa.id not in (select id from name where is_deleted) group by main_id order by main_id) as zz
                             where
                             vh.main_id=zz.main_id and
+                            vh.status <> $1 and 
                             zz.count>1 group by vh.main_id limit 1');
 
-        $result = $this->sdb->execute($qq, array());
+        $result = $this->sdb->execute($qq, array($this->deleted));
         $row = $this->sdb->fetchrow($result);
 
-        $version = $this->sqlCurrentVersion($row['main_id']);
+        $version = $this->selectCurrentVersion($row['main_id']);
 
         $this->sdb->deallocate($qq);
         return array('version' => $version,
@@ -2403,9 +2549,10 @@ class SQL
         $sql =
             'select max(id) as version,main_id
             from version_history
+            where version_history.status <> $1
             group by main_id order by main_id limit 100';
 
-        $result = $this->sdb->query($sql, array());
+        $result = $this->sdb->query($sql, array($this->deleted));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

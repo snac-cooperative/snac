@@ -56,21 +56,98 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
     }
 
+    public function testUpdateContrib()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $firstJSON = $cObj->toJSON();
+        $retObj = $this->dbu->writeConstellation($cObj,
+                                                 'bulk ingest of merged');
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
+
+        $origContribName = $retObj->getNameEntries()[0]->getContributors()[0]->getName();
+        $nameVersion = $retObj->getNameEntries()[0]->getVersion();
+        $contribVersion = $retObj->getNameEntries()[0]->getContributors()[0]->getVersion();
+
+        $retObj->getNameEntries()[0]->getContributors()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+        $modNameID = $retObj->getNameEntries()[0]->getContributors()[0]->getID();
+        $retObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
+
+        /* 
+         * printf("\ndbutiltest: pre-change id: %s to name: %s pre-change cons version: %s\n",
+         *        $modNameID,
+         *        $retObj->getNameEntries()[0]->getContributors()[0]->getName(),
+         *        $retObj->getVersion());
+         */
+
+        // printf("\nDBUtilTest Writing cons with changed contributor name\n");
+        $postWriteObj = $this->dbu->writeConstellation($retObj,
+                                                     'change contributor name');
+        $this->dbu->writeConstellationStatus($postWriteObj->getID(), 'published');
+
+        // printf("\nReading constellation version: %s\n", $postWriteObj->getVersion());
+        $newObj = $this->dbu->readConstellation($postWriteObj->getID(),
+                                                $postWriteObj->getVersion());
+        
+        // printf("\npost-change cons version: %s\n", $newObj->getVersion());
+
+        $newContribName = $newObj->getNameEntries()[0]->getContributors()[0]->getName();
+        $newNameVersion = $newObj->getNameEntries()[0]->getVersion();
+        $newContribVersion = $newObj->getNameEntries()[0]->getContributors()[0]->getVersion();
+
+        /* 
+         * printf("dbutiltest post change name zero nameID: %s\n", $newObj->getNameEntries()[0]->getID());
+         * 
+         * foreach($newObj->getNameEntries()[0]->getContributors() as $item)
+         * {
+         *     printf("\ndbutiltest contrib name: %s id: %s post-change cons version: %s\n json:%s\n",
+         *            $item->getName(),
+         *            $item->getID(),
+         *            $newObj->getVersion(),
+         *            $item->toJSON());
+         * }
+         */
+
+        $this->assertEquals("TestName", $newContribName);
+        $this->assertEquals($nameVersion, $newNameVersion);
+        $this->assertTrue($newContribVersion > $contribVersion);
+    }
+
     public function testFullCPF()
     {
         $eParser = new \snac\util\EACCPFParser();
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
         $retObj = $this->dbu->writeConstellation($cObj,
-                                                 'bulk ingest',
                                                  'bulk ingest of merged');
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'bulk ingest');
 
         $this->assertNotNull($retObj);
 
-        // read from the db what we just wrote to the db
-        // $readObj = $this->dbu->selectConstellation($vhInfo, $this->appUserID);
+        /*
+         * New as of March 8 2016.
+         * 
+         * Test constellation status change, status read, status read by version, and the number of
+         * constellations the user has marked for edit.
+         */ 
+        $editList = $this->dbu->editConstellationList();
+        $initialEditCount = count($editList);
+        $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
+                                             'locked editing',
+                                             'test write constellation status');
+        $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
+        $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
-        // printf("\nreturned id: %s version: %s\n", $retObj->getID(), $retObj->getVersion());
+        $editList = $this->dbu->editConstellationList();
+        $postEditCount = count($editList);
+        
+        $this->assertEquals('locked editing', $newStatus);
+        $this->assertEquals('locked editing', $newStatusToo);
+        $this->assertEquals($initialEditCount+1, $postEditCount);
+
+        /* 
+         * read from the db what we just wrote to the db
+         */
         
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
         
@@ -92,8 +169,31 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(853, substr_count( $firstJSON, "\n" ));
         $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
 
-        // There is no way the two JSON strings will ever be equal.
-        // $this->assertEquals($firstJSON, $secondJSON);
+        $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
+        $deletedObj = $this->dbu->writeConstellation($readObj,
+                                       'test deleting a whole constellation');
+
+        /* 
+         * readPublishedConstellationByID() should return false when the constellation in question has been
+         * deleted.
+         *     
+         * Try to get it, then test the returned value to be false.
+         */
+        $tryObj = $this->dbu->readPublishedConstellationByID($deletedObj->getID());
+        $postDeleteJSON = "";
+        if ($tryObj)
+        {
+            $postDeleteJSON = $tryObj->toJSON();
+        }
+        $this->assertFalse($tryObj);
+
+        if (0)
+        {
+            // These files may be interesting when debugging
+            $cfile = fopen('post_delete_json.txt', 'w');
+            fwrite($cfile, $postDeleteJSON);
+            fclose($cfile);
+        }
     }
 
     /*
@@ -170,24 +270,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $mNObj = $this->dbu->multiNameConstellation($this->appUserID);
 
         $preDeleteNameCount = count($mNObj->getNameEntries());
-
-        /* 
-         * foreach ($mNObj->getNameEntries() as $gObj)
-         * {
-         *     printf("\nname id: %s version: %s original: %s main_id: %s\n",
-         *            $gObj->getID(),
-         *            $gObj->getVersion(),
-         *            $gObj->getOriginal(),
-         *            $mNObj->getID());
-         * }
-         */
-        
-        /* 
-         * printf("\npre count: %s using main_id: %s recordid: %s\n", 
-         *        $preDeleteNameCount,
-         *        $mNObj->getID(),
-         *        $mNObj->getNameEntries()[0]->getID() );
-         */
         
         /*
          * We need the new version of the deleted record, which becomes the max(version) of the constellation.
@@ -204,7 +286,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $mNObj->getNameEntries()[0]->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $mNObj->setOperation(null);
         $returnedDeleteObj = $this->dbu->writeConstellation($mNObj,
-                                                            'bulk ingest',
                                                             'delete a name, that is: set is_deleted to true');
 
         /* 
@@ -264,8 +345,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $neNameListRef[0]->setOriginal($modName);
         $neNameListRef[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $retObj = $this->dbu->writeConstellation($postDObj,
-                                                 'needs review',
                                                  'modified first alt name');
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'needs review');
 
         if (0 == 1) // old code disabled
         {
@@ -307,7 +388,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
         $retObj = $this->dbu->writeConstellation($constellationObj,
-                                                 'bulk ingest',
                                                  'machine ingest of hand-crafted, full CPF test record');
         // printf("\nAfter first write version: %s\n", $retObj->getVersion());
         $this->assertNotNull($retObj);
@@ -359,8 +439,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
         $cObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $updatedObj = $this->dbu->writeConstellation($cObj,
-                                                     'needs review',
                                                      'updating constellation for test');
+        $this->dbu->writeConstellationStatus($updatedObj->getID(), 'needs review');
         /* 
          * printf("\nret: %s cons: %s upd: %s\n", 
          *        $retObj->getID(),
