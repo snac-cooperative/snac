@@ -1,4 +1,8 @@
 var biogHistEditor = null;
+
+// Has anything been edited on this page?
+var somethingHasBeenEdited = false;
+
 function updatePage() {
     $('.selectpicker').selectpicker();
     /*
@@ -81,10 +85,15 @@ function makeEditable(short, i) {
 	        }
 	    });
     }
+    
+    // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
     	$("#" + short + "_operation_" + i).val("update");
     else
     	$("#" + short + "_operation_" + i).val("insert");
+    
+    // Asked to edit something, so make it globally known
+    somethingHasBeenEdited = true;
     		
     return false;
 }
@@ -218,6 +227,10 @@ function setDeleted(short, i) {
         }
     	
     }
+    
+    // Asked to delete something, so make it globally known
+    somethingHasBeenEdited = true;
+    
     return false;
 }
 
@@ -232,6 +245,7 @@ $(document).ready(function() {
 	console.log("Next Gender ID: " + genderid);
 	if ($('#btn_add_gender').exists()){
 		$('#btn_add_gender').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#gender_template').clone();
 	        var html = text.html().replace(/ZZ/g, genderid);
 	        $('#gender_pane').append(html);
@@ -248,6 +262,7 @@ $(document).ready(function() {
 	console.log("Next NameEntry ID: " + nameEntryid);
 	if ($('#btn_add_nameEntry').exists()){
 		$('#btn_add_nameEntry').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#nameEntry_template').clone();
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
@@ -263,6 +278,7 @@ $(document).ready(function() {
 	console.log("Next sameAs ID: " + sameAsid);
 	if ($('#btn_add_sameAs').exists()){
 		$('#btn_add_sameAs').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#sameAs_template').clone();
 	        var html = text.html().replace(/ZZ/g, sameAsid);
 	        $('#add_sameAs_div').after(html);
@@ -278,6 +294,7 @@ $(document).ready(function() {
 	console.log("Next source ID: " + sourceid);
 	if ($('#btn_add_source').exists()){
 		$('#btn_add_source').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#source_template').clone();
 	        var html = text.html().replace(/ZZ/g, sourceid);
 	        $('#add_source_div').after(html);
@@ -293,6 +310,7 @@ $(document).ready(function() {
 	console.log("Next resourceRelation ID: " + resourceRelationid);
 	if ($('#btn_add_resourceRelation').exists()){
 		$('#btn_add_resourceRelation').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#resourceRelation_template').clone();
 	        var html = text.html().replace(/ZZ/g, resourceRelationid);
 	        $('#add_resourceRelation_div').after(html);
@@ -308,6 +326,7 @@ $(document).ready(function() {
 	console.log("Next constellationRelation ID: " + constellationRelationid);
 	if ($('#btn_add_constellationRelation').exists()){
 		$('#btn_add_constellationRelation').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#constellationRelation_template').clone();
 	        var html = text.html().replace(/ZZ/g, constellationRelationid);
 	        $('#add_constellationRelation_div').after(html);
@@ -323,6 +342,7 @@ $(document).ready(function() {
 	console.log("Next language ID: " + languageid);
 	if ($('#btn_add_language').exists()){
 		$('#btn_add_language').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#language_template').clone();
 	        var html = text.html().replace(/ZZ/g, languageid);
 	        $('#add_language_div').after(html);
@@ -338,6 +358,7 @@ $(document).ready(function() {
 	console.log("Next subject ID: " + subjectid);
 	if ($('#btn_add_subject').exists()){
 		$('#btn_add_subject').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#subject_template').clone();
 	        var html = text.html().replace(/ZZ/g, subjectid);
 	        $('#add_subject_div').after(html);
@@ -353,6 +374,7 @@ $(document).ready(function() {
 	console.log("Next nationality ID: " + nationalityid);
 	if ($('#btn_add_nationality').exists()){
 		$('#btn_add_nationality').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#nationality_template').clone();
 	        var html = text.html().replace(/ZZ/g, nationalityid);
 	        $('#add_nationality_div').after(html);
@@ -368,6 +390,7 @@ $(document).ready(function() {
 	console.log("Next function ID: " + functionid);
 	if ($('#btn_add_function').exists()){
 		$('#btn_add_function').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#function_template').clone();
 	        var html = text.html().replace(/ZZ/g, functionid);
 	        $('#add_function_div').after(html);
@@ -383,6 +406,7 @@ $(document).ready(function() {
 	console.log("Next occupation ID: " + occupationid);
 	if ($('#btn_add_occupation').exists()){
 		$('#btn_add_occupation').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#occupation_template').clone();
 	        var html = text.html().replace(/ZZ/g, occupationid);
 	        $('#add_occupation_div').after(html);
@@ -398,6 +422,7 @@ $(document).ready(function() {
 	console.log("Next legalStatus ID: " + legalStatusid);
 	if ($('#btn_add_legalStatus').exists()){
 		$('#btn_add_legalStatus').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#legalStatus_template').clone();
 	        var html = text.html().replace(/ZZ/g, legalStatusid);
 	        $('#add_legalStatus_div').after(html);
@@ -413,6 +438,7 @@ $(document).ready(function() {
 	console.log("Next place ID: " + placeid);
 	if ($('#btn_add_place').exists()){
 		$('#btn_add_place').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#place_template').clone();
 	        var html = text.html().replace(/ZZ/g, placeid);
 	        $('#add_place_div').after(html);
@@ -428,6 +454,7 @@ $(document).ready(function() {
 	console.log("Next conventionDeclaration ID: " + conventionDeclarationid);
 	if ($('#btn_add_conventionDeclaration').exists()){
 		$('#btn_add_conventionDeclaration').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#conventionDeclaration_template').clone();
 	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
 	        $('#add_conventionDeclaration_div').after(html);
@@ -443,6 +470,7 @@ $(document).ready(function() {
 	console.log("Next generalContext ID: " + generalContextid);
 	if ($('#btn_add_generalContext').exists()){
 		$('#btn_add_generalContext').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#generalContext_template').clone();
 	        var html = text.html().replace(/ZZ/g, generalContextid);
 	        $('#add_generalContext_div').after(html);
@@ -458,6 +486,7 @@ $(document).ready(function() {
 	console.log("Next structureOrGenealogy ID: " + structureOrGenealogyid);
 	if ($('#btn_add_structureOrGenealogy').exists()){
 		$('#btn_add_structureOrGenealogy').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#structureOrGenealogy_template').clone();
 	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
 	        $('#add_structureOrGenealogy_div').after(html);
@@ -473,6 +502,7 @@ $(document).ready(function() {
 	console.log("Next mandate ID: " + mandateid);
 	if ($('#btn_add_mandate').exists()){
 		$('#btn_add_mandate').click(function(){
+            somethingHasBeenEdited = true;
 			var text = $('#mandate_template').clone();
 	        var html = text.html().replace(/ZZ/g, mandateid);
 	        $('#add_mandate_div').after(html);
