@@ -1239,17 +1239,32 @@ class DBUtil
     private function saveNrd($vhInfo, &$cObj)
     {
         $theOp = $cObj->getOperation();
-        if (! $theOp)
+        $theID = $cObj->getID();
+        if (! $theOp && ! $theID)
+        {
+            /* 
+             * If no operation and no id, this must be new (no id) so force the operation to be insert.
+             * I think the old code intended to do this, but was simply wrong and could fail to write nrd.
+             */
+            $theOp = \snac\data\AbstractData::$OPERATION_INSERT;
+        }
+
+        if ($theOp == \snac\data\AbstractData::$OPERATION_UPDATE || 
+            $theOp == \snac\data\AbstractData::$OPERATION_INSERT)
         {
             /*
              * Table nrd is special, and the id is main_id.
              */ 
-            if (! $cObj->getID())
-            {
-                $this->sql->insertNrd($vhInfo,
-                                      $cObj->getArk(),
-                                      $this->thingID($cObj->getEntityType()));
-            }
+            $this->sql->insertNrd($vhInfo,
+                                  $cObj->getArk(),
+                                  $this->thingID($cObj->getEntityType()));
+        }
+        else
+        {
+            /*
+             * Any other operation, especially delete makes no sense for nrd.
+             * If we get into this else, something has probably gone wrong.
+             */
         }
     }
 
