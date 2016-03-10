@@ -110,7 +110,7 @@ class Server implements \snac\interfaces\ServerInterface {
                     $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
                         $constellation = new \snac\data\Constellation($this->input["constellation"]);
-                        $result = $db->writeConstellation($constellation, "being edited", "Demo updates for now");
+                        $result = $db->writeConstellation($constellation, "Demo updates for now");
                         if (isset($result) && $result != null) {
                             $this->logger->addDebug("successfully wrote constellation");
                             $this->response["constellation"] = $result->toArray();
