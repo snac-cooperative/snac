@@ -172,7 +172,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          */ 
-
         $this->assertEquals(853, substr_count( $firstJSON, "\n" ));
         $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
 
