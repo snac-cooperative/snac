@@ -151,13 +151,12 @@ function foo_main ()
         $unparsedTags = $eparser->getMissing();
 
         /* 
-         * Default status is published. If you want some records to have another status, this is the place to
-         * set that. See DBUtil for valid values in $statusList;
+         * Default status is determined inside writeConstellation(). The default status is probably 'locked
+         * editing'.
          */
-        $status = 'published';
         if (empty($unparsedTags))
         {
-            $cObj = $dbu->writeConstellation($constellationObj, $status, 'bulk ingest of merged via bulk_merge_ingest.php');
+            $cObj = $dbu->writeConstellation($constellationObj, 'bulk ingest of merged via bulk_merge_ingest.php');
             check_vocabulary($constellationObj);
             $msg = sprintf("$xx File $file ok.");
             quick_stderr($msg); // no terminal \n, the code will add that later

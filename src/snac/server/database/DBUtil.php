@@ -302,10 +302,13 @@ class DBUtil
      *
      * Build a list of constellations that the user is editing. That is: user has locked for edit.
      *
+     * @param string $status A single status to get the list of constellations
+     *
      * @return \snac\data\Constellation[] A list of  PHP constellation object.
      * 
      */
-    function editConstellationList()
+
+    function listConstellationsLockedToUser($status=null)
     {
         $infoList = $this->editList();
         if ($infoList)
@@ -441,6 +444,10 @@ class DBUtil
          * the constellation object.
          */ 
         $this->populateNrd($vhInfo, $cObj);
+        /*
+         * Constellation SCM moved here from populateNrd() because it is *not* the scm for table nrd.
+         */ 
+        $this->populateMeta($cObj);
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateDate($cObj); // "Constellation Date" in SQL these dates are linked to table nrd.
         $this->populateSource($cObj); // "Constellation Source" in the order of statements here
@@ -500,7 +507,6 @@ class DBUtil
         $cObj->setEntityType($this->populateTerm($row['entity_type']));
         $cObj->setID($vhInfo['main_id']); // constellation ID, $row['main_id'] has the same value.
         $cObj->setVersion($vhInfo['version']);
-        $this->populateMeta($cObj);
     }
 
     /**
@@ -2324,7 +2330,7 @@ class DBUtil
      */ 
     private function coreWrite($vhInfo, $cObj)
     {
-        $this->saveMeta($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+        $this->saveMeta($vhInfo, $cObj, 'version_history', $vhInfo['main_id']);
         $this->saveBiogHist($vhInfo, $cObj);
         $this->saveConstellationDate($vhInfo, $cObj);
         $this->saveConstellationSource($vhInfo, $cObj);

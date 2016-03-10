@@ -63,7 +63,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $firstJSON = $cObj->toJSON();
         $retObj = $this->dbu->writeConstellation($cObj,
                                                  'bulk ingest of merged');
-        $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status to published');
 
         $origContribName = $retObj->getNameEntries()[0]->getContributors()[0]->getName();
         $nameVersion = $retObj->getNameEntries()[0]->getVersion();
@@ -83,7 +83,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // printf("\nDBUtilTest Writing cons with changed contributor name\n");
         $postWriteObj = $this->dbu->writeConstellation($retObj,
                                                      'change contributor name');
-        $this->dbu->writeConstellationStatus($postWriteObj->getID(), 'published');
+        $this->dbu->writeConstellationStatus($postWriteObj->getID(), 'published', 'probably already published, but setting again');
 
         // printf("\nReading constellation version: %s\n", $postWriteObj->getVersion());
         $newObj = $this->dbu->readConstellation($postWriteObj->getID(),
@@ -120,7 +120,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $firstJSON = $cObj->toJSON();
         $retObj = $this->dbu->writeConstellation($cObj,
                                                  'bulk ingest of merged');
-        $this->dbu->writeConstellationStatus($retObj->getID(), 'bulk ingest');
+        /*
+         * Change the status to published so that we can change it to 'locked editing' further below.  The new
+         * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
+         * do that we want to change status and call listConstellationsLockedToUser() a second time.
+         *
+         * There can and should be more definitive tests of listConstellationsLockedToUser().
+         */ 
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
 
         $this->assertNotNull($retObj);
 
@@ -130,7 +137,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
          */ 
-        $editList = $this->dbu->editConstellationList();
+        $editList = $this->dbu->listConstellationsLockedToUser();
         $initialEditCount = count($editList);
         $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
                                              'locked editing',
@@ -138,7 +145,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
         $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
-        $editList = $this->dbu->editConstellationList();
+        $editList = $this->dbu->listConstellationsLockedToUser();
         $postEditCount = count($editList);
         
         $this->assertEquals('locked editing', $newStatus);
@@ -171,7 +178,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($readObj,
-                                       'test deleting a whole constellation');
+                                                     'test deleting a whole constellation');
 
         /* 
          * readPublishedConstellationByID() should return false when the constellation in question has been
@@ -346,7 +353,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $neNameListRef[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $retObj = $this->dbu->writeConstellation($postDObj,
                                                  'modified first alt name');
-        $this->dbu->writeConstellationStatus($retObj->getID(), 'needs review');
+        /*
+         * This may be fine during testing, and simulates a record going off for review after a change.
+         */ 
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'needs review', 'send for review after a name change');
 
         if (0 == 1) // old code disabled
         {
