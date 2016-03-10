@@ -160,22 +160,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         
         $secondJSON = $readObj->toJSON();
 
-        if (0)
-        {
-            // These files may be interesting when debugging
-            $cfile = fopen('first_json.txt', 'w');
-            fwrite($cfile, $firstJSON);
-            fclose($cfile); 
-            $cfile = fopen('second_json.txt', 'w');
-            fwrite($cfile, $secondJSON);
-            fclose($cfile); 
-        }
+        /**
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
+        **/
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          */ 
-        $this->assertEquals(851, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1000, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(853, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($readObj,

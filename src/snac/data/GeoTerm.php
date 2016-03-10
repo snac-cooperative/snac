@@ -355,6 +355,40 @@ class GeoTerm {
         return $this->id;
     }
 
+
+    /**
+     * is Equal
+     *
+     * Checks whether the given parameter is the same as this object. If
+     * the IDs match, then that is taken as priority above any other data.  Else,
+     * everything must match.
+     *
+     * @param \snac\data\GeoTerm $other the Other Term object
+     * @return boolean true if equal, false otherwise
+     */
+    public function equals($other) {
+        // Don't consider it if it's not a GeoTerm object
+        if ($other != null && $other instanceOf \snac\data\GeoTerm) {
+            // Check IDs first
+            if ($other->getID() != null && $this->getID() != null) {
+                if ($other->getID() == $this->getID())
+                    return true;
+                    else
+                        // If they both have IDs, but they are different, no match
+                        return false;
+            }
     
+            if ($this->getName() == $other->getName() &&
+                    $this->getURI() == $other->getURI() &&
+                    $this->getVocabularySource() == $other->getVocabularySource() &&
+                    $this->getLatitude() == $other->getLatitude() &&
+                    $this->getLongitude() == $other->getLongitude() &&
+                    $this->getAdministrationCode() == $other->getAdministrationCode() &&
+                    $this->getCountryCode() == $other->getCountryCode()) {
+                        return true;
+                    }
+        }
+        return false;
+    }
 
 }

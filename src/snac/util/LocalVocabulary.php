@@ -25,6 +25,11 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * @var string[][] The vocabulary array, preloaded in the constructor
      */
     private $vocab = null;
+    
+    /**
+     * @var \snac\server\database\DBUtil database utility handle
+     */
+    private $db = null;
 
     /**
      * Constructor
@@ -33,8 +38,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
      * to aid in lookups.
      */
     public function __construct() {
-        $db = new \snac\server\database\DBUtil();
-        $vocab = $db->getAllVocabulary();
+        $this->db = new \snac\server\database\DBUtil();
+        $vocab = $this->db->getAllVocabulary();
         // Fix up the vocabulary into a nested array
         foreach($vocab as $v) {
             if (!isset($this->vocab[$v["type"]]))
@@ -90,5 +95,16 @@ class LocalVocabulary implements \snac\util\Vocabulary {
                 return $term;
             }
         return $term;
+    }
+    
+
+    /**
+     * Get a GeoTerm by URI
+     *
+     * @param string $uri The uri to look up
+     * @return \snac\data\GeoTerm The GeoTerm object for the uri
+     */
+    public function getGeoTermByURI($uri) {
+        return $this->db->getPlaceByURI($uri);
     }
 }

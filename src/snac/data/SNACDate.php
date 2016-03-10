@@ -537,4 +537,68 @@ class SNACDate extends AbstractData {
                 $tmp
         );
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\SNACDate $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\SNACDate))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getFromBC() != $other->getFromBC())
+            return false;
+        if ($this->getFromDate() != $other->getFromDate())
+            return false;
+        if ($this->getFromDateOriginal() != $other->getFromDateOriginal())
+            return false;
+        if ($this->getToBC() != $other->getToBC())
+            return false;
+        if ($this->getToDate() != $other->getToDate())
+            return false;
+        if ($this->getToDateOriginal() != $other->getToDateOriginal())
+            return false;
+        if ($this->getIsRange() != $other->getIsRange())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+
+        // handle ranges
+        if ($this->getFromRange() != null && $other->getFromRange() != null) {
+            if ($this->getFromRange()["notAfter"] != $other->getFromRange()["notAfter"] ||
+                    $this->getFromRange()["notBefore"] != $other->getFromRange()["notBefore"])
+                return false;
+        } else if (($this->getFromRange() == null && $other->getFromRange() != null) ||
+           ($this->getFromRange() != null && $other->getFromRange() == null)) {
+            return false;
+        }
+        
+        if ($this->getToRange() != null && $other->getToRange() != null) {
+            if ($this->getToRange()["notAfter"] != $other->getToRange()["notAfter"] ||
+                    $this->getToRange()["notBefore"] != $other->getToRange()["notBefore"])
+                return false;
+        } else if (($this->getToRange() == null && $other->getToRange() != null) ||
+                ($this->getToRange() != null && $other->getToRange() == null)) {
+            return false;
+        }
+        
+        
+        if (($this->getFromType() != null && ! $this->getFromType()->equals($other->getFromType())) ||
+                 ($this->getFromType() == null && $other->getFromType() != null))
+            return false;
+        if (($this->getToType() != null && ! $this->getToType()->equals($other->getToType())) ||
+                 ($this->getToType() == null && $other->getToType() != null))
+            return false;
+        
+        return true;
+    }
 }

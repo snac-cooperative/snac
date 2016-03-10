@@ -249,4 +249,35 @@ class NameEntry extends AbstractData {
 
         $this->preferenceScore = $score;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\NameEntry $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\NameEntry))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getOriginal() != $other->getOriginal())
+            return false;
+        if ($this->getPreferenceScore() != $other->getPreferenceScore())
+            return false;
+        
+        if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
+                 ($this->getLanguage() == null && $other->getLanguage() != null))
+            return false;
+                 
+        if (!$this->checkArrayEqual($this->getContributors(), $other->getContributors(), $strict))
+            return false;
+        
+        return true;
+    }
 }

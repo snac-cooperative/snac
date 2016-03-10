@@ -2674,10 +2674,58 @@ class DBUtil
     } // end saveConstellation
 
 
+    /**
+     * Search Vocabulary
+     * 
+     * Searches the vocabulary and returns an array of id, value pairs.
+     * 
+     * @param string $type vocabulary type
+     * @param string $query search string
+     * @return string[][] list of results
+     */
     public function searchVocabulary($type, $query) {
 
+        if ($type == 'geo_place') {
+            $results = $this->sql->searchPlaceVocabulary($query);
+            $retVal = array();
+            foreach ($results as $res) {
+                $item = array();
+                $item["id"] = $res["id"];
+                $item["value"] = $res["name"] . " (" . $res["admin_code"] . ", " . $res["country_code"] . ")";
+                array_push($retVal, $item);
+            }
+            return $retVal;
+        }
         return $this->sql->searchVocabulary($type, $query);
     }
+    
+
+    /**
+     * Get a Place Vocabulary Term by URI
+     *
+     * Looks up the given URI and returns the associated geoplace Term.
+     * 
+     * @param string $uri search uri
+     * @return \snac\data\GeoTerm the corresponding geoterm, or null
+     */
+    public function getPlaceByURI($uri) {
+    
+        $data = $this->sql->getPlaceByURI($uri);
+        
+        if ($data == null || empty($data)) return null;
+        
+        $place = new \snac\data\GeoTerm();
+        $place->setAdministrationCode($data["admin_code"]);
+        $place->setCountryCode($data["country_code"]);
+        $place->setID($data["id"]);
+        $place->setLatitude($data["latitude"]);
+        $place->setLongitude($data["longitude"]);
+        $place->setName($data["name"]);
+        $place->setURI($data["uri"]);
+        
+        return $place;
+    }
+    
     /**
      * Save the biogHist
      *

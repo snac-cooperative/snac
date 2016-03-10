@@ -236,39 +236,36 @@ class Source extends AbstractData {
     }
 
     /**
-     * is Equal
      *
-     * Checks whether the given parameter is the same as this object. If
-     * the IDs match, then that is taken as priority above any other data.  Else,
-     * everything must match.
+     * {@inheritDoc}
      *
-     * @param \snac\data\Source $other the Other source object
-     * @return boolean true if equal, false otherwise
+     * @param \snac\data\Source $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
      */
-    public function equals($other) {
-        // Don't consider it if it's not a Source object
-        if ($other != null && $other instanceOf \snac\data\Source) { 
-            // Check IDs first
-            if ($other->getID() != null && $this->getID() != null) {
-                if ($other->getID() == $this->getID())
-                    return true;
-                else
-                    // If they both have IDs, but they are different, no match
-                    return false;
-            }
+    public function equals($other, $strict = true) {
 
-            if ($this->getURI() == $other->getURI() &&
-                $this->getNote() == $other->getNote() &&
-                $this->getText() == $other->getText()) {
-                if ( $this->getType() != null && 
-                    !$this->getType()->equals($other->getType()))
-                    return false;
-                if ( $this->getLanguage() != null &&
-                    !$this->getLanguage()->equals($other->getLanguage())) 
-                    return false;
-                return true;
-            }
-        }
-        return false;
+        if ($other == null || ! ($other instanceof \snac\data\Source))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getText() != $other->getText())
+            return false;
+        if ($this->getURI() != $other->getURI())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
+                 ($this->getType() == null && $other->getType() != null))
+            return false;
+        if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
+                 ($this->getLanguage() == null && $other->getLanguage() != null))
+            return false;
+        
+        return true;
     }
+
 }

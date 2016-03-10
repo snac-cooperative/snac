@@ -212,7 +212,7 @@ class Place extends AbstractData {
      * @return boolean True if confirmed flag was set, false otherwise
      */
     public function confirm() {
-        if ($this->getTerm == null)
+        if ($this->getGeoTerm() == null)
             return false;
         $this->confirmed = true;
         return true;
@@ -399,5 +399,42 @@ class Place extends AbstractData {
         return true;
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\Place $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\Place))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getOriginal() != $other->getOriginal())
+            return false;
+        if ($this->getScore() != $other->getScore())
+            return false;
+        if ($this->getConfirmed() != $other->getConfirmed())
+            return false;
+        if ($this->getNote() != $other->getNote())
+            return false;
+        
+        if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
+                 ($this->getType() == null && $other->getType() != null))
+            return false;
+        if (($this->getRole() != null && ! $this->getRole()->equals($other->getRole())) ||
+                 ($this->getRole() == null && $other->getRole() != null))
+            return false;
+        if (($this->getGeoTerm() != null && ! $this->getGeoTerm()->equals($other->getGeoTerm())) ||
+                 ($this->getGeoTerm() == null && $other->getGeoTerm() != null))
+            return false;
+        
+        return true;
+    }
 
 }

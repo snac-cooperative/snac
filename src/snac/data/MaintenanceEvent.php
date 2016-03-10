@@ -236,4 +236,93 @@ class MaintenanceEvent extends AbstractData {
 
         $this->eventDescription = $eventDescription;
     }
+    
+    /**
+     * Get the event type
+     * 
+     * @return \snac\data\Term event type
+     */
+    public function getEventType() {
+        return $this->eventType;
+    }
+    
+    /**
+     * Get the event date time
+     * 
+     * @return string date and time string
+     */
+    public function getEventDateTime() {
+        return $this->eventDateTime;
+    }
+    
+    /**
+     * Get the event description
+     * 
+     * @return string description
+     */
+    public function getEventDescription() {
+        return $this->eventDescription;
+    }
+    
+    /**
+     * Get the agent type
+     * 
+     * @return \snac\data\Term agent type
+     */
+    public function getAgentType() {
+        return $this->agentType;
+    }
+    
+    /**
+     * Get the agent
+     * 
+     * @return string agent name
+     */
+    public function getAgent() {
+        return $this->agent;
+    }
+    
+    /**
+     * Get the standard date and time
+     * 
+     * @return string standardized date and time
+     */
+    public function getStandardDateTime() {
+        return $this->standardDateTime;
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\Language $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\MaintenanceEvent))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getEventDateTime() != $other->getEventDateTime())
+            return false;
+        if ($this->getStandardDateTime() != $other->getStandardDateTime())
+            return false;
+        if ($this->getAgent() != $other->getAgent())
+            return false;
+        if ($this->getEventDescription() != $other->getEventDescription())
+            return false;
+        
+        if (($this->getEventType() != null && ! $this->getEventType()->equals($other->getEventType())) ||
+                 ($this->getEventType() == null && $other->getEventType() != null))
+            return false;
+        if (($this->getAgentType() != null && ! $this->getAgentType()->equals($other->getAgentType())) ||
+                 ($this->getAgentType() == null && $other->getAgentType() != null))
+            return false;
+        
+        return true;
+    }
 }

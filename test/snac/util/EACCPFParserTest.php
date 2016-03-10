@@ -99,4 +99,10 @@ class TestVocabulary implements \snac\util\Vocabulary {
         $term->setURI($type);
         return $term;
     }
+    
+    public function getGeoTermByURI($uri) {
+        $geoterm = new \snac\data\GeoTerm();
+        $geoterm->setURI($uri);
+        return $geoterm;
+    }
 }

@@ -1593,8 +1593,16 @@ class EACCPFParser {
         $scm->setNote("Parsed from SNAC EAC-CPF.");
         $place->addSNACControlMetadata($scm);
         
+        // If the geo information was set, try to find the real term
         if ($geoInfoSet) {
-            $place->setGeoTerm($geoTerm);
+            $realGeoPlace = null;
+            if ($this->vocabulary != null) {
+                $realGeoPlace = $this->vocabulary->getGeoTermByURI($geoTerm->getVocabularySource());
+            }
+            if ($realGeoPlace != null)
+                $place->setGeoTerm($realGeoPlace);
+            else
+                $place->setGeoTerm($geoTerm);
             $place->setScore($score);
         }
         

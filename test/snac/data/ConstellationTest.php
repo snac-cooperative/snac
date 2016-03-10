@@ -105,6 +105,7 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
         }
     }
     
+    
     /**
      * Test that reading a partial JSON Object works 
      */
@@ -118,6 +119,95 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
         $idArray = $identity->toArray(false);
 
         $this->assertEquals($arrayIn["nameEntries"], $idArray["nameEntries"]);
+    }
+    
+    /**
+     * Test empty equals
+     */
+    public function testEqualsEmpty() {
+        $c1 = new \snac\data\Constellation();
+        $c2 = new \snac\data\Constellation();
+        
+        // equals another empty
+        $this->assertTrue($c1->equals($c2));
+        $this->assertTrue($c1->equals($c2, false));
+        
+        // equals itself
+        $this->assertTrue($c1->equals($c1));
+        $this->assertTrue($c1->equals($c1, false));
+    }
+    
+    /**
+     * Test empty equals
+     */
+    public function testEqualsNull() {
+        $c1 = new \snac\data\Constellation();
+    
+        // equals another empty
+        $this->assertFalse($c1->equals(null));
+        $this->assertFalse($c1->equals(null, false));
+    
+    }
+    
+    /**
+     * Test that non-empty constellations are equal
+     */
+    public function testEqualsNonEmpty() {
+        $c1 = new \snac\data\Constellation();
+        $c2 = new \snac\data\Constellation();
+        $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+    
+        $c1->fromJSON($jsonIn);
+        $c2->fromJSON($jsonIn);
+    
+        // equals another
+        $this->assertTrue($c1->equals($c2));
+        $this->assertTrue($c1->equals($c2, false));
+        
+        // equals itself
+        $this->assertTrue($c1->equals($c1));
+        $this->assertTrue($c1->equals($c1, false));
+        
+        $c1->setID(1);
+        $this->assertFalse($c1->equals($c2));
+        $this->assertTrue($c1->equals($c2, false));
+        $this->assertFalse($c2->equals($c1));
+        $this->assertTrue($c2->equals($c1, false));
+        $c1->setVersion(234);
+        $this->assertFalse($c1->equals($c2));
+        $this->assertTrue($c1->equals($c2, false));
+        $this->assertFalse($c2->equals($c1));
+        $this->assertTrue($c2->equals($c1, false));
+        $c1->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
+        $this->assertFalse($c1->equals($c2));
+        $this->assertTrue($c1->equals($c2, false));
+        $this->assertFalse($c2->equals($c1));
+        $this->assertTrue($c2->equals($c1, false));
+        
+        
+    }
+    
+    /**
+     * Test that non-empty constellations are not equal
+     */
+    public function testNotEqualsNonEmpty() {
+        $c1 = new \snac\data\Constellation();
+        $c2 = new \snac\data\Constellation();
+        $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+    
+        $c1->fromJSON($jsonIn);
+        $c2->fromJSON($jsonIn);
+        
+        $date = new \snac\data\SNACDate();
+        $c2->addDate($date);
+    
+
+        $this->assertFalse($c1->equals($c2));
+        $this->assertFalse($c1->equals($c2, false));
+        
+        $this->assertFalse($c2->equals($c1));
+        $this->assertFalse($c2->equals($c1, false));
+    
     }
 
 }

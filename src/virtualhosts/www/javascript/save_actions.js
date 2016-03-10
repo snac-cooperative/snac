@@ -18,15 +18,14 @@ jQuery.fn.exists = function(){return this.length>0;}
  */
 $(document).ready(function() {
     
-    // Set a variable noting that this page has been saved.  (It's new and unchanged)
-    var unsaved = false;
+
 
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
             // Open up the warning alert box and note that we are saving
-            $('.alert-warning').html("<p>Saving Constellation... Please wait.</p>");
-            $('.alert-warning').slideDown();
+            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
+            $('#notification-message').slideDown();
 
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
@@ -35,29 +34,62 @@ $(document).ready(function() {
                 if (data.result == "success") {
                     // If there were any new elements pre-save that have now been
                     // saved, put those IDs into the form
-                    for (var key in data.updates) {
-                        // TODO
-                    }
+                	for (var key in data.updates) {
+                		console.log("updating: " + key + " to value " + data.updates[key]);
+                		$('#' + key).val(data.updates[key]);
+                	}
+                	
 
-                    unsaved = false;
-                    $('.alert-warning').slideUp();
+                	// Remove any deleted items
+                	// Note: deleted items will have the deleted-component class added to them, so 
+                	//       this line will just remove anything with that class from the DOM
+                    $('.deleted-component').remove();
+
+                	
+                	// Return edited items back to unedited state
+                	$("div[id*='_panel_']").each(function() {
+                		// for any div that has _panel_ in its name, we should check the ID
+                		// and remove anything that didn't get an ID
+                		// Note: this should be anything that the user started but didn't save.
+            	        var cont = $(this);
+            	        // Don't look at any of the ZZ hidden panels
+	            	    if (cont.attr('id').indexOf("ZZ") == -1) {
+	            	        var split = cont.attr('id').split("_");
+	            	        if (split.length = 3) {
+	            	        	var short = split[0];
+	        	            	var id = split[2];
+	        	            	if ($("#"+short+"_id_"+id).val() == "")
+	        	            		cont.remove();
+	        	            	else {
+	        	            		// Make Uneditable returns the editing item back to text and
+	        	            		// clears the operation flag.
+	        	            		makeUneditable(short, id);
+	        	            	}
+	            	        }
+            	        }
+        	            
+                	});
+
+                    // Everything's been saved, so mark not in editing
+                    somethingHasBeenEdited = false;
+                    $('#notification-message').slideUp();
                     // Show the success alert
-                    $('.alert-success').html("<p>Saved successfully!</p>");
+                    $('#success-message').html("<p>Saved successfully!</p>");
                     setTimeout(function(){
-                        $('.alert-success').slideDown();
+                        $('#success-message').slideDown();
                     }, 1000);
                     setTimeout(function(){
-                        $('.alert-success').slideUp();
+                        $('#success-message').slideUp();
                     }, 3000);
                 } else {
-                    $('.alert-warning').slideUp();
+                    $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error.
-                    $('.alert-danger').html("<p>An error occurred while saving.</p>");
+                    $('#error-message').html("<p>An error occurred while saving.</p>");
                     setTimeout(function(){
-                        $('.alert-danger').slideDown();
+                        $('#error-message').slideDown();
                     }, 500);
                     setTimeout(function(){
-                        $('.alert-danger').slideUp();
+                        $('#error-message').slideUp();
                     }, 8000);
                 }
             });
@@ -68,29 +100,30 @@ $(document).ready(function() {
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
             // Open up the warning alert box and note that we are saving
-            $('.alert-warning').html("<p>Saving Constellation... Please wait.</p>");
-            $('.alert-warning').slideDown();
+            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
+            $('#notification-message').slideDown();
 
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
-                    unsaved = false;
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
                     
-                    $('.alert-warning').slideUp();
+                    $('#notification-message').slideUp();
                     
                     // Go to dashboard
                     window.location.href = "?command=dashboard";
 
                 } else {
-                    $('.alert-warning').slideUp();
+                    $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    $('.alert-danger').html("<p>An error occurred while saving.</p>");
+                    $('#error-message').html("<p>An error occurred while saving.</p>");
                     setTimeout(function(){
-                        $('.alert-danger').slideDown();
+                        $('#error-message').slideDown();
                     }, 500);
                     setTimeout(function(){
-                        $('.alert-danger').slideUp();
+                        $('#error-message').slideUp();
                     }, 8000);
                 }
             });
@@ -101,35 +134,49 @@ $(document).ready(function() {
     if($('#save_and_submit').exists()) {
         $('#save_and_submit').click(function(){
             // Open up the warning alert box and note that we are saving
-            $('.alert-warning').html("<p>Saving Constellation... Please wait.</p>");
-            $('.alert-warning').slideDown();
+            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
+            $('#notification-message').slideDown();
 
             // Send the data back by AJAX call
             $.post("?command=save_submit", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
-                    unsaved = false;
+                    // Edit succeeded, so save mode off
+                    somethingHasBeenEdited = false;
                     
-                    $('.alert-warning').slideUp();
+                    $('#notification-message').slideUp();
                     
                     // TODO: Go to dashboard?? Show notice then dashboard?
                     window.location.href = "?command=dashboard";
 
                 } else {
-                    $('.alert-warning').slideUp();
+                    $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    $('.alert-danger').html("<p>An error occurred while saving.</p>");
+                    $('#error-message').html("<p>An error occurred while saving.</p>");
                     setTimeout(function(){
-                        $('.alert-danger').slideDown();
+                        $('#error-message').slideDown();
                     }, 500);
                     setTimeout(function(){
-                        $('.alert-danger').slideUp();
+                        $('#error-message').slideUp();
                     }, 8000);
                 }
             });
         });
     }
 
+    // Set the message to display if you try to leave the page without saving changes
+    
+	function unloadPage(e){ 
+		if(somethingHasBeenEdited){
+			var message = 'You may have unsaved changes on this Constellation.  Are you sure you want to leave the page and risk losing those edits?';
+			var e = e || window.event;
+			// For IE and Firefox
+			if (e) { e.returnValue = message; }
+			// For Safari
+			return message;
+		}
+	}
+	window.onbeforeunload = unloadPage;
 
 
 });

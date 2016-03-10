@@ -150,4 +150,30 @@ class Contributor extends AbstractData {
 
         return true;
     }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\Contributor $other Other object
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || !($other instanceof \snac\data\Contributor))
+            return false;
+        
+        if (!parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getName() != $other->getName())
+            return false;
+        
+        if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
+                ($this->getType() == null && $other->getType() != null))
+            return false;
+        
+        return true;
+    }
 }

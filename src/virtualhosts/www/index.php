@@ -18,7 +18,11 @@ include ("../../../vendor/autoload.php");
 
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
 
+// Set up the global log stream
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$WEBUI_LOGFILE, Logger::DEBUG);
 
 // Use the REQUEST (GET, POST, COOKIE) variables as input
 $input = $_REQUEST;

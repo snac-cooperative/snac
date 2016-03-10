@@ -112,4 +112,26 @@ abstract class AbstractTextData extends AbstractData{
             $this->text = null;
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     * 
+     * @param \snac\data\AbstractTextData $other Other object
+     * 
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\AbstractTextData))
+            return false;
+        
+        if (!parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getText() != $other->getText())
+            return false;
+        
+        return true;
+    }
+
 }

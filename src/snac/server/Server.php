@@ -52,6 +52,11 @@ class Server implements \snac\interfaces\ServerInterface {
      * @var int Timing information (ms)
      */
     private $timing = 0;
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
 
     /**
      * Constructor
@@ -61,12 +66,18 @@ class Server implements \snac\interfaces\ServerInterface {
      * @param array $input Input to the server
      */
     public function __construct($input) {
+        global $log;
 
         $this->input = $input;
         $this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
         $this->response = array(
                 "request" => $this->input,
         );
+        
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('Server');
+        $this->logger->pushHandler($log);
     }
 
     /**
@@ -95,18 +106,30 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"]["editing"] = $db->demoConstellationList();
                 break;
             case "update_constellation":
-                $db = new \snac\server\database\DBUtil();
-                if (isset($this->input["constellation"]) && isset($this->input["constellation"]["id"])) {
-                    $constellation = new \snac\data\Constellation($this->input["constellation"]);
-                    $result = $db->updateConstellation($constellation, 6, 1, "being edited", "Demo updates for now", $constellation->getID());
-                    if (isset($result["main_id"]))
-                        $this->response["result"] = "success";
-                    else
+                try {
+                    $db = new \snac\server\database\DBUtil();
+                    if (isset($this->input["constellation"])) {
+                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                        $result = $db->writeConstellation($constellation, "being edited", "Demo updates for now");
+                        if (isset($result) && $result != null) {
+                            $this->logger->addDebug("successfully wrote constellation");
+                            $this->response["constellation"] = $result->toArray();
+                            $this->response["result"] = "success";
+                        } else {
+                            $this->logger->addDebug("writeConstellation returned a null result");
+                            $this->response["result"] = "failure";
+                        }
+                    } else {
+                        $this->logger->addDebug("Constellation input value wasn't set to write");
                         $this->response["result"] = "failure";
-                } else {
+                    }
+                } catch (Exception $e) {
+                    $this->logger->addError("writeConstellation threw an exception");
                     $this->response["result"] = "failure";
                 }
+                
                 break;
+            case "read":
             case "edit":
                 if (isset($this->input["arkid"])) {
                     // Editing the given ark id by reading querying the current HRT

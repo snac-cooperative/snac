@@ -49,6 +49,11 @@ class Rest implements \snac\interfaces\ServerInterface {
      * @var string response
      */
     private $response = "";
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
 
     /**
      * Constructor
@@ -58,8 +63,13 @@ class Rest implements \snac\interfaces\ServerInterface {
      * @param array $input Input to the server
      */
     public function __construct($input) {
+        global $log;
 
         $this->input = $input;
+
+        // create a log channel
+        $this->logger = new \Monolog\Logger('RESTApi');
+        $this->logger->pushHandler($log);
     }
 
     /**
