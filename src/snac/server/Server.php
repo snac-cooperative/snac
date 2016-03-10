@@ -87,6 +87,7 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function run() {
 
+        $this->logger->addDebug("Server starting to handle request", $this->input);
         // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
 
         switch ($this->input["command"]) {
@@ -103,7 +104,20 @@ class Server implements \snac\interfaces\ServerInterface {
             case "user_information":
                 $this->response["user"] = array();
                 $db = new \snac\server\database\DBUtil();
-                $this->response["user"]["editing"] = $db->demoConstellationList();
+                $this->logger->addDebug("Getting list of locked constellations to user");
+                $editList = $db->listConstellationsLockedToUser();
+                $this->logger->addDebug("Got list of locked constellations to user");
+                
+                $this->response["user"]["editing"] = array();
+                foreach ($editList as $constellation) {
+                    $item = array(
+                        "id" => $constellation->getID(),
+                        "version" => $constellation->getVersion(),
+                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    );
+                    $this->logger->addDebug("User was currently editing", $item);
+                    array_push($this->response["user"]["editing"], $item);
+                }
                 break;
             case "update_constellation":
                 try {
@@ -153,10 +167,13 @@ class Server implements \snac\interfaces\ServerInterface {
                     
                     try {
                         // Read the constellation
+                        $this->logger->addDebug("Reading constellation from the database");
                         $constellation = $db->readConstellation(
                             $this->input["constellationid"], 
                             $this->input["version"]);
+                        $this->logger->addDebug("Finished reading constellation from the database");
                         $this->response["constellation"] = $constellation->toArray();
+                        $this->logger->addDebug("Serialized constellation for output to client");
                     } catch (Exception $e) {
                         $this->response["error"] = $e;
                     }

@@ -464,6 +464,31 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get the preferred name
+     *
+     * Gets the nameEntry in this constellation with the highest score, or the
+     * first one if the scores are equal, or null if there is no name entry
+     *
+     * @return \snac\data\NameEntry Preferred name entry for this constellation
+     *
+     */
+    public function getPreferredNameEntry()
+    {
+        if (count($this->nameEntries) < 1)
+            return null;
+
+        $max = 0;
+        $id = 0;
+        foreach ($this->nameEntries as $i => $entry) {
+            if ($entry->getPreferenceScore() > $max) {
+                $max = $entry->getPreferenceScore();
+                $id = $i;
+            }
+        }
+        return $this->nameEntries[$id];
+    }
+
+    /**
      * Get the occupations
      * 
      * @return \snac\data\Occupation[] List of occupations

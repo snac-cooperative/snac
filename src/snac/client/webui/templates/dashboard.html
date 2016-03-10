@@ -106,7 +106,7 @@ body {
                     <p>Continue where you left off on one of the following Constellations.</p>
                     <div class="list-group">
                         {% for link in data.user.editing %}
-                        <a href="?command=edit&constellationid={{link.main_id}}&version={{link.version}}" class="list-group-item">{{link.formatted_name}}</a>
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>

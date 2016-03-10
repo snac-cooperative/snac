@@ -83,6 +83,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
      */
     public function run() {
 
+        $this->logger->debug("Starting to handle user request", $this->input);
         $connect = new ServerConnect();
 
 
@@ -128,7 +129,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Display the current information
         if ($this->input["command"] == "edit") {
+            $this->logger->addDebug("Sending query to the server", $this->input);
             $serverResponse = $connect->query($this->input);
+            $this->logger->addDebug("Received server response");
             $display->setTemplate("edit_page");
             if (isset($serverResponse["constellation"])) {
                 $constellation = $serverResponse["constellation"];
@@ -136,13 +139,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
+                $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData($constellation);
             }
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
             // Ask the server for a list of records to edit
             $ask = array("command"=>"user_information");
+            $this->logger->addDebug("Sending query to the server", $ask);
             $serverResponse = $connect->query($ask);
+            $this->logger->addDebug("Received server response", $ask);
+            $this->logger->addDebug("Setting dashboard data into the page template");
             $display->setData($serverResponse);
         } else if ($this->input["command"] == "login") {
             // Destroy the old session
@@ -267,8 +274,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $display->setTemplate("landing_page");
         }
+        $this->logger->addDebug("Creating response page from template with data");
         array_push($this->responseHeaders, "Content-Type: text/html");
         $this->response = $display->getDisplay();
+        $this->logger->addDebug("Response page created, sending back to user");
 
         return;
     }
