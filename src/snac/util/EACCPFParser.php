@@ -49,6 +49,10 @@ class EACCPFParser {
      */
     private $unknowns;
 
+    /**
+     * @var string $operation The operation to add to each element that is parsed
+     */
+    private $operation = null;
 
     /**
      * @var \snac\util\Vocabulary An object allowing the interaction with vocabulary terms from the
@@ -91,6 +95,19 @@ class EACCPFParser {
      */
     private function instantiateVocabulary() {
         $this->vocabulary = new \snac\util\LocalVocabulary();
+    }
+
+    /**
+     * Set the Operation
+     *
+     * Set the operation for the entire constellation when parsing.  This sets the operation in every
+     * legal data structure (all except Term and GeoTerm) to be this operation.  If this method is not
+     * called, the resulting PHP Constellation object will have no operations.
+     *
+     * @param string $operation The operation to set
+     */
+    public function setConstellationOperation($operation) {
+        $this->operation = $operation;
     }
 
     /**
@@ -177,6 +194,7 @@ class EACCPFParser {
                         $sameas = new \snac\data\SameAs();
                         $sameas->setType($term);
                         $sameas->setURI((string) $control);
+                        $sameas->setOperation($this->operation);
                         $identity->addOtherRecordID($sameas);
                         break;
                     case "maintenanceStatus":
@@ -314,6 +332,7 @@ class EACCPFParser {
                                     $mevent->getName()
                                 ), $this->getAttributes($mevent));
                                 
+                            $event->setOperation($this->operation);
                             $identity->addMaintenanceEvent($event);
                         }
                         $this->markUnknownAtt(
@@ -325,6 +344,7 @@ class EACCPFParser {
                     case "conventionDeclaration":
                         $cd = new \snac\data\ConventionDeclaration();
                         $cd->setText($control->asXML());
+                        $cd->setOperation($this->operation);
                         $identity->addConventionDeclaration($cd);
                         $this->markUnknownAtt(
                             array (
@@ -357,6 +377,7 @@ class EACCPFParser {
                                             $source->getName()
                                         ), $innerSource);
                             }
+                            $sourceObj->setOperation($this->operation);
                             $identity->addSource($sourceObj);
                         }
                         break;
@@ -385,6 +406,7 @@ class EACCPFParser {
                                 $sameas = new \snac\data\SameAs();
                                 $sameas->setType($term);
                                 $sameas->setURI((string) $ident);
+                                $sameas->setOperation($this->operation);
                                 $identity->addOtherRecordID($sameas);
                                 break;
                             case "entityType":
@@ -405,8 +427,10 @@ class EACCPFParser {
                                     $nameLanguage->setScript($this->getTerm($iatts["scriptCode"], "script_code"));
                                     unset($iatts["scriptCode"]);
                                 }
-                                if (!$nameLanguage->isEmpty())
+                                if (!$nameLanguage->isEmpty()) {
+                                    $nameLanguage->setOperation($this->operation);
                                     $nameEntry->setLanguage($nameLanguage);
+                                }
 
                                 foreach ($this->getChildren($ident) as $npart) {
                                     switch ($npart->getName()) {
@@ -418,6 +442,7 @@ class EACCPFParser {
                                         $ctObj = new \snac\data\Contributor();
                                         $ctObj->setType($this->getTerm($this->getValue($npart->getName()), 'name_type'));
                                         $ctObj->setName((string) $npart);
+                                        $ctObj->setOperation($this->operation);
                                         $nameEntry->addContributor($ctObj);
                                         break;
                                     case "useDates":
@@ -464,6 +489,7 @@ class EACCPFParser {
                                             $npart->getName()
                                         ), $this->getAttributes($npart));
                                 }
+                                $nameEntry->setOperation($this->operation);
                                 $identity->addNameEntry($nameEntry);
                                 break;
                             default:
@@ -506,6 +532,7 @@ class EACCPFParser {
                                                  * Old code: $identity->addExistDates($date);
                                                  * Add a date object to the list of date objects for this constellation.
                                                  */
+                                                $date->setOperation($this->operation);
                                                 $identity->addDate($date);
                                             } else {
                                                 $this->markUnknownTag(
@@ -528,6 +555,7 @@ class EACCPFParser {
                                                                      $node->getName() . $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
+                                        $date->setOperation($this->operation);
                                         $identity->addDate($date);
                                         break;
                                     case "descriptiveNote":
@@ -665,6 +693,7 @@ class EACCPFParser {
                                     }
                                     $newPlace->setNote($place->getNote());
                                     $newPlace->setRole($place->getRole());
+                                    $newPlace->setOperation($this->operation);
                                     $identity->addPlace($newPlace);
                                 }
                                 
@@ -689,6 +718,7 @@ class EACCPFParser {
                                 case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
                                     $subject = new \snac\data\Subject();
                                     $subject->setTerm($this->getTerm((string) $subTag, "subject"));
+                                    $subject->setOperation($this->operation);
                                     $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
@@ -696,11 +726,13 @@ class EACCPFParser {
                                     $term = $this->getTerm((string) $subTag, "nationality");
                                     $nationality = new \snac\data\Nationality();
                                     $nationality->setTerm($term);
+                                    $nationality->setOperation($this->operation);
                                     $identity->addNationality($nationality);
                                     break;
                                 case "http://viaf.org/viaf/terms#gender":
                                     $gender = new \snac\data\Gender();
                                     $gender->setTerm($this->getTerm($this->getValue((string) $subTag), "gender"));
+                                    $gender->setOperation($this->operation);
                                     $identity->addGender($gender);
                                     break;
                                 default:
@@ -765,8 +797,10 @@ class EACCPFParser {
                                             ), $lang);
                                     }
                                 }
-                                if ($updatedLanguage)
+                                if ($updatedLanguage) {
+                                    $language->setOperation($this->operation);
                                     $identity->addLanguageUsed($language);
+                                }
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -777,6 +811,7 @@ class EACCPFParser {
                             case "generalContext":
                                 $gc = new \snac\data\GeneralContext();
                                 $gc->setText($desc2->asXML());
+                                $gc->setOperation($this->operation);
                                 $identity->addGeneralContext($gc);
                                 break;
                             case "legalStatus":
@@ -813,17 +848,20 @@ class EACCPFParser {
                                 if (!$legalStatusTerm->isEmpty()) {
                                     $legalStatus = new \snac\data\LegalStatus();
                                     $legalStatus->setTerm($legalStatusTerm);
+                                    $legalStatus->setOperation($this->operation);
                                     $identity->addLegalStatus($legalStatus);
                                 }
                                 break;
                             case "mandate":
                                 $mandate = new \snac\data\Mandate();
                                 $mandate->setText($desc2->asXML());
+                                $mandate->setOperation($this->operation);
                                 $identity->addMandate($mandate);
                                 break;
                             case "structureOrGenealogy":
                                 $sog = new \snac\data\StructureOrGenealogy();
                                 $sog->setText($desc2->asXML());
+                                $sog->setOperation($this->operation);
                                 $identity->addStructureOrGenealogy($sog);
                                 break;
                             case "occupation":
@@ -874,6 +912,7 @@ class EACCPFParser {
                                             $occ->getName()
                                         ), $oatts);
                                 }
+                                $occupation->setOperation($this->operation);
                                 $identity->addOccupation($occupation);
                                 $this->markUnknownAtt(
                                     array (
@@ -935,6 +974,7 @@ class EACCPFParser {
                                     $function->setType(new \snac\data\Term($fatts["localType"]));
                                     unset($fatts["localType"]);
                                 }
+                                $function->setOperation($this->operation);
                                 $identity->addFunction($function);
                                 $this->markUnknownAtt(
                                     array (
@@ -949,7 +989,9 @@ class EACCPFParser {
                                 /*
                                  * Is it correct to set the language of the biogHist to the <languageDeclaration> element?
                                  */ 
+                                $languageDeclaration->setOperation($this->operation);
                                 $bh->setLanguage($languageDeclaration);
+                                $bh->setOperation($this->operation);
                                 $identity->addBiogHist($bh);
                                 break;
                             default:
@@ -1056,6 +1098,7 @@ class EACCPFParser {
                                         $desc->getName(),
                                         $rel->getName()
                                     ), $ratts);
+                                $relation->setOperation($this->operation);
                                 $identity->addRelation($relation);
                                 break;
                             case "resourceRelation":
@@ -1113,6 +1156,7 @@ class EACCPFParser {
                                             ));
                                     }
                                 }
+                                $relation->setOperation($this->operation);
                                 $identity->addResourceRelation($relation);
                                 break;
                             default:
@@ -1143,6 +1187,7 @@ class EACCPFParser {
                 ));
             }
         }
+        $identity->setOperation($this->operation);
         return $identity;
     }
 
@@ -1443,6 +1488,7 @@ class EACCPFParser {
                 $date->setDate((string) $dateElement, '', new \snac\data\Term());
             }
         }
+        $date->setOperation($this->operation);
         return $date;
     }
 
@@ -1591,6 +1637,7 @@ class EACCPFParser {
         $scm = new \snac\data\SNACControlMetadata();
         $scm->setSourceData($place->getOriginal());
         $scm->setNote("Parsed from SNAC EAC-CPF.");
+        $scm->setOperation($this->operation);
         $place->addSNACControlMetadata($scm);
         
         // If the geo information was set, try to find the real term
@@ -1606,6 +1653,7 @@ class EACCPFParser {
             $place->setScore($score);
         }
         
+        $place->setOperation($this->operation);
         return $place;
     }
 }
