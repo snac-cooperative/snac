@@ -116,12 +116,12 @@ CREATE SEQUENCE "version_history_id_seq";
 create table version_history (
         id int default nextval('version_history_id_seq'),
         main_id int default nextval('id_seq'), -- main constellation id, when inserting a new identity, allow this to default
-        is_locked boolean default false,       -- boolean, true is locked by version_history.user_id
+        is_locked boolean default false,       -- (not used) boolean, true is locked by version_history.user_id
         user_id int,                           -- fk to appuser.id
         role_id int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
         timestamp timestamp default now(),     -- now()
         status text,                           -- a curated list of status terms.
-        is_current boolean,                    -- most current published, optional field to enhance performance
+        is_current boolean,                    -- (not used) most current published, optional field to enhance performance
         note text,                             -- checkin message
         primary key (id, main_id)
         );
