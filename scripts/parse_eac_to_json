@@ -22,6 +22,7 @@ if ($argc < 2) {
 
     // Create new parser for this file and parse it
     $e = new \snac\util\EACCPFParser();
+    $e->setConstellationOperation("insert");
     $id = $e->parseFile($argv[1]);
 
     $unparsedTags = $e->getMissing();

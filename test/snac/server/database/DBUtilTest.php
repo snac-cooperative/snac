@@ -113,10 +113,78 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($newContribVersion > $contribVersion);
     }
 
+    /**
+     * Insert a test record, then change the status to update and make sure that nrd is updated.
+     *
+     * This is similar to testFullCPF() below.
+     *
+     * Parse test record, set operation to insert, write to db. We know that the entity type is person.
+     *
+     * .dbutiltest et term json: {
+     * "id": "698",
+     * "term": "person"
+     * }
+     *
+     * The next step is the whole point of the test: does table nrd get updated when operation is update.
+     * 
+     * Read the record from db, change entity type to family, set operation to update, write to db.
+     *
+     * Read the record from db and verify entity type is still family.
+     * 
+     */ 
+    public function testFullCPFNrdOperationUpdate()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $eParser->setConstellationOperation("insert");
+        $firstJSON = $cObj->toJSON();
+
+        $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $startingARK = $cObj->getArk();
+        $startingEntity = $cObj->getEntityType()->getTerm();
+
+        $retObj = $this->dbu->writeConstellation($cObj,
+                                                 'ingest from file');
+
+        $this->assertNotNull($retObj);
+        
+        /* 
+         * read from the db what we just wrote to the db
+         * 
+         * wfdb=> select * from vocabulary where type='entity_type';
+         *  id  |    type     |     value     | uri | description 
+         * -----+-------------+---------------+-----+-------------
+         *  698 | entity_type | person        |     | 
+         *  697 | entity_type | family        |     | 
+         *  696 | entity_type | corporateBody |     | 
+         * (3 rows)
+         */
+
+        $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        /*
+         * printf("dbutiltest et term json: %s\n", $readObj->getEntityType()->toJSON());
+         */
+
+        /* 
+         * $readObj->getEntityType()->getTerm()->setID(697);
+         * $readObj->getEntityType()->getTerm()->setTerm('family');
+         */
+        $readObj->getEntityType()->setID(697);
+        $readObj->getEntityType()->setTerm('family');
+        $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+        $xObj = $this->dbu->writeConstellation($readObj,
+                                                 'change nrd term operation update');
+
+        $finalObj = $this->dbu->readConstellation($xObj->getID(), $xObj->getVersion());
+        $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
+    }
+
     public function testFullCPF()
     {
         $eParser = new \snac\util\EACCPFParser();
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $eParser->setConstellationOperation("insert");
         $firstJSON = $cObj->toJSON();
 
         $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -157,11 +225,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
             $editList = $this->dbu->listConstellationsLockedToUser();
             $initialEditCount = count($editList);
         }
-        else
-        {
-            // Force a test to fail so we don't forget to enable it later.
-            // $this->assertTrue(false);
-        }
         
         $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
                                              'locked editing',
@@ -178,12 +241,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
             $this->assertEquals('locked editing', $newStatusToo);
             $this->assertEquals($initialEditCount+1, $postEditCount);
         }
-        else
-        {
-            // Force a test to fail so we don't forget to enable it later.
-            // $this->assertTrue(false);
-        }
-
 
         /* 
          * read from the db what we just wrote to the db
@@ -197,9 +254,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($startingARK, $readingARK);
         $this->assertEquals($startingEntity, $readingEntity);
 
-        printf("\ndbuitltest startingARK: %s readingARK: %s startingEntity: %s readingEntity: %s\n",
-               $startingARK, $readingARK,
-               $startingEntity, $readingEntity);               
+        /* 
+         * printf("\ndbuitltest startingARK: %s readingARK: %s startingEntity: %s readingEntity: %s\n",
+         *        $startingARK, $readingARK,
+         *        $startingEntity, $readingEntity);               
+         */
 
         /* 
          * printf("\ndbutiltest legal term: %s termID: %s json:\n",
@@ -211,14 +270,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $secondJSON = $readObj->toJSON();
 
-
+        /**
         $cfile = fopen('first_json.txt', 'w');
         fwrite($cfile, $firstJSON);
         fclose($cfile); 
         $cfile = fopen('second_json.txt', 'w');
         fwrite($cfile, $secondJSON);
         fclose($cfile); 
-
+        **/
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.

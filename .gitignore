@@ -2,3 +2,4 @@ doc/
 composer.lock
 composer.phar
 vendor/
+log/
