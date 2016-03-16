@@ -229,3 +229,24 @@ if ($response == "yes") {
 
 
 
+echo "Would you like to load a sampling of records into the database?\n ('yes' or 'no'): "; 
+$response = trim(fgets(STDIN));
+if ($response == "yes") {
+    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    $dir = trim(fgets(STDIN));
+    if ($dir == null || $dir = "")
+        $dir = "/data/merge/";
+    $retval = 0;
+    echo "  Attempting to ingest sample records from $dir.\n";
+    // Run a system shell command, that sudos bash, then su's to postgres user,
+    // then creates the user and database from the Config class.
+    system("cd ../scripts && ./ingest_sample $dir\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem ingesting the sample records.\n\n";
+    }
+} else {
+    echo "  Not ingesting sample records.\n\n";
+}
+
+
