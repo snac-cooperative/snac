@@ -56,30 +56,37 @@ if (is_dir($argv[1])) {
         // Update them to be published
         $dbu->writeConstellationStatus($written->getID(), "published");
     }
-    
-    //Now, write samples to edit
-    // TODO: get list from email to Tom, write them in here
+
+    // Write some large test samples as published (too big to edit now) 
     // Washington
     echo "Parsing: George Washington\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6028ps4.xml");
     $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    // Update them to be published
+    $dbu->writeConstellationStatus($written->getID(), "published");
 
     // Jefferson
     echo "Parsing: Thomas Jefferson\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6w9576g.xml");
     $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    // Update them to be published
+    $dbu->writeConstellationStatus($written->getID(), "published");
 
     // Oppenheimer
     echo "Parsing: Robert Oppenheimer\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6v1266v.xml");
     $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    // Update them to be published
+    $dbu->writeConstellationStatus($written->getID(), "published");
 
     // Joseph Henry (large record) 
     echo "Parsing: Joseph Henry\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6st7qq0.xml");
     $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    // Update them to be published
+    $dbu->writeConstellationStatus($written->getID(), "published");
 
-    // And a few random sparse ones:
+    //Now, write samples to edit
     echo "Parsing: Sparse other sample files .";
     $constellation = $e->parseFile($argv[1]."/99166-w6988j92.xml");
     $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
