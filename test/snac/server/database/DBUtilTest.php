@@ -47,41 +47,70 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        /*
-         * Feb 19 2016 Holy cow. This needs to be in DBUtil, only. This is being done there and here. Only
-         * deprecated code will use the values here.
-         *
-         * A flat list of the appuser.id and related role.id, both are numeric. 
-         */ 
-        // list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
+        // Prototypeing..
+        // $this->traverseHead();
+        // exit();
     }
 
+    
+    /**
+     * {@inheritDoc}
+     * @see PHPUnit_Framework_TestCase::setUp()
+     *
+     * This is run before each test, not just once before all tests.
+     */
+    public function setUp() 
+    {
+        // Consider creating a single parser instance here, and reusing it throughout.
+    }
+
+    /**
+     * Update contributor
+     *
+     * Modify a contributor without any changes happening to the nameEntry the contributor refers to.
+     */ 
     public function testUpdateContrib()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
         $retObj = $this->dbu->writeConstellation($cObj,
                                                  'bulk ingest of merged');
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status to published');
 
+        if (0)
+        {
+            $cbObj = $retObj->getNameEntries()[0];
+            printf("\ndbutiltest post write name operation: %s\n", $cbObj->getOperation());
+            $op = call_user_func(array($cbObj, 'getOperation'));
+            // call_user_func_array(array($cbObj, 'setOperation'), array('foo'));
+            $cbObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+            printf("\ndbutiltest after callback setOperation op: %s operation: %s\n", $op, $cbObj->getOperation());
+        }
         $origContribName = $retObj->getNameEntries()[0]->getContributors()[0]->getName();
         $nameVersion = $retObj->getNameEntries()[0]->getVersion();
         $contribVersion = $retObj->getNameEntries()[0]->getContributors()[0]->getVersion();
 
-        $retObj->getNameEntries()[0]->getContributors()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
-        $modNameID = $retObj->getNameEntries()[0]->getContributors()[0]->getID();
-        $retObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
+        /*
+         * All the operations are set for $retObj, and there is no way to clear them. Read the constellation
+         * from disk to get a new constellation with no operations. Then modify the new copy of the constellation as planned.
+         */ 
+        $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+        unset($retObj);
+        $newRetObj->getNameEntries()[0]->getContributors()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+        $modNameID = $newRetObj->getNameEntries()[0]->getContributors()[0]->getID();
+        $newRetObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
 
         /* 
          * printf("\ndbutiltest: pre-change id: %s to name: %s pre-change cons version: %s\n",
          *        $modNameID,
-         *        $retObj->getNameEntries()[0]->getContributors()[0]->getName(),
-         *        $retObj->getVersion());
+         *        $newRetObj->getNameEntries()[0]->getContributors()[0]->getName(),
+         *        $newRetObj->getVersion());
          */
 
         // printf("\nDBUtilTest Writing cons with changed contributor name\n");
-        $postWriteObj = $this->dbu->writeConstellation($retObj,
+        $postWriteObj = $this->dbu->writeConstellation($newRetObj,
                                                      'change contributor name');
         $this->dbu->writeConstellationStatus($postWriteObj->getID(), 'published', 'probably already published, but setting again');
 
@@ -135,11 +164,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testFullCPFNrdOperationUpdate()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        $eParser->setConstellationOperation("insert");
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $firstJSON = $cObj->toJSON();
 
-        $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        // $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
@@ -183,8 +213,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testFullCPF()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        $eParser->setConstellationOperation("insert");
+        // Does this work when called before or after parseFile()? Needs to use the constant.
+        // $eParser->setConstellationOperation("insert");
         $firstJSON = $cObj->toJSON();
 
         $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -220,7 +252,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
          */ 
-        if (0)
+        if (1)
         {
             $editList = $this->dbu->listConstellationsLockedToUser();
             $initialEditCount = count($editList);
@@ -506,6 +538,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // Parse a file, write the data into the db.
         
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation("insert");
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
         $retObj = $this->dbu->writeConstellation($constellationObj,
                                                  'machine ingest of hand-crafted, full CPF test record');
