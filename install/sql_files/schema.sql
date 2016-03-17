@@ -479,6 +479,9 @@ create unique index source_idx2 on source (id,version,main_id);
 -- Source is first order data, not an authority. Every source is treated separately. We rejected the idea of
 -- an authority (broadly, controlled vocabulary) for source and will copy each source for each object it
 -- applies to. As a result, linking is not necessary.
+--
+-- Hang on: I thought we decided to have a single set of source per constellation. That means we would need a
+-- linking table.
 
 -- create table source_link (
 --     id         int default nextval('id_seq'),

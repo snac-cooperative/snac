@@ -239,7 +239,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
          * do that we want to change status and call listConstellationsLockedToUser() a second time.
          *
-         * There can and should be more definitive tests of listConstellationsLockedToUser().
+         * There can, and should be more definitive tests of listConstellationsLockedToUser().
          */ 
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
 
@@ -280,6 +280,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('locked editing', $newStatus);
         $this->assertEquals('locked editing', $newStatusToo);
         $this->assertEquals($initialEditCount+1, $postEditCount);
+
+        /*
+         * Change back to published so it doesn't show up on anyone's dashboard.
+         * When we have real users this won't matter as much because testing will be done with the "test" user.
+         */
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status back to published in order toclean up');
 
         /* 
          * read from the db what we just wrote to the db
@@ -470,7 +476,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
              */ 
             $undelVersion = $this->dbu->clearDeleted($this->appUserID,
                                                      $this->roleID,
-                                                     'bulk ingest',
+                                                     'locked editing',
                                                      'un-delete a name, that is: change status deleted to locked editing',
                                                      $mNObj->getID(), // constellation main_id
                                                      'name',
