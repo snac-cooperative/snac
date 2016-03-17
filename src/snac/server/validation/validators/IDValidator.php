@@ -222,7 +222,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         }
     
         // If this object has already been seen, then success is false
-        if (in_array($preID . $object->getID(), $this->seen[$type])) {
+        if (isset($this->seen[$type]) && in_array($preID . $object->getID(), $this->seen[$type])) {
             $this->addError("ID used multiple times", $object);
             $success = false;
         }
@@ -231,6 +231,10 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         // validate all it's subelements against their counterparts from the database
         foreach ($realObjects as $i => $current) {
             if ($object->getID() == $current->getID()) {
+                // If the seen IDs list for this type doesn't exist, create it
+                if (!isset($this->seen[$type]))
+                    $this->seen[$type] = array();
+                // Add this id to the list of ids seen for this type (duplicate check)
                 array_push($this->seen[$type], $preID . $object->getID());
                 // Validate the subelements
                 $success = $success && $this->validateAllDates($object, $current);
@@ -276,7 +280,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         }
     
         // If this object has already been seen, then success is false
-        if (in_array($preID . $object->getID(), $this->seen[$type])) {
+        if (isset($this->seen[$type]) && in_array($preID . $object->getID(), $this->seen[$type])) {
             $this->addError("ID used multiple times", $object);
             $success = false;
         }
@@ -285,6 +289,10 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         // validate all it's subelements against their counterparts from the database
         foreach ($realObjects as $i => $current) {
             if ($object->getID() == $current->getID()) {
+                // Create the seen id list for this type if it doesn't exist
+                if (!isset($this->seen[$type]))
+                    $this->seen[$type] = array();
+                // Add this ID to the seen list for this type
                 array_push($this->seen[$type], $preID . $object->getID());
                 // Validate the subelements
                 $success = $success && $this->validateLanguage($object->getLanguage(), $current);
@@ -465,7 +473,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         }
         
         // If this nameEntry has already been seen, then success is false
-        if (in_array($nameEntry->getID(), $this->seen["nameEntry"])) {
+        if (isset($this->seen["nameEntry"]) && in_array($nameEntry->getID(), $this->seen["nameEntry"])) {
             $this->addError("ID used multiple times", $nameEntry);
             $success = false;
         }
@@ -474,6 +482,10 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         // validate all it's subelements against their counterparts from the database
         foreach ($this->constellation->getNameEntries() as $i => $current) {
             if ($nameEntry->getID() == $current->getID()) {
+                // Create the array if it doesn't exist yet
+                if (!isset($this->seen["nameEntry"]))
+                    $this->seen["nameEntry"] = array();
+                // Add this name ID to the list of seen ids
                 array_push($this->seen["nameEntry"], $nameEntry->getID());
                 // Validate the subelements
                 $success = $success && $this->validateLanguage($nameEntry->getLanguage(), $current);
@@ -578,7 +590,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
             }
         }
         
-        if (in_array($scm->getID(), $this->seen["scm"])) {
+        if (isset($this->seen["scm"]) && in_array($scm->getID(), $this->seen["scm"])) {
             $this->addError("ID used multiple times", $scm);
             return false;
         }
@@ -589,6 +601,10 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         }
         foreach ($scmList as $i => $current) {
             if ($scm->getID() == $current->getID()) {
+                // If the seen list for scm IDs doesn't yet exist, create it
+                if (!isset($this->seen["scm"])) 
+                    $this->seen["scm"] = array();
+                // Add this id to the list of seen ids
                 array_push($this->seen["scm"], $scm->getID());
                 $success = $this->validateSource($scm->getCitation(), $current);
                 $success = $success && $this->validateLanguage($scm->getLanguage(), $current);
@@ -612,9 +628,9 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         
         // Get sources from the constellation
         $list = $this->constellation->getSources();
-        // If there is a context, use that (in list form) instead, and add pre-id
+        // If there is a context (only an SCM object), use that (in list form) instead, and add pre-id
         if ($context != null) {
-            $list = array($context->getSource());
+            $list = array($context->getCitation());
             $preID = $context->getID() . ":";
         }
         
