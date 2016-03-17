@@ -145,7 +145,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     /**
      * Insert a test record, then change the status to update and make sure that nrd is updated.
      *
-     * This is similar to testFullCPF() below.
+     * This is similar to testFullCPFWithEditList() below.
      *
      * Parse test record, set operation to insert, write to db. We know that the entity type is person.
      *
@@ -179,7 +179,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($retObj);
         
         /* 
-         * read from the db what we just wrote to the db
+         * Read from the db what we just wrote to the db.
+         *
+         * Assume that the vocabulary table is carved in stone, as it should be. Hard code the id 697, and if
+         * someone messes with vocabulary this should break. Multilingual vocabulary will break this, and will
+         * break a query to retrieve the 697, so there's not much point in trying to use a query instead of
+         * simply hard coding the id.
          * 
          * wfdb=> select * from vocabulary where type='entity_type';
          *  id  |    type     |     value     | uri | description 
@@ -192,14 +197,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        /*
-         * printf("dbutiltest et term json: %s\n", $readObj->getEntityType()->toJSON());
-         */
-
-        /* 
-         * $readObj->getEntityType()->getTerm()->setID(697);
-         * $readObj->getEntityType()->getTerm()->setTerm('family');
-         */
         $readObj->getEntityType()->setID(697);
         $readObj->getEntityType()->setTerm('family');
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
@@ -210,16 +207,18 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
     }
 
-    public function testFullCPF()
+    /**
+     * Read in the full test record
+     *
+     * 
+     *
+     */
+    public function testFullCPFWithEditList()
     {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        // Does this work when called before or after parseFile()? Needs to use the constant.
-        // $eParser->setConstellationOperation("insert");
         $firstJSON = $cObj->toJSON();
-
-        $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
 
         /* 
          * printf("\ndbutiltest operation: %s\n", $cObj->getOperation());
@@ -234,7 +233,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $startingEntity = $cObj->getEntityType()->getTerm();
 
         $retObj = $this->dbu->writeConstellation($cObj,
-                                                 'bulk ingest of merged');
+                                                 'testing ingest of a full CPF record');
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
          * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
@@ -251,28 +250,36 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * 
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
+         *
+         * Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
+         * is therefore much faster than listConstellationsLockedToUser().
          */ 
         if (1)
+        {
+            $vhList = $this->dbu->editList();
+            $initialEditCount = count($vhList);
+        }
+        else
         {
             $editList = $this->dbu->listConstellationsLockedToUser();
             $initialEditCount = count($editList);
         }
         
         $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
-                                             'locked editing',
-                                             'test write constellation status');
+                                                            'locked editing',
+                                                            'test write constellation status');
         $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
         $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
-        // Mar 10 2016. Disable this for now. 
-        if (0)
-        {
-            $editList = $this->dbu->listConstellationsLockedToUser();
-            $postEditCount = count($editList);
-            $this->assertEquals('locked editing', $newStatus);
-            $this->assertEquals('locked editing', $newStatusToo);
-            $this->assertEquals($initialEditCount+1, $postEditCount);
-        }
+        /* 
+         * $editList = $this->dbu->listConstellationsLockedToUser();
+         * $postEditCount = count($editList);
+         */
+        $vhList = $this->dbu->editList();
+        $postEditCount = count($vhList);
+        $this->assertEquals('locked editing', $newStatus);
+        $this->assertEquals('locked editing', $newStatusToo);
+        $this->assertEquals($initialEditCount+1, $postEditCount);
 
         /* 
          * read from the db what we just wrote to the db
@@ -302,19 +309,19 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $secondJSON = $readObj->toJSON();
 
-        /**
-        $cfile = fopen('first_json.txt', 'w');
-        fwrite($cfile, $firstJSON);
-        fclose($cfile); 
-        $cfile = fopen('second_json.txt', 'w');
-        fwrite($cfile, $secondJSON);
-        fclose($cfile); 
-        **/
+        /* 
+         * $cfile = fopen('first_json.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('second_json.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
+         */
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          */ 
-        $this->assertEquals(853, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(944, substr_count( $firstJSON, "\n" ));
         $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);

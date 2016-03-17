@@ -298,9 +298,12 @@ class DBUtil
      *
      * Build a list of main_id,version user has locked for edit by $appUserID.
      *
+     * Changed from private to public because long lists of 'locked editing' are slow, and impractical for
+     * several reasons.
+     *
      * @return integer[] A list with keys 'main_id', 'version' of constellations locked for edit by $appUserID
      */ 
-    private function editList()
+    public function editList()
     {
         $vhList = $this->sql->selectEditList($this->appUserID);
         if ($vhList)
@@ -2328,18 +2331,16 @@ class DBUtil
 
         /*
          * Validation. If we have a mainID then add the IDValidator. Always add the HasOperationValidator.
+         * Make sure 
          */  
         $ve = new ValidationEngine();        
+        $hasOperationValidator = new HasOperationValidator();
+        $ve->addValidator($hasOperationValidator);
         if ($mainID)
         {
             $idValidator = new IDValidator();
             $ve->addValidator($idValidator);
         }        
-        $hasOperationValidator = new HasOperationValidator();
-        $ve->addValidator($hasOperationValidator);
-        
-        // printf("\ndbutil: lang: %s\n", var_export($cObj->getLanguage(), 1));
-
         if ($ve->validateConstellation($cObj))
         {
             // ok
@@ -2355,6 +2356,9 @@ class DBUtil
             printf("operation: %s mainID: %s\n",
                    $op, $mainID);
         }
+        
+        // printf("\ndbutil: lang: %s\n", var_export($cObj->getLanguage(), 1));
+
         $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
 
         /*
