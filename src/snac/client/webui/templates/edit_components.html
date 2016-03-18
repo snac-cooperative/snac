@@ -626,10 +626,10 @@
                                             </label>
                                             <div class="col-xs-8">
                                                 <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
-                                                    {{ place.confirmed ? 'checked' : '' }}
+                                                    {{ place.confirmed == 't' ? 'checked' : '' }}
                                                     readonly/> True</label> 
                                                 <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false" 
-                                                    {{ place.confirmed ? '' : 'checked' }}
+                                                    {{ place.confirmed == 't' ? '' : 'checked' }}
                                                     readonly/> False</label> 
                                             </div>
                                         </div>

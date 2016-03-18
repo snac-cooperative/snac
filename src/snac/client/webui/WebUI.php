@@ -11,7 +11,7 @@
  */
 namespace snac\client\webui;
 
-use snac\interfaces\ServerInterface;
+use \snac\interfaces\ServerInterface;
 use \snac\client\util\ServerConnect as ServerConnect;
 
 /**
@@ -196,6 +196,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Get the constellation object
             $constellation = $mapper->serializeToConstellation($this->input);
 
+            $this->logger->addDebug("writing constellation", $constellation->toArray());
+
             // Build a data structure to send to the server
             $request = array("command"=>"update_constellation");
 
@@ -203,6 +205,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $request["constellation"] = $constellation->toArray();
             $serverResponse = $connect->query($request);
             
+            $this->logger->addDebug("server's response writen constellation", $serverResponse["constellation"]);
 
             $response = array();
             $response["server_debug"] = $serverResponse;
