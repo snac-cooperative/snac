@@ -55,8 +55,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
     public function setConstellation($constellation) {
         // Get the ID for this constellation
         $id = $constellation->getID();
-        
-        if ($id == null) {
+        $version = $constellation->getVersion();
+        if ($id == null || $version == null) {
             // We don't have the ID, so we can't do anything
             return false;
         }
@@ -65,7 +65,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
         $dbutil = new \snac\server\database\DBUtil();
         
         //TODO Replace this with the actual code to get the constellation out of the database
-        $this->constellation = $dbutil->readConstellation($id);
+        // Mar 15 2016 readConstellation() with args $id, $version is the actual code.
+        $this->constellation = $dbutil->readConstellation($id, $version);
         
         return true;
             

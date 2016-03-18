@@ -379,8 +379,19 @@ class HasOperationValidator extends \snac\server\validation\validators\Validator
      */
     public function validateSource($source, $context=null) {
         $success = $this->validateAbstractData($source, $context);
-        $success = $success && 
-                    $this->validateLanguage($source->getLanguage(), $source->getOperation());
+        /*
+         * Source may be null, so work around that. I suspect we don't need to check that getLanguage()
+         * returns anything because the validate* functions seem to deal with nulls just fine.
+         */ 
+        if ($source && $languageObject = $source->getLanguage())
+        {
+            $languageSuccess = $this->validateLanguage($source->getLanguage(), $source->getOperation());
+            $success = $success && $languageSuccess;
+        }
+        /*
+         * else success is simply the return value from validateAbstractData()
+         */ 
+                 
         return $success;
     }
     

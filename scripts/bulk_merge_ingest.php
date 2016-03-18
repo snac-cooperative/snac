@@ -153,9 +153,15 @@ function foo_main ()
         /* 
          * Default status is determined inside writeConstellation(). The default status is probably 'locked
          * editing'.
+         *
+         * public static $OPERATION_INSERT = "insert";
+         * public static $OPERATION_UPDATE = "update";
+         * public static $OPERATION_DELETE = "delete";
+         * 
          */
         if (empty($unparsedTags))
         {
+            $constellationObj=>setOperation();
             $cObj = $dbu->writeConstellation($constellationObj, 'bulk ingest of merged via bulk_merge_ingest.php');
             check_vocabulary($constellationObj);
             $msg = sprintf("$xx File $file ok.");

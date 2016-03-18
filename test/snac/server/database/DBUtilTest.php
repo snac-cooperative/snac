@@ -47,41 +47,70 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUtil();
-        /*
-         * Feb 19 2016 Holy cow. This needs to be in DBUtil, only. This is being done there and here. Only
-         * deprecated code will use the values here.
-         *
-         * A flat list of the appuser.id and related role.id, both are numeric. 
-         */ 
-        // list($this->appUserID, $this->roleID) = $this->dbu->getAppUserInfo('system');
+        // Prototypeing..
+        // $this->traverseHead();
+        // exit();
     }
 
+    
+    /**
+     * {@inheritDoc}
+     * @see PHPUnit_Framework_TestCase::setUp()
+     *
+     * This is run before each test, not just once before all tests.
+     */
+    public function setUp() 
+    {
+        // Consider creating a single parser instance here, and reusing it throughout.
+    }
+
+    /**
+     * Update contributor
+     *
+     * Modify a contributor without any changes happening to the nameEntry the contributor refers to.
+     */ 
     public function testUpdateContrib()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
         $retObj = $this->dbu->writeConstellation($cObj,
                                                  'bulk ingest of merged');
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status to published');
 
+        if (0)
+        {
+            $cbObj = $retObj->getNameEntries()[0];
+            printf("\ndbutiltest post write name operation: %s\n", $cbObj->getOperation());
+            $op = call_user_func(array($cbObj, 'getOperation'));
+            // call_user_func_array(array($cbObj, 'setOperation'), array('foo'));
+            $cbObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+            printf("\ndbutiltest after callback setOperation op: %s operation: %s\n", $op, $cbObj->getOperation());
+        }
         $origContribName = $retObj->getNameEntries()[0]->getContributors()[0]->getName();
         $nameVersion = $retObj->getNameEntries()[0]->getVersion();
         $contribVersion = $retObj->getNameEntries()[0]->getContributors()[0]->getVersion();
 
-        $retObj->getNameEntries()[0]->getContributors()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
-        $modNameID = $retObj->getNameEntries()[0]->getContributors()[0]->getID();
-        $retObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
+        /*
+         * All the operations are set for $retObj, and there is no way to clear them. Read the constellation
+         * from disk to get a new constellation with no operations. Then modify the new copy of the constellation as planned.
+         */ 
+        $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+        unset($retObj);
+        $newRetObj->getNameEntries()[0]->getContributors()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+        $modNameID = $newRetObj->getNameEntries()[0]->getContributors()[0]->getID();
+        $newRetObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
 
         /* 
          * printf("\ndbutiltest: pre-change id: %s to name: %s pre-change cons version: %s\n",
          *        $modNameID,
-         *        $retObj->getNameEntries()[0]->getContributors()[0]->getName(),
-         *        $retObj->getVersion());
+         *        $newRetObj->getNameEntries()[0]->getContributors()[0]->getName(),
+         *        $newRetObj->getVersion());
          */
 
         // printf("\nDBUtilTest Writing cons with changed contributor name\n");
-        $postWriteObj = $this->dbu->writeConstellation($retObj,
+        $postWriteObj = $this->dbu->writeConstellation($newRetObj,
                                                      'change contributor name');
         $this->dbu->writeConstellationStatus($postWriteObj->getID(), 'published', 'probably already published, but setting again');
 
@@ -116,7 +145,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     /**
      * Insert a test record, then change the status to update and make sure that nrd is updated.
      *
-     * This is similar to testFullCPF() below.
+     * This is similar to testFullCPFWithEditList() below.
      *
      * Parse test record, set operation to insert, write to db. We know that the entity type is person.
      *
@@ -135,11 +164,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function testFullCPFNrdOperationUpdate()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        $eParser->setConstellationOperation("insert");
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $firstJSON = $cObj->toJSON();
 
-        $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        // $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
@@ -149,7 +179,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertNotNull($retObj);
         
         /* 
-         * read from the db what we just wrote to the db
+         * Read from the db what we just wrote to the db.
+         *
+         * Assume that the vocabulary table is carved in stone, as it should be. Hard code the id 697, and if
+         * someone messes with vocabulary this should break. Multilingual vocabulary will break this, and will
+         * break a query to retrieve the 697, so there's not much point in trying to use a query instead of
+         * simply hard coding the id.
          * 
          * wfdb=> select * from vocabulary where type='entity_type';
          *  id  |    type     |     value     | uri | description 
@@ -162,14 +197,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        /*
-         * printf("dbutiltest et term json: %s\n", $readObj->getEntityType()->toJSON());
-         */
-
-        /* 
-         * $readObj->getEntityType()->getTerm()->setID(697);
-         * $readObj->getEntityType()->getTerm()->setTerm('family');
-         */
         $readObj->getEntityType()->setID(697);
         $readObj->getEntityType()->setTerm('family');
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
@@ -180,14 +207,18 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
     }
 
-    public function testFullCPF()
+    /**
+     * Read in the full test record
+     *
+     * 
+     *
+     */
+    public function testFullCPFWithEditList()
     {
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        $eParser->setConstellationOperation("insert");
         $firstJSON = $cObj->toJSON();
-
-        $cObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
 
         /* 
          * printf("\ndbutiltest operation: %s\n", $cObj->getOperation());
@@ -202,13 +233,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $startingEntity = $cObj->getEntityType()->getTerm();
 
         $retObj = $this->dbu->writeConstellation($cObj,
-                                                 'bulk ingest of merged');
+                                                 'testing ingest of a full CPF record');
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
          * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
          * do that we want to change status and call listConstellationsLockedToUser() a second time.
          *
-         * There can and should be more definitive tests of listConstellationsLockedToUser().
+         * There can, and should be more definitive tests of listConstellationsLockedToUser().
          */ 
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
 
@@ -219,28 +250,42 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * 
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
+         *
+         * Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
+         * is therefore much faster than listConstellationsLockedToUser().
          */ 
-        if (0)
+        if (1)
+        {
+            $vhList = $this->dbu->editList();
+            $initialEditCount = count($vhList);
+        }
+        else
         {
             $editList = $this->dbu->listConstellationsLockedToUser();
             $initialEditCount = count($editList);
         }
         
         $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
-                                             'locked editing',
-                                             'test write constellation status');
+                                                            'locked editing',
+                                                            'test write constellation status');
         $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
         $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
-        // Mar 10 2016. Disable this for now. 
-        if (0)
-        {
-            $editList = $this->dbu->listConstellationsLockedToUser();
-            $postEditCount = count($editList);
-            $this->assertEquals('locked editing', $newStatus);
-            $this->assertEquals('locked editing', $newStatusToo);
-            $this->assertEquals($initialEditCount+1, $postEditCount);
-        }
+        /* 
+         * $editList = $this->dbu->listConstellationsLockedToUser();
+         * $postEditCount = count($editList);
+         */
+        $vhList = $this->dbu->editList();
+        $postEditCount = count($vhList);
+        $this->assertEquals('locked editing', $newStatus);
+        $this->assertEquals('locked editing', $newStatusToo);
+        $this->assertEquals($initialEditCount+1, $postEditCount);
+
+        /*
+         * Change back to published so it doesn't show up on anyone's dashboard.
+         * When we have real users this won't matter as much because testing will be done with the "test" user.
+         */
+        $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status back to published in order toclean up');
 
         /* 
          * read from the db what we just wrote to the db
@@ -270,19 +315,19 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $secondJSON = $readObj->toJSON();
 
-        /**
-        $cfile = fopen('first_json.txt', 'w');
-        fwrite($cfile, $firstJSON);
-        fclose($cfile); 
-        $cfile = fopen('second_json.txt', 'w');
-        fwrite($cfile, $secondJSON);
-        fclose($cfile); 
-        **/
+        /* 
+         * $cfile = fopen('first_json.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('second_json.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
+         */
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          */ 
-        $this->assertEquals(853, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(944, substr_count( $firstJSON, "\n" ));
         $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
@@ -431,7 +476,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
              */ 
             $undelVersion = $this->dbu->clearDeleted($this->appUserID,
                                                      $this->roleID,
-                                                     'bulk ingest',
+                                                     'locked editing',
                                                      'un-delete a name, that is: change status deleted to locked editing',
                                                      $mNObj->getID(), // constellation main_id
                                                      'name',
@@ -506,6 +551,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // Parse a file, write the data into the db.
         
         $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation("insert");
         $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
         $retObj = $this->dbu->writeConstellation($constellationObj,
                                                  'machine ingest of hand-crafted, full CPF test record');

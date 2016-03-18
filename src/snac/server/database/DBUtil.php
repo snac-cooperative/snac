@@ -12,6 +12,9 @@
    */
 
 namespace snac\server\database;
+use \snac\server\validation\ValidationEngine as ValidationEngine;
+use snac\server\validation\validators\IDValidator;
+use \snac\server\validation\validators\HasOperationValidator;
 
 /**
  * High level database class.
@@ -182,14 +185,20 @@ class DBUtil
      *
      * This is a wrapper to deal with delete, and call setDeleted() if necessary.
      *
+     * Note the setOperation() at the end right before return. It is best that we not return from the middle
+     * of this function.
+     *
+     * This is where operation is cleared during write. Also see saveNrd() where operation for the constellation is cleared.
+     *
      */ 
     private function prepOperation($vhInfo, $cObj)
     {
         $theOp = $cObj->getOperation();
+        $result = false;
         if ($theOp == \snac\data\AbstractData::$OPERATION_DELETE)
         {
             $this->setDeleted($vhInfo, $cObj);
-            return false;
+            $result = false;
         }
         elseif (! $theOp)
         {
@@ -200,32 +209,36 @@ class DBUtil
                  * case during testing prior to all objects explicitly getting an operation. Once every
                  * operation is set, this branch should never run.
                  */ 
-                return true;
+                $result = true;
             }
-            /* 
-             * Mar 8 2014. With a null operation, we do nothing, and we prevent the calling code from doing
-             * anything as well.
-             *
-             * This prevents nameEntry with no operation from updating itself when its child contributor has
-             * an operation. In some cases the other code will not send objects that have no operation, but
-             * that doesn't save us any work here because we always have to test the operation.
-             *
-             * If the no-op objects really were simply not in the constellation, then all inserts and updates
-             * would be identical. No-op objects are sometimes present, and thus this distinction for no
-             * operation.
-             *
-             * Top level code will have already minted a new version number, and since all true updates and
-             * inserts are equivalent at the low level, the only thing we need to do here is prevent
-             * unnecessary updates on no-op objects.
-             *
-             */
-            return false;
+            else
+            {
+                /* 
+                 * Mar 8 2014. With a null operation, we do nothing, and by returning false we prevent the calling
+                 * code from doing anything as well.
+                 *
+                 * This prevents nameEntry with no operation from updating itself when its child contributor has
+                 * an operation. In some cases the other code will not send objects that have no operation, but
+                 * that doesn't save us any work here because we always have to test the operation.
+                 *
+                 * If the no-op objects really were simply not in the constellation, then all inserts and updates
+                 * would be identical. No-op objects are sometimes present, and thus this distinction for no
+                 * operation.
+                 *
+                 * Top level code will have already minted a new version number, and since all true updates and
+                 * inserts are equivalent at the low level, the only thing we need to do here is prevent
+                 * unnecessary updates on no-op objects.
+                 *
+                 */
+                $result = false;
+            }
         }
         else
         {
-            return true;
+            $result = true;
         }
-}
+        return $result;
+    }
 
     /**
      * Read published by ARK
@@ -285,9 +298,12 @@ class DBUtil
      *
      * Build a list of main_id,version user has locked for edit by $appUserID.
      *
+     * Changed from private to public because long lists of 'locked editing' are slow, and impractical for
+     * several reasons.
+     *
      * @return integer[] A list with keys 'main_id', 'version' of constellations locked for edit by $appUserID
      */ 
-    private function editList()
+    public function editList()
     {
         $vhList = $this->sql->selectEditList($this->appUserID);
         if ($vhList)
@@ -302,7 +318,8 @@ class DBUtil
      *
      * Build a list of constellations that the user is editing. That is: user has locked for edit.
      *
-     * @param string $status A single status to get the list of constellations
+     * @param string optional $status A single status for the list of constellations. Not implemented, but
+     * planned to support status values in addition to 'locked editing'
      *
      * @return \snac\data\Constellation[] A list of  PHP constellation object.
      * 
@@ -317,14 +334,14 @@ class DBUtil
             foreach ($infoList as $idVer)
             {
                 $cObj = $this->readConstellation($idVer['main_id'], $idVer['version']);
-                array_push($constellationList, $cObj);              
+                array_push($constellationList, $cObj);
             }
             return $constellationList;
         }
         return false;
     }
 
-    /*
+    /**
      * Return version list
      *
      * List all version numbers for the given $mainID. This is a utility function which may eventually become
@@ -1165,7 +1182,7 @@ class DBUtil
      * This is a bit exciting because Constellation will have a list of Source, but SNACControlMetadata only
      * has a single Source.
      *
-     * Two options for setCitaion()
+     * Two options for setCitation()
      * 1) call a function to build a Source object, call setCitation()
      *  $sourceArrayOrSingle = $this->buildSource($cObj);
      *  $gObj->setCitation($sourceOjb)
@@ -1236,7 +1253,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveNrd($vhInfo, &$cObj)
+    private function saveNrd($vhInfo, $cObj)
     {
         $theOp = $cObj->getOperation();
         $theID = $cObj->getID();
@@ -2147,7 +2164,7 @@ class DBUtil
      *
      * @param string $status The new status value. 'deleted' not allowed. The status must be one of the known values.
      *
-     * @param string $note Optional text note to write to the version_history table.
+     * @param string $note optional text note to write to the version_history table.
      *
      * @return integer|boolean Returns the new version number on success or false on failure.
      *
@@ -2312,18 +2329,42 @@ class DBUtil
             die();
         }
 
+        /*
+         * Validation. If we have a mainID then add the IDValidator. Always add the HasOperationValidator.
+         * Make sure 
+         */  
+        $ve = new ValidationEngine();        
+        $hasOperationValidator = new HasOperationValidator();
+        $ve->addValidator($hasOperationValidator);
+        if ($mainID)
+        {
+            $idValidator = new IDValidator();
+            $ve->addValidator($idValidator);
+        }        
+        if ($ve->validateConstellation($cObj))
+        {
+            // ok
+        }
+        else
+        {
+            // problem
+            printf("\nDBUtil.php Error: Validation failed: %s\n", $ve->getErrors());
+        }
         if (! $status)
         {
             printf("\nDBUtil.php Error: writeConstellation() cannot determine version status.\n");
             printf("operation: %s mainID: %s\n",
                    $op, $mainID);
         }
+        
+        // printf("\ndbutil: lang: %s\n", var_export($cObj->getLanguage(), 1));
+
         $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
 
         /*
          * $cObj is passed by reference, and changed in place.
          *
-         * The only changes to $cObj are adding id and version as necessary. 
+         * The only changes to $cObj are adding id and version as necessary, and setting operation to null.
          */
         $this->coreWrite($vhInfo, $cObj);
         return $cObj;
@@ -2576,28 +2617,25 @@ class DBUtil
      * Source objects are written to table source, and their related language (if one exists) is written to
      * table Language with a reverse foreign key as usual. Related on source.id=language.fk_id.
      *
-     *
      * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
      * validation.
      *
-     * SNACControlMetadata is part of a source, so calling saveMeta() here would recursion until there was a
-     * null SCM. I'm not sure we an call Source first order data, but I'm also not sure DBUtil should care. If
-     * the upstream code puts an SCM on an object, we can write the SCM to the db.
-     *
-     * Or if we have one case of Source as first order, we need an additional argument to control that. Source
-     * extends AbstractData, so source can have a SNACControlMetadata object.
+     * SNACControlMetadata is optional in Source object, and the SCM contains an (optional?) citation which is
+     * a Source object.  Thus saveSource and saveMeta might recurse. I'm not sure we an call Source first
+     * order data, but I'm also not sure DBUtil should care. If the upstream code puts an SCM on an object, we
+     * can write the SCM to the db.
      *
      * Note: saveSource() is a primitive called by saveConstellationSource() which probably does need
      * SNACControlMetadata.
      *
-     * Is Source first order data? It is a non-authority description of a source. Each source is not a
-     * shared authority and is singular to the record to which it is attached. That is: each Source is
-     * related back to a record. There can be multiple sources all related back to a single record, as
-     * is the case here in Constellation (nrd).
+     * Is Source first order data? Not always, as in when a Source object is a SCM citation. A Source object
+     * is a non-authority description of a source. Each source is not a shared authority and is singular to
+     * the record to which it is attached. That is: each Source is related back to a record. There can be
+     * multiple sources all related back to a single record, as is the case here in Constellation (nrd).
      *
-     * @param Object $gObj The object containing this source
+     * @param \snac\data\Source $gObj The Source object
      *
-     * @param string $fkTable The name of the containing object's table.
+     * @param string $fkTable The name of the containing object's table. This will be 'nrd' for constellation source.
      *
      * @param integer $fkID The record id of the containing table.
      *
@@ -2843,6 +2881,7 @@ class DBUtil
             $nameID = $ndata->getID();
             if ($this->prepOperation($vhInfo, $ndata))
             {
+                // printf("\ndbutil name operation: %s mainID: %s version: %s\n", $ndata->getOperation(), $ndata->getID(), $ndata->getVersion());
                 $nameID = $this->sql->insertName($vhInfo, 
                                                  $ndata->getOriginal(),
                                                  $ndata->getPreferenceScore(),
