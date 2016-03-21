@@ -3,6 +3,18 @@ var biogHistEditor = null;
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
 
+
+function addSCMEntry(short, i){
+	//next_scm_{{short}}_{{i}}_j
+	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
+    somethingHasBeenEdited = true;
+	var text = $('#scm_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
+    $('#add_scm_'+short+'_'+i+'_div').after(html);
+    $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
+    return false;
+}
+
 function updatePage() {
     $('.selectpicker').selectpicker();
     /*
@@ -157,53 +169,59 @@ function makeUneditable(short, i) {
 
 function makeSCMEditable(short, i, j) {
     // No editing if it's already in edit mode
-    if ($("#" + short + "_operation_" + i).val() == "update")
+    if ($("#scm_" + short + "_operation_" + j + "_" + i).val() == "update")
         return false;
 
     var idstr = "_" + j + "_" + i;
-    $("input[id^='"+short+"_']").each(function() {
+    $("input[id^='scm_"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
             obj.removeAttr("readonly");
         }
     });
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("textarea[id^='scm_"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
             obj.removeAttr("readonly");
         }
     });
-    $("div[id^='select_"+short+"']").each(function() {
+    $("div[id^='select_scm_"+short+"']").each(function() {
         var cont = $(this);
         if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
             var split = cont.attr('id').split("_");
             var name = split[3];
-            var id = $("#"+short+"_"+name+"_id"+idstr).val();
-            var term = $("#"+short+"_"+name+"_term"+idstr).val();
-            var vocabtype = $("#"+short+"_"+name+"_vocabtype"+idstr).val();
-            var minlength = $("#"+short+"_"+name+"_minlength"+idstr).val();
-            cont.html("<select id='"+short+"_"+name+"_id"+idstr+"' name='"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
+            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
+            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
+            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
+            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
                     "<option></option>"+
                     "<option value=\""+id+"\" selected>"+term+"</option>"+
                     "</select>");
-            vocab_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
+            vocab_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
         }
     });
-    $("div[id^='selectsource_"+short+"']").each(function() {
+    $("div[id^='selectsource_scm_"+short+"']").each(function() {
         var cont = $(this);
         if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
             var split = cont.attr('id').split("_");
             var name = split[3];
-            var id = $("#"+short+"_"+name+"_id"+idstr).val();
-            var term = $("#"+short+"_"+name+"_term"+idstr).val();
-            cont.html("<select id='"+short+"_"+name+"_id"+idstr+"' name='"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
+            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
+            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
                     "<option></option>"+
                     "<option value=\""+id+"\" selected>"+term+"</option>"+
                     "</select>");
-            scm_source_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr);
+            scm_source_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr);
         }
     });
-    $("#" + short + "_operation_" + i).val("update");
+    
+
+    if ($("#scm_" + short + "_id_" + j + "_" + i).val() != "")
+    	$("#scm_" + short + "_operation_" + j + "_" + i).val("update");
+    else
+    	$("#scm_" + short + "_operation_" + j + "_" + i).val("insert");
+    
     return false;
 }
 
