@@ -141,8 +141,8 @@ abstract class AbstractData {
         
         if ($this->getMaxDateCount() > 0) {
             $tmp = array();
-            
-            if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList()))
+
+            if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList(), $strict))
                 return false;
         }
         
