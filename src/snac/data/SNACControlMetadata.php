@@ -74,6 +74,10 @@ class SNACControlMetadata extends AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
+
+        $this->setMaxDateCount(0);
+        parent::__construct($data);
+        
         if ($data != null && is_array($data))
             $this->fromArray($data);
         
@@ -293,9 +297,11 @@ class SNACControlMetadata extends AbstractData {
         if (($this->getCitation() != null && ! $this->getCitation()->equals($other->getCitation(), $strict)) ||
                  ($this->getCitation() == null && $other->getCitation() != null))
             return false;
+
         if (($this->getDescriptiveRule() != null && ! $this->getDescriptiveRule()->equals($other->getDescriptiveRule())) ||
                  ($this->getDescriptiveRule() == null && $other->getDescriptiveRule() != null))
             return false;
+
         if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;

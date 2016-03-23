@@ -91,6 +91,11 @@ abstract class AbstractData {
      * @var string Operation for this object.  Must be set to one of the constant values or null.
      */
     protected $operation;
+    
+    /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    protected $logger = null;
 
     /**
      * Constructor
@@ -104,11 +109,16 @@ abstract class AbstractData {
      *                                  object with.
      */
     public function __construct($data = null) {
+        global $log;
 
         $this->snacControlMetadata = array();
         $this->dateList = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
+            
+        // create a log channel
+        $this->logger = new \Monolog\Logger(get_class($this));
+        $this->logger->pushHandler($log);
     }
     
     /**
@@ -124,6 +134,7 @@ abstract class AbstractData {
      * @return boolean true if equal, false if not
      */
     public function equals($other, $strict = true) {
+
         if ($other == null || !($other instanceOf \snac\data\AbstractData))
             return false;
         
@@ -135,6 +146,7 @@ abstract class AbstractData {
             if ($this->getOperation() != $other->getOperation())
                 return false;
         }
+
         
         if ($this->getMaxDateCount() != $other->getMaxDateCount()) 
             return false;
@@ -145,11 +157,9 @@ abstract class AbstractData {
             if (!$this->checkArrayEqual($this->getDateList(), $other->getDateList(), $strict))
                 return false;
         }
-        
-        if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata()))
+
+        if (!$this->checkArrayEqual($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict))
             return false;
-        
-        
         
         // If all the tests pass, they are equal
         return true;
@@ -175,7 +185,7 @@ abstract class AbstractData {
             return false;
         
         $tmp = array();
-        
+
         foreach ($first as $data) {
             foreach ($second as $k => $odata) {
                 if ((($data == null && $odata == null) || ($data != null && $data->equals($odata, $strict))) 
@@ -184,13 +194,13 @@ abstract class AbstractData {
                 }
             }
         }
-        
+
         $count = count($tmp);
         unset($tmp);
         
         if ($count != count($second))
             return false;
-        
+ 
         return true;
         
     }

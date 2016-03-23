@@ -139,40 +139,10 @@ class ConstellationPostMapper {
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
             
-            if (isset($scm["descriptiveRule"]) && isset($scm["descriptiveRule"]["id"]) &&
-                     $scm["descriptiveRule"]["id"] != "") {
-                $term = new \snac\data\Term();
-                $term->setID($scm["descriptiveRule"]["id"]);
-                $scmObject->setDescriptiveRule($term);
-            }
+            $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
             
-            $lang = new \snac\data\Language();
-            if ($scm["language"]["id"] != "")
-                $lang->setID($scm["language"]["id"]);
-            if ($scm["language"]["version"] != "")
-                $lang->setVersion($scm["language"]["version"]);
-            $lang->setOperation($this->getOperation($scm));
-            // May need to set the operation to insert if the id is null and there is an update...
-            
-            if (isset($scm["languagelanguage"]["id"]) &&
-                    $scm["languagelanguage"]["id"] != null &&
-                    $scm["languagelanguage"]["id"] != "") {
-                $term = new \snac\data\Term();
-                $term->setID($scm["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-            }
+            $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
-            if (isset($scm["languagescript"]["id"]) &&
-                    $scm["languagescript"]["id"] != null &&
-                    $scm["languagescript"]["id"] != "") {
-                $term = new \snac\data\Term();
-                $term->setID($scm["languagescript"]["id"]);
-                $lang->setScript($term);
-            }
-            
-            $this->addToMapping("scm_".$short."_language", $j . "_". $i, $scm, $lang);
-            
-            $scmObject->setLanguage($lang);
             
             // short, i, post data, php object
             // need: 
@@ -182,6 +152,58 @@ class ConstellationPostMapper {
         }
         
         return $scmArray;
+    }
+    
+    /**
+     * Parse Term
+     * 
+     * Parses and creates a Term object if the information exists in the data given.
+     * 
+     * @param string[][] $data  Data to inspect for term object
+     * @return NULL|\snac\data\Term Correct Term object or null if no term
+     */
+    private function parseTerm($data) {
+        $term = null;
+        if (isset($data) && $data != null && isset($data["id"]) && $data["id"] != "" && $data["id"] != null) {
+            $term = new \snac\data\Term();
+            $term->setID($data["id"]);
+        }
+        return $term;
+    }
+
+    /**
+     * Parse a sub-language
+     * 
+     * Parses a language that is an integral part of another object, such as an SCM,
+     * BiogHist, NameEntry, etc.  
+     * 
+     * @param string[][] $object The string array to be parsed, which is the object containing a language
+     * @param string $short The short name for this object's type (from the web page)
+     * @param string|integer $i The id of the object on the page (not the DB ID)
+     * @return \snac\data\Language The language object found when parsing the array
+     */
+    private function parseSubLanguage($object, $short, $i) {
+
+        $lang = new \snac\data\Language();
+        if ($object["language"]["id"] != "")
+            $lang->setID($object["language"]["id"]);
+        if ($object["language"]["version"] != "")
+            $lang->setVersion($object["language"]["version"]);
+        
+        if ($lang->getID() == null && $lang->getVersion() == null && 
+                $this->getOperation($object) == \snac\data\Language::$OPERATION_UPDATE) {
+            $lang->setOperation(\snac\data\Language::$OPERATION_INSERT);
+        } else {
+            $lang->setOperation($this->getOperation($object));
+        }
+ 
+        $lang->setLanguage($this->parseTerm($object["languagelanguage"]));
+
+        $lang->setScript($this->parseTerm($object["languagescript"]));
+        
+        $this->addToMapping($short . "_language", $i, $object, $lang);
+        
+        return $lang;
     }
     
     /**
@@ -518,12 +540,10 @@ class ConstellationPostMapper {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
             $gender = new \snac\data\Gender();
             $gender->setID($data["id"]);
             $gender->setVersion($data["id"]);
-            $gender->setTerm($term);
+            $gender->setTerm($this->parseTerm($data["term"]));
             $gender->setOperation($this->getOperation($data));
             
             $gender->setAllSNACControlMetadata($this->parseSCM($data,"gender", $k));
@@ -543,13 +563,9 @@ class ConstellationPostMapper {
             $date->setOperation($this->getOperation($data));
             
             $date->setNote($data["note"]);
-            $type = new \snac\data\Term();
-            $type->setID($data["starttype"]["id"]);
-            $date->setFromDate($data["startoriginal"], $data["start"], $type);
+            $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
             $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
-            $type = new \snac\data\Term();
-            $type->setID($data["endtype"]["id"]);
-            $date->setFromDate($data["endoriginal"], $data["end"], $type);
+            $date->setFromDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
             $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
             
             $date->setAllSNACControlMetadata($this->parseSCM($data, "exist", $k));
@@ -569,24 +585,9 @@ class ConstellationPostMapper {
             $bh->setOperation($this->getOperation($data));
             
             $bh->setText($data["text"]);
-            
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $bh->setLanguage($lang);
-            }
+
+            $bh->setLanguage($this->parseSubLanguage($data, "biogHist", $k));
+
             
             $bh->setAllSNACControlMetadata($this->parseSCM($data, "biogHist", $k));
 
@@ -604,13 +605,9 @@ class ConstellationPostMapper {
             $lang->setVersion($data["version"]);
             $lang->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["language"]["id"]);
-            $lang->setLanguage($term);
+            $lang->setLanguage($this->parseTerm($data["language"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["script"]["id"]);
-            $lang->setScript($term);
+            $lang->setScript($this->parseTerm($data["script"]));
             
             $lang->setAllSNACControlMetadata($this->parseSCM($data, "language", $k));
             
@@ -628,9 +625,7 @@ class ConstellationPostMapper {
             $nationality->setVersion($data["version"]);
             $nationality->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $nationality->setTerm($term);
+            $nationality->setTerm($this->parseTerm($data["term"]));
             
             $nationality->setAllSNACControlMetadata($this->parseSCM($data, "nationality", $k));
             
@@ -648,9 +643,7 @@ class ConstellationPostMapper {
             $fun->setVersion($data["version"]);
             $fun->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $fun->setTerm($term);
+            $fun->setTerm($this->parseTerm($data["term"]));
             
             $fun->setAllSNACControlMetadata($this->parseSCM($data, "function", $k));
             
@@ -667,10 +660,8 @@ class ConstellationPostMapper {
             $legalStatus->setID($data["id"]);
             $legalStatus->setVersion($data["version"]);
             $legalStatus->setOperation($this->getOperation($data));
-            
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $legalStatus->setTerm($term);
+
+            $legalStatus->setTerm($this->parseTerm($data["term"]));
             
             $legalStatus->setAllSNACControlMetadata($this->parseSCM($data, "legalStatus", $k));
             
@@ -763,23 +754,7 @@ class ConstellationPostMapper {
             $nameEntry->setOriginal($data["original"]);
             $nameEntry->setPreferenceScore($data["preferenceScore"]);
             
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $nameEntry->setLanguage($lang);
-            }
+            $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
             
             $nameEntry->setAllSNACControlMetadata($this->parseSCM($data, "nameEntry", $k));
             
@@ -800,9 +775,7 @@ class ConstellationPostMapper {
             $sameas->setText($data["text"]);
             $sameas->setURI($data["uri"]);
             
-            $type = new \snac\data\Term();
-            $type->setID($data["type"]["id"]);
-            $sameas->setType($type);
+            $sameas->setType($this->parseTerm($data["type"]));
             
             $sameas->setAllSNACControlMetadata($this->parseSCM($data, "sameAs", $k));
             
@@ -824,23 +797,8 @@ class ConstellationPostMapper {
             $source->setURI($data["uri"]);
             $source->setNote($data["note"]);
             
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $source->setLanguage($lang);
-            }
+            $source->setLanguage($this->parseSubLanguage($data, "source", $k));
+
             
             $source->setAllSNACControlMetadata($this->parseSCM($data, "source", $k));
             
@@ -863,13 +821,9 @@ class ConstellationPostMapper {
             $relation->setSource($data["source"]);
             $relation->setNote($data["note"]);
             
-            $type = new \snac\data\Term();
-            $type->setID($data["documentType"]["id"]);
-            $relation->setDocumentType($type);
-            
-            $role = new \snac\data\Term();
-            $role->setID($data["role"]["id"]);
-            $relation->setRole($role);
+            $relation->setDocumentType($this->parseTerm($data["documentType"]));
+
+            $relation->setRole($this->parseTerm($data["role"]));
             
             $relation->setAllSNACControlMetadata($this->parseSCM($data, "resourceRelation", $k));
             
@@ -891,10 +845,8 @@ class ConstellationPostMapper {
             $relation->setTargetArkID($data["targetArkID"]);
             $relation->setContent($data["content"]);
             $relation->setNote($data["note"]);
-            
-            $type = new \snac\data\Term();
-            $type->setID($data["type"]["id"]);
-            $relation->setType($type);
+
+            $relation->setType($this->parseTerm($data["type"]));
             
             $relation->setAllSNACControlMetadata($this->parseSCM($data, "constellationRelation", $k));
             
@@ -912,9 +864,7 @@ class ConstellationPostMapper {
             $subject->setVersion($data["version"]);
             $subject->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $subject->setTerm($term);
+            $subject->setTerm($this->parseTerm($data["term"]));
             
             $subject->setAllSNACControlMetadata($this->parseSCM($data, "subject", $k));
             
@@ -931,10 +881,8 @@ class ConstellationPostMapper {
             $occupation->setID($data["id"]);
             $occupation->setVersion($data["version"]);
             $occupation->setOperation($this->getOperation($data));
-            
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $occupation->setTerm($term);
+
+            $occupation->setTerm($this->parseTerm($data["term"]));
             
             $occupation->setAllSNACControlMetadata($this->parseSCM($data, "occupation", $k));
             
@@ -956,17 +904,16 @@ class ConstellationPostMapper {
             $place->setScore($data["score"]);
             $place->setNote($data["note"]);
             
-            $term = new \snac\data\Term();
-            $term->setID($data["type"]["id"]);
-            $place->setType($term);
+            $place->setType($this->parseTerm($data["type"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["role"]["id"]);
-            $place->setRole($term);
+            $place->setRole($this->parseTerm($data["role"]));
             
-            $geoterm = new \snac\data\GeoTerm();
-            $geoterm->setID($data["geoplace"]["id"]);
-            $place->setGeoTerm($geoterm);
+            if (isset($data["geoplace"]) && $data["geoplace"] != null && isset($data["geoplace"]["id"])
+                    && $data["geoplace"]["id"] != null && $data["geoplace"]["id"] != "") {
+                $geoterm = new \snac\data\GeoTerm();
+                $geoterm->setID($data["geoplace"]["id"]);
+                $place->setGeoTerm($geoterm);
+            }
             
             if ($data["confirmed"] === "true")
                 $place->confirm();
