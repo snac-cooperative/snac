@@ -55,7 +55,9 @@ $(document).ready(function() {
             	        // Don't look at any of the ZZ hidden panels
 	            	    if (cont.attr('id').indexOf("ZZ") == -1) {
 	            	        var split = cont.attr('id').split("_");
-	            	        if (split.length = 3) {
+	            	        
+	            	        // Split reveals a normal panel:
+	            	        if (split.length == 3) {
 	            	        	var short = split[0];
 	        	            	var id = split[2];
 	        	            	if ($("#"+short+"_id_"+id).val() == "")
@@ -64,6 +66,18 @@ $(document).ready(function() {
 	        	            		// Make Uneditable returns the editing item back to text and
 	        	            		// clears the operation flag.
 	        	            		makeUneditable(short, id);
+	        	            	}
+	        	            // Else if split reveals an SCM panel:
+	            	        } else if (split.length == 5) {
+	            	        	var short = split[1];
+	        	            	var i = split[4];
+	        	            	var j = split[3];
+	        	            	if ($("#scm_"+short+"_id_"+j+"_"+i).val() == "")
+	        	            		cont.remove();
+	        	            	else {
+	        	            		// Make Uneditable returns the editing item back to text and
+	        	            		// clears the operation flag.
+	        	            		makeSCMUneditable(short, i, j);
 	        	            	}
 	            	        }
             	        }

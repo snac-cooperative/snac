@@ -745,7 +745,7 @@
 
 {% macro displaySCM(short, i, j, scm) %}
     {% import 'widgets.html' as widgets %}  
-                   <div class="panel panel-default">
+                   <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
                         <div class="panel-body">
                             <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
                             <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
@@ -788,7 +788,7 @@
                                         <input id="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.term }}"/>
                                         <input id="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="descriptive_rule"/>
                                         <input id="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ scm.language.language.term }}</p>
+                                        <p class="form-control-static">{{ scm.descriptiveRule.term }}</p>
                                     </div>
                                 </div>
 

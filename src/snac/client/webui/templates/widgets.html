@@ -28,8 +28,8 @@
 {% macro scmOptionsList(short, i, j) %}
 <div class="col-xs-2">
     <div class="list-group text-center">
-        <a href="#" id="{{short}}_scm_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault(); makeSCMEditable('{{short}}', {{i}}, {{j}});"><span class="glyphicon glyphicon-pencil"></span></a>
-        <a href="#" id="{{short}}_scm_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault(); setSCMDeleted('{{short}}', {{i}}, {{j}});"><span class="glyphicon glyphicon-trash"></span></a>
+        <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault(); makeSCMEditable('{{short}}', {{i}}, {{j}});"><span class="glyphicon glyphicon-pencil"></span></a>
+        <a href="#" id="scm_{{short}}_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault(); setSCMDeleted('{{short}}', {{i}}, {{j}});"><span class="glyphicon glyphicon-trash"></span></a>
     </div>
 </div>
 {% endmacro %}
