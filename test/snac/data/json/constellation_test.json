@@ -84,6 +84,7 @@
             "dataType": "Source",
             "language": null,
             "type": null,
+            "displayName": null,
             "text": null,
             "note": "<descriptiveNote>\n               <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n               <p>Nota : champ ancien identifiant pas accessible<\/p>\n               <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n            <\/descriptiveNote>",
             "uri": null,

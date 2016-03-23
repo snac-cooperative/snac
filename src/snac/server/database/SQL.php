@@ -233,7 +233,7 @@ class SQL
     {
         $qq = 'select_source';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id, aa.display_name
                             from source as aa,
                             (select fk_id,max(version) as version from source where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -277,7 +277,7 @@ class SQL
      * which is used by language as a foreign key.
      *
      */
-    public function insertSource($vhInfo, $id, $text, $note, $uri, $typeID, $fkTable, $fkID)
+    public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri, $typeID, $fkTable, $fkID)
     {
         if (! $id)
         {
@@ -286,13 +286,14 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq,
                             'insert into source
-                            (version, main_id, id, text, note, uri, type_id, fk_table, fk_id)
+                            (version, main_id, id, display_name, text, note, uri, type_id, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
                                   $id,
+                                  $displayName,
                                   $text,
                                   $note,
                                   $uri,

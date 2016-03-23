@@ -210,30 +210,33 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     /**
      * Read in the full test record
      *
-     * 
+     * Set the operation to be insert.
      *
+     * After parsing, change the second place to be confirmed. It is only possibel to set confirmed on a place
+     * with a geoplace (aka GeoTerm), and that's why we use [1] ainstead of [0].
+     *
+     * Count how many constellations are status 'locked editing'.
+     *
+     * Change the status of one record and compare the count of records locked for editing, which should be initial+1.
+     *
+     * Read the record back from the db, and make sure the ARK and entity type are correct.
+     *
+     * Delete a constellation, then attempt a read and make sure it did not read.
      */
     public function testFullCPFWithEditList()
     {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cObj->getPlaces()[1]->setConfirmed(true);
         $firstJSON = $cObj->toJSON();
-
-        /* 
-         * printf("\ndbutiltest operation: %s\n", $cObj->getOperation());
-         * 
-         * printf("\ndbutiltest cobj legal term: %s termID: %s json:\n",
-         *        $cObj->getLegalStatuses()[0]->getTerm()->getTerm(),
-         *        $cObj->getLegalStatuses()[0]->getTerm()->getID(),
-         *        $cObj->getLegalStatuses()[0]->getTerm()->toJSON());
-         */
 
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
         $retObj = $this->dbu->writeConstellation($cObj,
                                                  'testing ingest of a full CPF record');
+
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
          * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
@@ -299,18 +302,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($startingARK, $readingARK);
         $this->assertEquals($startingEntity, $readingEntity);
 
-        /* 
-         * printf("\ndbuitltest startingARK: %s readingARK: %s startingEntity: %s readingEntity: %s\n",
-         *        $startingARK, $readingARK,
-         *        $startingEntity, $readingEntity);               
-         */
-
-        /* 
-         * printf("\ndbutiltest legal term: %s termID: %s json:\n",
-         *        $readObj->getLegalStatuses()[0]->getTerm()->getTerm(),
-         *        $readObj->getLegalStatuses()[0]->getTerm()->getID(),
-         *        $readObj->getLegalStatuses()[0]->getTerm()->toJSON());
-         */
+        
+        /*
+         * Legalstatus is broken because all the terms are not in the db?
+         */ 
         // $this->assertEquals("Sample legal status", $readObj->getLegalStatuses()[0]->getTerm()->getTerm());
 
         $secondJSON = $readObj->toJSON();
@@ -326,9 +321,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
+         * Update: could probably start using the equal() functions.
          */ 
-        $this->assertEquals(944, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1018, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(945, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(1014, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($readObj,
