@@ -24,4 +24,222 @@ namespace snac\data;
  *        
  */
 class User {
+
+    private $userid;
+
+    private $firstName;
+
+    private $lastName;
+
+    private $fullName;
+
+    private $avatar;
+    
+    private $avatarSmall;
+    
+    private $avatarLarge;
+
+    private $email;
+
+    private $token;
+
+    public function setUserid($id) {
+
+        $this->userid = $id;
+    }
+
+    public function setFirstName($first) {
+
+        $this->firstName = $first;
+    }
+
+    public function setLastName($last) {
+
+        $this->lastName = $last;
+    }
+
+    public function setFullName($full) {
+
+        $this->fullName = $full;
+    }
+
+    public function setAvatar($avatar) {
+
+        $this->avatar = $avatar;
+    }
+
+    public function setAvatarSmall($avatar) {
+    
+        $this->avatarSmall = $avatar;
+    }
+
+    public function setAvatarLarge($avatar) {
+    
+        $this->avatarLarge = $avatar;
+    }
+
+    public function setEmail($email) {
+
+        $this->email = $email;
+    }
+
+    public function setToken($token) {
+
+        $this->token = $token;
+    }
+
+    public function getUserid() {
+
+        return $this->userid;
+    }
+
+    public function getFirstName() {
+
+        return $this->firstName;
+    }
+
+    public function getLastName() {
+
+        return $this->lastName;
+    }
+
+    public function getFullName() {
+
+        return $this->fullName;
+    }
+
+    public function getAvatar() {
+
+        return $this->avatar;
+    }
+    public function getAvatarSmall() {
+
+        return $this->avatarSmall;
+    }
+    public function getAvatarLarge() {
+
+        return $this->avatarLarge;
+    }
+
+    public function getEmail() {
+
+        return $this->email;
+    }
+
+    public function getToken() {
+
+        return $this->token;
+    }
+
+    /**
+     * Returns this object's data as an associative array
+     *
+     * @param boolean $shorten optional Whether or not to include null/empty components
+     * @return string[][] This objects data in array form
+     */
+    public function toArray($shorten = true) {
+
+        $return = array (
+                "userid" => $this->userid,
+                "firstName" => $this->firstName,
+                "lastName" => $this->lastName,
+                "fullName" => $this->fullName,
+                "avatar" => $this->avatar,
+                "avatarSmall" => $this->avatarSmall,
+                "avatarLarge" => $this->avatarLarge,
+                "email" => $this->email,
+                "token" => $this->token
+        );
+        
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array ();
+            foreach ($return as $i => $v)
+                if ($v != null && ! empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+        
+        return $return;
+    }
+
+    /**
+     * Replaces this object's data with the given associative array
+     *
+     * @param string[][] $data This objects data in array form
+     * @return boolean true on success, false on failure
+     */
+    public function fromArray($data) {
+
+        if (isset($data["userid"]))
+            $this->userid = $data["userid"];
+        else
+            $this->userid = null;
+        
+        if (isset($data["firstName"]))
+            $this->firstName = $data["firstName"];
+        else
+            $this->firstName = null;
+        
+        if (isset($data["lastName"]))
+            $this->lastName = $data["lastName"];
+        else
+            $this->lastName = null;
+        
+        if (isset($data["fullName"]))
+            $this->fullName = $data["fullName"];
+        else
+            $this->fullName = null;
+        
+        if (isset($data["avatar"]))
+            $this->avatar = $data["avatar"];
+        else
+            $this->avatar = null;
+        
+        if (isset($data["avatarSmall"]))
+            $this->avatarSmall = $data["avatarSmall"];
+        else
+            $this->avatarSmall = null;
+        
+        if (isset($data["avatarLarge"]))
+            $this->avatarLarge = $data["avatarLarge"];
+        else
+            $this->avatarLarge = null;
+        
+        if (isset($data["email"]))
+            $this->email = $data["email"];
+        else
+            $this->email = null;
+        
+        if (isset($data["token"]))
+            $this->token = $data["token"];
+        else
+            $this->token = null;
+        
+        return true;
+    }
+    
+    /**
+     * Convert this object to JSON
+     *
+     * @param boolean $shorten optional Whether or not to include null/empty components
+     * @return string JSON encoding of this object
+     */
+    public function toJSON($shorten = true) {
+        return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
+    }
+    
+    /**
+     * Prepopulate this object from the given JSON
+     *
+     * @param string $json JSON encoding of this object
+     * @return boolean true on success, false on failure
+     */
+    public function fromJSON($json) {
+        $data = json_decode($json, true);
+        $return = $this->fromArray($data);
+        unset($data);
+        return $return;
+    }
 }

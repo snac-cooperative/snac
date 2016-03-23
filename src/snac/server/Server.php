@@ -102,13 +102,14 @@ class Server implements \snac\interfaces\ServerInterface {
 
                 break;
             case "user_information":
-                $this->response["user"] = array();
+                $this->response["editing"] = array();
+                $this->response["user"] = $this->input["user"];
                 $db = new \snac\server\database\DBUtil();
                 $this->logger->addDebug("Getting list of locked constellations to user");
                 $editList = $db->listConstellationsLockedToUser();
                 $this->logger->addDebug("Got list of locked constellations to user");
                 
-                $this->response["user"]["editing"] = array();
+                $this->response["editing"] = array();
                 foreach ($editList as $constellation) {
                     $item = array(
                         "id" => $constellation->getID(),
@@ -116,7 +117,7 @@ class Server implements \snac\interfaces\ServerInterface {
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                     );
                     $this->logger->addDebug("User was currently editing", $item);
-                    array_push($this->response["user"]["editing"], $item);
+                    array_push($this->response["editing"], $item);
                 }
                 break;
             case "update_constellation":
