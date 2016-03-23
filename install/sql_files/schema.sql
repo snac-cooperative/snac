@@ -459,17 +459,18 @@ create unique index language_idx1 on date_range(id,main_id,version);
 -- just like date. 
 
 create table source (
-    id          int default nextval('id_seq'),
-    version     int not null,
-    main_id     int not null,
-    is_deleted  boolean default false,
-    text        text,    -- Text of this source
-    note        text,    -- Note related to this source
-    uri         text,    -- URI of this source
-    type_id     integer, -- Type of this source, fk to vocabulary.id
-    language_id integer, -- language, fk to vocabulary.id
-    fk_id       integer,
-    fk_table    text,
+    id           int default nextval('id_seq'),
+    version      int not null,
+    main_id      int not null,
+    is_deleted   boolean default false,
+    display_name text,    -- User entered display name to distinguish sources, esp in the UI
+    text         text,    -- Text of this source
+    note         text,    -- Note related to this source
+    uri          text,    -- URI of this source
+    type_id      integer, -- Type of this source, fk to vocabulary.id
+    language_id  integer, -- language, fk to vocabulary.id
+    fk_id        integer,
+    fk_table     text,
     primary key(id, version)
     );
 

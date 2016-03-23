@@ -1207,6 +1207,7 @@ class DBUtil
         foreach ($rows as $rec)
         {
             $newObj = new \snac\data\Source();
+            $newObj->setDisplayName($rec['display_name']);
             $newObj->setText($rec['text']);
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
@@ -2647,6 +2648,7 @@ class DBUtil
         {
             $genericRecordID = $this->sql->insertSource($vhInfo,
                                                         $gObj->getID(),
+                                                        $gObj->getDisplayName(),
                                                         $gObj->getText(),
                                                         $gObj->getNote(),
                                                         $gObj->getURI(),

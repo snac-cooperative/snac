@@ -11,16 +11,22 @@
  * the Regents of the University of California
  */
 
+chdir(dirname(__FILE__));
+include("../vendor/autoload.php");
+
 printf("basename: %s dirname: %s\n", basename(__FILE__), dirname(__FILE__));
 
 // include("src/snac/Config.php");
 
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
+
+// Set up the global log stream
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 // Path is relative to cwd when you launch the script, not the path of the script (this file).
 
 // The line below only works if you chdir() to the script's directory.
-chdir(dirname(__FILE__));
-include("../src/snac/Config.php");
 
 use \snac\Config as Config;
 

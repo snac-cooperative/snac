@@ -47,24 +47,49 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
     
     /**
      * Test that reading a JSON object, then serializing back to JSON gives the same result 
+     * Changing any constellation objects is likely to require a change here.
      */
     public function testJSONJSON() {
         $identity = new \snac\data\Constellation();
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
+        /* 
+         * rtrim() the input since some people have their editor defaulting to adding a newline at the end of
+         * every file.
+         */
+        $jsonIn = rtrim($jsonIn);
 
         $identity->fromJSON($jsonIn);
+        
+        /* 
+         * $cfile = fopen('new_constellation_test.json', 'w');
+         * fwrite($cfile, $identity->toJSON(false));
+         * fclose($cfile); 
+         */
 
         $this->assertEquals($jsonIn, $identity->toJSON(false));
     }
     
     /**
-     * Test that reading a larger JSON object, then serializing back to JSON gives the same result 
+     * Test that reading a larger JSON object, then serializing back to JSON gives the same result
+     *
+     * Changing any constellation objects is likely to require a change here.
      */
     public function testJSONJSON2() {
         $identity = new \snac\data\Constellation();
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test2.json");
         $arrayIn = json_decode($jsonIn, true);
         $identity->fromJSON($jsonIn);
+
+
+        /*
+         * Uncomment the lines below to write out a new copy of constellation_test2.json which you need to verify differs only by
+         * whatever you added to the constellation.
+         */        
+        /* 
+         * $cfile = fopen('new_constellation_test2.json', 'w');
+         * fwrite($cfile, $identity->toJSON(false));
+         * fclose($cfile); 
+         */
 
         unset($jsonIn);
         $arrayOut = json_decode($identity->toJSON(false), true);
