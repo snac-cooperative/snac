@@ -27,7 +27,7 @@ class ConstellationPostMapper {
     /**
      * @var \snac\data\Constellation The constellation created from the original POST input
      */
-    private $inputConstellation = null;
+    private $constellation = null;
 
     /**
      * @var mixed[] A mapping of fields to Constellation data objects
@@ -44,11 +44,22 @@ class ConstellationPostMapper {
      */
     private $updates = null;
     
+
+    /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    private $logger = null;
+    
     /**
      * Constructor
      */
     public function __construct() {
+        global $log;
         $this->mapping = array();
+
+        // create a log channel
+        $this->logger = new \Monolog\Logger('ConstellationPOSTMapper');
+        $this->logger->pushHandler($log);
     }
 
     /**
@@ -96,6 +107,7 @@ class ConstellationPostMapper {
             $map["operation"] = $this->getOperation($data);
             $map["object"] = $object;
             
+            $this->logger->addDebug("Adding to mapping", $map);
             array_push($this->mapping, $map);
         }
     }
@@ -108,7 +120,7 @@ class ConstellationPostMapper {
      * @param string[][] $objectWithSCM Array with SCM data included
      * @return \snac\data\SNACControlMetadata[] Array of snac control metadata
      */
-    private function parseSCM($objectWithSCM) {
+    private function parseSCM($objectWithSCM, $short, $i) {
         // parse through the SCM array
         if (! isset($objectWithSCM) || $objectWithSCM == null || ! isset($objectWithSCM["scm"]) ||
                  $objectWithSCM["scm"] == null || $objectWithSCM["scm"] == "")
@@ -116,7 +128,7 @@ class ConstellationPostMapper {
         
         $scmArray = array ();
         
-        foreach ($objectWithSCM["scm"] as $scm) {
+        foreach ($objectWithSCM["scm"] as $j => $scm) {
             $scmObject = new \snac\data\SNACControlMetadata();
             if ($scm["id"] != "")
                 $scmObject->setID($scm["id"]);
@@ -127,35 +139,71 @@ class ConstellationPostMapper {
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
             
-            if (isset($scm["descriptiveRule"]) && isset($scm["descriptiveRule"]["id"]) &&
-                     $scm["descriptiveRule"]["id"] != "") {
-                $term = new \snac\data\Term();
-                $term->setID($scm["descriptiveRule"]["id"]);
-                $scmObject->setDescriptiveRule($term);
-            }
+            $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
             
-            $lang = new \snac\data\Language();
-            if ($scm["language"]["id"] != "")
-                $lang->setID($scm["language"]["id"]);
-            if ($scm["language"]["version"] != "")
-                $lang->setVersion($scm["language"]["version"]);
-            $lang->setOperation($this->getOperation($scm));
-            // May need to set the operation to insert if the id is null and there is an update...
+            $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
+
             
-            $term = new \snac\data\Term();
-            $term->setID($scm["languagelanguage"]["id"]);
-            $lang->setLanguage($term);
-            
-            $term = new \snac\data\Term();
-            $term->setID($scm["languagescript"]["id"]);
-            $lang->setScript($term);
-            
-            $scmObject->setLanguage($lang);
+            // short, i, post data, php object
+            // need: 
+            $this->addToMapping("scm_".$short, $j . "_". $i, $scm, $scmObject);
             
             array_push($scmArray, $scmObject);
         }
         
         return $scmArray;
+    }
+    
+    /**
+     * Parse Term
+     * 
+     * Parses and creates a Term object if the information exists in the data given.
+     * 
+     * @param string[][] $data  Data to inspect for term object
+     * @return NULL|\snac\data\Term Correct Term object or null if no term
+     */
+    private function parseTerm($data) {
+        $term = null;
+        if (isset($data) && $data != null && isset($data["id"]) && $data["id"] != "" && $data["id"] != null) {
+            $term = new \snac\data\Term();
+            $term->setID($data["id"]);
+        }
+        return $term;
+    }
+
+    /**
+     * Parse a sub-language
+     * 
+     * Parses a language that is an integral part of another object, such as an SCM,
+     * BiogHist, NameEntry, etc.  
+     * 
+     * @param string[][] $object The string array to be parsed, which is the object containing a language
+     * @param string $short The short name for this object's type (from the web page)
+     * @param string|integer $i The id of the object on the page (not the DB ID)
+     * @return \snac\data\Language The language object found when parsing the array
+     */
+    private function parseSubLanguage($object, $short, $i) {
+
+        $lang = new \snac\data\Language();
+        if ($object["language"]["id"] != "")
+            $lang->setID($object["language"]["id"]);
+        if ($object["language"]["version"] != "")
+            $lang->setVersion($object["language"]["version"]);
+        
+        if ($lang->getID() == null && $lang->getVersion() == null && 
+                $this->getOperation($object) == \snac\data\Language::$OPERATION_UPDATE) {
+            $lang->setOperation(\snac\data\Language::$OPERATION_INSERT);
+        } else {
+            $lang->setOperation($this->getOperation($object));
+        }
+ 
+        $lang->setLanguage($this->parseTerm($object["languagelanguage"]));
+
+        $lang->setScript($this->parseTerm($object["languagescript"]));
+        
+        $this->addToMapping($short . "_language", $i, $object, $lang);
+        
+        return $lang;
     }
     
     /**
@@ -170,229 +218,202 @@ class ConstellationPostMapper {
         return $this->updates;
     }
     
+    private function getMatchInfo($object) {
+        foreach ($this->mapping as $map) {
+            if ($object->equals($map["object"], false)) {
+                return $map;
+            }
+        }
+    }
+    
+    /**
+     * @param \snac\data\AbstractData $object Main object to reconcile
+     * @param \snac\data\AbstractData $other Object to reconcile against
+     * @param boolean $checkLang optional Whether or not to check the language
+     */
+    public function reconcileObject($object, $other, $checkLang = false) {
+        if ($object == null || $other == null) {
+            return;
+        }
+
+        if ($object->getOperation() != null &&
+                $object->equals($other, false) && $object->getOperation() == $other->getOperation()) {
+            // loose equality (not checking IDs, since they may not exist)
+            $piece = $this->getMatchInfo($object);
+            
+            $this->logger->addDebug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
+            
+            // Other object is the one that we received from the server (with new ID and/or version)
+            $this->updates[$piece["idField"]] = $other->getID();
+            $this->updates[$piece["versionField"]] = $other->getVersion();
+        }
+        
+        // This is highly inefficient!
+        if ($object->getDateList() != null) {
+            foreach($object->getDateList() as $date) {
+                foreach ($other->getDateList() as $otherdate) {
+                    $this->reconcileObject($date, $otherdate);
+                }
+            }
+        }
+        
+        // This is highly inefficient!
+        if ($object->getSNACControlMetadata() != null) {
+            foreach($object->getSNACControlMetadata() as $scm) {
+                foreach ($other->getSNACControlMetadata() as $otherscm) {
+                    $this->reconcileObject($scm, $otherscm, true);
+                }
+            }
+        }
+        
+        // Check the language if we need to, based on the parameter
+        if ($checkLang) {
+           $this->reconcileObject($object->getLanguage(), $other->getLanguage());
+        }
+    }
+    
     /**
      * Reconcile Constellation
      * 
      * Reconciles the differences between the given constellation and the one already created
-     * from the POST dat`a.
+     * from the POST data.
      * 
-     * @param \snac\data\Constellation $constellation The Constelllation object to reconcile
+     * @param \snac\data\Constellation $constellation The Constellation object to reconcile
      */
     public function reconcile($constellation) {
-        foreach ($this->mapping as $piece) {
-            switch($piece["type"]) {
-                case "gender":
-                    foreach($constellation->getGenders() as $gender) {
-                        if ($gender->equals($piece["object"], false) &&
-                                $gender->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $gender->getID();
-                            $this->updates[$piece["versionField"]] = $gender->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "exist":
-                    foreach($constellation->getDateList() as $date) {
-                        if ($date->equals($piece["object"], false) &&
-                                $date->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $date->getID();
-                            $this->updates[$piece["versionField"]] = $date->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "biogHist":
-                    foreach($constellation->getBiogHistList() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "language":
-                    foreach($constellation->getLanguagesUsed() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "nationality":
-                    foreach($constellation->getNationalities() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "function":
-                    foreach($constellation->getFunctions() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "legalStatus":
-                    foreach($constellation->getLegalStatuses() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "conventionDeclaration":
-                    foreach($constellation->getConventionDeclarations() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "generalContext":
-                    foreach($constellation->getGeneralContexts() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "structureOrGenealogy":
-                    foreach($constellation->getStructureOrGenealogies() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "mandate":
-                    foreach($constellation->getMandates() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "nameEntry":
-                    foreach($constellation->getNameEntries() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "sameAs":
-                    foreach($constellation->getOtherRecordIDs() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "source":
-                    foreach($constellation->getSources() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "resourceRelation":
-                    foreach($constellation->getResourceRelations() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "constellationRelation":
-                    foreach($constellation->getRelations() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "subject":
-                    foreach($constellation->getSubjects() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "occupation":
-                    foreach($constellation->getOccupations() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                case "place":
-                    foreach($constellation->getPlaces() as $obj) {
-                        if ($obj->equals($piece["object"], false) &&
-                                $obj->getOperation() == $piece["operation"]) {
-                            // loose equality (not checking IDs, since they may not exist)
-                            $this->updates[$piece["idField"]] = $obj->getID();
-                            $this->updates[$piece["versionField"]] = $obj->getVersion();
-                            break;
-                        }
-                    }
-                    break;
-                    
+        // We need to parse the whole thing, all the way down...
+        
+        foreach ($this->constellation->getBiogHistList() as $biogHist) {
+            foreach ($constellation->getBiogHistList() as $other) {
+                $this->reconcileObject($biogHist, $other, true);
+            }
+                
+        }
+        
+        foreach ($this->constellation->getConventionDeclarations() as $cd) {
+            foreach ($constellation->getConventionDeclarations() as $other) {
+                $this->reconcileObject($cd, $other);
             }
         }
+        
+        foreach ($this->constellation->getDateList() as $date) {
+            foreach ($constellation->getDateList() as $other) {
+                $this->reconcileObject($date, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getFunctions() as $fn) {
+            foreach ($constellation->getFunctions() as $other) {
+                $this->reconcileObject($fn, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getGenders() as $gender) {
+            foreach ($constellation->getGenders() as $other) {
+                $this->logger->addDebug("Reconciling Gender", array("obj" => $gender->toArray(), "other"=>$other->toArray()));
+                $this->logger->addDebug("Reconciling Gender", array("obj" => print_r($gender->toArray(), true), "other"=>print_r($other->toArray(), true)));
+                $this->logger->addDebug("Gender Match is " . (int) $gender->equals($other, false));
+                $this->reconcileObject($gender, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getGeneralContexts() as $gc) {
+            foreach ($constellation->getGeneralContexts() as $other) {
+                $this->reconcileObject($gc, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getLanguagesUsed() as $languageUsed) {
+            foreach ($constellation->getLanguagesUsed() as $other) {
+                $this->reconcileObject($languageUsed, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getLegalStatuses() as $legalStatus) {
+            foreach ($constellation->getLegalStatuses() as $other) {
+                $this->reconcileObject($legalStatus, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getMaintenanceEvents() as $maintenanceEvent) {
+            foreach ($constellation->getMaintenanceEvents() as $other) {
+                $this->reconcileObject($maintenanceEvent, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getMandates() as $mandate) {
+            foreach ($constellation->getMandates() as $other) {
+                $this->reconcileObject($mandate, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getNameEntries() as $nameEntry) {
+            foreach ($constellation->getNameEntries() as $other) {
+                $this->reconcileObject($nameEntry, $other, true);
+            }
+        }
+        
+        foreach ($this->constellation->getNationalities() as $nationality) {
+            foreach ($constellation->getNationalities() as $other) {
+                $this->reconcileObject($nationality, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getOccupations() as $occupation) {
+            foreach ($constellation->getOccupations() as $other) {
+                $this->reconcileObject($occupation, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getOtherRecordIDs() as $otherid) {
+            foreach ($constellation->getOtherRecordIDs() as $other) {
+                $this->reconcileObject($otherid, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getPlaces() as $place) {
+            foreach ($constellation->getPlaces() as $other) {
+                $this->reconcileObject($place, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getRelations() as $relation) {
+            foreach ($constellation->getRelations() as $other) {
+                $this->reconcileObject($relation, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getResourceRelations() as $relation) {
+            foreach ($constellation->getResourceRelations() as $other) {
+                $this->reconcileObject($relation, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getSNACControlMetadata() as $scm) {
+            foreach ($constellation->getSNACControlMetadata() as $other) {
+                $this->reconcileObject($scm, $other, true);
+            }
+        }
+        
+        foreach ($this->constellation->getSources() as $source) {
+            foreach ($constellation->getSources() as $other) {
+                $this->reconcileObject($source, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getStructureOrGenealogies() as $sog) {
+            foreach ($constellation->getStructureOrGenealogies() as $other) {
+                $this->reconcileObject($sog, $other);
+            }
+        }
+        
+        foreach ($this->constellation->getSubjects() as $subject) {
+            foreach ($constellation->getSubjects() as $other) {
+                $this->reconcileObject($subject, $other);
+            }
+        }
+        
+        
     }
 
     /**
@@ -513,21 +534,19 @@ class ConstellationPostMapper {
         
         // Constellation SCM
         
-        $constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"]));
+        $constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"], "constellation", 1));
         
         foreach ($nested["gender"] as $k => $data) {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
             $gender = new \snac\data\Gender();
             $gender->setID($data["id"]);
             $gender->setVersion($data["id"]);
-            $gender->setTerm($term);
+            $gender->setTerm($this->parseTerm($data["term"]));
             $gender->setOperation($this->getOperation($data));
             
-            $gender->setAllSNACControlMetadata($this->parseSCM($data));
+            $gender->setAllSNACControlMetadata($this->parseSCM($data,"gender", $k));
             
             $this->addToMapping("gender", $k, $data, $gender);
             
@@ -544,16 +563,12 @@ class ConstellationPostMapper {
             $date->setOperation($this->getOperation($data));
             
             $date->setNote($data["note"]);
-            $type = new \snac\data\Term();
-            $type->setID($data["starttype"]["id"]);
-            $date->setFromDate($data["startoriginal"], $data["start"], $type);
+            $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
             $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
-            $type = new \snac\data\Term();
-            $type->setID($data["endtype"]["id"]);
-            $date->setFromDate($data["endoriginal"], $data["end"], $type);
+            $date->setFromDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
             $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
             
-            $date->setAllSNACControlMetadata($this->parseSCM($data));
+            $date->setAllSNACControlMetadata($this->parseSCM($data, "exist", $k));
 
             $this->addToMapping("exist", $k, $data, $date);
             
@@ -570,26 +585,11 @@ class ConstellationPostMapper {
             $bh->setOperation($this->getOperation($data));
             
             $bh->setText($data["text"]);
+
+            $bh->setLanguage($this->parseSubLanguage($data, "biogHist", $k));
+
             
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $bh->setLanguage($lang);
-            }
-            
-            $bh->setAllSNACControlMetadata($this->parseSCM($data));
+            $bh->setAllSNACControlMetadata($this->parseSCM($data, "biogHist", $k));
 
             $this->addToMapping("biogHist", $k, $data, $bh);
             
@@ -605,15 +605,11 @@ class ConstellationPostMapper {
             $lang->setVersion($data["version"]);
             $lang->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["language"]["id"]);
-            $lang->setLanguage($term);
+            $lang->setLanguage($this->parseTerm($data["language"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["script"]["id"]);
-            $lang->setScript($term);
+            $lang->setScript($this->parseTerm($data["script"]));
             
-            $lang->setAllSNACControlMetadata($this->parseSCM($data));
+            $lang->setAllSNACControlMetadata($this->parseSCM($data, "language", $k));
             
             $this->addToMapping("language", $k, $data, $lang);
             
@@ -629,11 +625,9 @@ class ConstellationPostMapper {
             $nationality->setVersion($data["version"]);
             $nationality->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $nationality->setTerm($term);
+            $nationality->setTerm($this->parseTerm($data["term"]));
             
-            $nationality->setAllSNACControlMetadata($this->parseSCM($data));
+            $nationality->setAllSNACControlMetadata($this->parseSCM($data, "nationality", $k));
             
             $this->addToMapping("nationality", $k, $data, $nationality);
             
@@ -649,11 +643,9 @@ class ConstellationPostMapper {
             $fun->setVersion($data["version"]);
             $fun->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $fun->setTerm($term);
+            $fun->setTerm($this->parseTerm($data["term"]));
             
-            $fun->setAllSNACControlMetadata($this->parseSCM($data));
+            $fun->setAllSNACControlMetadata($this->parseSCM($data, "function", $k));
             
             $this->addToMapping("function", $k, $data, $fun);
             
@@ -668,12 +660,10 @@ class ConstellationPostMapper {
             $legalStatus->setID($data["id"]);
             $legalStatus->setVersion($data["version"]);
             $legalStatus->setOperation($this->getOperation($data));
+
+            $legalStatus->setTerm($this->parseTerm($data["term"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $legalStatus->setTerm($term);
-            
-            $legalStatus->setAllSNACControlMetadata($this->parseSCM($data));
+            $legalStatus->setAllSNACControlMetadata($this->parseSCM($data, "legalStatus", $k));
             
             $this->addToMapping("legalStatus", $k, $data, $legalStatus);
             
@@ -691,7 +681,7 @@ class ConstellationPostMapper {
             
             $conventionDeclaration->setText($data["text"]);
             
-            $conventionDeclaration->setAllSNACControlMetadata($this->parseSCM($data));
+            $conventionDeclaration->setAllSNACControlMetadata($this->parseSCM($data, "conventionDeclaration", $k));
             
             $this->addToMapping("conventionDeclaration", $k, $data, $conventionDeclaration);
             
@@ -709,7 +699,7 @@ class ConstellationPostMapper {
             
             $generalContext->setText($data["text"]);
             
-            $generalContext->setAllSNACControlMetadata($this->parseSCM($data));
+            $generalContext->setAllSNACControlMetadata($this->parseSCM($data, "generalContext", $k));
             
             $this->addToMapping("generalContext", $k, $data, $generalContext);
             
@@ -727,7 +717,7 @@ class ConstellationPostMapper {
             
             $structureOrGenealogy->setText($data["text"]);
             
-            $structureOrGenealogy->setAllSNACControlMetadata($this->parseSCM($data));
+            $structureOrGenealogy->setAllSNACControlMetadata($this->parseSCM($data, "structureOrGenealogy", $k));
             
             $this->addToMapping("structureOrGenealogy", $k, $data, $structureOrGenealogy);
             
@@ -745,7 +735,7 @@ class ConstellationPostMapper {
             
             $mandate->setText($data["text"]);
             
-            $mandate->setAllSNACControlMetadata($this->parseSCM($data));
+            $mandate->setAllSNACControlMetadata($this->parseSCM($data, "mandate", $k));
             
             $this->addToMapping("mandate", $k, $data, $mandate);
             
@@ -764,25 +754,9 @@ class ConstellationPostMapper {
             $nameEntry->setOriginal($data["original"]);
             $nameEntry->setPreferenceScore($data["preferenceScore"]);
             
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $nameEntry->setLanguage($lang);
-            }
+            $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
             
-            $nameEntry->setAllSNACControlMetadata($this->parseSCM($data));
+            $nameEntry->setAllSNACControlMetadata($this->parseSCM($data, "nameEntry", $k));
             
             $this->addToMapping("nameEntry", $k, $data, $nameEntry);
             
@@ -801,11 +775,9 @@ class ConstellationPostMapper {
             $sameas->setText($data["text"]);
             $sameas->setURI($data["uri"]);
             
-            $type = new \snac\data\Term();
-            $type->setID($data["type"]["id"]);
-            $sameas->setType($type);
+            $sameas->setType($this->parseTerm($data["type"]));
             
-            $sameas->setAllSNACControlMetadata($this->parseSCM($data));
+            $sameas->setAllSNACControlMetadata($this->parseSCM($data, "sameAs", $k));
             
             $this->addToMapping("sameAs", $k, $data, $sameas);
             
@@ -825,25 +797,10 @@ class ConstellationPostMapper {
             $source->setURI($data["uri"]);
             $source->setNote($data["note"]);
             
-            if ($data["language"]["id"] != "" || $data["languagelanguage"]["id"] != "" ||
-                     $data["languagescript"]["id"] != "") {
-                $lang = new \snac\data\Language();
-                $lang->setID($data["language"]["id"]);
-                $lang->setVersion($data["language"]["version"]);
-                $lang->setOperation($this->getOperation($data));
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagelanguage"]["id"]);
-                $lang->setLanguage($term);
-                
-                $term = new \snac\data\Term();
-                $term->setID($data["languagescript"]["id"]);
-                $lang->setScript($term);
-                
-                $source->setLanguage($lang);
-            }
+            $source->setLanguage($this->parseSubLanguage($data, "source", $k));
+
             
-            $source->setAllSNACControlMetadata($this->parseSCM($data));
+            $source->setAllSNACControlMetadata($this->parseSCM($data, "source", $k));
             
             $this->addToMapping("source", $k, $data, $source);
             
@@ -864,15 +821,11 @@ class ConstellationPostMapper {
             $relation->setSource($data["source"]);
             $relation->setNote($data["note"]);
             
-            $type = new \snac\data\Term();
-            $type->setID($data["documentType"]["id"]);
-            $relation->setDocumentType($type);
+            $relation->setDocumentType($this->parseTerm($data["documentType"]));
+
+            $relation->setRole($this->parseTerm($data["role"]));
             
-            $role = new \snac\data\Term();
-            $role->setID($data["role"]["id"]);
-            $relation->setRole($role);
-            
-            $relation->setAllSNACControlMetadata($this->parseSCM($data));
+            $relation->setAllSNACControlMetadata($this->parseSCM($data, "resourceRelation", $k));
             
             $this->addToMapping("resourceRelation", $k, $data, $relation);
             
@@ -892,12 +845,10 @@ class ConstellationPostMapper {
             $relation->setTargetArkID($data["targetArkID"]);
             $relation->setContent($data["content"]);
             $relation->setNote($data["note"]);
+
+            $relation->setType($this->parseTerm($data["type"]));
             
-            $type = new \snac\data\Term();
-            $type->setID($data["type"]["id"]);
-            $relation->setType($type);
-            
-            $relation->setAllSNACControlMetadata($this->parseSCM($data));
+            $relation->setAllSNACControlMetadata($this->parseSCM($data, "constellationRelation", $k));
             
             $this->addToMapping("constellationRelation", $k, $data, $relation);
             
@@ -913,11 +864,9 @@ class ConstellationPostMapper {
             $subject->setVersion($data["version"]);
             $subject->setOperation($this->getOperation($data));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $subject->setTerm($term);
+            $subject->setTerm($this->parseTerm($data["term"]));
             
-            $subject->setAllSNACControlMetadata($this->parseSCM($data));
+            $subject->setAllSNACControlMetadata($this->parseSCM($data, "subject", $k));
             
             $this->addToMapping("subject", $k, $data, $subject);
             
@@ -932,12 +881,10 @@ class ConstellationPostMapper {
             $occupation->setID($data["id"]);
             $occupation->setVersion($data["version"]);
             $occupation->setOperation($this->getOperation($data));
+
+            $occupation->setTerm($this->parseTerm($data["term"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["term"]["id"]);
-            $occupation->setTerm($term);
-            
-            $occupation->setAllSNACControlMetadata($this->parseSCM($data));
+            $occupation->setAllSNACControlMetadata($this->parseSCM($data, "occupation", $k));
             
             $this->addToMapping("occupation", $k, $data, $occupation);
             
@@ -957,31 +904,30 @@ class ConstellationPostMapper {
             $place->setScore($data["score"]);
             $place->setNote($data["note"]);
             
-            $term = new \snac\data\Term();
-            $term->setID($data["type"]["id"]);
-            $place->setType($term);
+            $place->setType($this->parseTerm($data["type"]));
             
-            $term = new \snac\data\Term();
-            $term->setID($data["role"]["id"]);
-            $place->setRole($term);
+            $place->setRole($this->parseTerm($data["role"]));
             
-            $geoterm = new \snac\data\GeoTerm();
-            $geoterm->setID($data["geoplace"]["id"]);
-            $place->setGeoTerm($geoterm);
+            if (isset($data["geoplace"]) && $data["geoplace"] != null && isset($data["geoplace"]["id"])
+                    && $data["geoplace"]["id"] != null && $data["geoplace"]["id"] != "") {
+                $geoterm = new \snac\data\GeoTerm();
+                $geoterm->setID($data["geoplace"]["id"]);
+                $place->setGeoTerm($geoterm);
+            }
             
             if ($data["confirmed"] === "true")
                 $place->confirm();
             else
                 $place->deconfirm();
             
-            $place->setAllSNACControlMetadata($this->parseSCM($data));
+            $place->setAllSNACControlMetadata($this->parseSCM($data, "place", $k));
 
             $this->addToMapping("place", $k, $data, $place);
             
             $constellation->addPlace($place);
         }
         
-        $this->inputConstellation = $constellation;
+        $this->constellation = $constellation;
         $this->nested = $nested;
         
         return $constellation;

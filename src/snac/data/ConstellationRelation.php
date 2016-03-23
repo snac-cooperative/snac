@@ -430,7 +430,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * @param \snac\data\Term $type Target's entity type
      */
-    public function setTargetEntityType(\snac\data\Term $type) {
+    public function setTargetEntityType($type) {
         $this->targetEntityType = $type;
     }
 
@@ -439,7 +439,7 @@ class ConstellationRelation extends AbstractData {
      *
      * @param \snac\data\Term $type Type of the relation
      */
-    public function setType(\snac\data\Term $type) {
+    public function setType($type) {
 
         $this->type = $type;
     }
@@ -449,7 +449,7 @@ class ConstellationRelation extends AbstractData {
      * 
      * @param \snac\data\Term $type CPF Relation Type
      */
-    public function setCPFRelationType(\snac\data\Term $type) {
+    public function setCPFRelationType($type) {
         $this->cpfRelationType = $type;
     }
 
@@ -463,7 +463,7 @@ class ConstellationRelation extends AbstractData {
      *
      * @param \snac\data\Term $type Alternate type of the relation
      */
-    public function setAltType(\snac\data\Term $type) {
+    public function setAltType($type) {
 
         $this->altType = $type;
     }

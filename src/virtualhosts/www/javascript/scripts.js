@@ -3,6 +3,18 @@ var biogHistEditor = null;
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
 
+
+function addSCMEntry(short, i){
+	//next_scm_{{short}}_{{i}}_j
+	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
+    somethingHasBeenEdited = true;
+	var text = $('#scm_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
+    $('#add_scm_'+short+'_'+i+'_div').after(html);
+    $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
+    return false;
+}
+
 function updatePage() {
     $('.selectpicker').selectpicker();
     /*
@@ -156,56 +168,159 @@ function makeUneditable(short, i) {
 }
 
 function makeSCMEditable(short, i, j) {
+	var id = j + "_" + i;
+	
     // No editing if it's already in edit mode
-    if ($("#" + short + "_operation_" + i).val() == "update")
+    if ($("#scm_" + short + "_operation_" + id).val() == "update")
         return false;
+    
+    // If it's deleted, then you better undelete it first
+    if ($("#scm_" + short + "_operation_" + id).val() == "delete")
+        setSCMDeleted(short, i, j);
+
 
     var idstr = "_" + j + "_" + i;
-    $("input[id^='"+short+"_']").each(function() {
+    $("input[id^='scm_"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
             obj.removeAttr("readonly");
         }
     });
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("textarea[id^='scm_"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
             obj.removeAttr("readonly");
         }
     });
-    $("div[id^='select_"+short+"']").each(function() {
-        var cont = $(this);
-        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-            var split = cont.attr('id').split("_");
-            var name = split[3];
-            var id = $("#"+short+"_"+name+"_id"+idstr).val();
-            var term = $("#"+short+"_"+name+"_term"+idstr).val();
-            var vocabtype = $("#"+short+"_"+name+"_vocabtype"+idstr).val();
-            var minlength = $("#"+short+"_"+name+"_minlength"+idstr).val();
-            cont.html("<select id='"+short+"_"+name+"_id"+idstr+"' name='"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-                    "</select>");
-            vocab_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
+    
+
+    var sawSelect = false;
+    $("select[id^='scm_"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            sawSelect = true;
         }
     });
-    $("div[id^='selectsource_"+short+"']").each(function() {
-        var cont = $(this);
-        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-            var split = cont.attr('id').split("_");
-            var name = split[3];
-            var id = $("#"+short+"_"+name+"_id"+idstr).val();
-            var term = $("#"+short+"_"+name+"_term"+idstr).val();
-            cont.html("<select id='"+short+"_"+name+"_id"+idstr+"' name='"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-                    "</select>");
-            scm_source_select_replace($("#"+short+"_"+name+"_id"+idstr), idstr);
-        }
-    });
-    $("#" + short + "_operation_" + i).val("update");
+
+    if (!sawSelect) {
+	    $("div[id^='select_scm_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[3];
+	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+	            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
+	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
+	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
+	            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
+	                    "<option></option>"+
+	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+	                    "</select>"+
+                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" value=\""+vocabtype+"\"/>" +
+                    	"<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>");
+	            vocab_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
+	        }
+	    });
+	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[3];
+	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+	            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
+	            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
+	                    "<option></option>"+
+	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+	                    "</select>");
+	            scm_source_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr);
+	        }
+	    });
+    }
+    
+
+    if ($("#scm_" + short + "_id_" + id).val() != "")
+    	$("#scm_" + short + "_operation_" + id).val("update");
+    else
+    	$("#scm_" + short + "_operation_" + id).val("insert");
+    
     return false;
 }
+
+
+function makeSCMUneditable(short, i, j) {
+
+	// Make inputs read-only
+    var idstr = "_" + j + "_" + i;
+    $("input[id^='scm_"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.attr("readonly", "true");
+        }
+    });
+    // Make textareas read-only
+    $("textarea[id^='scm_"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            obj.attr("readonly", "true");
+        }
+    });
+    // Check for a select box
+    var sawSelect = false;
+    $("select[id^='scm_"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            sawSelect = true;
+        }
+    });
+    // If a select box was seen, undo it
+    if (sawSelect) {
+	    $("div[id^='select_scm_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[3];
+	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
+	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
+	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
+	        
+	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
+                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
+                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" " +
+                        	"name=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" value=\""+vocabtype+"\"/>" +
+                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
+                        	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>" +
+                        	"<p class=\"form-control-static\">"+term+"</p>");
+	            
+	        }
+	    });
+	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
+	        var cont = $(this);
+	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
+	            var split = cont.attr('id').split("_");
+	            var name = split[3];
+	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
+	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
+	        
+	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
+                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
+                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
+                        	"<p class=\"form-control-static\">"+term+"</p>");
+	            
+	        }
+	    });
+    }
+    
+    // Clear the operation flag
+    $("#" + short + "_operation_" + i).val("");
+    return false;
+}
+
 
 function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
@@ -238,6 +353,49 @@ function setDeleted(short, i) {
     	    	$("#" + short + "_operation_" + i).val("insert");
         } else {
         	$("#" + short + "_operation_" + i).val("");
+        }
+    	
+    }
+    
+    // Asked to delete something, so make it globally known
+    somethingHasBeenEdited = true;
+    
+    return false;
+}
+
+
+function setSCMDeleted(short, i, j) {
+	var id = j + '_' + i;
+    if ($("#scm_" + short + "_operation_" + id).val() != "delete") {
+    	// set deleted
+    	$("#scm_" + short + "_panel_" + id).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
+        $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("list-group-item-warning");
+        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+    	
+        $("#scm_" + short + "_operation_" + id).val("delete");
+    	
+    } else {
+    	// set undelete
+    	$("#scm_" + short + "_panel_" + id).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
+        $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-warning").addClass("list-group-item-danger");
+        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-trash\"></span>");
+        
+
+        // If this thing was deleted but is supposed to be an update, then return it back to update status
+        var sawSelect = false;
+        $("select[id^='scm_"+short+"_']").each(function() {
+            var obj = $(this);
+            if(obj.attr('id').indexOf("_" + id) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+                sawSelect = true;
+            }
+        });
+        if (sawSelect) {
+    	    if ($("#scm_" + short + "_id_" + id).val() != "")
+    	    	$("#scm_" + short + "_operation_" + id).val("update");
+    	    else
+    	    	$("#scm_" + short + "_operation_" + id).val("insert");
+        } else {
+        	$("#scm_" + short + "_operation_" + id).val("");
         }
     	
     }

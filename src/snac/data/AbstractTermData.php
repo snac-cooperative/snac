@@ -36,6 +36,11 @@ abstract class AbstractTermData extends AbstractData {
      */
     protected $term;
 
+    
+    public function __construct($data) {
+        parent::__construct($data);
+    }
+
     /**
      * Get the type of this object
      *
@@ -130,7 +135,13 @@ abstract class AbstractTermData extends AbstractData {
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
+
+
         if ($other == null || !($other instanceof \snac\data\AbstractTermData))
+            return false;
+
+        
+        if ($other->getDataType() != $this->getDataType())
             return false;
         
         if (!parent::equals($other, $strict))

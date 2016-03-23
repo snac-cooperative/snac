@@ -152,12 +152,12 @@ class Language extends AbstractData {
 
         parent::fromArray($data);
 
-        if (isset($data["language"]))
+        if (isset($data["language"]) && $data["language"] != null)
             $this->language = new Term($data["language"]);
         else
             $this->language = null;
 
-        if (isset($data["script"]))
+        if (isset($data["script"]) && $data["script"] != null)
             $this->script = new Term($data["script"]);
         else
             $this->script = null;
@@ -180,7 +180,7 @@ class Language extends AbstractData {
      * 
      * @param \snac\data\Term $language The language term
      */
-    public function setLanguage(\snac\data\Term $language) {
+    public function setLanguage($language) {
         $this->language = $language;
     }
     
@@ -189,7 +189,7 @@ class Language extends AbstractData {
      * 
      * @param \snac\data\Term $script The script term
      */
-    public function setScript(\snac\data\Term $script) {
+    public function setScript($script) {
         $this->script = $script;
     }
     
@@ -220,7 +220,6 @@ class Language extends AbstractData {
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
-
         if ($other == null || ! ($other instanceof \snac\data\Language))
             return false;
         
@@ -235,10 +234,10 @@ class Language extends AbstractData {
         if ( ($this->getScript() != null && !$this->getScript()->equals($other->getScript())) ||
                 ($this->getScript() == null && $other->getScript() != null))
             return false;
+
         if ( ($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage())) ||
                 ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-
         
         return true;
     }

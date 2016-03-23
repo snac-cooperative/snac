@@ -33,6 +33,11 @@ class Source extends AbstractData {
      * @var \snac\data\Language The language this source was written in
      */
     private $language;
+    
+    /**
+     * @var string Display name of this source. 
+     */
+    private $displayName;
 
     /**
      * @var string Text of this source. 
@@ -96,6 +101,18 @@ class Source extends AbstractData {
     {
         return $this->text;
     }
+    
+
+    /**
+     * Get the display name of this source
+     *
+     * @return string The display name of the source
+     *
+     */
+    public function getDisplayName()
+    {
+        return $this->displayName;
+    }
 
     /**
      * Get the URI of this source
@@ -126,6 +143,7 @@ class Source extends AbstractData {
             "dataType" => "Source",
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
+            "displayName" => $this->displayName,
             "text" => $this->text,
             "note" => $this->note,
             "uri" => $this->uri
@@ -173,6 +191,11 @@ class Source extends AbstractData {
         else
             $this->uri = null;
 
+        if (isset($data["displayName"]))
+            $this->displayName = $data["displayName"];
+        else
+            $this->displayName = null;
+
         if (isset($data["text"]))
             $this->text = $data["text"];
         else
@@ -205,6 +228,16 @@ class Source extends AbstractData {
     public function setText($text) {
 
         $this->text = $text;
+    }
+    
+    /**
+     * Set the display name of this Source
+     *
+     * @param string $displayName The display name of this source
+     */
+    public function setDisplayName($displayName) {
+    
+        $this->displayName = $displayName;
     }
 
     /**
@@ -250,7 +283,9 @@ class Source extends AbstractData {
         
         if (! parent::equals($other, $strict))
             return false;
-        
+
+        if ($this->getDisplayName() != $other->getDisplayName())
+            return false;
         if ($this->getText() != $other->getText())
             return false;
         if ($this->getURI() != $other->getURI())
