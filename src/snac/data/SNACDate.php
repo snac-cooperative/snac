@@ -429,9 +429,62 @@ class SNACDate extends AbstractData {
     }
 
     /**
+     * Set the from date BC
+     *
+     * Set the before common epoch boolean property of a from date.
+     *
+     * @param boolean $arg True for BC dates, false otherwise.
+     */
+    public function setFromBC($arg)
+    {
+        $this->fromBC = false;
+        if ($arg)
+        {
+            $this->fromBC = true;
+        }
+    }
+
+    /**
+     * Set the to date BC
+     *
+     * Set the before common epoch boolean property of a to date.
+     *
+     * @param boolean $arg True for BC dates, false otherwise.
+     */
+    public function setToBC($arg)
+    {
+        $this->toBC = false;
+        if ($arg)
+        {
+            $this->toBC = true;
+        }
+    }
+
+    /**
+     * Set the date BC
+     *
+     * Set the before common epoch boolean property of a single date. It is likely that implementation of a
+     * single date vs date range is a from date and $isRange = false. Regardless of implementation, this
+     * function changes the BC for a single date.
+     *
+     * Current implementation is to call setFromBC().
+     *
+     * Use this when you want to set (or clear) the BC boolean (fromBC) after calling setDate().
+     *
+     * @param boolean $arg True for BC dates, false otherwise.
+     */
+    public function setBC($arg)
+    {
+        return $this->setFromBC($arg);
+    }
+
+    /**
      * Set the "from date"
      * 
      * Set the from date in this object, as well as setting some related private variables.
+     *
+     * If you need to set BC, but you have BC in a separate field, call this with the non-BC annotated date,
+     * then call setFromBC(), setToBC() or setBC().
      * 
      * @param string $original Original date
      * @param string $standardDate Standardized date

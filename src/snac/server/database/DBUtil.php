@@ -606,7 +606,7 @@ class DBUtil
             $gObj->setRole($this->populateTerm($rec['role']));
             $gObj->setGeoTerm($this->buildGeoTerm($rec['geo_place_id']));
             $gObj->setScore($rec['score']);
-            $gObj->setConfirmed($rec['confirmed']);
+            $gObj->setConfirmed($this->db->pgToBool($rec['confirmed']));
             $gObj->setNote($rec['note']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($gObj);
@@ -824,17 +824,17 @@ class DBUtil
 
         foreach ($dateRows as $singleDate)
         {
-            
-
             $dateObj = new \snac\data\SNACDate();
-            $dateObj->setRange($singleDate['is_range']);
+            $dateObj->setRange($this->db->pgToBool($singleDate['is_range']));
             $dateObj->setFromDate($singleDate['from_original'],
                                   $singleDate['from_date'],
-                                  $this->populateTerm($singleDate['from_type'])); // $type
+                                  $this->populateTerm($singleDate['from_type']));
+            $dateObj->setFromBC($this->db->pgToBool($singleDate['from_bc']));
             $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
             $dateObj->setToDate($singleDate['to_original'],
                                 $singleDate['to_date'],
                                 $this->populateTerm($singleDate['to_type']));
+            $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
             $this->populateMeta($dateObj);

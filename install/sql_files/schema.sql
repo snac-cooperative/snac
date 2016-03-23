@@ -20,7 +20,7 @@
 -- drop table if exists control;
 -- drop table if exists pre_snac_maintenance_history;
 
-drop table if exists appuser;
+drop table if exists appuser; 
 drop table if exists appuser_role_link;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
@@ -132,6 +132,8 @@ create index version_history_idx1 on version_history(status);
 
 -- Users of the system (editors, authors, researchers, admins etc)
 -- SQL reserved word 'user', instead of always quoting it, change table name to appuser.
+
+-- aka table user
 
 create table appuser (
         id     int  primary key default nextval('id_seq'),

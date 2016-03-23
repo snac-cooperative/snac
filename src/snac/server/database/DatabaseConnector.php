@@ -42,7 +42,7 @@ class DatabaseConnector {
      *
      * @param string $arg A php boolean of whatever type as long as it will test true or false.
      *
-     * 
+     * @return string Either 't or 'f', for use as boolean in Postgres SQL.
      */
     public static function boolToPg($arg)
     {
@@ -54,6 +54,28 @@ class DatabaseConnector {
         {
             return 'f';
         }
+    }
+
+    /**
+     * pg_execute() doesn't know to convert boolean to 't' and 'f' from Postgres to php true and false. We do it
+     * ourselves.
+     * 
+     * @param string $arg A php boolean of whatever type as long as it will test true or false.
+     *
+     * @return boolean Return php true or false.
+     */
+    public static function pgToBool($arg)
+    {
+        if ($arg == 't')
+        {
+            return true;
+        }
+        elseif ($arg == 'f')
+        {
+            return false;
+        }
+        // If we get down here, something is very wrong. Seems like this should be fatal.
+        printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
     }
 
     /**
