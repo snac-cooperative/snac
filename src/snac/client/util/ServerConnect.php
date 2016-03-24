@@ -66,6 +66,10 @@ class ServerConnect {
         curl_close($ch);
         
         // Return the server response as associative array
-        return json_decode($response, true);
+        $return = json_decode($response, true);
+        if ($return == null) {
+            return $response;
+        }
+        return $return;
     }
 }

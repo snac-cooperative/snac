@@ -214,6 +214,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $request["constellation"] = $constellation->toArray();
             $request["user"] = $user->toArray();
             $serverResponse = $connect->query($request);
+            if (!is_array($serverResponse))
+                $this->logger->addDebug("server's response: $serverResponse");
             
             $this->logger->addDebug("server's response writen constellation", $serverResponse["constellation"]);
 
