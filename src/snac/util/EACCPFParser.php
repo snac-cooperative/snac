@@ -156,6 +156,35 @@ class EACCPFParser {
         }
         return $term;
     }
+    
+    /**
+     * Generate Display Name for Source
+     * 
+     * Generates a display name for a given source by inspecting the source and creating a name
+     * for this entity.  This will be stored in the database until updated by a human to create
+     * a more meaningful name.
+     * 
+     * @param \snac\data\Source $source Source object to create name for
+     * @param int $i optional The index into the source list
+     * @return string the display name
+     */
+    private function generateSourceDisplayName($source, $i = null) {
+        
+        $display = "";
+        
+        if ($i != null) {
+            $display .= "Source $i: ";
+        }
+        
+        if (stristr($source->getText(), "ead_entity"))
+            $display .= "EAD from ";
+        
+        if ($source->getURI() != null && $source->getURI() != "") {
+            $display .= $source->getURI();
+        }
+        
+        return $display; 
+    }
 
     /**
      * Parse a string containing EAC-CPF XML into an identity constellation.
@@ -173,6 +202,8 @@ class EACCPFParser {
         $this->namespaces = $xml->getNamespaces(true);
 
         $languageDeclaration = new \snac\data\Language();
+        
+        $sourceCounter = 1;
         
         foreach ($this->getChildren($xml) as $node) {
             if ($node->getName() == "control") {
@@ -377,6 +408,7 @@ class EACCPFParser {
                                             $source->getName()
                                         ), $innerSource);
                             }
+                            $sourceObj->setDisplayName($this->generateSourceDisplayName($sourceObj, $sourceCounter++));
                             $sourceObj->setOperation($this->operation);
                             $identity->addSource($sourceObj);
                         }

@@ -147,6 +147,14 @@
                                 <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10">
                                     <div class="form-group">
+                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4">
+                                            Display Name
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="text" class="form-control" value="{{ source.displayName }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
                                         <label for="source_uri_{{ i }}" class="control-label col-xs-4">
                                             URI
                                         </label>
@@ -765,8 +773,8 @@
                                         </label>
                                     <div class="col-xs-8" id="selectsource_scm_{{short}}_citation_{{j}}_{{i}}">
                                         <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
-                                        <input id="scm_{{short}}_citation_term_{{j}}_{{i}}" name="scm_{{short}}_citation_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.citation.text}} ({{ scm.citation.uri }})"/>
-                                        <p class="form-control-static">{{scm.citation.text}} ({{ scm.citation.uri }})</p>
+                                        <input id="scm_{{short}}_citation_term_{{j}}_{{i}}" name="scm_{{short}}_citation_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.citation.displayName}}"/>
+                                        <p class="form-control-static">{{scm.citation.displayName}}</p>
                                     </div>
                                 </div>
                                 
