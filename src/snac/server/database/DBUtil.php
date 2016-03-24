@@ -1550,14 +1550,6 @@ class DBUtil
     {
         foreach ($cObj->getOtherRecordIDs() as $otherID)
         {
-            if ($otherID->getType()->getTerm() != 'MergedRecord' and
-                $otherID->getType()->getTerm() != 'viafID')
-            {
-                $msg = sprintf("Warning: unexpected otherRecordID type: %s for ark: %s\n",
-                               $otherID->getType()->getTerm(),
-                               $otherID->getURI());
-                // TODO: Throw warning or log
-            }
             $rid = $otherID->getID();
             if ($this->prepOperation($vhInfo, $otherID))
             {
