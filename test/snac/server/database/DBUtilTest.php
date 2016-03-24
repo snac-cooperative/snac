@@ -323,8 +323,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          * Update: could probably start using the equal() functions.
          */ 
-        $this->assertEquals(945, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1014, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(950, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(1019, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($readObj,
