@@ -40,6 +40,12 @@ abstract class Validator {
      * @var \snac\server\validation\ValidationError[] List of errors encountered by this validator
      */
     protected $errors;
+
+
+    /**
+     * @var \Monolog\Logger $logger Logger for this server
+     */
+    protected $logger = null;
     
     /**
      * Constructor
@@ -47,7 +53,12 @@ abstract class Validator {
      * Needed to instantiate errors
      */
     public function __construct() {
+        global $log;
         $this->errors = array();
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger(get_class($this));
+        $this->logger->pushHandler($log);
     }
     
     /**

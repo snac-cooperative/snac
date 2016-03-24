@@ -224,14 +224,19 @@ class IDValidator extends \snac\server\validation\validators\Validator {
     
         // If this object has already been seen, then success is false
         if (isset($this->seen[$type]) && in_array($preID . $object->getID(), $this->seen[$type])) {
-            $this->addError("ID used multiple times", $object);
+            //$this->logger->addWarning("ID used multiple times ($type, $preID".$object->getID().")", $object->toArray());
+            $this->addError("ID used multiple times ($type, $preID".$object->getID().")", $object);
             $success = false;
         }
     
         // Validate this object's ID against the real object from the database, and
         // validate all it's subelements against their counterparts from the database
+        
+        // At this point, $object is not null and has an id.  So, we must see an object with that
+        // id, or there is a problem here.
+        $seenObject = false;
         foreach ($realObjects as $i => $current) {
-            if ($object->getID() == $current->getID()) {
+            if ($current != null && $object->getID() == $current->getID()) {
                 // If the seen IDs list for this type doesn't exist, create it
                 if (!isset($this->seen[$type]))
                     $this->seen[$type] = array();
@@ -240,11 +245,12 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                 // Validate the subelements
                 $success = $success && $this->validateAllDates($object, $current);
                 $success = $success && $this->validateAllSCM($object, $current);
+                $seenObject = true;
             }
         }
     
         // Return success
-        return $success;
+        return $success && $seenObject;
     }
 
     /**
@@ -282,12 +288,17 @@ class IDValidator extends \snac\server\validation\validators\Validator {
     
         // If this object has already been seen, then success is false
         if (isset($this->seen[$type]) && in_array($preID . $object->getID(), $this->seen[$type])) {
-            $this->addError("ID used multiple times", $object);
+            //$this->logger->addWarning("ID used multiple times ($type, $preID".$object->getID().")", $object->toArray());
+            $this->addError("ID used multiple times ($type, $preID".$object->getID().") ". json_encode($this->seen[$type]), $object);
             $success = false;
         }
     
         // Validate this object's ID against the real object from the database, and
         // validate all it's subelements against their counterparts from the database
+        
+        // At this point, $object is not null and has an id.  So, we must see an object with that
+        // id, or there is a problem here.
+        $seenObject = false;
         foreach ($realObjects as $i => $current) {
             if ($object->getID() == $current->getID()) {
                 // Create the seen id list for this type if it doesn't exist
@@ -299,11 +310,12 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                 $success = $success && $this->validateLanguage($object->getLanguage(), $current);
                 $success = $success && $this->validateAllDates($object, $current);
                 $success = $success && $this->validateAllSCM($object, $current);
+                $seenObject = true;
             }
         }
     
         // Return success
-        return $success;
+        return $success && $seenObject;
     }
     
     /**
@@ -607,9 +619,24 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                     $this->seen["scm"] = array();
                 // Add this id to the list of seen ids
                 array_push($this->seen["scm"], $scm->getID());
-                $success = $this->validateSource($scm->getCitation(), $current);
-                $success = $success && $this->validateLanguage($scm->getLanguage(), $current);
-                return $success;
+                
+                // Must check the source citation of the SCM.  Originally, we recursed, however
+                // that method may produce an infinite loop if there are cyclical SCM on source on
+                // SCM on source on ...
+                if ($scm->getCitation() != null && $scm->getCitation()->getID() != null) {
+                    // If we have a citation and that citation has an ID, we must check it
+                    $foundID = false;
+                    foreach ($this->constellation->getSources() as $source) {
+                        if ($scm->getCitation()->getID() == $source->getID()) {
+                            $foundID = true;
+                            break;
+                        }
+                    }
+                    if (!$foundID)
+                        return false;
+                }
+                
+                return $this->validateLanguage($scm->getLanguage(), $current);
             }
         }
     
@@ -620,7 +647,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * Validate a Source
      * 
      * @param \snac\data\Source $source Source to validate
-     * @param mixed[] $context optional Any context information needed for validation
+     * @param mixed $context optional Any context information needed for validation
      * @return boolean true if valid, false otherwise
      */
     public function validateSource($source, $context=null) {
