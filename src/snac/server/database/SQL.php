@@ -1863,6 +1863,14 @@ class SQL
      *
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
+     *
+     * Mar 25 2016: The fix described below only worked in certain cases. It is unclear why the subquery was
+     * not just turned into a join like all the other tables. Fixed and this query works in at least one case
+     * where the original failed. It failed when the versions were not in order.
+     *
+     * I just noticed that otherid doesn't have is_deleted. There is a historical reason for that, but I
+     * suspect history needs to be updated. Unless there is some really good reason otherid will never be
+     * deleted. Or even edited? 
      * 
      * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
      * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
@@ -1870,6 +1878,13 @@ class SQL
      * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
      * database versions, and the otherRecordID JSON looks correct.
      * 
+     * select
+     * id, version, main_id, text, uri, type
+     * from otherid
+     * where
+     * version=(select max(version) from otherid where version<=$1)
+     * and main_id=$2 order by id
+     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, text, uri,
@@ -1882,11 +1897,12 @@ class SQL
         $qq = 'sorid';
         $this->sdb->prepare($qq,
                             'select
-                            id, version, main_id, text, uri, type
-                            from otherid
+                            aa.id, aa.version, aa.main_id, aa.text, aa.uri, aa.type
+                            from otherid as aa,
+                            (select id,max(version) as version from otherid where version<=$1 and main_id=$2 group by id) as bb
                             where
-                            version=(select max(version) from otherid where version<=$1)
-                            and main_id=$2 order by id');
+                            aa.id = bb.id and 
+                            aa.version = bb.version order by id asc');
 
         $all = array();
         $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
@@ -2445,6 +2461,24 @@ class SQL
         $deletedVersion = null;
         if ($status != $this->deleted)
         {
+            /*
+             * We need to know the version of a deleted constellation. If the most recent version is deleted,
+             * we return false.
+             *
+             * In other words, we only return a version number if the most recent version is not deleted. The
+             * tricky bit is that we are constrained by status, so we might not have been asked to return the
+             * most recent version (absolute) but the most recent version with a given status. This is what
+             * happens when we are asked for the most recent published version, and the absolute most recent
+             * is locked editing.
+             *
+             * This is fine, and exactly what we planned for. A search of published sees the most recent
+             * published, if the constellation has not been deleted more recently.
+             *
+             * This points up a wrinkle in our current implementation where all versions are in the same
+             * table. We have to check for more recent deleted (and eventually embargo) because there are
+             * multiple copies of the records. While copying data to edit and publish tables seems clumsy, it
+             * may be a simpler and more efficient implementation than we are current using.
+             */ 
             $deletedVersion = $this->selectCurrentVersionByStatus($mainID, $this->deleted);
         }
         $result = $this->sdb->query(

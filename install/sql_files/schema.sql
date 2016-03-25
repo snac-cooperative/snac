@@ -137,9 +137,11 @@ create index version_history_idx1 on version_history(status);
 
 create table appuser (
         id     int  primary key default nextval('id_seq'),
-        userid text unique, -- text-based user ids
-        email  text,        -- contact information for tracking
-        name   text         -- full name text
+        userid text unique, -- text-based user id, the user email address
+        first  text,        -- first name
+        last   text,        -- last name
+        name   text,        -- full name text
+        avatar text         -- is this a file name? 
         );
 
 -- Linking table to handle role membership for users Do we need a 'primary' role boolean field? This would be

@@ -123,8 +123,12 @@ class DBUtil
 
         /*
          * Mar 4 2016 Here's a little suprise: we don't have an object for name component. How this will work
-         * is not determined, so I guess we're ignoring it for now.
+         * is not determined, so I guess we're ignoring it for now. The topic came up when filling in the canDelete array.
          *
+         * (Not only do we not have a name component object, we don't have any working code that deals with
+         * name components, so there isn't an issue here. When we parse names into components, we will deal
+         * with all this. We do have a SQL table name_component, but it is not used, yet.)
+         * 
          * 'snac\data\Foo' => 'name_component',
          *
          */ 
@@ -136,6 +140,9 @@ class DBUtil
          * class. See prepOperation(), setDeleted(), and clearDeleted().
          *
          * Table nrd and the constellation have a different mechanism, so they are not listed here.
+         *
+         * What about table otherid? Oddly, we can't delete otherid records, and that seems wrong.
+         * 
          */ 
         $this->canDelete = array('snac\data\BiogHist' => 'biog_hist',
                                  'snac\data\ConventionDeclaration' => 'convention_declaration',
@@ -2907,14 +2914,6 @@ class DBUtil
                                                              $nameID,
                                                              $cb->getName(),
                                                              $this->thingID($cb->getType()));
-             /* 
-              * printf("dbutil: after insertContributor and prepOp true\ncontrib_id: %s contrib_name: %s operation: %s contrib rid: %s new version: %s nameID %s\n",
-              *                   $cb->getID(),
-              *                   $cb->getName(),
-              *                   $cb->getOperation(), $rid,
-              *                   $vhInfo['version'],
-              *                   $nameID);
-              */
                         $cb->setID($rid);
                         $cb->setVersion($vhInfo['version']);
                     }
