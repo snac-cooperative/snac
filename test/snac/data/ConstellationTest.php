@@ -54,7 +54,8 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
         /* 
          * rtrim() the input since some people have their editor defaulting to adding a newline at the end of
-         * every file.
+         * every file. We have to manually edit constellation_test.json. Don't let trailing whitespace at the
+         * end of the file interfere with the match below.
          */
         $jsonIn = rtrim($jsonIn);
 
@@ -82,8 +83,8 @@ class ConstellationTest extends PHPUnit_Framework_TestCase {
 
 
         /*
-         * Uncomment the lines below to write out a new copy of constellation_test2.json which you need to verify differs only by
-         * whatever you added to the constellation.
+         * Uncomment the lines below to write out a new copy of constellation_test2.json which you need to
+         * verify differs only by whatever you added to the constellation.
          */        
         /* 
          * $cfile = fopen('new_constellation_test2.json', 'w');
