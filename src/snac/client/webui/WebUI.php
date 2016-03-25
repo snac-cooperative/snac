@@ -116,21 +116,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
-            $user = array (
-                "first" => $ownerDetails->getFirstName(),
-                "last" => $ownerDetails->getLastName(),
-                "name" => $ownerDetails->getName(),
-                "avatar" => $ownerDetails->getAvatar(),
-                "email" => $ownerDetails->getEmail()
-            );
-            $display->setUserData($user);
+            $user = $this->createUser($ownerDetails, $token);
+            $display->setUserData($user->toArray());
         }
 
 
         // Display the current information
         if ($this->input["command"] == "edit") {
-            $this->logger->addDebug("Sending query to the server", $this->input);
-            $serverResponse = $connect->query($this->input);
+            $query = $this->input;
+            $query["user"] = $user->toArray();
+            $this->logger->addDebug("Sending query to the server", $query);
+            $serverResponse = $connect->query($query);
             $this->logger->addDebug("Received server response");
             $display->setTemplate("edit_page");
             if (isset($serverResponse["constellation"])) {
@@ -145,7 +141,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
             // Ask the server for a list of records to edit
-            $ask = array("command"=>"user_information");
+            $ask = array("command"=>"user_information",
+                    "user" => $user->toArray()
+            );
+            $this->logger->addDebug("Sending query to the server", $ask);
+            $serverResponse = $connect->query($ask);
+            $this->logger->addDebug("Received server response", $ask);
+            $this->logger->addDebug("Setting dashboard data into the page template");
+            $display->setData($serverResponse);
+        } else if ($this->input["command"] == "profile") {
+            $display->setTemplate("profile_page");
+            // Ask the server for a list of records to edit
+            $ask = array("command"=>"user_information",
+                    "user" => $user->toArray()
+            );
             $this->logger->addDebug("Sending query to the server", $ask);
             $serverResponse = $connect->query($ask);
             $this->logger->addDebug("Received server response", $ask);
@@ -203,7 +212,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Send the query to the server
             $request["constellation"] = $constellation->toArray();
+            $request["user"] = $user->toArray();
             $serverResponse = $connect->query($request);
+            if (!is_array($serverResponse))
+                $this->logger->addDebug("server's response: $serverResponse");
             
             $this->logger->addDebug("server's response writen constellation", $serverResponse["constellation"]);
 
@@ -246,7 +258,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                             foreach ($constellation->getSources() as $source) {
                                 array_push($response["results"], array(
                                         "id" => $source->getID(),
-                                        "text" => $source->getText() . " (" . $source->getURI() . ")"
+                                        "text" => $source->getDisplayName()
                                 ));
                             }
                             $this->logger->addDebug("created the following response list of sources", $response);
@@ -308,6 +320,29 @@ class WebUI implements \snac\interfaces\ServerInterface {
         return array (
                 "Content-Type: text/html"
         );
+    }
+    
+    private function createUser($googleUser, $googleToken) {
+        $user = new \snac\data\User();
+        $avatar = $googleUser->getAvatar();
+        $avatarSmall = null;
+        $avatarLarge = null;
+        if ($avatar != null) {
+            $avatar = str_replace("?sz=50", "", $avatar);
+            $avatarSmall = $avatar . "?sz=20";
+            $avatarLarge = $avatar . "?sz=250";
+        }
+        $user->setAvatar($avatar);
+        $user->setAvatarSmall($avatarSmall);
+        $user->setAvatarLarge($avatarLarge);
+        $user->setEmail($googleUser->getEmail());
+        $user->setFirstName($googleUser->getFirstName());
+        $user->setFullName($googleUser->getName());
+        $user->setLastName($googleUser->getLastName());
+        $user->setToken($googleToken);
+        $user->setUserid($googleUser->getId());
+        
+        return $user;
     }
  
 }

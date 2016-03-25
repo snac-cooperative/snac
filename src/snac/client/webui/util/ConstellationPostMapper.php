@@ -143,6 +143,14 @@ class ConstellationPostMapper {
             
             $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
+            if (isset($scm["citation"]) && isset($scm["citation"]["id"]) && $scm["citation"]["id"] != "") {
+                foreach ($this->constellation->getSources() as $source) {
+                    if ($source->getID() == $scm["citation"]["id"]) {
+                        $scmObject->setCitation($source);
+                        break;
+                    }
+                }
+            }
             
             // short, i, post data, php object
             // need: 
@@ -427,7 +435,7 @@ class ConstellationPostMapper {
      */
     public function serializeToConstellation($postData) {
 
-        $constellation = new \snac\data\Constellation();
+        $this->constellation = new \snac\data\Constellation();
         
         // Rework the input into arrays of sections
         $nested = array ();
@@ -519,22 +527,50 @@ class ConstellationPostMapper {
         
         // NRD-level Information
         if (isset($nested["ark"]))
-            $constellation->setArkID($nested["ark"]);
+            $this->constellation->setArkID($nested["ark"]);
         if (isset($nested["constellationid"]))
-            $constellation->setID($nested["constellationid"]);
+            $this->constellation->setID($nested["constellationid"]);
         if (isset($nested["version"]))
-            $constellation->setVersion($nested["version"]);
+            $this->constellation->setVersion($nested["version"]);
         if (isset($nested["operation"]))
-            $constellation->setOperation($this->getOperation($nested));
+            $this->constellation->setOperation($this->getOperation($nested));
         if (isset($nested["entityType"])) {
             $term = new \snac\data\Term();
             $term->setID($nested["entityType"]);
-            $constellation->setEntityType($term);
+            $this->constellation->setEntityType($term);
+        }
+            
+            // We must do sources first, so they are available to any SCM calculations
+            // That is, when SCM are added, we must match them up and send the actual Source
+            // objects instead of just the ID that we get from the UI.
+        foreach ($nested["source"] as $k => $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
+            $source = new \snac\data\Source();
+            $source->setID($data["id"]);
+            $source->setVersion($data["version"]);
+            $source->setOperation($this->getOperation($data));
+            
+            $source->setDisplayName($data["displayName"]);
+            $source->setText($data["text"]);
+            $source->setURI($data["uri"]);
+            $source->setNote($data["note"]);
+            
+            $source->setLanguage($this->parseSubLanguage($data, "source", $k));
+            
+            // Right now, we're going to say this is okay because should a source have
+            // other sources listed in their metadata?
+            // TODO: Do sources have sources as part of their SCM?
+            $source->setAllSNACControlMetadata($this->parseSCM($data, "source", $k));
+            
+            $this->addToMapping("source", $k, $data, $source);
+            
+            $this->constellation->addSource($source);
         }
         
         // Constellation SCM
-        
-        $constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"], "constellation", 1));
+        $this->constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"], "constellation", 1));
         
         foreach ($nested["gender"] as $k => $data) {
             // If the user added an object, but didn't actually edit it
@@ -550,7 +586,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("gender", $k, $data, $gender);
             
-            $constellation->addGender($gender);
+            $this->constellation->addGender($gender);
         }
         
         foreach ($nested["exist"] as $k => $data) {
@@ -572,7 +608,7 @@ class ConstellationPostMapper {
 
             $this->addToMapping("exist", $k, $data, $date);
             
-            $constellation->addDate($date);
+            $this->constellation->addDate($date);
         }
         
         foreach ($nested["biogHist"] as $k => $data) {
@@ -593,7 +629,7 @@ class ConstellationPostMapper {
 
             $this->addToMapping("biogHist", $k, $data, $bh);
             
-            $constellation->addBiogHist($bh);
+            $this->constellation->addBiogHist($bh);
         }
         
         foreach ($nested["language"] as $k => $data) {
@@ -613,7 +649,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("language", $k, $data, $lang);
             
-            $constellation->addLanguageUsed($lang);
+            $this->constellation->addLanguageUsed($lang);
         }
         
         foreach ($nested["nationality"] as $k => $data) {
@@ -631,7 +667,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("nationality", $k, $data, $nationality);
             
-            $constellation->addNationality($nationality);
+            $this->constellation->addNationality($nationality);
         }
         
         foreach ($nested["function"] as $k => $data) {
@@ -649,7 +685,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("function", $k, $data, $fun);
             
-            $constellation->addFunction($fun);
+            $this->constellation->addFunction($fun);
         }
         
         foreach ($nested["legalStatus"] as $k => $data) {
@@ -667,7 +703,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("legalStatus", $k, $data, $legalStatus);
             
-            $constellation->addLegalStatus($legalStatus);
+            $this->constellation->addLegalStatus($legalStatus);
         }
         
         foreach ($nested["conventionDeclaration"] as $k => $data) {
@@ -685,7 +721,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("conventionDeclaration", $k, $data, $conventionDeclaration);
             
-            $constellation->addConventionDeclaration($conventionDeclaration);
+            $this->constellation->addConventionDeclaration($conventionDeclaration);
         }
         
         foreach ($nested["generalContext"] as $k => $data) {
@@ -703,7 +739,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("generalContext", $k, $data, $generalContext);
             
-            $constellation->addGeneralContext($generalContext);
+            $this->constellation->addGeneralContext($generalContext);
         }
         
         foreach ($nested["structureOrGenealogy"] as $k => $data) {
@@ -721,7 +757,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("structureOrGenealogy", $k, $data, $structureOrGenealogy);
             
-            $constellation->addStructureOrGenealogy($structureOrGenealogy);
+            $this->constellation->addStructureOrGenealogy($structureOrGenealogy);
         }
         
         foreach ($nested["mandate"] as $k => $data) {
@@ -739,7 +775,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("mandate", $k, $data, $mandate);
             
-            $constellation->addMandate($mandate);
+            $this->constellation->addMandate($mandate);
         }
         
         foreach ($nested["nameEntry"] as $k => $data) {
@@ -760,7 +796,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("nameEntry", $k, $data, $nameEntry);
             
-            $constellation->addNameEntry($nameEntry);
+            $this->constellation->addNameEntry($nameEntry);
         }
         
         foreach ($nested["sameAs"] as $k => $data) {
@@ -781,30 +817,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("sameAs", $k, $data, $sameas);
             
-            $constellation->addOtherRecordID($sameas);
-        }
-        
-        foreach ($nested["source"] as $k => $data) {
-            // If the user added an object, but didn't actually edit it
-            if ($data["id"] == "" && $data["operation"] != "insert")
-                continue;
-            $source = new \snac\data\Source();
-            $source->setID($data["id"]);
-            $source->setVersion($data["version"]);
-            $source->setOperation($this->getOperation($data));
-            
-            $source->setText($data["text"]);
-            $source->setURI($data["uri"]);
-            $source->setNote($data["note"]);
-            
-            $source->setLanguage($this->parseSubLanguage($data, "source", $k));
-
-            
-            $source->setAllSNACControlMetadata($this->parseSCM($data, "source", $k));
-            
-            $this->addToMapping("source", $k, $data, $source);
-            
-            $constellation->addSource($source);
+            $this->constellation->addOtherRecordID($sameas);
         }
         
         foreach ($nested["resourceRelation"] as $k => $data) {
@@ -829,7 +842,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("resourceRelation", $k, $data, $relation);
             
-            $constellation->addResourceRelation($relation);
+            $this->constellation->addResourceRelation($relation);
         }
         
         foreach ($nested["constellationRelation"] as $k => $data) {
@@ -852,7 +865,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("constellationRelation", $k, $data, $relation);
             
-            $constellation->addRelation($relation);
+            $this->constellation->addRelation($relation);
         }
         
         foreach ($nested["subject"] as $k => $data) {
@@ -870,7 +883,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("subject", $k, $data, $subject);
             
-            $constellation->addSubject($subject);
+            $this->constellation->addSubject($subject);
         }
         
         foreach ($nested["occupation"] as $k => $data) {
@@ -888,7 +901,7 @@ class ConstellationPostMapper {
             
             $this->addToMapping("occupation", $k, $data, $occupation);
             
-            $constellation->addOccupation($occupation);
+            $this->constellation->addOccupation($occupation);
         }
         
         foreach ($nested["place"] as $k => $data) {
@@ -924,12 +937,11 @@ class ConstellationPostMapper {
 
             $this->addToMapping("place", $k, $data, $place);
             
-            $constellation->addPlace($place);
+            $this->constellation->addPlace($place);
         }
         
-        $this->constellation = $constellation;
         $this->nested = $nested;
         
-        return $constellation;
+        return $this->constellation;
     }
 }
