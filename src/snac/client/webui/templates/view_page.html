@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Prototype : Viewing {{data.nameEntries.0.original}}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- SNAC HRT Template code -->
+<link data-xsl-asset="stylesheets/index.css"
+            href="http://bioghist.s3-website-us-east-1.amazonaws.com/build/stylesheets/index.css"
+            media="all"
+            rel="stylesheet"
+            type="text/css"></link>
+<link href="http://bioghist.s3-website-us-east-1.amazonaws.com/build/stylesheets/grunticon/icons.data.svg.css" rel="stylesheet">
+<script data-xsl-asset="javascripts/modernizr.js"
+        src="http://bioghist.s3-website-us-east-1.amazonaws.com/build/javascripts/modernizr.js"
+        charset="utf-8"
+        type="text/javascript"></script>
+<style>
+   .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
+   .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
+   .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov 
+   { float: left; 
+   margin-right: 0.33em; }     
+</style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>
+//tinymce.init({selector:'#biogHist', plugins:'code', min_height: 300});
+</script>
+
+<!-- CodeMirror XML editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+<script src="javascript/select_loaders.js"></script>
+<script src="javascript/scripts.js"></script>
+
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+.tab-pane {
+
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0px 0px 5px 5px;
+    padding: 10px;
+}
+
+.nav-tabs {
+    margin-bottom: 0;
+}
+</style>
+
+
+</head>
+<body role="document">
+
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand active" href="?">SNAC</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="?command=dashboard">Dashboard</a></li>
+                <li><a href="http://snac-community.iath.virginia.edu/">Discussion</a></li>
+            </ul>
+            <div class="navbar-right">
+            {% if user.email %}
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li class="disabled"><a href="#">{{ user.email }}</a></li>
+                        <li><a href="?command=profile">User Profile</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li class="dropdown-header">User Options</li>
+                        <li><a href="?command=logout">Logout</a></li>
+                    </ul>
+                    </li>
+                </ul>
+            {% else %}
+                <ul class="nav navbar-nav">
+                    <li><a href="?command=login">Login</a></li>
+                </ul>
+            {% endif %}
+            </div>
+        </div><!--/.nav-collapse -->
+    </div>
+</nav>  
+
+
+      <div class="main_content">
+         <div id="identity">
+            <div class="name">
+               <h1>
+                  <span title="authorized form of name" class="person" data-xsl="identity">{{data.nameEntries.0.original}}
+                    {% if data.entityType.term == 'person' %}
+                     <span class="icon-ind x2"></span>
+                    {% elseif data.entityType.term == 'corporateBody' %}
+                     <span class="icon-org x2"></span>
+                    {% elseif data.entityType.term == 'family' %}
+                     <span class="icon-fam x2"></span>
+                    {% endif %}
+                  </span> 
+               </h1>
+               <a data-toggle="modal" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+            </div>
+            <div>
+               <div class="biog">
+                  <div class="facts">
+                     <div class="life" data-xsl="life">
+                        <dt>Dates:</dt>
+                        <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
+                        <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
+                        <dt>Gender:</dt>
+                        <dd>{{data.genders.0.term.term}}</dd>
+                     </div>
+                     <div>
+                        <div data-xsl="authoritySource">
+                           <label>Authority Source:</label>
+                           <!-- TEMPLATE_SOURCE  -->
+                        </div>
+                        <div data-xsl="nationality">
+                           <label>Nationality: </label>
+                           {% for nat in data.nationalities %}
+                                {{ nat.term.term }},
+                           {% endfor %}
+                        </div>
+                        <div data-xsl="language">
+                           <label>Language: </label> 
+                            {% for lang in data.languagesUsed %}
+                                {{ lang.language.description }},
+                            {% endfor %}
+                        </div>
+                     </div>
+                  </div>
+                  <h2>Biographical notes:</h2>
+                  <div class="wikipedia_thumbnail" data-xsl="wikipedia_thumbnail">
+                  </div>
+                  <div class="biogHist">
+                  {% if data.biogHists.0.text %}
+                    {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+                  </div>
+                  <br clear="both"></br>
+                  <div class="well well-sm">Biographical notes are generated from 
+                     the bibliographic and archival source records supplied by 
+                     <a href="http://socialarchive.iath.virginia.edu/datacontrib.html">data contributors</a>.
+                  </div>
+               </div>
+               <div class="relations">
+                  <h2 class="tophead">Links to collections</h2>
+                  <div class="related" id="related">
+                     <div class="panel panel-default" data-xsl="relatedCollections">
+                        <div class="panel-heading">
+                           <h4>
+                           
+                                        {% set numRels = 0 %}
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.documentType.term == 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedCollections">
+                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Archival Collections
+                                 <span class="badge pull-right">{{numRels}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedCollections" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#creatorOf" data-toggle="tab">creator of</a>
+                                    </li>
+                                    <li>
+                                       <a href="#referencedIn" data-toggle="tab">referenced in</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="creatorOf">
+                                        <!--
+                                       <div class="related">
+                                          <a href="http://www.worldcat.org/oclc/725108369">Cleveland, Frances Folsom, 1864-1947. Frances F. Cleveland Preston letter to Mrs. Charles S. Fairchild, 1922.</a>
+                                          <div>
+                                             <namePart xmlns="http://www.loc.gov/mods/v3">New-York Historical Society Library</namePart>
+                                          </div>
+                                       </div>
+                                        -->
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.role.term == 'creatorOf' and relation.documentType.term == 'ArchivalResource' %}
+                                            <div class="related">
+                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="tab-pane list" id="referencedIn">
+                                       <!--
+                                          <div class="related">
+                                          <a href="http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=hou01429">Autograph File, F, 1447-1994.</a>
+                                          <div>
+                                             <repository xmlns="urn:isbn:1-931666-22-9">Houghton Library, Harvard College Library, Harvard University</repository>
+                                          </div>
+                                       </div>
+                                       -->
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.role.term == 'referencedIn' and relation.documentType.term == 'ArchivalResource' %}
+                                            <div class="related">
+                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                                        {% set numRels = 0 %}
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.documentType.term != 'ArchivalResource' %}
+                                            {% set numRels = numRels + 1 %}
+                                        {% endif %}
+                                        {% endfor %}
+                     <div class="panel panel-default" data-xsl="relatedWorks">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedWorks">
+                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related Resources
+                                 <span class="badge pull-right">{{numRels}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedWorks" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <!--
+                              <div class="related">
+                                 <a href="http://www.worldcat.org/search?q=ti:Charles%20S.%20Fairchild%20papers+au:Fairchild%2C%20Charles%20S.%20%28Charles%20Stebbins%29%2C%201842-1924">Charles S. Fairchild papers</a>
+                                 <span class="arcrole">creatorOf</span>
+                                 <div></div>
+                              </div>
+                              -->
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.documentType.term != 'ArchivalResource' %}
+                                            <div class="related">
+                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <span class="arcrole">{{relation.role.term}}</span>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                           </div>
+                        </div>
+                     </div>
+                     <div class="panel panel-default" data-xsl="linkedData">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#linkedData">
+                                 <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related External Links
+                                 <span class="badge pull-right">{{data.otherRecordIDs|length}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="linkedData" class="panel-collapse collapse">
+                           <div class="panel-body">
+                           
+                                        {% for sameas in data.otherRecordIDs %}
+                                            <div class="related">
+                                                <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                            </div>
+                                        {% endfor %}
+                        <!--
+                              <div>
+                                 <div class="sprite-icons-archivegrid"></div>
+                                 <a href="http://beta.worldcat.org/archivegrid/?p=1&amp;q=Fairchild,+Charles+S.+(Charles+Stebbins),+1842-1924">ArchiveGrid search</a>
+                              </div>
+                              <div>
+                                 <div class="sprite-icons-dpla"></div>
+                                 <a href="http://dp.la/search?utf8=%E2%9C%93&amp;q=Fairchild,+Charles+S.+(Charles+Stebbins),+1842-1924">DPLA search</a>
+                              </div>
+                              <div>
+                                 <div class="sprite-icons-wikipedia"></div>
+                                 <a href="http://en.wikipedia.org/wiki/Charles_S._Fairchild">Wikipedia</a>
+                              </div>
+                              <div>
+                                 <div class="sprite-icons-idlocgov"></div>
+                                 <a href="http://id.loc.gov/authorities/names/n88071278">LC Name Authority File</a>
+                              </div>
+                              <div>
+                                 <div class="sprite-icons-viaf"></div>
+                                 <a href="http://viaf.org/viaf/60627856">Virtual International Authority File</a>
+                              </div>
+                              <div>
+                                 <div class="sprite-icons-worldcat"></div>
+                                 <a href="http://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
+                              </div> 
+                        -->
+                           </div>
+                        </div>
+                     </div>
+                     <h3>Related names in 
+                        <abbr class="initialism">SNAC</abbr>
+                     </h3>
+                     <div class="panel panel-default" data-xsl="relatedPeople">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedPeople">
+                                 <span class="icon-ind"></span> Relations
+                                 <span class="badge pull-right">{{data.relations|length}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedPeople" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <!--
+                              <div class="person">
+                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
+                                 <span class="arcrole">correspondedWith</span>
+                                 <div></div>
+                              </div>
+                              -->
+                              {% for relation in data.relations %}
+                              <div class="person">
+                                 <a href="{{relation.targetArkID}}">{{relation.content}}</a>
+                                 <span class="arcrole">{{relation.type.term}}</span>
+                                 <div></div>
+                              </div>
+                              {% endfor %}
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+               <div class="others">
+                  <h3>Actions:</h3>
+                  <div class="list-group">
+                        <a class="list-group-item list-group-item-info" 
+                           href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                  </div>
+                  
+                  {% if debug %}
+                  <h3>Debug:</h3>
+                  <div class="list-group">
+                     
+                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
+                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+
+                  </div>
+                  
+                    <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.constellationSource}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.serverResponse}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  
+                  {% endif %}
+                  
+                  <h3>Subjects:</h3>
+                  <!--
+                  <div class="alert alert-info">not available for this record</div>
+                  -->
+
+                  {% if data.subjects|length > 0 %}
+                    <ul>
+                    <!-- {% for subject in data.subjects %} -->
+                        <li>{{subject.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}                  
+
+                  <h3>Occupations:</h3>
+                  <!--
+                  <ul>
+                     <li>
+                        <a href="/snac/search?sectionType=cpfdescription&amp;f1-occupation=Cabinet officers">
+                           Cabinet officers.
+                           
+                        </a>
+                     </li>
+                  </ul>
+                  -->
+                  
+                  {% if data.occupations|length > 0 %}
+                    <ul>
+                    <!-- {% for occupation in data.occupations %} -->
+                        <li>{{occupation.term.term}}</li>
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}   
+                  
+               </div>
+               <div>
+                  <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
+                       aria-hidden="true">
+                     <div class="modal-dialog">
+                        <div class="modal-content">
+                           <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal" aria-labelledby="myModalLabel"
+                                      aria-hidden="true">×</button>
+                              <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
+                           </div>
+                           <div title="alternative forms of name" class="extra-names modal-body">
+                              <!--
+                              <div>Fairchild, Charles Stebbins, 1842-1924</div>
+                              -->
+                              {% for nameEntry in data.nameEntries %}
+                                <div>{{nameEntry.original}}</div>
+                              {% endfor %}
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal fade" id="collection_locations" tabindex="-1" role="dialog"
+                       aria-hidden="true">
+                     <div class="modal-dialog">
+                        <div class="modal-content">
+                           <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal" aria-labelledby="colLocLabel"
+                                      aria-hidden="true">×</button>
+                              <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
+                           </div>
+                           <div class="modal-body">
+                               <!--
+                              <div>
+                                 Manuscript Division Library of
+                                             Congress
+                              </div>
+                               -->
+                               TEMPLATE_COLL_LOCATIONS
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+
+    </body>
+    </html>

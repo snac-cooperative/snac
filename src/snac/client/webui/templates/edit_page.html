@@ -118,7 +118,11 @@ body {
 <div class="container snac" role="main">
 
     <form class="form-horizontal" id="constellation_form">
-        <h1>Editing Constellation: {{data.nameEntries.0.original}}</h1>
+        {% if data.id %}
+            <h1>Editing: {{data.nameEntries.0.original}}</h1>
+        {% else %}
+            <h1>New Constellation</h1>
+        {% endif %}
 
         <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
             <p>Saving Constellation...</p>
@@ -178,6 +182,7 @@ body {
                         <!-- Constellation Data -->
                         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
                         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+                        <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
 
                         <div class="panel-body">
                             <div class="col-xs-10">
@@ -569,10 +574,15 @@ body {
                         </div>
                         <div class="panel-body">
                             <p>You may perform any of the following actions on this constellation.</p>
+                            <!-- 
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
+                            </div>
+                            -->
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue</a>
                                 <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard</a>
-                                <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Submit</a>
+                                <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Publish</a>
                                 <a href="?command=dashboard" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel</a>
                             </div>
                         </div>
@@ -708,6 +718,23 @@ body {
     </div>
     </div>
 
+
+<div class="modal fade" id="previewPane" tabindex="-1" role="dialog" aria-labelledby="previewPane">
+    <div class="modal-dialog" role="document" style="width:90%;">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="previewLabel">Preview</h4>
+            </div>
+            <div class="modal-body" id="previewPaneContent">
+                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
     </div>
