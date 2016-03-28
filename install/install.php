@@ -246,7 +246,7 @@ if ($response == "yes") {
     echo "  Attempting to ingest sample records from $dir.\n";
     // Run a system shell command, that sudos bash, then su's to postgres user,
     // then creates the user and database from the Config class.
-    system("cd ../scripts && ./ingest_sample $dir\n", $retval);
+    system("cd ../scripts && ./ingest_sample.php $dir\n", $retval);
     
     if ($retval != 0) {
         echo "  There was a problem ingesting the sample records.\n\n";
