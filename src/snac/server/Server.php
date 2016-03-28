@@ -203,8 +203,8 @@ class Server implements \snac\interfaces\ServerInterface {
                             
                             if ($eSearch != null) {
                                 $params = [
-                                        'index' => 'rtest',
-                                        'type' => 'prototype_name_search',
+                                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                                         'id' => $constellation->getID(),
                                         'body' => [
                                                 'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),

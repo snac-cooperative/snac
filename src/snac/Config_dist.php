@@ -126,14 +126,24 @@ class Config {
     public static $MAX_LIST_SIZE = 50000;
 
     /**
-     * @var string Elastic Search URL
-     */
-    public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
-
-    /**
      * @var boolean Whether or not to have the server attempt to use Elastic
      *      Search indexing.
      */
     public static $USE_ELASTIC_SEARCH = true;
+
+    /**
+     * @var string Elastic Search URL
+     */
+    public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
+    
+    /**
+     * @var string Main index for the search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_BASE_INDEX = "";
+    
+    /**
+     * @var string Main type for the search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_BASE_TYPE = "";
     
 }
