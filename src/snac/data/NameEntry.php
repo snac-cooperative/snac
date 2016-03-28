@@ -114,6 +114,9 @@ class NameEntry extends AbstractData {
      */ 
     public function getPreferenceScore()
     {
+        if ($this->preferenceScore == null)
+            return 0;
+       
         return $this->preferenceScore;
     }
 
