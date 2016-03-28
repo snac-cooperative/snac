@@ -124,4 +124,16 @@ class Config {
      * @var int The maximum number of objects allowed in a list of objects.
      */
     public static $MAX_LIST_SIZE = 50000;
+
+    /**
+     * @var string Elastic Search URL
+     */
+    public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
+
+    /**
+     * @var boolean Whether or not to have the server attempt to use Elastic
+     *      Search indexing.
+     */
+    public static $USE_ELASTIC_SEARCH = true;
+    
 }
