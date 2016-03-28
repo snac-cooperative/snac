@@ -4,7 +4,8 @@
         "twig/twig": "~1.23",
         "league/oauth2-client": "^1.1",
         "league/oauth2-google": "^1.0",
-        "monolog/monolog": "^1.18"
+        "monolog/monolog": "^1.18",
+        "elasticsearch/elasticsearch": "~2.0@beta"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "2.*",
