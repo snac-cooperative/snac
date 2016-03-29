@@ -136,12 +136,15 @@ create index version_history_idx1 on version_history(status);
 -- aka table user
 
 create table appuser (
-        id     int  primary key default nextval('id_seq'),
-        userid text unique, -- text-based user id, the user email address
-        first  text,        -- first name
-        last   text,        -- last name
-        name   text,        -- full name text
-        avatar text         -- is this a file name? 
+        id           int primary key default nextval('id_seq'),
+        userid       text unique, -- text-based user id, the user email address
+        email        text         -- perhaps redundant, since userid is probably the email
+        first        text,        -- first name
+        last         text,        -- last name
+        fullname     text,        -- full name text
+        avatar       text,        -- url
+        avatar_small text,        -- url
+        avatar_large text         -- url
         );
 
 -- Linking table to handle role membership for users Do we need a 'primary' role boolean field? This would be
@@ -164,6 +167,14 @@ create table role (
         label       text unique, -- short name of this role
         description text         -- description of this role
         );
+
+-- There may be multiple active sessions per user, so we need a separate table for sessions.
+
+create table session (
+        appuser_fk   int,  -- fk to appuser.id
+        access_token text, -- the openauth session token
+        expires      text  -- when the token expires
+);
 
 -- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the split/merge
 -- data has been moved to table version_history. Or somewhere else? Where?

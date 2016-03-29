@@ -99,6 +99,16 @@ class Config {
     public static $DATABASE_TESTING = false;
 
     /**
+     *  @var integer Default for offset in selectListByStatus() and selectEditList()
+     */
+    public static $SQL_OFFSET = 0;
+    
+    /**
+     *  @var integer Default for limit selectListByStatus() and selectEditList()
+     */
+    public static $SQL_LIMIT = 42;
+
+    /**
      * @var string Location of the template directory
      */
     public static $TEMPLATE_DIR = "full/path/to/src/snac/client/webui/templates";

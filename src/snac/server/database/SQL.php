@@ -111,29 +111,56 @@ class SQL
     }
 
     /**
-     * Select edit records for user
+     * Select edit or locked records by user and status
      *
-     * All status values are exclusive, so if a record's most recent status is 'locked editing' then it cannot
-     * not possibly also be deleted.
+     * Get a list of mainID, version for all records with a given status for a given user, ordered by most
+     * recent first. A note about checking for deleted: All status values are exclusive, so if a record's most
+     * recent status is 'locked editing' then it cannot not possibly also be deleted.
      *
      * Get the version and main_id for each non-deleted record the user has locked for edit.
      *
+     * It seems possible that any status except published must be associated with a specific user, and could
+     * be done via this function. We also assume that this will return only no more than (roughly) 100
+     * constellations. The dashboard UI won't work with more than a couple dozen constellations in various
+     * status states.
+     *
      * @param integer $appUserID User numeric ID
+     *
+     * @param string $status The status we want, defaults to 'locked editing'. Must be 'locked editing' or
+     * 'currently editing'. This is used for status values that are locked to a specific user. We assume that
+     * anyone who wants a list of all published constellations will use the HRT or similar because there are
+     * around 4 million of those.
+     *
+     * Only support locked statuses.
+     *
+     * @param integer $limit optional An optional limit to number of records.
+     *
+     * @param integer $offset optional An optional offset to jump into the list of records in the database.
      *
      * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
      */ 
-    public function selectEditList($appUserID)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit=null, $offset=null)
     {
-        $status = 'locked editing';
-        $result = $this->sdb->query(
+        if ($status != 'locked editing' &&
+            $status != 'currently editing')
+        {
+            return array();
+        }
+        $limitStr = '';
+        $offsetStr = '';
+        $limitStr = $this->doLOValue('limit', $limit);
+        $offsetStr = $this->doLOValue('offset', $offset);
+
+        $queryString = sprintf(
             'select aa.id as version, aa.main_id
             from version_history as aa,
             (select max(bb.id) as id,bb.main_id from version_history as bb where bb.user_id=$1 group by bb.main_id) as cc
             where
             aa.main_id=cc.main_id and
             aa.id=cc.id
-            and aa.status = $2',
-            array($appUserID, $status));
+            and aa.status = $2 %s %s', $limitStr, $offsetStr);
+        $result = $this->sdb->query($queryString,
+                                    array($appUserID, $status));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -151,6 +178,101 @@ class SQL
         }
         return $all;
     }
+
+    /**
+     * Handle the strings for limit and offset
+     *
+     * Deal with some details in building limit and offset. If -1, do all, that is no limit or offset
+     * statement. If an integer, use that as the limit or offset. If null then use the default.
+     *
+     * Always return the string padded with leading and trailing spaces. It is safer to have extra spaces.
+     *
+     * @param string $str Either 'limit' or 'offset'
+     *
+     * @param integer $value An integer, -1, or null. 
+     *
+     * @return string An empty string, or a limit or offset SQL string. 
+     */ 
+    private function doLOValue($str, $value)
+    {
+        if ($value == -1 || ($str != 'limit' && $str != 'offset'))
+        {
+            return '';
+        }
+        elseif ($value == null || ! is_int($value))
+        {
+            if ($str == 'limit')
+            {
+                return " $str " . \snac\Config::$SQL_LIMIT . " ";
+            }
+            elseif ($str == 'offset')
+            {
+                return " $str " . \snac\Config::$SQL_OFFSET . " ";
+            }
+            else
+            {
+                return '';
+            }
+        }
+        else
+        {
+            return " $str $value ";
+        }
+    }
+
+    /**
+     * Select a list by status
+     *
+     * Select a list of mainID, version for a given status, any user. That is: not constrained by
+     * user. Optional args for limit and offset allow returning partial lists.
+     *
+     * We are dynamically building the query string. Use sprintf() in order to get $limiStr and $offsetStr
+     * into the query as necessary. Note the care (above) of checking that $limit and $offset are
+     * integers. Building query strings dynamically is one way that sql injection attacks sneak into code. We
+     * are safe checking for ints and building the string only from trusted data.
+     *
+     * Use single quotes in $queryStr below. We don't want $1 to be interpolated. A bit of testing reveals
+     * that $1 never interpolates, but heaven only knows if that is in the php language spec. If you want,
+     * it also seems fine to escape with \ when using double quotes.
+     *
+     *
+     */ 
+    public function selectListByStatus($status = 'locked editing', $limit=null, $offset=null)
+    {
+        $limitStr = '';
+        $offsetStr = '';
+        $limitStr = $this->doLOValue('limit', $limit);
+        $offsetStr = $this->doLOValue('offset', $offset);
+        $queryString = sprintf(
+            'select aa.id as version, aa.main_id
+            from version_history as aa,
+            (select max(bb.id) as id,bb.main_id from version_history as bb group by bb.main_id) as cc
+            where
+            aa.main_id=cc.main_id and
+            aa.id=cc.id and
+            aa.status = $1
+            order by aa.id desc %s %s', $limitStr, $offsetStr);
+        
+        $result = $this->sdb->query($queryString,
+                                    array($status));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $mainID = $row['main_id'];
+            $version = $row['version'];
+            /*
+             * I think the query above works, returning the max() only when that version also has the required
+             * status. However, the check below will confirm that the returned version really is the max.
+             */ 
+            $maxVersion = $this->selectCurrentVersion($mainID);
+            if ($maxVersion == $version)
+            {
+                array_push($all, $row);
+            }
+        }
+        return $all;
+    }
+        
 
     /**
      * Mint a new record id.
@@ -175,6 +297,16 @@ class SQL
     /**
      * select mainID by arkID
      *
+     * nrd.main_id is the constellation id.
+     *
+     * nrd.id is a typical row id (aka record id)
+     *
+     * Constellation->getID() gets the main_id aka constellation id
+     *
+     * non-constellation->getID() gets the row id. Non-constellation objects get the main_id from the
+     * constellation, and it is not stored in these objects themselves. I mention this (again) because it
+     * (again) caused confusion in the SQL below (now fixed).
+     *
      * @param string $arkID The ARK id of a constellation
      *
      * @return integer The constellation ID aka mainID akd main_id aka version_history.main_id.
@@ -182,12 +314,12 @@ class SQL
     public function selectMainID($arkID)
     {
         $result = $this->sdb->query(
-            'select main_id
+            'select nrd.main_id
             from version_history, nrd
             where
             nrd.ark_id=$1
-            and version_history.main_id=nrd.id',
-            array());
+            and version_history.main_id=nrd.main_id',
+            array($arkID));
         $row = $this->sdb->fetchrow($result);
         return $row['main_id'];
     }
