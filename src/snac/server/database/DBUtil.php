@@ -400,10 +400,10 @@ class DBUtil
      * planned to support status values in addition to 'locked editing'
      *
      * @param integer $limit optional The number of constellations to return. Order by version number, most
-     * recent first. -1==all, default=42 (in config file), some value is that value.
+     * recent first. -1==all, null is default=42 (in config file), any other positive integer is that value.
      *
      * @param integer $offset optional Start returning $limit number, but begin from $offset into the
-     * list. -1==all, default=42 (in config file), some value is that value.
+     * list. -1==all, null is default=0 (in config file), any other positive integer is that value.
      * 
      * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
      */

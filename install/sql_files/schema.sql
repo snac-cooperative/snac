@@ -138,7 +138,7 @@ create index version_history_idx1 on version_history(status);
 create table appuser (
         id           int primary key default nextval('id_seq'),
         userid       text unique, -- text-based user id, the user email address
-        email        text         -- perhaps redundant, since userid is probably the email
+        email        text,        -- perhaps redundant, since userid is probably the email
         first        text,        -- first name
         last         text,        -- last name
         fullname     text,        -- full name text

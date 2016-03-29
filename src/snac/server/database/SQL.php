@@ -195,12 +195,18 @@ class SQL
      */ 
     private function doLOValue($str, $value)
     {
-        if ($value == -1 || ($str != 'limit' && $str != 'offset'))
+        if ($value < 0 || ($str != 'limit' && $str != 'offset'))
         {
+            /*
+             * -1 or any negative value is "all". Negative values don't get beyond the first if statement.
+             */
             return '';
         }
         elseif ($value == null || ! is_int($value))
         {
+            /*
+             * Null or weird stuff use the default. This seems the safe option.
+             */ 
             if ($str == 'limit')
             {
                 return " $str " . \snac\Config::$SQL_LIMIT . " ";
@@ -211,11 +217,19 @@ class SQL
             }
             else
             {
+                /*
+                 * If the $str is unknown, there's no limit or offset string we can create, so just return an
+                 * empty string. The $str is checked in the first if statement, so we should never get down
+                 * here, which makes this a belt and suspenders situation.
+                 */ 
                 return '';
             }
         }
         else
         {
+            /*
+             * Else we have a nice integer, so we use that.
+             */ 
             return " $str $value ";
         }
     }
@@ -237,7 +251,7 @@ class SQL
      *
      *
      */ 
-    public function selectListByStatus($status = 'locked editing', $limit=null, $offset=null)
+    public function selectListByStatus($status = 'published', $limit=null, $offset=null)
     {
         $limitStr = '';
         $offsetStr = '';
