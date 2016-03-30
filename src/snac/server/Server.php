@@ -106,10 +106,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"] = $this->input["user"];
                 $db = new \snac\server\database\DBUtil();
                 $this->logger->addDebug("Getting list of locked constellations to user");
-                $editList = $db->listConstellationsWithStatus("locked editing");
-                $this->logger->addDebug("Got list of locked constellations to user");
                 
-                // TODO Repeat for each status, check that they are returning summary constellations
+                // First look for constellations editable
+                $editList = $db->listConstellationsWithStatusForUser("locked editing");
+               
                 $this->response["editing"] = array();
                 foreach ($editList as $constellation) {
                     $item = array(
@@ -125,6 +125,25 @@ class Server implements \snac\interfaces\ServerInterface {
                 usort($this->response["editing"], function($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
+
+                // Next look for currently editing constellations
+                $editList = $db->listConstellationsWithStatusForUser("currently editing");
+                 
+                $this->response["editing_lock"] = array();
+                foreach ($editList as $constellation) {
+                    $item = array(
+                            "id" => $constellation->getID(),
+                            "version" => $constellation->getVersion(),
+                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                    );
+                    $this->logger->addDebug("User was currently editing", $item);
+                    array_push($this->response["editing_lock"], $item);
+                }
+                
+                // Give the editing list back in alphabetical order
+                usort($this->response["editing_lock"], function($a, $b) {
+                    return $a['nameEntry'] <=> $b['nameEntry'];
+                });
                 
                 break;
             case "insert_constellation":
@@ -134,37 +153,7 @@ class Server implements \snac\interfaces\ServerInterface {
                         $constellation = new \snac\data\Constellation($this->input["constellation"]);
                         $result = $db->writeConstellation($constellation, "Demo updates for now");
                         if (isset($result) && $result != null) {
-                            $this->logger->addDebug("successfully wrote constellation");
-
-                            // add to elastic search
-                            $eSearch = null;
-                            if (\snac\Config::$USE_ELASTIC_SEARCH) {
-                                $eSearch = \Elasticsearch\ClientBuilder::create()
-                                ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-                                ->setRetries(0)
-                                ->build();
-                            }
-                            
-                            $this->logger->addDebug("Created elastic search client to update");
-                            
-                            if ($eSearch != null) {
-                                $params = [
-                                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                                        'id' => $result->getID(),
-                                        'body' => [
-                                                'nameEntry' => $result->getPreferredNameEntry()->getOriginal(),
-                                                'arkID' => $result->getArk(),
-                                                'id' => $result->getID(),
-                                                'timestamp' => date('c')
-                                        ]
-                                ];
-                            
-                                $eSearch->index($params);
-                                $this->logger->addDebug("Updated elastic search with newly published constellation");
-                            }
-                            
-                            
+                            $this->logger->addDebug("successfully wrote constellation");                            
                             $this->response["constellation"] = $result->toArray();
                             $this->response["result"] = "success";
                         } else {
