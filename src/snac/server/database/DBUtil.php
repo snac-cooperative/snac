@@ -16,6 +16,7 @@ use \snac\server\validation\ValidationEngine as ValidationEngine;
 use snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 
+
 /**
  * High level database class.
  *
@@ -316,7 +317,7 @@ class DBUtil
      * @return \snac\data\Constellation A PHP constellation object.
      *
      */
-    public function readPublishedConstellationByARK($arkID)
+    public function readPublishedConstellationByARK($arkID, $summary=false)
     {
         $mainID = $this->sql->selectMainID($arkID);
         if ($mainID)
@@ -324,7 +325,7 @@ class DBUtil
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
             if ($version)
             {
-                $cObj = $this->readConstellation($mainID, $version);
+                $cObj = $this->readConstellation($mainID, $version, $summary);
                 return $cObj;
             }
         }
@@ -342,12 +343,12 @@ class DBUtil
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */ 
-    public function readPublishedConstellationByID($mainID)
+    public function readPublishedConstellationByID($mainID, $summary=false)
     {
         $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
         if ($version)
         {
-            $cObj = $this->readConstellation($mainID, $version);
+            $cObj = $this->readConstellation($mainID, $version, $summary);
             return $cObj;
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
@@ -382,11 +383,18 @@ class DBUtil
     }
     
     /**
-     * Constellations user is edting
+     * Constellations by status current user only
      *
-     * List constellations with a given status, defaulting to 'locked editing'. Returns valid, but partial
-     * constellations The default is: user has the constellation locked for edit. Note: 'locked editing' and
-     * 'currently editing' are different with different meanings.
+     * List constellations that meet all these criteria: 1) given status 2) for the current user 3) is the most recent version.
+     *
+     * This function Returns valid, partial constellations. 
+     *
+     * Status defaults to 'locked editing'. The default is: user has the constellation locked for edit. Note:
+     * 'locked editing' and 'currently editing' are different with different meanings.
+     *
+     * The constellations returned will always be owned by the current user, and will be the most recent
+     * version, period. This will be the absolutely most recent version. This will not return any
+     * constellation for which the most recent version does not match status and user.
      *
      * Mar 29 2016 Robbie suggests we only return partial constellations here with enough data to build
      * UI. Partial means: table nrd and table name_entry. We tried returning the full constellations, but that
@@ -396,59 +404,107 @@ class DBUtil
      *
      * Was named listConstellationsLockedToUser().
      *
+     * Defaults are: \snac\Config::$SQL_LIMIT (probably 42), \snac\Config::$SQL_OFFSET (probably 0).
+
+     * Note about default paramter values: Unfortunately, we have to accept null and default to null since php
+     * cannot default to a constant or variable in a function signature. Also, php does not allow optional
+     * parameters except the last parameter, so we have to accept null for $limit regardless.
+     *
+     * From the php manual: "The default value must be a constant expression, not (for example) a variable, a
+     * class member or a function call."
+     *
      * @param string optional $status A single status for the list of constellations. Not implemented, but
      * planned to support status values in addition to 'locked editing'
      *
-     * @param integer $limit optional The number of constellations to return. Order by version number, most
-     * recent first. -1==all, null is default=42 (in config file), any other positive integer is that value.
+     * @param integer $limit optional Limit to the number of records. Not optional here. Must be -1 for all, or an
+     * integer . Default to the config when missing. 
      *
-     * @param integer $offset optional Start returning $limit number, but begin from $offset into the
-     * list. -1==all, null is default=0 (in config file), any other positive integer is that value.
-     * 
+     * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
+     * a config value. Must be -1 for all, or an integer. Default to the config when missing.
+     *
      * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
      */
-    function listConstellationsWithStatus($status='locked editing', $limit=null, $offset=null)
+    public function listConstellationsWithStatusForUser($status='locked editing',
+                                                        $limit=null,
+                                                        $offset=null)
     {
-        if (! $this->statusOK($status))
+        if ($limit==null || ! is_int($limit))
         {
-            return false;
+            $limit = \snac\Config::$SQL_LIMIT;
         }
-        /*
-         * Locked imples for this $appUserID only. Conversly, $appUserID implies only locked records,
-         * in the broad sense of "locked".
-         *
-         * Works for all but published. Maybe does not work with deleted, embargoed.
-         */ 
-        if ($status == 'locked editing' || $status == 'currently editing')
+        if ($offset == null || ! is_int($offset))
         {
-            $infoList = $this->sql->selectEditList($this->appUserID, $status, $limit, $offset);
-            if ($infoList)
-            {
-                $constellationList = array();
-                foreach ($infoList as $idVer)
-                {
-                    $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
-                    array_push($constellationList, $cObj);
-                }
-                return $constellationList;
-            }
+            $offset = \snac\Config::$SQL_OFFSET;
         }
-        else
+        $infoList = $this->sql->selectEditList($this->appUserID, $status, $limit, $offset);
+        if ($infoList)
         {
-            /*
-             * This does not work with 'currently editing' and 'locked editing' which must be only $appUserID
-             */  
-            $infoList = $this->sql->selectListByStatus($status, $limit, $offset);
-            if ($infoList)
+            $constellationList = array();
+            foreach ($infoList as $idVer)
             {
-                $constellationList = array();
-                foreach ($infoList as $idVer)
-                {
-                    $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
-                    array_push($constellationList, $cObj);
-                }
-                return $constellationList;
+                $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
+                array_push($constellationList, $cObj);
             }
+            return $constellationList;
+        }
+    }
+    
+    /**
+     * List constellations by status for any user
+     *
+     * Return a list of valid (but partial) constellations for a single status, but for any user, and the most
+     * recent version.
+     *
+     * List constellations that meet all these criteria: 1) given status 2) is the most recent version. User
+     * is ignored, thus constellations owned by any user are returned.
+     *
+     * This will return the most recent version for the status. For reasons of sanity and
+     * safety, status defaults to 'published'. This function will handle any status, including various locks,
+     * deleted, embargoed. The given status is returned for any user, and always the most recent version.
+     *
+     * There is no question of this honoring deleted. If you ask for 'published' and the most recent is
+     * 'published' then you get published. Deleted, or any other status does not come into the argument,
+     * because we must always match "most recent". In other words, if you ask for publshed and the most recent
+     * is not published, you won't get that constellation. There is no question of status when the status is
+     * not the requested status. This is a bit odd because nearly everything else in DBUtil fills some other
+     * need and therefore behaves otherwise.
+     *
+     * Note about default paramter values: Unfortunately, we have to accept null and default to null since php
+     * cannot default to a constant or variable in a function signature. Also, php does not allow optional
+     * parameters except the last parameter, so we have to accept null for $limit regardless.
+     *
+     * @param string $status optional Status defaults to 'published'.
+     * 
+     * @param integer $limit optional Limit to the number of records. Not optional here. Must be -1 for all, or an
+     * integer . Default to the config when missing.
+     * 
+     * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
+     * a config value. Must be -1 for all, or an integer. Default to the config when missing. 
+     *
+     * @return \snac\data\Constellation[] A list of PHP constellation object, or false when there are no constellations.
+     */
+    public function listConstellationsWithStatusForAny($status='published',
+                                                       $limit=null,
+                                                       $offset=null)
+    {
+        if ($limit==null || ! is_int($limit))
+        {
+            $limit = \snac\Config::$SQL_LIMIT;
+        }
+        if ($offset == null || ! is_int($offset))
+        {
+            $offset = \snac\Config::$SQL_OFFSET;
+        }
+        $infoList = $this->sql->selectListByStatus($status, $limit, $offset);
+        if ($infoList)
+        {
+            $constellationList = array();
+            foreach ($infoList as $idVer)
+            {
+                $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
+                array_push($constellationList, $cObj);
+            }
+            return $constellationList;
         }
         return false;
     }

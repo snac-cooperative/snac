@@ -65,33 +65,33 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Exercise listConstellationsWithStatus()
+     * Exercise listConstellationsWithStatusForUser() and listConstellationsWithStatusForAny()
      *
      * We test with 'locked editing' which is user sensitive and 'published' which is for all users.
      */ 
     public function testWithStatus()
     {
-        $objList = $this->dbu->listConstellationsWithStatus('locked editing');
+        $objList = $this->dbu->listConstellationsWithStatusForUser('locked editing');
         $this->assertTrue(count($objList)>=1);
 
         if (count($objList) > 5)
         {
-            $objList = $this->dbu->listConstellationsWithStatus('locked editing', 5);
+            $objList = $this->dbu->listConstellationsWithStatusForUser('locked editing', 5);
             $this->assertTrue(count($objList)==5);
-            $objList = $this->dbu->listConstellationsWithStatus('locked editing', 5,1);
+            $objList = $this->dbu->listConstellationsWithStatusForUser('locked editing', 5, 1);
             $this->assertTrue(count($objList)==5);
         }
 
         /*
          * Assume that in 100 records of a test load, at least 20 are status published.
          */ 
-        $objList = $this->dbu->listConstellationsWithStatus('published');
+        $objList = $this->dbu->listConstellationsWithStatusForAny('published');
         $this->assertTrue(count($objList)>=1);
 
-        $objList = $this->dbu->listConstellationsWithStatus('published', 10);
+        $objList = $this->dbu->listConstellationsWithStatusForAny('published', 10);
         $this->assertTrue(count($objList)==10);
 
-        $objList = $this->dbu->listConstellationsWithStatus('published', 10, 10);
+        $objList = $this->dbu->listConstellationsWithStatusForAny('published', 10, 10);
         $this->assertTrue(count($objList)==10);
     }
     /**
@@ -269,10 +269,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
-         * default on insert is 'locked editing', but we want to test listConstellationsWithStatus() and to
-         * do that we want to change status and call listConstellationsWithStatus() a second time.
+         * default on insert is 'locked editing', but we want to test listConstellationsWithStatusForUser() and to
+         * do that we want to change status and call listConstellationsWithStatusForUser() a second time.
          *
-         * There can, and should be more definitive tests of listConstellationsWithStatus().
          */ 
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
 
@@ -284,10 +283,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
          *
-         * New: Mar 29 2016 Now that we can return summary constellation lists, switch back to calling listConstellationsWithStatus()
+         * New: Mar 29 2016 Now that we can return summary constellation lists, switch back to calling listConstellationsWithStatusForUser()
          * 
          * old: Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
-         * is therefore much faster than listConstellationsWithStatus().
+         * is therefore much faster than listConstellationsWithStatusForUser().
          */ 
         $useLocked = true;
         if (! $useLocked)
@@ -298,7 +297,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         else
         {
             // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatus('locked editing');
+            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing');
             $initialEditCount = count($editList);
         }
         
@@ -319,7 +318,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         else
         {
             // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatus('locked editing');
+            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing');
             $postEditCount = count($editList);
         }
         $this->assertEquals('locked editing', $newStatus);
