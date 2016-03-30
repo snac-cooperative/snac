@@ -43,6 +43,7 @@ drop table if exists place_link;
 drop table if exists related_identity;
 drop table if exists related_resource;
 drop table if exists role;
+drop table if exists session;
 drop table if exists scm;
 drop table if exists structure_genealogy;
 drop table if exists source;
