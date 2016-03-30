@@ -111,35 +111,31 @@ class SQL
     }
 
     /**
-     * Select edit or locked records by user and status
+     * Select by status and most recent, user only
      *
-     * Get a list of mainID, version for all records with a given status for a given user, ordered by most
-     * recent first. A note about checking for deleted: All status values are exclusive, so if a record's most
-     * recent status is 'locked editing' then it cannot not possibly also be deleted.
+     * Get a list of mainID, version for all records when the most recent matches the given status and user.
+     * This will only return most recent records, and only if the status and user match. A note about
+     * checking for deleted: All status values are exclusive, so if a record's most recent status is 'locked
+     * editing' then it cannot not possibly also be deleted. If you ask for 'locked editing' and that is most
+     * recent, and for this user, then you will get that record.
      *
-     * Get the version and main_id for each non-deleted record the user has locked for edit.
+     * This will not return records which are not most recent. After that, any record must match status and user.
      *
-     * It seems possible that any status except published must be associated with a specific user, and could
-     * be done via this function. We also assume that this will return only no more than (roughly) 100
-     * constellations. The dashboard UI won't work with more than a couple dozen constellations in various
-     * status states.
+     * @param integer $appUserID User numeric ID. The most recent record must match this user id, and must
+     * match $status.
      *
-     * @param integer $appUserID User numeric ID
+     * @param string $status optional The status we want, defaults to 'locked editing'. Any status is
+     * supported, but records are returned only if the most recent is this status, and matches $appUserID.
      *
-     * @param string $status The status we want, defaults to 'locked editing'. Must be 'locked editing' or
-     * 'currently editing'. This is used for status values that are locked to a specific user. We assume that
-     * anyone who wants a list of all published constellations will use the HRT or similar because there are
-     * around 4 million of those.
+     * @param integer $limit Limit to the number of records. Not optional here. Must be -1 for all, or a
+     * number. The higher level calling code has a default from the config.
      *
-     * Only support locked statuses.
-     *
-     * @param integer $limit optional An optional limit to number of records.
-     *
-     * @param integer $offset optional An optional offset to jump into the list of records in the database.
+     * @param integer $offset An offset to jump into the list of records in the database. Not optional
+     * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
      * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
      */ 
-    public function selectEditList($appUserID, $status = 'locked editing', $limit=null, $offset=null)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
     {
         if ($status != 'locked editing' &&
             $status != 'currently editing')
@@ -154,11 +150,12 @@ class SQL
         $queryString = sprintf(
             'select aa.id as version, aa.main_id
             from version_history as aa,
-            (select max(bb.id) as id,bb.main_id from version_history as bb where bb.user_id=$1 group by bb.main_id) as cc
+            (select max(bb.id) as id,bb.main_id from version_history as bb group by bb.main_id) as cc
             where
             aa.main_id=cc.main_id and
-            aa.id=cc.id
-            and aa.status = $2 %s %s', $limitStr, $offsetStr);
+            aa.id=cc.id and
+            aa.user_id=$1 and
+            aa.status = $2 %s %s', $limitStr, $offsetStr);
         $result = $this->sdb->query($queryString,
                                     array($appUserID, $status));
         $all = array();
@@ -182,14 +179,20 @@ class SQL
     /**
      * Handle the strings for limit and offset
      *
-     * Deal with some details in building limit and offset. If -1, do all, that is no limit or offset
-     * statement. If an integer, use that as the limit or offset. If null then use the default.
+     * This the logical implementation details in building limit and offset SQL statements. The defaults are
+     * at a higher level, so checking here is merely to catch errors. If -1, do all, that is no limit or
+     * offset statement. If an integer, use that as the limit or offset. If null then use the default, but
+     * null should never happen because the default in the calling code is an integer constant from the
+     * config.
+     *
+     * Default in the calling code are: \snac\Config::$SQL_LIMIT, \snac\Config::$SQL_OFFSET.
      *
      * Always return the string padded with leading and trailing spaces. It is safer to have extra spaces.
      *
      * @param string $str Either 'limit' or 'offset'
      *
-     * @param integer $value An integer, -1, or null. 
+     * @param integer $value An integer or -1. We accept null, but only as an error which results in using the
+     * constants.
      *
      * @return string An empty string, or a limit or offset SQL string. 
      */ 
@@ -205,7 +208,8 @@ class SQL
         elseif ($value == null || ! is_int($value))
         {
             /*
-             * Null or weird stuff use the default. This seems the safe option.
+             * Null or weird stuff use the default. This seems the safe option.  This should never happen, but
+             * if it does, we have backstopped the user doing something non-sensical.
              */ 
             if ($str == 'limit')
             {
@@ -237,21 +241,30 @@ class SQL
     /**
      * Select a list by status
      *
-     * Select a list of mainID, version for a given status, any user. That is: not constrained by
-     * user. Optional args for limit and offset allow returning partial lists.
+     * Select a list of mainID, version for a given status, and most recent. User is ignored therefore we get
+     * records from any user. That is: not constrained by user. Optional args for limit and offset allow
+     * returning partial lists.
      *
      * We are dynamically building the query string. Use sprintf() in order to get $limiStr and $offsetStr
-     * into the query as necessary. Note the care (above) of checking that $limit and $offset are
+     * into the query as necessary. Note the care we take in checking that $limit and $offset are
      * integers. Building query strings dynamically is one way that sql injection attacks sneak into code. We
-     * are safe checking for ints and building the string only from trusted data.
+     * are validating for ints and building the string only from trusted data.
      *
-     * Use single quotes in $queryStr below. We don't want $1 to be interpolated. A bit of testing reveals
-     * that $1 never interpolates, but heaven only knows if that is in the php language spec. If you want,
-     * it also seems fine to escape with \ when using double quotes.
+     * Use single quotes in $queryStr below. We don't want $1 to be interpolated. Testing php behavior reveals
+     * that $1 never interpolates, but heaven only knows if that is in the php language spec. If you want, it
+     * also seems fine to escape with \ when using double quotes.
      *
+     * @param string $status optional Status defaults to 'published'.
+     * 
+     * @param integer $limit Limit to the number of records. Not optional here. Must be -1 for all, or a
+     * number. The higher level calling code has a default from the config.
      *
+     * @param integer $offset An offset to jump into the list of records in the database. Not optional
+     * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
+     *
+     * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
      */ 
-    public function selectListByStatus($status = 'published', $limit=null, $offset=null)
+    public function selectListByStatus($status = 'published', $limit, $offset)
     {
         $limitStr = '';
         $offsetStr = '';
