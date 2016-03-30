@@ -104,14 +104,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Initialize the provider
         $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
         $_SESSION['oauth2state'] = $provider->getState();
+        
+        // These are the things you are allowed to do without logging in.
+        $publicCommands = array(
+                "login",
+                "login2",
+                "search",
+                "view"
+        );
+        
+        // Null user object unless set by the session
+        $user = null;
 
         // If the user is not logged in, send to the home screen
         if (empty($_SESSION['token'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
             if (!empty($this->input["command"]) &&
-                ($this->input["command"] != "login" && $this->input["command"] != "login2"))
-                $this->input["command"] = "";
+                !(in_array($this->input["command"], $publicCommands)))
+                $this->input["command"] = "login";
 
         } else {
             $token = unserialize($_SESSION['token']);
@@ -152,7 +163,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $query = array(); //$this->input;
             $query["constellationid"] = $this->input["constellationid"];
             $query["command"] = "read";
-            $query["user"] = $user->toArray();
+            if (isset($user) && $user != null)
+                $query["user"] = $user->toArray();
             $this->logger->addDebug("Sending query to the server", $query);
             $serverResponse = $connect->query($query);
             $this->logger->addDebug("Received server response");

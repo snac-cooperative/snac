@@ -110,7 +110,9 @@ body {
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
+                <!-- {% if user.email %} -->
                 <li><a href="?command=dashboard">Dashboard</a></li>
+                <!-- {% endif %} -->
                 <li><a href="http://snac-community.iath.virginia.edu/">Discussion</a></li>
             </ul>
             <div class="navbar-right">
@@ -391,8 +393,10 @@ body {
                <div class="others">
                   <h3>Actions:</h3>
                   <div class="list-group">
+                    {% if user.email %}
                         <a class="list-group-item list-group-item-info" 
                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                    {% endif %}
                   </div>
                   
                   {% if debug %}

@@ -148,14 +148,16 @@ body {
 	                //previewWindow.document.write(data);
 	                
 	                var html = "";
+                    html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
 	                if (data.length > 0) {
-	                    html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
 	                    for (var key in data) {
 	                        html += "<a href='?command=view&constellationid="+data[key].id+"' class='list-group-item'>"+data[key].value+"</a>";
 	                    }
-	                    html += "</div>";
-	                    $("#search-results-box").html(html);
+	                } else {
+                        html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
 	                }
+                    html += "</div>";
+                    $("#search-results-box").html(html);
 	            });
         	}
         }
@@ -185,7 +187,9 @@ body {
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
+            <!-- {% if user.email %} -->
                 <li><a href="?command=dashboard">Dashboard</a></li>
+            <!-- {% endif %} -->
                 <li><a href="http://snac-community.iath.virginia.edu/">Discussion</a></li>
             </ul>
             <div class="navbar-right">
@@ -219,7 +223,7 @@ body {
 
 		<h1>SNAC Prototype</h1>
 
-		<form class="form-horizontal" id="search_form">
+		<form class="form-horizontal" id="search_form" onsubmit="return false;">
 			<div class="well well-lg text-center">
 
 					<div class="input-group">

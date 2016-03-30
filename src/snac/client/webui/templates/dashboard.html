@@ -119,6 +119,20 @@ body {
                     </div>
                 </div>
             </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Locked Edits</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following Constellations are open in a browser for editing.  You may unlock them by clicking below, however your
+                    changes not previously saved may be lost.</p>
+                    <div class="list-group">
+                        {% for link in data.editing %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
