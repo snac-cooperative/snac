@@ -451,6 +451,23 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 
             }
         } else {
+            // The WebUI is displaying the landing page only
+            
+            // Get the list of recently published constellations
+
+            $request = array();
+            $request["command"] = "recently_published";
+            $recentConstellations = $connect->query($request)["constellation"];
+            
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(), 
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            
+            $display->setData(array("recents"=>$recents));
             $display->setTemplate("landing_page");
         }
         $this->logger->addDebug("Creating response page from template with data");

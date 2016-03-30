@@ -171,7 +171,8 @@ function indexESearch($written) {
                 'body' => [
                         'nameEntry' => $written->getPreferredNameEntry()->getOriginal(),
                         'arkID' => $written->getArk(),
-                        'id' => $written->getID()
+                        'id' => $written->getID(),
+                        'timestamp' => date("c")
                 ]
         ];
     

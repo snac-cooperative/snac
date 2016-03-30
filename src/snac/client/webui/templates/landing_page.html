@@ -256,10 +256,9 @@ body {
                 <div class="panel-body">
                     <p>Browse interesting and recently updated Constellations.</p>
                     <div class="list-group">
-                        <a href="#" class="list-group-item">Brown, Emmett.</a>
-                        <a href="#" class="list-group-item">Doctor, The.</a>
-                        <a href="#" class="list-group-item">Tyler, Rose.</a>
-                        <a href="#" class="list-group-item">Oswald, Clara.</a>
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

@@ -106,9 +106,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response["user"] = $this->input["user"];
                 $db = new \snac\server\database\DBUtil();
                 $this->logger->addDebug("Getting list of locked constellations to user");
-                $editList = $db->listConstellationsLockedToUser();
+                $editList = $db->listConstellationsWithStatus("locked editing");
                 $this->logger->addDebug("Got list of locked constellations to user");
                 
+                // TODO Repeat for each status, check that they are returning summary constellations
                 $this->response["editing"] = array();
                 foreach ($editList as $constellation) {
                     $item = array(
@@ -134,6 +135,36 @@ class Server implements \snac\interfaces\ServerInterface {
                         $result = $db->writeConstellation($constellation, "Demo updates for now");
                         if (isset($result) && $result != null) {
                             $this->logger->addDebug("successfully wrote constellation");
+
+                            // add to elastic search
+                            $eSearch = null;
+                            if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                                $eSearch = \Elasticsearch\ClientBuilder::create()
+                                ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                                ->setRetries(0)
+                                ->build();
+                            }
+                            
+                            $this->logger->addDebug("Created elastic search client to update");
+                            
+                            if ($eSearch != null) {
+                                $params = [
+                                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                                        'id' => $result->getID(),
+                                        'body' => [
+                                                'nameEntry' => $result->getPreferredNameEntry()->getOriginal(),
+                                                'arkID' => $result->getArk(),
+                                                'id' => $result->getID(),
+                                                'timestamp' => date('c')
+                                        ]
+                                ];
+                            
+                                $eSearch->index($params);
+                                $this->logger->addDebug("Updated elastic search with newly published constellation");
+                            }
+                            
+                            
                             $this->response["constellation"] = $result->toArray();
                             $this->response["result"] = "success";
                         } else {
@@ -209,7 +240,8 @@ class Server implements \snac\interfaces\ServerInterface {
                                         'body' => [
                                                 'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
                                                 'arkID' => $constellation->getArk(),
-                                                'id' => $constellation->getID()
+                                                'id' => $constellation->getID(),
+                                                'timestamp' => date('c')
                                         ]
                                 ];
                             
@@ -230,6 +262,101 @@ class Server implements \snac\interfaces\ServerInterface {
                     $this->response["result"] = "failure";
                 }
             
+                break;
+            case "search":
+                // ElasticSearch Handler
+                $eSearch = null;
+                if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                    $this->logger->addDebug("Creating ElasticSearch Client");
+                    $eSearch = \Elasticsearch\ClientBuilder::create()
+                    ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                    ->setRetries(0)
+                    ->build();
+                
+                
+                    $params = [
+                            'index' => 'rtest',
+                            'type' => 'prototype_name_search',
+                            'body' => [
+                                    'query' => [
+                                            'query_string' => [
+                                                    'fields' => ["nameEntry"],
+                                                    'query' => '*'.$this->input["term"].'*'
+                                            ]
+                                    ]
+                            ]
+                    ];
+                    $this->logger->addDebug("Defined parameters for search", $params);
+                
+                    $results = $eSearch->search($params);
+                
+                    $this->logger->addDebug("Completed Elastic Search", $results);
+                
+                    $return = array();
+                    foreach ($results["hits"]["hits"] as $i => $val) {
+                        array_push($return, array(
+                                "id"=>$val["_source"]["id"],
+                                "label"=>$val["_source"]["nameEntry"],
+                                "value"=>$val["_source"]["nameEntry"]
+                        ));
+                    }
+                
+                    $this->logger->addDebug("Created search response to the user", $return);
+                
+                    // Send the response back to the web client
+                    $this->response = json_encode($return, JSON_PRETTY_PRINT);
+                    array_push($this->responseHeaders, "Content-Type: text/json");
+                    return;
+                } else {
+                    $this->response = json_encode(array("result" => "Not Using ElasticSearch"), JSON_PRETTY_PRINT);
+                    array_push($this->responseHeaders, "Content-Type: text/json");
+                
+                }
+                break;
+            case "recently_published":
+                // ElasticSearch Handler
+                $eSearch = null;
+                if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                    $this->logger->addDebug("Creating ElasticSearch Client");
+                    $eSearch = \Elasticsearch\ClientBuilder::create()
+                    ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                    ->setRetries(0)
+                    ->build();
+
+                    $db = new \snac\server\database\DBUtil();
+                
+                    $params = [
+                        'index' => 'rtest',
+                        'type' => 'prototype_name_search',
+                        'body' => [
+                                'sort' => [
+                                        'timestamp' => [
+                                               "order" => "desc"
+                                        ]
+                                ]
+                        ]
+                    ];
+                    $this->logger->addDebug("Defined parameters for search", $params);
+                
+                    $results = $eSearch->search($params);
+                
+                    $this->logger->addDebug("Completed Elastic Search", $results);
+                
+                    $return = array();
+                    foreach ($results["hits"]["hits"] as $i => $val) {
+                        array_push($return, $db->readConstellation($val["_source"]["id"], null, true)->toArray());
+                    }
+                
+                    $this->logger->addDebug("Created search response to the user", $return);
+                
+                    // Send the response back to the web client
+                    $this->response["constellation"] = $return;
+                    $this->response["result"] = "success";
+                    return;
+                } else {
+                    $this->response["result"] = "Not Using ElasticSearch";
+                
+                }
                 break;
             case "read":
             case "edit":
@@ -253,6 +380,7 @@ class Server implements \snac\interfaces\ServerInterface {
                     // Editing the given constellation id by reading the database
                     $db = new \snac\server\database\DBUtil();
                     
+                    // TODO should lock constellation
                     try {
                         // Read the constellation
                         $this->logger->addDebug("Reading constellation from the database");
@@ -287,6 +415,7 @@ class Server implements \snac\interfaces\ServerInterface {
                         return;
                     }
                 }
+                
                 // break; // no longer breaking to allow the default case to give an error if neither matches
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
