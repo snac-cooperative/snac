@@ -104,6 +104,59 @@ class DBUtil
      */ 
     private $roleID = null;
 
+    /**
+     * Constellation status
+     *
+     * This are the valid values for constellation status. These are used here in the code, so an enumerated
+     * type in the database was both irritating to maintain, and added complexity, and was in the wrong
+     * place. The values are needed here in the code, not over in the database.
+     *
+     * Add new status values to this variable. PHP allows list keys with no values, but I like the explicit
+     * value, so these all have value 1. There are other ways to initialize the list, but this method is very clear.
+     *
+     * published: the published public constellation (proposed, not implemented)
+     *
+     * being edited: locked for edit, viewable only by the locker, and maybe special admins (proposed, not implemented)
+     *
+     * deleted: only admins can see this (implemented) See the new SQL() call above. This valued 'deleted' is pass to class SQL's constructor.
+     *
+     * needs review: awaiting review, proposed, probably will change
+     *
+     * bulk ingest: bulk inserted, might become directly published
+     *
+     * rejected: an uploaded record that fails integrity checks. The system will not allow the constellation
+     * to be sent for review, nor can the constellation be published. Presumably, rejected records can be
+     * change to 'locked editing', or transfered to another user with or without a status change.
+     *
+     * currently editing: Added Mar 29 2016 in order to deal with an edit happening right now, in this session
+     * (that is: login session, aka in the web browser). Using this solves the problem of session locking,
+     * even when there are multiple sessions. Using constellation status this way saves us having to (try) to
+     * manage a session-to-constellation link.
+     */
+    private $statusList = array('published' => 1,
+                                'needs review' => 1,
+                                'rejected' => 1,
+                                'locked editing' => 1,
+                                'bulk ingest' => 1,
+                                'deleted' =>1,
+                                'currently editing' => 1);
+
+    /**
+     * Check status values
+     *
+     * Validate status values. This is an evolving concept, so just return true or false right now.
+     *
+     * 'published', 'needs review', 'rejected', 'being edited', 'bulk ingest', 'deleted'
+     *
+     */ 
+    private function statusOK($status)
+    {
+        if (isset($this->statusList[$status]))
+        {
+            return true;
+        }
+        return false;
+    }
     /** 
      * Constructor
      *
@@ -113,7 +166,13 @@ class DBUtil
     {
         $this->db = new \snac\server\database\DatabaseConnector();
 
-        // See private var $status.
+        /*
+         * See private var $statusList. Passing the value of deleted to the SQL constructor is a valiant, but
+         * probably pointless, attempt to use the deleted status symbolically, instead of being tightly
+         * coupled with the string's value. In reality, I think it only makes matters more complex. If the
+         * value changed (very unlikely) the "fix" cwould be a simple search and replace.
+         */
+        
         $this->sql = new SQL($this->db, 'deleted');
         /*
          * DBUtil needs user id and role id for the current user. We may perform several reads and writes, and
@@ -259,7 +318,7 @@ class DBUtil
      */
     public function readPublishedConstellationByARK($arkID)
     {
-        $mainID = selectMainID($arkID);
+        $mainID = $this->sql->selectMainID($arkID);
         if ($mainID)
         {
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
@@ -301,18 +360,20 @@ class DBUtil
 
 
     /**
-     * List main_id, version user is editing
+     * List main_id, version by status
      *
-     * Build a list of main_id,version user has locked for edit by $appUserID.
+     * Build a list of main_id,version. If locked, than select by $appUserID.
      *
-     * Changed from private to public because long lists of 'locked editing' are slow, and impractical for
-     * several reasons.
+     * The public API is listConstellationsWithStatus(), if you want a list of constellations with a
+     * status such as 'locked editing'.
      *
-     * @return integer[] A list with keys 'main_id', 'version' of constellations locked for edit by $appUserID
+     * @param string $status option An optional status value.
+     * 
+     * @return integer[] A list with keys 'main_id', 'version'.
      */ 
-    public function editList()
+    private function editList($status='locked editing')
     {
-        $vhList = $this->sql->selectEditList($this->appUserID);
+        $vhList = $this->sql->selectEditList($this->appUserID, $status);
         if ($vhList)
         {
             return $vhList;
@@ -323,27 +384,71 @@ class DBUtil
     /**
      * Constellations user is edting
      *
-     * Build a list of constellations that the user is editing. That is: user has locked for edit.
+     * List constellations with a given status, defaulting to 'locked editing'. Returns valid, but partial
+     * constellations The default is: user has the constellation locked for edit. Note: 'locked editing' and
+     * 'currently editing' are different with different meanings.
+     *
+     * Mar 29 2016 Robbie suggests we only return partial constellations here with enough data to build
+     * UI. Partial means: table nrd and table name_entry. We tried returning the full constellations, but that
+     * was simply too much data to send to the web browser. The return values here are valid constellations
+     * and can be treated as normal constellations which keeps all the code consistent. However, by only
+     * containing a fraction of the data, the returned list is manageable.
+     *
+     * Was named listConstellationsLockedToUser().
      *
      * @param string optional $status A single status for the list of constellations. Not implemented, but
      * planned to support status values in addition to 'locked editing'
      *
-     * @return \snac\data\Constellation[] A list of  PHP constellation object.
+     * @param integer $limit optional The number of constellations to return. Order by version number, most
+     * recent first. -1==all, null is default=42 (in config file), any other positive integer is that value.
+     *
+     * @param integer $offset optional Start returning $limit number, but begin from $offset into the
+     * list. -1==all, null is default=0 (in config file), any other positive integer is that value.
      * 
+     * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
      */
-
-    function listConstellationsLockedToUser($status=null)
+    function listConstellationsWithStatus($status='locked editing', $limit=null, $offset=null)
     {
-        $infoList = $this->editList();
-        if ($infoList)
+        if (! $this->statusOK($status))
         {
-            $constellationList = array();
-            foreach ($infoList as $idVer)
+            return false;
+        }
+        /*
+         * Locked imples for this $appUserID only. Conversly, $appUserID implies only locked records,
+         * in the broad sense of "locked".
+         *
+         * Works for all but published. Maybe does not work with deleted, embargoed.
+         */ 
+        if ($status == 'locked editing' || $status == 'currently editing')
+        {
+            $infoList = $this->sql->selectEditList($this->appUserID, $status, $limit, $offset);
+            if ($infoList)
             {
-                $cObj = $this->readConstellation($idVer['main_id'], $idVer['version']);
-                array_push($constellationList, $cObj);
+                $constellationList = array();
+                foreach ($infoList as $idVer)
+                {
+                    $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
+                    array_push($constellationList, $cObj);
+                }
+                return $constellationList;
             }
-            return $constellationList;
+        }
+        else
+        {
+            /*
+             * This does not work with 'currently editing' and 'locked editing' which must be only $appUserID
+             */  
+            $infoList = $this->sql->selectListByStatus($status, $limit, $offset);
+            if ($infoList)
+            {
+                $constellationList = array();
+                foreach ($infoList as $idVer)
+                {
+                    $cObj = $this->readConstellation($idVer['main_id'], $idVer['version'], true);
+                    array_push($constellationList, $cObj);
+                }
+                return $constellationList;
+            }
         }
         return false;
     }
@@ -435,7 +540,7 @@ class DBUtil
      *
      * A helper function to get a constellation from the db for testing purposes.
      *
-     * @return string[] Return the standard vh_info associative list with the keys 'version' and 'main_id'
+     * @return integer[] Return the standard vh_info associative list with the keys 'version' and 'main_id'
      * from the constellation.
      *
      */
@@ -450,26 +555,52 @@ class DBUtil
     }
 
     /**
-     * Fill in a Constellation.
+     * Fill in a constellation.
      *
-     * This is private. Use readConstellation() as the public API 
+     * Call all necessary functions to essentially traverse the constellation, getting all data from the
+     * database. 
      *
-     * @param integer $appUserID The internal id of the user from appuser.id. Used for locking records, and checking locks.
+     * Calling overview: readConstellation() calls selectConstellation() which calls many populate*() functions each of
+     * which call one or more select*() SQL functions.
+     *
+     * This function serves two purposes. First, it simplfies the API so that all outside code sees
+     * something high level. Second, it wraps all the mid-level functions that know something about structure
+     * of objects. Each populate*() function knows how to populate its own object. selectConstellation() only
+     * knows the list of populate*() functions to call. By factoring the code to have 4 levels of functions,
+     * we avoid massive copy/paste. Each of the 4 levels does some bookkeeping appropriate to its level, so
+     * this architecture is not merely to make the code more legible.
+     *
+     * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
+     * $vhInfo arg, but populateDate(), populateSource(), and populateLanguage() rely on the internals of
+     * the constellation object.
+     * 
+     * We always need nrd data for ARK and entity type, and we always need the name. The constellation
+     * object has mainID and version. That is enough data to render the user interface.
+     *
+     * Use readConstellation() as the public API. This is private.
+     *
+     * @param integer[] $vhInfo An associative list with keys 'version', 'main_id'. Values are integers.
      *
      * @return \snac\data\Constellation A PHP constellation object.
      * 
      */
-    private function selectConstellation($vhInfo, $appUserID)
+    private function selectConstellation($vhInfo, $summary=false)
     {
         $cObj = new \snac\data\Constellation();
-        /*
-         * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
-         * $vhInfo arg, but populateDate(), populateSource(), and populateLanguage() rely on the internals of
-         * the constellation object.
-         */ 
         $this->populateNrd($vhInfo, $cObj);
+        $this->populateNameEntry($vhInfo, $cObj);
         /*
-         * Constellation SCM moved here from populateNrd() because it is *not* the scm for table nrd.
+         * If any true value in $summary, only return a summary (partial) constellation constising of data
+         * from nrd and name_entry. Yes, we are returning from the middle of the function when doing a
+         * summary.
+         */ 
+        if ($summary)
+        {
+            return $cObj;
+        }
+        /*
+         * Constellation SCM aka populateMeta() call moved here from populateNrd() because it is *not* the scm
+         * for table nrd.
          */ 
         $this->populateMeta($cObj);
         $this->populateBiogHist($vhInfo, $cObj);
@@ -482,7 +613,6 @@ class DBUtil
         $this->populateLanguage($cObj, $cObj->getID()); // getID only works here because nrd.id=nrd.main_id
         $this->populateLegalStatus($vhInfo, $cObj);
         $this->populateMandate($vhInfo, $cObj);
-        $this->populateNameEntry($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
         $this->populateOccupation($vhInfo, $cObj);
         $this->populateOtherRecordID($vhInfo, $cObj);
@@ -514,12 +644,10 @@ class DBUtil
      * | setEntityType                                          | entity_type            |
      * |                                                        |                        |
      *
-     * @param string[] $vhInfo associative list with keys 'version', 'main_id', 'id'. The version and main_id you
-     * want. Note that constellation component version numbers are the max() <= version requested.  main_id is
-     * the unique id across all tables in this constellation. This is not the nrd.id, but is
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'. The version and main_id
+     * you want. Note that constellation component version numbers are the max() <= version requested.
+     * main_id is the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
-     *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
@@ -546,7 +674,7 @@ class DBUtil
      * as an argument. SameAs->setURI() takes a string. Term->setTerm() takes a string. SameAs->setText()
      * takes a string.
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
@@ -594,7 +722,7 @@ class DBUtil
      * | setGeoNameId()                                  | geo_place.geonamed_id       | geonameId            |
      * | setSource()                                     | scm.source_data             |                      |
      *
-     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
@@ -684,7 +812,7 @@ class DBUtil
      *
      * Extends AbstracteTermData
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
@@ -713,7 +841,7 @@ class DBUtil
      *
      * Extends AbstracteTermData
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
@@ -758,7 +886,7 @@ class DBUtil
      * | getContributors()['type']        | name_type                  |
      * |                                  |                            |
      *
-     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
@@ -1929,7 +2057,7 @@ class DBUtil
      * | setNote             | note              |
      * | setVocabularySource | vocabulary_source |
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
@@ -1984,7 +2112,7 @@ class DBUtil
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateRelation($vhInfo, &$cObj)
@@ -2030,7 +2158,7 @@ class DBUtil
      * | setSource            | object_xml_wrap          | resourceRelation/objectXMLWrap            |
      * | setNote              | descriptive_note         | resourceRelation/descriptiveNote          |
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
@@ -2060,7 +2188,7 @@ class DBUtil
      *
      * Select, create object, then add to an existing Constellation object.
      *
-     * @param string[] $vhInfo associative list with keys 'version' and 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
@@ -2092,51 +2220,17 @@ class DBUtil
         insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note);
     }
 
-    /**
-     * Constellation status
-     *
-     * Long term this needs to be a small subsystem.
-     *
-     * published: the published public constellation (proposed, not implemented)
-     *
-     * being edited: locked for edit, viewable only by the locker, and maybe special admins (proposed, not implemented)
-     *
-     * deleted: only admins can see this (implemented) See the new SQL() call above. This valued 'deleted' is pass to class SQL's constructor.
-     *
-     * needs review: awaiting review, proposed, probably will change
-     *
-     * bulk ingest: bulk inserted, might become directly published
-     *
-     * rejected: an uploaded record that fails integrity checks. The system will not allow the constellation
-     * to be sent for review, nor can the constellation be published. Presumably, rejected records can be
-     * change to 'locked editing', or transfered to another user with or without a status change.
-     */
-    private $statusList = array('published' => 1,
-                                'needs review' => 1,
-                                'rejected' => 1,
-                                'locked editing' => 1,
-                                'bulk ingest' => 1,
-                                'deleted' =>1);
 
     /**
-     * Check status values
+     * Read the status of a constellation.
      *
-     * Validate status values. This is an evolving concept, so just return true or false right now.
+     * Read the status of a constellation, with optional version. If version is not supplied, then the most recent version is used.
      *
-     * 'published', 'needs review', 'rejected', 'being edited', 'bulk ingest', 'deleted'
+     * @param integer $mainID The constellation ID
      *
-     */ 
-    private function statusOK($status)
-    {
-        if (isset($this->statusList[$status]))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    /**
+     * @param integer $version optional The version number or if empty, return the status for the most recent version.
      *
+     * @return string status. Return the version_history.status value.
      */
     public function readConstellationStatus($mainID, $version=null)
     {
@@ -2420,22 +2514,43 @@ class DBUtil
     /**
      * Read a constellation from the database.
      *
-     * This is intended to be the public exposed interface function to read data from the db. Perhaps not
-     * necessary. Currently just a wrapper for selectConstellation(). The word "select" is reserved for SQL
-     * functions, so selectConstellation() really should be renamed.
+     * Read constellation ID $mainID from the database. 
      *
-     * If we need to do any read related bookkeeping, do it here, and not in the wrapped code.
+     * This the public exposed interface function to read constellation data from the db, and handles a bit of
+     * bookkeeping. It might be possible to move the logic here into selectConstellation(), but I can't see a
+     * compelling reason to do that. The word "select" is reserved for SQL functions, so selectConstellation()
+     * really should be renamed, and we really do not want a public API function with "select" in the name.
+     *
+     * If we need to do any read related bookkeeping, do it here, and not in the lower level code.
+     *
+     * @param integer $mainID A constellation ID number
+     *
+     * @param integer $version optional An optional version number. When not supplied this function will look
+     * up the most recent version, regardless of status.
+     *
+     * @param boolean $summary Any true value means return a summary constellation. Defaults to false which is
+     * return the full constellation.
+     *
+     * @return \snac\data\Constellation or boolean If successful, return a constellation, else if not successful return false.
      *
      */
-    public function readConstellation($mainID, $version)
+    public function readConstellation($mainID, $version=null, $summary=false)
     {
-        if (! $mainID || ! $version)
+        if (! $mainID)
+        {
+            return false;
+        }
+        if (! $version)
+        {
+            $version = $this->sql->selectCurrentVersion($mainID);
+        }
+        if (! $version)
         {
             return false;
         }
         $vhInfo = array('version' => $version,
                         'main_id' => $mainID);
-        $cObj = $this->selectConstellation($vhInfo, $this->appUserID);
+        $cObj = $this->selectConstellation($vhInfo, $summary);
         if ($cObj)
         {
             return $cObj;
@@ -2460,7 +2575,7 @@ class DBUtil
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
-     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
+     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
      * return value such as true for success, and false for failure. This function might need to call into the
      * system-wide user message class that we haven't written yet.
      *
@@ -2494,7 +2609,7 @@ class DBUtil
      *
      * @param int $main_id The main_id for this constellation.
      *
-     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
+     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
      * return value such as true for success, and false for failure. This function might need to call into the
      * system-wide user message class that we haven't written yet.
      *
@@ -2514,7 +2629,7 @@ class DBUtil
      *
      * The only way to know the related table is for it to be passed in via $relatedTable.
      *
-     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      *
      * @param snac\data\AbstractData Object $id An object that might have a place, and that extends
      * AbstractData.
@@ -2571,7 +2686,7 @@ class DBUtil
      * Note: this depends on an existing Source, DescriptiveRule, and Language, each in its
      * appropriate table in the database. Or if not existing they can be null.
      *
-     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      *
      * @param \snac\data\SNACControlMetadata[] $metaObjList List of SNAC control meta data
      *
@@ -2695,9 +2810,9 @@ class DBUtil
      *
      * @param string $note A user-created note for what was done to the constellation. A check-in note.
      *
-     * @param string[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
+     * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      *
-     * @return string[] An associative list with keys 'version', 'main_id'. There might be a more useful
+     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
      * return value such as true for success, and false for failure. This function might need to call into the
      * system-wide user message class that we haven't written yet.
      *
@@ -2834,7 +2949,7 @@ class DBUtil
      *
      * @param string $note User created note explaining this update.
      *
-     * @return string[] Associative list with keys 'version', 'main_id'
+     * @return integer[] Associative list with keys 'version', 'main_id'
      *
      */
     public function updatePrepare($pObj,
@@ -2870,7 +2985,7 @@ class DBUtil
      * When saving a name, the database assigns it a new id, and returns that id. We must be sure to use
      * $nameID for related dates, etc.
      *
-     * @param string[] $vhInfo associative list with keys 'version', 'main_id'.
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
      * @param \snac\data\NameEntry Name entry object
      *
@@ -2950,7 +3065,8 @@ class DBUtil
      * The constellation must have 2 or more non-delted names. This is a helper function for testing purposes
      * only.
      *
-     * @param integer $appUserID A user id integer. When testing this comes from getAppUserInfo().
+     * @param integer $appUserID A user id integer. When testing this comes from
+     * getAppUserInfo(). Historically, I guess this was used, but not currently used.
      * 
      * @return \snac\data\Constellation A PHP constellation object.
      *
@@ -2958,7 +3074,7 @@ class DBUtil
     public function multiNameConstellation($appUserID)
     {
         $vhInfo = $this->sql->sqlMultiNameConstellationID();
-        $mNConstellation = $this->selectConstellation($vhInfo, $appUserID);
+        $mNConstellation = $this->selectConstellation($vhInfo);
         return $mNConstellation;
     }
 

@@ -65,6 +65,36 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Exercise listConstellationsWithStatus()
+     *
+     * We test with 'locked editing' which is user sensitive and 'published' which is for all users.
+     */ 
+    public function testWithStatus()
+    {
+        $objList = $this->dbu->listConstellationsWithStatus('locked editing');
+        $this->assertTrue(count($objList)>=1);
+
+        if (count($objList) > 5)
+        {
+            $objList = $this->dbu->listConstellationsWithStatus('locked editing', 5);
+            $this->assertTrue(count($objList)==5);
+            $objList = $this->dbu->listConstellationsWithStatus('locked editing', 5,1);
+            $this->assertTrue(count($objList)==5);
+        }
+
+        /*
+         * Assume that in 100 records of a test load, at least 20 are status published.
+         */ 
+        $objList = $this->dbu->listConstellationsWithStatus('published');
+        $this->assertTrue(count($objList)>=1);
+
+        $objList = $this->dbu->listConstellationsWithStatus('published', 10);
+        $this->assertTrue(count($objList)==10);
+
+        $objList = $this->dbu->listConstellationsWithStatus('published', 10, 10);
+        $this->assertTrue(count($objList)==10);
+    }
+    /**
      * Update contributor
      *
      * Modify a contributor without any changes happening to the nameEntry the contributor refers to.
@@ -239,10 +269,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
-         * default on insert is 'locked editing', but we want to test listConstellationsLockedToUser() and to
-         * do that we want to change status and call listConstellationsLockedToUser() a second time.
+         * default on insert is 'locked editing', but we want to test listConstellationsWithStatus() and to
+         * do that we want to change status and call listConstellationsWithStatus() a second time.
          *
-         * There can, and should be more definitive tests of listConstellationsLockedToUser().
+         * There can, and should be more definitive tests of listConstellationsWithStatus().
          */ 
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
 
@@ -254,17 +284,21 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Test constellation status change, status read, status read by version, and the number of
          * constellations the user has marked for edit.
          *
-         * Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
-         * is therefore much faster than listConstellationsLockedToUser().
+         * New: Mar 29 2016 Now that we can return summary constellation lists, switch back to calling listConstellationsWithStatus()
+         * 
+         * old: Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
+         * is therefore much faster than listConstellationsWithStatus().
          */ 
-        if (1)
+        $useLocked = true;
+        if (! $useLocked)
         {
             $vhList = $this->dbu->editList();
             $initialEditCount = count($vhList);
         }
         else
         {
-            $editList = $this->dbu->listConstellationsLockedToUser();
+            // It defaults to 'locked editing', but be explicit anyway.
+            $editList = $this->dbu->listConstellationsWithStatus('locked editing');
             $initialEditCount = count($editList);
         }
         
@@ -274,12 +308,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
         $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
-        /* 
-         * $editList = $this->dbu->listConstellationsLockedToUser();
-         * $postEditCount = count($editList);
-         */
-        $vhList = $this->dbu->editList();
-        $postEditCount = count($vhList);
+        /*
+         * Get the post-status-change count, and test.
+         */ 
+        if (! $useLocked)
+        {
+            $vhList = $this->dbu->editList();
+            $postEditCount = count($vhList);
+        }
+        else
+        {
+            // It defaults to 'locked editing', but be explicit anyway.
+            $editList = $this->dbu->listConstellationsWithStatus('locked editing');
+            $postEditCount = count($editList);
+        }
         $this->assertEquals('locked editing', $newStatus);
         $this->assertEquals('locked editing', $newStatusToo);
         $this->assertEquals($initialEditCount+1, $postEditCount);
@@ -289,6 +331,19 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * When we have real users this won't matter as much because testing will be done with the "test" user.
          */
         $this->dbu->writeConstellationStatus($retObj->getID(), 'published', 'change status back to published in order toclean up');
+
+        /*
+         * Change status of some other constellation. This tests a bug Robbie found on Mar 25 where
+         * non-contiguous version numbers for the otherRecordID (table otherid) caused selectOtherID() to not
+         * return the records.
+         *
+         * Get the Washington record which as of this test has just become a requirement. We can use any
+         * record, so you should be able to change the ARK below to any ARK which is known to be loaded.
+         *
+         * Incidentally, this exercises readPublishedConstellationByARK() and selectMainID().
+         */ 
+        $washObj = $this->dbu->readPublishedConstellationByARK('http://n2t.net/ark:/99166/w6028ps4');
+        $this->dbu->writeConstellationStatus($washObj->getID(), 'published', 'modify status as part of testFullCPFWithEditList');
 
         /* 
          * read from the db what we just wrote to the db
@@ -310,6 +365,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $secondJSON = $readObj->toJSON();
 
+        /*
+         * Before uncommenting this, copy the old files. Any time these need updating, you should diff the old
+         * and new to confirm that what you think changed, changed, and nothing else.
+         */ 
         /* 
          * $cfile = fopen('first_json.txt', 'w');
          * fwrite($cfile, $firstJSON);
@@ -322,6 +381,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
          * Update: could probably start using the equal() functions.
+         *
          */ 
         $this->assertEquals(950, substr_count( $firstJSON, "\n" ));
         $this->assertEquals(1019, substr_count( $secondJSON, "\n" ));
