@@ -206,8 +206,24 @@ class WebUI implements \snac\interfaces\ServerInterface {
             );
             $this->logger->addDebug("Sending query to the server", $ask);
             $serverResponse = $connect->query($ask);
-            $this->logger->addDebug("Received server response", $ask);
+            $this->logger->addDebug("Received server response", array($serverResponse));
             $this->logger->addDebug("Setting dashboard data into the page template");
+            
+            $recentConstellations = $connect->query(array(
+                    "command"=>"recently_published"
+            ))["constellation"];
+            
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(),
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            $serverResponse["recents"] = $recents;
+            
+            
+            
             $display->setData($serverResponse);
         } else if ($this->input["command"] == "profile") {
             $display->setTemplate("profile_page");

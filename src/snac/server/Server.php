@@ -102,7 +102,6 @@ class Server implements \snac\interfaces\ServerInterface {
 
                 break;
             case "user_information":
-                $this->response["editing"] = array();
                 $this->response["user"] = $this->input["user"];
                 $db = new \snac\server\database\DBUtil();
                 $this->logger->addDebug("Getting list of locked constellations to user");
@@ -111,14 +110,16 @@ class Server implements \snac\interfaces\ServerInterface {
                 $editList = $db->listConstellationsWithStatusForUser("locked editing");
                
                 $this->response["editing"] = array();
-                foreach ($editList as $constellation) {
-                    $item = array(
-                        "id" => $constellation->getID(),
-                        "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
-                    );
-                    $this->logger->addDebug("User was currently editing", $item);
-                    array_push($this->response["editing"], $item);
+                if ($editList !== false) {
+                    foreach ($editList as $constellation) {
+                        $item = array(
+                            "id" => $constellation->getID(),
+                            "version" => $constellation->getVersion(),
+                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        );
+                        $this->logger->addDebug("User was currently editing", $item);
+                        array_push($this->response["editing"], $item);
+                    }
                 }
                 
                 // Give the editing list back in alphabetical order
@@ -130,14 +131,16 @@ class Server implements \snac\interfaces\ServerInterface {
                 $editList = $db->listConstellationsWithStatusForUser("currently editing");
                  
                 $this->response["editing_lock"] = array();
-                foreach ($editList as $constellation) {
-                    $item = array(
-                            "id" => $constellation->getID(),
-                            "version" => $constellation->getVersion(),
-                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
-                    );
-                    $this->logger->addDebug("User was currently editing", $item);
-                    array_push($this->response["editing_lock"], $item);
+                if ($editList !== false) {
+                    foreach ($editList as $constellation) {
+                        $item = array(
+                                "id" => $constellation->getID(),
+                                "version" => $constellation->getVersion(),
+                                "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        );
+                        $this->logger->addDebug("User was currently editing", $item);
+                        array_push($this->response["editing_lock"], $item);
+                    }
                 }
                 
                 // Give the editing list back in alphabetical order
@@ -333,7 +336,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 
                     $return = array();
                     foreach ($results["hits"]["hits"] as $i => $val) {
-                        array_push($return, $db->readConstellation($val["_source"]["id"], null, true)->toArray());
+                        array_push($return, $db->readPublishedConstellationByID($val["_source"]["id"], true)->toArray());
                     }
                 
                     $this->logger->addDebug("Created search response to the user", $return);

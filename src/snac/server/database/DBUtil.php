@@ -447,6 +447,7 @@ class DBUtil
             }
             return $constellationList;
         }
+        return false;
     }
     
     /**
