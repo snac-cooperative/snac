@@ -295,9 +295,13 @@ if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
 
     if ($eSearch != null) {
         echo "   - connected to Elastic Search\n";
+        try {
         $params = array("index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX);
         $response = $eSearch->indices()->delete($params);
         echo "   - deleted search index\n";
+        } catch (\Exception $e) {
+            echo "   - could not delete search index. It did not exist.\n"
+        }
         echo "  Successfully emptied the Elastic Search Indices.\n\n";
     } else {
         echo "  ERR: Unable to connect or delete Elastic Search index.\n";
