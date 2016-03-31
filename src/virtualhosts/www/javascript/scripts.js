@@ -406,9 +406,24 @@ function setSCMDeleted(short, i, j) {
     return false;
 }
 
-// Attach functions to each of the "+ Add New _______" buttons
 $(document).ready(function() {
 
+
+	// Attach functions to the entityType select
+	if ($('#entityType').exists()) {
+		$('#entityType').change(function() {
+            somethingHasBeenEdited = true;
+            // If there is an ID, then we need to set this to update
+            // Else, the main-level operation should be and remain insert
+			if ($('#constellationid').val() != null &&
+					$('#constellationid').val() != "") {
+				$('#operation').val("update");
+			}
+		});
+	}
+
+	// Attach functions to each of the "+ Add New _______" buttons
+	
 	// Code to handle adding new genders to the page
 	var genderid = 1;
 	if ($('#next_gender_i').exists()) {

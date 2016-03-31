@@ -1,13 +1,22 @@
 before_script:
-  - cp ~/composer.phar .
-  - php composer.phar -n -q install
-  - cp ~/Config.php src/snac/Config.php
-  - rm -rf ~/public_html/snac_server
-  - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
+    - cp ~/composer.phar .
+    - php composer.phar -n -q install
+    - cp ~/Config.php src/snac/Config.php
+    - rm -rf ~/public_html/snac_server
+    - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
+    - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
 
 stages:
+  - database
   - test
   - documentation
+
+update_database:
+  script:
+    - cd install && php install.php automate
+  stage: database
+  only:
+    - development
 
 run_test:
   script:

@@ -102,23 +102,76 @@ class Server implements \snac\interfaces\ServerInterface {
 
                 break;
             case "user_information":
-                $this->response["editing"] = array();
                 $this->response["user"] = $this->input["user"];
                 $db = new \snac\server\database\DBUtil();
                 $this->logger->addDebug("Getting list of locked constellations to user");
-                $editList = $db->listConstellationsLockedToUser();
-                $this->logger->addDebug("Got list of locked constellations to user");
                 
+                // First look for constellations editable
+                $editList = $db->listConstellationsWithStatusForUser("locked editing");
+               
                 $this->response["editing"] = array();
-                foreach ($editList as $constellation) {
-                    $item = array(
-                        "id" => $constellation->getID(),
-                        "version" => $constellation->getVersion(),
-                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
-                    );
-                    $this->logger->addDebug("User was currently editing", $item);
-                    array_push($this->response["editing"], $item);
+                if ($editList !== false) {
+                    foreach ($editList as $constellation) {
+                        $item = array(
+                            "id" => $constellation->getID(),
+                            "version" => $constellation->getVersion(),
+                            "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        );
+                        $this->logger->addDebug("User was currently editing", $item);
+                        array_push($this->response["editing"], $item);
+                    }
                 }
+                
+                // Give the editing list back in alphabetical order
+                usort($this->response["editing"], function($a, $b) {
+                    return $a['nameEntry'] <=> $b['nameEntry'];
+                });
+
+                // Next look for currently editing constellations
+                $editList = $db->listConstellationsWithStatusForUser("currently editing");
+                 
+                $this->response["editing_lock"] = array();
+                if ($editList !== false) {
+                    foreach ($editList as $constellation) {
+                        $item = array(
+                                "id" => $constellation->getID(),
+                                "version" => $constellation->getVersion(),
+                                "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                        );
+                        $this->logger->addDebug("User was currently editing", $item);
+                        array_push($this->response["editing_lock"], $item);
+                    }
+                }
+                
+                // Give the editing list back in alphabetical order
+                usort($this->response["editing_lock"], function($a, $b) {
+                    return $a['nameEntry'] <=> $b['nameEntry'];
+                });
+                
+                break;
+            case "insert_constellation":
+                try {
+                    $db = new \snac\server\database\DBUtil();
+                    if (isset($this->input["constellation"])) {
+                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                        $result = $db->writeConstellation($constellation, "Demo updates for now");
+                        if (isset($result) && $result != null) {
+                            $this->logger->addDebug("successfully wrote constellation");                            
+                            $this->response["constellation"] = $result->toArray();
+                            $this->response["result"] = "success";
+                        } else {
+                            $this->logger->addDebug("writeConstellation returned a null result");
+                            $this->response["result"] = "failure";
+                        }
+                    } else {
+                        $this->logger->addDebug("Constellation input value wasn't set to write");
+                        $this->response["result"] = "failure";
+                    }
+                } catch (Exception $e) {
+                    $this->logger->addError("writeConstellation threw an exception");
+                    $this->response["result"] = "failure";
+                }
+                
                 break;
             case "update_constellation":
                 try {
@@ -144,6 +197,159 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 
                 break;
+
+            case "publish_constellation":
+                try {
+                    $this->logger->addDebug("Publishing constellation");
+                    $db = new \snac\server\database\DBUtil();
+                    if (isset($this->input["constellation"])) {
+                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                        $result = $db->writeConstellationStatus($constellation->getID(), "published", "User published constellation");
+                        if (isset($result) && $result !== false) {
+                            $this->logger->addDebug("successfully published constellation");
+                            $constellation->setVersion($result);
+                            $this->response["constellation"] = $constellation->toArray();
+                            $this->response["result"] = "success";
+
+                            $this->logger->addDebug("Successfully published constellation");
+                            
+                            // add to elastic search
+                            $eSearch = null;
+                            if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                                $eSearch = \Elasticsearch\ClientBuilder::create()
+                                ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                                ->setRetries(0)
+                                ->build();
+                            }
+
+                            $this->logger->addDebug("Created elastic search client to update");
+                            
+                            if ($eSearch != null) {
+                                $params = [
+                                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                                        'id' => $constellation->getID(),
+                                        'body' => [
+                                                'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
+                                                'arkID' => $constellation->getArk(),
+                                                'id' => $constellation->getID(),
+                                                'timestamp' => date('c')
+                                        ]
+                                ];
+                            
+                                $eSearch->index($params);
+                                $this->logger->addDebug("Updated elastic search with newly published constellation");
+                            }
+                            
+                        } else {
+                            $this->logger->addDebug("could not publish the constellation");
+                            $this->response["result"] = "failure";
+                        }
+                    } else {
+                        $this->logger->addDebug("no constellation given to publish");
+                        $this->response["result"] = "failure";
+                    }
+                } catch (Exception $e) {
+                    $this->logger->addError("publishing constellation threw an exception");
+                    $this->response["result"] = "failure";
+                }
+            
+                break;
+            case "search":
+                // ElasticSearch Handler
+                $eSearch = null;
+                if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                    $this->logger->addDebug("Creating ElasticSearch Client");
+                    $eSearch = \Elasticsearch\ClientBuilder::create()
+                    ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                    ->setRetries(0)
+                    ->build();
+                
+                
+                    $params = [
+                            'index' => 'rtest',
+                            'type' => 'prototype_name_search',
+                            'body' => [
+                                    'query' => [
+                                            'query_string' => [
+                                                    'fields' => ["nameEntry"],
+                                                    'query' => '*'.$this->input["term"].'*'
+                                            ]
+                                    ]
+                            ]
+                    ];
+                    $this->logger->addDebug("Defined parameters for search", $params);
+                
+                    $results = $eSearch->search($params);
+                
+                    $this->logger->addDebug("Completed Elastic Search", $results);
+                
+                    $return = array();
+                    foreach ($results["hits"]["hits"] as $i => $val) {
+                        array_push($return, array(
+                                "id"=>$val["_source"]["id"],
+                                "label"=>$val["_source"]["nameEntry"],
+                                "value"=>$val["_source"]["nameEntry"]
+                        ));
+                    }
+                
+                    $this->logger->addDebug("Created search response to the user", $return);
+                
+                    // Send the response back to the web client
+                    $this->response = json_encode($return, JSON_PRETTY_PRINT);
+                    array_push($this->responseHeaders, "Content-Type: text/json");
+                    return;
+                } else {
+                    $this->response = json_encode(array("result" => "Not Using ElasticSearch"), JSON_PRETTY_PRINT);
+                    array_push($this->responseHeaders, "Content-Type: text/json");
+                
+                }
+                break;
+            case "recently_published":
+                // ElasticSearch Handler
+                $eSearch = null;
+                if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                    $this->logger->addDebug("Creating ElasticSearch Client");
+                    $eSearch = \Elasticsearch\ClientBuilder::create()
+                    ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                    ->setRetries(0)
+                    ->build();
+
+                    $db = new \snac\server\database\DBUtil();
+                
+                    $params = [
+                        'index' => 'rtest',
+                        'type' => 'prototype_name_search',
+                        'body' => [
+                                'sort' => [
+                                        'timestamp' => [
+                                               "order" => "desc"
+                                        ]
+                                ]
+                        ]
+                    ];
+                    $this->logger->addDebug("Defined parameters for search", $params);
+                
+                    $results = $eSearch->search($params);
+                
+                    $this->logger->addDebug("Completed Elastic Search", $results);
+                
+                    $return = array();
+                    foreach ($results["hits"]["hits"] as $i => $val) {
+                        array_push($return, $db->readPublishedConstellationByID($val["_source"]["id"], true)->toArray());
+                    }
+                
+                    $this->logger->addDebug("Created search response to the user", $return);
+                
+                    // Send the response back to the web client
+                    $this->response["constellation"] = $return;
+                    $this->response["result"] = "success";
+                    return;
+                } else {
+                    $this->response["result"] = "Not Using ElasticSearch";
+                
+                }
+                break;
             case "read":
             case "edit":
                 if (isset($this->input["arkid"])) {
@@ -166,12 +372,25 @@ class Server implements \snac\interfaces\ServerInterface {
                     // Editing the given constellation id by reading the database
                     $db = new \snac\server\database\DBUtil();
                     
+                    // TODO should lock constellation
                     try {
                         // Read the constellation
                         $this->logger->addDebug("Reading constellation from the database");
-                        $constellation = $db->readConstellation(
-                            $this->input["constellationid"], 
-                            $this->input["version"]);
+                        $constellation = null;
+                        if (isset($this->input["version"])) {
+                            $constellation = $db->readConstellation(
+                                $this->input["constellationid"], 
+                                $this->input["version"]);
+                        } else {
+                            $constellation = $db->readPublishedConstellationByID(
+                                    $this->input["constellationid"]);
+                            
+                            if ($constellation === false) {
+                                // This means that the Constellation doesn't have a published version!
+                                throw new \snac\exceptions\SNACInputException("Constellation with id " . 
+                                        $this->input["constellationid"] . " does not have a published version.");
+                            }
+                        }
                         $this->logger->addDebug("Finished reading constellation from the database");
                         $this->response["constellation"] = $constellation->toArray();
                         $this->logger->addDebug("Serialized constellation for output to client");
@@ -188,6 +407,7 @@ class Server implements \snac\interfaces\ServerInterface {
                         return;
                     }
                 }
+                
                 // break; // no longer breaking to allow the default case to give an error if neither matches
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);

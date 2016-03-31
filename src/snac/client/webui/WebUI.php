@@ -104,14 +104,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Initialize the provider
         $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
         $_SESSION['oauth2state'] = $provider->getState();
+        
+        // These are the things you are allowed to do without logging in.
+        $publicCommands = array(
+                "login",
+                "login2",
+                "search",
+                "view"
+        );
+        
+        // Null user object unless set by the session
+        $user = null;
 
         // If the user is not logged in, send to the home screen
         if (empty($_SESSION['token'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
             if (!empty($this->input["command"]) &&
-                ($this->input["command"] != "login" && $this->input["command"] != "login2"))
-                $this->input["command"] = "";
+                !(in_array($this->input["command"], $publicCommands)))
+                $this->input["command"] = "login";
 
         } else {
             $token = unserialize($_SESSION['token']);
@@ -138,6 +149,55 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData($constellation);
             }
+        } else if ($this->input["command"] == "new") {
+            $display->setTemplate("edit_page");
+            $constellation = new \snac\data\Constellation();
+            $constellation->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
+            $constellation->addNameEntry(new \snac\data\NameEntry());
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+            }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData($constellation);
+        } else if ($this->input["command"] == "view") {
+            $query = array(); //$this->input;
+            $query["constellationid"] = $this->input["constellationid"];
+            $query["command"] = "read";
+            if (isset($user) && $user != null)
+                $query["user"] = $user->toArray();
+            $this->logger->addDebug("Sending query to the server", $query);
+            $serverResponse = $connect->query($query);
+            $this->logger->addDebug("Received server response");
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("view_page");
+                $constellation = $serverResponse["constellation"];
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($constellation);
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $display->setTemplate("error_page");
+                $this->logger->addDebug("Setting error data into the error page template");
+                $display->setData($serverResponse["error"]);
+            }
+        } else if ($this->input["command"] == "preview") {
+            // If just previewing, then all the information should come VIA post to build the preview
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+      
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($this->input);
+            
+            if ($constellation != null) {
+                $display->setTemplate("view_page");
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+                }
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($constellation);
+            }
         } else if ($this->input["command"] == "dashboard") {
             $display->setTemplate("dashboard");
             // Ask the server for a list of records to edit
@@ -146,8 +206,24 @@ class WebUI implements \snac\interfaces\ServerInterface {
             );
             $this->logger->addDebug("Sending query to the server", $ask);
             $serverResponse = $connect->query($ask);
-            $this->logger->addDebug("Received server response", $ask);
+            $this->logger->addDebug("Received server response", array($serverResponse));
             $this->logger->addDebug("Setting dashboard data into the page template");
+            
+            $recentConstellations = $connect->query(array(
+                    "command"=>"recently_published"
+            ))["constellation"];
+            
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(),
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            $serverResponse["recents"] = $recents;
+            
+            
+            
             $display->setData($serverResponse);
         } else if ($this->input["command"] == "profile") {
             $display->setTemplate("profile_page");
@@ -214,21 +290,75 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $request["constellation"] = $constellation->toArray();
             $request["user"] = $user->toArray();
             $serverResponse = $connect->query($request);
-            if (!is_array($serverResponse))
-                $this->logger->addDebug("server's response: $serverResponse");
-            
-            $this->logger->addDebug("server's response writen constellation", $serverResponse["constellation"]);
 
             $response = array();
             $response["server_debug"] = $serverResponse;
-            $response["result"] = $serverResponse["result"];
             
-            // Get the server's response constellation
-            if (isset($serverResponse["constellation"])) {
-                $updatedConstellation = new \snac\data\Constellation($serverResponse["constellation"]);
-                $mapper->reconcile($updatedConstellation);
-                
-                $response["updates"] = $mapper->getUpdates();
+            if (!is_array($serverResponse)) {
+                $this->logger->addDebug("server's response: $serverResponse");
+            } else {
+                if (isset($serverResponse["result"]))
+                    $response["result"] = $serverResponse["result"];
+                if (isset($serverResponse["error"])) {
+                    $response["error"] = $serverResponse["error"];
+                }
+                // Get the server's response constellation
+                if (isset($serverResponse["constellation"])) {
+                    $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                    $updatedConstellation = new \snac\data\Constellation($serverResponse["constellation"]);
+                    $mapper->reconcile($updatedConstellation);
+                    
+                    $response["updates"] = $mapper->getUpdates();
+                }
+            }
+
+            // Generate response to the user's web browser
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
+        } else if ($this->input["command"] == "save_publish") {
+            // If saving, this is just an ajax/JSON return.
+            
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($this->input);
+
+            $this->logger->addDebug("writing constellation", $constellation->toArray());
+
+            // Build a data structure to send to the server
+            $request = array("command"=>"update_constellation");
+
+            // Send the query to the server
+            $request["constellation"] = $constellation->toArray();
+            $request["user"] = $user->toArray();
+            $serverResponse = $connect->query($request);
+
+            $response = array();
+            $response["server_debug"] = array();
+            $response["server_debug"]["update"] = $serverResponse;
+            
+            if (!is_array($serverResponse)) {
+                $this->logger->addDebug("server's response: $serverResponse");
+            } else {
+
+                if (isset($serverResponse["constellation"])) {
+                    $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+                }
+            
+                if (isset($serverResponse["result"]) && $serverResponse["result"] == "success"
+                        && isset($serverResponse["constellation"])) {
+                    $request["command"] = "publish_constellation";
+                    $request["constellation"] = $serverResponse["constellation"];
+                    $serverResponse = $connect->query($request);
+                    $response["server_debug"]["publish"] = $serverResponse;
+                    if (isset($serverResponse["result"]))
+                        $response["result"] = $serverResponse["result"];
+                    if (isset($serverResponse["error"])) 
+                        $response["error"] = $serverResponse["error"];
+          
+                }
             }
 
             // Generate response to the user's web browser
@@ -286,7 +416,74 @@ class WebUI implements \snac\interfaces\ServerInterface {
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
+        } else if ($this->input["command"] == "search") {
+            $this->logger->addDebug("Searching for a Constellation");
+            // ElasticSearch Handler
+            $eSearch = null;
+            if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                $this->logger->addDebug("Creating ElasticSearch Client");
+                $eSearch = \Elasticsearch\ClientBuilder::create()
+                ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                ->setRetries(0)
+                ->build();
+                
+                
+                $params = [
+                        'index' => 'rtest',
+                        'type' => 'prototype_name_search',
+                        'body' => [
+                                'query' => [
+                                        'query_string' => [
+                                                'fields' => ["nameEntry"],
+                                                'query' => '*'.$this->input["term"].'*'
+                                        ]
+                                ]
+                        ]
+                ];
+                $this->logger->addDebug("Defined parameters for search", $params);
+                
+                $results = $eSearch->search($params);
+                
+                $this->logger->addDebug("Completed Elastic Search", $results);
+                
+                $return = array();
+                foreach ($results["hits"]["hits"] as $i => $val) {
+                    array_push($return, array(
+                            "id"=>$val["_source"]["id"],
+                            "label"=>$val["_source"]["nameEntry"],
+                            "value"=>$val["_source"]["nameEntry"]
+                    ));
+                }
+                
+                $this->logger->addDebug("Created search response to the user", $return);
+
+                // Send the response back to the web client
+                $this->response = json_encode($return, JSON_PRETTY_PRINT);
+                array_push($this->responseHeaders, "Content-Type: text/json");
+                return;
+            } else {
+                $this->response = json_encode(array("notice" => "Not Using ElasticSearch"), JSON_PRETTY_PRINT);
+                array_push($this->responseHeaders, "Content-Type: text/json");
+                
+            }
         } else {
+            // The WebUI is displaying the landing page only
+            
+            // Get the list of recently published constellations
+
+            $request = array();
+            $request["command"] = "recently_published";
+            $recentConstellations = $connect->query($request)["constellation"];
+            
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(), 
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            
+            $display->setData(array("recents"=>$recents));
             $display->setTemplate("landing_page");
         }
         $this->logger->addDebug("Creating response page from template with data");

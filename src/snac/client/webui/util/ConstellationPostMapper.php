@@ -289,6 +289,17 @@ class ConstellationPostMapper {
      * @param \snac\data\Constellation $constellation The Constellation object to reconcile
      */
     public function reconcile($constellation) {
+        
+        // First, check the constellation id
+        if ($this->constellation->getID() != $constellation->getID()) {
+                    $this->updates["constellationid"] = $constellation->getID();
+        }
+        
+        // Then, the version number
+        if ($this->constellation->getVersion() != $constellation->getVersion()) {
+                    $this->updates["version"] = $constellation->getVersion();
+        }
+        
         // We need to parse the whole thing, all the way down...
         
         foreach ($this->constellation->getBiogHistList() as $biogHist) {

@@ -23,6 +23,35 @@ $(document).ready(function() {
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
+        	// If nothing has changed, alert the user and do nothing
+        	if (somethingHasBeenEdited == false) {
+                $('#notification-message').html("<p>No new changes to save.</p>");
+                setTimeout(function(){
+                    $('#notification-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#notification-message').slideUp();
+                }, 7000);
+        		return;
+        	}
+        	
+        	// If EntityType and NameEntry do not have values, then don't let the user save
+        	var noNameEntryText = true;
+        	$("input[id^=nameEntry_original_").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#entityType').val() == "" || noNameEntryText) {
+        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+                setTimeout(function(){
+                    $('#error-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#error-message').slideUp();
+                }, 10000);
+        		return;
+        	}
+        	
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
@@ -39,6 +68,8 @@ $(document).ready(function() {
                 		$('#' + key).val(data.updates[key]);
                 	}
                 	
+                	// Remove the global operation, if one is set
+                	$('#operation').val("");
 
                 	// Remove any deleted items
                 	// Note: deleted items will have the deleted-component class added to them, so 
@@ -98,13 +129,16 @@ $(document).ready(function() {
                 } else {
                     $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error.
-                    $('#error-message').html("<p>An error occurred while saving.</p>");
+                    var errorMsg = "";
+                    if (data.error && data.error.type)
+                    	errorMsg += ": " + data.error.type;
+                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
                     setTimeout(function(){
                         $('#error-message').slideDown();
                     }, 500);
                     setTimeout(function(){
                         $('#error-message').slideUp();
-                    }, 8000);
+                    }, 10000);
                 }
             });
         });
@@ -113,6 +147,35 @@ $(document).ready(function() {
     // Save and Dashboard button
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
+        	// If nothing has changed, alert the user and do nothing
+        	if (somethingHasBeenEdited == false) {
+                $('#notification-message').html("<p>No new changes to save.</p>");
+                setTimeout(function(){
+                    $('#notification-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#notification-message').slideUp();
+                }, 7000);
+        		return;
+        	}
+        	
+        	// If EntityType and NameEntry do not have values, then don't let the user save
+        	var noNameEntryText = true;
+        	$("input[id^=nameEntry_original_").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#entityType').val() == "" || noNameEntryText) {
+        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+                setTimeout(function(){
+                    $('#error-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#error-message').slideUp();
+                }, 10000);
+        		return;
+        	}
+        	
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
@@ -132,13 +195,16 @@ $(document).ready(function() {
                 } else {
                     $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    $('#error-message').html("<p>An error occurred while saving.</p>");
+                    var errorMsg = "";
+                    if (data.error && data.error.type)
+                    	errorMsg += ": " + data.error.type;
+                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
                     setTimeout(function(){
                         $('#error-message').slideDown();
                     }, 500);
                     setTimeout(function(){
                         $('#error-message').slideUp();
-                    }, 8000);
+                    }, 10000);
                 }
             });
         });
@@ -147,12 +213,41 @@ $(document).ready(function() {
     // Save and Submit button
     if($('#save_and_submit').exists()) {
         $('#save_and_submit').click(function(){
+        	// If nothing has changed, alert the user and do nothing
+        	if (somethingHasBeenEdited == false) {
+                $('#notification-message').html("<p>No new changes to save.</p>");
+                setTimeout(function(){
+                    $('#notification-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#notification-message').slideUp();
+                }, 7000);
+        		return;
+        	}
+        	
+        	// If EntityType and NameEntry do not have values, then don't let the user save
+        	var noNameEntryText = true;
+        	$("input[id^=nameEntry_original_").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#entityType').val() == "" || noNameEntryText) {
+        		$('#error-message').html("<p>Entity Type and at least one Name Entry required for saving.</p>");
+                setTimeout(function(){
+                    $('#error-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#error-message').slideUp();
+                }, 10000);
+        		return;
+        	}
+        	
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
 
             // Send the data back by AJAX call
-            $.post("?command=save_submit", $("#constellation_form").serialize(), function (data) {
+            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // Edit succeeded, so save mode off
@@ -177,6 +272,28 @@ $(document).ready(function() {
             });
         });
     }
+    
+
+    // Preview button
+    if($('#preview').exists()) {
+        $('#preview').click(function(){
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Generating Preview... Please wait.</p>");
+            $('#notification-message').slideDown();
+            setTimeout(function(){
+                $('#notification-message').slideUp();
+            }, 3000);
+
+            // Send the data back by AJAX call
+            $.post("?command=preview", $("#constellation_form").serialize(), function (data) {
+                var previewWindow = window.open("", "Preview");
+                previewWindow.document.write(data);
+            });
+        });
+    }
+    
+    
+    
 
     // Set the message to display if you try to leave the page without saving changes
     

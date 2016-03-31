@@ -97,6 +97,17 @@ body {
             <!-- Left column -->
             <div class="panel panel-success">
                 <div class="panel-heading">
+                    <h3 class="panel-title">Create New Constellation</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Use the button below to create a new constellation</p>
+                    <div class="list-group">
+                        <a href="?command=new" class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-plus"></span> Create New Constellation</a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
                     <h3 class="panel-title">In Progress Edits</h3>
                 </div>
                 <div class="panel-body">
@@ -108,6 +119,24 @@ body {
                     </div>
                 </div>
             </div>
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Locked Edits</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following Constellations are open in a browser for editing.  You may unlock them by clicking below, however your
+                    changes not previously saved may be lost.</p>
+                    <div class="list-group">
+                        {% for link in data.editing_lock %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Needs Review</h3>
@@ -115,28 +144,28 @@ body {
                 <div class="panel-body">
                     <p>Review and publish the following Constellations.</p>
                     <div class="list-group">
-                        <a href="?command=edit&arkid=http://n2t.net/ark:/99166/w6v1266v" class="list-group-item">Oppenheimer, Robert J. (eac-cpf)</a>
-                        <a href="?command=edit&arkid=http://n2t.net/ark:/99166/w6sf3424" class="list-group-item">Wilson, James Harrison. (eac-cpf)</a>
+                        {% for link in data.reviewing %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
-            <div class="panel panel-info">
+            
+            <!-- Panels that don't mean anything right new
+            <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Recently Updated</h3>
+                    <h3 class="panel-title">User Edit History</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Browse interesting and recently updated Constellations..</p>
+                    <p>Here is a list of your recent edits and submissions.</p>
                     <div class="list-group">
-                        <a href="#" class="list-group-item">Brown, Emmett.</a>
-                        <a href="#" class="list-group-item">Doctor, The.</a>
-                        <a href="#" class="list-group-item">Tyler, Rose.</a>
-                        <a href="#" class="list-group-item">Oswald, Clara.</a>
+                        <a href="?command=edit" class="list-group-item">Oppenheimer, Robert J.</a>
+                        <a href="#" class="list-group-item">McFly, Martin J.</a>
+                        <a href="#" class="list-group-item">Simpson, Marge</a>
                     </div>
                 </div>
             </div>
+            
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Special Records</h3>
@@ -148,19 +177,23 @@ body {
                     </div>
                 </div>
             </div>
+            -->
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            <div class="panel panel-default">
+            
+            
+            
+            <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">User Edit History</h3>
+                    <h3 class="panel-title">Recently Updated</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Here is a list of your recent edits and submissions.</p>
+                    <p>Browse interesting and recently updated Constellations..</p>
                     <div class="list-group">
-                        <a href="?command=edit" class="list-group-item">Oppenheimer, Robert J.</a>
-                        <a href="#" class="list-group-item">McFly, Martin J.</a>
-                        <a href="#" class="list-group-item">Simpson, Marge</a>
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
