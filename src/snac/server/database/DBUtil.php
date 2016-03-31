@@ -383,18 +383,19 @@ class DBUtil
     }
     
     /**
-     * Constellations by status current user only
+     * Most recent constellation list by status current user only
      *
-     * List constellations that meet all these criteria: 1) given status 2) for the current user 3) is the most recent version.
+     * List constellations that meet all these criteria: 1) most recent,  2) current user, 3) given status
      *
-     * This function Returns valid, partial constellations. 
+     * This function returns valid, partial constellations. 
      *
      * Status defaults to 'locked editing'. The default is: user has the constellation locked for edit. Note:
      * 'locked editing' and 'currently editing' are different with different meanings.
      *
      * The constellations returned will always be owned by the current user, and will be the most recent
-     * version, period. This will be the absolutely most recent version. This will not return any
-     * constellation for which the most recent version does not match status and user.
+     * version, period. The returned constellations will be the absolutely most recent version for that
+     * constellation. This will not return any constellation for which the most recent version does not match
+     * status and user.
      *
      * Mar 29 2016 Robbie suggests we only return partial constellations here with enough data to build
      * UI. Partial means: table nrd and table name_entry. We tried returning the full constellations, but that
@@ -450,13 +451,13 @@ class DBUtil
     }
     
     /**
-     * List constellations by status for any user
+     * List constellations most recent by status for any user
      *
      * Return a list of valid (but partial) constellations for a single status, but for any user, and the most
      * recent version.
      *
-     * List constellations that meet all these criteria: 1) given status 2) is the most recent version. User
-     * is ignored, thus constellations owned by any user are returned.
+     * List constellations that meet all these criteria: 1) most recent, 2) given status. User is ignored,
+     * thus constellations owned by any user are returned.
      *
      * This will return the most recent version for the status. For reasons of sanity and
      * safety, status defaults to 'published'. This function will handle any status, including various locks,
