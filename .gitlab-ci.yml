@@ -1,20 +1,15 @@
-stages:
-  - setup
-  - database
-  - test
-  - documentation
-
-setup_environment:
-  script:
+before_script:
     - cp ~/composer.phar .
     - php composer.phar -n -q install
     - cp ~/Config.php src/snac/Config.php
     - rm -rf ~/public_html/snac_server
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
-  stage: setup
-  only:
-    - development
+
+stages:
+  - database
+  - test
+  - documentation
 
 update_database:
   script:
