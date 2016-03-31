@@ -1,6 +1,6 @@
 <?php
   /**
-   * High level database abstraction layer.
+   * High level database abstraction layer for constellations.
    *
    * License:
    *
