@@ -147,6 +147,10 @@
             </localDescription>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
                 <placeEntry>Virginia</placeEntry>
+                <dateRange>
+                    <fromDate standardDate="1808">1808</fromDate>
+                    <toDate standardDate="1890">1890</toDate>
+                </dateRange>
             </place>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
                 <snac:placeEntry xmlns:snac="http://socialarchive.iath.virginia.edu/">
@@ -162,6 +166,7 @@
             </place>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
                 <placeEntry>United States - Social conditions - To 1865</placeEntry>
+                <date standardDate="1865-09-18">September 18, 1865</date>
             </place>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
                 <placeEntry>Washington (D.C.)</placeEntry>
