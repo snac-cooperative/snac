@@ -84,27 +84,18 @@ class WebUI implements \snac\interfaces\ServerInterface {
     public function run() {
 
         $this->logger->debug("Starting to handle user request", $this->input);
-        $connect = new ServerConnect();
-
-
-        // Start the session
-        session_name("SNACWebUI");
-        session_start();
-
+        
+        // Create an executor to perform all the actions
+        $executor = new WebUIExecutor();
 
         // Create the display for local templates
         $display = new display\Display();
-
-        // Replace these with your token settings
-        // Create a project at https://console.developers.google.com/
-        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
-        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
-        // Change this if you are not using the built-in PHP server
-        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
-        // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
-        $_SESSION['oauth2state'] = $provider->getState();
         
+
+        // Create an empty user object.  May be filled by the Session handler
+        $user = null;
+        
+
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
                 "login",
@@ -113,10 +104,27 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "view"
         );
         
-        // Null user object unless set by the session
-        $user = null;
 
-        // If the user is not logged in, send to the home screen
+        // *****************************************
+        // Session and User Information
+        // *****************************************
+
+        // Start the session
+        session_name("SNACWebUI");
+        session_start();
+
+        // Google OAuth Settings (from Config)
+        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
+        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
+        // Change this if you are not using the built-in PHP server
+        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        // Initialize the provider
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        $_SESSION['oauth2state'] = $provider->getState();
+
+
+
+        // If the user is not logged in, send to the home screen. If logged in, then fill in User object
         if (empty($_SESSION['token'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
@@ -127,387 +135,113 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
-            $user = $this->createUser($ownerDetails, $token);
+            
+            // Create the PHP User object
+            $user = $executor->createUser($ownerDetails, $token);
+            
+            // Set the user information into the display object
             $display->setUserData($user->toArray());
         }
+        
+
+        // *************************************************
+        // Workflow: Handle user commands, perform actions
+        // *************************************************
 
 
-        // Display the current information
-        if ($this->input["command"] == "edit") {
-            $query = $this->input;
-            $query["user"] = $user->toArray();
-            $this->logger->addDebug("Sending query to the server", $query);
-            $serverResponse = $connect->query($query);
-            $this->logger->addDebug("Received server response");
-            $display->setTemplate("edit_page");
-            if (isset($serverResponse["constellation"])) {
-                $constellation = $serverResponse["constellation"];
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData($constellation);
-            }
-        } else if ($this->input["command"] == "new") {
-            $display->setTemplate("edit_page");
-            $constellation = new \snac\data\Constellation();
-            $constellation->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
-            $constellation->addNameEntry(new \snac\data\NameEntry());
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
-            }
-            $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
-        } else if ($this->input["command"] == "view") {
-            $query = array(); //$this->input;
-            $query["constellationid"] = $this->input["constellationid"];
-            $query["command"] = "read";
-            if (isset($user) && $user != null)
-                $query["user"] = $user->toArray();
-            $this->logger->addDebug("Sending query to the server", $query);
-            $serverResponse = $connect->query($query);
-            $this->logger->addDebug("Received server response");
-            if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("view_page");
-                $constellation = $serverResponse["constellation"];
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData($constellation);
-            } else {
-                $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
-            }
-        } else if ($this->input["command"] == "preview") {
-            // If just previewing, then all the information should come VIA post to build the preview
-            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
-      
-            // Get the constellation object
-            $constellation = $mapper->serializeToConstellation($this->input);
-            
-            if ($constellation != null) {
-                $display->setTemplate("view_page");
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData($constellation);
-            }
-        } else if ($this->input["command"] == "dashboard") {
-            $display->setTemplate("dashboard");
-            // Ask the server for a list of records to edit
-            $ask = array("command"=>"user_information",
-                    "user" => $user->toArray()
-            );
-            $this->logger->addDebug("Sending query to the server", $ask);
-            $serverResponse = $connect->query($ask);
-            $this->logger->addDebug("Received server response", array($serverResponse));
-            $this->logger->addDebug("Setting dashboard data into the page template");
-            
-            $recentConstellations = $connect->query(array(
-                    "command"=>"recently_published"
-            ))["constellation"];
-            
-            $recents = array();
-            foreach ($recentConstellations as $constellationArray) {
-                $constellation = new \snac\data\Constellation($constellationArray);
-                array_push($recents, array(
-                        "id"=>$constellation->getID(),
-                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
-            }
-            $serverResponse["recents"] = $recents;
-            
-            
-            
-            $display->setData($serverResponse);
-        } else if ($this->input["command"] == "profile") {
-            $display->setTemplate("profile_page");
-            // Ask the server for a list of records to edit
-            $ask = array("command"=>"user_information",
-                    "user" => $user->toArray()
-            );
-            $this->logger->addDebug("Sending query to the server", $ask);
-            $serverResponse = $connect->query($ask);
-            $this->logger->addDebug("Received server response", $ask);
-            $this->logger->addDebug("Setting dashboard data into the page template");
-            $display->setData($serverResponse);
-        } else if ($this->input["command"] == "login") {
+        // Session-Level Commands
+        if ($this->input["command"] == "login") {
+        
             // Destroy the old session
             session_destroy();
             // Restart the session
             session_name("SNACWebUI");
             session_start();
-
+        
             // if the user wants to log in, then send them to the login server
             $authUrl = $provider->getAuthorizationUrl();
             header('Location: ' . $authUrl);
+        
         } else if ($this->input["command"] == "login2") {
-
+        
             // OAuth Stuff //
-
             // Try to get an access token (using the authorization code grant)
             $token = $provider->getAccessToken('authorization_code',
-                array('code' => $_GET['code']));
+                    array('code' => $_GET['code']));
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
-
+        
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
-
+        
             // Set the user details in the session
             $_SESSION['user_details'] = serialize($ownerDetails);
-
+        
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
+        
         } else if ($this->input["command"] == "logout") {
+        
             // Destroy the old session
             session_destroy();
             // Restart the session
             session_name("SNACWebUI");
             session_start();
-
+        
             // Go to the homepage
             header('Location: index.php');
+        
+        // Editing, Preview, View, and Other Commands
+        } else if ($this->input["command"] == "edit") {
+            $executor->displayEditPage($this->input, $display, $user);
+        } else if ($this->input["command"] == "new") {
+            $executor->displayNewEditPage($display);
+        } else if ($this->input["command"] == "view") {
+            $executor->displayViewPage($this->input, $display, $user);
+        } else if ($this->input["command"] == "preview") {
+            $executor->displayPreviewPage($this->input, $display);
+        } else if ($this->input["command"] == "dashboard") {
+            $executor->displayDashboardPage($display, $user);
+        } else if ($this->input["command"] == "profile") {
+            $executor->displayProfilePage($display, $user);
+
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
-            
-            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
-
-            // Get the constellation object
-            $constellation = $mapper->serializeToConstellation($this->input);
-
-            $this->logger->addDebug("writing constellation", $constellation->toArray());
-
-            // Build a data structure to send to the server
-            $request = array("command"=>"update_constellation");
-
-            // Send the query to the server
-            $request["constellation"] = $constellation->toArray();
-            $request["user"] = $user->toArray();
-            $serverResponse = $connect->query($request);
-
-            $response = array();
-            $response["server_debug"] = $serverResponse;
-            
-            if (!is_array($serverResponse)) {
-                $this->logger->addDebug("server's response: $serverResponse");
-            } else {
-                if (isset($serverResponse["result"]))
-                    $response["result"] = $serverResponse["result"];
-                if (isset($serverResponse["error"])) {
-                    $response["error"] = $serverResponse["error"];
-                }
-                // Get the server's response constellation
-                if (isset($serverResponse["constellation"])) {
-                    $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
-                    $updatedConstellation = new \snac\data\Constellation($serverResponse["constellation"]);
-                    $mapper->reconcile($updatedConstellation);
-                    
-                    $response["updates"] = $mapper->getUpdates();
-                }
-            }
-
-            // Generate response to the user's web browser
+            $response = $executor->saveConstellation($this->input, $user);
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
         } else if ($this->input["command"] == "save_publish") {
             // If saving, this is just an ajax/JSON return.
-            
-            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+            $response = $executor->saveAndPublishConstellation($this->input, $user);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
 
-            // Get the constellation object
-            $constellation = $mapper->serializeToConstellation($this->input);
-
-            $this->logger->addDebug("writing constellation", $constellation->toArray());
-
-            // Build a data structure to send to the server
-            $request = array("command"=>"update_constellation");
-
-            // Send the query to the server
-            $request["constellation"] = $constellation->toArray();
-            $request["user"] = $user->toArray();
-            $serverResponse = $connect->query($request);
-
-            $response = array();
-            $response["server_debug"] = array();
-            $response["server_debug"]["update"] = $serverResponse;
-            
-            if (!is_array($serverResponse)) {
-                $this->logger->addDebug("server's response: $serverResponse");
-            } else {
-
-                if (isset($serverResponse["constellation"])) {
-                    $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
-                }
-            
-                if (isset($serverResponse["result"]) && $serverResponse["result"] == "success"
-                        && isset($serverResponse["constellation"])) {
-                    $request["command"] = "publish_constellation";
-                    $request["constellation"] = $serverResponse["constellation"];
-                    $serverResponse = $connect->query($request);
-                    $response["server_debug"]["publish"] = $serverResponse;
-                    if (isset($serverResponse["result"]))
-                        $response["result"] = $serverResponse["result"];
-                    if (isset($serverResponse["error"])) 
-                        $response["error"] = $serverResponse["error"];
-          
-                }
-            }
-
-            // Generate response to the user's web browser
+        } else if ($this->input["command"] == "publish") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->publishConstellation($this->input, $user);
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
         } else if ($this->input["command"] == "vocabulary") {
-            $this->logger->addDebug("Requesting Vocabulary");
-            // Check what kind of vocabulary is wanted, and ask server for it
-            $request = array();
-            $request["command"] = "vocabulary";
-            $request["type"] = $this->input["type"];
-            if (isset($request["type"])) {
-                if (strpos($request["type"], "ic_") !== false) {
-                    $this->logger->addDebug("Requesting Sources as Vocabulary List");
-                    // This is a query into a constellation for "vocabulary"
-                    if (isset($this->input["id"]) && isset($this->input["version"])) {
-                        $serverResponse = $connect->query(array("constellationid"=>$this->input["id"], 
-                                "version"=>$this->input["version"],
-                                "command"=>"read"));
-                        $this->logger->addDebug("tried to get the constellation with response", $serverResponse);
-                        if (isset($serverResponse["constellation"])) {
-                            $constellation = new \snac\data\Constellation($serverResponse["constellation"]);
-                            $response = array();
-                            $response["results"] = array();
-                            foreach ($constellation->getSources() as $source) {
-                                array_push($response["results"], array(
-                                        "id" => $source->getID(),
-                                        "text" => $source->getDisplayName()
-                                ));
-                            }
-                            $this->logger->addDebug("created the following response list of sources", $response);
-                            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-                        }
-                    }
-                } else {
-                    $this->logger->addDebug("Requesting Controlled Vocabulary List");
-                    // This is a strict query for a controlled vocabulary term
-                    $queryString = "";
-                    if (isset ($this->input["q"]))
-                        $queryString = $this->input["q"];
-                    $request["query_string"] = $queryString;
-        
-                    // Send the query to the server
-                    $serverResponse = $connect->query($request);
-        
-                    foreach ($serverResponse["results"] as $k => $v)
-                        $serverResponse["results"][$k]["text"] = $v["value"];
-        
-                    // Send the response back to the web client
-                    $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
-                }
-            }
+            $response = $executor->performVocabularySearch($this->input);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
         } else if ($this->input["command"] == "search") {
-            $this->logger->addDebug("Searching for a Constellation");
+            $response = $executor->performNameSearch($this->input);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
             
-            $start = 0;
-            if (isset($this->input["start"]) && is_numeric($this->input["start"]))
-                $start = $this->input["start"];
-            
-            $count = 10;
-            if (isset($this->input["count"]) && is_numeric($this->input["count"]))
-                $count = $this->input["count"];
-                
-            // ElasticSearch Handler
-            $eSearch = null;
-            if (\snac\Config::$USE_ELASTIC_SEARCH) {
-                $this->logger->addDebug("Creating ElasticSearch Client");
-                $eSearch = \Elasticsearch\ClientBuilder::create()
-                ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-                ->setRetries(0)
-                ->build();
-                
-                
-                $params = [
-                        'index' => 'rtest',
-                        'type' => 'prototype_name_search',
-                        'body' => [
-                                'query' => [
-                                        'query_string' => [
-                                                'fields' => ["nameEntry"],
-                                                'query' => '*'.$this->input["term"].'*'
-                                        ]
-                                ],
-                                'from' => $start,
-                                'size' => $count
-                        ]
-                ];
-                $this->logger->addDebug("Defined parameters for search", $params);
-                
-                $results = $eSearch->search($params);
-                
-                $this->logger->addDebug("Completed Elastic Search", $results);
-                
-                $return = array();
-                foreach ($results["hits"]["hits"] as $i => $val) {
-                    array_push($return, array(
-                            "id"=>$val["_source"]["id"],
-                            "label"=>$val["_source"]["nameEntry"],
-                            "value"=>$val["_source"]["nameEntry"]
-                    ));
-                }
-                
-                $this->logger->addDebug("Created search response to the user", $return);
-                
-                $response = array();
-                $response["total"] = $results["hits"]["total"];
-                $response["results"] = $return;
-                
-                if ($response["total"] == 0 || $count == 0) {
-                    $response["pagination"] = 0;
-                    $response["page"] = 0;
-                } else {
-                    $response["pagination"] = ceil($response["total"] / $count);
-                    $response["page"] = floor($start / $count);
-                }            
-
-                // Send the response back to the web client
-                $this->response = json_encode($response, JSON_PRETTY_PRINT);
-                array_push($this->responseHeaders, "Content-Type: text/json");
-                return;
-            } else {
-                $this->response = json_encode(array("notice" => "Not Using ElasticSearch"), JSON_PRETTY_PRINT);
-                array_push($this->responseHeaders, "Content-Type: text/json");
-                
-            }
         } else {
             // The WebUI is displaying the landing page only
-            
-            // Get the list of recently published constellations
+            $executor->displayLandingPage($display);
 
-            $request = array();
-            $request["command"] = "recently_published";
-            $recentConstellations = $connect->query($request)["constellation"];
-            
-            $recents = array();
-            foreach ($recentConstellations as $constellationArray) {
-                $constellation = new \snac\data\Constellation($constellationArray);
-                array_push($recents, array(
-                        "id"=>$constellation->getID(), 
-                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
-            }
-            
-            $display->setData(array("recents"=>$recents));
-            $display->setTemplate("landing_page");
         }
         $this->logger->addDebug("Creating response page from template with data");
         array_push($this->responseHeaders, "Content-Type: text/html");
