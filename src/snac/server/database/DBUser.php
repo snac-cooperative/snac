@@ -58,8 +58,8 @@ class DBUser
     }
 
     /**
-     * Add a user record. Minimal requirements is user id or email (which ever is used to login). Return true
-     * for success.
+     * Add a user record. Minimal requirements are user id or email (which ever is used to login). 
+     * Return the new user object on success.
      *
      * Calling code had better do some sanity checking.
      */
@@ -84,14 +84,15 @@ class DBUser
      */
     public function saveUser($user)
     {
-        return $this->sql->updateUser($user->getUserID(),
-                                      $user->getFirstName(),
-                                      $user->getLastName(),
-                                      $user->getFullName(),
-                                      $user->getAvatar(),
-                                      $user->getAvatarSmall(),
-                                      $user->getAvatarLarge(),
-                                      $user->getEmail());
+        $this->sql->updateUser($user->getUserID(),
+                               $user->getFirstName(),
+                               $user->getLastName(),
+                               $user->getFullName(),
+                               $user->getAvatar(),
+                               $user->getAvatarSmall(),
+                               $user->getAvatarLarge(),
+                               $user->getEmail());
+        return true;
     }
     
 
@@ -100,10 +101,10 @@ class DBUser
      */
     public function findUserID($email)
     {
-        $rec = selectUserByEmail($email);
-        if (isset($rec['id']))
+        $uid = selectUserByEmail($email);
+        if ($uid)
         {
-            return $rec['id'];
+            return $uid;
         }
         return false;
     }
@@ -121,44 +122,67 @@ class DBUser
         if ($userid)
         {
             $rec = selectUserByID($userid);
+            $user = new \snac\data\User();
+            $user->setUserID($rec['id']);
+            $user->setFirstName($rec['first']);
+            $user->setLastName($rec['last']);
+            $user->setFullName($rec['fullname']);
+            $user->setAvatar($rec['avatar']);
+            $user->setAvatarSmall($rec['avatar_small']);
+            $user->setAvatarLarge($rec['avatar_large']);
+            $user->setEmail($rec['email']);
+            return $user;
         }
-        $user = new \snac\dataUser();
-        $user->setUserID($rec['id']);
-        $user->setFirstName($rec['first_name']);
-        $user->setLastName($rec['last_name']);
-        $user->setFullName($rec['full_name']);
-        $user->setAvatar($rec['avatar']);
-        $user->setAvatarSmall($rec['avatar_small']);
-        $user->setAvatarLarge($rec['avatar_large']);
-        $user->setEmail($rec['email']);
-        return $user;
+        return false;
     }
 
     /**
      * Disable log in to this account. Update table appuser.active to false. Return true on success.
      *
+     * Should we also munge their password so login becomes impossible? Perhaps not.
+     *
+     * @param \snac\data\User $user The user to disable
+     * @return boolean Return true on success
      */
     public function disableUser($user)
     {
-        return $this->sql->updateActiveFalse($user->getUserID());
+        $this->sql->updateActive($user->getUserID(), $this->db->boolToPg(false));
+        return true;
     }
 
     /**
      * Add a role to the User via table appuser_role_link. Return true on success.
      *
-     * $role is associative list with keys id, label, description. We really only care about id.
+     * @param \snac\data\User $user A user
+     * @param string[] $newRole is associative list with keys id, label, description. We really only care about id.
      */
     public function addUserRole($user, $newRole)
     {
-        return $this->sql->updateRoleLink($user->getUserID(), $newRole['id']);
+        $this->sql->insertRoleLink($user->getUserID(), $newRole['id']);
+        return true;
+    }
+
+
+    /**
+     * Remove a role from the User via table appuser_role_link.
+     *
+     * @param \snac\data\User $user A user
+     * @param string[] $role is associative list with keys id, label, description. We really only care about id.
+     */
+    public function removeUserRole($user, $role)
+    {
+        $this->sql->deleteRoleLink($user->getUserID(), $role['id']);
+        return true;
     }
 
     /**
      * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
+     *
+     * @return string[][] Return list of list with keys: id, label, description.
      */
-    public function listRoles()
+    public function roleList()
     {
-        return $this->sql->selectRoles();
+        return $this->sql->selectRole();
     }
 
     /**

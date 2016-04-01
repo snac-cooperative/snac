@@ -64,6 +64,145 @@ class SQL
     }
 
     /**
+     * Insert a new user aka appuser
+     *
+     * Insert a user into the db, returning the new record id. Field userid is not currently used.
+     *
+     * @param string $firstName The first name
+     * @param string $lastName The last name
+     * @param string $fullName The full name
+     * @param string $avatar The avatar
+     * @param string $avatarSmall The small avatar
+     * @param string $avatarLarge The large avatar
+     * @param string $email The email address
+     * @return integer Record row id, unique, from sequence id_seq.
+     */ 
+    public function insertUser($firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    {
+        $result = $this->sdb->query(
+            'insert into appuser (first, last, fullname, avatar, avatar_small, avatar_large, email)
+            values ($1, $2, $3, $4, $5, $6, $7)
+            returning id',
+            array($firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+        /**
+     * Insert a new user aka appuser
+     *
+     * Insert a user into the db, returning the new record id. Field userid is not currently used.
+     *
+     * @param integer $uid The row id aka user id (but not from field userid) 
+     * @param string $firstName The first name
+     * @param string $lastName The last name
+     * @param string $fullName The full name
+     * @param string $avatar The avatar
+     * @param string $avatarSmall The small avatar
+     * @param string $avatarLarge The large avatar
+     * @param string $email The email address
+     */ 
+    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    {
+        $this->sdb->query(
+            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8)
+            where appuser.id=$1',
+            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+    }
+
+    /**
+     * Get user id from email
+     *
+     * @param string $email Email address
+     * @return integer User id which is appuser.id, aka row id. We aren't cuurrently using appuser.userid.
+     */ 
+    public function selectUserByEmail($email)
+    {
+        $result = $this->sdb->query("select id from appuser where email=$1",
+                                    array($email));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Select user record from database
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email
+     */ 
+    public function selectUserByid($uid)
+    {
+        $this->sdb->query("select * from appuser where appuser.id=$1",
+                          array($uid));
+        $row = $this->sdb->fetchrow($result);
+        return $row;
+    }
+
+    /**
+     * Disable/enable user account
+     *
+     * Set active to true or false, depending on $value.
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.  @param string $value A Postgres compatible
+     * value, 't' or 'f'. Get this value by calling boolToPg() with true or false in the calling code.
+     * 
+     */ 
+    public function updateActive($uid, $value)
+    {
+        $this->sdb->query("update appuser set active=$2 where appuser.id=$1",
+                          array($uid, $value));
+    }
+
+    /**
+     * Add a role to a user
+     *
+     * Link a role to a user. 
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $newRoleID A rold id
+     */ 
+    public function insertRoleLink($uid, $newRoleID)
+    {
+        $this->sdb->query("insert into appuser_role_link (uid, rid) values ($1, $2)",
+                          array($uid, $newRoleID));
+    }
+
+
+    /**
+     * Delete a role from a user
+     *
+     * Deleted a link role.
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $roleID A rold id
+     */ 
+    public function deleteRoleLink($uid, $roleID)
+    {
+        $this->sdb->query("delete from appuser_role_link where uid=$1 and rid=$2",
+                          array($uid, $roleID));
+    }
+
+    /**
+     * Select all role records
+     *
+     * @return string[][] Return list of list with keys: id, label, description.
+     */ 
+    public function selectRole()
+    {
+        $retult = $this->sdb->query("select * from role order by label asc",
+                                    array($uid, $roleID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+
+
+
+    /**
      * Current version by mainID
      *
      * The max, that is: current version for mainID regardless of status. This will return max for deleted as
