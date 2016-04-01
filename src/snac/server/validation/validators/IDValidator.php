@@ -100,8 +100,7 @@ class IDValidator extends \snac\server\validation\validators\Validator {
                 $this->addError("Object with no ID has SNACControlMetadata with ID", $object);
                 $success = false;
             } else if ($scm != null && $scm->getID() == null && 
-                    (($scm->getCitation() != null && $scm->getCitation()->getID() != null) ||
-                     ($scm->getLanguage() != null && $scm->getLanguage()->getID() != null))) {
+                    ($scm->getLanguage() != null && $scm->getLanguage()->getID() != null)) {
                 $this->addError("Object with no ID has SNACControlMetadata with no ID with subelements that have ID", $object);
                 $success = false;
             }
@@ -592,10 +591,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
             return true;
         
         if ($scm->getID() == null) {
-            if (($scm->getCitation() == null  ||
-                        ($scm->getCitation() != null && $scm->getCitation()->getID() == null)) 
-                    && ($scm->getLanguage() == null ||
-                        ($scm->getLanguage() != null && $scm->getLanguage()->getID() == null)))
+            if ($scm->getLanguage() == null ||
+                        ($scm->getLanguage() != null && $scm->getLanguage()->getID() == null))
                 return true;
             else {
                 $this->addError("SNACControlMetadata with no ID has elements with ID", $scm);

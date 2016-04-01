@@ -191,9 +191,10 @@ class Server implements \snac\interfaces\ServerInterface {
                         $this->logger->addDebug("Constellation input value wasn't set to write");
                         $this->response["result"] = "failure";
                     }
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->logger->addError("writeConstellation threw an exception");
-                    $this->response["result"] = "failure";
+                    // Rethrow it, since we just wanted a log statement
+                    throw $e;
                 }
                 
                 break;
@@ -267,8 +268,8 @@ class Server implements \snac\interfaces\ServerInterface {
                 
                 
                     $params = [
-                            'index' => 'rtest',
-                            'type' => 'prototype_name_search',
+                            'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                            'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                             'body' => [
                                     'query' => [
                                             'query_string' => [
@@ -318,8 +319,8 @@ class Server implements \snac\interfaces\ServerInterface {
                     $db = new \snac\server\database\DBUtil();
                 
                     $params = [
-                        'index' => 'rtest',
-                        'type' => 'prototype_name_search',
+                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                         'body' => [
                                 'sort' => [
                                         'timestamp' => [
