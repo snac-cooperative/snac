@@ -55,9 +55,9 @@ class WebUIExecutor {
         $query["user"] = $user->toArray();
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
-        $display->setTemplate("edit_page");
+        $this->logger->addDebug("Received server response", array($serverResponse));
         if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("edit_page");
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
@@ -65,6 +65,11 @@ class WebUIExecutor {
             }
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData($constellation);
+        } else {
+                $this->logger->addDebug("Error page being drawn");
+                $display->setTemplate("error_page");
+                $this->logger->addDebug("Setting error data into the error page template");
+                $display->setData($serverResponse["error"]);
         }
     }
     
@@ -272,6 +277,89 @@ class WebUIExecutor {
     }
     
 
+    public function saveAndUnlockConstellation(&$input, &$user) {
+    
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+    
+        // Get the constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+    
+        $this->logger->addDebug("writing constellation", $constellation->toArray());
+    
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "update_constellation"
+        );
+    
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $request["user"] = $user->toArray();
+        $serverResponse = $this->connect->query($request);
+    
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["update"] = $serverResponse;
+    
+        if (! is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+    
+            if (isset($serverResponse["constellation"])) {
+                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+            }
+    
+            if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
+                    isset($serverResponse["constellation"])) {
+                        $request["command"] = "unlock_constellation";
+                        $request["constellation"] = $serverResponse["constellation"];
+                        $serverResponse = $this->connect->query($request);
+                        $response["server_debug"]["unlock"] = $serverResponse;
+                        if (isset($serverResponse["result"]))
+                            $response["result"] = $serverResponse["result"];
+                            if (isset($serverResponse["error"]))
+                                $response["error"] = $serverResponse["error"];
+                    }
+        }
+    
+        return $response;
+    }
+    
+
+    public function unlockConstellation(&$input, &$user) {
+    
+        $constellation = null;
+        if (isset($input["constellationid"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+        } else {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        }
+        
+        $this->logger->addDebug("unlocking constellation", $constellation->toArray());
+    
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "unlock_constellation"
+        );
+    
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $request["user"] = $user->toArray();
+        $serverResponse = $this->connect->query($request);
+    
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["unlock"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+        
+        return $response;
+    }
 
     public function publishConstellation(&$input, &$user) {
     
@@ -429,6 +517,10 @@ class WebUIExecutor {
         }
         
         return array ();
+    }
+    
+    public function setConstellationStatus(&$input, $status, &$user) {
+        
     }
 
     public function createUser($googleUser, $googleToken) {

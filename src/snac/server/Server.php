@@ -196,9 +196,50 @@ class Server implements \snac\interfaces\ServerInterface {
                     // Rethrow it, since we just wanted a log statement
                     throw $e;
                 }
+                break;
+            
+            case "unlock_constellation":
+                try {
+                    $this->logger->addDebug("Lowering the lock on the constellation");
+                    $db = new \snac\server\database\DBUtil();
+                    if (isset($this->input["constellation"])) {
+                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                        
+                        $currentStatus = $db->readConstellationStatus($constellation->getID());
+                        
+                        // TODO This will change when users are present
+                        if ($currentStatus == "currently editing") {
+                            $result = $db->writeConstellationStatus($constellation->getID(), "locked editing", 
+                                "User finished editing constellation");
+                            
+                        
+                            if (isset($result) && $result !== false) {
+                                $this->logger->addDebug("successfully unlocked constellation");
+                                $constellation->setVersion($result);
+                                $this->response["constellation"] = $constellation->toArray();
+                                $this->response["result"] = "success";
+                                
+                                
+                            } else {
+                                
+                                $this->logger->addDebug("could not unlock the constellation");
+                                $this->response["result"] = "failure";
+                            }
+                        } else {
+                            $this->logger->addDebug("constellation was not locked");
+                            $this->response["result"] = "failure";
+                        }
+                    } else {
+                        $this->logger->addDebug("no constellation given to unlock");
+                        $this->response["result"] = "failure";
+                    }
+                } catch (\Exception $e) {
+                    $this->logger->addError("unlocking constellation threw an exception");
+                    $this->response["result"] = "failure";
+                    throw $e;
+                }
                 
                 break;
-
             case "publish_constellation":
                 try {
                     $this->logger->addDebug("Publishing constellation");
@@ -212,7 +253,6 @@ class Server implements \snac\interfaces\ServerInterface {
                             $this->response["constellation"] = $constellation->toArray();
                             $this->response["result"] = "success";
 
-                            $this->logger->addDebug("Successfully published constellation");
                             
                             // add to elastic search
                             $eSearch = null;
@@ -250,9 +290,10 @@ class Server implements \snac\interfaces\ServerInterface {
                         $this->logger->addDebug("no constellation given to publish");
                         $this->response["result"] = "failure";
                     }
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->logger->addError("publishing constellation threw an exception");
                     $this->response["result"] = "failure";
+                    throw $e;
                 }
             
                 break;
@@ -352,7 +393,6 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 break;
             case "read":
-            case "edit":
                 if (isset($this->input["arkid"])) {
                     // Editing the given ark id by reading querying the current HRT
 
@@ -409,7 +449,68 @@ class Server implements \snac\interfaces\ServerInterface {
                     }
                 }
                 
-                // break; // no longer breaking to allow the default case to give an error if neither matches
+                break;
+            case "edit":
+                if (isset($this->input["arkid"])) {
+                    // Editing the given ark id by reading querying the current HRT
+
+                    // split on ark:/
+                    $tmp = explode("ark:/", $this->input["arkid"]);
+                    if (isset($tmp[1])) {
+                        $pieces = explode("/", $tmp[1]);
+                        if (count($pieces) == 2) {
+                            $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
+                            // Create new parser for this file and parse it
+                            $parser = new \snac\util\EACCPFParser();
+                            $id = $parser->parseFile($filename);
+                            $this->response["constellation"] = $id->toArray();
+                            return;
+                        }
+                    }
+                } else if (isset($this->input["constellationid"])) {
+                    // Editing the given constellation id by reading the database
+                    
+                    // TODO should lock constellation
+                    try {
+                        $db = new \snac\server\database\DBUtil();
+                        // Read the constellation
+                        $this->logger->addDebug("Reading constellation from the database");
+                        
+                        $cId = $this->input["constellationid"];
+                        $status = $db->readConstellationStatus($cId);
+                        // TODO This must change when users are present
+                        if ( $status == "published" || $status == "locked editing") {
+                            // Can edit this!
+                            
+                            // lock the constellation to the user as currently editing
+                            $db->writeConstellationStatus($cId, "currently editing");
+                            
+                            // read the constellation into response
+                            $constellation = $db->readConstellation($cId);
+                            $this->logger->addDebug("Finished reading constellation from the database");
+                            $this->response["constellation"] = $constellation->toArray();
+                            $this->logger->addDebug("Serialized constellation for output to client");
+                        } else {
+                            throw new \snac\exceptions\SNACPermissionException("User is not allowed to edit this constellation.");
+                        }
+                        
+                        
+                    } catch (\Exception $e) {
+                        // Leaving a catch block for logging purposes
+                        throw $e;
+                    }
+                    return;
+                } else if (isset($this->input["testid"])) {
+                    if ($this->input["testid"] == 1) {
+                        // Create new parser for this file and parse it
+                        $parser = new \snac\util\EACCPFParser();
+                        $id = $parser->parseFile("http://shannonvm.village.virginia.edu/~jh2jf/test_record.xml");
+                        $this->response["constellation"] = $id->toArray();
+                        return;
+                    }
+                }
+                
+                break;
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
 

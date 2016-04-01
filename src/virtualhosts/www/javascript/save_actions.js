@@ -167,54 +167,77 @@ $(document).ready(function() {
         		return;
         	}
         	
-        	// If nothing has changed, alert the user and do nothing
+        	// If nothing has changed, alert the user and unlock
         	if (somethingHasBeenEdited == false) {
-                $('#notification-message').html("<p>No new changes to save. Going to dashboard.</p>");
-                setTimeout(function(){
-                    $('#notification-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                	
-                    // Go to dashboard
-                    window.location.href = "?command=dashboard";
-                    
-                }, 1000);
-
-                
-        		return;
+		        $('#notification-message').html("<p>No new changes to save.  Updating Constellation state... Please wait.</p>");
+		        $('#notification-message').slideDown();
+		
+		        // Publish by AJAX call
+		        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+		            // Check the return value from the ajax. If success, then go to dashboard
+		            if (data.result == "success") {
+		                // Edit succeeded, so save mode off
+		                somethingHasBeenEdited = false;
+		                
+		                $('#notification-message').slideUp();
+		                
+		                $('#success-message').html("<p>Constellation state updated. Going to dashboard.</p>");
+		                setTimeout(function(){
+		                    $('#success-message').slideDown();
+		                }, 500);
+		                setTimeout(function(){
+		                	
+		                    // Go to dashboard
+		                    window.location.href = "?command=dashboard";
+		                    
+		                }, 1000);
+		
+		            } else {
+		                $('#notification-message').slideUp();
+		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
+		                $('#error-message').html("<p>An error occurred while updating state.</p>");
+		                setTimeout(function(){
+		                    $('#error-message').slideDown();
+		                }, 500);
+		                setTimeout(function(){
+		                    $('#error-message').slideUp();
+		                }, 8000);
+		            }
+		        });
+        	} else {
+	        	
+	            // Open up the warning alert box and note that we are saving
+	            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
+	            $('#notification-message').slideDown();
+	
+	            // Send the data back by AJAX call
+	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
+	                // Check the return value from the ajax. If success, then go to dashboard
+	                if (data.result == "success") {
+	                    // No longer in editing, save succeeded
+	                    somethingHasBeenEdited = false;
+	                    
+	                    $('#notification-message').slideUp();
+	                    
+	                    // Go to dashboard
+	                    window.location.href = "?command=dashboard";
+	
+	                } else {
+	                    $('#notification-message').slideUp();
+	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+	                    var errorMsg = "";
+	                    if (data.error && data.error.type)
+	                    	errorMsg += ": " + data.error.type;
+	                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
+	                    setTimeout(function(){
+	                        $('#error-message').slideDown();
+	                    }, 500);
+	                    setTimeout(function(){
+	                        $('#error-message').slideUp();
+	                    }, 10000);
+	                }
+	            });
         	}
-        	
-            // Open up the warning alert box and note that we are saving
-            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
-            $('#notification-message').slideDown();
-
-            // Send the data back by AJAX call
-            $.post("?command=save", $("#constellation_form").serialize(), function (data) {
-                // Check the return value from the ajax. If success, then go to dashboard
-                if (data.result == "success") {
-                    // No longer in editing, save succeeded
-                    somethingHasBeenEdited = false;
-                    
-                    $('#notification-message').slideUp();
-                    
-                    // Go to dashboard
-                    window.location.href = "?command=dashboard";
-
-                } else {
-                    $('#notification-message').slideUp();
-                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    var errorMsg = "";
-                    if (data.error && data.error.type)
-                    	errorMsg += ": " + data.error.type;
-                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
-                    setTimeout(function(){
-                        $('#error-message').slideDown();
-                    }, 500);
-                    setTimeout(function(){
-                        $('#error-message').slideUp();
-                    }, 10000);
-                }
-            });
         });
     }
 
@@ -244,7 +267,7 @@ $(document).ready(function() {
 		        $('#notification-message').html("<p>No new changes to save.  Publishing Constellation... Please wait.</p>");
 		        $('#notification-message').slideDown();
 		
-		        // Send the data back by AJAX call
+		        // Publish by AJAX call
 		        $.post("?command=publish", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {

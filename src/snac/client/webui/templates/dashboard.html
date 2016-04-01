@@ -94,7 +94,7 @@ body {
                     changes not previously saved may be lost.</p>
                     <div class="list-group">
                         {% for link in data.editing_lock %}
-                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>

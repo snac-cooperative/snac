@@ -212,6 +212,26 @@ class WebUI implements \snac\interfaces\ServerInterface {
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
+        } else if ($this->input["command"] == "save_unlock") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->saveAndUnlockConstellation($this->input, $user);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
+        } else if ($this->input["command"] == "unlock") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->unlockConstellation($this->input, $user);
+            // if unlocked by constellationid parameter, then send them to the dashboard.
+            if (!isset($response["error"]) && isset($this->input["constellationid"])) {
+                header("Location: index.php?command=dashboard");
+                return;
+            } else {
+                $this->response = json_encode($response, JSON_PRETTY_PRINT);
+                array_push($this->responseHeaders, "Content-Type: text/json");
+            }
+            return;
+
         } else if ($this->input["command"] == "save_publish") {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->saveAndPublishConstellation($this->input, $user);
