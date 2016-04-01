@@ -23,18 +23,7 @@ $(document).ready(function() {
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
-        	// If nothing has changed, alert the user and do nothing
-        	if (somethingHasBeenEdited == false) {
-                $('#notification-message').html("<p>No new changes to save.</p>");
-                setTimeout(function(){
-                    $('#notification-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#notification-message').slideUp();
-                }, 7000);
-        		return;
-        	}
-        	
+
         	// If EntityType and NameEntry do not have values, then don't let the user save
         	var noNameEntryText = true;
         	$("input[id^=nameEntry_original_").each(function() {
@@ -49,6 +38,19 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
+        		return;
+        	}
+        	
+        	
+        	// If nothing has changed, alert the user and do nothing
+        	if (somethingHasBeenEdited == false) {
+                $('#notification-message').html("<p>No new changes to save.</p>");
+                setTimeout(function(){
+                    $('#notification-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#notification-message').slideUp();
+                }, 7000);
         		return;
         	}
         	
@@ -147,22 +149,6 @@ $(document).ready(function() {
     // Save and Dashboard button
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
-        	// If nothing has changed, alert the user and do nothing
-        	if (somethingHasBeenEdited == false) {
-                $('#notification-message').html("<p>No new changes to save. Going to dashboard.</p>");
-                setTimeout(function(){
-                    $('#notification-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                	
-                    // Go to dashboard
-                    window.location.href = "?command=dashboard";
-                    
-                }, 1000);
-
-                
-        		return;
-        	}
         	
         	// If EntityType and NameEntry do not have values, then don't let the user save
         	var noNameEntryText = true;
@@ -178,6 +164,23 @@ $(document).ready(function() {
                 setTimeout(function(){
                     $('#error-message').slideUp();
                 }, 10000);
+        		return;
+        	}
+        	
+        	// If nothing has changed, alert the user and do nothing
+        	if (somethingHasBeenEdited == false) {
+                $('#notification-message').html("<p>No new changes to save. Going to dashboard.</p>");
+                setTimeout(function(){
+                    $('#notification-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                	
+                    // Go to dashboard
+                    window.location.href = "?command=dashboard";
+                    
+                }, 1000);
+
+                
         		return;
         	}
         	
