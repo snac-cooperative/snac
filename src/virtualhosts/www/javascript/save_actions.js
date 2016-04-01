@@ -149,13 +149,18 @@ $(document).ready(function() {
         $('#save_and_dashboard').click(function(){
         	// If nothing has changed, alert the user and do nothing
         	if (somethingHasBeenEdited == false) {
-                $('#notification-message').html("<p>No new changes to save.</p>");
+                $('#notification-message').html("<p>No new changes to save. Going to dashboard.</p>");
                 setTimeout(function(){
                     $('#notification-message').slideDown();
                 }, 500);
                 setTimeout(function(){
-                    $('#notification-message').slideUp();
-                }, 7000);
+                	
+                    // Go to dashboard
+                    window.location.href = "?command=dashboard";
+                    
+                }, 1000);
+
+                
         		return;
         	}
         	
@@ -213,19 +218,8 @@ $(document).ready(function() {
     // Save and Submit button
     if($('#save_and_submit').exists()) {
         $('#save_and_submit').click(function(){
-        	// If nothing has changed, alert the user and do nothing
-        	if (somethingHasBeenEdited == false) {
-                $('#notification-message').html("<p>No new changes to save.</p>");
-                setTimeout(function(){
-                    $('#notification-message').slideDown();
-                }, 500);
-                setTimeout(function(){
-                    $('#notification-message').slideUp();
-                }, 7000);
-        		return;
-        	}
         	
-        	// If EntityType and NameEntry do not have values, then don't let the user save
+        	// If EntityType and NameEntry do not have values, then don't let the user save or publish
         	var noNameEntryText = true;
         	$("input[id^=nameEntry_original_").each(function() {
         		if ($(this).val() != "")
@@ -241,35 +235,83 @@ $(document).ready(function() {
                 }, 10000);
         		return;
         	}
-        	
-            // Open up the warning alert box and note that we are saving
-            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
-            $('#notification-message').slideDown();
 
-            // Send the data back by AJAX call
-            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
-                // Check the return value from the ajax. If success, then go to dashboard
-                if (data.result == "success") {
-                    // Edit succeeded, so save mode off
-                    somethingHasBeenEdited = false;
-                    
-                    $('#notification-message').slideUp();
-                    
-                    // TODO: Go to dashboard?? Show notice then dashboard?
-                    window.location.href = "?command=dashboard";
+        	// If nothing has changed, alert the user and publish
+        	if (somethingHasBeenEdited == false) {
+		        $('#notification-message').html("<p>No new changes to save.  Publishing Constellation... Please wait.</p>");
+		        $('#notification-message').slideDown();
+		
+		        // Send the data back by AJAX call
+		        $.post("?command=publish", $("#constellation_form").serialize(), function (data) {
+		            // Check the return value from the ajax. If success, then go to dashboard
+		            if (data.result == "success") {
+		                // Edit succeeded, so save mode off
+		                somethingHasBeenEdited = false;
+		                
+		                $('#notification-message').slideUp();
+		                
+		                $('#success-message').html("<p>Constellation Published. Going to dashboard.</p>");
+		                setTimeout(function(){
+		                    $('#success-message').slideDown();
+		                }, 500);
+		                setTimeout(function(){
+		                	
+		                    // Go to dashboard
+		                    window.location.href = "?command=dashboard";
+		                    
+		                }, 1000);
+		
+		            } else {
+		                $('#notification-message').slideUp();
+		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
+		                $('#error-message').html("<p>An error occurred while publishing.</p>");
+		                setTimeout(function(){
+		                    $('#error-message').slideDown();
+		                }, 500);
+		                setTimeout(function(){
+		                    $('#error-message').slideUp();
+		                }, 8000);
+		            }
+		        });
+        	} else {
+	        	
+	            // Open up the warning alert box and note that we are saving
+	            $('#notification-message').html("<p>Saving and Publishing Constellation... Please wait.</p>");
+	            $('#notification-message').slideDown();
+	
+	            // Send the data back by AJAX call
+	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
+	                // Check the return value from the ajax. If success, then go to dashboard
+	                if (data.result == "success") {
+	                    // Edit succeeded, so save mode off
+	                    somethingHasBeenEdited = false;
+	                    
+	                    $('#notification-message').slideUp();
 
-                } else {
-                    $('#notification-message').slideUp();
-                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    $('#error-message').html("<p>An error occurred while saving.</p>");
-                    setTimeout(function(){
-                        $('#error-message').slideDown();
-                    }, 500);
-                    setTimeout(function(){
-                        $('#error-message').slideUp();
-                    }, 8000);
-                }
-            });
+		                
+		                $('#success-message').html("<p>Constellation Saved and Published. Going to dashboard.</p>");
+		                setTimeout(function(){
+		                    $('#success-message').slideDown();
+		                }, 500);
+		                setTimeout(function(){
+		                	
+		                    // Go to dashboard
+		                    window.location.href = "?command=dashboard";
+		                    
+		                }, 1000);
+	                } else {
+	                    $('#notification-message').slideUp();
+	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+	                    $('#error-message').html("<p>An error occurred while saving.</p>");
+	                    setTimeout(function(){
+	                        $('#error-message').slideDown();
+	                    }, 500);
+	                    setTimeout(function(){
+	                        $('#error-message').slideUp();
+	                    }, 8000);
+	                }
+	            });
+        	}
         });
     }
     
