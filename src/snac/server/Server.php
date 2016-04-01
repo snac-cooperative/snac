@@ -191,9 +191,10 @@ class Server implements \snac\interfaces\ServerInterface {
                         $this->logger->addDebug("Constellation input value wasn't set to write");
                         $this->response["result"] = "failure";
                     }
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->logger->addError("writeConstellation threw an exception");
-                    $this->response["result"] = "failure";
+                    // Rethrow it, since we just wanted a log statement
+                    throw $e;
                 }
                 
                 break;
