@@ -828,6 +828,8 @@ class DBUtil
      * The convention for related things like date, place, and meta is args ($id, $version) so we're
      * following that.
      *
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
      * @param integer $tid Table id, aka row id akd object id
      *
      * @param integer $version Constellation version number
@@ -993,6 +995,8 @@ class DBUtil
      *
      * Note: $cObj passed by reference and changed in place.
      *
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
      * @param int $rowID the nrd.id actual row id from table nrd.
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
@@ -1013,7 +1017,7 @@ class DBUtil
         {
             $breakAfterOne = true;
         }
-        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version']); // bug: $cObj->getVersion());
+        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version']);
 
         foreach ($dateRows as $singleDate)
         {
@@ -1325,6 +1329,8 @@ class DBUtil
      * "term_id".
      *
      * Note: $cObj passed by reference and changed in place.
+     * 
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
@@ -1388,6 +1394,8 @@ class DBUtil
      * object other times. The workaround for that is two functions, which is awkard.
      *
      * Best to just take our medicine and encapsulate the complexity inside here populateSource().
+     *
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
@@ -2721,9 +2729,16 @@ class DBUtil
                 $this->saveMeta($vhInfo, $gObj, 'place_link', $pid);
                 if ($dObj = $gObj->getDateList())
                 {
-                    foreach ($ndata->getDateList() as $date)
+                    /*
+                     * The docs for getDateList() imply that in some circumstances it does not return a list,
+                     * not even an empty list. We have to check.
+                     */ 
+                    if (is_array($dObj))
                     {
-                        $this->saveDate($vhInfo, $date, 'place_link', $pid);
+                        foreach ($dObj as $date)
+                        {
+                            $this->saveDate($vhInfo, $date, 'place_link', $pid);
+                        }
                     }
                 }
             }

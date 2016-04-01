@@ -12,7 +12,7 @@ insert into role values (default, 'editor', 'constellation editor, may modify an
 
 -- Create the system (root-level) user for system services
 
-insert into appuser values (default, 'system', '', 'System Service');
+insert into appuser (userid, email, fullname) values ('system', 'system@localhost', 'System Service');
 
 -- Apply system services role to system user
 
