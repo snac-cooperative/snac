@@ -267,8 +267,8 @@ class Server implements \snac\interfaces\ServerInterface {
                 
                 
                     $params = [
-                            'index' => 'rtest',
-                            'type' => 'prototype_name_search',
+                            'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                            'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                             'body' => [
                                     'query' => [
                                             'query_string' => [
@@ -318,8 +318,8 @@ class Server implements \snac\interfaces\ServerInterface {
                     $db = new \snac\server\database\DBUtil();
                 
                     $params = [
-                        'index' => 'rtest',
-                        'type' => 'prototype_name_search',
+                        'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                         'body' => [
                                 'sort' => [
                                         'timestamp' => [
