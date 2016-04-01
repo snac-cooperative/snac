@@ -418,6 +418,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         } else if ($this->input["command"] == "search") {
             $this->logger->addDebug("Searching for a Constellation");
+            
+            $start = 0;
+            if (isset($this->input["start"]) && is_numeric($this->input["start"]))
+                $start = $this->input["start"];
+            
+            $count = 10;
+            if (isset($this->input["count"]) && is_numeric($this->input["count"]))
+                $count = $this->input["count"];
+                
             // ElasticSearch Handler
             $eSearch = null;
             if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -437,7 +446,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                                                 'fields' => ["nameEntry"],
                                                 'query' => '*'.$this->input["term"].'*'
                                         ]
-                                ]
+                                ],
+                                'from' => $start,
+                                'size' => $count
                         ]
                 ];
                 $this->logger->addDebug("Defined parameters for search", $params);
@@ -456,9 +467,21 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 
                 $this->logger->addDebug("Created search response to the user", $return);
+                
+                $response = array();
+                $response["total"] = $results["hits"]["total"];
+                $response["results"] = $return;
+                
+                if ($response["total"] == 0 || $count == 0) {
+                    $response["pagination"] = 0;
+                    $response["page"] = 0;
+                } else {
+                    $response["pagination"] = ceil($response["total"] / $count);
+                    $response["page"] = floor($start / $count);
+                }            
 
                 // Send the response back to the web client
-                $this->response = json_encode($return, JSON_PRETTY_PRINT);
+                $this->response = json_encode($response, JSON_PRETTY_PRINT);
                 array_push($this->responseHeaders, "Content-Type: text/json");
                 return;
             } else {

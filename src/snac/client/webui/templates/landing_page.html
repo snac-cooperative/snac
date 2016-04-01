@@ -100,6 +100,71 @@ body {
      <script>
      jQuery.fn.exists = function(){return this.length>0;}
      
+
+     
+     function setSearchPosition(start) {
+         $('#start').val(start);
+     }
+     
+     function searchAndUpdate() {
+         if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
+             $("#search-results-box").html("");
+         } else {
+             $.post("?command=search", $("#search_form").serialize(), function (data) {
+                 //var previewWindow = window.open("", "Preview");
+                 //previewWindow.document.write(data);
+                 
+                 var html = "";
+                 html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
+                 if (data.results.length > 0) {
+                     for (var key in data.results) {
+                         html += "<a href='?command=view&constellationid="+data.results[key].id+"' class='list-group-item'>"+data.results[key].value+"</a>";
+                     }
+                 } else {
+                     html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
+                 }
+                 html += "</div>";
+                 
+                 // Have pagination (total number of pages) and page (current page number) in data
+                 // ... use them to help stepping through the search for multiple pages.
+                 
+                 if (data.results.length > 0 && data.results.length < data.total) {
+                     var start = $('#start').val();
+                     var count = $('#count').val();
+                     var prev = (data.page - 1) * count;
+                     var next = (data.page + 1) * count;
+                     html += "<nav><ul class='pagination'>";
+                     var disabled = "";
+                     var goScript = " onClick='setSearchPosition("+prev+");searchAndUpdate();'";
+                     if (data.page == 0) {
+                         disabled = " class='disabled'";
+                         goScript = "";
+                     }
+                     html += "<li"+disabled+"><a href='#' aria-label='Previous'"+goScript+"><span aria-hidden='true'>&laquo;</span></a></li>";
+                     for (var i = 0; i < data.pagination; i++) {
+                         var active = '';
+                         var goScript = " onClick='setSearchPosition("+(i * count)+");searchAndUpdate();'";
+                         if (i == data.page) {
+                             active = " class='active'";
+                             goScript = "";
+                         }
+                         html += "<li"+active+"><a href='#'"+goScript+">"+(i+1)+"</a></li>";
+                     }
+                     disabled = "";
+                     goScript = " onClick='setSearchPosition("+next+");searchAndUpdate();'";
+                     if (data.page == data.pagination - 1) {
+                         disabled = " class='disabled'";
+                         goScript = "";
+                     }
+                     html += "<li"+disabled+"><a href='#' aria-label='Next'"+goScript+"><span aria-hidden='true'>&raquo;</span></a></li>";
+                     html += "</ul></nav>";
+                 }
+                 $("#search-results-box").html(html);
+             });
+         }
+     }
+
+     
      /**
       * Only load this script once the document is fully loaded
       */
@@ -125,10 +190,10 @@ body {
                     //previewWindow.document.write(data);
                     
                     var html = "";
-                    if (data.length > 0) {
+                    if (data.results.length > 0) {
                         html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left'>";
                         for (var key in data) {
-                        	html += "<a href='?command=view&constellationid="+data[key].id+"' class='list-group-item'>"+data[key].value+"</a>";
+                        	html += "<a href='?command=view&constellationid="+data.results[key].id+"' class='list-group-item'>"+data.results[key].value+"</a>";
                         }
                         html += "</div>";
                         $("#search-results-box").html(html);
@@ -139,33 +204,11 @@ body {
         
         var timeoutID = null;
 
-        function searchAndUpdate() {
-        	if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
-        		$("#search-results-box").html("");
-        	} else {
-	            $.post("?command=search", $("#search_form").serialize(), function (data) {
-	                //var previewWindow = window.open("", "Preview");
-	                //previewWindow.document.write(data);
-	                
-	                var html = "";
-                    html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
-	                if (data.length > 0) {
-	                    for (var key in data) {
-	                        html += "<a href='?command=view&constellationid="+data[key].id+"' class='list-group-item'>"+data[key].value+"</a>";
-	                    }
-	                } else {
-                        html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
-	                }
-                    html += "</div>";
-                    $("#search-results-box").html(html);
-	            });
-        	}
-        }
 
         $('#searchbox').keyup(function() {
           clearTimeout(timeoutID);
           var $target = $(this);
-          timeoutID = setTimeout(function() { searchAndUpdate(); }, 500); 
+          timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500); 
         });
      });
         
@@ -183,7 +226,7 @@ body {
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand active" href="?">SNAC</a>
+            <a class="navbar-brand active" href="?"><span class="glyphicon glyphicon-home"></span> SNAC</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
@@ -193,8 +236,13 @@ body {
                 <li><a href="http://snac-community.iath.virginia.edu/">Discussion</a></li>
             </ul>
             <div class="navbar-right">
-            {% if user.email %}
                 <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                        <span class="glyphicon glyphicon-question-sign"></span> Help <span class="caret"></span>
+                    </a>
+            
+            <!-- {% if user.email %} -->
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
                         <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
@@ -207,12 +255,10 @@ body {
                         <li><a href="?command=logout">Logout</a></li>
                     </ul>
                     </li>
+            <!-- {% else %} -->
+                    <li><a href="?command=login"><span class="glyphicon glyphicon-user"></span> Login</a></li>
+            <!-- {% endif %}  -->
                 </ul>
-            {% else %}
-                <ul class="nav navbar-nav">
-                    <li><a href="?command=login">Login</a></li>
-                </ul>
-            {% endif %}
             </div>
         </div><!--/.nav-collapse -->
     </div>
@@ -225,13 +271,14 @@ body {
 
 		<form class="form-horizontal" id="search_form" onsubmit="return false;">
 			<div class="well well-lg text-center">
-
+                    <input type="hidden" id="count" name="count" value="10">
+                    <input type="hidden" id="start" name="start" value="0">
 					<div class="input-group">
 						<input type="text" class="form-control"
 							placeholder="Search for..." id="searchbox" name="term"> 
 							<span class="input-group-btn">
-							<button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
-						</span>
+							     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+						    </span>
 					</div>
 					
 					<div id="search-results-box">
@@ -241,7 +288,7 @@ body {
 
 		{% if not user.email %}  
             <p class="text-center">
-    <a href="?command=login" class="btn btn-lg btn-warning">Login</a>
+    <a href="?command=login" class="btn btn-lg btn-warning"><span class="glyphicon glyphicon-user"></span> Login</a>
     </p>
             {% endif %}
             
@@ -249,6 +296,27 @@ body {
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
+            <h3>Getting Started</h3>
+            
+            <p>Welcome to the SNAC Prototypical Prototype Interface.  This interface allows you to search, view, edit, create, and 
+            publish identity constellations in a prototype interface.  You may search and view constellations without logging in,
+            but to make any changes to a constellation, you need an authorized Google account.  Click the "Login" link above to 
+            log in with Google and authorize the SNAC Prototype.</p>
+            
+            <p>Use the search box above to find a record within SNAC to view.  Search results will appear right on this page below
+            the search bar.  Selecting one will take you to the view page.  That page is modeled after the <a href="http://socialarchive.iath.virginia.edu/">SNAC HRT</a>,
+            so it should feel familiar.  If you are logged in and have permissions, you will also see on that page a button to begin
+            editing the constellation.</p>
+            
+            <p>The box on the right, entitled "Recently Updated" will show you the most recently published constellations from
+            across the system.</p>
+            
+            <p>Once logged in, you'll have access to your Dashboard.  The dashboard shows which constellations are currently
+            checked out to you for editing, which ones you currently have open in an editor, and other information.  You may return
+            to this page at any time by clicking the "SNAC" link on the menu above.</p>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">Recently Updated</h3>
@@ -264,21 +332,18 @@ body {
             </div>
         </div>
         <div class="col-md-4">
-            <!-- Middle column -->
-            <div class="panel panel-warning">
+            <!-- Right column -->
+            <div class="panel panel-success">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Special Constellations</h3>
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Special debugging constellations</p>
+                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
                     <div class="list-group">
                         <a href="?command=view&constellationid=57741" class="list-group-item">SNAC Test Record</a>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Right column -->
         </div>
     </div>
 </div>
