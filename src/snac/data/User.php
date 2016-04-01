@@ -25,6 +25,9 @@ namespace snac\data;
  */
 class User {
 
+    /**
+     * It seems like a good idea for this to be appuser.id, but that needs to be confirmed.
+     */
     private $userid;
 
     private $firstName;
@@ -43,7 +46,7 @@ class User {
 
     private $token;
 
-    public function setUserid($id) {
+    public function setUserID($id) {
 
         $this->userid = $id;
     }
@@ -88,7 +91,7 @@ class User {
         $this->token = $token;
     }
 
-    public function getUserid() {
+    public function getUserID() {
 
         return $this->userid;
     }
@@ -116,6 +119,7 @@ class User {
 
         return $this->avatarSmall;
     }
+
     public function getAvatarLarge() {
 
         return $this->avatarLarge;
