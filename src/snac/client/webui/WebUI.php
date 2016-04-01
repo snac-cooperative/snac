@@ -223,7 +223,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->unlockConstellation($this->input, $user);
             // if unlocked by constellationid parameter, then send them to the dashboard.
-            if (!isset($response["error"]) && isset($this->input["constellationid"])) {
+            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                 header("Location: index.php?command=dashboard");
                 return;
             } else {
