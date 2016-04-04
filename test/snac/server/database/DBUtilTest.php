@@ -21,7 +21,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     
     /**
      * DBUtil object for this class
-     * @var $dbu DBUtil object
+     * @var $dbu \snac\server\database\DBUtil object
      */ 
     private $dbu = null;
 
@@ -671,5 +671,33 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertTrue($retObj->getVersion() < $updatedObj->getVersion());
         $this->assertEquals($retObj->getID(), $updatedObj->getID());
+    }
+    
+    /**
+     * Test parsing another problem cpf
+     *
+     */
+    public function testIngestAnotherProblemCPF()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/util/eac-cpf/99166-w65k3tsm.xml");
+    
+        $retObj = $this->dbu->writeConstellation($cObj,
+                'testing ingest of a full CPF record');
+
+        // Assert that it was written
+        $this->assertNotNull($retObj, "Something went wrong when trying to write the constellation");
+
+        $ret = $this->dbu->writeConstellationStatus($retObj->getID(), 'published');
+
+        // Assert that we could change the status
+        $this->assertNotFalse($ret, "Error writing status to object");
+        
+        // Delete it so it's not in our way anymore
+        $ret = $this->dbu->writeConstellationStatus($retObj->getID(), 'deleted');
+
+        // Assert that we could change the status
+        $this->assertNotFalse($ret, "Error writing deleted status to object");
     }
 }
