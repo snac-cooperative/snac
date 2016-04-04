@@ -191,6 +191,16 @@ class ConstellationPostMapper {
      * @return \snac\data\Language The language object found when parsing the array
      */
     private function parseSubLanguage($object, $short, $i) {
+        
+        // If there is no language to parse, then just return null and don't do anything
+        if ($object["language"]["id"] == "" &&
+                $object["language"]["version"] == "" &&
+                (!isset($object["languagelanguage"]) || 
+                $object["languagelanguage"]["id"] == "") && 
+                (!isset($object["languagescript"]) ||
+                $object["languagescript"]["id"] == "") ) {
+            return null;
+        }
 
         $lang = new \snac\data\Language();
         if ($object["language"]["id"] != "")
