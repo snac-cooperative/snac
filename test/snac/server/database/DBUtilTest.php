@@ -368,14 +368,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Before uncommenting this, copy the old files. Any time these need updating, you should diff the old
          * and new to confirm that what you think changed, changed, and nothing else.
          */ 
-        /* 
-         * $cfile = fopen('first_json.txt', 'w');
-         * fwrite($cfile, $firstJSON);
-         * fclose($cfile); 
-         * $cfile = fopen('second_json.txt', 'w');
-         * fwrite($cfile, $secondJSON);
-         * fclose($cfile); 
-         */
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.
@@ -383,7 +381,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          *
          */ 
         $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1055, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($readObj,

@@ -516,14 +516,14 @@ class SQL
 
 
     /**
-     * Select records from table source.
+     * Select records from table source by foreign key
      *
      * @param integer $fkID A foreign key to record in another table.
      *
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
-     * @return string[] A list of location fields as list with keys matching the database field names:
+     * @return string[] A list of records (list of lists) with inner keys matching the database field names:
      * version, main_id, id, text, note, uri, type_id, language_id.
      *
      */
@@ -545,15 +545,84 @@ class SQL
         return $all;
     }
 
+    /**
+     * Select all source id only by constellation ID
+     *
+     * Select only source.id values for a given constellation ID. Use this to get constellation source id
+     * values, which higher level code uses to call populateSourceByID(). If you want full source record data,
+     * then you should use selectSourceByID().
+     *
+     * @param integer $mainID A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A list of list (records) with key 'id'
+     *
+     */
+    public function selectSourceIDList($mainID, $version)
+    {
+        $qq = 'select_source_id_list';
+        $this->sdb->prepare($qq,
+                            'select aa.id
+                            from source as aa,
+                            (select id,max(version) as version from source where main_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($mainID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
+     * Select full source records from table source by source id
+     *
+     * Select source where the most recent version <= $version for source id $sourceID and not deleted.
+     *
+     * @param integer $fkID A foreign key to record in another table.
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[] A single source record keys matching the database field names:
+     * version, main_id, id, text, note, uri, type_id, language_id.
+     *
+     */
+    public function selectSourceByID($sourceID, $version)
+    {
+        $qq = 'select_source_by_id';
+        $this->sdb->prepare($qq,
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id, aa.display_name
+                            from source as aa,
+                            (select id,max(version) as version from source where id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($sourceID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
 
     /**
      * Insert a record into table source.
      *
-     * Language related is a Language object, and is saved in table language. It is related where
-     * source.id=language.fk_id. There is not language_id in table source, and there should not be.
+     * Write a source objec to the database. These are per-constellation so they have main_id and no foreign
+     * keys. These are linked to other tables by putting a source.id foreign key in that related table. 
      *
-     * $typeID is different. It is a vocabulary id, from a PHP Term object. Therefore we only save the id. The
-     * Term object's instance is really a single row in table vocabulary.
+     * Language related is a Language object, and is saved in table language. It is related where
+     * source.id=language.fk_id. There is no language_id in table source, and there should not be. However, a
+     * lanugage may link to this source record via source.id. See DBUtil writeSource().
+     *
+     * The "type" field was always "simple" and is no longer used.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
@@ -565,17 +634,11 @@ class SQL
      *
      * @param string $uri URI of this source
      *
-     * @param integer $typeID Vocabulary fk of the type
-     *
-     * @param integer $fkID Foreign key of the table related to this source.
-     *
-     * @param string $fkTable Name of the related table.
-     *
      * @return integer The id value of this record. Sources have a language, so we need to return the $id
      * which is used by language as a foreign key.
      *
      */
-    public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri, $typeID, $fkTable, $fkID)
+    public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri)
     {
         if (! $id)
         {
@@ -584,9 +647,9 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq,
                             'insert into source
-                            (version, main_id, id, display_name, text, note, uri, type_id, fk_table, fk_id)
+                            (version, main_id, id, display_name, text, note, uri)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
@@ -594,10 +657,7 @@ class SQL
                                   $displayName,
                                   $text,
                                   $note,
-                                  $uri,
-                                  $typeID,
-                                  $fkTable,
-                                  $fkID));
+                                  $uri));
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -1132,7 +1192,7 @@ class SQL
      * @param string $fkTable name of the related table
      *
      */
-    public function insertMeta($vhInfo, $id, $subCitation, $sourceData,
+    public function insertMeta($vhInfo, $id, $citationID, $subCitation, $sourceData,
                                $ruleID, $note, $fkTable, $fkID)
     {
         if (! $id)
@@ -1142,13 +1202,14 @@ class SQL
         $qq = 'insert_meta';
         $this->sdb->prepare($qq,
                             'insert into scm
-                            (version, main_id, id, sub_citation, source_data,
+                            (version, main_id, id, citation_id, sub_citation, source_data,
                             rule_id, note, fk_id, fk_table)
-                            values ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
+                            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
                                             $vhInfo['main_id'],
                                             $id,
+                                            $citationID,
                                             $subCitation,
                                             $sourceData,
                                             $ruleID,

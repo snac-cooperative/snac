@@ -50,7 +50,7 @@ drop table if exists source;
 -- drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists version_history;
-drop table if exists source_link;
+-- drop table if exists source_link;
 drop table if exists control;
 drop table if exists pre_snac_maintenance_history;
 drop table if exists contributor;
@@ -473,6 +473,11 @@ create unique index language_idx1 on date_range(id,main_id,version);
 -- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
 -- just like date. 
 
+-- Apr 4 2016. Switching to list of sources per constellation. Finally removing type, which is always
+-- "simple", and essentially not used. Removing fk_id and fk_table since sources are linked to each
+-- constellation by main_id. Any constellation component using a source does a relational link aka foreign key
+-- by source.id
+
 create table source (
     id           int default nextval('id_seq'),
     version      int not null,
@@ -482,10 +487,7 @@ create table source (
     text         text,    -- Text of this source
     note         text,    -- Note related to this source
     uri          text,    -- URI of this source
-    type_id      integer, -- Type of this source, fk to vocabulary.id
     language_id  integer, -- language, fk to vocabulary.id
-    fk_id        integer,
-    fk_table     text,
     primary key(id, version)
     );
 
@@ -494,12 +496,10 @@ create table source (
 
 create unique index source_idx2 on source (id,version,main_id);
 
--- Source is first order data, not an authority. Every source is treated separately. We rejected the idea of
--- an authority (broadly, controlled vocabulary) for source and will copy each source for each object it
--- applies to. As a result, linking is not necessary.
+-- Source is related to whatever needs it by putting a source.id foreign key in the table that wants to refer
+-- back to a source. There is no need for this linking table because we do not have a many-to-many relation.
 --
--- Hang on: I thought we decided to have a single set of source per constellation. That means we would need a
--- linking table.
+-- At one point, Source was first order data, not an authority. Every source was treated separately.
 
 -- create table source_link (
 --     id         int default nextval('id_seq'),
@@ -510,6 +510,7 @@ create unique index source_idx2 on source (id,version,main_id);
 --     source_id  int, -- fk to source.id
 --     primary key(id, version)
 --     );
+-- create unique index source__link_idx1 on source_link (id,version,main_id);
 
 -- Feb 10 2016 Data in <control> is planned to be stored elsewhere, probably version_history.
 
@@ -692,7 +693,7 @@ create table scm (
     version      int not null,
     main_id      int not null,
     is_deleted   boolean default false,
-    citation_id  int,  --  fk to source.id?
+    citation_id  int,  -- fk to source.id
     sub_citation text, -- human readable location within the source
     source_data  text, -- original data "as entered" from CPF
     rule_id      int,  -- fk to some vocabulary of descriptive rules

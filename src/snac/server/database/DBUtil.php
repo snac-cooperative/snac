@@ -629,8 +629,8 @@ class DBUtil
      * this architecture is not merely to make the code more legible.
      *
      * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
-     * $vhInfo arg, but populateDate(), populateSource(), and populateLanguage() rely on the internals of
-     * the constellation object.
+     * $vhInfo arg, but populateDate(), populateConstellationSource(), and populateLanguage() rely on the
+     * internals of the constellation object.
      * 
      * We always need nrd data for ARK and entity type, and we always need the name. The constellation
      * object has mainID and version. That is enough data to render the user interface.
@@ -663,7 +663,7 @@ class DBUtil
         $this->populateMeta($vhInfo, $cObj);
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateDate($vhInfo, $cObj); // "Constellation Date" in SQL these dates are linked to table nrd.
-        $this->populateSource($vhInfo, $cObj); // "Constellation Source" in the order of statements here
+        $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
         $this->populateConventionDeclaration($vhInfo, $cObj);
         $this->populateFunction($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
@@ -856,9 +856,10 @@ class DBUtil
                  */ 
                 $this->populateLanguage($vhInfo, $gObj, $rec['id']);
                 /*
-                 * populateSource() will call setCitation() for SNACControlMetadata objects
+                 * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
+                 * addSource() for Constellation object.
                  */ 
-                $this->populateSource($vhInfo, $gObj); // ?Why was there: $rec['id'], 
+                $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
                 $cObj->addSNACControlMetadata($gObj);
             }
         }
@@ -1372,39 +1373,64 @@ class DBUtil
     }
 
     /**
-     * Create a source object from the database
+     * Populate full source list from the database
      *
-     * Select source from the database, create a source object and return it. The api isn't consisten with how
-     * Source objects are added to other objects, so we're best off to build and return. This is different
-     * than the populate* functions that rely on a consistent api to add theirself to the parent object.
+     * Select source from the database based on Constellation ID, create a source object and add it to the
+     * passed in $cObj. Note that Constellation will have a list of Source via addSource(), but
+     * SNACControlMetadata only has a single Source via setCitation(). Best to just take our medicine and
+     * encapsulate the complexity inside here populateSourceByID().
      *
-     * This is a bit exciting because Constellation will have a list of Source, but SNACControlMetadata only
-     * has a single Source.
+     * Constellation version aka version_history.id is always the "newest". If only SCM changed, then
+     * constellation version would be the same as the SCM version. Thus we should use $vhInfo['verion'].
      *
-     * Two options for setCitation()
-     * 1) call a function to build a Source object, call setCitation()
-     *  $sourceArrayOrSingle = $this->buildSource($cObj);
-     *  $gObj->setCitation($sourceOjb)
-     *
-     * 2) Call populateSource(), which is smart enough to know that SNACControlMetadata uses setCitation()
-     * for its Source object and Constellation uses addSource().
-     *
-     * Option 2 is better because Constellation needs an array and SNACControlMetadata needs a single
-     * Source object. It would be very odd for a function to return an array sometimes, and a single
-     * object other times. The workaround for that is two functions, which is awkard.
-     *
-     * Best to just take our medicine and encapsulate the complexity inside here populateSource().
+     * If something else changed, then the Constellation version is newer than the SCM version, and we
+     * should still use the constellation version (because always use the newest version available).
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
-     * @param integer[] $vhInfo list with keys version, main_id.
-     *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
-     *
+     * @param $cObj snac\data\Constellation object, passed by reference (as is the default in php for objects
+     * as parameters), and changed in place
      */
-    private function populateSource($vhInfo, $cObj)
+    private function populateSourceConstellation($vhInfo, $cObj)
     {
-        $rows = $this->sql->selectSource($cObj->getID(), $vhInfo['version']);
+        // Constellation version aka version_history.id is always the "newest". See note above.
+        $rows = $this->sql->selectSourceIDList($cObj->getID(), $vhInfo['version']);
+
+        foreach ($rows as $rec)
+        {
+            $this->populateSourceByID($vhInfo, $cObj, $rec['id']);
+        }
+    }
+
+    
+    /**
+     * Create a source object from the database
+     *
+     * Select source from the database based on Source id (not constellation id), create a source object and
+     * add it to the passed in $cObj. Note that Constellation will have a list of Source via addSource(), but
+     * SNACControlMetadata only has a single Source via setCitation(). Best to just take our medicine and
+     * encapsulate the complexity inside here populateSourceByID().
+     *
+     * Constellation version aka version_history.id is always the "newest". If only SCM changed, then
+     * constellation version would be the same as the SCM version. Thus we should use $vhInfo['verion'].
+     *
+     * If something else changed, then the Constellation version is newer than the SCM version, and we
+     * should still use the constellation version (because always use the newest version available).
+     *
+     * apr 4 remove             $newObj->setType($this->populateTerm($rec['type_id']));
+     *
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
+     *
+     * @param snac\data\Constellation $cObj Constellation object, passed by reference (as is the default in
+     * php for objects as parameters), and changed in place
+     *
+     * @param integer $sourceID Source record id. 
+     */
+    private function populateSourceByID($vhInfo, $cObj, $sourceID)
+    {
+        // Constellation version aka version_history.id is always the "newest". See note above.
+        $rows = $this->sql->selectSourceByID($sourceID, $vhInfo['version']);
+
         foreach ($rows as $rec)
         {
             $newObj = new \snac\data\Source();
@@ -1412,7 +1438,6 @@ class DBUtil
             $newObj->setText($rec['text']);
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
-            $newObj->setType($this->populateTerm($rec['type_id']));
             $newObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $newObj);
             /*
@@ -1773,11 +1798,12 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveConstellationSource($vhInfo, &$cObj)
+    private function saveConstellationSource($vhInfo, $cObj)
     {
+        die("DBUtil saveConstellationSource() no longer used. See saveSource()\n");
         foreach ($cObj->getSources() as $fdata)
         {
-            $this->saveSource($vhInfo, $fdata, 'nrd', $vhInfo['main_id']);
+            $this->saveSource($vhInfo, $fdata);
             /*
              * No saveMeta() here, because saveSource() calls saveMeta() internally. This particular Source
              * may be first order data, but that is not a concern of DBUtil.
@@ -2549,7 +2575,7 @@ class DBUtil
         $this->saveMeta($vhInfo, $cObj, 'version_history', $vhInfo['main_id']);
         $this->saveBiogHist($vhInfo, $cObj);
         $this->saveConstellationDate($vhInfo, $cObj);
-        $this->saveConstellationSource($vhInfo, $cObj);
+        $this->saveSource($vhInfo, $cObj); // Source objects are only per constellation. Other uses of source are by foreign key.
         $this->saveConventionDeclaration($vhInfo, $cObj);
         $this->saveFunction($vhInfo, $cObj);
         $this->saveGender($vhInfo, $cObj);
@@ -2779,8 +2805,14 @@ class DBUtil
             $metaID = $metaObj->getID();
             if ($this->prepOperation($vhInfo, $metaObj))
             {
+                $citationID = null;
+                if ($metaObj->getCitation())
+                {
+                    $citationID = $metaObj->getCitation()->getID();
+                }
                 $metaID = $this->sql->insertMeta($vhInfo,
                                                  $metaObj->getID(),
+                                                 $citationID,
                                                  $metaObj->getSubCitation(),
                                                  $metaObj->getSourceData(),
                                                  $this->thingID($metaObj->getDescriptiveRule()),
@@ -2791,35 +2823,29 @@ class DBUtil
                 $metaObj->setVersion($vhInfo['version']);
             }
             $this->saveLanguage($vhInfo, $metaObj, 'scm', $metaID);
-            $citeID = null;
-            if ($cite = $metaObj->getCitation())
-            {
-                $this->saveSource($vhInfo, $cite, 'scm', $metaID);
-            }
+            /*
+             * Citation has become a link (foreign key) to Source table. No need to save separately.
+             */ 
+            /* 
+             * $citeID = null;
+             * /\*
+             *  * Yes single = aka if the assignment is successful
+             *  *\/
+             * if ($cite = $metaObj->getCitation())
+             * {
+             *     $this->saveSourceLink($vhInfo, $cite, 'scm', $metaID);
+             * }
+             */
         }
     }
 
     /**
-     * Save a Source
+     * Save a Source link
      *
-     * Source objects are written to table source, and their related language (if one exists) is written to
-     * table Language with a reverse foreign key as usual. Related on source.id=language.fk_id.
+     * Source objects exist in their own table, so when any part of a constellation needs a source, it links
+     * to it. This writes those links. These links have version control. There may be SCM for these links.
      *
-     * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
-     * validation.
-     *
-     * SNACControlMetadata is optional in Source object, and the SCM contains an (optional?) citation which is
-     * a Source object.  Thus saveSource and saveMeta might recurse. I'm not sure we an call Source first
-     * order data, but I'm also not sure DBUtil should care. If the upstream code puts an SCM on an object, we
-     * can write the SCM to the db.
-     *
-     * Note: saveSource() is a primitive called by saveConstellationSource() which probably does need
-     * SNACControlMetadata.
-     *
-     * Is Source first order data? Not always, as in when a Source object is a SCM citation. A Source object
-     * is a non-authority description of a source. Each source is not a shared authority and is singular to
-     * the record to which it is attached. That is: each Source is related back to a record. There can be
-     * multiple sources all related back to a single record, as is the case here in Constellation (nrd).
+     * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      *
      * @param \snac\data\Source $gObj The Source object
      *
@@ -2828,28 +2854,60 @@ class DBUtil
      * @param integer $fkID The record id of the containing table.
      *
      */
-    private function saveSource($vhInfo, &$gObj, $fkTable, $fkID)
+    private function saveSourceLink($vhInfo, $gObj, $fkTable, $fkID)
     {
+        die("DBUtil saveSourceLink Not used. Source links are single-sided relations foreign key relations to table source.\n");
         $genericRecordID = $gObj->getID();
         if ($this->prepOperation($vhInfo, $gObj))
         {
-            $genericRecordID = $this->sql->insertSource($vhInfo,
-                                                        $gObj->getID(),
-                                                        $gObj->getDisplayName(),
-                                                        $gObj->getText(),
-                                                        $gObj->getNote(),
-                                                        $gObj->getURI(),
-                                                        $this->thingID($gObj->getType()),
-                                                        $fkTable,
-                                                        $fkID);
+            $genericRecordID = $this->sql->insertSourceLink($vhInfo,
+                                                            $gObj->getID(),
+                                                            $fkTable,
+                                                            $fkID);
             $gObj->setID($genericRecordID);
             $gObj->setVersion($vhInfo['version']);
         }
-        /*
-         * Some non-first-order Source objects won't have meta data, but that is not really our concern.
-         */  
-        $this->saveMeta($vhInfo, $gObj, 'source', $genericRecordID);
-        $this->saveLanguage($vhInfo, $gObj, 'source', $genericRecordID);
+        $this->saveMeta($vhInfo, $gObj, 'source_link', $genericRecordID);
+    }
+
+    /**
+     * Write constellation sources to the database
+     *
+     * Foreach over a list of all Source objects in a constellation and the sources to the db. Source objects
+     * are written to table source, and their related language (if one exists) is written to table Language
+     * with a reverse foreign key as usual. Source and language are related on source.id=language.fk_id.
+     *
+     * Constellation sources can each have an SCM. 
+     *
+     * Any part of a constellation that needs source will link to the source by source->getID().
+     * 
+     * 'type' is always simple, and Daniel says we can ignore it. It was used in EAC-CPF just to quiet
+     * validation.
+     *
+     * @param integer[] $vhInfo list with keys version, main_id.
+     *
+     * @param \snac\data\Constellation $cObj The constellation object
+     */
+    private function saveSource($vhInfo, $cObj)
+    {
+        // G for generic in $gObj
+        foreach ($cObj->getSources() as $gObj)
+        {
+            $genericRecordID = $gObj->getID();
+            if ($this->prepOperation($vhInfo, $gObj))
+            {
+                $genericRecordID = $this->sql->insertSource($vhInfo,
+                                                            $gObj->getID(),
+                                                            $gObj->getDisplayName(),
+                                                            $gObj->getText(),
+                                                            $gObj->getNote(),
+                                                            $gObj->getURI());
+                $gObj->setID($genericRecordID);
+                $gObj->setVersion($vhInfo['version']);
+            }
+            $this->saveMeta($vhInfo, $gObj, 'source', $genericRecordID);
+            $this->saveLanguage($vhInfo, $gObj, 'source', $genericRecordID);
+        }
     }
 
 
