@@ -238,6 +238,56 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Test that an scm can use an existing source, and round trip the SCM.
+     */ 
+    public function testSourceSCM()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cObj->getPlaces()[1]->setConfirmed(true);
+
+        $retObj = $this->dbu->writeConstellation($cObj,
+                                                 'ingest full CPF prior to checking adding source to scm');
+
+        $readObj = $this->dbu->readConstellation($retObj->getID());
+
+        $readObj->getPlaces()[0]->getSNACControlMetadata()[0]->setCitation($readObj->getSources()[0]);
+        $readObj->getPlaces()[0]->getSNACControlMetadata()[0]->setNote("adding source");
+        $readObj->getPlaces()[0]->getSNACControlMetadata()[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+        /* 
+         * Run toJSON before write because write changes the constellation in place (apparently) even though
+         * it should not be doing that.
+         */
+        $firstJSON = $readObj->toJSON();
+
+        $origObj = $this->dbu->writeConstellation($readObj,
+                                                 'adding source to scm');
+        
+        $newObj = $this->dbu->readConstellation($readObj->getID());
+
+        /* 
+         * printf("\nDButiltest retObj id:%s readObj id: %s orig id: %s new id: %s\n",
+         *        $retObj->getID(),
+         *        $readObj->getID(),
+         *        $origObj->getID(),
+         *        $newObj->getID());
+         */
+
+        $secondJSON = $newObj->toJSON();
+
+        /* 
+         * $cfile = fopen('scm_before_save.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('scm_after_read.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
+         */
+        $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
+    }
+
+    /**
      * Read in the full test record
      *
      * Set the operation to be insert.
@@ -297,13 +347,17 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         else
         {
             // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing');
+            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing', -1, -1);
             $initialEditCount = count($editList);
         }
         
         $newSVersion = $this->dbu->writeConstellationStatus($retObj->getID(), 
                                                             'locked editing',
-                                                            'test write constellation status');
+                                                            'test write constellation status change published to locked editing');
+
+        // Not really necessary, since other tests will fail later if the writeConstellationStatus() fails.
+        $this->assertTrue($newSVersion > 1);
+
         $newStatus = $this->dbu->readConstellationStatus($retObj->getID());
         $newStatusToo = $this->dbu->readConstellationStatus($retObj->getID(), $newSVersion);
 
@@ -318,11 +372,16 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         else
         {
             // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing');
+            $editList = $this->dbu->listConstellationsWithStatusForUser('locked editing', -1, -1);
             $postEditCount = count($editList);
         }
         $this->assertEquals('locked editing', $newStatus);
         $this->assertEquals('locked editing', $newStatusToo);
+
+        /*
+         * If you get a number like 42 doesn't match expected 43, look at the optional limit and offset for
+         * listConstellationsWithStatusForUser(). The default limit is 42.
+         */
         $this->assertEquals($initialEditCount+1, $postEditCount);
 
         /*
@@ -368,12 +427,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Before uncommenting this, copy the old files. Any time these need updating, you should diff the old
          * and new to confirm that what you think changed, changed, and nothing else.
          */ 
-        $cfile = fopen('first_json.txt', 'w');
-        fwrite($cfile, $firstJSON);
-        fclose($cfile); 
-        $cfile = fopen('second_json.txt', 'w');
-        fwrite($cfile, $secondJSON);
-        fclose($cfile); 
+        /* 
+         * $cfile = fopen('first_json.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('second_json.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
+         */
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.

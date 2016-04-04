@@ -710,7 +710,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */ 
-    private function populateNrd($vhInfo, &$cObj)
+    private function populateNrd($vhInfo, $cObj)
     {
         $row = $this->sql->selectNrd($vhInfo);
         $cObj->setArkID($row['ark_id']);
@@ -737,7 +737,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */ 
-    private function populateOtherRecordID($vhInfo, &$cObj)
+    private function populateOtherRecordID($vhInfo, $cObj)
     {
         $oridRows = $this->sql->selectOtherID($vhInfo); 
         foreach ($oridRows as $rec)
@@ -785,7 +785,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populatePlace($vhInfo, &$cObj, $fkID)
+    private function populatePlace($vhInfo, $cObj, $fkID)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
@@ -820,7 +820,7 @@ class DBUtil
     /**
      * Populate the SNACControlMetadata (SCM)
      *
-     * Read the SCM from the database and add it to the object in &$cObj.
+     * Read the SCM from the database and add it to the object in $cObj.
      *
      * Don't be confused by setSource() that uses a Source object and setSource() that uses a
      * SNACControlMetadata object.
@@ -878,7 +878,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateLegalStatus($vhInfo, &$cObj)
+    private function populateLegalStatus($vhInfo, $cObj)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
@@ -907,7 +907,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateSubject($vhInfo, &$cObj)
+    private function populateSubject($vhInfo, $cObj)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
@@ -951,7 +951,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateNameEntry($vhInfo, &$cObj)
+    private function populateNameEntry($vhInfo, $cObj)
     {
         $neRows = $this->sql->selectName($vhInfo);
         foreach ($neRows as $oneName)
@@ -1147,7 +1147,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateConventionDeclaration($vhInfo, &$cObj)
+    private function populateConventionDeclaration($vhInfo, $cObj)
     {
         $rows = $this->sql->selectConventionDeclaration($vhInfo);
         foreach ($rows as $item)
@@ -1170,7 +1170,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */ 
-    private function saveStructureOrGenealogy($vhInfo, &$cObj)
+    private function saveStructureOrGenealogy($vhInfo, $cObj)
     {
         if ($gList = $cObj->getStructureOrGenealogies())
         {
@@ -1201,7 +1201,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */ 
-    private function populateStructureOrGenealogy($vhInfo, &$cObj)
+    private function populateStructureOrGenealogy($vhInfo, $cObj)
     {
         $rows = $this->sql->selectStructureOrGenealogy($vhInfo);
         foreach ($rows as $item)
@@ -1228,7 +1228,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateGeneralContext($vhInfo, &$cObj)
+    private function populateGeneralContext($vhInfo, $cObj)
     {
         $rows = $this->sql->selectGeneralContext($vhInfo);
         foreach ($rows as $item)
@@ -1250,7 +1250,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    private function saveGeneralContext($vhInfo, &$cObj)
+    private function saveGeneralContext($vhInfo, $cObj)
     {
         if ($gList = $cObj->getGeneralContexts())
         {
@@ -1282,7 +1282,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateNationality($vhInfo, &$cObj)
+    private function populateNationality($vhInfo, $cObj)
     {
         $rows = $this->sql->selectNationality($vhInfo);
         foreach ($rows as $item)
@@ -1302,7 +1302,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    private function saveNationality($vhInfo, &$cObj)
+    private function saveNationality($vhInfo, $cObj)
     {
         if ($gList = $cObj->getNationalities())
         {
@@ -1525,7 +1525,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateMandate($vhInfo, &$cObj)
+    private function populateMandate($vhInfo, $cObj)
     {
         $rows = $this->sql->selectMandate($vhInfo);
         foreach ($rows as $item)
@@ -1547,7 +1547,7 @@ class DBUtil
      *
      * @param $cObj snac\data\Constellation object
      */
-    private function saveMandate($vhInfo, &$cObj)
+    private function saveMandate($vhInfo, $cObj)
     {
         if ($gList = $cObj->getMandates())
         {
@@ -1576,7 +1576,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveConventionDeclaration($vhInfo, &$cObj)
+    private function saveConventionDeclaration($vhInfo, $cObj)
     {
         if ($gList = $cObj->getConventionDeclarations())
         {
@@ -1603,7 +1603,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveGender($vhInfo, &$cObj)
+    private function saveGender($vhInfo, $cObj)
     {
         foreach ($cObj->getGenders() as $fdata)
         {
@@ -1627,7 +1627,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveConstellationDate($vhInfo, &$cObj)
+    private function saveConstellationDate($vhInfo, $cObj)
     {
         foreach ($cObj->getDateList() as $date)
         {
@@ -1658,7 +1658,7 @@ class DBUtil
      *
      * What does it mean to have a date with no fromType? Could be an unparseable date, I guess.
      */
-    private function saveDate($vhInfo, &$date, $tableName,  $tableID)
+    private function saveDate($vhInfo, $date, $tableName,  $tableID)
     {
         $rid = $date->getID();
         if ($this->prepOperation($vhInfo, $date))
@@ -1711,7 +1711,7 @@ class DBUtil
      *
      * @param integer $fkID Foreign key row id aka table.id from the related table.
      */
-    private function saveLanguage($vhInfo, &$cObj, $table, $fkID)
+    private function saveLanguage($vhInfo, $cObj, $table, $fkID)
     {
         /*
          * Classes are not consistent in whether language is returned as a list or scalar, so we need to
@@ -1772,7 +1772,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveOtherRecordID($vhInfo, &$cObj)
+    private function saveOtherRecordID($vhInfo, $cObj)
     {
         foreach ($cObj->getOtherRecordIDs() as $otherID)
         {
@@ -1818,7 +1818,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveLegalStatus($vhInfo, &$cObj)
+    private function saveLegalStatus($vhInfo, $cObj)
     {
         foreach ($cObj->getLegalStatuses() as $fdata)
         {
@@ -1847,7 +1847,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveOccupation($vhInfo, &$cObj)
+    private function saveOccupation($vhInfo, $cObj)
     {
         foreach ($cObj->getOccupations() as $fdata)
         {
@@ -1900,7 +1900,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveFunction($vhInfo, &$cObj)
+    private function saveFunction($vhInfo, $cObj)
     {
         foreach ($cObj->getFunctions() as $fdata)
         {
@@ -1944,7 +1944,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveSubject($vhInfo, &$cObj)
+    private function saveSubject($vhInfo, $cObj)
     {
         foreach ($cObj->getSubjects() as $term)
         {
@@ -2057,7 +2057,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object
      */
-    private function saveResourceRelation($vhInfo, &$cObj)
+    private function saveResourceRelation($vhInfo, $cObj)
     {
         foreach ($cObj->getResourceRelations() as $fdata)
         {
@@ -2091,7 +2091,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateGender($vhInfo, &$cObj)
+    private function populateGender($vhInfo, $cObj)
     {
         $rows = $this->sql->selectGender($vhInfo);
         foreach ($rows as $item)
@@ -2116,7 +2116,7 @@ class DBUtil
      * 
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateBiogHist($vhInfo, &$cObj)
+    private function populateBiogHist($vhInfo, $cObj)
     {
         $rows = $this->sql->selectBiogHist($vhInfo);
         foreach ($rows as $item)
@@ -2153,7 +2153,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
-    private function populateOccupation($vhInfo, &$cObj)
+    private function populateOccupation($vhInfo, $cObj)
     {
         $occRows = $this->sql->selectOccupation($vhInfo);
         foreach ($occRows as $oneOcc)
@@ -2207,7 +2207,7 @@ class DBUtil
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      */
-    private function populateRelation($vhInfo, &$cObj)
+    private function populateRelation($vhInfo, $cObj)
     {
         $relRows = $this->sql->selectRelation($vhInfo);
         foreach ($relRows as $oneRel)
@@ -2254,7 +2254,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateResourceRelation($vhInfo, &$cObj)
+    private function populateResourceRelation($vhInfo, $cObj)
     {
         $rrRows = $this->sql->selectResourceRelation($vhInfo);
         foreach ($rrRows as $oneRes)
@@ -2284,7 +2284,7 @@ class DBUtil
      * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateFunction($vhInfo, &$cObj)
+    private function populateFunction($vhInfo, $cObj)
     {
         $funcRows = $this->sql->selectFunction($vhInfo);
         foreach ($funcRows as $oneFunc)
@@ -2420,7 +2420,7 @@ class DBUtil
      * $status and $note to the version_history.
      *
      * As of php 5 objects are passed by reference. It is therefore redundant for a function prototype to say
-     * foo(&$cObj). It is necessary to clone() the object if you want to mess with it and not have it changed
+     * foo($cObj). It is necessary to clone() the object if you want to mess with it and not have it changed
      * in place.
      *
      * Mar 9 2016 There is no $status arg. When creating the new version, keep the existing status. If the
@@ -2564,7 +2564,7 @@ class DBUtil
      *
      * @param int[] $vhInfo A list with keys 'main_id' and 'version'
      *
-     * @param \snac\data\Constellation &$cObj a constellation object passed by reference.
+     * @param \snac\data\Constellation $cObj a constellation object passed by reference.
      *
      * No return value. $cObj is passed by reference, and is changed in place by the save functions, as
      * necessary to update/populate id and version.
@@ -2729,7 +2729,7 @@ class DBUtil
      * @param string $relatedTable Name of the related table for this place.
      *
      */
-    private function savePlace($vhInfo, &$cObj, $relatedTable, $fkID)
+    private function savePlace($vhInfo, $cObj, $relatedTable, $fkID)
     {
         if ($placeList = $cObj->getPlaces())
         {
@@ -2794,7 +2794,7 @@ class DBUtil
      * @param integer $fkID Record id aka table.id of the record to which this meta data relates.
      *
      */ 
-    private function saveMeta($vhInfo, &$gObj, $fkTable, $fkID)
+    private function saveMeta($vhInfo, $gObj, $fkTable, $fkID)
     {
         if (! $metaObjList = $gObj->getSNACControlMetadata())
         {
@@ -3039,7 +3039,7 @@ class DBUtil
      *
      * @param \snac\data\BiogHist A single BiogHist object.
      */ 
-    private function saveBiogHist($vhInfo, &$cObj)
+    private function saveBiogHist($vhInfo, $cObj)
     {
         foreach ($cObj->getBiogHistList() as $biogHist)
         {
@@ -3121,7 +3121,7 @@ class DBUtil
      * @param \snac\data\NameEntry Name entry object
      *
      */
-    public function saveName($vhInfo, &$cObj)
+    public function saveName($vhInfo, $cObj)
     {
         foreach ($cObj->getNameEntries() as $ndata)
         {
