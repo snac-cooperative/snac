@@ -173,7 +173,7 @@ function indexESearch($written) {
                 'id' => $written->getID(),
                 'body' => [
                         'nameEntry' => $written->getPreferredNameEntry()->getOriginal(),
-                        'entityType' => $written->getEntityType()->getTerm(),
+                        'entityType' => $written->getEntityType()->getID(),
                         'arkID' => $written->getArk(),
                         'id' => $written->getID(),
                         'timestamp' => date("c")
