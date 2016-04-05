@@ -99,7 +99,7 @@ class DBUser
     {
         
         $id = $this->sql->insertUser($user->getFirstName(),
-                                     $user->getLastName()
+                                     $user->getLastName(),
                                      $user->getFullName(),
                                      $user->getAvatar(),
                                      $user->getAvatarSmall(),
