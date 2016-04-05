@@ -53,9 +53,9 @@ body {
 
 <div class="container snac" role="main">
 
-    <h1>Welcome, {{ user.firstName|default('SNAC User') }}!</h1>
+    <h1>Dashboard</h1>
 
-    <p>Short snippet of interesting text to welcome the user to the site.  Should be witty and engaging.</p>
+    <p>Welcome, {{ user.firstName|default('SNAC User') }},  this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p>
 
 
     <div class="row">
@@ -152,10 +152,10 @@ body {
             
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Recently Updated</h3>
+                    <h3 class="panel-title">Recently Published</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Browse interesting and recently updated Constellations..</p>
+                    <p>Browse interesting and recently published Constellations..</p>
                     <div class="list-group">
                         {% for recent in data.recents %}
                         <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
