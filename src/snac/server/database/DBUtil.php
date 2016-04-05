@@ -149,6 +149,8 @@ class DBUtil
      *
      * 'published', 'needs review', 'rejected', 'being edited', 'bulk ingest', 'deleted'
      *
+     * @param string $status A status value
+     * @return boolean Returns true if the $status is a valid status, else returns false.
      */ 
     private function statusOK($status)
     {
@@ -250,13 +252,18 @@ class DBUtil
     /**
      * Test for delete operation
      *
-     * This is a wrapper to deal with delete, and call setDeleted() if necessary.
+     * This is a wrapper to deal with delete, and call setDeleted() if necessary. Returns true if not deleted
+     * and it is ok to proceed with an insert or update.
      *
      * Note the setOperation() at the end right before return. It is best that we not return from the middle
      * of this function.
      *
      * This is where operation is cleared during write. Also see saveNrd() where operation for the constellation is cleared.
      *
+     * @param integer[] $vhInfo Associative list with keys 'main_id', 'version'.
+     * @param object $cObj An object that supports getOperation() and getID().
+     *
+     * @return boolean true if not delete and ok to proceed
      */ 
     private function prepOperation($vhInfo, $cObj)
     {
@@ -313,6 +320,7 @@ class DBUtil
      * Read a published constellation by ARK from the database.
      *
      * @param string $arkID An ARK
+     * @param boolean $summary optional Optional arg if true then return summary constellation.
      *
      * @return \snac\data\Constellation A PHP constellation object.
      *
@@ -340,6 +348,7 @@ class DBUtil
      * Read a published constellation by constellation ID (aka main_id, mainID) from the database.
      *
      * @param integer $mainID A constellation id
+     * @param boolean $summary optional Optional arg if true then return summary constellation.
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */ 
@@ -638,6 +647,7 @@ class DBUtil
      * Use readConstellation() as the public API. This is private.
      *
      * @param integer[] $vhInfo An associative list with keys 'version', 'main_id'. Values are integers.
+     * @param boolean $summary optional Optional arg if true then return summary constellation.
      *
      * @return \snac\data\Constellation A PHP constellation object.
      * 
@@ -782,7 +792,11 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param snac\data\Constellation $cObj Constellation object, passed by reference as is the default in
+     * php, and changed in place
+     *
+     * @param integer $fkID An integer foreign key of the table that has a place.
+     *
      *
      */
     private function populatePlace($vhInfo, $cObj, $fkID)
@@ -1322,7 +1336,7 @@ class DBUtil
         }
     }
 
-    /*
+    /**
      * Select language from the database, create a language object, add the language to the object referenced
      * by $cObj.
      *
@@ -2307,6 +2321,15 @@ class DBUtil
         }
     }
 
+    /**
+     * Insert a version history record.
+     *
+     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
+     * @param string $status A status string
+     * @param string $note A note for the new version
+     * @param integer $appUserID The user id
+     * @param integer $roleID The user's chosen role for this version
+     */
     private function saveVersionHistory($vhInfo, $status, $note, $appUserID, $roleID)
     {
         insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note);
@@ -2650,39 +2673,6 @@ class DBUtil
         return false;
     }
 
-
-    /**
-     * Insert a constellation
-     * 
-     * Public exposed function to write a new PHP Constellation object to the database. 
-     *
-     * This is a new constellation, and will get new version and main_id values. Calls saveConstellation() to
-     * call a sql function to do the actual writing.
-     *
-     * @param integer $appUserID The user appuser.id value from the db. 
-     *
-     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     *
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
-     *
-     * @param string $note A user-created note for what was done to the constellation. A check-in note.
-     *
-     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
-     * return value such as true for success, and false for failure. This function might need to call into the
-     * system-wide user message class that we haven't written yet.
-     *
-     */
-    public function old_insertConstellation($id, $appUserID, $roleID, $icstatus, $note)
-    {
-        // Quick hack for backward compatibility, even though this function is being deprecated. Pass a null
-        // $mainID to insertVersionHistory().
-        $mainID = null;
-        $vhInfo = $this->sql->insertVersionHistory($mainID, $appUserID, $roleID, $icstatus, $note);
-        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
-        return $vhInfo;
-    } // end insertConstellation
-
-
     /**
      * Update a constellation
      * 
@@ -2727,6 +2717,7 @@ class DBUtil
      * AbstractData.
      *
      * @param string $relatedTable Name of the related table for this place.
+     * @param integer $fkID Foreign key row id aka table.id from the related table.
      *
      */
     private function savePlace($vhInfo, $cObj, $relatedTable, $fkID)

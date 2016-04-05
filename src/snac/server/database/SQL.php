@@ -56,8 +56,11 @@ class SQL
      * any clear need.
      *
      * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
+     *
+     * @param string $deletedValue optional Optional param in case the value of status deleted ever changes
+     * its string representation. In hindsight not necessary and just added complexity. Oh well.
      */
-    public function __construct($db, $deletedValue)
+    public function __construct($db, $deletedValue='deleted')
     {
         $this->sdb = $db;
         $this->deleted = $deletedValue;
@@ -163,7 +166,9 @@ class SQL
     }
 
     /**
-     * Create a new session 
+     * Create a new session
+     *
+     * Create a new session for a user.
      *
      * @param integer $appUserID The user id
      * 
@@ -275,8 +280,10 @@ class SQL
      *
      * Set active to true or false, depending on $value.
      *
-     * @param integer $uid User id, aka appuser.id aka row id.  @param string $value A Postgres compatible
-     * value, 't' or 'f'. Get this value by calling boolToPg() with true or false in the calling code.
+     * @param integer $uid User id, aka appuser.id aka row id.
+     *
+     * @param string $value A Postgres compatible value, 't' or 'f'. Get this value by calling boolToPg() with
+     * true or false in the calling code.
      * 
      */ 
     public function updateActive($uid, $value)
@@ -640,30 +647,6 @@ class SQL
         return $row['main_id'];
     }
 
-    /**
-     *
-     * This is very similar to insertVersionHistory(). Why do we have both? What is insertVersionHistory()
-     * used for? Is it still relevant?
-     *
-     */ 
-    public function not_used_insertNewVersion($mainID, $status, $note)
-    {
-        $qq = 'insert_version_history';
-        // We need version_history.id and version_history.main_id returned.
-        $this->sdb->prepare($qq, 
-                            'insert into version_history 
-                            (user_id, role_id, status, is_current, note)
-                            values 
-                            ($1, $2, $3, $4, $5)
-                            returning id as version, main_id;');
-
-        $result = $this->sdb->execute($qq, array($userid, $role, $status, true, $note));
-        $vhInfo = $this->sdb->fetchrow($result);
-        $this->sdb->deallocate($qq);
-        return $vhInfo;
-        
-    }
-
 
     /**
      * Select records from table source by foreign key
@@ -767,16 +750,17 @@ class SQL
      *
      * Write a source objec to the database. These are per-constellation so they have main_id and no foreign
      * keys. These are linked to other tables by putting a source.id foreign key in that related table. 
-     *
      * Language related is a Language object, and is saved in table language. It is related where
      * source.id=language.fk_id. There is no language_id in table source, and there should not be. However, a
      * lanugage may link to this source record via source.id. See DBUtil writeSource().
-     *
      * The "type" field was always "simple" and is no longer used.
+     * 
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param integer $id Record id
+     *
+     * @param string $displayName The name of the source to display in the UI
      *
      * @param string $text Text of this source.
      *
@@ -932,6 +916,8 @@ class SQL
      * The $mainID aka main_id may not be minted. If we have an existing $mainID we do not create a new
      * one. This would be the case for update and delete.
      *
+     * @param integer $mainID Constellation id
+     *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
      *
      * @param integer $role Foreign key to role.id, the role id value of the current user.
@@ -980,6 +966,18 @@ class SQL
      * might be using the same version across many Constellations and other inserts all in this current
      * session.
      *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $appUserID User id
+     *
+     * @param integer $roleID Role id
+     *
+     * @param string $status Constellation status
+     *
+     * @param string $note Note for this version
+     *
+     * @return string[] $vhInfo associative list with keys: version, main_id
+     *
      */
     public function insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note)
     {
@@ -1014,6 +1012,8 @@ class SQL
      * code. Something.
      *
      * @param string $note A string the user enters to identify what changed in this version.
+     *
+     * @param integer $main_id Constellation id
      *
      * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
      * returned as 'id', but all the code knows that as the version number, so this code plays nice by
@@ -1210,15 +1210,21 @@ class SQL
     /**
      * Insert into place_link.
      *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     * 
      * @param integer $id The id
      *
      * @param string $confirmed Boolean confirmed by human
+     *
+     * @param string $original The original string
      *
      * @param string $geo_place_id The geo_place_id
      *
      * @param integer $typeID Vocabulary ID of the place@localType
      *
      * @param integer $roleID Vocabulary ID of the role
+     *
+     * @param string $note A note
      *
      * @param float $score The geoname matching score
      *
@@ -1327,20 +1333,21 @@ class SQL
      *
      * @param integer $id Record id of this table.
      *
-     * @param string $subCitation
+     * @param integer $citationID Foreign key to table source.id
      *
-     * @param string $sourceData
+     * @param string $subCitation A sub citation
+     *
+     * @param string $sourceData The text of the source
      *
      * @param integer $ruleID fk to vocaulary.id
      *
-     * @param integer $languageID fk to vocaulary.id
-     *
-     * @param string $note
-     *
-     * @param integer $fkID fk to the relate table
+     * @param string $note A note about this meta data
      *
      * @param string $fkTable name of the related table
      *
+     * @param integer $fkID fk to the relate table
+     *
+     * @return integer Return the record id
      */
     public function insertMeta($vhInfo, $id, $citationID, $subCitation, $sourceData,
                                $ruleID, $note, $fkTable, $fkID)
@@ -1396,15 +1403,13 @@ class SQL
      *
      * Also known as GeoTerm
      * 
-     * @param integer $gid A geo_place.id value.
-     *
      * @param integer $id The id. If null, the system will assign a new id.
      *
-     * @param string $version  The version 
+     * @param string $version The version.
      *
-     * @param string $uri  The uri 
+     * @param string $uri The uri.
      *
-     * @param string $name  The name 
+     * @param string $name The name.
      *
      * @param string $latitude  The latitude maybe a string in php, but really a number(10,7)
      *
@@ -1752,6 +1757,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id
+     *
      * @param integer $termID Vocabulary foreign key for the term.
      *
      * @return no return value.
@@ -1786,6 +1793,8 @@ class SQL
      * a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id
      *
      * @param integer $termID Vocabulary foreign key for the term.
      *
@@ -1822,6 +1831,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id
+     *
      * @param integer $termID Vocabulary foreign key for the term.
      *
      * @return no return value.
@@ -1855,7 +1866,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, main_id.
+     *
+     * @param string $table The table this text is related to.
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
      * text. There may be multiple rows returned.
@@ -1962,6 +1975,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id
+     *
      * @param string $text Text value we're saving.
      *
      * @return no return value.
@@ -1979,6 +1994,8 @@ class SQL
      * $id is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id
      *
      * @param string $text Text value we're saving.
      *
@@ -1998,6 +2015,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
+     * @param integer $id Record id
+     *
      * @param string $text Text value we're saving.
      *
      * @return no return value.
@@ -2015,6 +2034,8 @@ class SQL
      * is null, get a new record id. Always return $id.
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id
      *
      * @param string $text Text value we're saving.
      *
@@ -2106,15 +2127,18 @@ class SQL
      *
      * @param string $targetEntityType The entity type of the target relation (aka the other entity aka the related entity)
      *
-     * @param $type Traditionally the xlink:arcrole of the relation (aka relation type, a controlled vocabulary)
+     * @param integer $type A foreign key id of entityType, traditionally the xlink:arcrole of the relation
+     * (aka relation type, a controlled vocabulary)
      *
-     * @param $relationType The CPF relation type of this relationship, originally only used by AnF
-     * cpfRelation@cpfRelationType. Probably xlink:arcrole should be used instead of this. The two seem
-     * related and/or redundant.
+     * @param integer $relationType A foreign key id. The CPF relation type of this relationship, originally
+     * only used by AnF cpfRelation@cpfRelationType. Probably xlink:arcrole should be used instead of
+     * this. The two seem related and/or redundant.
      *
-     * @param $content Content of this relation
+     * @param string $content Content of this relation
      *
-     * @param $note A note, perhaps a descriptive note about the relationship
+     * @param string $note A note, perhaps a descriptive note about the relationship
+     *
+     * @param integer $id The record (related_identity.id) id
      *
      * @return no return value.
      *
@@ -2473,6 +2497,8 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param integer $termID Vocabulary foreign key for the term.
+     *
+     * @param integer $id Record id from this object and table.
      *
      * @return no return value.
      *
@@ -2863,14 +2889,8 @@ class SQL
     // Contributor has issues. See comments in schema.sql. This will work for now.
     // Get each name, and for each name get each contributor.
 
-    /*
+    /**
      * Select contributor of a specific name, where name_contributor.name_id=name.id.
-     *
-     * @param integer $nameID The foreign key record id from name.id
-     *
-     * @param integer $version The version number.
-     *
-     * @return string[] List of list, one inner list per contributor keys: id, version, main_id, type, name, name_id
      *
      * The new query is based on selectDate.
      *
@@ -2886,6 +2906,11 @@ class SQL
      * and aa.version=bb.version
      * and aa.name_id=$3');
      *
+     * @param integer $nameID The foreign key record id from name.id
+     *
+     * @param integer $version The version number.
+     *
+     * @return string[] List of list, one inner list per contributor keys: id, version, main_id, type, name, name_id
      */
     public function selectContributor($nameID, $version)
     {
@@ -2961,6 +2986,8 @@ class SQL
      * v4:locked editing
      *
      * @param integer $mainID id value matching version_history.main_id.
+     *
+     * @param string $status Constellation status we need
      *
      * @return integer Version number from version_history.id returned as 'version', as is our convention.
      *
@@ -3118,7 +3145,7 @@ class SQL
         return $all;
     }
 
-    /*
+    /**
      * Update a record in table $table to have is_deleted set to true, for the most recent version. "Most
      * recent" is the version prior to $newVersion, because $newVersion has not yet been saved in the
      * database. The query retains the usual subquery $version<=$1 even though in this case we have a new
@@ -3155,7 +3182,7 @@ class SQL
         $this->sqlCoreDeleted($table, $id, $newVersion, 'set');
     }
 
-        /*
+    /**
      * Update a record in table $table to have is_deleted set to true, for the most recent version. "Most
      * recent" is the version prior to $newVersion, because $newVersion has not yet been saved in the
      * database. The query retains the usual subquery $version<=$1 even though in this case we have a new
@@ -3284,6 +3311,10 @@ class SQL
      * Count sibling name records
      *
      * Counts only the most recent.
+     *
+     * @param integer $recID The record id
+     *
+     * @return integer The count of sibling records matching $recID
      */
     public function siblingNameCount($recID)
     {
