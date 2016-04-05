@@ -435,12 +435,7 @@ class WebUIExecutor {
             
             $return = array ();
             foreach ($results["hits"]["hits"] as $i => $val) {
-                array_push($return, 
-                        array (
-                                "id" => $val["_source"]["id"],
-                                "label" => $val["_source"]["nameEntry"],
-                                "value" => $val["_source"]["nameEntry"]
-                        ));
+                array_push($return, $val["_source"]);
             }
             
             $response = array();
