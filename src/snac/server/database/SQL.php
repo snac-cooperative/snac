@@ -128,17 +128,97 @@ class SQL
     }
 
     /**
+     * Return the id of a session by token.
      *
+     * If the session exists, return the record.
+     *
+     * @param string $accessToken A session token
+     *
+     * @return string[] The session record as a list with keys appuser_fk, access_token, expires.
      *
      */
     public function selectSession($accessToken)
     {
         $this->sdb->query(
-            'select id from session where access and id=$2',
-            array($passwd, $appUserID));
+            'select id from session where access_token=$1',
+            array($accessToken));
         $row = $this->sdb->fetchrow($result);
-        return $row['id'];
+        return $row;
     }
+
+
+    /**
+     * Update a session expiration timestamp
+     *
+     * @param string $accessToken A session token
+     *
+     * @param string $expire A session expiration timestamp
+     *
+     */
+    public function updateSession($accessToken, $expire)
+    {
+        $this->sdb->query(
+            'update session set expire=$1 where access_token=$2',
+            array($expire, $accessToken));
+    }
+
+    /**
+     * Create a new session 
+     *
+     * @param integer $appUserID The user id
+     * 
+     * @param string $accessToken A session token
+     *
+     * @param string $expire A session expiration timestamp
+     *
+     */
+    public function insertSession($appUserID, $accessToken, $expire)
+    {
+        $this->sdb->query(
+            'insert into session (appuser_fk, access_token expire) values ($1, $2, $3)',
+            array($appUserID, $accessToken, $expire));
+    }
+
+    
+    /**
+     * Check that a session is active
+     *
+     * @param integer $appUserID The user id
+     * 
+     * @param string $accessToken A session token
+     *
+     * @return boolean true for active, false for inactive or not found.
+     */
+    public function selectActive($appUserID, $accessToken)
+    {
+        $result = $this->sdb->query(
+            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire>=now()',
+            array($appUserID, $accessToken));
+        $row = $this->sdb->fetchrow($result);
+        if ($row['count'] == 1)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Clear all user sessions
+     *
+     * @param integer $appUserID The user id
+     * 
+     * @param string $accessToken A session token
+     *
+     * @return boolean true for active, false for inactive or not found.
+     */
+    public function deleteAllSessions($appUserID)
+    {
+        $result = $this->sdb->query(
+            'delete from session where appuser_fk=$1',
+            array($appUserID));
+    }
+
+
 
     /**
      * Insert a new user aka appuser

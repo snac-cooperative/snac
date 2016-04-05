@@ -99,7 +99,7 @@ class DBUser
     {
         
         $id = $this->sql->insertUser($user->getFirstName(),
-                                     $user->getLastName()
+                                     $user->getLastName(),
                                      $user->getFullName(),
                                      $user->getAvatar(),
                                      $user->getAvatarSmall(),
@@ -276,7 +276,8 @@ class DBUser
      */
     public function addSession(snac\data\User $user, $accessToken, $expire)
     {
-        if ($this->sql->selectSession($accessToken))
+        $rec = $this->sql->selectSession($accessToken);
+        if ($rec['appuser_fk'])
         {
             $this->sql->updateSession($accessToken, $expire);
         }
@@ -305,9 +306,12 @@ class DBUser
      * Delete all session records for $user.
      *
      * @param \snac\data\User $user A user object
+     *
+     * @return boolean true Returns true or an exception will be thrown by low level db code if something fails.
      */
     public function clearAllSessions(snac\data\User $user)
     {
-        return $this->sql->deleteAllSessions($user->getUserID);
+        $this->sql->deleteAllSessions($user->getUserID());
+        return true;
     }
 }
