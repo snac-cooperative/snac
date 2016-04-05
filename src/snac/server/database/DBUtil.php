@@ -2369,21 +2369,22 @@ class DBUtil
      *
      * Write a new version history record, updating the constellation status.
      *
-     * @param integer $mainID A constellation ID
-     *
-     * @param string $status The new status value. 'deleted' not allowed. The status must be one of the known values.
-     *
-     * @param string $note optional text note to write to the version_history table.
-     *
-     * @return integer|boolean Returns the new version number on success or false on failure.
-     *
      * always increment version
-     * cannot write status 'deleted'
+     * can write status 'deleted' which deletes the constellation
      * can update is_deleted and status='deleted' records (if update where is_deleted, probably best to set is_deleted to 'f')
      * returns false if $id not found
      * return false for any failure
      * return new version on success
      * write optional note if supplied
+     *
+     * @param integer $mainID A constellation ID
+     *
+     * @param string $status The new status value. 'deleted' is allowed, and will cause the constellation to
+     * be deleted. The status must be one of the known values.
+     *
+     * @param string $note optional text note to write to the version_history table.
+     *
+     * @return integer|boolean Returns the new version number on success or false on failure.
      *
      */ 
     public function writeConstellationStatus($mainID, $status, $note="")
@@ -2392,10 +2393,17 @@ class DBUtil
         {
             return false;
         }
-        if ($status == 'deleted')
-        {
-            return false;
-        }
+        /*
+         * Apr 4 2016 Rather than delete via setOperation() set to delete then callign writeConstellation(),
+         * allow setting the constellation status to deleted. A quick scan of the code doesn't reveal any
+         * problems with this approach. So, the following if statement is commented out.
+         */ 
+        /* 
+         * if ($status == 'deleted')
+         * {
+         *     return false;
+         * }
+         */
         if ($this->statusOK($status))
         {
             if (! $note)

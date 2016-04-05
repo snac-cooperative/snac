@@ -657,14 +657,14 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A list of records (list of lists) with inner keys matching the database field names:
-     * version, main_id, id, text, note, uri, type_id, language_id.
+     * version, main_id, id, text, note, uri, language_id.
      *
      */
     public function selectSource($fkID, $version)
     {
         $qq = 'select_source';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id, aa.display_name
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select fk_id,max(version) as version from source where fk_id=$1 and version<=$2 group by fk_id) as bb
                             where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
@@ -723,14 +723,14 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A single source record keys matching the database field names:
-     * version, main_id, id, text, note, uri, type_id, language_id.
+     * version, main_id, id, text, note, uri, language_id.
      *
      */
     public function selectSourceByID($sourceID, $version)
     {
         $qq = 'select_source_by_id';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.type_id, aa.language_id, aa.display_name
+                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -1323,7 +1323,7 @@ class SQL
      *
      * Note: we do not use citation_id because citations are source, and source is not a controlled
      * vocabulary. Source is like date. Each source is indivualized for the record it relates to. To get the
-     * citation, conceptuall select from source where scm.id==source.fk_id.
+     * citation, conceptual select from source where scm.id==source.fk_id.
      *
      * Note: We do not save language_id because languages are objects, not a single vocabulary term like
      * $ruleID. The language is related back to this table where scm.id=language.fk_id and
