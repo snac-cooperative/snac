@@ -144,6 +144,7 @@ create table appuser (
         first        text,                -- first name
         last         text,                -- last name
         fullname     text,                -- full name text
+        password     text,
         avatar       text,                -- url
         avatar_small text,                -- url
         avatar_large text                 -- url

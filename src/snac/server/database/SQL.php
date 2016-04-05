@@ -153,7 +153,7 @@ class SQL
      */
     public function selectMatchingPassword($appUserID, $passwd)
     {
-        $this->sdb->query(
+        $result = $this->sdb->query(
             'select id from  appuser where password=$1 and id=$2',
             array($passwd, $appUserID));
         $row = $this->sdb->fetchrow($result);

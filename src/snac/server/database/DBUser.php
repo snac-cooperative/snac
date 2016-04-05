@@ -285,7 +285,7 @@ class DBUser
      */
     public function checkPassword($user, $passwd)
     {
-        $id = $this->sql->selectMatchingPassword($user->getUserID, $passwd);
+        $id = $this->sql->selectMatchingPassword($user->getUserID(), $passwd);
         if ($id >= 1)
         {
             return true;
