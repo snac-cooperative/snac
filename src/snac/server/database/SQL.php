@@ -92,6 +92,36 @@ class SQL
     }
 
     /**
+     * Really delete a user
+     *
+     * Used for testing only. Normal users are inactivated.
+     *
+     * @param integer $appUserID The user id to delete.
+     */
+    public function deleteUser($appUserID)
+    {
+        $result = $this->sdb->query(
+            'delete from appuser where id=$1',
+            array($appUserID));
+    }
+
+    /**
+     * Really delete a role
+     *
+     * Used for testing only, maybe. In any case, deleting a role should be rare. To make this a little safer
+     * it only deletes if the role is not in use.
+     *
+     * @param string[] $role A list with keys: id, label, description
+     */
+    public function deleteRole($role)
+    {
+        $result = $this->sdb->query(
+            'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
+            array($role['id']));
+    }
+
+
+    /**
      * Update password for an existing user.
      *
      * We assume the user exists. This will silently fail for non-existing user, although the calling code
@@ -319,10 +349,10 @@ class SQL
      */
     public function insertRole($label, $description)
     {
-        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id",
+        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id, label, description",
                           array($label, $description));
         $row = $this->sdb->fetchrow($result);
-        return $row['id'];
+        return $row;
     }
 
     /**
@@ -346,8 +376,26 @@ class SQL
      */ 
     public function selectRole()
     {
-        $retult = $this->sdb->query("select * from role order by label asc",
-                                    array($uid, $roleID));
+        $result = $this->sdb->query("select * from role order by label asc",
+                                    array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Select user role records
+     *
+     * @return string[][] Return list of list with keys: id, label, description.
+     */ 
+    public function selectUserRole($appUserID)
+    {
+        $result = $this->sdb->query("select role.* from role,appuser_role_link
+                                    where appuser_role_link.uid=$1 and role.id=rid order by label asc",
+                                    array($appUserID));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
