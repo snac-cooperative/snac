@@ -505,12 +505,41 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
 	var constellationRelationid = 1;
+	
 	if ($('#next_constellationRelation_i').exists()) {
 	    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
 	}
-	console.log("Next constellationRelation ID: " + constellationRelationid);
+	console.log("Next constellationRelation ID: " + constellationRelationid);	
+	if ($('#btn_create_constellationRelation').exists()){
+		$('#btn_create_constellationRelation').click(function(){
+	        var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
+	        if (cid != null) {
+	            somethingHasBeenEdited = true;
+				var text = $('#constellationRelation_template').clone();
+		        var html = text.html().replace(/ZZ/g, constellationRelationid);
+		        $('#add_constellationRelation_div').after(html);
+		        $('#constellationRelation_targetID_'+constellationRelationid).val(cid);
+		        $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
+		        $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
+		        $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
+
+		        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
+		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
+		        
+		        makeEditable("constellationRelation", constellationRelationid);
+		        
+		        constellationRelationid = constellationRelationid + 1;
+		        
+		        return true;
+	        	
+	        }
+	        
+	        
+	        return false;
+		});
+	}
+/**
 	if ($('#btn_add_constellationRelation').exists()){
 		$('#btn_add_constellationRelation').click(function(){
             somethingHasBeenEdited = true;
@@ -521,7 +550,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+**/	
 	var languageid = 1;
 	if ($('#next_language_i').exists()) {
 	    languageid = parseInt($('#next_language_i').text());

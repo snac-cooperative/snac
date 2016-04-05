@@ -877,6 +877,10 @@ class ConstellationPostMapper {
             
             $relation->setTargetConstellation($data["targetID"]);
             $relation->setTargetArkID($data["targetArkID"]);
+            
+            $type = new \snac\data\Term();
+            $type->setID($data["targetEntityType"]);
+            $relation->setTargetEntityType($type);
             $relation->setContent($data["content"]);
             $relation->setNote($data["note"]);
 
