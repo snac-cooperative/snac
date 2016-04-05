@@ -11,12 +11,6 @@
  */
 
 /**
- * Load and instantiate the server
- */
-include ("../../../vendor/autoload.php");
-
-
-/**
  * Load dependencies
  */
 include ("../../../vendor/autoload.php");
