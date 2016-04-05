@@ -9,13 +9,21 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 
 /**
- * Load and instantiate the web ui
+ * Load dependencies
  */
 include ("../../../vendor/autoload.php");
+
+/**
+ * If debug is on, turn on error reporting
+ */
+if (\snac\Config::$DEBUG_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
