@@ -11,9 +11,18 @@
  */
 
 /**
- * Load and instantiate the server
+ * Load dependencies
  */
 include ("../../../vendor/autoload.php");
+
+/**
+ * If debug is on, turn on error reporting
+ */
+if (\snac\Config::$DEBUG_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 
 // Namespace shortcuts
 use \snac\server\Server as Server;
