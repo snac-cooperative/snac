@@ -88,7 +88,47 @@ class SQL
         return $row['id'];
     }
 
-        /**
+    /**
+     * Update password for an existing user.
+     *
+     * We assume the user exists. This will silently fail for non-existing user, although the calling code
+     * won't be able to get a $appUserID for a non-existent user, so that's not a problem.
+     *
+     * @param integer $appUserID The numeric user id
+     *
+     * @param string $passwd An encrypted password
+     *
+     */
+    public function updatePassword($appUserID, $passwd)
+    {
+        $this->sdb->query(
+            'update appuser set password=$1 where id=$2',
+            array($passwd, $appUserID));
+    }
+    
+    /**
+     * Check if a password matches
+     *
+     * Select a record with matching appUserID and password. Essentially, if the password it not a match, it
+     * will return a null.
+     *
+     * @param integer $appUserID The numeric user id
+     *
+     * @param string $passwd An encrypted password
+     *
+     * @return integer User id
+     */
+    public function selectMatchingPassword($appUserID, $passwd)
+    {
+        $this->sdb->query(
+            'select id from  appuser where password=$1 and id=$2',
+            array($passwd, $appUserID));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+
+    /**
      * Insert a new user aka appuser
      *
      * Insert a user into the db, returning the new record id. Field userid is not currently used.
@@ -167,6 +207,24 @@ class SQL
                           array($uid, $newRoleID));
     }
 
+    /**
+     * Insert a new role.
+     *
+     * Insert a new role and return the role's id.
+     *
+     * @param string $label Role label
+     *
+     * @param string $description Role description
+     *
+     * @return integer Role id
+     */
+    public function insertRole($label, $description)
+    {
+        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id",
+                          array($label, $description));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
 
     /**
      * Delete a role from a user
