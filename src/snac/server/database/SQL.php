@@ -127,6 +127,18 @@ class SQL
         return $row['id'];
     }
 
+    /**
+     *
+     *
+     */
+    public function selectSession($accessToken)
+    {
+        $this->sdb->query(
+            'select id from session where access and id=$2',
+            array($passwd, $appUserID));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
 
     /**
      * Insert a new user aka appuser

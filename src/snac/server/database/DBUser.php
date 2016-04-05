@@ -276,7 +276,7 @@ class DBUser
      */
     public function addSession(snac\data\User $user, $accessToken, $expire)
     {
-        if ($this->sql->sessionExists($accessToken))
+        if ($this->sql->selectSession($accessToken))
         {
             $this->sql->updateSession($accessToken, $expire);
         }
