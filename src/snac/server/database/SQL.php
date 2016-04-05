@@ -272,7 +272,7 @@ class SQL
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
     {
         $this->sdb->query(
-            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8)
+            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8
             where appuser.id=$1',
             array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
     }
@@ -299,8 +299,8 @@ class SQL
      */ 
     public function selectUserByid($uid)
     {
-        $this->sdb->query("select * from appuser where appuser.id=$1",
-                          array($uid));
+        $result = $this->sdb->query("select * from appuser where appuser.id=$1",
+                                    array($uid));
         $row = $this->sdb->fetchrow($result);
         return $row;
     }
