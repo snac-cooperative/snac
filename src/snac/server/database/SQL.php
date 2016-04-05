@@ -2140,7 +2140,7 @@ class SQL
      *
      * @param integer $id The record (related_identity.id) id
      *
-     * @return no return value.
+     * @return integer the record (related_identity.id) id
      *
      */
     public function insertRelation($vhInfo,
@@ -2181,6 +2181,8 @@ class SQL
         $row = $this->sdb->fetchrow($result);
 
         $this->sdb->deallocate($qq);
+        
+        return $id;
     }
 
     /**
