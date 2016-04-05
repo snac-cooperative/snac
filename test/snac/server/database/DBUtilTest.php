@@ -284,7 +284,29 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * fwrite($cfile, $secondJSON);
          * fclose($cfile); 
          */
+        /*
+         * There is one extra line in $firstJSON for "operation": "update" which is as we expect.  Everything
+         * else is identical. This simply tests the line count, but I diff'd the files manually to confirm.
+         */ 
         $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
+
+        $sourceList = $newObj->getSources();
+
+        $newSource = clone($sourceList[0]);
+        $newSource->setID(null);
+        $newSource->setVersion(null); // Seems like insert code should write over this.
+        $newSource->setDisplayName("added source");
+        $newSource->setURI("http://foo.com/bar/baz/");
+        $newSource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+        $newObj->addSource($newSource);
+
+        $this->dbu->writeConstellation($newObj, 'Added another source for foo.com');
+        
+        $postAddObj = $this->dbu->readConstellation($newObj->getID());
+
+        $longerSourceList = $postAddObj->getSources();
+        $this->assertEquals(count($sourceList)+1, count($longerSourceList));
     }
 
     /**
