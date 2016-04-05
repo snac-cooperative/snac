@@ -341,6 +341,56 @@ $(document).ready(function() {
         });
     }
     
+    
+
+    // Cancel button
+    if($('#cancel').exists()) {
+        $('#cancel').click(function(){
+        	
+        	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
+        	var noNameEntryText = true;
+        	$("input[id^=nameEntry_original_").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#entityType').val() == "" || noNameEntryText) {
+        		// Go to dashboard
+                window.location.href = "?command=dashboard";
+        		return;
+        	}
+        	
+        	// Unlock
+	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
+	            // Check the return value from the ajax. If success, then go to dashboard
+	            if (data.result == "success") {
+	                
+	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
+	                setTimeout(function(){
+	                    $('#success-message').slideDown();
+	                }, 500);
+	                setTimeout(function(){
+	                	
+	                    // Go to dashboard
+	                    window.location.href = "?command=dashboard";
+	                    
+	                }, 1000);
+	
+	            } else {
+	                $('#notification-message').slideUp();
+	                // Something went wrong in the ajax call. Show an error and don't go anywhere.
+	                $('#error-message').html("<p>An error occurred while unlocking the constellation.</p>");
+	                setTimeout(function(){
+	                    $('#error-message').slideDown();
+	                }, 500);
+	                setTimeout(function(){
+	                    $('#error-message').slideUp();
+	                }, 8000);
+	            }
+	        });
+        });
+    }
+
+    
 
     // Preview button
     if($('#preview').exists()) {
