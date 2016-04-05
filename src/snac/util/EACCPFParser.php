@@ -721,7 +721,7 @@ class EACCPFParser {
                                 foreach ($newPlaces as $newPlace) {
                                     $newPlace->setType($place->getType());
                                     foreach ($place->getDateList() as $date) {
-                                        $newPlace->addDate($date);
+                                        $newPlace->addDate(clone($date));
                                     }
                                     $newPlace->setNote($place->getNote());
                                     $newPlace->setRole($place->getRole());
