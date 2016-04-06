@@ -245,6 +245,10 @@ function makeSCMEditable(short, i, j) {
     else
     	$("#scm_" + short + "_operation_" + id).val("insert");
     
+    // Asked to edit something, so make it globally known
+    somethingHasBeenEdited = true;
+    		
+    
     return false;
 }
 
