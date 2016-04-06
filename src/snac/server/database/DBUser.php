@@ -188,9 +188,24 @@ class DBUser
             $user->setAvatarSmall($rec['avatar_small']);
             $user->setAvatarLarge($rec['avatar_large']);
             $user->setEmail($rec['email']);
+            $user->setRoleList($this->sql->selectUserRole($user->getUserID()));
             return $user;
         }
         return false;
+    }
+
+    /**
+     * Return a user object for the email.
+     *
+     * Wrapper for readUser() getting a user by email address instead of user id.
+     *
+     * @param string $email User email address.
+     * @return \snac\data\User Returns a user object or false.
+     */
+    public function readUserByEmail($email)
+    {
+        $uid = $this->sql->selectUserByEmail($email);
+        return readUser($uid);
     }
 
     /**
