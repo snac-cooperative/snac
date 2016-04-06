@@ -292,6 +292,7 @@ class Server implements \snac\interfaces\ServerInterface {
                                         'id' => $constellation->getID(),
                                         'body' => [
                                                 'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
+                                                'entityType' => $constellation->getEntityType()->getID(),
                                                 'arkID' => $constellation->getArk(),
                                                 'id' => $constellation->getID(),
                                                 'timestamp' => date('c')
