@@ -296,29 +296,23 @@
                                 <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
+                                <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="hidden" value="{{ relation.content }}"/>
+                                <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetID_{{i}}" type="hidden" value="{{ relation.targetConstellation }}"/>
+                                <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="hidden" value="{{ relation.targetArkID }}"/>
+                                <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
                                 <div class="col-xs-10">
                                 <div class="form-group">
-                                    <label for="constellationRelation_content_{{ i }}" class="control-label col-xs-4">
-                                        Relation Text
+                                    <label class="control-label col-xs-4">
+                                        Target
                                     </label>
                                     <div class="col-xs-8">
-                                        <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_targetID_{{ i }}" class="control-label col-xs-4">
-                                        Target Constellation ID
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetID_{{i}}" type="text" class="form-control" value="{{ relation.targetConstellation }}" readonly/>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="constellationRelation_targetArkID_{{ i }}" class="control-label col-xs-4">
-                                        Target ArkID
-                                    </label>
-                                    <div class="col-xs-8">
-                                        <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="text" class="form-control" value="{{ relation.targetArkID }}" readonly/>
+                                        <p class="form-control-static"><span style="font-weight: bold" id="constellationRelation_contentText_{{i}}">{{ relation.content }}</span><br>
+                                        <span id="constellationRelation_targetArkIDText_{{i}}">{{relation.targetArkID}} 
+                                        {% if relation.targetConstellation %}
+                                            <a class="label label-info" target="_blank" href="?command=view&constellationid={{relation.targetConstellation}}">View</a>
+                                        {% endif %}
+                                        </span>
+                                        </p>
                                     </div>
                                 </div>
                                 <div class="form-group">

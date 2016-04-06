@@ -150,6 +150,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 
                 break;
             case "insert_constellation":
+                
                 try {
                     $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
@@ -167,34 +168,53 @@ class Server implements \snac\interfaces\ServerInterface {
                         $this->logger->addDebug("Constellation input value wasn't set to write");
                         $this->response["result"] = "failure";
                     }
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     $this->logger->addError("writeConstellation threw an exception");
                     $this->response["result"] = "failure";
                 }
                 
                 break;
             case "update_constellation":
-                try {
-                    $db = new \snac\server\database\DBUtil();
-                    if (isset($this->input["constellation"])) {
-                        $constellation = new \snac\data\Constellation($this->input["constellation"]);
-                        $result = $db->writeConstellation($constellation, "Demo updates for now");
-                        if (isset($result) && $result != null) {
-                            $this->logger->addDebug("successfully wrote constellation");
-                            $this->response["constellation"] = $result->toArray();
-                            $this->response["result"] = "success";
-                        } else {
-                            $this->logger->addDebug("writeConstellation returned a null result");
-                            $this->response["result"] = "failure";
-                        }
-                    } else {
-                        $this->logger->addDebug("Constellation input value wasn't set to write");
-                        $this->response["result"] = "failure";
+                if (isset($this->input["constellation"])) {
+                    $constellation = new \snac\data\Constellation($this->input["constellation"]);
+                    
+                    try {
+                        $validation = new \snac\server\validation\ValidationEngine();
+                        $hasOperationValidator = new \snac\server\validation\validators\HasOperationValidator();
+                        $validation->addValidator($hasOperationValidator);
+                        
+                        $success = $validation->validateConstellation($constellation);
+                       
+                    } catch (\snac\exceptions\SNACValidationException $e) {
+                        // If the Constellation has no changes, then don't do anything and allow the "update"
+                        // but don't do anything
+                        $this->response["constellation"] = $constellation->toArray();
+                        $this->response["result"] = "success";
+                        break;
                     }
-                } catch (\Exception $e) {
-                    $this->logger->addError("writeConstellation threw an exception");
-                    // Rethrow it, since we just wanted a log statement
-                    throw $e;
+                    
+                    
+                    try {
+                        $db = new \snac\server\database\DBUtil();
+                        if (isset($this->input["constellation"])) {
+                            $result = $db->writeConstellation($constellation, "Demo updates for now");
+                            if (isset($result) && $result != null) {
+                                $this->logger->addDebug("successfully wrote constellation");
+                                $this->response["constellation"] = $result->toArray();
+                                $this->response["result"] = "success";
+                            } else {
+                                $this->logger->addDebug("writeConstellation returned a null result");
+                                $this->response["result"] = "failure";
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        $this->logger->addError("writeConstellation threw an exception");
+                        // Rethrow it, since we just wanted a log statement
+                        throw $e;
+                    }
+                } else {
+                    $this->logger->addDebug("Constellation input value wasn't set to write");
+                    $this->response["result"] = "failure";
                 }
                 break;
             

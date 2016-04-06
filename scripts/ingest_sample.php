@@ -161,6 +161,9 @@ if ($parsedFile == false) {
         . "Sample usage: ./ingest_sample.php /path/to/directory\n\n";
 }
 
+/**
+ * @param \snac\data\Constellation $written
+ */
 function indexESearch($written) {
     global $eSearch;
     if ($eSearch != null) {
@@ -170,6 +173,7 @@ function indexESearch($written) {
                 'id' => $written->getID(),
                 'body' => [
                         'nameEntry' => $written->getPreferredNameEntry()->getOriginal(),
+                        'entityType' => $written->getEntityType()->getID(),
                         'arkID' => $written->getArk(),
                         'id' => $written->getID(),
                         'timestamp' => date("c")
