@@ -218,6 +218,10 @@ class SQL
     /**
      * Check that a session is active
      *
+     * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
+     * 
+     * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
+     *
      * @param integer $appUserID The user id
      * 
      * @param string $accessToken A session token
@@ -227,7 +231,7 @@ class SQL
     public function selectActive($appUserID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire>=now()',
+            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone 'utc')',
             array($appUserID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         if ($row['count'] == 1)
