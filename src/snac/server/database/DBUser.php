@@ -188,7 +188,7 @@ class DBUser
             $user->setAvatarSmall($rec['avatar_small']);
             $user->setAvatarLarge($rec['avatar_large']);
             $user->setEmail($rec['email']);
-            $user->setRoleList($this->sql->selectUserRole($user->getUserID()));
+            $user->setRoleList($this->listUserRole($user));
             return $user;
         }
         return false;
@@ -223,54 +223,77 @@ class DBUser
     }
 
     /**
+     * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
+     *
+     * @return \snac\data\Role[] Return list of Role object
+     */
+    public function roleList()
+    {
+        $roleArray = $this->sql->selectRole();
+        $roleObjList = array();
+        foreach($roleArray as $roleHash)
+        {
+            $roleObj = new \snac\data\Role();
+            $roleObj->setID($roleHash['id']);
+            $roleObj->setLabel($roleHash['label']);
+            $roleObj->setDescription($roleHash['description']);
+            array_push($roleObjList, $roleObj);
+        }
+        return $roleObjList;
+    }
+
+
+    /**
      * Add a role to the User via table appuser_role_link. Return true on success.
      *
-     * You might be searching for addrole, add role adding a role adding role
+     * You might be searching for addrole, add role adding a role adding role.
+     *
+     * After adding the role, set the users's role list by getting the list from the db.
      * 
      * @param \snac\data\User $user A user
-     * @param string[] $newRole is associative list with keys id, label, description. We really only care about id.
+     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only care about id.
      */
     public function addUserRole($user, $newRole)
     {
-        $this->sql->insertRoleLink($user->getUserID(), $newRole['id']);
+        $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
+        $user->setRoleList($this->listUserRole($user));
         return true;
     }
 
     /**
      * List roles for a user.
      *
-     * List all the roles a user currently has.
+     * List all the roles a user currently has as an array of Role objects.
      *
      * @param \snac\data\User $user The user
      *
-     * @return string[][] A list of lists where the inner list has keys: id, label, description
+     * @return \snac\data\Role[] A list of Role objects.
      */
     public function listUserRole($user)
     {
         $roleList = $this->sql->selectUserRole($user->getUserID());
-        return $roleList;
+        $roleObjList = array();
+        foreach($roleList as $roleHash)
+            {
+                $roleObj = new \snac\data\Role();
+                $roleObj->setID($roleHash['id']);
+                $roleObj->setLabel($roleHash['label']);
+                $roleObj->setDescription($roleHash['description']);
+                array_push($roleObjList, $roleObj);
+            }
+        return $roleObjList;
     }
 
     /**
      * Remove a role from the User via table appuser_role_link.
      *
      * @param \snac\data\User $user A user
-     * @param string[] $role is associative list with keys id, label, description. We really only care about id.
+     * @param \snac\data\Role $role Role object
      */
     public function removeUserRole($user, $role)
     {
-        $this->sql->deleteRoleLink($user->getUserID(), $role['id']);
+        $this->sql->deleteRoleLink($user->getUserID(), $role->getID());
         return true;
-    }
-
-    /**
-     * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
-     *
-     * @return string[][] Return list of list with keys: id, label, description.
-     */
-    public function roleList()
-    {
-        return $this->sql->selectRole();
     }
 
     /**
@@ -280,11 +303,16 @@ class DBUser
      *
      * @param string $description The description of the role, a phrase or sentence.
      *
-     * @return string[] Role as a list with keys: id, label, description.
+     * @return \snac\data\Role Role object.
      */
     public function createRole($label, $description)
     {
-        return $this->sql->insertRole($label, $description);
+        $roleHash = $this->sql->insertRole($label, $description);
+        $roleObj = new \snac\data\Role();
+        $roleObj->setID($roleHash['id']);
+        $roleObj->setLabel($roleHash['label']);
+        $roleObj->setDescription($roleHash['description']);
+        return $roleObj;
     }
 
     /**

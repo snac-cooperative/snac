@@ -84,7 +84,7 @@ class Role {
      */ 
     public function setLabel($label)
     {
-        $this->id = $label;
+        $this->label = $label;
     }
 
     /**
@@ -102,7 +102,7 @@ class Role {
      */ 
     public function setDescription($description)
     {
-        $this->id = $description;
+        $this->description = $description;
     }
 
 

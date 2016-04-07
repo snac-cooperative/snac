@@ -111,13 +111,13 @@ class SQL
      * Used for testing only, maybe. In any case, deleting a role should be rare. To make this a little safer
      * it only deletes if the role is not in use.
      *
-     * @param string[] $role A list with keys: id, label, description
+     * @param integer $roleID An role id
      */
-    public function deleteRole($role)
+    public function deleteRole($roleID)
     {
         $result = $this->sdb->query(
             'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
-            array($role['id']));
+            array($roleID));
     }
 
 
@@ -231,7 +231,7 @@ class SQL
     public function selectActive($appUserID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone 'utc')',
+            "select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone 'utc')",
             array($appUserID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         if ($row['count'] == 1)
