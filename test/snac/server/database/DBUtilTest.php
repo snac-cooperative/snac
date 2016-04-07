@@ -26,12 +26,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     private $dbu = null;
 
     /**
-     * Class var to hold the appUserID
-     * @var $appUserID holds the appUserID
-     */ 
-    private $appUserID = null;
-
-    /**
      * Constructor
      *
      * Note about how things are different here in testing world vs normal execution:
@@ -517,15 +511,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /*
-     * DBUtil depends on some info about the current user. This just tests that we didn't forget to deal with
-     * that. 
-     */ 
-    public function testAppUserInfo()
-    {
-        $this->assertNotNull($this->dbu->getAppUserID());
-    }
-
-    /*
      * Can we get a random Constellation?
      * Can we reverse the order of keys in $vhInfo?
      * Can we get 100 constellations from the db?
@@ -541,32 +526,25 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */
     public function testDemoConstellation()
     {
-        $vhInfo = $this->dbu->demoConstellation();
-        $cObj = $this->dbu->readConstellation($vhInfo['main_id'], $vhInfo['version']);
+        
+
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        
+
+        $tmp = $this->dbu->writeConstellation($cObj,
+                'test demo constellation');
+        
+        
+        $cObj = $this->dbu->readConstellation($tmp->getID(), $tmp->getVersion());
         $this->assertNotNull($cObj);
 
         /* 
-         * Make sure that at least selectConstellation() works with reversed key order in the vhInfo arg.
-         */ 
-        /* Mar 2 2016 selectConstellation() will no longer be public, so this test is not meaningful.
-         * $vhInfo = $this->dbu->demoConstellation();
-         * $reverseVhInfo = array('main_id' => $vhInfo['main_id'],
-         *                        'version' => $vhInfo['version']);
-         * $reverseCObj = $this->dbu->selectConstellation($reverseVhInfo, $this->appUserID);
-         * $this->assertNotNull($reverseCObj);
-         */
-
-        // The returned value is a json string, with 100 top level elements.
-        $demo = $this->dbu->demoConstellationList();
-        $this->assertTrue(count($demo) == 100);
-
-        /* 
          * Delete a name and verify it. 
-         * Need a helper function somewhere to associate object type with database table. 
          */
-        $mNObj = $this->dbu->multiNameConstellation($this->appUserID);
 
-        $preDeleteNameCount = count($mNObj->getNameEntries());
+        $preDeleteNameCount = count($cObj->getNameEntries());
         
         /*
          * We need the new version of the deleted record, which becomes the max(version) of the constellation.
@@ -576,9 +554,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * object as we do here.
          *
          */  
-        $mNObj->getNameEntries()[0]->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
-        $mNObj->setOperation(null);
-        $returnedDeleteObj = $this->dbu->writeConstellation($mNObj,
+        $cObj->getNameEntries()[0]->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
+        $cObj->setOperation(null);
+        $returnedDeleteObj = $this->dbu->writeConstellation($cObj,
                                                             'delete a name, that is: set is_deleted to true');
 
         /* 
@@ -591,40 +569,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * getID() for all other data objects.
          * 
          */
-        /* 
-         * $postDVhInfo = array('version' => $newVersion,
-         *                      'main_id' => $mNObj->getID());
-         */
         $postDObj = $this->dbu->readConstellation($returnedDeleteObj->getID(),
                                                   $returnedDeleteObj->getVersion());
         $postDeleteNameCount = count($postDObj->getNameEntries());
         $this->assertEquals($preDeleteNameCount, ($postDeleteNameCount+1));
 
-        /* 
-         * Do not run this until clearDeleted() is fixed. We need an operation undelete so that DBUtil code
-         * can do the bookkeeping for the constellation and for the components. The concept of "deleted" is
-         * different for a constellation vs component.
-         */
-        if (1 == 0)
-        {
-            /*
-             * Undelete the name we just deleted, and check that we're not back to the original number of names.
-             */ 
-            $undelVersion = $this->dbu->clearDeleted($this->appUserID,
-                                                     $this->roleID,
-                                                     'locked editing',
-                                                     'un-delete a name, that is: change status deleted to locked editing',
-                                                     $mNObj->getID(), // constellation main_id
-                                                     'name',
-                                                     $mNObj->getNameEntries()[0]->getID());
-            
-            $undeleteDVhInfo = array('version' => $undelVersion,
-                                     'main_id' => $mNObj->getID());
-            
-            $unDObj = $this->dbu->readConstellation($undeleteDVhInfo['main_id'], $undeleteDVhInfo['version']);
-            $unDeleteNameCount = count($unDObj->getNameEntries());
-            $this->assertTrue($preDeleteNameCount == $unDeleteNameCount);
-        }
         /*
          * Modify a name and save the modified name only. No other parts of the constellation are updated,
          * which is reasonable because no other parts have been modified. After saving, re-read the entire
@@ -649,22 +598,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
         $this->dbu->writeConstellationStatus($retObj->getID(), 'needs review', 'send for review after a name change');
 
-        if (0 == 1) // old code disabled
-        {
-            $modVhInfo = $this->dbu->updatePrepare($unDObj,
-                                                   $this->appUserID,
-                                                   $this->roleID,
-                                                   'needs review',
-                                                   'modified first alt name');
-            /*
-             * Feb 9 2016 This will save all names of the constellation, but that's fine for testing that saving
-             * name or names does not change the number of names associated with the constellation. When we
-             * implement AbstractData->$operation and setOperation() we can use that feature to only save a
-             * name. When that happens we will call setOperation() on the name, and send the entire constellation
-             * off for processing.
-             */ 
-            $this->dbu->saveName($modVhInfo, $unDObj);
-        }
         
         /*
          * Confirm that we can read the modified name back from the db.

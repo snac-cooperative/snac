@@ -231,7 +231,7 @@ class SQL
     public function selectActive($appUserID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone 'utc')',
+            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone \'utc\')',
             array($appUserID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         if ($row['count'] == 1)
