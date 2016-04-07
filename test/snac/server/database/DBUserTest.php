@@ -121,7 +121,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */ 
 
         $cfile = fopen('user_object.txt', 'w');
-        fwrite($cfile, json_encode($newUser));
+        fwrite($cfile, var_export($newUser, 1));
         fclose($cfile);
 
         /*
