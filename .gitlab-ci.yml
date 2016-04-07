@@ -17,6 +17,7 @@ update_database:
   stage: database
   only:
     - development
+    - master
 
 run_test:
   script:
@@ -24,6 +25,7 @@ run_test:
   stage: test
   only:
     - development
+    - master
 
 generate_docs:
   script:
