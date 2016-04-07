@@ -89,11 +89,27 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $this->logger->addDebug("Server starting to handle request", $this->input);
         // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
+        
+        $executor = new \snac\server\ServerExecutor();
+        $db = new \snac\server\database\DBUtil();
+        
+        // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
+        $user = null;        
+        if (isset($this->input["user"])) {
+            $user = $this->input["user"];
+        }
+        
+        if (!$executor->authenticateUser($user)) {
+            throw new \snac\exceptions\SNACUserException("User is not authorized");
+        }
+        
 
+
+        // Decide what to do based on the command given to the server
         switch ($this->input["command"]) {
 
+
             case "vocabulary":
-                $db = new \snac\server\database\DBUtil();
                 $this->response["results"] = $db->searchVocabulary(
                     $this->input["type"],
                     $this->input["query_string"]);
@@ -103,7 +119,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
             case "user_information":
                 $this->response["user"] = $this->input["user"];
-                $db = new \snac\server\database\DBUtil();
+                
                 $this->logger->addDebug("Getting list of locked constellations to user");
                 
                 // First look for constellations editable
@@ -152,7 +168,6 @@ class Server implements \snac\interfaces\ServerInterface {
             case "insert_constellation":
                 
                 try {
-                    $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
                         $constellation = new \snac\data\Constellation($this->input["constellation"]);
                         $result = $db->writeConstellation($constellation, "Demo updates for now");
@@ -195,7 +210,6 @@ class Server implements \snac\interfaces\ServerInterface {
                     
                     
                     try {
-                        $db = new \snac\server\database\DBUtil();
                         if (isset($this->input["constellation"])) {
                             $result = $db->writeConstellation($constellation, "Demo updates for now");
                             if (isset($result) && $result != null) {
@@ -221,7 +235,6 @@ class Server implements \snac\interfaces\ServerInterface {
             case "unlock_constellation":
                 try {
                     $this->logger->addDebug("Lowering the lock on the constellation");
-                    $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
                         $constellation = new \snac\data\Constellation($this->input["constellation"]);
                         
@@ -263,7 +276,6 @@ class Server implements \snac\interfaces\ServerInterface {
             case "publish_constellation":
                 try {
                     $this->logger->addDebug("Publishing constellation");
-                    $db = new \snac\server\database\DBUtil();
                     if (isset($this->input["constellation"])) {
                         $constellation = new \snac\data\Constellation($this->input["constellation"]);
                         $result = $db->writeConstellationStatus($constellation->getID(), "published", "User published constellation");
@@ -378,7 +390,6 @@ class Server implements \snac\interfaces\ServerInterface {
                     ->setRetries(0)
                     ->build();
 
-                    $db = new \snac\server\database\DBUtil();
                 
                     $params = [
                         'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -432,9 +443,7 @@ class Server implements \snac\interfaces\ServerInterface {
                     }
                 } else if (isset($this->input["constellationid"])) {
                     // Editing the given constellation id by reading the database
-                    $db = new \snac\server\database\DBUtil();
                     
-                    // TODO should lock constellation
                     try {
                         // Read the constellation
                         $this->logger->addDebug("Reading constellation from the database");
@@ -491,9 +500,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 } else if (isset($this->input["constellationid"])) {
                     // Editing the given constellation id by reading the database
                     
-                    // TODO should lock constellation
                     try {
-                        $db = new \snac\server\database\DBUtil();
                         // Read the constellation
                         $this->logger->addDebug("Reading constellation from the database");
                         
