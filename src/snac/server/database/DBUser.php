@@ -59,6 +59,19 @@ class DBUser
     }
 
     /**
+     * Get the $sql object
+     *
+     * Test code needs access to the sql object.
+     *
+     * @return \snac\server\database\SQL SQL object
+     *
+     */ 
+    public function getSQL()
+    {
+        return $this->sql;
+    }
+
+    /**
      * Write the password
      *
      * This overwrites the password. Use this to initially set the password, as well as to set a new password.
@@ -175,9 +188,24 @@ class DBUser
             $user->setAvatarSmall($rec['avatar_small']);
             $user->setAvatarLarge($rec['avatar_large']);
             $user->setEmail($rec['email']);
+            $user->setRoleList($this->sql->selectUserRole($user->getUserID()));
             return $user;
         }
         return false;
+    }
+
+    /**
+     * Return a user object for the email.
+     *
+     * Wrapper for readUser() getting a user by email address instead of user id.
+     *
+     * @param string $email User email address.
+     * @return \snac\data\User Returns a user object or false.
+     */
+    public function readUserByEmail($email)
+    {
+        $uid = $this->sql->selectUserByEmail($email);
+        return readUser($uid);
     }
 
     /**
@@ -197,6 +225,8 @@ class DBUser
     /**
      * Add a role to the User via table appuser_role_link. Return true on success.
      *
+     * You might be searching for addrole, add role adding a role adding role
+     * 
      * @param \snac\data\User $user A user
      * @param string[] $newRole is associative list with keys id, label, description. We really only care about id.
      */
@@ -206,6 +236,20 @@ class DBUser
         return true;
     }
 
+    /**
+     * List roles for a user.
+     *
+     * List all the roles a user currently has.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return string[][] A list of lists where the inner list has keys: id, label, description
+     */
+    public function listUserRole($user)
+    {
+        $roleList = $this->sql->selectUserRole($user->getUserID());
+        return $roleList;
+    }
 
     /**
      * Remove a role from the User via table appuser_role_link.
@@ -236,7 +280,7 @@ class DBUser
      *
      * @param string $description The description of the role, a phrase or sentence.
      *
-     * @return integer New role id.
+     * @return string[] Role as a list with keys: id, label, description.
      */
     public function createRole($label, $description)
     {
@@ -256,7 +300,7 @@ class DBUser
      */
     public function checkPassword($user, $passwd)
     {
-        $id = $this->sql->selectMatchingPassword($user->getUserID, $passwd);
+        $id = $this->sql->selectMatchingPassword($user->getUserID(), $passwd);
         if ($id >= 1)
         {
             return true;

@@ -276,36 +276,42 @@ class DBUtil
         }
         elseif (! $theOp)
         {
-            if (! $cObj->getID())
-            {
-                /*
-                 * If we have no ID then this must be an insert, so return true now.  This is really just a
-                 * case during testing prior to all objects explicitly getting an operation. Once every
-                 * operation is set, this branch should never run.
-                 */ 
-                $result = true;
-            }
-            else
-            {
-                /* 
-                 * Mar 8 2014. With a null operation, we do nothing, and by returning false we prevent the calling
-                 * code from doing anything as well.
-                 *
-                 * This prevents nameEntry with no operation from updating itself when its child contributor has
-                 * an operation. In some cases the other code will not send objects that have no operation, but
-                 * that doesn't save us any work here because we always have to test the operation.
-                 *
-                 * If the no-op objects really were simply not in the constellation, then all inserts and updates
-                 * would be identical. No-op objects are sometimes present, and thus this distinction for no
-                 * operation.
-                 *
-                 * Top level code will have already minted a new version number, and since all true updates and
-                 * inserts are equivalent at the low level, the only thing we need to do here is prevent
-                 * unnecessary updates on no-op objects.
-                 *
-                 */
-                $result = false;
-            }
+            /* 
+             * if (! $cObj->getID())
+             * {
+             *     /\*
+             *      * If we have no ID then this must be an insert, so return true now.  This is really just a
+             *      * case during testing prior to all objects explicitly getting an operation. Once every
+             *      * operation is set, this branch should never run.
+             *      *\/ 
+             *     $result = true;
+             * }
+             * else
+             * {
+             */
+            /*
+             * Apr 6 2016. The code above that allowed insert when no op and no id is wrong. The rule is: no
+             * operation is nothing gets done. There's no being nice. Actually, it is nice to not do things
+             * when no operation because the UI can be a bit more lax about things like empty objects.
+             * 
+             * Mar 8 2014. With a null operation, we do nothing, and by returning false we prevent the calling
+             * code from doing anything as well.
+             *
+             * This prevents nameEntry with no operation from updating itself when its child contributor has
+             * an operation. In some cases the other code will not send objects that have no operation, but
+             * that doesn't save us any work here because we always have to test the operation.
+             *
+             * If the no-op objects really were simply not in the constellation, then all inserts and updates
+             * would be identical. No-op objects are sometimes present, and thus this distinction for no
+             * operation.
+             *
+             * Top level code will have already minted a new version number, and since all true updates and
+             * inserts are equivalent at the low level, the only thing we need to do here is prevent
+             * unnecessary updates on no-op objects.
+             *
+             */
+            $result = false;
+            /* } */
         }
         else
         {

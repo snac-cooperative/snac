@@ -46,6 +46,40 @@ class User {
 
     private $token;
 
+    /**
+     * List of role
+     *
+     * A list of each role this user has.
+     *
+     * @var snac\data\Role[] List of Role objects
+     */
+    private $roleList;
+
+    /**
+     * Get the list of roles
+     *
+     * Return the role list
+     *
+     * @return snac\data\Role[] Return a list of Role objects
+     */ 
+    public function getRoleList()
+    {
+        return $this->roleList;
+    }
+    
+    /**
+     * Set role list
+     *
+     * Set the user role list to a list of roles. The list probabl comes from from listUserRole().
+     *
+     * @param \snac\data\Role[] $roleList A list of roles. 
+     */ 
+    public function setRoleList($roleList)
+    {
+        $this->$roleList = $roleList;
+    }
+
+
     public function setUserID($id) {
 
         $this->userid = $id;
