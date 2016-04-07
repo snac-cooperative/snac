@@ -111,7 +111,7 @@ class DBUser
     public function createUser($user)
     {
         
-        $id = $this->sql->insertUser($user->getFirstName(),
+        $appUserID = $this->sql->insertUser($user->getFirstName(),
                                      $user->getLastName(),
                                      $user->getFullName(),
                                      $user->getAvatar(),
@@ -119,7 +119,7 @@ class DBUser
                                      $user->getAvatarLarge(),
                                      $user->getEmail());
         $newUser = clone($user);
-        $newUser->setUserID($id);
+        $newUser->setUserID($appUserID);
         return $newUser;
     }
 
@@ -148,16 +148,19 @@ class DBUser
     /**
      * Get the user id if you only know the email address. We must be assuming the email addresses are unique.
      *
+     * Might be called readUserIDByEmail. "Find" is not a word we use anywhere else in function names
+     * here. There is an attempt to follow some predictable convention for function names.
+     * 
      * @param string $email
      *
      * @return integer $uid Return an integer user id or false.
      */
     public function findUserID($email)
     {
-        $uid = $this->sql->selectUserByEmail($email);
-        if ($uid)
+        $appUserID = $this->sql->selectUserByEmail($email);
+        if ($appUserID)
         {
-            return $uid;
+            return $appUserID;
         }
         return false;
     }
@@ -170,15 +173,15 @@ class DBUser
      *
      * After calling this you probably want to call addSession().
      *
-     * @param integer $userid
+     * @param integer $appUserID
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    public function readUser($userid)
+    public function readUser($appUserID)
     {
-        if ($userid)
+        if ($appUserID)
         {
-            $rec = $this->sql->selectUserByID($userid);
+            $rec = $this->sql->selectUserByID($appUserID);
             $user = new \snac\data\User();
             $user->setUserID($rec['id']);
             $user->setFirstName($rec['first']);
@@ -205,7 +208,7 @@ class DBUser
     public function readUserByEmail($email)
     {
         $uid = $this->sql->selectUserByEmail($email);
-        return readUser($uid);
+        return $this->readUser($uid);
     }
 
     /**
@@ -328,8 +331,8 @@ class DBUser
      */
     public function checkPassword($user, $passwd)
     {
-        $id = $this->sql->selectMatchingPassword($user->getUserID(), $passwd);
-        if ($id >= 1)
+        $appUserID = $this->sql->selectMatchingPassword($user->getUserID(), $passwd);
+        if ($appUserID >= 1)
         {
             return true;
         }
@@ -340,42 +343,129 @@ class DBUser
      * Add a new session token $accessToken with expiration time $expire for $user. Update expiration if
      * $accessToken exists.
      *
-     * @param snac\data\User $user User object
+     * @param \snac\data\User $user User object
      *
      * @param string $accessToken The session token
      *
      * @param string $expire An expiration timestamp. 
      */
-    public function addSession(snac\data\User $user, $accessToken, $expire)
+    public function addSession(\snac\data\User $user)
     {
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        $expires = $currentToken['expires'];
         $rec = $this->sql->selectSession($accessToken);
         if ($rec['appuser_fk'])
         {
-            $this->sql->updateSession($accessToken, $expire);
+            $this->sql->updateSession($accessToken, $expires);
         }
         else
         {
             // For now, appuser.id is getUserID()
-            $this->sql->insertSession($user->getUserID(), $accessToken, $expire);
+            $this->sql->insertSession($user->getUserID(), $accessToken, $expires);
         }
-        $user->setToken($accessToken);
+    }
+
+    /**
+     * Check session exists
+     *
+     * Find out if a session exists and if that session is associated with $user, and has not expired.
+     *
+     * @param \snac\data\User User object
+     * @return boolean True on success, else false.
+     */
+    public function sessionExists($user)
+    {
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        $rec = $this->sql->selectSession($accessToken);
+        // printf("\ndbuser appuser_fk: %s appUserID: %s", $rec['appuser_fk'], $user->getUserID() );
+        if ($rec['appuser_fk'])
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
      * Check that a session is active (not expired) for $user and $accessToken. Time is assumed to be
      * "now". Return true for success (session is active now).
      *
-     * @param snac\data\User $user User object
+     * This really checked that a session is active and associated with the $user. In theory is it possible to
+     * ask if a session is active, without knowing the user. In fact, a session could be check as active, and
+     * could return the user id.
      *
-     * @param string $accessToken
+     * Add features: auto-create unknown user, auto-create unknown session, delete expired session. 
+     *
+     * @param \snac\data\User $user User object
+     *
+     * @return \snac\data\User when successful or return false on failure.
      */
-    public function checkSessionActive(snac\data\User $user, $accessToken)
+    public function checkSessionActive(\snac\data\User $user)
     {
-        return $this->sql->selectActive($user-getUserID(), $accessToken);
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        if (! $this->readUserByEmail($user->getEmail()))
+        {
+            $newUser = $this->createUser($user);
+            $this->addSession($newUser); // adds or updates expires for existing session
+
+            // printf("\ndbuser after add1 session exists: %d\n", $this->sessionExists($newUser));
+
+            $newUser->setToken($currentToken);
+            return $newUser;
+
+        }
+        else if (! $this->sessionExists($user))
+        {
+            // printf("\ndbuser session does not exist \n");
+            $this->addSession($user); // adds or updates expires for existing session
+
+            // printf("\ndbuser after add2 session exists: %d\n", $this->sessionExists($user));
+
+            $user->setToken($currentToken);
+            return $user;
+        }
+
+        /*
+         * Do this last, since if this fails we need to essentially logoff the user.
+         *
+         * If the session exists, but doesn't belong to this user, selectActive() will fail.
+         * If the sesion has expired, selectActive() will fail.
+         */ 
+        if (! $this->sql->selectActive($user->getUserID(), $accessToken))
+        {
+            /*
+             * Shouldn't this call removeSession() instead of a low-level SQL function.
+             */  
+            // printf("\ndbuser clearing session %s\n", $user->getToken()['access_token']);
+            $this->sql->deleteSession($user->getToken()['access_token']);
+            $user->setToken(array('access_token' => '', 'expires' => 0));
+            return $user;
+        }
+        return false;
     }
 
     /**
+     * Remove a session
+     *
+     * Assume that tokens are unique, which is important. Delete all sessions with the token no matter what user has that token.
+     *
+     * This showed up during testing where the appUserID and token got snarled.
+     *
+     * @param \snac\data\User $user
+     *
+     */
+    public function removeSession($user)
+    {
+        $this->sql->deleteSession($user->getToken()['access_token']);
+    }
+
+
+    /**
      * Delete all session records for $user.
+     *
+     * Unclear when this is used, but it will logout from all sessions.
      *
      * @param \snac\data\User $user A user object
      *
@@ -383,7 +473,7 @@ class DBUser
      */
     public function clearAllSessions(snac\data\User $user)
     {
-        $this->sql->deleteAllSessions($user->getUserID());
+        $this->sql->deleteAllSession($user->getUserID());
         return true;
     }
 }

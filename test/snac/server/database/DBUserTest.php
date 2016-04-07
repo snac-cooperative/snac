@@ -117,12 +117,13 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($roleList[0]->getLabel(), 'system');
 
         /*
-         * Write out the user object as json for review.
+         * Write out the user object as for review.
          */ 
-
-        $cfile = fopen('user_object.txt', 'w');
-        fwrite($cfile, var_export($newUser, 1));
-        fclose($cfile);
+        /* 
+         * $cfile = fopen('user_object.txt', 'w');
+         * fwrite($cfile, var_export($newUser, 1));
+         * fclose($cfile);
+         */
 
         /*
          * Remove the role from our user, and count. The user should have zero roles.
@@ -149,6 +150,27 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->dbu->getSQL()->deleteRole($role->getID());
         $postCleaningRoleList = $this->dbu->roleList();
         $this->assertEquals(count($preCleaningRoleList), count($postCleaningRoleList)+1);
+
+        /*
+         * This is clearly a lame session, but it will still be created. If we run call checkSessionActive() a
+         * second time, the session should disappear.
+         *
+         * Uncomment the lines below to check the user-does-not-exist case. Later, make this a real test.
+         */ 
+        /* 
+         * printf("\ndbusertest deleting appuserid: %s\n", $newUser->getUserID());
+         * $this->dbu->getSQL()->deleteUser($newUser->getUserID());
+         */
+
+        $newUser->setToken(array('access_token' => 'foo',
+                                'expires' => 12345));
+
+        // printf("\ndbusertest session exists: %d\n", $this->dbu->sessionExists($newUser));
+
+        $csaReturn = $this->dbu->checkSessionActive($newUser);
+
+        $this->dbu->checkSessionActive($csaReturn);
+        
 
         /*
          * When things are normally successful, we will clean up.  Or not. If we don't clean up, then we can

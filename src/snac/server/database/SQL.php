@@ -172,8 +172,8 @@ class SQL
      */
     public function selectSession($accessToken)
     {
-        $this->sdb->query(
-            'select id from session where access_token=$1',
+        $result = $this->sdb->query(
+            'select * from session where access_token=$1',
             array($accessToken));
         $row = $this->sdb->fetchrow($result);
         return $row;
@@ -185,14 +185,14 @@ class SQL
      *
      * @param string $accessToken A session token
      *
-     * @param string $expire A session expiration timestamp
+     * @param string $expires A session expiration timestamp
      *
      */
-    public function updateSession($accessToken, $expire)
+    public function updateSession($accessToken, $expires)
     {
         $this->sdb->query(
-            'update session set expire=$1 where access_token=$2',
-            array($expire, $accessToken));
+            'update session set expires=$1 where access_token=$2',
+            array($expires, $accessToken));
     }
 
     /**
@@ -204,14 +204,14 @@ class SQL
      * 
      * @param string $accessToken A session token
      *
-     * @param string $expire A session expiration timestamp
+     * @param string $expires A session expiration timestamp
      *
      */
-    public function insertSession($appUserID, $accessToken, $expire)
+    public function insertSession($appUserID, $accessToken, $expires)
     {
         $this->sdb->query(
-            'insert into session (appuser_fk, access_token expire) values ($1, $2, $3)',
-            array($appUserID, $accessToken, $expire));
+            'insert into session (appuser_fk, access_token, expires) values ($1, $2, $3)',
+            array($appUserID, $accessToken, $expires));
     }
 
     
@@ -231,7 +231,7 @@ class SQL
     public function selectActive($appUserID, $accessToken)
     {
         $result = $this->sdb->query(
-            "select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire >= extract(epoch from now() at time zone 'utc')",
+            "select count(*) from session where appuser_fk=$1 and access_token=$2 and expires >= extract(epoch from now() at time zone 'utc')",
             array($appUserID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         if ($row['count'] == 1)
@@ -239,6 +239,18 @@ class SQL
             return true;
         }
         return false;
+    }
+
+    /**
+     * Clear a session
+     *
+     * @param string $accessToken A session token
+     */
+    public function deleteSession($accessToken)
+    {
+        $result = $this->sdb->query(
+            'delete from session where access_token=$1',
+            array($accessToken));
     }
 
     /**
@@ -250,7 +262,7 @@ class SQL
      *
      * @return boolean true for active, false for inactive or not found.
      */
-    public function deleteAllSessions($appUserID)
+    public function deleteAllSession($appUserID)
     {
         $result = $this->sdb->query(
             'delete from session where appuser_fk=$1',
