@@ -54,6 +54,17 @@ class User {
      * @var snac\data\Role[] List of Role objects
      */
     private $roleList;
+    
+    /**
+     * Constructor 
+     * 
+     * @param string[] $data Array object of User information
+     */
+    public function __construct($data = null) {
+        if ($data != null)
+            $this->fromArray($data);
+        
+    }
 
     /**
      * Get the list of roles
