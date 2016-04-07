@@ -11,7 +11,6 @@
  */
 namespace snac\client\webui;
 
-use \snac\interfaces\ServerInterface;
 use \snac\client\util\ServerConnect as ServerConnect;
 
 /**
