@@ -79,14 +79,6 @@ class DBUtil
     private $db = null;
 
     /**
-     * Class var to hold the current user role
-     * 
-     * @var integer $roleID holds the integer role id, the id of the current user's primary role. Or in the
-     * future will be one of the user's roles chosen for the current task.
-     */ 
-    private $roleID = null;
-
-    /**
      * Constellation status
      *
      * These are the valid values for constellation status. These are used in the code, so an enumerated type
@@ -571,48 +563,6 @@ class DBUtil
      */
     public function getAllVocabulary() {
         return $this->sql->selectAllVocabulary();
-    }
-
-    /**
-     * Get user info
-     *
-     * This is a short term helper function which will be removed once we have real user/account
-     * management. Call this as your first step after creating a new DBUtil object. See DBUtilTest.php for
-     * examples.
-     * 
-     * Access some system-wide authentication and/or current user info.
-     *
-     * Hard coded for now to return id and role.
-     *
-     * @param string $userString The text user identifier corresponds to sql table appuser.userid, used to get
-     * the appuser.id and the user's primary role.
-     *
-     * @return integer[] A flat list of two integers, appuser.id and role.id.
-     */
-    public function getAppUserInfo($userString)
-    {
-        $uInfo = $this->sql->selectAppUserInfo($userString);
-        return $uInfo;
-    }
-
-
-    /**
-     * Get a demo constellation
-     *
-     * A helper function to get a constellation from the db for testing purposes.
-     *
-     * @return integer[] Return the standard vh_info associative list with the keys 'version' and 'main_id'
-     * from the constellation.
-     *
-     */
-    public function demoConstellation()
-    {
-        list($version, $mainID) = $this->sql->randomConstellationID();
-        if (! $version  || ! $mainID)
-        {
-            printf("Error: got null(s) from randomConstellation() version: $version mainID: $mainID\n");
-        }
-        return array('version' => $version, 'main_id' => $mainID);
     }
 
     /**
@@ -2401,7 +2351,9 @@ class DBUtil
             {
                 return false;
             }
-            $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), $this->roleID, $status, $note);
+
+            // Right now, we're passing null as the role ID.  We may change this to a role from the user object
+            $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
             // printf("\ndbutil wc mints new version: %s\n", $vhInfo['version']);
             return $vhInfo['version'];
         }
@@ -2563,9 +2515,9 @@ class DBUtil
                    $op, $mainID);
         }
         
-        // printf("\ndbutil: lang: %s\n", var_export($cObj->getLanguage(), 1));
 
-        $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), $this->roleID, $status, $note);
+        // Right now, we're passing null as the role ID.  We may change this to a role from the user object
+        $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
 
         /*
          * $cObj is passed by reference, and changed in place.
