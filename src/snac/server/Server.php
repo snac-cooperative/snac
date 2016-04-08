@@ -117,6 +117,13 @@ class Server implements \snac\interfaces\ServerInterface {
             case "reconcile":
                 break;
                 
+            case "start_session":
+                $this->response = $executor->startSession();
+                break;
+            
+            case "end_session":
+                $this->response = $executor->endSession();
+                
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;

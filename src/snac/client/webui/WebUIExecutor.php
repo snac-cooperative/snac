@@ -110,6 +110,32 @@ class WebUIExecutor {
             }
     }
     
+    public function startSNACSession(&$user) {
+        $query = array(
+                "command" => "start_session",
+                "user" => $user->toArray()
+                );
+        $serverResponse = $this->connect->query($query);
+        
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
+            return true;
+        return false;  
+    }
+    
+
+
+    public function endSNACSession(&$user) {
+        $query = array(
+                "command" => "end_session",
+                "user" => $user->toArray()
+        );
+        $serverResponse = $this->connect->query($query);
+    
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
+            return true;
+            return false;
+    }
+    
     public function displayPreviewPage(&$input, &$display) {
 
         // If just previewing, then all the information should come VIA post to build the preview

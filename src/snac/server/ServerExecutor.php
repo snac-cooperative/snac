@@ -110,6 +110,33 @@ class ServerExecutor {
         return true;
     }
     
+    public function startSession() {
+        $response = array();
+        
+        if ($this->user != null) {
+            $response["user"] = $this->user->toArray();
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        
+        return $response;
+    }
+    
+    public function endSession() {
+        $response = array();
+        
+        if ($this->user != null) {
+            $this->uStore->removeSession($user);
+            $response["user"] = $this->user->toArray();
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        
+        return $response;
+    }
+    
     public function searchVocabulary(&$input) {
         $response = array();
         $response["results"] = $this->cStore->searchVocabulary(
