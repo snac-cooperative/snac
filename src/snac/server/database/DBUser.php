@@ -456,25 +456,24 @@ class DBUser
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
+        
+        // Try to get this user from the database
         $newUser = $this->readUserByEmail($user->getEmail());
-        if ($newUser)
-        {
-            $newUser->setToken($user->getToken());
-        }
-        if (! $newUser)
-        {
+        
+        if ($newUser === false) {
+            // If the user doesn't exist, then create them
             $newUser = $this->createUser($user);
-            $this->addSession($newUser); // adds or updates expires for existing session
-            $newUser->setToken($currentToken);
-            return $newUser;
-
+            
         }
+        $newUser->setToken($user->getToken());
+        
         // Now we have a good $newUser with the original $user token. Either the user was created or read from
         // the db.
-        else if (! $this->sessionExists($newUser))
+        
+        // Create the session if it doesn't exist, and then return (no need to check that the session is active
+        if (! $this->sessionExists($newUser))
         {
             $this->addSession($newUser); // adds or updates expires for existing session
-            $newUser->setToken($currentToken);
             return $newUser;
         }
 
@@ -491,9 +490,13 @@ class DBUser
              */  
             $this->sql->deleteSession($newUser->getToken()['access_token']);
             $newUser->setToken(array('access_token' => '', 'expires' => 0));
-            return $newUser;
+            
+            // The user isn't logged in, so we should not let validate their session
+            return false;
         }
-        return false;
+        
+        // The user is set, their session is active
+        return $newUser;
     }
 
     /**

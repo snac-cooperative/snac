@@ -11,7 +11,6 @@
  */
 namespace snac\client\webui;
 
-use \snac\interfaces\ServerInterface;
 use \snac\client\util\ServerConnect as ServerConnect;
 
 /**
@@ -111,6 +110,32 @@ class WebUIExecutor {
             }
     }
     
+    public function startSNACSession(&$user) {
+        $query = array(
+                "command" => "start_session",
+                "user" => $user->toArray()
+                );
+        $serverResponse = $this->connect->query($query);
+        
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
+            return true;
+        return false;  
+    }
+    
+
+
+    public function endSNACSession(&$user) {
+        $query = array(
+                "command" => "end_session",
+                "user" => $user->toArray()
+        );
+        $serverResponse = $this->connect->query($query);
+    
+        if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
+            return true;
+            return false;
+    }
+    
     public function displayPreviewPage(&$input, &$display) {
 
         // If just previewing, then all the information should come VIA post to build the preview
@@ -175,7 +200,9 @@ class WebUIExecutor {
         
         $request = array();
         $request["command"] = "recently_published";
-        $recentConstellations = $this->connect->query($request)["constellation"];
+        $response = $this->connect->query($request);
+        $this->logger->addDebug("Got the following response from the server for recently published", array($response));
+        $recentConstellations = $response["constellation"];
         
         $recents = array();
         foreach ($recentConstellations as $constellationArray) {

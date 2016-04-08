@@ -13,6 +13,7 @@ namespace snac\client\webui;
 
 use \snac\interfaces\ServerInterface;
 use \snac\client\util\ServerConnect as ServerConnect;
+use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * WebUI Class
@@ -136,6 +137,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
             
+            
             // Create the PHP User object
             $user = $executor->createUser($ownerDetails, $token);
             
@@ -173,14 +175,28 @@ class WebUI implements \snac\interfaces\ServerInterface {
         
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
+            
         
             // Set the user details in the session
             $_SESSION['user_details'] = serialize($ownerDetails);
-        
+            
+            
+            
+            $tokenUnserialized = unserialize($_SESSION['token']);
+            $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
+            $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
+            
+            // Create the PHP User object
+            $user = $executor->createUser($ownerDetails, $token);
+            
+            $executor->startSNACSession($user);
+
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
         
         } else if ($this->input["command"] == "logout") {
+            
+            $executor->endSNACSession($user);
         
             // Destroy the old session
             session_destroy();

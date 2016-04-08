@@ -261,7 +261,7 @@ body {
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.documentType.term != 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <a href="{{relation.link ? relation.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content}}</a>
                                                 <span class="arcrole">{{relation.role.term}}</span>
                                                 <div></div>
                                             </div>
@@ -319,12 +319,20 @@ body {
                      <h3>Related names in 
                         <abbr class="initialism">SNAC</abbr>
                      </h3>
+
+                        {% set numRels = 0 %}
+                        {% for relation in data.relations %}
+                        {% if relation.targetEntityType.term == 'person' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+
                      <div class="panel panel-default" data-xsl="relatedPeople">
                         <div class="panel-heading">
                            <h4>
                               <a data-toggle="collapse" data-parent="#relations" href="#relatedPeople">
-                                 <span class="icon-ind"></span> Relations
-                                 <span class="badge pull-right">{{data.relations|length}}</span>
+                                 <span class="icon-ind"></span> People
+                                 <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
                         </div>
@@ -338,11 +346,131 @@ body {
                               </div>
                               -->
                               {% for relation in data.relations %}
+                              {% if relation.targetEntityType.term == 'person' %}
+                              <div class="person">
+                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                 <span class="arcrole">{{relation.type.term}}</span>
+                                 <div></div>
+                              </div>
+                              {% endif %}
+                              {% endfor %}
+                           </div>
+                        </div>
+                     </div>
+
+                        {% set numRels = 0 %}
+                        {% for relation in data.relations %}
+                        {% if relation.targetEntityType.term == 'family' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+
+                     <div class="panel panel-default" data-xsl="relatedFamilies">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedFamilies">
+                                 <span class="icon-fam"></span> Families
+                                 <span class="badge pull-right">{{numRels}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedFamilies" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <!--
+                              <div class="person">
+                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
+                                 <span class="arcrole">correspondedWith</span>
+                                 <div></div>
+                              </div>
+                              -->
+                              {% for relation in data.relations %}
+                              {% if relation.targetEntityType.term == 'family' %}
+                              <div class="person">
+                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                 <span class="arcrole">{{relation.type.term}}</span>
+                                 <div></div>
+                              </div>
+                              {% endif %}
+                              {% endfor %}
+                           </div>
+                        </div>
+                     </div>
+
+                        {% set numRels = 0 %}
+                        {% for relation in data.relations %}
+                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+
+                     <div class="panel panel-default" data-xsl="relatedOrganizations">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedOrganizations">
+                                 <span class="icon-org"></span> Organizations
+                                 <span class="badge pull-right">{{numRels}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedOrganizations" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <!--
+                              <div class="person">
+                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
+                                 <span class="arcrole">correspondedWith</span>
+                                 <div></div>
+                              </div>
+                              -->
+                              {% for relation in data.relations %}
+                              {% if relation.targetEntityType.term == 'corporateBody' %}
+                              <div class="person">
+                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                 <span class="arcrole">{{relation.type.term}}</span>
+                                 <div></div>
+                              </div>
+                              {% endif %}
+                              {% endfor %}
+                           </div>
+                        </div>
+                     </div>
+
+                     <h3>Related names in Original
+                        <abbr class="initialism">SNAC</abbr>
+                     </h3>
+
+                        {% set numRels = 0 %}
+                        {% for relation in data.relations %}
+                        {% if not relation.targetConstellation %}
+                            {% set numRels = numRels + 1 %}
+                        {% endif %}
+                        {% endfor %}
+
+                     <div class="panel panel-default" data-xsl="relatedOldSNAC">
+                        <div class="panel-heading">
+                           <h4>
+                              <a data-toggle="collapse" data-parent="#relations" href="#relatedOldSNAC">
+                                 <span class="icon-ind"></span> Relations
+                                 <span class="badge pull-right">{{numRels}}</span>
+                              </a>
+                           </h4>
+                        </div>
+                        <div id="relatedOldSNAC" class="panel-collapse collapse">
+                           <div class="panel-body">
+                              <!--
+                              <div class="person">
+                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
+                                 <span class="arcrole">correspondedWith</span>
+                                 <div></div>
+                              </div>
+                              -->
+                              {% for relation in data.relations %}
+                              {% if not relation.targetConstellation %}
                               <div class="person">
                                  <a href="{{relation.targetArkID}}">{{relation.content}}</a>
                                  <span class="arcrole">{{relation.type.term}}</span>
                                  <div></div>
                               </div>
+                              {% endif %}
                               {% endfor %}
                            </div>
                         </div>

@@ -53,7 +53,17 @@ class User {
      *
      * @var snac\data\Role[] List of Role objects
      */
-    private $roleList = null;
+    
+    /**
+     * Constructor 
+     * 
+     * @param string[] $data Array object of User information
+     */
+    public function __construct($data = null) {
+        if ($data != null)
+            $this->fromArray($data);
+        
+    }
 
     /**
      * Get the list of roles
@@ -167,6 +177,14 @@ class User {
     public function getToken() {
 
         return $this->token;
+    }
+    
+    public function generateTemporarySession($hours = 2) {
+        $token = array(
+                "access_token" => time(),                // use time() to be unique-ish
+                "expires" => time() + ($hours * 60 * 60) // Generates expiration $hours away
+        );
+        $this->setToken($token);
     }
 
     /**
