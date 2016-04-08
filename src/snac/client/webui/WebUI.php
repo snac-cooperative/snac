@@ -184,7 +184,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             $tokenUnserialized = unserialize($_SESSION['token']);
             $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
-            $user = $executor->createUser($tokenUnserialized, $ownerDetailsUnserialized);
+            $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
             
             // Create the PHP User object
             $user = $executor->createUser($ownerDetails, $token);

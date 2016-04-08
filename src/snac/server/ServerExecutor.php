@@ -98,9 +98,9 @@ class ServerExecutor {
             }
 
             $this->logger->addDebug("User is valid from OAuth details");
-            //$this->user = $this->uStore->checkSessionActive($tmpUser);
-            $this->user = $tmpUser;
-            $this->user->setUserID(1);
+            $this->user = $this->uStore->checkSessionActive($tmpUser);
+            //$this->user = $tmpUser;
+            //$this->user->setUserID(1);
             $this->logger->addDebug("User is valid from SNAC details");
             
             return true;
@@ -467,10 +467,14 @@ class ServerExecutor {
                     // Can edit this!
         
                     // lock the constellation to the user as currently editing
-                    $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
+                    $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
+                    if ($success === false) {
+                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cid));
+                    }
         
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
+                    $constellation->setStatus($this->cStore->readConstellationStatus($constellation->getID(), $constellation->getVersion()));
                     $this->logger->addDebug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
