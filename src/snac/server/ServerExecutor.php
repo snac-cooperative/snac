@@ -94,13 +94,20 @@ class ServerExecutor {
                 $this->logger->addDebug("Successfully got user details from OAuth2 Server");
             } catch (\Exception $e) {
                 $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
+                throw new \snac\exceptions\SNACUserException("User OAuth session has expired");
                 return false;
             }
 
             $this->logger->addDebug("User is valid from OAuth details");
+            
+            // Check that the user has a session in the database
             $this->user = $this->uStore->checkSessionActive($tmpUser);
-            //$this->user = $tmpUser;
-            //$this->user->setUserID(1);
+            
+            if ($this->user === false) {
+                throw new \snac\exceptions\SNACUserException("User session has expired");
+            }
+
+            
             $this->logger->addDebug("User is valid from SNAC details");
             
             return true;
@@ -416,6 +423,23 @@ class ServerExecutor {
                                 $input["constellationid"] . " does not have a published version.");
                     }
                 }
+                
+                // Get the list of constellations locked editing for this user
+                $inList = false;
+                if ($this->user != null) {
+                    $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
+                    if ($editable !== false) {
+                        foreach ($editable as $cEdit) {
+                            if ($cEdit->getID() == $constellation->getID()) {
+                                $inList = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
+                    $constellation->setStatus("editable");
+                }
                 $this->logger->addDebug("Finished reading constellation from the database");
                 $response["constellation"] = $constellation->toArray();
                 $this->logger->addDebug("Serialized constellation for output to client");
@@ -474,7 +498,9 @@ class ServerExecutor {
         
                     // read the constellation into response
                     $constellation = $this->cStore->readConstellation($cId);
-                    $constellation->setStatus($this->cStore->readConstellationStatus($constellation->getID(), $constellation->getVersion()));
+                    
+                    
+                    
                     $this->logger->addDebug("Finished reading constellation from the database");
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
