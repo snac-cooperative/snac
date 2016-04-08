@@ -521,7 +521,7 @@ class DBUser
      *
      * @return boolean true Returns true or an exception will be thrown by low level db code if something fails.
      */
-    public function clearAllSessions(snac\data\User $user)
+    public function clearAllSessions(\snac\data\User $user)
     {
         $this->sql->deleteAllSession($user->getUserID());
         return true;
