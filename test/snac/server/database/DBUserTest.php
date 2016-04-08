@@ -58,19 +58,30 @@ class DBUserTest extends PHPUnit_Framework_TestCase
     {
         // Consider creating a single parser instance here, and reusing it throughout, but be aware that this
         // is called for every test, so time consuming setup will be repeated for every test.
+
+        /*
+         * Start by deleting the test account, if it exists. We leave the old user after a test for debugging purposes.
+         *
+         * We do not want to leave the 'demo' role, but failures errors can cause that. So also delete the demo role, if it exists.
+         */ 
+        if ($oldUser = $this->dbu->readUserByEmail("mst3k@example.com"))
+        {
+            // $appUserID = $this->dbu->findUserID("mst3k@example.com");
+            $appUserID = $oldUser->getUserID();
+            $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
+            if ($oldDemoRole)
+            {
+                $this->dbu->getSQL()->deleteRole($oldDemoRole->getID());
+            }
+            if ($appUserID)
+            {
+                $this->dbu->getSQL()->deleteUser($appUserID);
+            }
+        }
     }
 
     public function testBasic()
     {
-        /*
-         * Start by deleting the test account, if it exists. This happens if things failed on a previous run.
-         */ 
-        $appUserID = $this->dbu->findUserID("mst3k@example.com");
-        if ($appUserID)
-        {
-            $this->dbu->getSQL()->deleteUser($appUserID);
-        }
-
         /*
          * Create a new user.
          */ 
@@ -113,8 +124,26 @@ class DBUserTest extends PHPUnit_Framework_TestCase
                 break;
             }
         }
+        /*
+         * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume
+         * that role[0] is 'system'.
+         */ 
         $roleList = $this->dbu->listUserRole($newUser);
-        $this->assertEquals($roleList[0]->getLabel(), 'system');
+        /* 
+         * $foundSystem = false;
+         * $systemRole = null;
+         * foreach($roleList as $role)
+         * {
+         *     if ($role->getLabel() == 'system')
+         *     {
+         *         $foundSystem = true;
+         *         $systemRole = $role;
+         *     }
+         * }
+         */
+        $systemRole = $this->dbu->checkRoleByLabel($newUser, 'system');
+        // false == null, so we only need to check for != null.
+        $this->assertTrue($systemRole != null);
 
         /*
          * Write out the user object as for review.
@@ -126,9 +155,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */
 
         /*
-         * Remove the role from our user, and count. The user should have zero roles.
+         * Remove the role 'system' from our user, and count. User might always have a default role which we
+         * should not remove.
+         *
+         * Rather than rely on an index, the code above saves the system role in a variable, and we use that
+         * variable here.
          */ 
-        $this->dbu->removeUserRole($newUser, $roleList[0]);
+        // $this->dbu->removeUserRole($newUser, $roleList[0]);
+        $this->dbu->removeUserRole($newUser, $systemRole);
         $roleList = $this->dbu->listUserRole($newUser);
         $this->assertEquals(count($roleList), 0);
 
@@ -136,18 +170,31 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create a new role, add it, check that our user has the role. Normally, roles probably aren't deleted, but we want to
          * delete the temp role as part of cleaning up.
          */ 
-        $role = $this->dbu->createRole('demo', 'Demo role created during testing');
-        $this->dbu->addUserRole($newUser, $role);
+        $demoRole = $this->dbu->createRole('demo', 'Demo role created during testing');
+        $this->dbu->addUserRole($newUser, $demoRole);
         $roleList = $this->dbu->listUserRole($newUser);
+        /* 
+         * $foundDemo = false;
+         * foreach($roleList as $role)
+         * {
+         *     if ($role->getLabel() == 'demo')
+         *     {
+         *         $foundDemo = true;
+         *     }
+         * }
+         */
+
         $preCleaningRoleList = $this->dbu->roleList();
-        $this->assertEquals($roleList[0]->getLabel(), 'demo');
+        // $this->assertEquals($roleList[0]->getLabel(), 'demo');
+        // false == null so we only check for != null
+        $this->assertTrue($this->dbu->checkRoleByLabel($newUser, 'demo') != null);
 
         /* 
          * Clean up, some. Remove the role from our user, delete the role. The make sure our user is back to
          * the same number of roles as before.
          */
-        $this->dbu->removeUserRole($newUser, $role);
-        $this->dbu->getSQL()->deleteRole($role->getID());
+        $this->dbu->removeUserRole($newUser, $demoRole);
+        $this->dbu->getSQL()->deleteRole($demoRole->getID());
         $postCleaningRoleList = $this->dbu->roleList();
         $this->assertEquals(count($preCleaningRoleList), count($postCleaningRoleList)+1);
 
@@ -179,5 +226,54 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         // $this->dbu->getSQL()->deleteUser($newUser->getUserID());
 
     }
+
+    public function testAutoUser()
+    {
+        /*
+         * Create a new user object
+         */ 
+        $userObj = new \snac\data\User();
+        $userObj->setFirstName("Malf");
+        $userObj->setLastName("Torrent");
+        $userObj->setFullName("Malf S Torrent");
+        $userObj->setAvatar("http://example.com/avatar");
+        $userObj->setAvatarSmall("http://example.com/avatar_small");
+        $userObj->setAvatarLarge("http://example.com/avatar_large");
+        $userObj->setEmail("mst3k@example.com");
+
+        /*
+         * User does not exist in db. This is clearly a lame session, but it will still be created. If we run
+         * call checkSessionActive() a second time, the session should disappear.
+         *
+         */ 
+        /* 
+         * printf("\ndbusertest deleting appuserid: %s\n", $newUser->getUserID());
+         * $this->dbu->getSQL()->deleteUser($useObj->getUserID());
+         */
+
+        $userObj->setToken(array('access_token' => 'foo',
+                                 'expires' => 12345));
+
+        $csaReturn = $this->dbu->checkSessionActive($userObj);
+
+        $this->assertEquals($csaReturn->getToken()['access_token'], 'foo');
+        /*
+         * Verify that we got the default role of Public HRT.
+         */ 
+        // false == null so we only check for != null
+        // We don't current have a role for public hrt.
+        // $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
+
+        $this->dbu->checkSessionActive($csaReturn);
+        
+
+        /*
+         * When things are normally successful, we will clean up.  Or not. If we don't clean up, then we can
+         * use psql to look at the database.
+         */ 
+        // $this->dbu->getSQL()->deleteUser($newUser->getUserID());
+
+    }
+
     
 }

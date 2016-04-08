@@ -96,13 +96,14 @@ class SQL
      *
      * Used for testing only. Normal users are inactivated.
      *
+     * Delete the user, and delete user role links.
+     *
      * @param integer $appUserID The user id to delete.
      */
     public function deleteUser($appUserID)
     {
-        $result = $this->sdb->query(
-            'delete from appuser where id=$1',
-            array($appUserID));
+        $this->sdb->query('delete from appuser where id=$1', array($appUserID));
+        $this->sdb->query('delete from appuser_role_link where uid=$1', array($appUserID));
     }
 
     /**
@@ -351,6 +352,39 @@ class SQL
         $this->sdb->query("insert into appuser_role_link (uid, rid) values ($1, $2)",
                           array($uid, $newRoleID));
     }
+
+    /**
+     * Add a role by label
+     *
+     * Use "returning rid" to detect if the query succeeded. If it fails, no rid will be returned.
+     *
+     * This is a conditional insert, and it relies on the values coming from a select statement. The select
+     * supplying the values has a combination of hard coded $1 and query derived values. Selects which supply
+     * values may have a where clause and when there are no records supplied by the select, nothing is
+     * inserted.
+     *
+     * The "id not in..." prevents adding the same role twice.
+     * 
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param string $roleLable A role label
+     */ 
+    public function insertRoleByLabel($uid, $roleLabel)
+    {
+        $qq =
+            "insert into appuser_role_link (uid, rid) select $1, (select id from role where label=$2) 
+            where 
+            (select id from role where label=$2 and id not in (select rid from appuser_role_link)) is not null
+            returning rid";
+
+        $result = $this->sdb->query($qq, array($uid, $roleLabel));
+        $row = $this->sdb->fetchrow($result);
+        if ($row['rid'])
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Insert a new role.

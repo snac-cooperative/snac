@@ -120,6 +120,7 @@ class DBUser
                                      $user->getEmail());
         $newUser = clone($user);
         $newUser->setUserID($appUserID);
+        $this->addDefaultRole($newUser);
         return $newUser;
     }
 
@@ -264,6 +265,30 @@ class DBUser
     }
 
     /**
+     * Add default role(s)
+     *
+     * Current there are no default roles. If we ever have default role(s) add them here. You might be
+     * searching for addrole, add role adding a role adding role, addUserRole
+     *
+     * After adding the role, set the users's role list by getting the list from the db.
+     *
+     * When we have more default roles, just add additional insertRoleByLabel() calls.
+     * 
+     * @param \snac\data\User $user A user
+     * @return boolean Return true on success, else false.
+     */
+    public function addDefaultRole($user)
+    {
+        return true;
+        /* 
+         * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
+         * $user->setRoleList($this->listUserRole($user));
+         * return $result;
+         */
+    }
+
+
+    /**
      * List roles for a user.
      *
      * List all the roles a user currently has as an array of Role objects.
@@ -285,6 +310,25 @@ class DBUser
                 array_push($roleObjList, $roleObj);
             }
         return $roleObjList;
+    }
+       
+    /**
+     * Check for role by label
+     * 
+     * @param \snac\data\User User object
+     * @param string $label A label for a role
+     * @return \snac\data\Role A role or null. Or false?
+     */
+    public function checkRoleByLabel($user, $label)
+    {
+        foreach($user->getRoleList() as $role)
+        {
+            if ($role->getLabel() == $label)
+            {
+                return $role;
+            }
+        }
+        return false;
     }
 
     /**
@@ -409,20 +453,13 @@ class DBUser
         {
             $newUser = $this->createUser($user);
             $this->addSession($newUser); // adds or updates expires for existing session
-
-            // printf("\ndbuser after add1 session exists: %d\n", $this->sessionExists($newUser));
-
             $newUser->setToken($currentToken);
             return $newUser;
 
         }
         else if (! $this->sessionExists($user))
         {
-            // printf("\ndbuser session does not exist \n");
             $this->addSession($user); // adds or updates expires for existing session
-
-            // printf("\ndbuser after add2 session exists: %d\n", $this->sessionExists($user));
-
             $user->setToken($currentToken);
             return $user;
         }
@@ -438,7 +475,6 @@ class DBUser
             /*
              * Shouldn't this call removeSession() instead of a low-level SQL function.
              */  
-            // printf("\ndbuser clearing session %s\n", $user->getToken()['access_token']);
             $this->sql->deleteSession($user->getToken()['access_token']);
             $user->setToken(array('access_token' => '', 'expires' => 0));
             return $user;
