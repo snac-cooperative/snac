@@ -1,5 +1,6 @@
 {
     "dataType": "Constellation",
+    "status": null,
     "ark": "FRAN_NP_050744",
     "entityType": {
         "id": "10",

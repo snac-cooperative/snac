@@ -43,10 +43,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function __construct() 
     {
         $this->dbu = new \snac\server\database\DBUtil();
-        $user = new \snac\data\User();
-        $user->setEmail("system@shannonvm.village.virginia.edu");
-        $user->setUserID(0);
-        $this->user = $user;
+        $dbuser = new \snac\server\database\DBUser();
+        $this->user = $dbuser->readUserByEmail("testing@localhost");
         //$dbuser = new \snac\server\database\DBUser();
         
 
