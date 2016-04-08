@@ -178,6 +178,14 @@ class User {
 
         return $this->token;
     }
+    
+    public function generateTemporarySession($hours = 2) {
+        $token = array(
+                "access_token" => time(),                // use time() to be unique-ish
+                "expires" => time() + ($hours * 60 * 60) // Generates expiration $hours away
+        );
+        $this->setToken($token);
+    }
 
     /**
      * Returns this object's data as an associative array
