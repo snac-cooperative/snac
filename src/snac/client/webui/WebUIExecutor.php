@@ -174,7 +174,9 @@ class WebUIExecutor {
         
         $request = array();
         $request["command"] = "recently_published";
-        $recentConstellations = $this->connect->query($request)["constellation"];
+        $response = $this->connect->query($request);
+        $this->logger->addDebug("Got the following response from the server for recently published", array($response));
+        $recentConstellations = $response["constellation"];
         
         $recents = array();
         foreach ($recentConstellations as $constellationArray) {

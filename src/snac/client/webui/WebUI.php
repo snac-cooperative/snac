@@ -13,6 +13,7 @@ namespace snac\client\webui;
 
 use \snac\interfaces\ServerInterface;
 use \snac\client\util\ServerConnect as ServerConnect;
+use League\OAuth2\Client\Token\AccessToken;
 
 /**
  * WebUI Class
@@ -135,6 +136,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
+            
             
             // Create the PHP User object
             $user = $executor->createUser($ownerDetails, $token);
