@@ -26,6 +26,11 @@ $parsedFile = false;
 // SNAC Postgres DB Handler
 $dbu = new snac\server\database\DBUtil();
 
+// SNAC Postgres User Handler
+$dbuser = new \snac\server\database\DBUser();
+$user = $dbuser->readUserByEmail("system@localhost");
+$user->generateTemporarySession();
+
 // ElasticSearch Handler
 $eSearch = null;
 if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -34,9 +39,6 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->setRetries(0)
         ->build();
 }
-
-list($appUserID, $role) = $dbu->getAppUserInfo('system');
-printf("appUserID: %s role: %s\n", $appUserID, $role);
 
 $limit = 100;
 
@@ -67,10 +69,10 @@ if (is_dir($argv[1])) {
         $constellation = $e->parseFile($filename);
         
         // Write the constellations to the DB
-        $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
         
         // Update them to be published
-        $dbu->writeConstellationStatus($written->getID(), "published");
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
         
         indexESearch($written);
 
@@ -80,73 +82,73 @@ if (is_dir($argv[1])) {
     // Washington
     echo "Parsing: George Washington\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6028ps4.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
     // Update them to be published
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
 
     // Jefferson
     echo "Parsing: Thomas Jefferson\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6w9576g.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
     // Update them to be published
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
 
     // Oppenheimer
     echo "Parsing: Robert Oppenheimer\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6v1266v.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
     // Update them to be published
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
 
     // Joseph Henry (large record) 
     echo "Parsing: Joseph Henry\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6st7qq0.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
     // Update them to be published
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
 
     //Now, write samples to edit
     echo "Parsing: Sparse other sample files .";
     $constellation = $e->parseFile($argv[1]."/99166-w6988j92.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w69b3nm4.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w6ck24z2.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     echo ".";
     $constellation = $e->parseFile($argv[1]."/99166-w61z46b8.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     echo ".\n";
     $constellation = $e->parseFile($argv[1]."/99166-w66182x0.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
     
     echo "Parsing: SNAC Sample test file (from db test)\n";
     $constellation = $e->parseFile("../test/snac/server/database/test_record.xml");
-    $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-    $dbu->writeConstellationStatus($written->getID(), "published");
+    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
-    $dbu->writeConstellationStatus($written->getID(), "locked editing");
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     echo "\nCompleted input of sample data.\n\n"; 
     
