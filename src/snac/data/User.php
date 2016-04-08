@@ -53,7 +53,6 @@ class User {
      *
      * @var snac\data\Role[] List of Role objects
      */
-    private $roleList;
     
     /**
      * Constructor 
@@ -81,13 +80,13 @@ class User {
     /**
      * Set role list
      *
-     * Set the user role list to a list of roles. The list probabl comes from from listUserRole().
+     * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
      *
      * @param \snac\data\Role[] $roleList A list of roles. 
      */ 
     public function setRoleList($roleList)
     {
-        $this->$roleList = $roleList;
+        $this->roleList = $roleList;
     }
 
 

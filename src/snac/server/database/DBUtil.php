@@ -89,9 +89,9 @@ class DBUtil
     /**
      * Constellation status
      *
-     * This are the valid values for constellation status. These are used here in the code, so an enumerated
-     * type in the database was both irritating to maintain, and added complexity, and was in the wrong
-     * place. The values are needed here in the code, not over in the database.
+     * These are the valid values for constellation status. These are used in the code, so an enumerated type
+     * in the database was both irritating to maintain, added complexity, and was in the wrong place because
+     * the values are needed here in the code, not over in the database.
      *
      * Add new status values to this variable. PHP allows list keys with no values, but I like the explicit
      * value, so these all have value 1. There are other ways to initialize the list, but this method is very clear.
