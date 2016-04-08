@@ -112,12 +112,12 @@ class DBUser
     {
         
         $appUserID = $this->sql->insertUser($user->getFirstName(),
-                                     $user->getLastName(),
-                                     $user->getFullName(),
-                                     $user->getAvatar(),
-                                     $user->getAvatarSmall(),
-                                     $user->getAvatarLarge(),
-                                     $user->getEmail());
+                                            $user->getLastName(),
+                                            $user->getFullName(),
+                                            $user->getAvatar(),
+                                            $user->getAvatarSmall(),
+                                            $user->getAvatarLarge(),
+                                            $user->getEmail());
         $newUser = clone($user);
         $newUser->setUserID($appUserID);
         $this->addDefaultRole($newUser);
@@ -125,13 +125,12 @@ class DBUser
     }
 
     /**
-     * Update a user record. Verify that read-only fields match, overwrite everthing else with values from the
-     * User object. Return true for success.
+     * Update a user record.
+     *
+     * Write the User fields to the database where appuser.id=$user->getUserID(). There is no sanity checking
+     * and no return value. This function probably needs some work.
      *
      * @param \snac\data\User $user A user object.
-     *
-     * @return boolean true Alway returns true. The only failure mode is for the DatabaseConnector to throw an
-     * exception.
      */
     public function saveUser($user)
     {
@@ -432,14 +431,22 @@ class DBUser
     }
 
     /**
-     * Check that a session is active (not expired) for $user and $accessToken. Time is assumed to be
-     * "now". Return true for success (session is active now).
+     * Check that a session is active
      *
-     * This really checked that a session is active and associated with the $user. In theory is it possible to
+     * Check that we have a non-expired session for $user and with token getToken(). Time is assumed to be
+     * "now" UTC. Return the User on success, false otherwise. If the user does not exist, a DB record is
+     * created in appuser. If the session does not exist, a session is created in table session. If the
+     * session is active, 'expires' is updated. If the session has expired, it is deleted, and the User object
+     * token is cleared.
+     *
+     * This checks that a session is active and associated with the $user. In theory is it possible to
      * ask if a session is active, without knowing the user. In fact, a session could be check as active, and
      * could return the user id.
      *
-     * Add features: auto-create unknown user, auto-create unknown session, delete expired session. 
+     * It is important to read or create a user at the top of the function. Everything after depends on a
+     * valid User from the SNAC appuser database table.
+     *
+     * Features: auto-create unknown user, auto-create unknown session, delete expired session. 
      *
      * @param \snac\data\User $user User object
      *
@@ -449,7 +456,12 @@ class DBUser
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
-        if (! $this->readUserByEmail($user->getEmail()))
+        $newUser = $this->readUserByEmail($user->getEmail());
+        if ($newUser)
+        {
+            $newUser->setToken($user->getToken());
+        }
+        if (! $newUser)
         {
             $newUser = $this->createUser($user);
             $this->addSession($newUser); // adds or updates expires for existing session
@@ -457,11 +469,13 @@ class DBUser
             return $newUser;
 
         }
-        else if (! $this->sessionExists($user))
+        // Now we have a good $newUser with the original $user token. Either the user was created or read from
+        // the db.
+        else if (! $this->sessionExists($newUser))
         {
-            $this->addSession($user); // adds or updates expires for existing session
-            $user->setToken($currentToken);
-            return $user;
+            $this->addSession($newUser); // adds or updates expires for existing session
+            $newUser->setToken($currentToken);
+            return $newUser;
         }
 
         /*
@@ -470,14 +484,14 @@ class DBUser
          * If the session exists, but doesn't belong to this user, selectActive() will fail.
          * If the sesion has expired, selectActive() will fail.
          */ 
-        if (! $this->sql->selectActive($user->getUserID(), $accessToken))
+        if (! $this->sql->selectActive($newUser->getUserID(), $accessToken))
         {
             /*
              * Shouldn't this call removeSession() instead of a low-level SQL function.
              */  
-            $this->sql->deleteSession($user->getToken()['access_token']);
-            $user->setToken(array('access_token' => '', 'expires' => 0));
-            return $user;
+            $this->sql->deleteSession($newUser->getToken()['access_token']);
+            $newUser->setToken(array('access_token' => '', 'expires' => 0));
+            return $newUser;
         }
         return false;
     }
