@@ -267,7 +267,8 @@ class DBUser
     /**
      * Add default role(s)
      *
-     * You might be searching for addrole, add role adding a role adding role, addUserRole
+     * Current there are no default roles. If we ever have default role(s) add them here. You might be
+     * searching for addrole, add role adding a role adding role, addUserRole
      *
      * After adding the role, set the users's role list by getting the list from the db.
      *
@@ -278,9 +279,12 @@ class DBUser
      */
     public function addDefaultRole($user)
     {
-        $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
-        $user->setRoleList($this->listUserRole($user));
-        return $result;
+        return true;
+        /* 
+         * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
+         * $user->setRoleList($this->listUserRole($user));
+         * return $result;
+         */
     }
 
 

@@ -64,17 +64,19 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          *
          * We do not want to leave the 'demo' role, but failures errors can cause that. So also delete the demo role, if it exists.
          */ 
-        $oldUser = $this->dbu->readUserByEmail("mst3k@example.com");
-        // $appUserID = $this->dbu->findUserID("mst3k@example.com");
-        $appUserID = $oldUser->getUserID();
-        $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
-        if ($oldDemoRole)
+        if ($oldUser = $this->dbu->readUserByEmail("mst3k@example.com"))
         {
-            $this->dbu->getSQL()->deleteRole($oldDemoRole->getID());
-        }
-        if ($appUserID)
-        {
-            $this->dbu->getSQL()->deleteUser($appUserID);
+            // $appUserID = $this->dbu->findUserID("mst3k@example.com");
+            $appUserID = $oldUser->getUserID();
+            $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
+            if ($oldDemoRole)
+            {
+                $this->dbu->getSQL()->deleteRole($oldDemoRole->getID());
+            }
+            if ($appUserID)
+            {
+                $this->dbu->getSQL()->deleteUser($appUserID);
+            }
         }
     }
 
@@ -123,8 +125,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
             }
         }
         /*
-         * We add a default role 'Public HRT', so even during testing we cannot assume that role[0] is
-         * 'system'.
+         * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume
+         * that role[0] is 'system'.
          */ 
         $roleList = $this->dbu->listUserRole($newUser);
         /* 
@@ -153,7 +155,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */
 
         /*
-         * Remove the role 'system' from our user, and count. User always has 1 role 'Public HRT' which we
+         * Remove the role 'system' from our user, and count. User might always have a default role which we
          * should not remove.
          *
          * Rather than rely on an index, the code above saves the system role in a variable, and we use that
@@ -162,7 +164,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         // $this->dbu->removeUserRole($newUser, $roleList[0]);
         $this->dbu->removeUserRole($newUser, $systemRole);
         $roleList = $this->dbu->listUserRole($newUser);
-        $this->assertEquals(count($roleList), 1);
+        $this->assertEquals(count($roleList), 0);
 
         /*
          * Create a new role, add it, check that our user has the role. Normally, roles probably aren't deleted, but we want to
@@ -259,7 +261,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Verify that we got the default role of Public HRT.
          */ 
         // false == null so we only check for != null
-        $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
+        // We don't current have a role for public hrt.
+        // $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
 
         $this->dbu->checkSessionActive($csaReturn);
         
