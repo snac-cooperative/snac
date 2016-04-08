@@ -431,14 +431,22 @@ class DBUser
     }
 
     /**
-     * Check that a session is active (not expired) for $user and $accessToken. Time is assumed to be
-     * "now". Return true for success (session is active now).
+     * Check that a session is active
      *
-     * This really checked that a session is active and associated with the $user. In theory is it possible to
+     * Check that we have a non-expired session for $user and with token getToken(). Time is assumed to be
+     * "now" UTC. Return the User on success, false otherwise. If the user does not exist, a DB record is
+     * created in appuser. If the session does not exist, a session is created in table session. If the
+     * session is active, 'expires' is updated. If the session has expired, it is deleted, and the User object
+     * token is cleared.
+     *
+     * This checks that a session is active and associated with the $user. In theory is it possible to
      * ask if a session is active, without knowing the user. In fact, a session could be check as active, and
      * could return the user id.
      *
-     * Add features: auto-create unknown user, auto-create unknown session, delete expired session. 
+     * It is important to read or create a user at the top of the function. Everything after depends on a
+     * valid User from the SNAC appuser database table.
+     *
+     * Features: auto-create unknown user, auto-create unknown session, delete expired session. 
      *
      * @param \snac\data\User $user User object
      *
