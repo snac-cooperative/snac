@@ -362,7 +362,7 @@ class DBUser
     }
 
     /**
-     * Check $passwd matches the password stored for snac\data\User. Return true on success.
+     * Check $passwd matches the password stored for \snac\data\User. Return true on success.
      *
      * Perhaps this won't be used in a world with OAuth.
      *
@@ -392,7 +392,7 @@ class DBUser
      *
      * @param string $expire An expiration timestamp. 
      */
-    public function addSession(\snac\data\User $user)
+    public function addSession($user)
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
@@ -452,7 +452,7 @@ class DBUser
      *
      * @return \snac\data\User when successful or return false on failure.
      */
-    public function checkSessionActive(\snac\data\User $user)
+    public function checkSessionActive($user)
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
@@ -524,7 +524,7 @@ class DBUser
      *
      * @return boolean true Returns true or an exception will be thrown by low level db code if something fails.
      */
-    public function clearAllSessions(\snac\data\User $user)
+    public function clearAllSessions($user)
     {
         $this->sql->deleteAllSession($user->getUserID());
         return true;
