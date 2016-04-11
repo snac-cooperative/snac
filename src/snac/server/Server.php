@@ -90,7 +90,6 @@ class Server implements \snac\interfaces\ServerInterface {
         $this->logger->addDebug("Server starting to handle request", $this->input);
         // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
         
-        $executor = new \snac\server\ServerExecutor();
         $db = new \snac\server\database\DBUtil();
         
         // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
@@ -99,9 +98,14 @@ class Server implements \snac\interfaces\ServerInterface {
             $user = $this->input["user"];
         }
         
-        if (!$executor->authenticateUser($user)) {
-            throw new \snac\exceptions\SNACUserException("User is not authorized");
-        }
+
+        $executor = new \snac\server\ServerExecutor($user);
+        
+        // Uncomment the following to have authentication happen at each query.  Currently, we will only check
+        // authentication at login, so that we can ignore expiration of tokens.
+        //if (!$executor->authenticateUser($user)) {
+        //    throw new \snac\exceptions\SNACUserException("User is not authorized");
+        //}
         
 
         $this->logger->addDebug("Switching on user command");

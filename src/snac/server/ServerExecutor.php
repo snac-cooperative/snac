@@ -48,12 +48,23 @@ class ServerExecutor {
     
     /**
      * Constructor
+     * 
+     * @param string[] $user The user array from the Server's input
      */
-    public function __construct() {
+    public function __construct($user = null) {
         global $log;
         
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
+        
+        // Create the user and fill in their userID from the database
+        if ($user != null) {
+            $this->user = new \snac\data\User($user);
+            $tmpUser = $this->uStore->readUserByEmail($this->user->getEmail());
+            if ($tmpUser !== false) {
+                $this->user->setUserID($tmpUser->getUserID());
+            }
+        }
         
         // create a log channel
         $this->logger = new \Monolog\Logger('ServerExec');
@@ -65,14 +76,13 @@ class ServerExecutor {
      * 
      * Authenticates the user by checking the user store (dbuser)
      * 
-     * @param string[] $user User information to check
+     * @param \snac\data\User $user User information to check
      * @return boolean true if user authenticated, false if not
      */
     public function authenticateUser($user) {
         if ($user != null) {
-            $this->logger->addDebug("Attempting to authenticate user", $user);
+            $this->logger->addDebug("Attempting to authenticate user", $user->toArray());
             
-            $tmpUser = new \snac\data\User($user);
             
             // Google OAuth Settings (from Config)
             $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
@@ -85,11 +95,11 @@ class ServerExecutor {
             try {
                 $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
                 
-                $accessToken = new AccessToken($tmpUser->getToken());
+                $accessToken = new AccessToken($user->getToken());
                 
                 $ownerDetails = $provider->getResourceOwner($accessToken);
                 
-                if ($ownerDetails->getEmail() != $tmpUser->getEmail()) {
+                if ($ownerDetails->getEmail() != $user->getEmail()) {
                     // This user's token doesn't match the user's email
                     $this->logger->addDebug("Email mismatch from the user and OAuth details");
                     return false;
@@ -104,7 +114,7 @@ class ServerExecutor {
             $this->logger->addDebug("User is valid from OAuth details");
             
             // Check that the user has a session in the database
-            $this->user = $this->uStore->checkSessionActive($tmpUser);
+            $this->user = $this->uStore->checkSessionActive($user);
             
             if ($this->user === false) {
                 throw new \snac\exceptions\SNACUserException("User session has expired");
@@ -134,6 +144,7 @@ class ServerExecutor {
         
         // TODO In the future, we may want to put Google OAuth here so we don't check the user
         // against Google for each operation on the server
+        $this->authenticateUser($this->user);
         
         if ($this->user != null) {
             $response["user"] = $this->user->toArray();

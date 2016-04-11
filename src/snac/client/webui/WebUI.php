@@ -142,16 +142,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
             if (isset($_SESSION["refresh_token"]))
                 $refreshToken = $_SESSION["refresh_token"];
             
-            if ($token->getExpires() <= time() && $refreshToken != null) {
-                // Need to refresh if we've gone past the expiration
-                
-                $grant = new \League\OAuth2\Client\Grant\RefreshToken();
-                $token = $provider->getAccessToken($grant, ['refresh_token' => $refreshToken]);
-                
-                // Set and restore from the session variable
-                $_SESSION['token'] = serialize($token);
-                $token = unserialize($_SESSION["token"]);
-                
+            if ($token->getExpires() <= time()) {
+                if ($refreshToken != null) {
+                    // Need to refresh if we've gone past the expiration
+                    
+                    $grant = new \League\OAuth2\Client\Grant\RefreshToken();
+                    $token = $provider->getAccessToken($grant, ['refresh_token' => $refreshToken]);
+                    
+                    // Set and restore from the session variable
+                    $_SESSION['token'] = serialize($token);
+                    $token = unserialize($_SESSION["token"]);
+                } else {
+                    // We have no token to refresh, so the user needs to log in again.
+                    //$this->input["command"] = "login";
+                }
             }
             
             // Create the PHP User object
