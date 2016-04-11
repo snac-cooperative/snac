@@ -59,6 +59,19 @@ class DBUser
     }
 
     /**
+     * Get the $sql object
+     *
+     * Test code needs access to the sql object.
+     *
+     * @return \snac\server\database\SQL SQL object
+     *
+     */ 
+    public function getSQL()
+    {
+        return $this->sql;
+    }
+
+    /**
      * Write the password
      *
      * This overwrites the password. Use this to initially set the password, as well as to set a new password.
@@ -98,26 +111,26 @@ class DBUser
     public function createUser($user)
     {
         
-        $id = $this->sql->insertUser($user->getFirstName(),
-                                     $user->getLastName(),
-                                     $user->getFullName(),
-                                     $user->getAvatar(),
-                                     $user->getAvatarSmall(),
-                                     $user->getAvatarLarge(),
-                                     $user->getEmail());
+        $appUserID = $this->sql->insertUser($user->getFirstName(),
+                                            $user->getLastName(),
+                                            $user->getFullName(),
+                                            $user->getAvatar(),
+                                            $user->getAvatarSmall(),
+                                            $user->getAvatarLarge(),
+                                            $user->getEmail());
         $newUser = clone($user);
-        $newUser->setUserID($id);
+        $newUser->setUserID($appUserID);
+        $this->addDefaultRole($newUser);
         return $newUser;
     }
 
     /**
-     * Update a user record. Verify that read-only fields match, overwrite everthing else with values from the
-     * User object. Return true for success.
+     * Update a user record.
+     *
+     * Write the User fields to the database where appuser.id=$user->getUserID(). There is no sanity checking
+     * and no return value. This function probably needs some work.
      *
      * @param \snac\data\User $user A user object.
-     *
-     * @return boolean true Alway returns true. The only failure mode is for the DatabaseConnector to throw an
-     * exception.
      */
     public function saveUser($user)
     {
@@ -135,16 +148,19 @@ class DBUser
     /**
      * Get the user id if you only know the email address. We must be assuming the email addresses are unique.
      *
+     * Might be called readUserIDByEmail. "Find" is not a word we use anywhere else in function names
+     * here. There is an attempt to follow some predictable convention for function names.
+     * 
      * @param string $email
      *
      * @return integer $uid Return an integer user id or false.
      */
     public function findUserID($email)
     {
-        $uid = $this->sql->selectUserByEmail($email);
-        if ($uid)
+        $appUserID = $this->sql->selectUserByEmail($email);
+        if ($appUserID)
         {
-            return $uid;
+            return $appUserID;
         }
         return false;
     }
@@ -157,15 +173,15 @@ class DBUser
      *
      * After calling this you probably want to call addSession().
      *
-     * @param integer $userid
+     * @param integer $appUserID
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    public function readUser($userid)
+    public function readUser($appUserID)
     {
-        if ($userid)
+        if ($appUserID)
         {
-            $rec = $this->sql->selectUserByID($userid);
+            $rec = $this->sql->selectUserByID($appUserID);
             $user = new \snac\data\User();
             $user->setUserID($rec['id']);
             $user->setFirstName($rec['first']);
@@ -175,9 +191,24 @@ class DBUser
             $user->setAvatarSmall($rec['avatar_small']);
             $user->setAvatarLarge($rec['avatar_large']);
             $user->setEmail($rec['email']);
+            $user->setRoleList($this->listUserRole($user));
             return $user;
         }
         return false;
+    }
+
+    /**
+     * Return a user object for the email.
+     *
+     * Wrapper for readUser() getting a user by email address instead of user id.
+     *
+     * @param string $email User email address.
+     * @return \snac\data\User Returns a user object or false.
+     */
+    public function readUserByEmail($email)
+    {
+        $uid = $this->sql->selectUserByEmail($email);
+        return $this->readUser($uid);
     }
 
     /**
@@ -195,38 +226,120 @@ class DBUser
     }
 
     /**
+     * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
+     *
+     * @return \snac\data\Role[] Return list of Role object
+     */
+    public function roleList()
+    {
+        $roleArray = $this->sql->selectRole();
+        $roleObjList = array();
+        foreach($roleArray as $roleHash)
+        {
+            $roleObj = new \snac\data\Role();
+            $roleObj->setID($roleHash['id']);
+            $roleObj->setLabel($roleHash['label']);
+            $roleObj->setDescription($roleHash['description']);
+            array_push($roleObjList, $roleObj);
+        }
+        return $roleObjList;
+    }
+
+
+    /**
      * Add a role to the User via table appuser_role_link. Return true on success.
      *
+     * You might be searching for addrole, add role adding a role adding role.
+     *
+     * After adding the role, set the users's role list by getting the list from the db.
+     * 
      * @param \snac\data\User $user A user
-     * @param string[] $newRole is associative list with keys id, label, description. We really only care about id.
+     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only care about id.
      */
     public function addUserRole($user, $newRole)
     {
-        $this->sql->insertRoleLink($user->getUserID(), $newRole['id']);
+        $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
+        $user->setRoleList($this->listUserRole($user));
         return true;
     }
 
+    /**
+     * Add default role(s)
+     *
+     * Current there are no default roles. If we ever have default role(s) add them here. You might be
+     * searching for addrole, add role adding a role adding role, addUserRole
+     *
+     * After adding the role, set the users's role list by getting the list from the db.
+     *
+     * When we have more default roles, just add additional insertRoleByLabel() calls.
+     * 
+     * @param \snac\data\User $user A user
+     * @return boolean Return true on success, else false.
+     */
+    public function addDefaultRole($user)
+    {
+        return true;
+        /* 
+         * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
+         * $user->setRoleList($this->listUserRole($user));
+         * return $result;
+         */
+    }
+
+
+    /**
+     * List roles for a user.
+     *
+     * List all the roles a user currently has as an array of Role objects.
+     *
+     * @param \snac\data\User $user The user
+     *
+     * @return \snac\data\Role[] A list of Role objects.
+     */
+    public function listUserRole($user)
+    {
+        $roleList = $this->sql->selectUserRole($user->getUserID());
+        $roleObjList = array();
+        foreach($roleList as $roleHash)
+            {
+                $roleObj = new \snac\data\Role();
+                $roleObj->setID($roleHash['id']);
+                $roleObj->setLabel($roleHash['label']);
+                $roleObj->setDescription($roleHash['description']);
+                array_push($roleObjList, $roleObj);
+            }
+        return $roleObjList;
+    }
+       
+    /**
+     * Check for role by label
+     * 
+     * @param \snac\data\User User object
+     * @param string $label A label for a role
+     * @return \snac\data\Role A role or null. Or false?
+     */
+    public function checkRoleByLabel($user, $label)
+    {
+        foreach($user->getRoleList() as $role)
+        {
+            if ($role->getLabel() == $label)
+            {
+                return $role;
+            }
+        }
+        return false;
+    }
 
     /**
      * Remove a role from the User via table appuser_role_link.
      *
      * @param \snac\data\User $user A user
-     * @param string[] $role is associative list with keys id, label, description. We really only care about id.
+     * @param \snac\data\Role $role Role object
      */
     public function removeUserRole($user, $role)
     {
-        $this->sql->deleteRoleLink($user->getUserID(), $role['id']);
+        $this->sql->deleteRoleLink($user->getUserID(), $role->getID());
         return true;
-    }
-
-    /**
-     * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
-     *
-     * @return string[][] Return list of list with keys: id, label, description.
-     */
-    public function roleList()
-    {
-        return $this->sql->selectRole();
     }
 
     /**
@@ -236,11 +349,16 @@ class DBUser
      *
      * @param string $description The description of the role, a phrase or sentence.
      *
-     * @return integer New role id.
+     * @return \snac\data\Role Role object.
      */
     public function createRole($label, $description)
     {
-        return $this->sql->insertRole($label, $description);
+        $roleHash = $this->sql->insertRole($label, $description);
+        $roleObj = new \snac\data\Role();
+        $roleObj->setID($roleHash['id']);
+        $roleObj->setLabel($roleHash['label']);
+        $roleObj->setDescription($roleHash['description']);
+        return $roleObj;
     }
 
     /**
@@ -256,8 +374,8 @@ class DBUser
      */
     public function checkPassword($user, $passwd)
     {
-        $id = $this->sql->selectMatchingPassword($user->getUserID, $passwd);
-        if ($id >= 1)
+        $appUserID = $this->sql->selectMatchingPassword($user->getUserID(), $passwd);
+        if ($appUserID >= 1)
         {
             return true;
         }
@@ -268,50 +386,147 @@ class DBUser
      * Add a new session token $accessToken with expiration time $expire for $user. Update expiration if
      * $accessToken exists.
      *
-     * @param snac\data\User $user User object
+     * @param \snac\data\User $user User object
      *
      * @param string $accessToken The session token
      *
      * @param string $expire An expiration timestamp. 
      */
-    public function addSession(snac\data\User $user, $accessToken, $expire)
+    public function addSession(\snac\data\User $user)
     {
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        $expires = $currentToken['expires'];
         $rec = $this->sql->selectSession($accessToken);
         if ($rec['appuser_fk'])
         {
-            $this->sql->updateSession($accessToken, $expire);
+            $this->sql->updateSession($accessToken, $expires);
         }
         else
         {
             // For now, appuser.id is getUserID()
-            $this->sql->insertSession($user->getUserID(), $accessToken, $expire);
+            $this->sql->insertSession($user->getUserID(), $accessToken, $expires);
         }
-        $user->setToken($accessToken);
     }
 
     /**
-     * Check that a session is active (not expired) for $user and $accessToken. Time is assumed to be
-     * "now". Return true for success (session is active now).
+     * Check session exists
      *
-     * @param snac\data\User $user User object
+     * Find out if a session exists and if that session is associated with $user, and has not expired.
      *
-     * @param string $accessToken
+     * @param \snac\data\User User object
+     * @return boolean True on success, else false.
      */
-    public function checkSessionActive(snac\data\User $user, $accessToken)
+    public function sessionExists($user)
     {
-        return $this->sql->selectActive($user-getUserID(), $accessToken);
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        $rec = $this->sql->selectSession($accessToken);
+        // printf("\ndbuser appuser_fk: %s appUserID: %s", $rec['appuser_fk'], $user->getUserID() );
+        if ($rec['appuser_fk'])
+        {
+            return true;
+        }
+        return false;
     }
+
+    /**
+     * Check that a session is active
+     *
+     * Check that we have a non-expired session for $user and with token getToken(). Time is assumed to be
+     * "now" UTC. Return the User on success, false otherwise. If the user does not exist, a DB record is
+     * created in appuser. If the session does not exist, a session is created in table session. If the
+     * session is active, 'expires' is updated. If the session has expired, it is deleted, and the User object
+     * token is cleared.
+     *
+     * This checks that a session is active and associated with the $user. In theory is it possible to
+     * ask if a session is active, without knowing the user. In fact, a session could be check as active, and
+     * could return the user id.
+     *
+     * It is important to read or create a user at the top of the function. Everything after depends on a
+     * valid User from the SNAC appuser database table.
+     *
+     * Features: auto-create unknown user, auto-create unknown session, delete expired session. 
+     *
+     * @param \snac\data\User $user User object
+     *
+     * @return \snac\data\User when successful or return false on failure.
+     */
+    public function checkSessionActive(\snac\data\User $user)
+    {
+        $currentToken = $user->getToken();
+        $accessToken = $currentToken['access_token'];
+        
+        // Try to get this user from the database
+        $newUser = $this->readUserByEmail($user->getEmail());
+        
+        if ($newUser === false) {
+            // If the user doesn't exist, then create them
+            $newUser = $this->createUser($user);
+            
+        }
+        $newUser->setToken($user->getToken());
+        
+        // Now we have a good $newUser with the original $user token. Either the user was created or read from
+        // the db.
+        
+        // Create the session if it doesn't exist, and then return (no need to check that the session is active
+        if (! $this->sessionExists($newUser))
+        {
+            $this->addSession($newUser); // adds or updates expires for existing session
+            return $newUser;
+        }
+
+        /*
+         * Do this last, since if this fails we need to essentially logoff the user.
+         *
+         * If the session exists, but doesn't belong to this user, selectActive() will fail.
+         * If the sesion has expired, selectActive() will fail.
+         */ 
+        if (! $this->sql->selectActive($newUser->getUserID(), $accessToken))
+        {
+            /*
+             * Shouldn't this call removeSession() instead of a low-level SQL function.
+             */  
+            $this->sql->deleteSession($newUser->getToken()['access_token']);
+            $newUser->setToken(array('access_token' => '', 'expires' => 0));
+            
+            // The user isn't logged in, so we should not let validate their session
+            return false;
+        }
+        
+        // The user is set, their session is active
+        return $newUser;
+    }
+
+    /**
+     * Remove a session
+     *
+     * Assume that tokens are unique, which is important. Delete all sessions with the token no matter what user has that token.
+     *
+     * This showed up during testing where the appUserID and token got snarled.
+     *
+     * @param \snac\data\User $user
+     *
+     */
+    public function removeSession($user)
+    {
+        $this->sql->deleteSession($user->getToken()['access_token']);
+    }
+
 
     /**
      * Delete all session records for $user.
+     *
+     * Unclear when this is used, but it will logout from all sessions.
      *
      * @param \snac\data\User $user A user object
      *
      * @return boolean true Returns true or an exception will be thrown by low level db code if something fails.
      */
-    public function clearAllSessions(snac\data\User $user)
+    public function clearAllSessions(\snac\data\User $user)
     {
-        $this->sql->deleteAllSessions($user->getUserID());
+        $this->sql->deleteAllSession($user->getUserID());
         return true;
     }
 }

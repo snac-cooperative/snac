@@ -92,6 +92,37 @@ class SQL
     }
 
     /**
+     * Really delete a user
+     *
+     * Used for testing only. Normal users are inactivated.
+     *
+     * Delete the user, and delete user role links.
+     *
+     * @param integer $appUserID The user id to delete.
+     */
+    public function deleteUser($appUserID)
+    {
+        $this->sdb->query('delete from appuser where id=$1', array($appUserID));
+        $this->sdb->query('delete from appuser_role_link where uid=$1', array($appUserID));
+    }
+
+    /**
+     * Really delete a role
+     *
+     * Used for testing only, maybe. In any case, deleting a role should be rare. To make this a little safer
+     * it only deletes if the role is not in use.
+     *
+     * @param integer $roleID An role id
+     */
+    public function deleteRole($roleID)
+    {
+        $result = $this->sdb->query(
+            'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
+            array($roleID));
+    }
+
+
+    /**
      * Update password for an existing user.
      *
      * We assume the user exists. This will silently fail for non-existing user, although the calling code
@@ -123,7 +154,7 @@ class SQL
      */
     public function selectMatchingPassword($appUserID, $passwd)
     {
-        $this->sdb->query(
+        $result = $this->sdb->query(
             'select id from  appuser where password=$1 and id=$2',
             array($passwd, $appUserID));
         $row = $this->sdb->fetchrow($result);
@@ -142,8 +173,8 @@ class SQL
      */
     public function selectSession($accessToken)
     {
-        $this->sdb->query(
-            'select id from session where access_token=$1',
+        $result = $this->sdb->query(
+            'select * from session where access_token=$1',
             array($accessToken));
         $row = $this->sdb->fetchrow($result);
         return $row;
@@ -155,14 +186,14 @@ class SQL
      *
      * @param string $accessToken A session token
      *
-     * @param string $expire A session expiration timestamp
+     * @param string $expires A session expiration timestamp
      *
      */
-    public function updateSession($accessToken, $expire)
+    public function updateSession($accessToken, $expires)
     {
         $this->sdb->query(
-            'update session set expire=$1 where access_token=$2',
-            array($expire, $accessToken));
+            'update session set expires=$1 where access_token=$2',
+            array($expires, $accessToken));
     }
 
     /**
@@ -174,19 +205,23 @@ class SQL
      * 
      * @param string $accessToken A session token
      *
-     * @param string $expire A session expiration timestamp
+     * @param string $expires A session expiration timestamp
      *
      */
-    public function insertSession($appUserID, $accessToken, $expire)
+    public function insertSession($appUserID, $accessToken, $expires)
     {
         $this->sdb->query(
-            'insert into session (appuser_fk, access_token expire) values ($1, $2, $3)',
-            array($appUserID, $accessToken, $expire));
+            'insert into session (appuser_fk, access_token, expires) values ($1, $2, $3)',
+            array($appUserID, $accessToken, $expires));
     }
 
     
     /**
      * Check that a session is active
+     *
+     * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
+     * 
+     * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
      *
      * @param integer $appUserID The user id
      * 
@@ -197,7 +232,7 @@ class SQL
     public function selectActive($appUserID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select count(*) from session where appuser_fk=$1 and access_token=$2 and $expire>=now()',
+            "select count(*) from session where appuser_fk=$1 and access_token=$2 and expires >= extract(epoch from now() at time zone 'utc')",
             array($appUserID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         if ($row['count'] == 1)
@@ -205,6 +240,18 @@ class SQL
             return true;
         }
         return false;
+    }
+
+    /**
+     * Clear a session
+     *
+     * @param string $accessToken A session token
+     */
+    public function deleteSession($accessToken)
+    {
+        $result = $this->sdb->query(
+            'delete from session where access_token=$1',
+            array($accessToken));
     }
 
     /**
@@ -216,7 +263,7 @@ class SQL
      *
      * @return boolean true for active, false for inactive or not found.
      */
-    public function deleteAllSessions($appUserID)
+    public function deleteAllSession($appUserID)
     {
         $result = $this->sdb->query(
             'delete from session where appuser_fk=$1',
@@ -242,7 +289,7 @@ class SQL
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
     {
         $this->sdb->query(
-            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8)
+            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8
             where appuser.id=$1',
             array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
     }
@@ -269,8 +316,8 @@ class SQL
      */ 
     public function selectUserByid($uid)
     {
-        $this->sdb->query("select * from appuser where appuser.id=$1",
-                          array($uid));
+        $result = $this->sdb->query("select * from appuser where appuser.id=$1",
+                                    array($uid));
         $row = $this->sdb->fetchrow($result);
         return $row;
     }
@@ -307,6 +354,39 @@ class SQL
     }
 
     /**
+     * Add a role by label
+     *
+     * Use "returning rid" to detect if the query succeeded. If it fails, no rid will be returned.
+     *
+     * This is a conditional insert, and it relies on the values coming from a select statement. The select
+     * supplying the values has a combination of hard coded $1 and query derived values. Selects which supply
+     * values may have a where clause and when there are no records supplied by the select, nothing is
+     * inserted.
+     *
+     * The "id not in..." prevents adding the same role twice.
+     * 
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param string $roleLable A role label
+     */ 
+    public function insertRoleByLabel($uid, $roleLabel)
+    {
+        $qq =
+            "insert into appuser_role_link (uid, rid) select $1, (select id from role where label=$2) 
+            where 
+            (select id from role where label=$2 and id not in (select rid from appuser_role_link)) is not null
+            returning rid";
+
+        $result = $this->sdb->query($qq, array($uid, $roleLabel));
+        $row = $this->sdb->fetchrow($result);
+        if ($row['rid'])
+        {
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
      * Insert a new role.
      *
      * Insert a new role and return the role's id.
@@ -319,10 +399,10 @@ class SQL
      */
     public function insertRole($label, $description)
     {
-        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id",
+        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id, label, description",
                           array($label, $description));
         $row = $this->sdb->fetchrow($result);
-        return $row['id'];
+        return $row;
     }
 
     /**
@@ -346,8 +426,26 @@ class SQL
      */ 
     public function selectRole()
     {
-        $retult = $this->sdb->query("select * from role order by label asc",
-                                    array($uid, $roleID));
+        $result = $this->sdb->query("select * from role order by label asc",
+                                    array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Select user role records
+     *
+     * @return string[][] Return list of list with keys: id, label, description.
+     */ 
+    public function selectUserRole($appUserID)
+    {
+        $result = $this->sdb->query("select role.* from role,appuser_role_link
+                                    where appuser_role_link.uid=$1 and role.id=rid order by label asc",
+                                    array($appUserID));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

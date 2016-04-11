@@ -481,8 +481,13 @@ body {
                   <h3>Actions:</h3>
                   <div class="list-group">
                     {% if user.email %}
+                        {% if data.status == 'editable' %}
                         <a class="list-group-item list-group-item-info" 
                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                        {% else %}
+                        <a class="list-group-item list-group-item-danger disabled" 
+                           href="#" title="This Constellation is currently being edited by someone else."><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                        {% endif %}   
                     {% endif %}
                   </div>
                   

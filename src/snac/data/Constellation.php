@@ -288,6 +288,16 @@ class Constellation extends AbstractData {
      * @var \snac\data\Mandate[] Mandates
      */
     private $mandates = null;
+    
+    /**
+     * Status of the constellation
+     * 
+     * The status of the constellation in the system.  This allows the system to note whether the
+     * constellation is editable by a given user.
+     * 
+     * @var string|null Status of the constellation
+     */
+    private $status = null;
 
     /**
      * Constructor for the class.
@@ -693,6 +703,17 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get the Status
+     *
+     * Get the status for this Constellation object
+     *
+     * @return string|NULL Status if one is set, or null if the status is empty
+     */
+    public function getStatus() {
+        return $this->status;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -701,6 +722,7 @@ class Constellation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "Constellation",
+            "status" => $this->status,
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
             "otherRecordIDs" => array(), 
@@ -812,6 +834,12 @@ class Constellation extends AbstractData {
             return false;
 
         parent::fromArray($data);
+
+        unset($this->status);
+        if (isset($data["status"]))
+            $this->status = $data["status"];
+        else
+            $this->status = null;
             
         unset($this->ark);
         if (isset($data["ark"]))
@@ -1238,6 +1266,17 @@ class Constellation extends AbstractData {
      */
     public function addMandate($mandate) {
         array_push($this->mandates, $mandate);
+    }
+    
+    /**
+     * Set the Status
+     * 
+     * Set the status of this Constellation object
+     * 
+     * @param string|null $status Status for the constellation
+     */
+    public function setStatus($status) {
+        $this->status = $status;
     }
 
     /**

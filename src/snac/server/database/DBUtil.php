@@ -79,38 +79,11 @@ class DBUtil
     private $db = null;
 
     /**
-     * Class var to hold the appUserID
-     * 
-     * @var integer $appUserID holds the numeric application user id, an integer.
-     */ 
-    private $appUserID = null;
-
-    /**
-     * Return the appUserID
-     *
-     * Probably no reason to use this outside of testing.
-     *
-     * @return integer $appUserID
-     */
-    public function getAppUserID()
-    {
-        return $this->appUserID;
-    }
-
-    /**
-     * Class var to hold the current user role
-     * 
-     * @var integer $roleID holds the integer role id, the id of the current user's primary role. Or in the
-     * future will be one of the user's roles chosen for the current task.
-     */ 
-    private $roleID = null;
-
-    /**
      * Constellation status
      *
-     * This are the valid values for constellation status. These are used here in the code, so an enumerated
-     * type in the database was both irritating to maintain, and added complexity, and was in the wrong
-     * place. The values are needed here in the code, not over in the database.
+     * These are the valid values for constellation status. These are used in the code, so an enumerated type
+     * in the database was both irritating to maintain, added complexity, and was in the wrong place because
+     * the values are needed here in the code, not over in the database.
      *
      * Add new status values to this variable. PHP allows list keys with no values, but I like the explicit
      * value, so these all have value 1. There are other ways to initialize the list, but this method is very clear.
@@ -177,11 +150,6 @@ class DBUtil
          */
         
         $this->sql = new SQL($this->db, 'deleted');
-        /*
-         * DBUtil needs user id and role id for the current user. We may perform several reads and writes, and
-         * they will all be done using the same user info.
-         */ 
-        list($this->appUserID, $this->roleID) = $this->getAppUserInfo('system');
 
         /*
          * Mar 4 2016 Here's a little suprise: we don't have an object for name component. How this will work
@@ -276,36 +244,42 @@ class DBUtil
         }
         elseif (! $theOp)
         {
-            if (! $cObj->getID())
-            {
-                /*
-                 * If we have no ID then this must be an insert, so return true now.  This is really just a
-                 * case during testing prior to all objects explicitly getting an operation. Once every
-                 * operation is set, this branch should never run.
-                 */ 
-                $result = true;
-            }
-            else
-            {
-                /* 
-                 * Mar 8 2014. With a null operation, we do nothing, and by returning false we prevent the calling
-                 * code from doing anything as well.
-                 *
-                 * This prevents nameEntry with no operation from updating itself when its child contributor has
-                 * an operation. In some cases the other code will not send objects that have no operation, but
-                 * that doesn't save us any work here because we always have to test the operation.
-                 *
-                 * If the no-op objects really were simply not in the constellation, then all inserts and updates
-                 * would be identical. No-op objects are sometimes present, and thus this distinction for no
-                 * operation.
-                 *
-                 * Top level code will have already minted a new version number, and since all true updates and
-                 * inserts are equivalent at the low level, the only thing we need to do here is prevent
-                 * unnecessary updates on no-op objects.
-                 *
-                 */
-                $result = false;
-            }
+            /* 
+             * if (! $cObj->getID())
+             * {
+             *     /\*
+             *      * If we have no ID then this must be an insert, so return true now.  This is really just a
+             *      * case during testing prior to all objects explicitly getting an operation. Once every
+             *      * operation is set, this branch should never run.
+             *      *\/ 
+             *     $result = true;
+             * }
+             * else
+             * {
+             */
+            /*
+             * Apr 6 2016. The code above that allowed insert when no op and no id is wrong. The rule is: no
+             * operation is nothing gets done. There's no being nice. Actually, it is nice to not do things
+             * when no operation because the UI can be a bit more lax about things like empty objects.
+             * 
+             * Mar 8 2014. With a null operation, we do nothing, and by returning false we prevent the calling
+             * code from doing anything as well.
+             *
+             * This prevents nameEntry with no operation from updating itself when its child contributor has
+             * an operation. In some cases the other code will not send objects that have no operation, but
+             * that doesn't save us any work here because we always have to test the operation.
+             *
+             * If the no-op objects really were simply not in the constellation, then all inserts and updates
+             * would be identical. No-op objects are sometimes present, and thus this distinction for no
+             * operation.
+             *
+             * Top level code will have already minted a new version number, and since all true updates and
+             * inserts are equivalent at the low level, the only thing we need to do here is prevent
+             * unnecessary updates on no-op objects.
+             *
+             */
+            $result = false;
+            /* } */
         }
         else
         {
@@ -372,18 +346,23 @@ class DBUtil
     /**
      * List main_id, version by status
      *
-     * Build a list of main_id,version. If locked, than select by $appUserID.
+     * Build a list of main_id,version. If locked, than select by $user.
      *
      * The public API is listConstellationsWithStatus(), if you want a list of constellations with a
      * status such as 'locked editing'.
      *
+     * @param \snac\data\User $user The user's to get the list for
      * @param string $status option An optional status value.
      * 
      * @return integer[] A list with keys 'main_id', 'version'.
      */ 
-    private function editList($status='locked editing')
+    private function editList($user, $status='locked editing')
     {
-        $vhList = $this->sql->selectEditList($this->appUserID, $status);
+        if ($user == null) {
+            return false;
+        }
+        
+        $vhList = $this->sql->selectEditList($user->getUserID(), $status);
         if ($vhList)
         {
             return $vhList;
@@ -422,6 +401,8 @@ class DBUtil
      *
      * From the php manual: "The default value must be a constant expression, not (for example) a variable, a
      * class member or a function call."
+     * 
+     * @param \snac\data\User $user The user to get the list of constellationsf or
      *
      * @param string optional $status A single status for the list of constellations. Not implemented, but
      * planned to support status values in addition to 'locked editing'
@@ -434,10 +415,15 @@ class DBUtil
      *
      * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
      */
-    public function listConstellationsWithStatusForUser($status='locked editing',
+    public function listConstellationsWithStatusForUser($user,
+                                                        $status='locked editing',
                                                         $limit=null,
                                                         $offset=null)
     {
+        if ($user == null) {
+            return false;
+        }
+        
         if ($limit==null || ! is_int($limit))
         {
             $limit = \snac\Config::$SQL_LIMIT;
@@ -446,7 +432,7 @@ class DBUtil
         {
             $offset = \snac\Config::$SQL_OFFSET;
         }
-        $infoList = $this->sql->selectEditList($this->appUserID, $status, $limit, $offset);
+        $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset);
         if ($infoList)
         {
             $constellationList = array();
@@ -577,48 +563,6 @@ class DBUtil
      */
     public function getAllVocabulary() {
         return $this->sql->selectAllVocabulary();
-    }
-
-    /**
-     * Get user info
-     *
-     * This is a short term helper function which will be removed once we have real user/account
-     * management. Call this as your first step after creating a new DBUtil object. See DBUtilTest.php for
-     * examples.
-     * 
-     * Access some system-wide authentication and/or current user info.
-     *
-     * Hard coded for now to return id and role.
-     *
-     * @param string $userString The text user identifier corresponds to sql table appuser.userid, used to get
-     * the appuser.id and the user's primary role.
-     *
-     * @return integer[] A flat list of two integers, appuser.id and role.id.
-     */
-    public function getAppUserInfo($userString)
-    {
-        $uInfo = $this->sql->selectAppUserInfo($userString);
-        return $uInfo;
-    }
-
-
-    /**
-     * Get a demo constellation
-     *
-     * A helper function to get a constellation from the db for testing purposes.
-     *
-     * @return integer[] Return the standard vh_info associative list with the keys 'version' and 'main_id'
-     * from the constellation.
-     *
-     */
-    public function demoConstellation()
-    {
-        list($version, $mainID) = $this->sql->randomConstellationID();
-        if (! $version  || ! $mainID)
-        {
-            printf("Error: got null(s) from randomConstellation() version: $version mainID: $mainID\n");
-        }
-        return array('version' => $version, 'main_id' => $mainID);
     }
 
     /**
@@ -2321,20 +2265,6 @@ class DBUtil
         }
     }
 
-    /**
-     * Insert a version history record.
-     *
-     * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
-     * @param string $status A status string
-     * @param string $note A note for the new version
-     * @param integer $appUserID The user id
-     * @param integer $roleID The user's chosen role for this version
-     */
-    private function saveVersionHistory($vhInfo, $status, $note, $appUserID, $roleID)
-    {
-        insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note);
-    }
-
 
     /**
      * Read the status of a constellation.
@@ -2377,6 +2307,8 @@ class DBUtil
      * return new version on success
      * write optional note if supplied
      *
+     * @param \snac\data\User $user The user to perform the write status
+     * 
      * @param integer $mainID A constellation ID
      *
      * @param string $status The new status value. 'deleted' is allowed, and will cause the constellation to
@@ -2387,8 +2319,12 @@ class DBUtil
      * @return integer|boolean Returns the new version number on success or false on failure.
      *
      */ 
-    public function writeConstellationStatus($mainID, $status, $note="")
+    public function writeConstellationStatus($user, $mainID, $status, $note="")
     {
+        if ($user == null) {
+            return false;
+        }
+        
         if (! $mainID)
         {
             return false;
@@ -2415,7 +2351,9 @@ class DBUtil
             {
                 return false;
             }
-            $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
+
+            // Right now, we're passing null as the role ID.  We may change this to a role from the user object
+            $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
             // printf("\ndbutil wc mints new version: %s\n", $vhInfo['version']);
             return $vhInfo['version'];
         }
@@ -2475,17 +2413,24 @@ class DBUtil
      * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
      *
      * A reminder: the structure of $vhInfo is array('version' => 123, 'main_id' => 456);
+     * 
+     * @param \snac\data\User $user The User to perform the write
      *
-     * @param \snac\data\Constellation $cObj A constellation object
+     * @param \snac\data\Constellation $argObj A constellation object
      *
      * @param string $note Human written note from the person who edit this data. This is a version commit
      * message.
      *
-     * @return \snac\data\Constellation $cObj the original constellation object modified to include id and version.
+     * @return \snac\data\Constellation|boolean the original constellation object modified to include id and version, or
+     * false if the user could not perform the action
      *
      */
-    public function writeConstellation($argObj, $note)
+    public function writeConstellation($user, $argObj, $note)
     {
+        if ($user == null) {
+            return false;
+        }
+        
         $cObj = clone($argObj);
         $mainID = null;
         $op = $cObj->getOperation();
@@ -2558,11 +2503,7 @@ class DBUtil
             $idValidator = new IDValidator();
             $ve->addValidator($idValidator);
         }        
-        if ($ve->validateConstellation($cObj))
-        {
-            // ok
-        }
-        else
+        if (!$ve->validateConstellation($cObj))
         {
             // problem
             printf("\nDBUtil.php Error: Validation failed: %s\n", $ve->getErrors());
@@ -2574,9 +2515,9 @@ class DBUtil
                    $op, $mainID);
         }
         
-        // printf("\ndbutil: lang: %s\n", var_export($cObj->getLanguage(), 1));
 
-        $vhInfo = $this->sql->insertVersionHistory($mainID, $this->appUserID, $this->roleID, $status, $note);
+        // Right now, we're passing null as the role ID.  We may change this to a role from the user object
+        $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
 
         /*
          * $cObj is passed by reference, and changed in place.
@@ -2679,37 +2620,6 @@ class DBUtil
             return $cObj;
         }
         return false;
-    }
-
-    /**
-     * Update a constellation
-     * 
-     * Public, exposed function to update a php constellation that is already in the database. Calls
-     * saveConstellation() to call lower level code to update the database.
-     *  
-     * @param \snac\data\Constellation $id A PHP Constellation object.
-     *
-     * @param integer $appUserID The user's appuser.id value from the db. 
-     *
-     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     *
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
-     *
-     * @param string $note A user-created note for what was done to the constellation. A check-in note.
-     *
-     * @param int $main_id The main_id for this constellation.
-     *
-     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
-     * return value such as true for success, and false for failure. This function might need to call into the
-     * system-wide user message class that we haven't written yet.
-     *
-     */
-    public function updateConstellation($id, $appUserID, $roleID, $icstatus, $note, $main_id)
-    {
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
-        $vhInfo = array('version' => $newVersion, 'main_id' => $main_id);
-        $this->saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo);
-        return $vhInfo;
     }
 
     /**
@@ -2909,70 +2819,6 @@ class DBUtil
         }
     }
 
-
-    /**
-     * Update a php constellation
-     *
-     * This core function writes a constellation to the database. Insert and update both do SQL insert, so
-     * there is not difference at this level. However, the calling code will do different things prior. Prior
-     * to insert, the calling code gets a new version_history record. Prior to update, the alling code gets a
-     * new version number for an existing version_history record.
-     *
-     * This is called from insertConstellation() or updateConstellation().
-     *
-     * The id->getID() has been populated by the calling code, whether this is new or exists in the
-     * database. This is due to constellation id values coming out of table version_history, unlike all other
-     * tables. For this reason, insertNrd() does not return the nrd.id value.
-     *
-     * nrd (ark, entityType), gender, date, language, bioghist, otherrecordid, nameentry, source, legalstatus, occupation,
-     * function, subject, relation, resourceRelation
-     *
-     * ?? conventionDeclaration, place, nationality, generalContext, structureOrGenealogy,
-     * mandate
-     *
-     * @param \snac\data\Constellation $id A PHP Constellation object.
-     *
-     * @param integer $appUserID The user's appuser.id value from the db. 
-     *
-     * @param integer $roleID The current role.id value of the user. Comes from role.id and table appuser_role_link.
-     *
-     * @param string $icstatus One of the allowed status values from icstatus. This becomes the new status of the inserted constellation.
-     *
-     * @param string $note A user-created note for what was done to the constellation. A check-in note.
-     *
-     * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
-     *
-     * @return integer[] An associative list with keys 'version', 'main_id'. There might be a more useful
-     * return value such as true for success, and false for failure. This function might need to call into the
-     * system-wide user message class that we haven't written yet.
-     *
-     */
-    private function old_saveConstellation($id, $appUserID, $roleID, $icstatus, $note, $vhInfo)
-    {
-        $this->saveBiogHist($vhInfo, $id);
-        $this->saveConstellationDate($vhInfo, $id);
-        $this->saveConstellationSource($vhInfo, $id);
-        $this->saveConventionDeclaration($vhInfo, $id);
-        $this->saveFunction($vhInfo, $id);
-        $this->saveGender($vhInfo, $id);
-        $this->saveGeneralContext($vhInfo, $id);
-        $this->saveLegalStatus($vhInfo, $id);
-        $this->saveLanguage($vhInfo, $id, 'nrd', $vhInfo['main_id']);
-        $this->saveMandate($vhInfo, $id);
-        $this->saveName($vhInfo, $id);
-        $this->saveNationality($vhInfo, $id);
-        $this->saveNrd($vhInfo, $id);
-        $this->saveOccupation($vhInfo, $id);
-        $this->saveOtherRecordID($vhInfo, $id);
-        $this->savePlace($vhInfo, $id, 'nrd', $vhInfo['main_id']);
-        $this->saveStructureOrGenealogy($vhInfo, $id);
-        $this->saveSubject($vhInfo, $id);
-        $this->saveRelation($vhInfo, $id); // aka cpfRelation, constellationRelation, related_identity
-        $this->saveResourceRelation($vhInfo, $id);
-        return $vhInfo;
-    } // end saveConstellation
-
-
     /**
      * Search Vocabulary
      * 
@@ -3060,41 +2906,6 @@ class DBUtil
     }
 
     /**
-     * Get ready to update
-     *
-     * Only used for testing. This creates a new version history record, and returns the $vhInfo for something
-     * else to use in doing an update. This calls updateVersionHistory() just like updateConstellation(), but
-     * doesn't do the saving part. This function will be deprecated by the setOperation() feature.
-     * 
-     * Create a new version_history record, and getting the new version number back. The constellation id
-     * (main_id) is unchanged. Each table.id is also unchanged. Both main_id and table.id *must* not change.
-     *
-     * @param snac\data\Constellation $pObj object that we are preparing to write all or part of back to the database.
-     *
-     * @param integer $appUserID Application user integer id.
-     *
-     * @param integer $roleID User numeric role id, from the appuser table.
-     *
-     * @param string $icstatus A version history status string.
-     *
-     * @param string $note User created note explaining this update.
-     *
-     * @return integer[] Associative list with keys 'version', 'main_id'
-     *
-     */
-    public function updatePrepare($pObj,
-                                  $appUserID,
-                                  $roleID,
-                                  $icstatus,
-                                  $note)
-    {
-        $mainID = $pObj->getID(); // Note: constellation id is the main_id
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $mainID);
-        $vhInfo = array('version' => $newVersion, 'main_id' => $mainID);
-        return $vhInfo;
-    }
-
-    /**
      * Save a name
      *
      * Once we have AbstractData->$operation implemented, make this method private, and fix DBUtilTest to use
@@ -3176,40 +2987,6 @@ class DBUtil
 
 
     /**
-     * Return 100 constellations as a json string
-     *
-     * Only 3 fields are included: version, main_id, formatted name. The idea it to return enough for the UI
-     * to allow selection of a record to edit.
-     *
-     * @return string[] A list of 100 records, each with key: 'version', 'main_id', 'formatted_name'
-     */
-    public function demoConstellationList()
-    {
-        $demoData = $this->sql->selectDemoRecs();
-        return $demoData;
-    }
-
-    /**
-     * Return a test constellation object
-     *
-     * The constellation must have 2 or more non-delted names. This is a helper function for testing purposes
-     * only.
-     *
-     * @param integer $appUserID A user id integer. When testing this comes from
-     * getAppUserInfo(). Historically, I guess this was used, but not currently used.
-     * 
-     * @return \snac\data\Constellation A PHP constellation object.
-     *
-     */
-    public function multiNameConstellation($appUserID)
-    {
-        $vhInfo = $this->sql->sqlMultiNameConstellationID();
-        $mNConstellation = $this->selectConstellation($vhInfo);
-        return $mNConstellation;
-    }
-
-
-    /**
      * Delete a single record of a single table.
      *
      * Public for testing until we implement "operation". When we implement operations via
@@ -3266,7 +3043,7 @@ class DBUtil
     /**
      * Undelete a record.
      *
-     * @param integer $appUserID Integer user id
+     * @param \snac\data\User $user The user performing the undelete
      *
      * @param integer $roleID The current integer role.id value of the user. Comes from role.id and table appuser_role_link.
      * 
@@ -3284,15 +3061,19 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function clearDeleted($appUserID, $roleID, $icstatus, $note, $main_id, $table, $id)
+    public function clearDeleted($user, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
+        if ($user == null) {
+            return null;
+        }
+        
         if (! isset($this->canDelete[$table]))
         {
             // Hmmm. Need to warn the user and write into the log.
             printf("Cannot clear deleted on table: $table\n");
             return null;
         }
-        $newVersion = $this->sql->updateVersionHistory($appUserID, $roleID, $icstatus, $note, $main_id);
+        $newVersion = $this->sql->updateVersionHistory($user->getUserID(), $roleID, $icstatus, $note, $main_id);
         $this->sql->sqlClearDeleted($table, $id, $newVersion);
         return $newVersion;
     }

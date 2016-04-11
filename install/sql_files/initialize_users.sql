@@ -10,9 +10,14 @@ insert into role values (default, 'web admin', 'web site administrator');
 insert into role values (default, 'sys admin', 'system administrator');
 insert into role values (default, 'editor', 'constellation editor, may modify any constellation data');
 
+-- We do not have a role for public. HRT is just something any user can do.
+-- insert into role values (default, 'Public HRT', 'Public and researcher, may view published constellations');
+
+
 -- Create the system (root-level) user for system services
 
 insert into appuser (userid, email, fullname) values ('system', 'system@localhost', 'System Service');
+insert into appuser (userid, email, fullname) values ('testing', 'testing@localhost', 'Database Testing User');
 
 -- Apply system services role to system user
 

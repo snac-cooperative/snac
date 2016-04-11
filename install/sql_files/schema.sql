@@ -144,6 +144,7 @@ create table appuser (
         first        text,                -- first name
         last         text,                -- last name
         fullname     text,                -- full name text
+        password     text,
         avatar       text,                -- url
         avatar_small text,                -- url
         avatar_large text                 -- url
@@ -175,7 +176,7 @@ create table role (
 create table session (
         appuser_fk   int,  -- fk to appuser.id
         access_token text, -- the openauth session token
-        expires      text  -- when the token expires
+        expires      integer  -- when the token expires
 );
 
 -- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the split/merge

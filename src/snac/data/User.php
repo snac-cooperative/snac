@@ -46,6 +46,50 @@ class User {
 
     private $token;
 
+    /**
+     * List of role
+     *
+     * A list of each role this user has.
+     *
+     * @var snac\data\Role[] List of Role objects
+     */
+    
+    /**
+     * Constructor 
+     * 
+     * @param string[] $data Array object of User information
+     */
+    public function __construct($data = null) {
+        if ($data != null)
+            $this->fromArray($data);
+        
+    }
+
+    /**
+     * Get the list of roles
+     *
+     * Return the role list
+     *
+     * @return snac\data\Role[] Return a list of Role objects
+     */ 
+    public function getRoleList()
+    {
+        return $this->roleList;
+    }
+    
+    /**
+     * Set role list
+     *
+     * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
+     *
+     * @param \snac\data\Role[] $roleList A list of roles. 
+     */ 
+    public function setRoleList($roleList)
+    {
+        $this->roleList = $roleList;
+    }
+
+
     public function setUserID($id) {
 
         $this->userid = $id;
@@ -133,6 +177,14 @@ class User {
     public function getToken() {
 
         return $this->token;
+    }
+    
+    public function generateTemporarySession($hours = 2) {
+        $token = array(
+                "access_token" => time(),                // use time() to be unique-ish
+                "expires" => time() + ($hours * 60 * 60) // Generates expiration $hours away
+        );
+        $this->setToken($token);
     }
 
     /**
