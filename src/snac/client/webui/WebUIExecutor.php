@@ -149,6 +149,7 @@ class WebUIExecutor {
                 "user" => $user->toArray()
                 );
         $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
         
         if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
             return true;
