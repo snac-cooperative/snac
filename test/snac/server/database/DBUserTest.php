@@ -56,9 +56,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
      */
     public function setUp() 
     {
-        // Consider creating a single parser instance here, and reusing it throughout, but be aware that this
-        // is called for every test, so time consuming setup will be repeated for every test.
-
         /*
          * Start by deleting the test account, if it exists. We leave the old user after a test for debugging purposes.
          *
@@ -66,7 +63,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */ 
         if ($oldUser = $this->dbu->readUserByEmail("mst3k@example.com"))
         {
-            // $appUserID = $this->dbu->findUserID("mst3k@example.com");
             $appUserID = $oldUser->getUserID();
             $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
             if ($oldDemoRole)
@@ -75,6 +71,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
             }
             if ($appUserID)
             {
+                $this->dbu->clearAllSessions($oldUser);
                 $this->dbu->getSQL()->deleteUser($appUserID);
             }
         }
@@ -241,35 +238,47 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setAvatarLarge("http://example.com/avatar_large");
         $userObj->setEmail("mst3k@example.com");
 
+
         /*
-         * User does not exist in db. This is clearly a lame session, but it will still be created. If we run
-         * call checkSessionActive() a second time, the session should disappear.
+         * User does not exist in db.
+         *
+         * This is a more or less valid session, with an expires 1 hour in the future. If we run call
+         * checkSessionActive() a second time, right away, it should be fine.
          *
          */ 
-        /* 
-         * printf("\ndbusertest deleting appuserid: %s\n", $newUser->getUserID());
-         * $this->dbu->getSQL()->deleteUser($useObj->getUserID());
-         */
 
         $userObj->setToken(array('access_token' => 'foo',
-                                 'expires' => 12345));
+                                 'expires' => time() + (60*60)));
 
         $csaReturn = $this->dbu->checkSessionActive($userObj);
 
         $this->assertEquals($csaReturn->getToken()['access_token'], 'foo');
         /*
-         * Verify that we got the default role of Public HRT.
-         */ 
-        // false == null so we only check for != null
-        // We don't current have a role for public hrt.
-        // $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
+         * We don't have default role, but if we did this would verify that we got the default role of Public
+         * HRT.
+         *
+         * false == null so we only check for != null
+         * We don't current have a role for public hrt.
+         * $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
+         */
 
-        $this->dbu->checkSessionActive($csaReturn);
-        
+        $goodUserID = $csaReturn->getUserID();
+        /*
+         * Try to trick the code by simulating a new Google login with a new, strange ID which should be ignored
+         * and replaced with the SNAC appUserID.
+         *
+         * Add 10 seconds to our expires, to make it different than the expires above.
+         */
+        $csaReturn->setUserID('foobarbaz');
+        $csaReturn->setToken(array('access_token' => 'bar',
+                                   'expires' => time() + (60*60) + 10));
+        $secondUser = $this->dbu->checkSessionActive($csaReturn);
+
+        $this->assertEquals($goodUserID, $secondUser->getUserID());
 
         /*
-         * When things are normally successful, we will clean up.  Or not. If we don't clean up, then we can
-         * use psql to look at the database.
+         * When things are normally successful, we might want to clean up.  Or not. If we don't clean up, then
+         * we can use psql to look at the database.
          */ 
         // $this->dbu->getSQL()->deleteUser($newUser->getUserID());
 
