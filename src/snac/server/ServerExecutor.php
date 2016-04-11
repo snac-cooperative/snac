@@ -46,6 +46,9 @@ class ServerExecutor {
      */
     private $logger;
     
+    /**
+     * Constructor
+     */
     public function __construct() {
         global $log;
         
@@ -117,8 +120,20 @@ class ServerExecutor {
         return true;
     }
     
+    /**
+     * Start the user session
+     * 
+     * Starts the user session (authenticates the user, if needed), and fills out the response
+     * with a sucess or failure based on whether or not the user was successfully authenticated, as
+     * well as the user information (snac ID) which may be useful to the web ui and other clients
+     * 
+     * @return string[] The response to send to the client
+     */
     public function startSession() {
         $response = array();
+        
+        // TODO In the future, we may want to put Google OAuth here so we don't check the user
+        // against Google for each operation on the server
         
         if ($this->user != null) {
             $response["user"] = $this->user->toArray();
@@ -130,6 +145,13 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * End user session
+     * 
+     * This ends the current user's session by using DBUser's removeSession method.
+     * 
+     * @return string[] The response to send to the client
+     */
     public function endSession() {
         $response = array();
         
@@ -144,6 +166,15 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Search Vocabulary
+     * 
+     * Searches the vocabulary from the database, based on the input given and returns
+     * a list of results
+     * 
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
     public function searchVocabulary(&$input) {
         $response = array();
         $response["results"] = $this->cStore->searchVocabulary(
@@ -152,6 +183,15 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Get User Information
+     * 
+     * Gets the user information, including their user information from the database as well
+     * as the list of constellations they have in each stage of editing/review.  Creates and returns
+     * an array of the user information to return to the client.
+     * 
+     * @return string[] The response to send to the client
+     */
     public function userInformation() {
         $response = array();
 
@@ -209,6 +249,14 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Insert Constellation
+     * 
+     * Uses DBUtil to write a new constellation to the database.  
+     * 
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
     public function insertConstellation(&$input) {
         $response = array();
 
@@ -235,6 +283,16 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Update Constellation
+     * 
+     * Uses DBUtil to update a constellation (from the input) in the database.  If no operation is set on the
+     * Constellation, it returns a success as if it wrote, but without modifying the database.
+     * 
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function updateConstellation(&$input) {
         $response = array();
         if (isset($input["constellation"])) {
@@ -280,6 +338,16 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Unlock Constellation
+     * 
+     * Lowers the lock on a constellation from "currently editing" to "locked editing."  The constellation
+     * must be given in the input.
+     * 
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function unlockConstellation(&$input) {
         $response = array();
         try {
@@ -324,6 +392,17 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Publish Constellation
+     * 
+     * Updates the status of the given input's constellation to "published."  On successful publish, this method
+     * also updates the Elastic Search indices to include the new version of this Constellation, if ES is being used
+     * in this install.
+     * 
+     * @param string[] $input Input array from the Server object
+     * @throws \Exception
+     * @return string[] The response to send to the client
+     */
     public function publishConstellation(&$input) {
 
         $response = array();
@@ -385,6 +464,23 @@ class ServerExecutor {
         
     }
     
+    /**
+     * Read Constellation
+     * 
+     * Looks for a constellationid, arkid, or testid in the input, and then reads the constellation data and
+     * creates a Constellation object.  The object is converted to an array and put in the response to send to the
+     * user.
+     * 
+     * If given an ark or test id, this method will use the parser to read the latest version of the EAC-CPF and
+     * create a Constellation, without going through the database.
+     * 
+     * If given a constellationid, it reads the constellation from the database.  If trying to read a constellation
+     * without a published version, an exception is thrown.
+     * 
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
     public function readConstellation(&$input) {
         $this->logger->addDebug("Reading constellation");
         $reponse = array();
@@ -460,6 +556,17 @@ class ServerExecutor {
         
     }
     
+    /**
+     * Edit Constellation
+     * 
+     * Similar to readConstellation, this method returns a Constellation on the response.  If the client provided
+     * an ark id, this constellation is generated by using the EAC-CPF parser.  If the client provided a 
+     * constellation id, it upgrades the status to "currently editing" and then returns the constellation in the response.
+     * 
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
     public function editConstellation(&$input) {
         $this->logger->addDebug("Editing Constellation");
         $response = array();
@@ -526,6 +633,15 @@ class ServerExecutor {
         return $response;
     }
     
+    /**
+     * Get Recently Published
+     * 
+     * Uses Elastic Search to get the most recently published Constellations.  Then, takes the ES results and 
+     * looks them up in our database to get summary constellations for each of the most recently published versions.
+     * Puts them as a list on the response for the client.
+     * 
+     * @return string[] The response to send to the client
+     */
     public function getRecentlyPublished() {
         $response = array();
         
