@@ -159,6 +159,8 @@ class ServerExecutor {
             return $response;
         }
         
+        $response["user"] = $this->user->toArray();
+        
         $this->logger->addDebug("Getting list of locked constellations to user");
         
         // First look for constellations editable

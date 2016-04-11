@@ -189,9 +189,10 @@ class WebUIExecutor {
         );
         $this->logger->addDebug("Sending query to the server", $ask);
         $serverResponse = $this->connect->query($ask);
-        $this->logger->addDebug("Received server response", $ask);
+        $this->logger->addDebug("Received server response", $serverResponse);
         $this->logger->addDebug("Setting dashboard data into the page template");
         $display->setData($serverResponse);
+        $this->logger->addDebug("Finished setting dashboard data into the page template");
     }
     
     public function displayLandingPage(&$display) {
