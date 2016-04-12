@@ -184,11 +184,11 @@ class DBUser
      */
     private function userExists($user)
     {
-        if ($record =  selectUserByID($user->getUserID()))
+        if ($record = $this->sql->selectUserByID($user->getUserID()))
         {
             return true;
         }
-        else if ($uid = selectUserByUserName($user->getUserName()))
+        else if ($uid = $this->sql->selectUserByUserName($user->getUserName()))
         {
             return true;
         }
@@ -301,7 +301,9 @@ class DBUser
         return $user;
     }
 
-    /**
+    /*
+     * This function removed.
+     * 
      * Return a user object for the email.
      *
      * Wrapper for readUser() getting a user by email address instead of user id.
@@ -568,7 +570,7 @@ class DBUser
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
         $rec = $this->sql->selectSession($user->getUserID(), $accessToken);
-        if (array_key_exists($rec, 'appuser_fk'))
+        if ($rec && array_key_exists('appuser_fk', $rec))
         {
             return true;
         }
@@ -621,7 +623,7 @@ class DBUser
         $accessToken = $currentToken['access_token'];
         
         // Try to get this user from the database
-        $newUser = $this->readUserByEmail($user->getEmail());
+        $newUser = $this->readUser($user);
         
         if ($newUser === false) {
             // If the user doesn't exist, then create them

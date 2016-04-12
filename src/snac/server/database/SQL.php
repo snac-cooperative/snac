@@ -177,7 +177,7 @@ class SQL
     public function selectSession($userID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select * from session where appuser_fk=$1 access_token=$2',
+            'select * from session where appuser_fk=$1 and access_token=$2',
             array($userID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         return $row;
@@ -324,7 +324,7 @@ class SQL
     {
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, $userName=$9
+            avatar_large=$7, email=$8, userName=$9
             where appuser.id=$1 returning id',
             array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName));
         $row = $this->sdb->fetchrow($result);

@@ -44,7 +44,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         $this->dbu = new \snac\server\database\DBUtil();
         $dbuser = new \snac\server\database\DBUser();
-        $this->user = $dbuser->readUserByEmail("testing@localhost");
+        /*
+         * Apr 12 2016 Use the username, not email. Username is unique, email is not. For now, username is
+         * defaulted to be email address, and we create the system account with username testing@localhost.
+         */ 
+        $testUser = new \snac\data\User();
+        $testUser->setUserName("testing@localhost");
+        $this->user = $dbuser->readUser($testUser);
         //$dbuser = new \snac\server\database\DBUser();
         
 
