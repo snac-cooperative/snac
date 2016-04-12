@@ -58,6 +58,22 @@ $(document).ready(function() {
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
 
+            // Save any XML editor contents back to their text areas before saving
+        	$("textarea[id*='_text_']").each(function() {
+        	    var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
@@ -209,6 +225,22 @@ $(document).ready(function() {
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
+
+                // Save any XML editor contents back to their text areas before saving
+                $("textarea[id*='_text_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
+                $("textarea[id*='_source_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
 	
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
@@ -304,6 +336,22 @@ $(document).ready(function() {
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving and Publishing Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
+
+                // Save any XML editor contents back to their text areas before saving
+                $("textarea[id*='_text_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
+                $("textarea[id*='_source_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
 	
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
