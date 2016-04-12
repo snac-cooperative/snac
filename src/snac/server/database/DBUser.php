@@ -66,10 +66,47 @@ class DBUser
      * @return \snac\server\database\SQL SQL object
      *
      */ 
-    public function getSQL()
+    /* 
+     * public function getSQL()
+     * {
+     *     return $this->sql;
+     * }
+     */
+
+    /*
+     * public function deleteRole delete from role if not in use
+     *
+     * public function deleteUser delete from appuser, and related appuser_role_link, but not sessions.
+     */
+
+
+    /**
+     * Really delete a user
+     *
+     * Used for testing only. Normally, users are inactivated.
+     *
+     * Delete the user, and delete user role links.
+     *
+     * @param \snac\data\User $user
+     */
+    public function eraseUser($user)
     {
-        return $this->sql;
+        $this->sql->deleteUser($user->getUserID());
     }
+
+    /**
+     * Really delete a role
+     *
+     * Used for testing only. In any case, deleting a role should be rare. To make this a little safer
+     * deleteRole() only deletes if the role is not in use.
+     *
+     * @param integer $roleID An role id
+     */
+    public function eraseRoleByID($roleID)
+    {
+        $this->sql->deleteRole($roleID);
+    }
+        
 
     /**
      * Write the password
@@ -78,12 +115,11 @@ class DBUser
      * In a world where logins are managed via OAuth, we may not have or use passwords. In that case,
      * passwords can be ignored.
      *
-     *
-     * The password must be encrypted.
+     * The password must be hashed.
      *
      * @param \snac\data\User $user
      *
-     * @param string $passwd An encrypted password
+     * @param string $passwd A hashed password
      *
      * @return boolean True on success, false for any type of failure.
      *
@@ -100,48 +136,85 @@ class DBUser
     }
 
     /**
-     * Add a user record. Minimal requirements are user id or email (which ever is used to login). 
+     * Add a user record.
+     *
+     * Minimal requirements are username which must be unique. We plan to use email as username, but calling
+     * code creates the User object, so this code will just use what getUserName() returns.
+     *
+     * Param $user is not modified, although it is cloned and the clone has the userID added, and the clone is
+     * returned on success.
+     * 
      * Return the new user object on success.
      *
      * Calling code had better do some sanity checking. This does not set the password. The password is not
      * part of a user object. We could add an optional arg, but for now, call writePassword()
      *
-     * @param \snac\data\User $user A user object. 
+     * @param \snac\data\User $user A user object.
+     *
+     * @return \snacData\User Return the cloned User with the userID set (and all other fields populated)
      */
     public function createUser($user)
     {
-        
-        $appUserID = $this->sql->insertUser($user->getFirstName(),
-                                            $user->getLastName(),
-                                            $user->getFullName(),
-                                            $user->getAvatar(),
-                                            $user->getAvatarSmall(),
-                                            $user->getAvatarLarge(),
-                                            $user->getEmail());
-        $newUser = clone($user);
-        $newUser->setUserID($appUserID);
-        $this->addDefaultRole($newUser);
-        return $newUser;
+        if (! $this->userExists($user))
+        {
+            $appUserID = $this->sql->insertUser($user->getUserName(),
+                                                $user->getFirstName(),
+                                                $user->getLastName(),
+                                                $user->getFullName(),
+                                                $user->getAvatar(),
+                                                $user->getAvatarSmall(),
+                                                $user->getAvatarLarge(),
+                                                $user->getEmail());
+            $newUser = clone($user);
+            $newUser->setUserID($appUserID);
+            $this->addDefaultRole($newUser);
+            return $newUser;
+        }
+        return false;
+    }
+
+    /**
+     * Does a user exist
+     *
+     * Find out if a user exists. True for success, else false.
+     *
+     * @param \snac\data\User $user A User object, must have user ID or username set.
+     * 
+     * @return boolean True for exists, else false.
+     */
+    private function userExists($user)
+    {
+        if ($record =  selectUserByID($user->getUserID()))
+        {
+            return true;
+        }
+        else if ($uid = selectUserByUserName($user->getUserName()))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
      * Update a user record.
      *
-     * Write the User fields to the database where appuser.id=$user->getUserID(). There is no sanity checking
-     * and no return value. This function probably needs some work.
+     * Write the User fields to the database where appuser.id=$user->getUserID(). By checking the returned id
+     * inside updateUser() we at least know a record was updated in the database.
      *
      * @param \snac\data\User $user A user object.
+     * @return boolean True on success, else false.
      */
     public function saveUser($user)
     {
-        $this->sql->updateUser($user->getUserID(),
-                               $user->getFirstName(),
-                               $user->getLastName(),
-                               $user->getFullName(),
-                               $user->getAvatar(),
-                               $user->getAvatarSmall(),
-                               $user->getAvatarLarge(),
-                               $user->getEmail());
+        return $this->sql->updateUser($user->getUserID(),
+                                      $user->getFirstName(),
+                                      $user->getLastName(),
+                                      $user->getFullName(),
+                                      $user->getAvatar(),
+                                      $user->getAvatarSmall(),
+                                      $user->getAvatarLarge(),
+                                      $user->getEmail(),
+                                      $user->getUserName());
     }
     
 
@@ -164,37 +237,68 @@ class DBUser
         }
         return false;
     }
-
-
+    
     /**
-     * Return a User object for the user id. Return false on failure.
+     * Return a User object
      *
-     * If you only know the email, call findUserID() which takes an email address and returns a user id.
+     * Get a user record from the db, create a User object, and return it. Return false on failure.
      *
-     * After calling this you probably want to call addSession().
+     * Robbie's commentary: readUser() is a little more forgiving [than userExists()] and reads the user out
+     * of the database.  It doesn’t call userExists(), but tries to do something different.  It tries to read
+     * the user by id (first), then if there is no id in the User object, it tries username (second).  Those
+     * are the only two options that guarantee a unique user.  If they’re not set in the User object, then it
+     * looks for a user with the given email address.  This is NOT a check of existence, since that would
+     * require uniqueness.  This is a "get me the first user you find that has email address..."
      *
-     * @param integer $appUserID
+     * @param \snac\data\User A user object with a good value for getUserID() or getUserName().
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    public function readUser($appUserID)
+    private function readUser($user)
     {
-        if ($appUserID)
+        
+        if ($newUserRec = $this->sql->selectUserByID($user->getUserID()))
         {
-            $rec = $this->sql->selectUserByID($appUserID);
-            $user = new \snac\data\User();
-            $user->setUserID($rec['id']);
-            $user->setFirstName($rec['first']);
-            $user->setLastName($rec['last']);
-            $user->setFullName($rec['fullname']);
-            $user->setAvatar($rec['avatar']);
-            $user->setAvatarSmall($rec['avatar_small']);
-            $user->setAvatarLarge($rec['avatar_large']);
-            $user->setEmail($rec['email']);
-            $user->setRoleList($this->listUserRole($user));
-            return $user;
+            return $this->populateUser($newUserRec);
+        }
+        else if ($newUserRec = $this->sql->selectUserByUserName($user->getUserName()))
+        {
+            return $this->populateUser($newUserRec);
+        }
+        else if ($newUserRec = selectUserByEmail($user->getEmail()))
+        {
+            // Warning: the returned user may not be the only user with the given email address.
+            return $this->populateUser($newUserRec);
         }
         return false;
+    }
+
+
+    /**
+     * Return a User object for the user id.
+     *
+     * Get a user record from the db, create a User object, and return it. Return false on failure.
+     *
+     * After calling this you probably want to call addSession().
+     *
+     * @param string[] $record A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     *
+     * @return \snac\data\User Returns a user object or false.
+     */
+    private function populateUser($record)
+    {
+        $user = new \snac\data\User();
+        $user->setUserID($rec['id']);
+        $user->setUserName($rec['username']);
+        $user->setFirstName($rec['first']);
+        $user->setLastName($rec['last']);
+        $user->setFullName($rec['fullname']);
+        $user->setAvatar($rec['avatar']);
+        $user->setAvatarSmall($rec['avatar_small']);
+        $user->setAvatarLarge($rec['avatar_large']);
+        $user->setEmail($rec['email']);
+        $user->setRoleList($this->listUserRole($user));
+        return $user;
     }
 
     /**
@@ -310,6 +414,30 @@ class DBUser
             }
         return $roleObjList;
     }
+
+    /**
+     * Check if a user has a role
+     *
+     * The role may be partial, but must have and id that is getID() must return a value.
+     * 
+     * @param \snac\data\User $user A user
+     *
+     * @param \snac\data\Role $role A role, may be incomplete, but must at least have an id.
+     *
+     * @return boolean True if user has the role, else false.
+     */
+    public function hasRole($user, $role)
+    {
+        foreach($user->getRoleList() as $userRole)
+        {
+            if ($userRole->getID() = $role->getID())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
        
     /**
      * Check for role by label
@@ -333,12 +461,15 @@ class DBUser
     /**
      * Remove a role from the User via table appuser_role_link.
      *
+     * After removing the role, refresh the User role list by reading it back from the database.
+     *
      * @param \snac\data\User $user A user
      * @param \snac\data\Role $role Role object
      */
     public function removeUserRole($user, $role)
     {
         $this->sql->deleteRoleLink($user->getUserID(), $role->getID());
+        $user->setRoleList($this->listUserRole($user));
         return true;
     }
 
@@ -368,7 +499,7 @@ class DBUser
      *
      * @param \snac\data\User $user The user object
      *
-     * @param string $passwd An encrypted password
+     * @param string $passwd A hashed password
      *
      * @return boolean Returns true if the password matches the database, false for any failure.
      */
@@ -383,36 +514,49 @@ class DBUser
     }
 
     /**
-     * Add a new session token $accessToken with expiration time $expire for $user. Update expiration if
-     * $accessToken exists.
+     * Extend a session expires
+     *
+     * @param \snac\data\User $user A User
+     *
+     * @param integer $extend optional Optional number of seconds to extend the expires time. Defaults to 3600.
+     *
+     * @return boolean True on success, else false.
+     */ 
+    public function sessionExtend($user, $extend=3600)
+    {
+        return $this->sql->updateByExtendingSession($user->getUserID(),
+                                                    $user->getToken()['access_token'],
+                                                    $extend);
+    }
+
+    /**
+     * Add a new session to the database
+     *
+     * Add a new session to the database using the token expiration from getToken(). Do nothing if the session
+     * already exists. Return true if the session already exists.
      *
      * @param \snac\data\User $user User object
      *
-     * @param string $accessToken The session token
-     *
-     * @param string $expire An expiration timestamp. 
+     * @return boolean True if session add was successful, else false
      */
     public function addSession($user)
     {
-        $currentToken = $user->getToken();
-        $accessToken = $currentToken['access_token'];
-        $expires = $currentToken['expires'];
-        $rec = $this->sql->selectSession($accessToken);
-        if ($rec['appuser_fk'])
+        if (! $this->sessionExists($user))
         {
-            $this->sql->updateSession($accessToken, $expires);
+            $currentToken = $user->getToken();
+            $accessToken = $currentToken['access_token'];
+            $expires = $currentToken['expires'];
+            return $this->sql->insertSession($user->getUserID(), $accessToken, $expires);
         }
-        else
-        {
-            // For now, appuser.id is getUserID()
-            $this->sql->insertSession($user->getUserID(), $accessToken, $expires);
-        }
+        return true; // Nothing added, but also no errors, so true is the return value.
     }
 
     /**
      * Check session exists
      *
-     * Find out if a session exists and if that session is associated with $user, and has not expired.
+     * Find out if a session exists for this User with the token getToken(). Expiration time is ignored. If
+     * somehow a session token has been applied to 2 users, this will still only return the token for $user,
+     * and that is good.
      *
      * @param \snac\data\User User object
      * @return boolean True on success, else false.
@@ -421,11 +565,28 @@ class DBUser
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
-        $rec = $this->sql->selectSession($accessToken);
-        // printf("\ndbuser appuser_fk: %s appUserID: %s", $rec['appuser_fk'], $user->getUserID() );
-        if ($rec['appuser_fk'])
+        $rec = $this->sql->selectSession($user->getUserID(), $accessToken);
+        if (array_key_exists($rec, 'appuser_fk'))
         {
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * Is a session active
+     *
+     * If a session exists for this user and is not expired, return true, else false.
+     *
+     * @param \snac\data\User $user
+     *
+     * @return boolean True for active, not expired, for this user. False otherwise.
+     */ 
+    public function sessionActive($user)
+    {
+        if ($this->sessionExists($user))
+        {
+            return $this->sql->selectActive($user->getUserID, $user->getToken()['access_token']);
         }
         return false;
     }
@@ -504,7 +665,7 @@ class DBUser
      *
      * Assume that tokens are unique, which is important. Delete all sessions with the token no matter what user has that token.
      *
-     * This showed up during testing where the appUserID and token got snarled.
+     * This might benefit from additional sanity checking, although that would change the meaning and use of this function.
      *
      * @param \snac\data\User $user
      *

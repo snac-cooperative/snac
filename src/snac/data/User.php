@@ -30,6 +30,8 @@ class User {
      */
     private $userid;
 
+    private $userName;
+
     private $firstName;
 
     private $lastName;
@@ -63,6 +65,24 @@ class User {
         if ($data != null)
             $this->fromArray($data);
         
+    }
+
+    /**
+     * Set the user name
+     * @param string $userName
+     */
+    public function setUserName($userName)
+    {
+        $this->userName = $userName;
+    }
+
+    /**
+     * Get the user name
+     * @return string $userName
+     */
+    public function getUserName()
+    {
+        return $this->userName;
     }
 
     /**

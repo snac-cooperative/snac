@@ -139,8 +139,8 @@ create index version_history_idx1 on version_history(status);
 create table appuser (
         id           int primary key default nextval('id_seq'),
         active       boolean default 't', -- true for active account
-        userid       text unique,         -- text-based user id, the user email address
-        email        text unique,         -- perhaps redundant, since userid is probably the email
+        username     text unique,         -- text-based user id, the user email address
+        email        text,                -- non-unique, current default is username is also email
         first        text,                -- first name
         last         text,                -- last name
         fullname     text,                -- full name text
@@ -174,9 +174,9 @@ create table role (
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 
 create table session (
-        appuser_fk   int,  -- fk to appuser.id
-        access_token text, -- the openauth session token
-        expires      integer  -- when the token expires
+        appuser_fk   int,         -- fk to appuser.id
+        access_token text unique, -- the session token
+        expires      integer      -- when the token expires, seconds since the epoch, UTC
 );
 
 -- As of Feb 10 2016 this table is not used. Perhaps we are planning to use it, but I suspect the split/merge

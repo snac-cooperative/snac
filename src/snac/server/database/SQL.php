@@ -71,22 +71,23 @@ class SQL
      *
      * Insert a user into the db, returning the new record id. Field userid is not currently used.
      *
+     * @param string $userName The username, unique, we initially are using email address
      * @param string $firstName The first name
      * @param string $lastName The last name
      * @param string $fullName The full name
      * @param string $avatar The avatar
      * @param string $avatarSmall The small avatar
      * @param string $avatarLarge The large avatar
-     * @param string $email The email address
+     * @param string $email The email address, not unique
      * @return integer Record row id, unique, from sequence id_seq.
      */ 
-    public function insertUser($firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    public function insertUser($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
     {
         $result = $this->sdb->query(
-            'insert into appuser (first, last, fullname, avatar, avatar_small, avatar_large, email)
-            values ($1, $2, $3, $4, $5, $6, $7)
+            'insert into appuser (username, first, last, fullname, avatar, avatar_small, avatar_large, email)
+            values ($1, $2, $3, $4, $5, $6, $7, $8)
             returning id',
-            array($firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
@@ -164,18 +165,20 @@ class SQL
     /**
      * Return the id of a session by token.
      *
-     * If the session exists, return the record.
+     * If the session exists for this user, return the record.
      *
+     * @param integer $userID A user id
+     * 
      * @param string $accessToken A session token
      *
      * @return string[] The session record as a list with keys appuser_fk, access_token, expires.
      *
      */
-    public function selectSession($accessToken)
+    public function selectSession($userID, $accessToken)
     {
         $result = $this->sdb->query(
-            'select * from session where access_token=$1',
-            array($accessToken));
+            'select * from session where appuser_fk=$1 access_token=$2',
+            array($userID, $accessToken));
         $row = $this->sdb->fetchrow($result);
         return $row;
     }
@@ -196,6 +199,28 @@ class SQL
             array($expires, $accessToken));
     }
 
+        /**
+     * Update a session expiration timestamp
+     *
+     * @param string $accessToken A session token
+     *
+     * @param string $extend A session expiration timestamp
+     *
+     */
+    public function updateByExtendingSession($userID, $accessToken, $extend)
+    {
+        $result = $this->sdb->query(
+            'update session set expires=expires+$1 where access_token=$2 and appuser_fk=$3 returning appuser_fk',
+            array($extend, $accessToken, $userID));
+        $row = $this->sdb->fetchrow($result);
+        if (array_key_exists($row, 'appuser_fk'))
+        {
+            return true;
+        }
+        return false;
+    }
+
+
     /**
      * Create a new session
      *
@@ -210,9 +235,15 @@ class SQL
      */
     public function insertSession($appUserID, $accessToken, $expires)
     {
-        $this->sdb->query(
-            'insert into session (appuser_fk, access_token, expires) values ($1, $2, $3)',
+        $result = $this->sdb->query(
+            'insert into session (appuser_fk, access_token, expires) values ($1, $2, $3) returning appuser_fk',
             array($appUserID, $accessToken, $expires));
+        $row = $this->sdb->fetchrow($result);
+        if (array_key_exists($row, 'appuser_fk'))
+        {
+            return true;
+        }
+        return false;
     }
 
     
@@ -275,9 +306,11 @@ class SQL
     /**
      * Insert a new user aka appuser
      *
-     * Insert a user into the db, returning the new record id. Field userid is not currently used.
+     * Insert a user into the db, returning the new record id.
      *
-     * @param integer $uid The row id aka user id (but not from field userid) 
+     * By checking the returned id we at least know a record was updated in the database.
+     *
+     * @param integer $uid The row id aka user id aka numeric user id
      * @param string $firstName The first name
      * @param string $lastName The last name
      * @param string $fullName The full name
@@ -285,41 +318,98 @@ class SQL
      * @param string $avatarSmall The small avatar
      * @param string $avatarLarge The large avatar
      * @param string $email The email address
+     * @param string $userName The user name
      */ 
-    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName)
     {
-        $this->sdb->query(
-            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, avatar_large=$7, email=$8
-            where appuser.id=$1',
-            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+        $result = $this->sdb->query(
+            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
+            avatar_large=$7, email=$8, $userName=$9
+            where appuser.id=$1 returning id',
+            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName));
+        $row = $this->sdb->fetchrow($result);
+        if (array_key_exists($row, 'id'))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
-     * Get user id from email
+     * Get user id email
      *
-     * @param string $email Email address
-     * @return integer User id which is appuser.id, aka row id. We aren't cuurrently using appuser.userid.
+     * Return the first user record based on email. Email is not unique, so there may be multiple users with
+     * the same email address. This simply returns the first appuser record found. See the commentary with
+     * function readUser() in DBUser.php
+     *
+     * Field password is not returned.
+     * 
+     * @param string $userName User name, a unique string, probably the user email
+     * 
+     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
      */ 
     public function selectUserByEmail($email)
     {
-        $result = $this->sdb->query("select id from appuser where email=$1",
+        $result = $this->sdb->query("select id from appuser where email=$1 limit 1",
                                     array($email));
         $row = $this->sdb->fetchrow($result);
-        return $row['id'];
+        if ($row && array_key_exists($row, 'id'))
+        {
+            /*
+             * Call selectUserByID() to avoid all copy/paste code. 
+             */ 
+            $rec = selectUserByID($row['id']);
+            return $rec;
+        }
+        return false;
+    }
+
+
+    /**
+     * Get user id from user name
+     *
+     * Return user record based on username aka user name aka userName. Field password is not returned
+     * 
+     * @param string $userName User name, a unique string, probably the user email
+     * 
+     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     */ 
+    public function selectUserByUserName($userName)
+    {
+        $result = $this->sdb->query("select id from appuser where username=$1",
+                                    array($userName));
+        $row = $this->sdb->fetchrow($result);
+        if ($row && array_key_exists($row, 'id'))
+        {
+            /*
+             * Call selectUserByID() to avoid all copy/paste code. 
+             */ 
+            $rec = selectUserByID($row['id']);
+            return $rec;
+        }
+        return false;
     }
 
     /**
      * Select user record from database
      *
      * @param integer $uid User id, aka appuser.id aka row id.
+     * 
      * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email
      */ 
-    public function selectUserByid($uid)
+    public function selectUserByID($uid)
     {
-        $result = $this->sdb->query("select * from appuser where appuser.id=$1",
-                                    array($uid));
+        $result = $this->sdb->query(
+            "select id,active,username,email,first,last,
+            fullname,avatar,avatar_small,avatar_large from appuser where appuser.id=$1",
+            array($uid));
         $row = $this->sdb->fetchrow($result);
-        return $row;
+        if (array_key_exists($row, 'active'))
+        {
+            $row['active'] = $this->sdb->pgToBool($row['active']);
+            return $row;
+        }
+        return false;
     }
 
     /**

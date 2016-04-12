@@ -67,12 +67,12 @@ class DBUserTest extends PHPUnit_Framework_TestCase
             $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
             if ($oldDemoRole)
             {
-                $this->dbu->getSQL()->deleteRole($oldDemoRole->getID());
+                $this->dbu->eraseRoleByID($oldDemoRole->getID());
             }
             if ($appUserID)
             {
                 $this->dbu->clearAllSessions($oldUser);
-                $this->dbu->getSQL()->deleteUser($appUserID);
+                $this->dbu->eraseUser($oldUser);
             }
         }
     }
@@ -191,7 +191,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * the same number of roles as before.
          */
         $this->dbu->removeUserRole($newUser, $demoRole);
-        $this->dbu->getSQL()->deleteRole($demoRole->getID());
+        $this->dbu->eraseRoleByID($demoRole->getID());
         $postCleaningRoleList = $this->dbu->roleList();
         $this->assertEquals(count($preCleaningRoleList), count($postCleaningRoleList)+1);
 
@@ -203,7 +203,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */ 
         /* 
          * printf("\ndbusertest deleting appuserid: %s\n", $newUser->getUserID());
-         * $this->dbu->getSQL()->deleteUser($newUser->getUserID());
+         * $this->dbu->eraseUser($newUser);
          */
 
         $newUser->setToken(array('access_token' => 'foo',
@@ -220,7 +220,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * When things are normally successful, we will clean up.  Or not. If we don't clean up, then we can
          * use psql to look at the database.
          */ 
-        // $this->dbu->getSQL()->deleteUser($newUser->getUserID());
+        // $this->dbu->eraseUser($newUser);
 
     }
 
@@ -280,7 +280,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * When things are normally successful, we might want to clean up.  Or not. If we don't clean up, then
          * we can use psql to look at the database.
          */ 
-        // $this->dbu->getSQL()->deleteUser($newUser->getUserID());
+        // $this->dbu->eraseUser($newUser);
 
     }
 
