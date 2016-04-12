@@ -254,7 +254,7 @@ class DBUser
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    private function readUser($user)
+    public function readUser($user)
     {
         
         if ($newUserRec = $this->sql->selectUserByID($user->getUserID()))
@@ -265,7 +265,7 @@ class DBUser
         {
             return $this->populateUser($newUserRec);
         }
-        else if ($newUserRec = selectUserByEmail($user->getEmail()))
+        else if ($newUserRec = $this->sql->selectUserByEmail($user->getEmail()))
         {
             // Warning: the returned user may not be the only user with the given email address.
             return $this->populateUser($newUserRec);
@@ -288,15 +288,15 @@ class DBUser
     private function populateUser($record)
     {
         $user = new \snac\data\User();
-        $user->setUserID($rec['id']);
-        $user->setUserName($rec['username']);
-        $user->setFirstName($rec['first']);
-        $user->setLastName($rec['last']);
-        $user->setFullName($rec['fullname']);
-        $user->setAvatar($rec['avatar']);
-        $user->setAvatarSmall($rec['avatar_small']);
-        $user->setAvatarLarge($rec['avatar_large']);
-        $user->setEmail($rec['email']);
+        $user->setUserID($record['id']);
+        $user->setUserName($record['username']);
+        $user->setFirstName($record['first']);
+        $user->setLastName($record['last']);
+        $user->setFullName($record['fullname']);
+        $user->setAvatar($record['avatar']);
+        $user->setAvatarSmall($record['avatar_small']);
+        $user->setAvatarLarge($record['avatar_large']);
+        $user->setEmail($record['email']);
         $user->setRoleList($this->listUserRole($user));
         return $user;
     }
@@ -309,11 +309,13 @@ class DBUser
      * @param string $email User email address.
      * @return \snac\data\User Returns a user object or false.
      */
-    public function readUserByEmail($email)
-    {
-        $uid = $this->sql->selectUserByEmail($email);
-        return $this->readUser($uid);
-    }
+    /* 
+     * public function readUserByEmail($email)
+     * {
+     *     $uid = $this->sql->selectUserByEmail($email);
+     *     return $this->readUser($uid);
+     * }
+     */
 
     /**
      * Disable log in to this account. Update table appuser.active to false. Return true on success.
@@ -430,7 +432,7 @@ class DBUser
     {
         foreach($user->getRoleList() as $userRole)
         {
-            if ($userRole->getID() = $role->getID())
+            if ($userRole->getID() == $role->getID())
             {
                 return true;
             }

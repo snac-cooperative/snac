@@ -28,7 +28,9 @@ $dbu = new snac\server\database\DBUtil();
 
 // SNAC Postgres User Handler
 $dbuser = new \snac\server\database\DBUser();
-$user = $dbuser->readUserByEmail("system@localhost");
+$tempUser = new \snac\data\User();
+$tempUser->setUserName("system@localhost");
+$user = $dbuser->readUser($tempUser);
 $user->generateTemporarySession();
 
 // ElasticSearch Handler
@@ -51,9 +53,21 @@ if (is_dir($argv[1])) {
     // Create new parser 
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
+    printf("Done creating new parser.\n");
+
+    /*
+     * Apr 12 2016 readdir() had a problem this afternoon, apparently related to something wrong with the disk
+     * or file system. readdir would hang, but so did "cd /data/merge" and "ls -f /data/merge". After a few
+     * tries, cd and ls began working, and then so did readdir().
+     *
+     * It might be a better idea to just hardcode 100 file paths in a file or even in an array/function at the
+     * end of this file. We always load the same files, and it just wastes time asking the file system for
+     * those file names.
+     *
+     */ 
     
     while (($short_file = readdir($dh)) && $xx++ <= $limit + 1) {
-        
+
         if ($short_file == '.' or $short_file == '..') {
             continue;
         }

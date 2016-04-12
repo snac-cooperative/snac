@@ -213,7 +213,7 @@ class SQL
             'update session set expires=expires+$1 where access_token=$2 and appuser_fk=$3 returning appuser_fk',
             array($extend, $accessToken, $userID));
         $row = $this->sdb->fetchrow($result);
-        if (array_key_exists($row, 'appuser_fk'))
+        if ($row && array_key_exists('appuser_fk', $row))
         {
             return true;
         }
@@ -239,7 +239,7 @@ class SQL
             'insert into session (appuser_fk, access_token, expires) values ($1, $2, $3) returning appuser_fk',
             array($appUserID, $accessToken, $expires));
         $row = $this->sdb->fetchrow($result);
-        if (array_key_exists($row, 'appuser_fk'))
+        if ($row && array_key_exists('appuser_fk', $row))
         {
             return true;
         }
@@ -328,7 +328,7 @@ class SQL
             where appuser.id=$1 returning id',
             array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName));
         $row = $this->sdb->fetchrow($result);
-        if (array_key_exists($row, 'id'))
+        if ($row && array_key_exists('id', $row))
         {
             return true;
         }
@@ -353,12 +353,12 @@ class SQL
         $result = $this->sdb->query("select id from appuser where email=$1 limit 1",
                                     array($email));
         $row = $this->sdb->fetchrow($result);
-        if ($row && array_key_exists($row, 'id'))
+        if ($row && array_key_exists('id', $row))
         {
             /*
              * Call selectUserByID() to avoid all copy/paste code. 
              */ 
-            $rec = selectUserByID($row['id']);
+            $rec = $this->selectUserByID($row['id']);
             return $rec;
         }
         return false;
@@ -379,12 +379,12 @@ class SQL
         $result = $this->sdb->query("select id from appuser where username=$1",
                                     array($userName));
         $row = $this->sdb->fetchrow($result);
-        if ($row && array_key_exists($row, 'id'))
+        if ($row && array_key_exists('id', $row))
         {
             /*
              * Call selectUserByID() to avoid all copy/paste code. 
              */ 
-            $rec = selectUserByID($row['id']);
+            $rec = $this->selectUserByID($row['id']);
             return $rec;
         }
         return false;
@@ -404,7 +404,7 @@ class SQL
             fullname,avatar,avatar_small,avatar_large from appuser where appuser.id=$1",
             array($uid));
         $row = $this->sdb->fetchrow($result);
-        if (array_key_exists($row, 'active'))
+        if ($row && array_key_exists('active', $row))
         {
             $row['active'] = $this->sdb->pgToBool($row['active']);
             return $row;

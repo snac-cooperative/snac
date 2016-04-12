@@ -16,11 +16,11 @@ insert into role values (default, 'editor', 'constellation editor, may modify an
 
 -- Create the system (root-level) user for system services
 
-insert into appuser (userid, email, fullname) values ('system', 'system@localhost', 'System Service');
-insert into appuser (userid, email, fullname) values ('testing', 'testing@localhost', 'Database Testing User');
+insert into appuser (username, email, fullname) values ('system@localhost', 'system@localhost', 'System Service');
+insert into appuser (username, email, fullname) values ('testing@localhost', 'testing@localhost', 'Database Testing User');
 
 -- Apply system services role to system user
 
 insert into appuser_role_link values
-((select id from appuser where userid='system'),
+((select id from appuser where username='system@localhost'),
 (select id from role where label='system'), true);
