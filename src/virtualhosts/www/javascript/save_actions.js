@@ -358,12 +358,19 @@ $(document).ready(function() {
                 window.location.href = "?command=dashboard";
         		return;
         	}
+            
+            if(somethingHasBeenEdited){
+                if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
+                    // Don't want to cancel, so exit!
+                    return;
+                }
+            }
         	
         	// Unlock
 	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                
+	                somethingHasBeenEdited = false;         
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
