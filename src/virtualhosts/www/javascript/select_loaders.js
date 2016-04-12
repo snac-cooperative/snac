@@ -1,5 +1,9 @@
 
-function vocab_select_replace(selectItem, idMatch, type, minLength = 4) {
+function vocab_select_replace(selectItem, idMatch, type, minLength) {
+    if (minLength === undefined) {
+        minLength = 4;
+    }
+
         if(selectItem.attr('id').indexOf(idMatch) != -1
             && selectItem.attr('id').indexOf("ZZ") == -1) {
                 selectItem.select2({
@@ -70,13 +74,13 @@ $(document).ready(function() {
         vocab_select_replace($(this), "language_script_", "script_code", 1);
 
         // Replace the subject selects
-        vocab_select_replace($(this), "subject_", "subject");
+        vocab_select_replace($(this), "subject_", "subject", 4);
 
         // Replace the function selects
-        vocab_select_replace($(this), "function_", "function");
+        vocab_select_replace($(this), "function_", "function", 4);
 
         // Replace the occupation selects
-        vocab_select_replace($(this), "occupation_", "occupation");
+        vocab_select_replace($(this), "occupation_", "occupation", 4);
 
         // Replace the entityType select
         vocab_select_replace($(this), "entityType", "entity_type", 0);

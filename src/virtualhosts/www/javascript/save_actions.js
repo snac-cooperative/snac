@@ -26,7 +26,7 @@ $(document).ready(function() {
 
         	// If EntityType and NameEntry do not have values, then don't let the user save
         	var noNameEntryText = true;
-        	$("input[id^=nameEntry_original_").each(function() {
+        	$("input[id^='nameEntry_original_']").each(function() {
         		if ($(this).val() != "")
         			noNameEntryText = false;
         	});
@@ -152,7 +152,7 @@ $(document).ready(function() {
         	
         	// If EntityType and NameEntry do not have values, then don't let the user save
         	var noNameEntryText = true;
-        	$("input[id^=nameEntry_original_").each(function() {
+        	$("input[id^='nameEntry_original_']").each(function() {
         		if ($(this).val() != "")
         			noNameEntryText = false;
         	});
@@ -247,7 +247,7 @@ $(document).ready(function() {
         	
         	// If EntityType and NameEntry do not have values, then don't let the user save or publish
         	var noNameEntryText = true;
-        	$("input[id^=nameEntry_original_").each(function() {
+        	$("input[id^='nameEntry_original_']").each(function() {
         		if ($(this).val() != "")
         			noNameEntryText = false;
         	});
