@@ -55,12 +55,28 @@ body {
 
     <h1>Dashboard</h1>
 
-    <p>Welcome, {{ user.firstName|default('SNAC User') }},  this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p>
-
-
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
+            <h3>Getting Started</h3>
+
+            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The first column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The second column gives quick access to view the most recently published Constellations on the SNAC prototype.</p>
+            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
+
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title">Create New Constellation</h3>
@@ -72,7 +88,7 @@ body {
                     </div>
                 </div>
             </div>
-            <div class="panel panel-info">
+            <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">In Progress Edits</h3>
                 </div>
@@ -85,7 +101,7 @@ body {
                     </div>
                 </div>
             </div>
-            <div class="panel panel-info">
+            <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Locked Edits</h3>
                 </div>
@@ -99,10 +115,8 @@ body {
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="col-md-4">
-            <!-- Middle column -->
             
+            <!-- Panels that don't mean anything right now
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Needs Review</h3>
@@ -117,7 +131,6 @@ body {
                 </div>
             </div>
             
-            <!-- Panels that don't mean anything right new
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">User Edit History</h3>
