@@ -397,7 +397,7 @@ $(document).ready(function() {
         	
         	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
-        	$("input[id^=nameEntry_original_").each(function() {
+        	$("input[id^='nameEntry_original_']").each(function() {
         		if ($(this).val() != "")
         			noNameEntryText = false;
         	});
