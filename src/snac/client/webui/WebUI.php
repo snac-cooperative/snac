@@ -119,8 +119,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
         // Change this if you are not using the built-in PHP server
         $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        // We want offline access?
+        $accessType = 'offline';
         // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri', 'accessType'));
         $_SESSION['oauth2state'] = $provider->getState();
 
 
@@ -136,7 +138,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
+            $refreshToken = null;
+            if (isset($_SESSION["refresh_token"]))
+                $refreshToken = $_SESSION["refresh_token"];
             
+            if ($token->getExpires() <= time()) {
+                if ($refreshToken != null) {
+                    // Need to refresh if we've gone past the expiration
+                    
+                    $grant = new \League\OAuth2\Client\Grant\RefreshToken();
+                    $token = $provider->getAccessToken($grant, ['refresh_token' => $refreshToken]);
+                    
+                    // Set and restore from the session variable
+                    $_SESSION['token'] = serialize($token);
+                    $token = unserialize($_SESSION["token"]);
+                } else {
+                    // We have no token to refresh, so the user needs to log in again.
+                    //$this->input["command"] = "login";
+                }
+            }
             
             // Create the PHP User object
             $user = $executor->createUser($ownerDetails, $token);
@@ -170,8 +190,16 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Try to get an access token (using the authorization code grant)
             $token = $provider->getAccessToken('authorization_code',
                     array('code' => $_GET['code']));
+            
+            
+            
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
+
+            // We should save the refresh token, too
+            $refreshToken = $token->getRefreshToken();
+            if ($refreshToken != null)
+                $_SESSION["refresh_token"] = $refreshToken;
         
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
