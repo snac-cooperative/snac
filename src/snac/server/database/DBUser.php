@@ -522,7 +522,8 @@ class DBUser
      *
      * @param \snac\data\User $user A User
      *
-     * @param integer $extend optional Optional number of seconds to extend the expires time. Defaults to 3600.
+     * @param integer $extend optional Optional number of seconds to extend the expires time. Defaults to
+     * 3600.
      *
      * @return boolean True on success, else false.
      */ 
