@@ -167,7 +167,7 @@ class ServerExecutor {
         $response = array();
         
         if ($this->user != null) {
-            $this->uStore->removeSession($user);
+            $this->uStore->removeSession($this->user);
             $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
@@ -207,8 +207,10 @@ class ServerExecutor {
         $response = array();
 
         if ($this->user == null) {
+            $response["result"] = "failure";
             return $response;
         }
+        $response["result"] = "success";
         
         $response["user"] = $this->user->toArray();
         

@@ -1562,7 +1562,7 @@ class EACCPFParser {
             {
                 /* Silently make dates with no standard date only partial complete.
                  *
-                 * Arg 3 is type which is Term object, important to send a Term object, not null or '' (empty string)
+                 * Arg 3 is type which is Term object
                  * 
                  * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
                  * $stderr = fopen('php://stderr', 'w');
@@ -1572,7 +1572,7 @@ class EACCPFParser {
                  * 
                  * 
                  */
-                $date->setDate((string) $dateElement, '', new \snac\data\Term());
+                $date->setDate((string) $dateElement, '', null);
             }
         }
         $date->setOperation($this->operation);
