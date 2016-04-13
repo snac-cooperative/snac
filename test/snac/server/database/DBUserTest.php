@@ -176,19 +176,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $demoRole = $this->dbu->createRole('demo', 'Demo role created during testing');
         $this->dbu->addUserRole($newUser, $demoRole);
         $roleList = $this->dbu->listUserRole($newUser);
-        /* 
-         * $foundDemo = false;
-         * foreach($roleList as $role)
-         * {
-         *     if ($role->getLabel() == 'demo')
-         *     {
-         *         $foundDemo = true;
-         *     }
-         * }
-         */
-
         $preCleaningRoleList = $this->dbu->roleList();
-        // $this->assertEquals($roleList[0]->getLabel(), 'demo');
+
         // false == null so we only check for != null
         $this->assertTrue($this->dbu->checkRoleByLabel($newUser, 'demo') != null);
 
@@ -202,9 +191,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(count($preCleaningRoleList), count($postCleaningRoleList)+1);
 
         /*
-         * This is clearly a lame session, but it will still be created. If we run call checkSessionActive() a
-         * second time, the session should disappear.
-         *
          * Uncomment the lines below to check the user-does-not-exist case. Later, make this a real test.
          */ 
         /* 
@@ -212,22 +198,29 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * $this->dbu->eraseUser($newUser);
          */
 
-        $newUser->setToken(array('access_token' => 'foo',
-                                'expires' => 12345));
-
-        // printf("\ndbusertest session exists: %d\n", $this->dbu->sessionExists($newUser));
 
         /*
-         * Need to rewrite this test using readUser(), sessionExists(), sessionActive(), etc.
-         *
-         * checkSessionActive() deprecated
+         * This is clearly a lame session, which is the point of the test.  If the user is not cleaned up, the
+         * old test session will linger. So, before testing session code remove any copies of session 'foo'.
          */
-
-        /* 
-         * $csaReturn = $this->dbu->checkSessionActive($newUser);
-         * $this->dbu->checkSessionActive($csaReturn);
-         */
-        
+         $newUser->setToken(array('access_token' => 'foo',
+                                  'expires' => 12345));
+         $this->dbu->removeSession($newUser);
+         if (! $this->dbu->sessionExists($newUser))
+         {
+             $this->dbu->addSession($newUser);
+         }
+         
+         /*
+          * The expire time is in the past, so this session is not active.
+          */
+         $this->assertFalse($this->dbu->sessionActive($newUser));
+         
+         /*
+          * Extend the session into the future
+          */ 
+         $this->dbu->sessionExtend($newUser, time() + (60*60) + 10);
+         $this->assertTrue($this->dbu->sessionActive($newUser));
 
         /*
          * When things are normally successful, we will clean up.  Or not. If we don't clean up, then we can
@@ -250,22 +243,23 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setAvatarSmall("http://example.com/avatar_small");
         $userObj->setAvatarLarge("http://example.com/avatar_large");
         $userObj->setEmail("mst3k@example.com");
-
-
+        
         /*
          * User does not exist in db.
          *
-         * This is a more or less valid session, with an expires 1 hour in the future. If we run call
-         * checkSessionActive() a second time, right away, it should be fine.
-         *
+         * This is a more or less valid session, with an expires 1 hour in the future.
          */ 
-
         $userObj->setToken(array('access_token' => 'foo',
                                  'expires' => time() + (60*60)));
-
-        $csaReturn = $this->dbu->checkSessionActive($userObj);
-
+        $csaReturn = $this->dbu->createUser($userObj);
+        $this->dbu->removeSession($csaReturn);
+         if (! $this->dbu->sessionExists($csaReturn))
+         {
+             $this->dbu->addSession($csaReturn);
+         }
         $this->assertEquals($csaReturn->getToken()['access_token'], 'foo');
+        $this->assertTrue($this->dbu->sessionActive($csaReturn));
+
         /*
          * We don't have default role, but if we did this would verify that we got the default role of Public
          * HRT.
@@ -277,21 +271,10 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
         $goodUserID = $csaReturn->getUserID();
         /*
-         * Try to trick the code by simulating a new Google login with a new, strange ID which should be ignored
-         * and replaced with the SNAC appUserID.
-         *
-         * Add 10 seconds to our expires, to make it different than the expires above.
+         * Test userExists() with the ficticious user id.
          */
         $csaReturn->setUserID('123456');
-        $csaReturn->setToken(array('access_token' => 'bar',
-                                   'expires' => time() + (60*60) + 10));
-
-        /* rewrite this using readUser(), sessionExists(), sessionActive() etc. */
-
-        /* 
-         * $secondUser = $this->dbu->checkSessionActive($csaReturn);
-         * $this->assertEquals($goodUserID, $secondUser->getUserID());
-         */
+        $this->assertFalse($this->dbu->userExists($csaReturn));
 
         /*
          * When things are normally successful, we might want to clean up.  Or not. If we don't clean up, then

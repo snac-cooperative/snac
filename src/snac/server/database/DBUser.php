@@ -5,10 +5,10 @@
    * License:
    *
    *
-   * @author Tom Laudeman
-   * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+   * @author Tom Laudeman <twl8n@virginia.edu>
    * @copyright 2015 the Rector and Visitors of the University of Virginia, and
    *            the Regents of the University of California
+   * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
    */
 
 namespace snac\server\database;
@@ -58,27 +58,6 @@ class DBUser
         $this->sql = new SQL($this->db, 'deleted');
     }
 
-    /**
-     * Get the $sql object
-     *
-     * Test code needs access to the sql object.
-     *
-     * @return \snac\server\database\SQL SQL object
-     *
-     */ 
-    /* 
-     * public function getSQL()
-     * {
-     *     return $this->sql;
-     * }
-     */
-
-    /*
-     * public function deleteRole delete from role if not in use
-     *
-     * public function deleteUser delete from appuser, and related appuser_role_link, but not sessions.
-     */
-
 
     /**
      * Really delete a user
@@ -117,7 +96,7 @@ class DBUser
      *
      * The password must be hashed.
      *
-     * @param \snac\data\User $user
+     * @param \snac\data\User $user A user object
      *
      * @param string $passwd A hashed password
      *
@@ -131,7 +110,7 @@ class DBUser
             return false;
         }
         $this->sql->updatePassword($user->getUserID(),
-                       $passwd);
+                                   $passwd);
         return true;
     }
 
@@ -182,7 +161,7 @@ class DBUser
      * 
      * @return boolean True for exists, else false.
      */
-    private function userExists($user)
+    public function userExists($user)
     {
         if ($record = $this->sql->selectUserByID($user->getUserID()))
         {
@@ -591,13 +570,16 @@ class DBUser
     {
         if ($this->sessionExists($user))
         {
-            return $this->sql->selectActive($user->getUserID, $user->getToken()['access_token']);
+            return $this->sql->selectActive($user->getUserID(), $user->getToken()['access_token']);
         }
         return false;
     }
 
     /**
-     * Check that a session is active
+     * Check that a session is active, with side effects.
+     *
+     * You probably want to use sessionExists(), sessionActive() and readUser(). This function may be
+     * deprecated.
      *
      * Check that we have a non-expired session for $user and with token getToken(). Time is assumed to be
      * "now" UTC. Return the User on success, false otherwise. If the user does not exist, a DB record is
@@ -639,7 +621,7 @@ class DBUser
         // Create the session if it doesn't exist, and then return (no need to check that the session is active
         if (! $this->sessionExists($newUser))
         {
-            $this->addSession($newUser); // adds or updates expires for existing session
+            $this->addSession($newUser); // adds a new session
             return $newUser;
         }
 
