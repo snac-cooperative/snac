@@ -65,13 +65,12 @@ function makeEditable(short, i) {
         }
     });
     // Turn on CodeMirror Editors
-    /**
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 
             && obj.attr('id').indexOf("ZZ") == -1
-            && obj.attr('id').indexOf('_text_') != -1) {
-            CodeMirror.fromTextArea(obj.get(0), {
+            && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
+            obj.get(0).CodeMirror = CodeMirror.fromTextArea(obj.get(0), {
               lineNumbers: true,
               lineWrapping: true,
               viewportMargin: Infinity,
@@ -79,7 +78,6 @@ function makeEditable(short, i) {
           });
         }
     });
-    **/
     var sawSelect = false;
     $("select[id^='"+short+"_']").each(function() {
         var obj = $(this);
@@ -138,26 +136,19 @@ function makeUneditable(short, i) {
         }
     });
     // Remove CodeMirror editors
-    /**
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').indexOf(idstr) != -1 
             && obj.attr('id').indexOf("ZZ") == -1
-            && obj.attr('id').indexOf('_text_') != -1) {
+            && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
             console.log(obj);
-            console.log((document.getElementById(obj.attr('id'))));
             if (obj.get(0).CodeMirror) {
                 obj.get(0).CodeMirror.toTextArea();
-            }
-            var CM = document.getElementById(obj.attr('id'));
-            if (CM.CodeMirror) {
-                CM.CodeMirror.toTextArea();
             }
             //(document.getElementById(obj.attr('id'))).CodeMirror.toTextArea();
                 //obj.get(0).CodeMirror.toTextArea();
         }
     });
-    **/
     // Make textareas read-only
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);

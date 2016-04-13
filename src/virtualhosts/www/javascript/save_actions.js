@@ -58,6 +58,22 @@ $(document).ready(function() {
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
 
+            // Save any XML editor contents back to their text areas before saving
+        	$("textarea[id*='_text_']").each(function() {
+        	    var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
@@ -209,6 +225,22 @@ $(document).ready(function() {
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
+
+                // Save any XML editor contents back to their text areas before saving
+                $("textarea[id*='_text_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
+                $("textarea[id*='_source_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
 	
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
@@ -304,6 +336,22 @@ $(document).ready(function() {
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving and Publishing Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
+
+                // Save any XML editor contents back to their text areas before saving
+                $("textarea[id*='_text_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
+                $("textarea[id*='_source_']").each(function() {
+                    var obj = $(this);
+                    if (obj.get(0).CodeMirror) {
+                        obj.get(0).CodeMirror.save();
+                    }
+
+                });
 	
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
@@ -349,7 +397,7 @@ $(document).ready(function() {
         	
         	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
-        	$("input[id^=nameEntry_original_").each(function() {
+        	$("input[id^='nameEntry_original_']").each(function() {
         		if ($(this).val() != "")
         			noNameEntryText = false;
         	});
@@ -358,12 +406,19 @@ $(document).ready(function() {
                 window.location.href = "?command=dashboard";
         		return;
         	}
+            
+            if(somethingHasBeenEdited){
+                if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
+                    // Don't want to cancel, so exit!
+                    return;
+                }
+            }
         	
         	// Unlock
 	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                
+	                somethingHasBeenEdited = false;         
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
