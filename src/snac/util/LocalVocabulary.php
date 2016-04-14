@@ -73,7 +73,7 @@ class LocalVocabulary implements \snac\util\Vocabulary {
                     return $term;
                 }
             }
-        return $term;
+        return null;
     }
 
     /**
@@ -94,7 +94,7 @@ class LocalVocabulary implements \snac\util\Vocabulary {
                 $term->setDescription($v["description"]);
                 return $term;
             }
-        return $term;
+        return null;
     }
     
 

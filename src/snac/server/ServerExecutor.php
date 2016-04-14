@@ -167,7 +167,7 @@ class ServerExecutor {
         $response = array();
         
         if ($this->user != null) {
-            $this->uStore->removeSession($user);
+            $this->uStore->removeSession($this->user);
             $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
@@ -207,8 +207,10 @@ class ServerExecutor {
         $response = array();
 
         if ($this->user == null) {
+            $response["result"] = "failure";
             return $response;
         }
+        $response["result"] = "success";
         
         $response["user"] = $this->user->toArray();
         
@@ -613,7 +615,7 @@ class ServerExecutor {
                     // lock the constellation to the user as currently editing
                     $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
                     if ($success === false) {
-                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cid));
+                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
                     }
         
                     // read the constellation into response

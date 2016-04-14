@@ -56,7 +56,7 @@ class EACCPFParserTest extends PHPUnit_Framework_TestCase {
             $this->assertAttributeEquals("SNAC: Social Networks and Archival Context Project", "maintenanceAgency", $identity);
 
             // Check that the language Used makes it through
-            $this->assertNotEmpty($identity->getLanguage(), "Did not parse any languages used");
+            $this->assertNotEmpty($identity->getLanguagesUsed(), "Did not parse any languages used");
             $lang = $identity->getLanguagesUsed()[0];
             
             $this->assertEquals("eng", $lang->getLanguage()->getTerm());
@@ -67,6 +67,31 @@ class EACCPFParserTest extends PHPUnit_Framework_TestCase {
             $this->fail("Hit exception: " . $e->getMessage());
         }
 
+    }
+    
+
+
+    /**
+     * Test that the parser correctly parses a given sample file and that munging the test Constellation
+     * by toArray and fromArray still produces the same as the parser.
+     */
+    public function testParserConstellationEquality() {
+        $parser = new \snac\util\EACCPFParser();
+        $parser->setVocabulary(new TestVocabulary());
+        $parser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        try {
+            // Parse the file into an identity
+            $identity = $parser->parseFile("test/snac/server/database/test_record.xml");
+    
+            $identity2 = new \snac\data\Constellation($identity->toArray());
+            
+            $this->assertTrue($identity->equals($identity2), "The copy is not equal to the original");
+            $this->assertTrue($identity2->equals($identity), "The original is not equal to the copy");
+    
+        } catch (\snac\exceptions\SNACParserException $e) {
+            $this->fail("Hit exception: " . $e->getMessage());
+        }
+    
     }
 }
 
@@ -83,6 +108,9 @@ class TestVocabulary implements \snac\util\Vocabulary {
      * @see \snac\util\Vocabulary::getTermByValue()
      */
     public function getTermByValue($value, $type) {
+        if ($value == null || $value == "")
+            return null;
+        
         $term = new \snac\data\Term();
         $term->setTerm($value);
         $term->setURI($type);
@@ -94,6 +122,9 @@ class TestVocabulary implements \snac\util\Vocabulary {
      * @see \snac\util\Vocabulary::getTermByID()
      */
     public function getTermByID($id, $type) {
+        if ($id == null || $id == "")
+            return null;
+        
         $term = new \snac\data\Term();
         $term->setID($id);
         $term->setURI($type);
