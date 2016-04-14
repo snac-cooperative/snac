@@ -347,29 +347,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertNotNull($retObj);
 
-        /*
-         * New as of March 8 2016.
-         * 
-         * Test constellation status change, status read, status read by version, and the number of
-         * constellations the user has marked for edit.
-         *
-         * New: Mar 29 2016 Now that we can return summary constellation lists, switch back to calling listConstellationsWithStatusForUser()
-         * 
-         * old: Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
-         * is therefore much faster than listConstellationsWithStatusForUser().
-         */ 
-        $useLocked = true;
-        if (! $useLocked)
-        {
-            $vhList = $this->dbu->editList();
-            $initialEditCount = count($vhList);
-        }
-        else
-        {
-            // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
-            $initialEditCount = count($editList);
-        }
+
+        // It defaults to 'locked editing', but be explicit anyway.
+        $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
+        $initialEditCount = count($editList);
+
         
         $newSVersion = $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 
                                                             'locked editing',
@@ -384,17 +366,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Get the post-status-change count, and test.
          */ 
-        if (! $useLocked)
-        {
-            $vhList = $this->dbu->editList();
-            $postEditCount = count($vhList);
-        }
-        else
-        {
-            // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
-            $postEditCount = count($editList);
-        }
+
+
+        // It defaults to 'locked editing', but be explicit anyway.
+        $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
+        $postEditCount = count($editList);
+
         $this->assertEquals('locked editing', $newStatus);
         $this->assertEquals('locked editing', $newStatusToo);
 
@@ -461,8 +438,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Update: could probably start using the equal() functions.
          *
          */ 
-        $this->assertEquals(976, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1027, substr_count( $secondJSON, "\n" ));
+        $this->assertEquals(969, substr_count( $firstJSON, "\n" ));
+        $this->assertEquals(1040, substr_count( $secondJSON, "\n" ));
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
