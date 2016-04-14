@@ -615,7 +615,7 @@ class ServerExecutor {
                     // lock the constellation to the user as currently editing
                     $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
                     if ($success === false) {
-                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cid));
+                        $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId));
                     }
         
                     // read the constellation into response
