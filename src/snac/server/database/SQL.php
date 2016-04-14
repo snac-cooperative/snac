@@ -1734,6 +1734,8 @@ class SQL
      * @param string $note Note for this function
      *
      * @param integer $term Function term controlled vocab id
+     * 
+     * @return integer id of this function
      *
      */
     public function insertFunction($vhInfo, $id, $type, $vocabularySource, $note, $term)
@@ -1756,7 +1758,6 @@ class SQL
                        $note,
                        $term);
         $result = $this->sdb->execute($qq, $eArgs);
-        $id = $this->sdb->fetchrow($result)['id'];
         $this->sdb->deallocate($qq);
         return $id;
     }

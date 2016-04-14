@@ -504,12 +504,16 @@ class ConstellationRelation extends AbstractData {
         if (! parent::equals($other, $strict))
             return false;
 
-        if ($this->getSourceConstellation() != $other->getSourceConstellation() ||
-                $this->getSourceArkID() != $other->getSourceArkID() ||
+        if ($this->getSourceArkID() != $other->getSourceArkID() ||
                 $this->getTargetConstellation() != $other->getTargetConstellation() ||
                 $this->getTargetArkID() != $other->getTargetArkID() ||
                 $this->getContent() != $other->getContent() ||
                 $this->getNote() != $other->getNote())
+            return false;
+        
+        // If strict checking is off, then we might not have target or source constellation IDs.
+        if ($strict && ($this->getSourceConstellation() != $other->getSourceConstellation() ||
+                $this->getTargetConstellation() != $other->getTargetConstellation()))
             return false;
         
         if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||

@@ -847,12 +847,12 @@ class EACCPFParser {
                                 $identity->addGeneralContext($gc);
                                 break;
                             case "legalStatus":
-                                $legalStatusTerm = new \snac\data\Term();
+                                $legalStatusTerm = null;
                                 foreach ($this->getChildren($desc2) as $legal) {
                                     $legalAtts = $this->getAttributes($legal);
                                     switch ($legal->getName()) {
                                     case "term":
-                                        $legalStatusTerm->setTerm((string) $legal);
+                                        $legalStatusTerm = $this->getTerm((string) $legal, "legal_status");
                                         if (isset($legalAtts["vocabularySource"])) {
                                             $legalStatusTerm->setURI($legalAtts["vocabularySource"]);
                                             unset($legalAtts["vocabularySource"]);
@@ -877,7 +877,7 @@ class EACCPFParser {
                                             $legal->getName()
                                         ), $legalAtts);
                                 }
-                                if (!$legalStatusTerm->isEmpty()) {
+                                if ($legalStatusTerm != null && !$legalStatusTerm->isEmpty()) {
                                     $legalStatus = new \snac\data\LegalStatus();
                                     $legalStatus->setTerm($legalStatusTerm);
                                     $legalStatus->setOperation($this->operation);
@@ -1116,7 +1116,9 @@ class EACCPFParser {
                                 } else { // real relation
                                         
                                     $relation = new \snac\data\ConstellationRelation();
+                                    
                                     $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
+                                    $relation->setSourceArkID($identity->getArk());
                                     $relation->setTargetArkID($ratts['href']);
                                     $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
                                     /*

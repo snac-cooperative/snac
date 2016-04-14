@@ -1774,7 +1774,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveLegalStatus($vhInfo, $cObj)
     {
@@ -1856,7 +1856,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveFunction($vhInfo, $cObj)
     {
@@ -1961,7 +1961,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveRelation($vhInfo, $cObj)
     {
@@ -1981,6 +1981,10 @@ class DBUtil
                                                     $fdata->getID());
                 $fdata->setID($relID);
                 $fdata->setVersion($vhInfo['version']);
+                
+                // Be nice and fill in the source Constellation
+                $fdata->setSourceConstellation($vhInfo['main_id']);
+                $fdata->setSourceArkID($cObj->getArk());
             }
             $this->saveMeta($vhInfo, $fdata, 'related_identity', $relID);
             foreach ($fdata->getDateList() as $date)

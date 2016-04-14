@@ -1069,6 +1069,17 @@ class Constellation extends AbstractData {
 
         array_push($this->sources, $source);
     }
+    
+
+    /**
+     * Sets all sources to the list of sources fin the parameter
+     *
+     * @param \snac\data\Source[] $sources list of sources
+     */
+    public function setAllSources($sources) {
+    
+        $this->sources = $sources;
+    }
 
     /**
      * Add a maintenance event
@@ -1297,19 +1308,23 @@ class Constellation extends AbstractData {
         
         if ($this->getArk() != $other->getArk())
             return false;
-        if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
-            return false;
         
         if (($this->getEntityType() != null && ! $this->getEntityType()->equals($other->getEntityType())) ||
                  ($this->getEntityType() == null && $other->getEntityType() != null))
             return false;
-        if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
+                 
+        /**    
+         * Currently, we are not checking the maintenance events for equality
+            if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
+                return false;
+            if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
                  ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
-            return false;
+                return false;
+            if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
+                return false;
+        **/
                  
         if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
-            return false;
-        if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
             return false;
         if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict))
             return false;
