@@ -21,6 +21,8 @@ class ServerTest extends PHPUnit_Framework_TestCase {
     
     private $user = null;
     
+    private $constellation = null;
+    
     public function setUp() {
         $this->user = new \snac\data\User();
         
@@ -211,8 +213,112 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         
         $this->assertTrue($c->equals($c), "Same constellation is not equal");
         $this->assertTrue($c2->equals($c), "Copy constellation is not equal");
-        
+
         $this->assertTrue($written->equals($c, false), "Written copy is not equal to original");
+        
+        return $written;
+    }
+    
+    
+    /**
+     * @depends testInsertConstellation
+     */
+    public function testReadConstellation(\snac\data\Constellation $c) {
+        
+        if ($c == null) {
+            $this->fail("Depends on insert constellation");
+        }
+        
+        $server = new Server( array(
+                "command" => "read",
+                "user" => $this->user->toArray(),
+                "constellationid" => $c->getID(),
+                "version" => $c->getVersion()
+        ));
+        $server->run();
+        $response = $server->getResponse();
+        $this->assertNotNull($response);
+
+        $response = json_decode($response, true);
+        $this->assertArrayHasKey("constellation", $response);
+        $read = new \snac\data\Constellation($response["constellation"]);
+        
+        $this->assertTrue($read->equals($c, false), "Read copy is not equal to original");
+        
+        return $read;
+    }
+    
+    /**
+     * @depends testReadConstellation
+     */
+    public function testEditUpdateConstellation(\snac\data\Constellation $constellation) {
+        if ($constellation == null) {
+            $this->fail("Depends on read constellation");
+        }
+        $server = new Server( array(
+                "command" => "edit",
+                "user" => $this->user->toArray(),
+                "constellationid" => $constellation->getID()
+        ));
+        $server->run();
+        $response = $server->getResponse();
+        $this->assertNotNull($response);
+
+        $response = json_decode($response, true);
+        $this->assertArrayHasKey("constellation", $response);
+        $c = new \snac\data\Constellation($response["constellation"]);
+        
+        $this->assertTrue($c->equals($constellation, false), "Read copy is not equal to original");
+        
+        
+        $nE = new \snac\data\NameEntry();
+        $nE->setOperation(\snac\data\NameEntry::$OPERATION_INSERT);
+        $nE->setOriginal("Snac Test Original Name");
+        $c->addNameEntry($nE);
+
+        $c->getSources()[0]->setOperation(\snac\data\Source::$OPERATION_DELETE);
+
+        $server = new Server( array(
+                "command" => "update_constellation",
+                "user" => $this->user->toArray(),
+                "constellation" => $c->toArray()
+        ));
+        $server->run();
+        $response = $server->getResponse();
+        $this->assertNotNull($response);
+        
+        $response = json_decode($response, true);
+        $this->assertArrayHasKey("constellation", $response);
+        $this->assertEquals("success", $response["result"]);
+        
+
+        $c2 = new \snac\data\Constellation($response["constellation"]);
+        
+        $this->assertTrue($c->equals($c2, false), "Updated returned copy is not equal to original");
+        
+        
+        $server = new Server( array(
+                "command" => "read",
+                "user" => $this->user->toArray(),
+                "constellationid" => $c2->getID(),
+                "version" => $c2->getVersion()
+        ));
+        $server->run();
+        $response = $server->getResponse();
+        $this->assertNotNull($response);
+        
+        $response = json_decode($response, true);
+        $this->assertArrayHasKey("constellation", $response);
+        $c3 = new \snac\data\Constellation($response["constellation"]);
+        
+        // Remove the first source (should have been deleted)
+        $newSources = $c->getSources();
+        array_shift($newSources);
+        $c->setAllSources($newSources);
+        
+        $this->assertTrue($c->equals($c3, false), "The updated copy on read is not the same as the updated original");
+        
+        
     }
 
 }
