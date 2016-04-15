@@ -57,10 +57,19 @@ class ServerExecutor {
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
         
-        // Create the user and fill in their userID from the database
+        /*
+         * Create the user and fill in their userID from the database We assume that a non-null $user at least
+         * has a valid email. If the getUserName() is null, then user the email as userName.
+         *
+         * readUser() will check getUserID(), getUserName() and even getEmail().
+         */ 
         if ($user != null) {
             $this->user = new \snac\data\User($user);
-            $tmpUser = $this->uStore->readUserByEmail($this->user->getEmail());
+            if (! $this->user->getUserName())
+            {
+                $this->user->setUserName($this->user->getEmail());
+            }
+            $tmpUser = $this->uStore->readUser($this->user);
             if ($tmpUser !== false) {
                 $this->user->setUserID($tmpUser->getUserID());
             }
