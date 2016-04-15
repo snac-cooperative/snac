@@ -467,8 +467,15 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Update: could probably start using the equal() functions.
          *
          */ 
-        $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
-        $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
+        if (1)
+        {
+            $this->assertTrue($cObj->equals($readObj));
+        }
+        else
+        {
+            $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
+            $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
+        }
 
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
