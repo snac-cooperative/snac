@@ -60,7 +60,7 @@ class ServerExecutor {
         // Create the user and fill in their userID from the database
         if ($user != null) {
             $this->user = new \snac\data\User($user);
-            $tmpUser = $this->uStore->readUser($user);
+            $tmpUser = $this->uStore->readUser($this->user);
             if ($tmpUser !== false) {
                 $this->user->setUserID($tmpUser->getUserID());
             }
