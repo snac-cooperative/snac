@@ -62,13 +62,13 @@ class ServerExecutor {
          * has a valid email. If the getUserName() is null, then user the email as userName.
          *
          * readUser() will check getUserID(), getUserName() and even getEmail().
+         *
+         * The expectation is that userID or userName will have valid values. If not then the user probably
+         * lost their userid, so just pull back the first user with the email address in getEmail(). There is
+         * also the expectation that the case of missing both userID and userName is very rare.
          */ 
         if ($user != null) {
             $this->user = new \snac\data\User($user);
-            if (! $this->user->getUserName())
-            {
-                $this->user->setUserName($this->user->getEmail());
-            }
             $tmpUser = $this->uStore->readUser($this->user);
             if ($tmpUser !== false) {
                 $this->user->setUserID($tmpUser->getUserID());
