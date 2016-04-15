@@ -316,8 +316,8 @@ class ConstellationRelation extends AbstractData {
             "targetArkID" => $this->targetArkID,
             "targetEntityType" => $this->targetEntityType == null ? null : $this->targetEntityType->toArray($shorten),
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
-            "altType" => $this->altType == null ? null : $this->type->toArray($shorten),
-            "cpfRelationType" => $this->cpfRelationType == null ? null : $this->type->toArray($shorten),
+            "altType" => $this->altType == null ? null : $this->altType->toArray($shorten),
+            "cpfRelationType" => $this->cpfRelationType == null ? null : $this->cpfRelationType->toArray($shorten),
             "content" => $this->content,
             "note" => $this->note
         );
@@ -503,13 +503,17 @@ class ConstellationRelation extends AbstractData {
         
         if (! parent::equals($other, $strict))
             return false;
-        
-        if ($this->getSourceConstellation() != $other->getSourceConstellation() ||
-                $this->getSourceArkID() != $other->getSourceArkID() ||
+
+        if ($this->getSourceArkID() != $other->getSourceArkID() ||
                 $this->getTargetConstellation() != $other->getTargetConstellation() ||
                 $this->getTargetArkID() != $other->getTargetArkID() ||
                 $this->getContent() != $other->getContent() ||
                 $this->getNote() != $other->getNote())
+            return false;
+        
+        // If strict checking is off, then we might not have target or source constellation IDs.
+        if ($strict && ($this->getSourceConstellation() != $other->getSourceConstellation() ||
+                $this->getTargetConstellation() != $other->getTargetConstellation()))
             return false;
         
         if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
@@ -523,7 +527,7 @@ class ConstellationRelation extends AbstractData {
         if (($this->getCpfRelationType() != null && !($this->getCpfRelationType()->equals($other->getCpfRelationType()))) ||
                 ($this->getCpfRelationType() == null && $other->getCpfRelationType() != null))
             return false;
-        
+
         return true;
     }
 }

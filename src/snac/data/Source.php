@@ -293,9 +293,11 @@ class Source extends AbstractData {
         if ($this->getNote() != $other->getNote())
             return false;
         
+        
         if (($this->getType() != null && ! $this->getType()->equals($other->getType())) ||
                  ($this->getType() == null && $other->getType() != null))
             return false;
+            
         if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;

@@ -87,8 +87,13 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function run() {
 
-        $this->logger->addDebug("Server starting to handle request", $this->input);
+        $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
         // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
+        
+        if ($this->input == null || empty($this->input)) {
+            throw new \snac\exceptions\SNACInputException("No input given");
+        }
+        
         
         $db = new \snac\server\database\DBUtil();
         
@@ -109,6 +114,12 @@ class Server implements \snac\interfaces\ServerInterface {
         
 
         $this->logger->addDebug("Switching on user command");
+        
+        if (!isset($this->input["command"])) {                
+            throw new \snac\exceptions\SNACUnknownCommandException("No command given");
+            
+            
+        }
 
         // Decide what to do based on the command given to the server
         switch ($this->input["command"]) {

@@ -270,16 +270,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         
         $newObj = $this->dbu->readConstellation($readObj->getID());
 
-        /* 
-         * printf("\nDButiltest retObj id:%s readObj id: %s orig id: %s new id: %s\n",
-         *        $retObj->getID(),
-         *        $readObj->getID(),
-         *        $origObj->getID(),
-         *        $newObj->getID());
-         */
 
         $secondJSON = $newObj->toJSON();
 
+        /*
+         * These files are sometimes useful for debugging.
+         */ 
         /* 
          * $cfile = fopen('scm_before_save.txt', 'w');
          * fwrite($cfile, $firstJSON);
@@ -289,10 +285,20 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * fclose($cfile); 
          */
         /*
-         * There is one extra line in $firstJSON for "operation": "update" which is as we expect.  Everything
-         * else is identical. This simply tests the line count, but I diff'd the files manually to confirm.
+         * We have Constellation->equals() which is a more accurate check of equality than line count.
          */ 
-        $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
+        if (1)
+        {
+            $this->assertTrue($readOjb->equals($newObj));
+        }
+        else
+        {
+            /*
+             * There is one extra line in $firstJSON for "operation": "update" which is as we expect.  Everything
+             * else is identical. This simply tests the line count, but I diff'd the files manually to confirm.
+             */ 
+            $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
+        }
 
         $sourceList = $newObj->getSources();
 
@@ -353,29 +359,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertNotNull($retObj);
 
-        /*
-         * New as of March 8 2016.
-         * 
-         * Test constellation status change, status read, status read by version, and the number of
-         * constellations the user has marked for edit.
-         *
-         * New: Mar 29 2016 Now that we can return summary constellation lists, switch back to calling listConstellationsWithStatusForUser()
-         * 
-         * old: Switch over to using editList() which returns an associative list of 'main_id' and 'version', and
-         * is therefore much faster than listConstellationsWithStatusForUser().
-         */ 
-        $useLocked = true;
-        if (! $useLocked)
-        {
-            $vhList = $this->dbu->editList();
-            $initialEditCount = count($vhList);
-        }
-        else
-        {
-            // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
-            $initialEditCount = count($editList);
-        }
+
+        // It defaults to 'locked editing', but be explicit anyway.
+        $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
+        $initialEditCount = count($editList);
+
         
         $newSVersion = $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 
                                                             'locked editing',
@@ -390,17 +378,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Get the post-status-change count, and test.
          */ 
-        if (! $useLocked)
-        {
-            $vhList = $this->dbu->editList();
-            $postEditCount = count($vhList);
-        }
-        else
-        {
-            // It defaults to 'locked editing', but be explicit anyway.
-            $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
-            $postEditCount = count($editList);
-        }
+
+
+        // It defaults to 'locked editing', but be explicit anyway.
+        $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
+        $postEditCount = count($editList);
+
         $this->assertEquals('locked editing', $newStatus);
         $this->assertEquals('locked editing', $newStatusToo);
 
@@ -453,14 +436,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * Before uncommenting this, copy the old files. Any time these need updating, you should diff the old
          * and new to confirm that what you think changed, changed, and nothing else.
          */ 
-        /* 
-         * $cfile = fopen('first_json.txt', 'w');
-         * fwrite($cfile, $firstJSON);
-         * fclose($cfile); 
-         * $cfile = fopen('second_json.txt', 'w');
-         * fwrite($cfile, $secondJSON);
-         * fclose($cfile); 
-         */
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
 
         /*
          * Lacking a JSON diff, use a simple sanity check on the number of lines.

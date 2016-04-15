@@ -113,7 +113,8 @@ class DBUtil
                                 'locked editing' => 1,
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
-                                'currently editing' => 1);
+                                'currently editing' => 1,
+                                'ingest cpf' => 1);
 
     /**
      * Check status values
@@ -661,7 +662,7 @@ class DBUtil
      * main_id is the unique id across all tables in this constellation. This is not the nrd.id, but is
      * version_history.main_id which is also nrd.main_id, etc.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */ 
     private function populateNrd($vhInfo, $cObj)
@@ -688,7 +689,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */ 
     private function populateOtherRecordID($vhInfo, $cObj)
@@ -736,7 +737,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
-     * @param snac\data\Constellation $cObj Constellation object, passed by reference as is the default in
+     * @param \snac\data\Constellation $cObj Constellation object, passed by reference as is the default in
      * php, and changed in place
      *
      * @param integer $fkID An integer foreign key of the table that has a place.
@@ -829,11 +830,11 @@ class DBUtil
      *
      * Populate the LegalStatus object(s), and add it/them to an existing Constellation object.
      *
-     * Extends AbstracteTermData
+     * LegalStatus Extends AbstracteTermData
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateLegalStatus($vhInfo, $cObj)
@@ -862,7 +863,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateSubject($vhInfo, $cObj)
@@ -906,7 +907,7 @@ class DBUtil
      * |                                  |                            |
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateNameEntry($vhInfo, $cObj)
@@ -958,7 +959,7 @@ class DBUtil
      *
      * @param int $rowID the nrd.id actual row id from table nrd.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateDate($vhInfo, $cObj)
     {
@@ -1102,7 +1103,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateConventionDeclaration($vhInfo, $cObj)
@@ -1126,7 +1127,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */ 
     private function saveStructureOrGenealogy($vhInfo, $cObj)
     {
@@ -1157,7 +1158,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */ 
     private function populateStructureOrGenealogy($vhInfo, $cObj)
     {
@@ -1184,7 +1185,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateGeneralContext($vhInfo, $cObj)
     {
@@ -1206,7 +1207,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveGeneralContext($vhInfo, $cObj)
     {
@@ -1238,7 +1239,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateNationality($vhInfo, $cObj)
     {
@@ -1258,7 +1259,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveNationality($vhInfo, $cObj)
     {
@@ -1293,7 +1294,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateLanguage($vhInfo, $cObj, $fkID)
@@ -1346,7 +1347,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference (as is the default in php for objects
+     * @param $cObj \snac\data\Constellation object, passed by reference (as is the default in php for objects
      * as parameters), and changed in place
      */
     private function populateSourceConstellation($vhInfo, $cObj)
@@ -1379,7 +1380,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
      *
-     * @param snac\data\Constellation $cObj Constellation object, passed by reference (as is the default in
+     * @param \snac\data\Constellation $cObj Constellation object, passed by reference (as is the default in
      * php for objects as parameters), and changed in place
      *
      * @param integer $sourceID Source record id. 
@@ -1397,6 +1398,15 @@ class DBUtil
             $newObj->setNote($rec['note']);
             $newObj->setURI($rec['uri']);
             $newObj->setDBInfo($rec['version'], $rec['id']);
+
+            // Set the type to "simple", the default required by Daniel
+            $type = null;
+            $types = $this->searchVocabulary("source_type", "simple");
+            if (count($types) == 1) {
+                $type = $this->populateTerm($types[0]["id"]);
+            }
+            $newObj->setType($type);
+
             $this->populateMeta($vhInfo, $newObj);
             /*
              * setLanguage() is a Language object.
@@ -1436,7 +1446,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveNrd($vhInfo, $cObj)
     {
@@ -1461,13 +1471,12 @@ class DBUtil
                                   $cObj->getArk(),
                                   $this->thingID($cObj->getEntityType()));
         }
-        else
-        {
-            /*
-             * Any other operation, especially delete makes no sense for nrd.
-             * If we get into this else, something has probably gone wrong.
-             */
-        }
+        /*
+         * else...
+         * 
+         * Any other operation, especially delete makes no sense for nrd.
+         * If we get into this else, something has probably gone wrong.
+         */
     }
 
     /**
@@ -1481,7 +1490,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateMandate($vhInfo, $cObj)
     {
@@ -1503,7 +1512,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      *
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveMandate($vhInfo, $cObj)
     {
@@ -1532,7 +1541,7 @@ class DBUtil
      * 
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveConventionDeclaration($vhInfo, $cObj)
     {
@@ -1559,7 +1568,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveGender($vhInfo, $cObj)
     {
@@ -1583,7 +1592,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveConstellationDate($vhInfo, $cObj)
     {
@@ -1663,7 +1672,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param snac\data\Constellation $cObj snac\data\Constellation object
+     * @param \snac\data\Constellation $cObj \snac\data\Constellation object
      *
      * @param string $table Table name of the related table
      *
@@ -1728,7 +1737,7 @@ class DBUtil
      * 
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveOtherRecordID($vhInfo, $cObj)
     {
@@ -1754,7 +1763,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveConstellationSource($vhInfo, $cObj)
     {
@@ -1774,7 +1783,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveLegalStatus($vhInfo, $cObj)
     {
@@ -1803,7 +1812,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveOccupation($vhInfo, $cObj)
     {
@@ -1856,7 +1865,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveFunction($vhInfo, $cObj)
     {
@@ -1900,7 +1909,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveSubject($vhInfo, $cObj)
     {
@@ -1961,7 +1970,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveRelation($vhInfo, $cObj)
     {
@@ -1981,6 +1990,10 @@ class DBUtil
                                                     $fdata->getID());
                 $fdata->setID($relID);
                 $fdata->setVersion($vhInfo['version']);
+                
+                // Be nice and fill in the source Constellation
+                $fdata->setSourceConstellation($vhInfo['main_id']);
+                $fdata->setSourceArkID($cObj->getArk());
             }
             $this->saveMeta($vhInfo, $fdata, 'related_identity', $relID);
             foreach ($fdata->getDateList() as $date)
@@ -2013,7 +2026,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object
+     * @param $cObj \snac\data\Constellation object
      */
     private function saveResourceRelation($vhInfo, $cObj)
     {
@@ -2047,7 +2060,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateGender($vhInfo, $cObj)
     {
@@ -2072,7 +2085,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateBiogHist($vhInfo, $cObj)
     {
@@ -2108,7 +2121,7 @@ class DBUtil
      * | setVocabularySource | vocabulary_source |
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      * 
      */
     private function populateOccupation($vhInfo, $cObj)
@@ -2163,7 +2176,7 @@ class DBUtil
      * serializing export.
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
     private function populateRelation($vhInfo, $cObj)
     {
@@ -2209,7 +2222,7 @@ class DBUtil
      * | setNote              | descriptive_note         | resourceRelation/descriptiveNote          |
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateResourceRelation($vhInfo, $cObj)
@@ -2239,7 +2252,7 @@ class DBUtil
      * Select, create object, then add to an existing Constellation object.
      *
      * @param integer[] $vhInfo associative list with keys 'version' and 'main_id'.
-     * @param $cObj snac\data\Constellation object, passed by reference, and changed in place
+     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
     private function populateFunction($vhInfo, $cObj)
@@ -2257,10 +2270,8 @@ class DBUtil
 
             /*
              * Must call $fOjb->setDBInfo() before calling populateDate()
-             *
-             * Why is $fDate assigned but never used?
              */
-            $fDate = $this->populateDate($vhInfo, $fObj);
+            $this->populateDate($vhInfo, $fObj);
             $cObj->addFunction($fObj);
         }
     }
@@ -2453,10 +2464,14 @@ class DBUtil
         elseif ($op == \snac\data\AbstractData::$OPERATION_INSERT)
         {
             /*
-             * Insert require a new ID. Passing a null mainID (aka main_id) to insertVersionHistory() will
+             * Insert requires a new ID. Passing a null mainID (aka main_id) to insertVersionHistory() will
              * cause a new mainID to be minted.
+             *
+             * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after writing a
+             * version_history record.
              */ 
-            $status = 'locked editing';
+            $status = 'ingest cpf';
+            // $status = 'locked editing';
             $mainID = null;
         }
         elseif ($op == null)
@@ -2480,8 +2495,11 @@ class DBUtil
                 /*
                  * I guess this is an insert. We don't have a mainID, so this must be a new constellation.
                  *
+                 * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after
+                 * writing a version_history record.
                  */ 
-                $status = 'locked editing';
+                $status = 'ingest cpf';
+                // $status = 'locked editing';
             }
         }
         else
@@ -2515,6 +2533,21 @@ class DBUtil
                    $op, $mainID);
         }
         
+        /*
+         * The constellation may have a status property 'ingest cpf' in which case we create a special ingest
+         * version where the note is the maintenance info as json. Do not use var $vhInfo which will be
+         * initialized below. Do initialize or update $mainID.
+         *
+         * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after writing a
+         * version_history record.
+         */ 
+        if ($status == 'ingest cpf')
+        {
+            $maintNote = $this->maintenanceNote($cObj);
+            $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $cObj->getStatus(), $maintNote);
+            $mainID = $vhInfoIngest['main_id'];
+            $status = 'locked editing';
+        }
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
         $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
@@ -2569,6 +2602,10 @@ class DBUtil
          * Always update the constellation ID and version, even when not inserting into table nrd. The
          * constellation ID and version are more properly connected to table version_history, but due to
          * historical baggage we tend to conflate nrd and constellation.
+         *
+         * Apr 15 2016: Question: Why do we wait until after writing everything to the db to set the main_id
+         * and version? Those numbers were minted way back in writeConstellation(). Is there some reason that
+         * we didn't call the $cObj setters back there?
          */ 
         // printf("dbutil Setting constellation id: %s\n", $vhInfo['version']);
         $cObj->setID($vhInfo['main_id']);
@@ -2623,6 +2660,22 @@ class DBUtil
     }
 
     /**
+     *
+     *
+     */
+    private function maintenanceNote($cObj)
+    {
+        $saveArray = array("maintenanceStatus" => $cObj->getMaintenanceStatus() == null ? null : $cObj->getMaintenanceStatus()->toArray(),
+                           "maintenanceAgency" => $cObj->getMaintenanceAgency(),
+                           "maintenanceEvents" => array());
+        foreach ($cObj->getMaintenanceEvents() as $i => $v)
+            $saveArray["maintenanceEvents"][$i] = $v->toArray();
+        
+        $json = json_encode($saveArray, JSON_PRETTY_PRINT);
+        return $json;
+    }
+
+    /**
      * Save place object
      *
      * Save a list of places to place_link, including meta data.
@@ -2631,7 +2684,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo Array with keys 'version', 'main_id' for this constellation.
      *
-     * @param snac\data\AbstractData Object $id An object that might have a place, and that extends
+     * @param \snac\data\AbstractData Object $id An object that might have a place, and that extends
      * AbstractData.
      *
      * @param string $relatedTable Name of the related table for this place.

@@ -542,10 +542,6 @@ class ConstellationPostMapper {
             }
         }
         
-        // Just for testing
-        $arr = print_r($nested, true);
-        file_put_contents("/home/jh2jf/output/webui-nested-" . date("Ymd-His") . ".txt", $arr);
-        
         // NRD-level Information
         if (isset($nested["ark"]))
             $this->constellation->setArkID($nested["ark"]);
