@@ -378,8 +378,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Get the post-status-change count, and test.
          */ 
-
-
         // It defaults to 'locked editing', but be explicit anyway.
         $editList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing', -1, -1);
         $postEditCount = count($editList);
@@ -413,17 +411,15 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->dbu->writeConstellationStatus($this->user, $washObj->getID(), 'published', 'modify status as part of testFullCPFWithEditList');
 
         /* 
-         * read from the db what we just wrote to the db
+         * read from the db what we just wrote to the db back at the beginning.
          */
-        
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        $readingARK = $cObj->getArk();
-        $readingEntity = $cObj->getEntityType()->getTerm();
+        $readingARK = $readObj->getArk();
+        $readingEntity = $readObj->getEntityType()->getTerm();
 
         $this->assertEquals($startingARK, $readingARK);
         $this->assertEquals($startingEntity, $readingEntity);
-
         
         /*
          * Legalstatus is broken because all the terms are not in the db?
@@ -433,38 +429,33 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $secondJSON = $readObj->toJSON();
 
         /*
-         * A hack to see if sourceConstellation is the reason for equals() failing.
-         */ 
-        foreach($readObj->getRelations() as $fdata)
-        {
-            printf("\ndbusertest warning: removing sourceConstellation\n");
-            $fdata->setSourceConstellation(null);
-        }
-
-        /*
          * Before uncommenting this, copy the old files. Any time these need updating, you should diff the old
          * and new to confirm that what you think changed, changed, and nothing else.
-         */ 
-        $cfile = fopen('first_json.txt', 'w');
-        fwrite($cfile, $firstJSON);
-        fclose($cfile); 
-        $cfile = fopen('second_json.txt', 'w');
-        fwrite($cfile, $secondJSON);
-        fclose($cfile); 
-
-        /*
-         * Lacking a JSON diff, use a simple sanity check on the number of lines.
-         * Update: could probably start using the equal() functions.
          *
+         * first is from $cObj.
+         * second is from $readObj.
+         */ 
+        /* 
+         * $cfile = fopen('first_json.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('second_json.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
          */
-        $this->assertTrue($cObj->equals($readObj, false));
+
+        $this->assertTrue($retObj->equals($retObj, false)); // ok, of course
+        $this->assertTrue($cObj->equals($retObj, false)); // ok, $cObj is parsed, $retObj is returned by writeConstellation
+        $this->assertTrue($cObj->equals($readObj, false)); // Fails. $readObj is result of readConstellation()
         
         /* 
          * $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
          * $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
          */
 
-
+        /*
+         * In the old days, lacking a JSON diff, we used a simple sanity check on the number of lines.
+         */
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
                                                      'test deleting a whole constellation');
