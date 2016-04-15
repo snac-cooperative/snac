@@ -2467,11 +2467,8 @@ class DBUtil
              * Insert requires a new ID. Passing a null mainID (aka main_id) to insertVersionHistory() will
              * cause a new mainID to be minted.
              *
-             * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after writing a
-             * version_history record.
              */ 
-            $status = 'ingest cpf';
-            // $status = 'locked editing';
+            $status = 'locked editing';
             $mainID = null;
         }
         elseif ($op == null)
@@ -2495,11 +2492,8 @@ class DBUtil
                 /*
                  * I guess this is an insert. We don't have a mainID, so this must be a new constellation.
                  *
-                 * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after
-                 * writing a version_history record.
                  */ 
-                $status = 'ingest cpf';
-                // $status = 'locked editing';
+                $status = 'locked editing';
             }
         }
         else
@@ -2534,19 +2528,18 @@ class DBUtil
         }
         
         /*
-         * The constellation may have a status property 'ingest cpf' in which case we create a special ingest
-         * version where the note is the maintenance info as json. Do not use var $vhInfo which will be
-         * initialized below. Do initialize or update $mainID.
+         * On insert, the constellation may have a status property 'ingest cpf' in which case we create a
+         * special ingest version where the note is the maintenance info as json. Do not use var $vhInfo which
+         * will be initialized below. Do initialize or update $mainID.
          *
-         * Status on insert is 'ingest cpf', which immediately changes to 'locked editing' after writing a
-         * version_history record.
+         * Incoming status is 'ingest cpf'. After writing a version_history record, change status to 'locked editing'.
          */ 
-        if ($status == 'ingest cpf')
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT && $cObj->getStatus() == 'ingest cpf')
         {
             $maintNote = $this->maintenanceNote($cObj);
             $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $cObj->getStatus(), $maintNote);
             $mainID = $vhInfoIngest['main_id'];
-            $status = 'locked editing';
+            $cObj->setStatus = 'locked editing';
         }
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
