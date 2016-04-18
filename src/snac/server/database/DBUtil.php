@@ -1021,8 +1021,10 @@ class DBUtil
      */
     private function populateTerm($termID)
     {
-        $newObj = new \snac\data\Term();
         $row = $this->sql->selectTerm($termID);
+        if ($row == null || empty($row))
+            return null;
+        $newObj = new \snac\data\Term();
         $newObj->setID($row['id']);
         $newObj->setType($row['type']); // Was setDataType() but this is a vocaulary type. See Term.php.
         $newObj->setTerm($row['value']);
@@ -1046,8 +1048,10 @@ class DBUtil
      */ 
     public function buildGeoTerm($termID)
     {
-        $gObj = new \snac\data\GeoTerm();
         $rec = $this->sql->selectGeoTerm($termID);
+        if ($rec == null || empty($rec)) 
+            return null;
+        $gObj = new \snac\data\GeoTerm();
         $gObj->setID($rec['id']);
         $gObj->setURI($rec['uri']);
         $gObj->setName($rec['name']);

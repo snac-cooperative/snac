@@ -348,6 +348,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $retObj = $this->dbu->writeConstellation($this->user, $cObj,
                                                  'testing ingest of a full CPF record');
+        $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
+        
+        $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        file_put_contents("1", print_r($retObj->toArray(), true));
+        file_put_contents("2", print_r($readObj->toArray(), true));
+        
+        $this->assertTrue($readObj->equals($retObj, false), "Written constellation is not equal to next read version");
 
         /*
          * Change the status to published so that we can change it to 'locked editing' further below.  The new
@@ -443,10 +451,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * fwrite($cfile, $secondJSON);
          * fclose($cfile); 
          */
+        //HERE
 
-        $this->assertTrue($retObj->equals($retObj, false)); // ok, of course
-        $this->assertTrue($cObj->equals($retObj, false)); // ok, $cObj is parsed, $retObj is returned by writeConstellation
-        $this->assertTrue($cObj->equals($readObj, false)); // Fails. $readObj is result of readConstellation()
+        $this->assertTrue($retObj->equals($readObj, false));
         
         /* 
          * $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
