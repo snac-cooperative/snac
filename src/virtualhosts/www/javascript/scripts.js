@@ -349,7 +349,7 @@ function makeSCMUneditable(short, i, j) {
     }
     
     // Clear the operation flag
-    $("#" + short + "_operation_" + i).val("");
+    $("#scm_" + short + "_operation_" + j + "_" + i).val("");
     return false;
 }
 

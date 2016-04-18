@@ -455,14 +455,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertTrue($retObj->equals($readObj, false));
         
-        /* 
-         * $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
-         * $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
-         */
-
-        /*
-         * In the old days, lacking a JSON diff, we used a simple sanity check on the number of lines.
-         */
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
                                                      'test deleting a whole constellation');

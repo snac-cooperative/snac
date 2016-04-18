@@ -871,6 +871,9 @@ class ConstellationPostMapper {
             $relation->setVersion($data["version"]);
             $relation->setOperation($this->getOperation($data));
             
+            $relation->setSourceConstellation($this->constellation->getID());
+            $relation->setSourceArkID($this->constellation->getArk());
+            
             $relation->setTargetConstellation($data["targetID"]);
             $relation->setTargetArkID($data["targetArkID"]);
             $relation->setTargetEntityType($data["targetEntityType"]);
