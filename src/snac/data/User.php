@@ -217,6 +217,7 @@ class User {
 
         $return = array (
                 "userid" => $this->userid,
+                "userName" => $this->userName,
                 "firstName" => $this->firstName,
                 "lastName" => $this->lastName,
                 "fullName" => $this->fullName,
@@ -252,6 +253,11 @@ class User {
             $this->userid = $data["userid"];
         else
             $this->userid = null;
+        
+        if (isset($data["userName"]))
+            $this->userName = $data["userName"];
+        else
+            $this->userName = null;
         
         if (isset($data["firstName"]))
             $this->firstName = $data["firstName"];
