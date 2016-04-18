@@ -718,12 +718,12 @@ class WebUIExecutor {
         $user->setAvatar($avatar);
         $user->setAvatarSmall($avatarSmall);
         $user->setAvatarLarge($avatarLarge);
+        $user->setUserName($googleUser->getEmail());
         $user->setEmail($googleUser->getEmail());
         $user->setFirstName($googleUser->getFirstName());
         $user->setFullName($googleUser->getName());
         $user->setLastName($googleUser->getLastName());
         $user->setToken($googleToken);
-        $user->setUserid($googleUser->getId());
         
         return $user;
     }

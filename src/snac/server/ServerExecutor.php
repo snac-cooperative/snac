@@ -79,6 +79,37 @@ class ServerExecutor {
         $this->logger = new \Monolog\Logger('ServerExec');
         $this->logger->pushHandler($log);
     }
+
+    private function checkOAuth($user) {
+        // Google OAuth Settings (from Config)
+        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
+        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
+        // Change this if you are not using the built-in PHP server
+        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        // Initialize the provider
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+
+        try {
+            $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
+
+            $accessToken = new AccessToken($user->getToken());
+
+            $ownerDetails = $provider->getResourceOwner($accessToken);
+
+            if ($ownerDetails->getEmail() != $user->getEmail()) {
+                // This user's token doesn't match the user's email
+                $this->logger->addDebug("Email mismatch from the user and OAuth details");
+                return false;
+            }
+            $this->logger->addDebug("Successfully got user details from OAuth2 Server");
+        } catch (\Exception $e) {
+            $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
+            return false;
+        }
+
+        // Could connect using the token, emails matched, so all's good
+        return true;
+    }
     
     /**
      * Authenticate User
@@ -92,47 +123,60 @@ class ServerExecutor {
         if ($user != null) {
             $this->logger->addDebug("Attempting to authenticate user", $user->toArray());
             
-            
-            // Google OAuth Settings (from Config)
-            $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
-            $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
-            // Change this if you are not using the built-in PHP server
-            $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
-            // Initialize the provider
-            $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
-            
-            try {
-                $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
-                
-                $accessToken = new AccessToken($user->getToken());
-                
-                $ownerDetails = $provider->getResourceOwner($accessToken);
-                
-                if ($ownerDetails->getEmail() != $user->getEmail()) {
-                    // This user's token doesn't match the user's email
-                    $this->logger->addDebug("Email mismatch from the user and OAuth details");
-                    return false;
-                }
-                $this->logger->addDebug("Successfully got user details from OAuth2 Server");
-            } catch (\Exception $e) {
-                $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
-                throw new \snac\exceptions\SNACUserException("User OAuth session has expired");
-                return false;
-            }
-
-            $this->logger->addDebug("User is valid from OAuth details");
+            // If the user exists in our database and we know about this token,
+            // then we'll let them continue. Else, we will try to authenticate
+            // with Google, check their information, and add them to the database. 
             
             // Check that the user has a session in the database
-            $this->user = $this->uStore->checkSessionActive($user);
-            
-            if ($this->user === false) {
-                throw new \snac\exceptions\SNACUserException("User session has expired");
+            //$this->user = $this->uStore->checkSessionActive($user);
+            $this->user = false;
+
+            if ($user->getUserName() != null) {
+                // For purposes of authentication, the UserName is required
+
+                $this->user = $this->uStore->readUser($user);
+
+                if ($this->user === false) {
+                    // The user wasn't found in the database
+
+                    // For version 1.1.0, we will go ahead and add them
+                    // if the token is valid
+                    if ($this->checkOAuth($user))
+                        $this->user = $this->uStore->createUser($user);
+                    else
+                        throw new \snac\exceptions\SNACUserException("Invalid OAuth user");
+                }
+            } else {
+                throw new \snac\exceptions\SNACUserException("Username required for login");
             }
 
-            
-            $this->logger->addDebug("User is valid from SNAC details");
-            
-            return true;
+            if ($this->user !== false && $this->uStore->sessionExists($this->user)) {
+                if ($this->uStore->sessionActive($this->user)) {
+                    // The session is still active
+                    $this->logger->addDebug("User is valid from SNAC details");
+                    return true;
+                } else {
+                    // The session has expired, so we will be nice and extend
+                    $this->logger->addDebug("User is valid from SNAC details");
+                    return $this->uStore->sessionExtend($this->user);
+                }
+
+            } else if ($this->user !== false && $this->user->getToken() != null) {
+                // Try to add the session (check google first)
+
+                if ($this->checkOAuth($this->user) &&
+                    $this->uStore->addSession($this->user)) {
+                    // Google approved the session and we successfully added it
+                    return true;
+                } else {
+                    throw new \snac\exceptions\SNACUserException("User did not have a valid session to capture");
+                }
+            } else {
+                throw new \snac\exceptions\SNACUserException("User did not have session");
+            }
+
+            $this->logger->addDebug("Something went wrong checking user in SNAC");
+            return false;
         }
         
         // If the user is null, then we're okay on authentication (no permissions)
