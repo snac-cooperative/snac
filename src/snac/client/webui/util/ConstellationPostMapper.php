@@ -618,7 +618,7 @@ class ConstellationPostMapper {
             $date->setNote($data["note"]);
             $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
             $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
-            $date->setFromDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
+            $date->setToDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
             $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
             
             $date->setAllSNACControlMetadata($this->parseSCM($data, "exist", $k));
