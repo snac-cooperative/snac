@@ -23,7 +23,7 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class User {
+class User implements \Serializable {
 
     /**
      * It seems like a good idea for this to be appuser.id, but that needs to be confirmed.
@@ -324,4 +324,27 @@ class User {
         unset($data);
         return $return;
     }
+
+    /**
+     * Serialization Method
+     *
+     * Allows PHP's serialize() method to correctly serialize the object.
+     *
+     * {@inheritDoc}
+     */ 
+    public function serialize() {
+        return $this->toJSON();
+    }
+
+    /**
+     * Un-Serialization Method
+     *
+     * Allows PHP's unserialize() method to correctly unserialize the object.
+     *
+     * {@inheritDoc}
+     */ 
+    public function unserialize($data) {
+        $this->fromJSON($data);
+    }    
+
 }

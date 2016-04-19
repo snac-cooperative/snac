@@ -27,7 +27,7 @@ namespace snac\data;
  * @author Robbie Hott
  * @author Tom Laudeman
  */
-abstract class AbstractData {
+abstract class AbstractData implements \Serializable {
 
     /**
      * Constants associated with all data
@@ -507,6 +507,27 @@ abstract class AbstractData {
         unset($data);
         return $return;
     } 
-    
+
+    /**
+     * Serialization Method
+     *
+     * Allows PHP's serialize() method to correctly serialize the object.
+     *
+     * {@inheritDoc}
+     */ 
+    public function serialize() {
+        return $this->toJSON();
+    }
+
+    /**
+     * Un-Serialization Method
+     *
+     * Allows PHP's unserialize() method to correctly unserialize the object.
+     *
+     * {@inheritDoc}
+     */ 
+    public function unserialize($data) {
+        $this->fromJSON($data);
+    }    
 
 }
