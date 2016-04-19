@@ -128,7 +128,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
 
         // If the user is not logged in, send to the home screen. If logged in, then fill in User object
-        if (empty($_SESSION['token'])) {
+        if (empty($_SESSION['snac_user'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
             if (!empty($this->input["command"]) &&
@@ -138,11 +138,30 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
+            $user = unserialize($_SESSION['snac_user']);
             $refreshToken = null;
             if (isset($_SESSION["refresh_token"]))
                 $refreshToken = $_SESSION["refresh_token"];
             
-            if ($token->getExpires() <= time()) {
+            if ($user->getToken()["expires"] <= time()) {
+                // if the user's token has expired, we need to ask for a refresh
+                // if the refresh is successful, then great, keep going.
+                // however, if not, then we need to either return an error asking the user
+                //    to log back in (if returning JSON) OR redirect them to the login page
+                //    (if returning HTML)
+
+                // startSNACSession will connect to the server and ask to start a session.  The server will
+                // reissue the session and extend the token expiration if the session does already exist.
+                $tmpUser = $executor->startSNACSession($user); 
+                if ($tmpUser !== false) {
+                    $user = $tmpUser;
+                } else {
+                    $this->logger->addError("User was unable to restart session, but we allowed them through", array($user));
+                    // TODO in Version 1.2, this needs to actually redirect them to the login page or give an error
+                    // if they were actually trying to get a JSON response.
+                }
+                /**
+                 // Originally, we would ask OAuth for a refresh, but we will handle our own expiry
                 if ($refreshToken != null) {
                     // Need to refresh if we've gone past the expiration
                     
@@ -156,10 +175,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     // We have no token to refresh, so the user needs to log in again.
                     //$this->input["command"] = "login";
                 }
+                **/
             }
             
             // Create the PHP User object
-            $user = $executor->createUser($ownerDetails, $token);
+            // $user = $executor->createUser($ownerDetails, $token);
             
             // Set the user information into the display object
             $display->setUserData($user->toArray());
@@ -212,12 +232,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             $tokenUnserialized = unserialize($_SESSION['token']);
             $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
+            // Create the PHP User object
             $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
             
-            // Create the PHP User object
-            $user = $executor->createUser($ownerDetails, $token);
-            
-            $executor->startSNACSession($user);
+            $tmpUser = $executor->startSNACSession($user);
+
+            if ($tmpUser !== false)
+                $user = $tmpUser;
+
+            $_SESSION['snac_user'] = serialize($user); 
 
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
@@ -231,6 +254,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Restart the session
             session_name("SNACWebUI");
             session_start();
+            $_SESSION = array();
         
             // Go to the homepage
             header('Location: index.php');

@@ -152,7 +152,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
         
         if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
-            return true;
+            return new \snac\data\User($serverRespons["user"]);;
         return false;  
     }
     
