@@ -359,7 +359,7 @@ class DBUtil
      */ 
     private function editList($user, $status='locked editing')
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -421,7 +421,7 @@ class DBUtil
                                                         $limit=null,
                                                         $offset=null)
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -2336,7 +2336,7 @@ class DBUtil
      */ 
     public function writeConstellationStatus($user, $mainID, $status, $note="")
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -2442,7 +2442,7 @@ class DBUtil
      */
     public function writeConstellation($user, $argObj, $note)
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -3113,7 +3113,7 @@ class DBUtil
      */
     public function clearDeleted($user, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return null;
         }
         
