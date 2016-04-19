@@ -414,7 +414,7 @@ class DBUtil
      * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
      * a config value. Must be -1 for all, or an integer. Default to the config when missing.
      *
-     * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
+     * @return \snac\data\Constellation[] A list of  PHP constellation object, or an empty array when there are no constellations.
      */
     public function listConstellationsWithStatusForUser($user,
                                                         $status='locked editing',
@@ -444,7 +444,7 @@ class DBUtil
             }
             return $constellationList;
         }
-        return false;
+        return array();
     }
     
     /**

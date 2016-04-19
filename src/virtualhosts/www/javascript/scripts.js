@@ -4,6 +4,31 @@ var biogHistEditor = null;
 var somethingHasBeenEdited = false;
 
 
+function displayErrorMessage(err) {
+    var errorMsg = "";
+    if ((typeof err) == "string")
+        errorMsg = err;
+    else if (err.message) 
+        errorMsg = err.message;
+    else if (err.type)
+        errorMsg = err.type;
+    else
+        errorMsg = "an unknown problem occurred";
+
+    $('#error-message').html("<h4>Oops</h4><p>"+errorMsg+"</p>"
+            +"<p class=\"text-right\">"
+            +"<button type=\"button\" class=\"btn btn-warning\" aria-label=\"Close\" onClick=\"$('#error-message').slideUp()\">"+
+            "Stay Here"
+            +"</button> "
+            +"<a href=\"?command=dashboard\" type=\"button\" class=\"btn btn-danger\">"+
+            "Go to Dashboard"
+            +"</a>"
+            +"</p>");
+    setTimeout(function(){
+        $('#error-message').slideDown();
+    }, 500);
+}
+
 function addSCMEntry(short, i){
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
