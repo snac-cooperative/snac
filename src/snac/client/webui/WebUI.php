@@ -364,27 +364,4 @@ class WebUI implements \snac\interfaces\ServerInterface {
         );
     }
     
-    private function createUser($googleUser, $googleToken) {
-        $user = new \snac\data\User();
-        $avatar = $googleUser->getAvatar();
-        $avatarSmall = null;
-        $avatarLarge = null;
-        if ($avatar != null) {
-            $avatar = str_replace("?sz=50", "", $avatar);
-            $avatarSmall = $avatar . "?sz=20";
-            $avatarLarge = $avatar . "?sz=250";
-        }
-        $user->setAvatar($avatar);
-        $user->setAvatarSmall($avatarSmall);
-        $user->setAvatarLarge($avatarLarge);
-        $user->setEmail($googleUser->getEmail());
-        $user->setFirstName($googleUser->getFirstName());
-        $user->setFullName($googleUser->getName());
-        $user->setLastName($googleUser->getLastName());
-        $user->setToken($googleToken);
-        $user->setUserid($googleUser->getId());
-        
-        return $user;
-    }
- 
 }

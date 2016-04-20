@@ -258,6 +258,8 @@ class NameEntry extends AbstractData {
      * {@inheritDoc}
      *
      * @param \snac\data\NameEntry $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      *       
      * @see \snac\data\AbstractData::equals()
      */

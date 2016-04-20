@@ -2657,8 +2657,13 @@ class DBUtil
     }
 
     /**
+     * Generate a Maintenance Note
      *
-     *
+     * Given a Constellation object, this method generates a note (for storing in a text field) that 
+     * contains the maintenance information from the constellation.
+     * 
+     * @param \snac\data\Constellation $cObj A constellation object
+     * @return string The JSON-encoded note containing maintenance data
      */
     private function maintenanceNote($cObj)
     {

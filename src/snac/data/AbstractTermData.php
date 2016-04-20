@@ -37,7 +37,12 @@ abstract class AbstractTermData extends AbstractData {
     protected $term;
 
     
-    public function __construct($data) {
+    /**
+     * Constructor
+     * 
+     * @param string[] $data optional Array with data to build this object
+     */
+    public function __construct($data = null) {
         parent::__construct($data);
     }
 
@@ -131,7 +136,8 @@ abstract class AbstractTermData extends AbstractData {
      * {@inheritDoc}
      * 
      * @param \snac\data\AbstractTermData $other Other object
-     * 
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {

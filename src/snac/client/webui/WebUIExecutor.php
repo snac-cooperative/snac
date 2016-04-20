@@ -22,6 +22,9 @@ use \snac\client\util\ServerConnect as ServerConnect;
  */
 class WebUIExecutor {
 
+    /**
+     * @var \snac\client\util\ServerConnect $connect Connection to the server
+     */
     private $connect = null;
 
     /**

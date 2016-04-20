@@ -199,13 +199,13 @@ class SQL
             array($expires, $accessToken));
     }
 
-        /**
+    /**
      * Update a session expiration timestamp
      *
+     * @param int $userID The User's ID to update
      * @param string $accessToken A session token
-     *
-     * @param string $extend A session expiration timestamp
-     *
+     * @param string $extend An amount of time by which to extend the session
+     * @return boolean true on success, false otherwise
      */
     public function updateByExtendingSession($userID, $accessToken, $extend)
     {
@@ -529,6 +529,7 @@ class SQL
     /**
      * Select user role records
      *
+     * @param int $appUserID The numeric ID for the user for whom to list roles
      * @return string[][] Return list of list with keys: id, label, description.
      */ 
     public function selectUserRole($appUserID)

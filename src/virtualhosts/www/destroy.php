@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+<?php 
+/**
+ * Session destruction and Script reload page
+ *
+ * This file removes and refreshes the session information, including destroying the user variables.  It
+ * also loads all the scripts used in the edit page, so it provides a way to shift+click reload the scripts
+ * used in editing.
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
+?><!DOCTYPE html>
 <html>
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>

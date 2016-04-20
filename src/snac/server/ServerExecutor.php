@@ -80,6 +80,14 @@ class ServerExecutor {
         $this->logger->pushHandler($log);
     }
 
+    /**
+     * Check OAuth Authentication
+     * 
+     * Checks the User against OAuth and validates their token.
+     * 
+     * @param \snac\data\User $user The user to validate
+     * @return boolean true on success, false on failure
+     */
     private function checkOAuth($user) {
         // Google OAuth Settings (from Config)
         $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];

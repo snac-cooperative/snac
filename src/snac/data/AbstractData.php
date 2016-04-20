@@ -514,6 +514,8 @@ abstract class AbstractData implements \Serializable {
      * Allows PHP's serialize() method to correctly serialize the object.
      *
      * {@inheritDoc}
+     * 
+     * @return string Serialized form of this object
      */ 
     public function serialize() {
         return $this->toJSON();
@@ -525,6 +527,8 @@ abstract class AbstractData implements \Serializable {
      * Allows PHP's unserialize() method to correctly unserialize the object.
      *
      * {@inheritDoc}
+     * 
+     * @param string $data Serialized version of this object
      */ 
     public function unserialize($data) {
         $this->fromJSON($data);

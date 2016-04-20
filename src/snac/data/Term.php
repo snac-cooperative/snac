@@ -123,7 +123,7 @@ class Term {
      * 
      * @return string The vocabulary type of this Term.
      */
-    public function getType($type)
+    public function getType()
     {
         return $this->type;
     }

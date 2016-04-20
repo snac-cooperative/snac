@@ -118,6 +118,8 @@ class ConstellationPostMapper {
      * Parses the SCM out of the parameter and returns a list of SCM objects
      * 
      * @param string[][] $objectWithSCM Array with SCM data included
+     * @param string $short The short name of the containing object, as defined in the edit page
+     * @param int $i The ID of the containing object, as defined in the edit page
      * @return \snac\data\SNACControlMetadata[] Array of snac control metadata
      */
     private function parseSCM($objectWithSCM, $short, $i) {
@@ -236,6 +238,14 @@ class ConstellationPostMapper {
         return $this->updates;
     }
     
+    /**
+     * Get Match Info
+     * 
+     * Returns the mapping information for the given object.
+     * 
+     * @param \snac\data\AbstractData $object  The object for which to get mapping info
+     * @return mixed[] The mapping information, which includes edit-page references and a reference to the object
+     */
     private function getMatchInfo($object) {
         foreach ($this->mapping as $map) {
             if ($object->equals($map["object"], false)) {
@@ -245,6 +255,12 @@ class ConstellationPostMapper {
     }
     
     /**
+     * Reconcile Objects
+     * 
+     * Reconciles two objects.  If they match, this method fills in the class' updates field
+     * to reflect that the incoming object should be linked to this object.  It adds the new ID
+     * and version number to be eventually returned to the edit interface.
+     * 
      * @param \snac\data\AbstractData $object Main object to reconcile
      * @param \snac\data\AbstractData $other Object to reconcile against
      * @param boolean $checkLang optional Whether or not to check the language
