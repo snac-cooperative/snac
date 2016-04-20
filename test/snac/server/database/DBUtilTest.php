@@ -75,8 +75,21 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     public function testWithStatus()
     {
+        // Make any previous ones published
         $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
-        $this->assertTrue(count($objList)>=1);
+        foreach ($objList as $c) {
+            $this->dbu->writeConstellationStatus($this->user, $c->getID(), "published");
+        }
+
+        // Write 6 copies of the constellation
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        for ($i = 1; $i <= 6; $i++)
+            $this->dbu->writeConstellation($this->user, $cObj, "TestWithStatus Database Test".$i);
+        
+        $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
+        $this->assertEquals(6, count($objList), "Should have 6 in locked editing for this user");
 
         if (count($objList) > 5)
         {
@@ -351,9 +364,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
         
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
-
-        file_put_contents("1", print_r($retObj->toArray(), true));
-        file_put_contents("2", print_r($readObj->toArray(), true));
         
         $this->assertTrue($readObj->equals($retObj, false), "Written constellation is not equal to next read version");
 
