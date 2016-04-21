@@ -334,6 +334,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      * Read the record back from the db, and make sure the ARK and entity type are correct.
      *
      * Delete a constellation, then attempt a read and make sure it did not read.
+     *
+     * Apr 21 2016 Added <descriptiveNote> to existDates in test_record.xml and verified that it shows up in
+     * the JSON from parsing and reading back out of the db. There's no explicit test for that here, just like
+     * there's no explicit test for all the other CPF elements.
      */
     public function testFullCPFWithEditList()
     {
@@ -445,12 +449,14 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * first is from $cObj.
          * second is from $readObj.
          */ 
-        $cfile = fopen('first_json.txt', 'w');
-        fwrite($cfile, $firstJSON);
-        fclose($cfile); 
-        $cfile = fopen('second_json.txt', 'w');
-        fwrite($cfile, $secondJSON);
-        fclose($cfile); 
+        /* 
+         * $cfile = fopen('first_json.txt', 'w');
+         * fwrite($cfile, $firstJSON);
+         * fclose($cfile); 
+         * $cfile = fopen('second_json.txt', 'w');
+         * fwrite($cfile, $secondJSON);
+         * fclose($cfile); 
+         */
         //HERE
 
         $this->assertTrue($retObj->equals($readObj, false));
