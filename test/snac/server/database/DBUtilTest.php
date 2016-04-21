@@ -352,8 +352,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        file_put_contents("1", print_r($retObj->toArray(), true));
-        file_put_contents("2", print_r($readObj->toArray(), true));
+        /* 
+         * file_put_contents("dbutiltest_1.txt", print_r($retObj->toArray(), true));
+         * file_put_contents("dbutiltest_2.txt", print_r($readObj->toArray(), true));
+         */
         
         $this->assertTrue($readObj->equals($retObj, false), "Written constellation is not equal to next read version");
 
@@ -443,14 +445,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * first is from $cObj.
          * second is from $readObj.
          */ 
-        /* 
-         * $cfile = fopen('first_json.txt', 'w');
-         * fwrite($cfile, $firstJSON);
-         * fclose($cfile); 
-         * $cfile = fopen('second_json.txt', 'w');
-         * fwrite($cfile, $secondJSON);
-         * fclose($cfile); 
-         */
+        $cfile = fopen('first_json.txt', 'w');
+        fwrite($cfile, $firstJSON);
+        fclose($cfile); 
+        $cfile = fopen('second_json.txt', 'w');
+        fwrite($cfile, $secondJSON);
+        fclose($cfile); 
         //HERE
 
         $this->assertTrue($retObj->equals($readObj, false));

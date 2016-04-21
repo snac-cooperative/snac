@@ -1250,6 +1250,7 @@ class SQL
      * @param string $toNotBefore Not before this date
      * @param string $toNotAfter Not after this date
      * @param string $toOriginal What we got from the CPF
+     * @param string $descriptiveNote Descriptive note
      * @param string $fk_table The name of the table to which this date and $fk_id apply.
      * @param integer $fk_id The id of the record to which this date applies.
      *
@@ -1271,7 +1272,8 @@ class SQL
                                $toBC,
                                $toNotBefore,
                                $toNotAfter,
-                               $toOriginal, 
+                               $toOriginal,
+                               $descriptiveNote,
                                $fk_table,
                                $fk_id)
     {
@@ -1284,9 +1286,9 @@ class SQL
                             'insert into date_range
                             (version, main_id, id, is_range, 
                             from_date, from_type, from_bc, from_not_before, from_not_after, from_original,
-                            to_date, to_type, to_bc, to_not_before, to_not_after, to_original, fk_table, fk_id)
+                            to_date, to_type, to_bc, to_not_before, to_not_after, to_original, descriptive_note, fk_table, fk_id)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)');
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'], 
@@ -1304,7 +1306,8 @@ class SQL
                                             $toBC,
                                             $toNotBefore, 
                                             $toNotAfter,
-                                            $toOriginal, 
+                                            $toOriginal,
+                                            $descriptiveNote,
                                             $fk_table,
                                             $fk_id));
 
@@ -1338,7 +1341,7 @@ class SQL
         $qq = 'select_date';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, aa.main_id, aa.is_range, 
+                            aa.id, aa.version, aa.main_id, aa.is_range, aa.descriptive_note,
                             aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
                             aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
                             aa.from_type,aa.to_type

@@ -414,29 +414,30 @@ create unique index name_contributor_idx1 on name_contributor(id,main_id,version
 
 
 create table date_range (
-        id              int default nextval('id_seq'),
-        version         int not null,
-        main_id         int not null,
-        is_deleted      boolean default false,
-        is_range        boolean default false, -- distinguish 1 or 2 dates from a range with possibly missing bounds
-        missing_from    boolean default false, -- from date is missing or unknown, only is_range=t
-        from_date       text,                  -- date as an iso string
-        from_type       int,                   -- (fk to vocabulary.id) birth, death, active
-        from_bc         boolean default false, -- just in case we ever run into a BC date
-        from_not_before text,
-        from_not_after  text,
-        from_original   text,                  -- from date tag value
-        missing_to      boolean default false, -- to date is missing or unknown, only is_range=t
-        to_date         text,
-        to_type         int,                   -- (fk to vocabulary.id) birth, death, active
-        to_bc           boolean default false, -- just in case we ever run into a BC date
-        to_not_before   text,
-        to_not_after    text,
-        to_present      boolean,
-        to_original     text,                  -- the to date tag value 
-        fk_table        text,                  -- table name of the related foreign table. Exists only as a backup
-        fk_id           int,                   -- table.id of the related record
-        primary         key(id, version)
+        id               int default nextval('id_seq'),
+        version          int not null,
+        main_id          int not null,
+        is_deleted       boolean default false,
+        is_range         boolean default false, -- distinguish 1 or 2 dates from a range with possibly missing bounds
+        missing_from     boolean default false, -- from date is missing or unknown, only is_range=t
+        from_date        text,                  -- date as an iso string
+        from_type        int,                   -- (fk to vocabulary.id) birth, death, active
+        from_bc          boolean default false, -- just in case we ever run into a BC date
+        from_not_before  text,
+        from_not_after   text,
+        from_original    text,                  -- from date tag value
+        missing_to       boolean default false, -- to date is missing or unknown, only is_range=t
+        to_date          text,
+        to_type          int,                   -- (fk to vocabulary.id) birth, death, active
+        to_bc            boolean default false, -- just in case we ever run into a BC date
+        to_not_before    text,
+        to_not_after     text,
+        to_present       boolean,
+        to_original      text,                  -- the to date tag value 
+        descriptive_note text, 
+        fk_table         text,                  -- table name of the related foreign table. Exists only as a backup
+        fk_id            int,                   -- table.id of the related record
+        primary          key(id, version)
         );
 
 create unique index date_range_idx1 on date_range(id,main_id,version);
