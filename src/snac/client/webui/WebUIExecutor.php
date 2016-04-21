@@ -155,7 +155,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
         
         if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
-            return new \snac\data\User($serverRespons["user"]);;
+            return new \snac\data\User($serverResponse["user"]);
         return false;  
     }
     
@@ -737,7 +737,11 @@ class WebUIExecutor {
         $user->setFirstName($googleUser->getFirstName());
         $user->setFullName($googleUser->getName());
         $user->setLastName($googleUser->getLastName());
-        $user->setToken($googleToken);
+        $token = array (
+                "access_token" => $googleToken->getToken(),
+                "expires" => $googleToken->getExpires()
+        );
+        $user->setToken($token);
         
         return $user;
     }

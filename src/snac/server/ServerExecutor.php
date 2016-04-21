@@ -143,6 +143,7 @@ class ServerExecutor {
                 // For purposes of authentication, the UserName is required
 
                 $this->user = $this->uStore->readUser($user);
+                $this->logger->addDebug("Read user", array($this->user));
 
                 if ($this->user === false) {
                     // The user wasn't found in the database
@@ -157,6 +158,10 @@ class ServerExecutor {
             } else {
                 throw new \snac\exceptions\SNACUserException("Username required for login");
             }
+            
+            $this->logger->addDebug("The user was found in the database", $this->user->toArray());
+            $this->user->setToken($user->getToken());
+            $this->logger->addDebug("Updated the user with their token", $this->user->toArray());
 
             if ($this->user !== false && $this->uStore->sessionExists($this->user)) {
                 if ($this->uStore->sessionActive($this->user)) {

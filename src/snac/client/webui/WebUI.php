@@ -119,10 +119,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
         // Change this if you are not using the built-in PHP server
         $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
-        // We want offline access?
-        $accessType = 'offline';
         // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri', 'accessType'));
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
         $_SESSION['oauth2state'] = $provider->getState();
 
 
@@ -133,15 +131,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // send them to the home page.
             if (!empty($this->input["command"]) &&
                 !(in_array($this->input["command"], $publicCommands)))
-                $this->input["command"] = "login";
+                $this->input["command"] = "";
 
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
             $user = unserialize($_SESSION['snac_user']);
-            $refreshToken = null;
-            if (isset($_SESSION["refresh_token"]))
-                $refreshToken = $_SESSION["refresh_token"];
             
             if ($user->getToken()["expires"] <= time()) {
                 // if the user's token has expired, we need to ask for a refresh
@@ -155,27 +150,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $tmpUser = $executor->startSNACSession($user); 
                 if ($tmpUser !== false) {
                     $user = $tmpUser;
+                    $_SESSION["snac_user"] = serialize($user);
                 } else {
                     $this->logger->addError("User was unable to restart session, but we allowed them through", array($user));
                     // TODO in Version 1.2, this needs to actually redirect them to the login page or give an error
                     // if they were actually trying to get a JSON response.
                 }
-                /**
-                 // Originally, we would ask OAuth for a refresh, but we will handle our own expiry
-                if ($refreshToken != null) {
-                    // Need to refresh if we've gone past the expiration
-                    
-                    $grant = new \League\OAuth2\Client\Grant\RefreshToken();
-                    $token = $provider->getAccessToken($grant, ['refresh_token' => $refreshToken]);
-                    
-                    // Set and restore from the session variable
-                    $_SESSION['token'] = serialize($token);
-                    $token = unserialize($_SESSION["token"]);
-                } else {
-                    // We have no token to refresh, so the user needs to log in again.
-                    //$this->input["command"] = "login";
-                }
-                **/
             }
             
             // Create the PHP User object
@@ -215,11 +195,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
-
-            // We should save the refresh token, too
-            $refreshToken = $token->getRefreshToken();
-            if ($refreshToken != null)
-                $_SESSION["refresh_token"] = $refreshToken;
         
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
