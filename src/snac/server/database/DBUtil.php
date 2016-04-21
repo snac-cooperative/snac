@@ -993,6 +993,7 @@ class DBUtil
                                 $this->populateTerm($singleDate['to_type']));
             $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+            $dateObj->setNote($singleDate['descriptive_note']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
             $this->populateMeta($vhInfo, $dateObj);
 
@@ -1649,6 +1650,7 @@ class DBUtil
                                           $date->getToRange()['notBefore'],
                                           $date->getToRange()['notAfter'],
                                           $date->getToDateOriginal(),
+                                          $date->getNote(),
                                           $tableName,
                                           $tableID);
             $date->setID($rid);
