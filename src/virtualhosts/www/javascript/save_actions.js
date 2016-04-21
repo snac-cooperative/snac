@@ -237,8 +237,16 @@ $(document).ready(function() {
 	                    $('#notification-message').slideUp();
 	                    
 	                    // Go to dashboard
-	                    //window.location.href = "?command=dashboard";
-                        console.log(data);	
+		                $('#success-message').html("<p>Constellation Saved. Going to dashboard.</p>");
+		                setTimeout(function(){
+		                    $('#success-message').slideDown();
+		                }, 500);
+                        setTimeout(function(){
+                            
+                            // Go to dashboard
+                            window.location.href = "?command=dashboard";
+                            
+                        }, 1000);
 	                } else {
 	                    $('#notification-message').slideUp();
 	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
