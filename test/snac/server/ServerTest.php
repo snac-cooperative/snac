@@ -211,7 +211,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $server = new Server( array(
                 "command" => "unlock_constellation",
                 "user" => $this->user->toArray(),
-                "constellation" => $c->toArray()
+                "constellation" => $written->toArray()
         ));
         $server->run();
         $response = $server->getResponse();
