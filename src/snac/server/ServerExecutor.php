@@ -322,50 +322,16 @@ class ServerExecutor {
     }
     
     /**
-     * Insert Constellation
+     * Write Constellation
      * 
-     * Uses DBUtil to write a new constellation to the database.  
-     * 
-     * @param string[] $input Input array from the Server object
-     * @return string[] The response to send to the client
-     */
-    public function insertConstellation(&$input) {
-        $response = array();
-
-        try {
-            if (isset($input["constellation"])) {
-                $constellation = new \snac\data\Constellation($input["constellation"]);
-                $result = $this->cStore->writeConstellation($this->user, $constellation, "Insert of Constellation");
-                if (isset($result) && $result != null) {
-                    $this->logger->addDebug("successfully wrote constellation");
-                    $response["constellation"] = $result->toArray();
-                    $response["result"] = "success";
-                } else {
-                    $this->logger->addDebug("writeConstellation returned a null result");
-                    $response["result"] = "failure";
-                }
-            } else {
-                $this->logger->addDebug("Constellation input value wasn't set to write");
-                $response["result"] = "failure";
-            }
-        } catch (\Exception $e) {
-            $this->logger->addError("writeConstellation threw an exception");
-            $response["result"] = "failure";
-        }
-        return $response;
-    }
-    
-    /**
-     * Update Constellation
-     * 
-     * Uses DBUtil to update a constellation (from the input) in the database.  If no operation is set on the
+     * Uses DBUtil to write a constellation (from the input) in the database.  If no operation is set on the
      * Constellation, it returns a success as if it wrote, but without modifying the database.
      * 
      * @param string[] $input Input array from the Server object
      * @throws \snac\exceptions\SNACException
      * @return string[] The response to send to the client
      */
-    public function updateConstellation(&$input) {
+    public function writeConstellation(&$input) {
         $response = array();
         if (isset($input["constellation"])) {
             $constellation = new \snac\data\Constellation($input["constellation"]);
@@ -388,22 +354,45 @@ class ServerExecutor {
         
             try {
                 if (isset($input["constellation"])) {
-                    // Read the constellation summary and make sure the last version matches the current version
-                    // if they match, write, else send failure back with note about updating old version
-
-                    $inList = false;
-                    $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
-                    foreach ($userList as $item) {
-                        if ($item->getID() == $constellation->getID() && $item->getVersion() == $constellation->getVersion()) {
-                            $inList = true;
-                            break;
-                        }
-                    }
 
                     $result = null;
+                    
+                    // If the constellation has an ID, then we should check that it's actually checked-out to the user
+                    // and the user is currently editing it!
+                    if ($constellation->getID() != null) {
+                        // Read the constellation summary and make sure the last version matches the current version
+                        // if they match, write, else send failure back with note about updating old version
 
-                    if ($inList)
-                        $result = $this->cStore->writeConstellation($this->user, $constellation, "Edits in Web UI");
+                        $this->logger->addDebug("Constellation had an ID, so we're doing an update", array($constellation->getID()));
+                        $inList = false;
+                        $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
+                        foreach ($userList as $item) {
+                            if ($item->getID() == $constellation->getID() && $item->getVersion() == $constellation->getVersion()) {
+                                $inList = true;
+                                break;
+                            }
+                        }
+
+                        if ($inList)
+                            $result = $this->cStore->writeConstellation($this->user, $constellation, "Edits in Web UI");
+                    
+                    // If the constellation does not currently have and ID, then we should write it and have it checked
+                    // out to the user that wrote it.  Also, update the status to be currently editing
+                    } else {
+                        $this->logger->addDebug("Writing a new constellation");
+                        $result = $this->cStore->writeConstellation($this->user, $constellation, "New Constellation from Web UI");
+                        if ($result != null) {
+                            $version = $this->cStore->writeConstellationStatus($this->user, $result->getID(), 
+                                    "currently editing", "New constellation is already in edit");
+                            if ($version !== false)
+                                $result->setVersion($version);
+                        } else {
+                            $this->logger->addDebug("Couldn't write the new constellation for some reason");
+                            $response["result"] = "failure";
+                            $response["error"] = "an unknown error occurred while trying to write";
+                            return $response;
+                        }
+                    }
                     
                     if (isset($result) && $result != null) {
                         $this->logger->addDebug("successfully wrote constellation");
