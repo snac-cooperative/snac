@@ -177,6 +177,34 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Ingest the full CPF test using the optional status arg
+     *
+     * Write a constellation with the optional status 'ingest cpf' to test contellation creation and
+     * maintenance info capture in the version_history record.
+     */
+    public function testFullCPFIngestCPFStatus()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $retObj = $this->dbu->writeConstellation($this->user, // $user
+                                                 $cObj,       // $argObj
+                                                 'testing ingest full CPF record with ingest cpf', // $note
+                                                 'ingest cpf'); // $statusArg
+        $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
+        
+        // Get the most recent version.
+        $readObj = $this->dbu->readConstellation($retObj->getID());
+        
+        /*
+         * The constellation object does not contain a populated status because the server may change it. If
+         * you want status you must call readConstellationStatus() and get it directly from the db.
+         */ 
+        $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
+    }
+    
+    /**
      * Insert a test record, then change the status to update and make sure that nrd is updated.
      *
      * This is similar to testFullCPFWithEditList() below.
