@@ -84,8 +84,9 @@ function makeEditable(short, i) {
     if ($("#" + short + "_operation_" + i).val() == "delete")
         setDeleted(short, i);
 
+    // Add to the undo set
     undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
-    console.log(undoSet);
+    
     $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
@@ -185,7 +186,7 @@ function makeUneditable(short, i) {
         if(obj.attr('id').indexOf(idstr) != -1 
             && obj.attr('id').indexOf("ZZ") == -1
             && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
-            console.log(obj);
+            
             if (obj.get(0).CodeMirror) {
                 obj.get(0).CodeMirror.toTextArea();
             }
