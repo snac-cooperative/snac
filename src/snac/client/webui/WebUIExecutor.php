@@ -22,6 +22,9 @@ use \snac\client\util\ServerConnect as ServerConnect;
  */
 class WebUIExecutor {
 
+    /**
+     * @var \snac\client\util\ServerConnect $connect Connection to the server
+     */
     private $connect = null;
 
     /**
@@ -152,7 +155,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
         
         if (isset($serverResponse["result"]) && $serverResponse["result"] == "success")
-            return true;
+            return new \snac\data\User($serverResponse["user"]);
         return false;  
     }
     
@@ -380,6 +383,10 @@ class WebUIExecutor {
         $response = array ();
         $response["server_debug"] = array ();
         $response["server_debug"]["update"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
         
         if (! is_array($serverResponse)) {
             $this->logger->addDebug("server's response: $serverResponse");
@@ -443,6 +450,10 @@ class WebUIExecutor {
         $response = array ();
         $response["server_debug"] = array ();
         $response["server_debug"]["update"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
     
         if (! is_array($serverResponse)) {
             $this->logger->addDebug("server's response: $serverResponse");
@@ -460,8 +471,8 @@ class WebUIExecutor {
                         $response["server_debug"]["unlock"] = $serverResponse;
                         if (isset($serverResponse["result"]))
                             $response["result"] = $serverResponse["result"];
-                            if (isset($serverResponse["error"]))
-                                $response["error"] = $serverResponse["error"];
+                        if (isset($serverResponse["error"]))
+                            $response["error"] = $serverResponse["error"];
                     }
         }
     
@@ -482,14 +493,17 @@ class WebUIExecutor {
     public function unlockConstellation(&$input, &$user) {
     
         $constellation = null;
-        if (isset($input["constellationid"])) {
+        if (isset($input["constellationid"]) && isset($input["version"])) {
             $constellation = new \snac\data\Constellation();
             $constellation->setID($input["constellationid"]);
-        } else {
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
             $mapper = new \snac\client\webui\util\ConstellationPostMapper();
         
             // Get the constellation object
             $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
         }
         
         $this->logger->addDebug("unlocking constellation", $constellation->toArray());
@@ -718,12 +732,16 @@ class WebUIExecutor {
         $user->setAvatar($avatar);
         $user->setAvatarSmall($avatarSmall);
         $user->setAvatarLarge($avatarLarge);
+        $user->setUserName($googleUser->getEmail());
         $user->setEmail($googleUser->getEmail());
         $user->setFirstName($googleUser->getFirstName());
         $user->setFullName($googleUser->getName());
         $user->setLastName($googleUser->getLastName());
-        $user->setToken($googleToken);
-        $user->setUserid($googleUser->getId());
+        $token = array (
+                "access_token" => $googleToken->getToken(),
+                "expires" => $googleToken->getExpires()
+        );
+        $user->setToken($token);
         
         return $user;
     }

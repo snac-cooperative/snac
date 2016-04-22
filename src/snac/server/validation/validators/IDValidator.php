@@ -203,6 +203,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @param \snac\data\AbstractData $object The object to validate
      * @param \snac\data\AbstractData[] $realObjects A list (from a valid constellation part) possibly containing the object
      * @param string $type Sting shorthand type of this object
+     * @param string $preID optional Any string that should be used in front of the objects id in the array of
+     * seen objects
      * @return boolean true if valid, false otherwise.
      */
     private function validateGeneric($object, $realObjects, $type, $preID = "") {
@@ -266,6 +268,8 @@ class IDValidator extends \snac\server\validation\validators\Validator {
      * @param \snac\data\AbstractData $object The object to validate
      * @param \snac\data\AbstractData[] $realObjects A list (from a valid constellation part) possibly containing the object
      * @param string $type Sting shorthand type of this object
+     * @param string $preID optional Any string that should be used in front of the objects id in the array of
+     * seen objects
      * @return boolean true if valid, false otherwise.
      */
     private function validateGenericWithLanguage($object, $realObjects, $type, $preID = "") {

@@ -79,6 +79,45 @@ class ServerExecutor {
         $this->logger = new \Monolog\Logger('ServerExec');
         $this->logger->pushHandler($log);
     }
+
+    /**
+     * Check OAuth Authentication
+     * 
+     * Checks the User against OAuth and validates their token.
+     * 
+     * @param \snac\data\User $user The user to validate
+     * @return boolean true on success, false on failure
+     */
+    private function checkOAuth($user) {
+        // Google OAuth Settings (from Config)
+        $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
+        $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
+        // Change this if you are not using the built-in PHP server
+        $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
+        // Initialize the provider
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
+
+        try {
+            $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
+
+            $accessToken = new AccessToken($user->getToken());
+
+            $ownerDetails = $provider->getResourceOwner($accessToken);
+
+            if ($ownerDetails->getEmail() != $user->getEmail()) {
+                // This user's token doesn't match the user's email
+                $this->logger->addDebug("Email mismatch from the user and OAuth details");
+                return false;
+            }
+            $this->logger->addDebug("Successfully got user details from OAuth2 Server");
+        } catch (\Exception $e) {
+            $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
+            return false;
+        }
+
+        // Could connect using the token, emails matched, so all's good
+        return true;
+    }
     
     /**
      * Authenticate User
@@ -92,47 +131,65 @@ class ServerExecutor {
         if ($user != null) {
             $this->logger->addDebug("Attempting to authenticate user", $user->toArray());
             
-            
-            // Google OAuth Settings (from Config)
-            $clientId     = \snac\Config::$OAUTH_CONNECTION["google"]["client_id"];
-            $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
-            // Change this if you are not using the built-in PHP server
-            $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
-            // Initialize the provider
-            $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
-            
-            try {
-                $this->logger->addDebug("Trying to connect to OAuth2 Server to get user details");
-                
-                $accessToken = new AccessToken($user->getToken());
-                
-                $ownerDetails = $provider->getResourceOwner($accessToken);
-                
-                if ($ownerDetails->getEmail() != $user->getEmail()) {
-                    // This user's token doesn't match the user's email
-                    $this->logger->addDebug("Email mismatch from the user and OAuth details");
-                    return false;
-                }
-                $this->logger->addDebug("Successfully got user details from OAuth2 Server");
-            } catch (\Exception $e) {
-                $this->logger->addDebug("Could not get user details from OAuth2 Server: ".$e->getMessage());
-                throw new \snac\exceptions\SNACUserException("User OAuth session has expired");
-                return false;
-            }
-
-            $this->logger->addDebug("User is valid from OAuth details");
+            // If the user exists in our database and we know about this token,
+            // then we'll let them continue. Else, we will try to authenticate
+            // with Google, check their information, and add them to the database. 
             
             // Check that the user has a session in the database
-            $this->user = $this->uStore->checkSessionActive($user);
+            //$this->user = $this->uStore->checkSessionActive($user);
+            $this->user = false;
+
+            if ($user->getUserName() != null) {
+                // For purposes of authentication, the UserName is required
+
+                $this->user = $this->uStore->readUser($user);
+                $this->logger->addDebug("Read user", array($this->user));
+
+                if ($this->user === false) {
+                    // The user wasn't found in the database
+
+                    // For version 1.1.0, we will go ahead and add them
+                    // if the token is valid
+                    if ($this->checkOAuth($user))
+                        $this->user = $this->uStore->createUser($user);
+                    else
+                        throw new \snac\exceptions\SNACUserException("Invalid OAuth user");
+                }
+            } else {
+                throw new \snac\exceptions\SNACUserException("Username required for login");
+            }
             
-            if ($this->user === false) {
-                throw new \snac\exceptions\SNACUserException("User session has expired");
+            $this->logger->addDebug("The user was found in the database", $this->user->toArray());
+            $this->user->setToken($user->getToken());
+            $this->logger->addDebug("Updated the user with their token", $this->user->toArray());
+
+            if ($this->user !== false && $this->uStore->sessionExists($this->user)) {
+                if ($this->uStore->sessionActive($this->user)) {
+                    // The session is still active
+                    $this->logger->addDebug("User is valid from SNAC details");
+                    return true;
+                } else {
+                    // The session has expired, so we will be nice and extend
+                    $this->logger->addDebug("User is valid from SNAC details");
+                    return $this->uStore->sessionExtend($this->user);
+                }
+
+            } else if ($this->user !== false && $this->user->getToken() != null) {
+                // Try to add the session (check google first)
+
+                if ($this->checkOAuth($this->user) &&
+                    $this->uStore->addSession($this->user)) {
+                    // Google approved the session and we successfully added it
+                    return true;
+                } else {
+                    throw new \snac\exceptions\SNACUserException("User did not have a valid session to capture");
+                }
+            } else {
+                throw new \snac\exceptions\SNACUserException("User did not have session");
             }
 
-            
-            $this->logger->addDebug("User is valid from SNAC details");
-            
-            return true;
+            $this->logger->addDebug("Something went wrong checking user in SNAC");
+            return false;
         }
         
         // If the user is null, then we're okay on authentication (no permissions)
@@ -151,8 +208,6 @@ class ServerExecutor {
     public function startSession() {
         $response = array();
         
-        // TODO In the future, we may want to put Google OAuth here so we don't check the user
-        // against Google for each operation on the server
         $this->authenticateUser($this->user);
         
         if ($this->user != null) {
@@ -272,50 +327,16 @@ class ServerExecutor {
     }
     
     /**
-     * Insert Constellation
+     * Write Constellation
      * 
-     * Uses DBUtil to write a new constellation to the database.  
-     * 
-     * @param string[] $input Input array from the Server object
-     * @return string[] The response to send to the client
-     */
-    public function insertConstellation(&$input) {
-        $response = array();
-
-        try {
-            if (isset($input["constellation"])) {
-                $constellation = new \snac\data\Constellation($input["constellation"]);
-                $result = $this->cStore->writeConstellation($this->user, $constellation, "Insert of Constellation");
-                if (isset($result) && $result != null) {
-                    $this->logger->addDebug("successfully wrote constellation");
-                    $response["constellation"] = $result->toArray();
-                    $response["result"] = "success";
-                } else {
-                    $this->logger->addDebug("writeConstellation returned a null result");
-                    $response["result"] = "failure";
-                }
-            } else {
-                $this->logger->addDebug("Constellation input value wasn't set to write");
-                $response["result"] = "failure";
-            }
-        } catch (\Exception $e) {
-            $this->logger->addError("writeConstellation threw an exception");
-            $response["result"] = "failure";
-        }
-        return $response;
-    }
-    
-    /**
-     * Update Constellation
-     * 
-     * Uses DBUtil to update a constellation (from the input) in the database.  If no operation is set on the
+     * Uses DBUtil to write a constellation (from the input) in the database.  If no operation is set on the
      * Constellation, it returns a success as if it wrote, but without modifying the database.
      * 
      * @param string[] $input Input array from the Server object
      * @throws \snac\exceptions\SNACException
      * @return string[] The response to send to the client
      */
-    public function updateConstellation(&$input) {
+    public function writeConstellation(&$input) {
         $response = array();
         if (isset($input["constellation"])) {
             $constellation = new \snac\data\Constellation($input["constellation"]);
@@ -338,14 +359,54 @@ class ServerExecutor {
         
             try {
                 if (isset($input["constellation"])) {
-                    $result = $this->cStore->writeConstellation($this->user, $constellation, "Demo updates for now");
+
+                    $result = null;
+                    
+                    // If the constellation has an ID, then we should check that it's actually checked-out to the user
+                    // and the user is currently editing it!
+                    if ($constellation->getID() != null) {
+                        // Read the constellation summary and make sure the last version matches the current version
+                        // if they match, write, else send failure back with note about updating old version
+
+                        $this->logger->addDebug("Constellation had an ID, so we're doing an update", array($constellation->getID()));
+                        $inList = false;
+                        $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
+                        foreach ($userList as $item) {
+                            if ($item->getID() == $constellation->getID() && $item->getVersion() == $constellation->getVersion()) {
+                                $inList = true;
+                                break;
+                            }
+                        }
+
+                        if ($inList)
+                            $result = $this->cStore->writeConstellation($this->user, $constellation, "Edits in Web UI");
+                    
+                    // If the constellation does not currently have and ID, then we should write it and have it checked
+                    // out to the user that wrote it.  Also, update the status to be currently editing
+                    } else {
+                        $this->logger->addDebug("Writing a new constellation");
+                        $result = $this->cStore->writeConstellation($this->user, $constellation, "New Constellation from Web UI");
+                        if ($result != null) {
+                            $version = $this->cStore->writeConstellationStatus($this->user, $result->getID(), 
+                                    "currently editing", "New constellation is already in edit");
+                            if ($version !== false)
+                                $result->setVersion($version);
+                        } else {
+                            $this->logger->addDebug("Couldn't write the new constellation for some reason");
+                            $response["result"] = "failure";
+                            $response["error"] = "an unknown error occurred while trying to write";
+                            return $response;
+                        }
+                    }
+                    
                     if (isset($result) && $result != null) {
                         $this->logger->addDebug("successfully wrote constellation");
                         $response["constellation"] = $result->toArray();
                         $response["result"] = "success";
                     } else {
-                        $this->logger->addDebug("writeConstellation returned a null result");
+                        $this->logger->addDebug("writeConstellation returned a null result or edits not allowed");
                         $response["result"] = "failure";
+                        $response["error"] = "this version is not the current version, other edits have happened";
                     }
                 }
             } catch (\Exception $e) {
@@ -356,6 +417,7 @@ class ServerExecutor {
         } else {
             $this->logger->addDebug("Constellation input value wasn't set to write");
             $response["result"] = "failure";
+            $response["error"] = "no constellation to write";
         }
         return $response;
     }
@@ -378,10 +440,24 @@ class ServerExecutor {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
         
                 $currentStatus = $this->cStore->readConstellationStatus($constellation->getID());
-        
-                // TODO This will change when users are present
-                // TODO IF this constellation is in the list of currently editing for the user, then unlock it
-                if ($currentStatus == "currently editing") {
+
+                // Read the summary out of the database. if the version numbers match AND the constellation
+                // is currently editing for the user, THEN unlock it.  Else, send back a note to the client with a failure
+                
+                // Read the current summary
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                $inList = false;
+                $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
+                foreach ($userList as $item) {
+                    if ($item->getID() == $constellation->getID()) {
+                        $inList = true;
+                        break;
+                    }
+                }
+
+                // If this constellation is in the list of currently editing for the user, then unlock it
+                if ($current->getVersion() == $constellation->getVersion() && $inList) {
                     $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "locked editing",
                             "User finished editing constellation");
         
@@ -397,14 +473,18 @@ class ServerExecutor {
         
                         $this->logger->addDebug("could not unlock the constellation");
                         $response["result"] = "failure";
+                        $response["error"] = "writing status failed";
                     }
                 } else {
-                    $this->logger->addDebug("constellation was not locked");
+                    $this->logger->addDebug("constellation versions didn't match or was not in users currently editing list");
                     $response["result"] = "failure";
+                    $response["error"] = "other changes have been made to this constellation";
+                    $response["constellation"] = $constellation->toArray();
                 }
             } else {
                 $this->logger->addDebug("no constellation given to unlock");
                 $response["result"] = "failure";
+                $response["error"] = "no constellation given";
             }
         } catch (\Exception $e) {
             $this->logger->addError("unlocking constellation threw an exception");
@@ -432,7 +512,32 @@ class ServerExecutor {
             $this->logger->addDebug("Publishing constellation");
             if (isset($input["constellation"])) {
                 $constellation = new \snac\data\Constellation($input["constellation"]);
-                $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "published", "User published constellation");
+
+                // Check the status of the constellation.  Make sure the input has the old version number (read the summary)
+                // and then only publish if the user has permission (it was locked to them, etc).
+
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                $inList = false;
+                $userList = array_merge(
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
+                );
+                foreach ($userList as $item) {
+                    if ($item->getID() == $constellation->getID()) {
+                        $inList = true;
+                        break;
+                    }
+                }
+
+                $result = false;
+
+                // If this constellation is the correct version, and the user was editing it, then publish it
+                if ($current->getVersion() == $constellation->getVersion() && $inList) {
+                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), 
+                                                                        "published", "User published constellation");
+                }
+
                 if (isset($result) && $result !== false) {
                     $this->logger->addDebug("successfully published constellation");
                     $constellation->setVersion($result);
@@ -472,10 +577,12 @@ class ServerExecutor {
                 } else {
                     $this->logger->addDebug("could not publish the constellation");
                     $response["result"] = "failure";
+                    $response["error"] = "cannot publish an out-of-date copy of the constellation";
                 }
             } else {
                 $this->logger->addDebug("no constellation given to publish");
                 $response["result"] = "failure";
+                $response["error"] = "missing constellation information";
             }
         } catch (\Exception $e) {
             $this->logger->addError("publishing constellation threw an exception");
@@ -617,8 +724,25 @@ class ServerExecutor {
         
                 $cId = $input["constellationid"];
                 $status = $this->cStore->readConstellationStatus($cId);
-                // TODO This must change when users are present
-                if ( $status == "published" || $status == "locked editing") {
+                
+                // Should check the list of constellations for the user and only allow editing a "locked editing" constellation
+                // if that constellation is attached to that user.  So, need to loop through the constellations for that user
+                
+                // Read the current summary
+                $current = $this->cStore->readConstellation($cId, null, true);
+
+                $inList = false;
+                $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing");
+                foreach ($userList as $item) {
+                    if ($item->getID() == $current->getID()) {
+                        $inList = true;
+                        break;
+                    }
+                }
+
+                // If the current status is published OR the user has that constellation locked editing (checked out to them),
+                // then the user is allowed to edit.
+                if ( $status == "published" || $inList) {
                     // Can edit this!
         
                     // lock the constellation to the user as currently editing
@@ -636,7 +760,7 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("User is not allowed to edit this constellation.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user or window.");
                 }
         
         

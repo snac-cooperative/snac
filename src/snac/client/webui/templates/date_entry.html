@@ -1,7 +1,7 @@
 {% macro dateEntry(name, short, snacDate) %}
     {% import 'widgets.html' as widgets %}
     {% set i = 0 %}
-<div class="panel panel-default">
+<div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }}</div>
 
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>

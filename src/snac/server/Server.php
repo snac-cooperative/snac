@@ -144,10 +144,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
                 
             case "insert_constellation":
-                $this->response = $executor->insertConstellation($this->input);
+                $this->response = $executor->writeConstellation($this->input);
                 break;
             case "update_constellation":
-                $this->response = $executor->updateConstellation($this->input);
+                $this->response = $executor->writeConstellation($this->input);
                 break;
             
             case "unlock_constellation":

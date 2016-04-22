@@ -23,29 +23,56 @@ namespace snac\data;
  * @author Robbie Hott
  *        
  */
-class User {
+class User implements \Serializable {
 
     /**
-     * It seems like a good idea for this to be appuser.id, but that needs to be confirmed.
+     * @var int The numeric user ID for this user
      */
     private $userid;
 
+    /**
+     * @var string The user name (unique for each user)
+     */
     private $userName;
 
+    /**
+     * @var string The user's first name
+     */
     private $firstName;
 
+    /**
+     * @var string The user's last name
+     */
     private $lastName;
 
+    /**
+     * @var string The user's full name
+     */
     private $fullName;
 
+    /**
+     * @var string A URL to the user's avatar image (default size)
+     */
     private $avatar;
     
+    /**
+     * @var string A URL to the user's avatar image (small size)
+     */
     private $avatarSmall;
     
+    /**
+     * @var string A URL to the user's avatar image (large size)
+     */
     private $avatarLarge;
 
+    /**
+     * @var string The user's email address. One email address may be registered to multiple users.
+     */
     private $email;
 
+    /**
+     * @var string[] The user's session token
+     */
     private $token;
 
     /**
@@ -55,6 +82,7 @@ class User {
      *
      * @var snac\data\Role[] List of Role objects
      */
+    private $roleList = null;
     
     /**
      * Constructor 
@@ -62,6 +90,7 @@ class User {
      * @param string[] $data Array object of User information
      */
     public function __construct($data = null) {
+        $this->roleList = array();
         if ($data != null)
             $this->fromArray($data);
         
@@ -69,7 +98,7 @@ class User {
 
     /**
      * Set the user name
-     * @param string $userName
+     * @param string $userName username
      */
     public function setUserName($userName)
     {
@@ -78,7 +107,7 @@ class User {
 
     /**
      * Get the user name
-     * @return string $userName
+     * @return string the username
      */
     public function getUserName()
     {
@@ -90,7 +119,7 @@ class User {
      *
      * Return the role list
      *
-     * @return snac\data\Role[] Return a list of Role objects
+     * @return snac\data\Role[] a list of Role objects
      */ 
     public function getRoleList()
     {
@@ -110,95 +139,205 @@ class User {
     }
 
 
+    /**
+     * Set the UserID
+     * 
+     * @param int $id The User's numeric id
+     */
     public function setUserID($id) {
 
         $this->userid = $id;
     }
 
+    /**
+     * Set the first name
+     * 
+     * @param string $first The User's first name
+     */
     public function setFirstName($first) {
 
         $this->firstName = $first;
     }
 
+    /**
+     * Set the last name
+     * 
+     * @param string $last The user's last name
+     */
     public function setLastName($last) {
 
         $this->lastName = $last;
     }
 
+    /**
+     * Set the full name
+     * 
+     * @param string $full The user's full name
+     */
     public function setFullName($full) {
 
         $this->fullName = $full;
     }
 
+    /**
+     * Set the avatar
+     * 
+     * Sets the default-sized avatar link
+     * 
+     * @param string $avatar URL to the default-size avatar image
+     */
     public function setAvatar($avatar) {
 
         $this->avatar = $avatar;
     }
 
+    /**
+     * Set the small avatar
+     *
+     * Sets the small-sized avatar link
+     *
+     * @param string $avatar URL to the small-size avatar image
+     */
     public function setAvatarSmall($avatar) {
     
         $this->avatarSmall = $avatar;
     }
 
+    /**
+     * Set the large avatar
+     *
+     * Sets the large-sized avatar link
+     *
+     * @param string $avatar URL to the large-size avatar image
+     */
     public function setAvatarLarge($avatar) {
     
         $this->avatarLarge = $avatar;
     }
 
+    /**
+     * Set the email address
+     * 
+     * @param string $email The user's email address
+     */
     public function setEmail($email) {
 
         $this->email = $email;
     }
 
+    /**
+     * Set the access token
+     * 
+     * This sets the token for the user.  The token is an associative array that contain the "access_token" and
+     * a "expires" that states when the token expires in terms of the linux epoch.
+     * 
+     * @param string[] $token Associative array for the token, with "access_token" and "expires" keys
+     */
     public function setToken($token) {
 
         $this->token = $token;
     }
 
+    /**
+     * Get user id
+     * 
+     * @return int the user's numeric ID
+     */
     public function getUserID() {
 
         return $this->userid;
     }
 
+    /**
+     * Get the first name
+     * 
+     * @return string The user's first name
+     */
     public function getFirstName() {
 
         return $this->firstName;
     }
 
+    /**
+     * Get the last name
+     * 
+     * @return string The user's last name
+     */
     public function getLastName() {
 
         return $this->lastName;
     }
 
+    /**
+     * Get the full name
+     * 
+     * @return string The user's full name
+     */
     public function getFullName() {
 
         return $this->fullName;
     }
 
+    /**
+     * Get the default-size avatar
+     * 
+     * @return string The URL to the default-size avatar
+     */
     public function getAvatar() {
 
         return $this->avatar;
     }
+    
+    /**
+     * Get the small-size avatar
+     * 
+     * @return string The URL to the small-size avatar
+     */
     public function getAvatarSmall() {
 
         return $this->avatarSmall;
     }
 
+    /**
+     * Get the large-size avatar
+     *
+     * @return string The URL to the large-size avatar
+     */
     public function getAvatarLarge() {
 
         return $this->avatarLarge;
     }
 
+    /**
+     * Get the email address
+     * 
+     * @return string The user's email address
+     */
     public function getEmail() {
 
         return $this->email;
     }
 
+    /**
+     * Get the token
+     * 
+     * Get's the full token array, including the "access_token" and "expires" fields.
+     * 
+     * @return \string[] The associative array containing the user's "access_token" and "expires" keys.
+     */
     public function getToken() {
 
         return $this->token;
     }
     
+    /**
+     * Generate a temporary session
+     * 
+     * Generates a temporary session, using the timestamp as an access token and the expiration to be
+     * the number of hours specified by the parameter from now.
+     * 
+     * @param int $hours optional number of valid hours for the token (default 2)
+     */
     public function generateTemporarySession($hours = 2) {
         $token = array(
                 "access_token" => time(),                // use time() to be unique-ish
@@ -217,6 +356,7 @@ class User {
 
         $return = array (
                 "userid" => $this->userid,
+                "userName" => $this->userName,
                 "firstName" => $this->firstName,
                 "lastName" => $this->lastName,
                 "fullName" => $this->fullName,
@@ -252,6 +392,11 @@ class User {
             $this->userid = $data["userid"];
         else
             $this->userid = null;
+        
+        if (isset($data["userName"]))
+            $this->userName = $data["userName"];
+        else
+            $this->userName = null;
         
         if (isset($data["firstName"]))
             $this->firstName = $data["firstName"];
@@ -318,4 +463,31 @@ class User {
         unset($data);
         return $return;
     }
+
+    /**
+     * Serialization Method
+     *
+     * Allows PHP's serialize() method to correctly serialize the object.
+     *
+     * {@inheritDoc}
+     * 
+     * @return string The serialized form of this object
+     */ 
+    public function serialize() {
+        return $this->toJSON();
+    }
+
+    /**
+     * Un-Serialization Method
+     *
+     * Allows PHP's unserialize() method to correctly unserialize the object.
+     *
+     * {@inheritDoc}
+     * 
+     * @param string $data the serialized object
+     */ 
+    public function unserialize($data) {
+        $this->fromJSON($data);
+    }    
+
 }

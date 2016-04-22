@@ -117,6 +117,8 @@ abstract class AbstractTextData extends AbstractData{
      * {@inheritDoc}
      * 
      * @param \snac\data\AbstractTextData $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      * 
      * @see \snac\data\AbstractData::equals()
      */

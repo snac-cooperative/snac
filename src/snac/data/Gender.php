@@ -25,6 +25,8 @@ class Gender extends AbstractTermData {
 
     /**
      * Constructor
+     * 
+     * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
         $this->setDataType("Gender");

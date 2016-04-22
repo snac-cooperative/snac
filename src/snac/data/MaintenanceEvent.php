@@ -94,6 +94,8 @@ class MaintenanceEvent extends AbstractData {
     
     /**
      * Constructor
+     * 
+     * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(0);
@@ -296,6 +298,8 @@ class MaintenanceEvent extends AbstractData {
      * {@inheritDoc}
      *
      * @param \snac\data\Language $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      *       
      * @see \snac\data\AbstractData::equals()
      */

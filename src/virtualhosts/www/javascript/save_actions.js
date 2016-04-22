@@ -147,16 +147,7 @@ $(document).ready(function() {
                 } else {
                     $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error.
-                    var errorMsg = "";
-                    if (data.error && data.error.type)
-                    	errorMsg += ": " + data.error.type;
-                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
-                    setTimeout(function(){
-                        $('#error-message').slideDown();
-                    }, 500);
-                    setTimeout(function(){
-                        $('#error-message').slideUp();
-                    }, 10000);
+                    displayErrorMessage(data.error);
                 }
             });
         });
@@ -211,13 +202,7 @@ $(document).ready(function() {
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-		                $('#error-message').html("<p>An error occurred while updating state.</p>");
-		                setTimeout(function(){
-		                    $('#error-message').slideDown();
-		                }, 500);
-		                setTimeout(function(){
-		                    $('#error-message').slideUp();
-		                }, 8000);
+                        displayErrorMessage(data.error);
 		            }
 		        });
         	} else {
@@ -252,21 +237,20 @@ $(document).ready(function() {
 	                    $('#notification-message').slideUp();
 	                    
 	                    // Go to dashboard
-	                    window.location.href = "?command=dashboard";
-	
+		                $('#success-message').html("<p>Constellation Saved. Going to dashboard.</p>");
+		                setTimeout(function(){
+		                    $('#success-message').slideDown();
+		                }, 500);
+                        setTimeout(function(){
+                            
+                            // Go to dashboard
+                            window.location.href = "?command=dashboard";
+                            
+                        }, 1000);
 	                } else {
 	                    $('#notification-message').slideUp();
 	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-	                    var errorMsg = "";
-	                    if (data.error && data.error.type)
-	                    	errorMsg += ": " + data.error.type;
-	                    $('#error-message').html("<p>An error occurred while saving"+errorMsg+".</p>");
-	                    setTimeout(function(){
-	                        $('#error-message').slideDown();
-	                    }, 500);
-	                    setTimeout(function(){
-	                        $('#error-message').slideUp();
-	                    }, 10000);
+                        displayErrorMessage(data.error);
 	                }
 	            });
         	}
@@ -322,13 +306,7 @@ $(document).ready(function() {
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-		                $('#error-message').html("<p>An error occurred while publishing.</p>");
-		                setTimeout(function(){
-		                    $('#error-message').slideDown();
-		                }, 500);
-		                setTimeout(function(){
-		                    $('#error-message').slideUp();
-		                }, 8000);
+                        displayErrorMessage(data.error);
 		            }
 		        });
         	} else {
@@ -376,13 +354,7 @@ $(document).ready(function() {
 	                } else {
 	                    $('#notification-message').slideUp();
 	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-	                    $('#error-message').html("<p>An error occurred while saving.</p>");
-	                    setTimeout(function(){
-	                        $('#error-message').slideDown();
-	                    }, 500);
-	                    setTimeout(function(){
-	                        $('#error-message').slideUp();
-	                    }, 8000);
+                        displayErrorMessage(data.error);
 	                }
 	            });
         	}
@@ -433,13 +405,7 @@ $(document).ready(function() {
 	            } else {
 	                $('#notification-message').slideUp();
 	                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-	                $('#error-message').html("<p>An error occurred while unlocking the constellation.</p>");
-	                setTimeout(function(){
-	                    $('#error-message').slideDown();
-	                }, 500);
-	                setTimeout(function(){
-	                    $('#error-message').slideUp();
-	                }, 8000);
+                    displayErrorMessage(data.error);
 	            }
 	        });
         });

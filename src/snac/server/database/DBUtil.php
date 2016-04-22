@@ -355,7 +355,7 @@ class DBUtil
      */ 
     private function editList($user, $status='locked editing')
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -410,14 +410,14 @@ class DBUtil
      * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
      * a config value. Must be -1 for all, or an integer. Default to the config when missing.
      *
-     * @return \snac\data\Constellation[] A list of  PHP constellation object, or false when there are no constellations.
+     * @return \snac\data\Constellation[] A list of  PHP constellation object, or an empty array when there are no constellations.
      */
     public function listConstellationsWithStatusForUser($user,
                                                         $status='locked editing',
                                                         $limit=null,
                                                         $offset=null)
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -440,7 +440,7 @@ class DBUtil
             }
             return $constellationList;
         }
-        return false;
+        return array();
     }
     
     /**
@@ -2336,7 +2336,7 @@ class DBUtil
      */ 
     public function writeConstellationStatus($user, $mainID, $status, $note="")
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -2453,7 +2453,7 @@ class DBUtil
          */  
         $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
         $status = $defaultStatus;
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return false;
         }
         
@@ -2675,12 +2675,13 @@ class DBUtil
     }
 
     /**
-     * Create json for maintenance note
+     * Generate a Maintenance Note
      *
-     * We store the maintenance info in version_history.note which is a text field. This creates the necessary
-     * json string.
-     *
-     * @param \snac\data\Constellation $cObj A constellation object.
+     * Given a Constellation object, this method generates a note (for storing in a text field) that 
+     * contains the maintenance information from the constellation.
+     * 
+     * @param \snac\data\Constellation $cObj A constellation object
+     * @return string The JSON-encoded note containing maintenance data
      */
     private function maintenanceNote($cObj)
     {
@@ -3135,7 +3136,7 @@ class DBUtil
      */
     public function clearDeleted($user, $roleID, $icstatus, $note, $main_id, $table, $id)
     {
-        if ($user == null) {
+        if ($user == null || $user->getUserID() == null) {
             return null;
         }
         

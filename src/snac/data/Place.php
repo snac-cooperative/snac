@@ -404,6 +404,8 @@ class Place extends AbstractData {
      * {@inheritDoc}
      *
      * @param \snac\data\Place $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      *       
      * @see \snac\data\AbstractData::equals()
      */

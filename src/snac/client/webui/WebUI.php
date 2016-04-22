@@ -119,47 +119,47 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $clientSecret = \snac\Config::$OAUTH_CONNECTION["google"]["client_secret"];
         // Change this if you are not using the built-in PHP server
         $redirectUri  = \snac\Config::$OAUTH_CONNECTION["google"]["redirect_uri"];
-        // We want offline access?
-        $accessType = 'offline';
         // Initialize the provider
-        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri', 'accessType'));
+        $provider = new \League\OAuth2\Client\Provider\Google(compact('clientId', 'clientSecret', 'redirectUri'));
         $_SESSION['oauth2state'] = $provider->getState();
 
 
 
         // If the user is not logged in, send to the home screen. If logged in, then fill in User object
-        if (empty($_SESSION['token'])) {
+        if (empty($_SESSION['snac_user'])) {
             // If the user wants to do something, but hasn't logged in, then
             // send them to the home page.
             if (!empty($this->input["command"]) &&
                 !(in_array($this->input["command"], $publicCommands)))
-                $this->input["command"] = "login";
+                $this->input["command"] = "";
 
         } else {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
-            $refreshToken = null;
-            if (isset($_SESSION["refresh_token"]))
-                $refreshToken = $_SESSION["refresh_token"];
+            $user = unserialize($_SESSION['snac_user']);
             
-            if ($token->getExpires() <= time()) {
-                if ($refreshToken != null) {
-                    // Need to refresh if we've gone past the expiration
-                    
-                    $grant = new \League\OAuth2\Client\Grant\RefreshToken();
-                    $token = $provider->getAccessToken($grant, ['refresh_token' => $refreshToken]);
-                    
-                    // Set and restore from the session variable
-                    $_SESSION['token'] = serialize($token);
-                    $token = unserialize($_SESSION["token"]);
+            if ($user->getToken()["expires"] <= time()) {
+                // if the user's token has expired, we need to ask for a refresh
+                // if the refresh is successful, then great, keep going.
+                // however, if not, then we need to either return an error asking the user
+                //    to log back in (if returning JSON) OR redirect them to the login page
+                //    (if returning HTML)
+
+                // startSNACSession will connect to the server and ask to start a session.  The server will
+                // reissue the session and extend the token expiration if the session does already exist.
+                $tmpUser = $executor->startSNACSession($user); 
+                if ($tmpUser !== false) {
+                    $user = $tmpUser;
+                    $_SESSION["snac_user"] = serialize($user);
                 } else {
-                    // We have no token to refresh, so the user needs to log in again.
-                    //$this->input["command"] = "login";
+                    $this->logger->addError("User was unable to restart session, but we allowed them through", array($user));
+                    // TODO in Version 1.2, this needs to actually redirect them to the login page or give an error
+                    // if they were actually trying to get a JSON response.
                 }
             }
             
             // Create the PHP User object
-            $user = $executor->createUser($ownerDetails, $token);
+            // $user = $executor->createUser($ownerDetails, $token);
             
             // Set the user information into the display object
             $display->setUserData($user->toArray());
@@ -195,11 +195,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
-
-            // We should save the refresh token, too
-            $refreshToken = $token->getRefreshToken();
-            if ($refreshToken != null)
-                $_SESSION["refresh_token"] = $refreshToken;
         
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
@@ -212,12 +207,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
             
             $tokenUnserialized = unserialize($_SESSION['token']);
             $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
+            // Create the PHP User object
             $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
             
-            // Create the PHP User object
-            $user = $executor->createUser($ownerDetails, $token);
-            
-            $executor->startSNACSession($user);
+            $tmpUser = $executor->startSNACSession($user);
+
+            if ($tmpUser !== false)
+                $user = $tmpUser;
+
+            $_SESSION['snac_user'] = serialize($user); 
 
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
@@ -231,6 +229,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Restart the session
             session_name("SNACWebUI");
             session_start();
+            $_SESSION = array();
         
             // Go to the homepage
             header('Location: index.php');
@@ -340,27 +339,4 @@ class WebUI implements \snac\interfaces\ServerInterface {
         );
     }
     
-    private function createUser($googleUser, $googleToken) {
-        $user = new \snac\data\User();
-        $avatar = $googleUser->getAvatar();
-        $avatarSmall = null;
-        $avatarLarge = null;
-        if ($avatar != null) {
-            $avatar = str_replace("?sz=50", "", $avatar);
-            $avatarSmall = $avatar . "?sz=20";
-            $avatarLarge = $avatar . "?sz=250";
-        }
-        $user->setAvatar($avatar);
-        $user->setAvatarSmall($avatarSmall);
-        $user->setAvatarLarge($avatarLarge);
-        $user->setEmail($googleUser->getEmail());
-        $user->setFirstName($googleUser->getFirstName());
-        $user->setFullName($googleUser->getName());
-        $user->setLastName($googleUser->getLastName());
-        $user->setToken($googleToken);
-        $user->setUserid($googleUser->getId());
-        
-        return $user;
-    }
- 
 }

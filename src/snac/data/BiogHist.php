@@ -39,6 +39,7 @@ class BiogHist extends AbstractData {
      *
      * Mostly this exists to call setMaxDateCount() to a reasonable number for this class.
      *
+     * @param string[] $data optional Array with data to populate this object
      */ 
     public function __construct($data = null) {
         $this->setMaxDateCount(0);
@@ -146,6 +147,8 @@ class BiogHist extends AbstractData {
      * {@inheritDoc}
      *
      * @param \snac\data\BiogHist $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
      *       
      * @see \snac\data\AbstractData::equals()
      */

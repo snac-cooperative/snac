@@ -207,6 +207,21 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $this->assertArrayHasKey("constellation", $response);
         $written = new \snac\data\Constellation($response["constellation"]);
         
+
+        $server = new Server( array(
+                "command" => "unlock_constellation",
+                "user" => $this->user->toArray(),
+                "constellation" => $written->toArray()
+        ));
+        $server->run();
+        $response = $server->getResponse();
+        $this->assertNotNull($response);
+        
+        $response = json_decode($response, true);
+        $this->assertEquals("success", $response["result"]);
+        $this->assertArrayHasKey("constellation", $response);
+        $unlocked = new \snac\data\Constellation($response["constellation"]);
+        
         
         $c2 = new \snac\data\Constellation($c->toArray());
         
@@ -215,8 +230,9 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($c2->equals($c), "Copy constellation is not equal");
 
         $this->assertTrue($written->equals($c, false), "Written copy is not equal to original");
+        $this->assertTrue($written->equals($unlocked, false), "Written copy is not equal to unlocked version");
         
-        return $written;
+        return $unlocked;
     }
     
     

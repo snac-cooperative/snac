@@ -513,11 +513,20 @@ class DBUser
      *
      * @return boolean True on success, else false.
      */ 
-    public function sessionExtend($user, $extend=3600)
+    public function sessionExtend(&$user, $extend=3600)
     {
-        return $this->sql->updateByExtendingSession($user->getUserID(),
+        $success = $this->sql->updateByExtendingSession($user->getUserID(),
                                                     $user->getToken()['access_token'],
                                                     $extend);
+        if ($success === false)
+            return false;
+
+        // Update the token for the user object
+        $user->setToken(array(
+            "access_token" => $user->getToken()["access_token"],
+            "expires" => $this->sql->selectSession($user->getUserID(),
+                                                   $user->getToken()["access_token"])));
+        return true;
     }
 
     /**

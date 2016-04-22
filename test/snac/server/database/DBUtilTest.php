@@ -75,8 +75,21 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     public function testWithStatus()
     {
+        // Make any previous ones published
         $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
-        $this->assertTrue(count($objList)>=1);
+        foreach ($objList as $c) {
+            $this->dbu->writeConstellationStatus($this->user, $c->getID(), "published");
+        }
+
+        // Write 6 copies of the constellation
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        for ($i = 1; $i <= 6; $i++)
+            $this->dbu->writeConstellation($this->user, $cObj, "TestWithStatus Database Test".$i);
+        
+        $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
+        $this->assertEquals(6, count($objList), "Should have 6 in locked editing for this user");
 
         if (count($objList) > 5)
         {
@@ -383,11 +396,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
         
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
-
-        /* 
-         * file_put_contents("dbutiltest_1.txt", print_r($retObj->toArray(), true));
-         * file_put_contents("dbutiltest_2.txt", print_r($readObj->toArray(), true));
-         */
         
         $this->assertTrue($readObj->equals($retObj, false), "Written constellation is not equal to next read version");
 
@@ -489,14 +497,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertTrue($retObj->equals($readObj, false));
         
-        /* 
-         * $this->assertEquals(984, substr_count( $firstJSON, "\n" ));
-         * $this->assertEquals(1035, substr_count( $secondJSON, "\n" ));
-         */
-
-        /*
-         * In the old days, lacking a JSON diff, we used a simple sanity check on the number of lines.
-         */
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
                                                      'test deleting a whole constellation');
