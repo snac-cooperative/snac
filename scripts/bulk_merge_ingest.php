@@ -2,7 +2,7 @@
 <?php
 
   /* 
-   * Database Connector Test File
+   * Load 1000 CPF files into the database to create a test environment.
    * 
    * Usage: bulk_merge_ingest.php /data/merge 2> bmi.log
    * 
@@ -54,7 +54,14 @@ function foo_main ()
     $dbu = new snac\server\database\DBUtil();
 
     list($appUserID, $role) = $dbu->getAppUserInfo('system');
+    if (! $appUserID || ! $role)
+    {
+        printf("Error: Missing userid or role. appUserID: %s role: %s\n", $appUserID, $role);
+        exit();
+    }
+
     printf("appUserID: %s role: %s\n", $appUserID, $role);
+
     
     // If no file was parsed, then print the output that something went wrong
     if ($argc < 2)
@@ -95,13 +102,36 @@ function foo_main ()
     // Doesn't work, seems to be an issue with nested function calls.
     // while ($short_file = readdir(opendir($argv[1])))
 
-    printf("Opening dir: $argv[1]\n");
-    $dh = opendir($argv[1]);
-    printf("Done.\n");
+    if (1)
+    {
+        printf("Opening dir: $argv[1]\n");
+        $dh = opendir($argv[1]);
+        printf("Done.\n");
+    }
+    else
+    {
+        /*
+         * This is no faster than readdir(), but may be a bit more clever. This does not return . or .. as
+         * file names.
+         */ 
+        $it = new FilesystemIterator($argv[1]);
+    }
+    /* 
+     * foreach ($it as $fileinfo) 
+     * {
+     *     echo $fileinfo->getFilename() . "\n";
+     * }
+     */
 
+    /*
+     * As of Jan 27 2016 the parser takes a long time (a second or more) to instantiate. Don't repeat that,
+     * and reuse a single instance. What could possibly go wrong?
+     */ 
+    $eparser = new \snac\util\EACCPFParser();
     $xx = 0;
     while ($short_file = readdir($dh))
     {
+        // $short_file = $fileInfo->getFilename();
         if ($short_file == '.' or $short_file == '..')
         {
             continue;
@@ -111,34 +141,43 @@ function foo_main ()
         {
             exit();
         }
-
+        
         // Create a full path file name
         $file = "$argv[1]/$short_file";
 
-        // Create new parser for this file and parse it
-        $eparser = new \snac\util\EACCPFParser();
+        // Parse the file using the existing parser instance.
         $constellationObj = $eparser->parseFile($file);
 
-        
         $unparsedTags = $eparser->getMissing();
+
+        /* 
+         * Default status is determined inside writeConstellation(). The default status is probably 'locked
+         * editing'.
+         *
+         * public static $OPERATION_INSERT = "insert";
+         * public static $OPERATION_UPDATE = "update";
+         * public static $OPERATION_DELETE = "delete";
+         * 
+         */
         if (empty($unparsedTags))
         {
-            $vhInfo = $dbu->insertConstellation($constellationObj, $appUserID, $role, 'bulk ingest', 'bulk ingest of merged');
+            $constellationObj=>setOperation();
+            $cObj = $dbu->writeConstellation($constellationObj, 'bulk ingest of merged via bulk_merge_ingest.php');
             check_vocabulary($constellationObj);
-            // $msg = sprintf("File $file ok. vhInfo: %s", var_export($vhInfo, 1));
-            $msg = sprintf("File $file ok.");
+            $msg = sprintf("$xx File $file ok.");
             quick_stderr($msg); // no terminal \n, the code will add that later
         }
         else
         {
-            // For each unparsable tag and attribute in the parsed EAC-CPF, print it out
-
-            // Print error messages to stderr, giving the user the option to io redirect to a separate log
-            // file.
+            /* 
+             * For each unparsable tag and attribute in the parsed EAC-CPF, print it out
+             * 
+             * Print error messages to stderr, giving the user the option to io redirect to a separate log
+             * file.
+             */
             foreach ($unparsedTags as $miss)
             {
                 quick_stderr($miss);
-                // fwrite($stderr,"  $miss\n");
             }
         }
     }

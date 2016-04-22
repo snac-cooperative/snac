@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Dashboard</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<link rel="stylesheet" href="css/snac.css">
+<script src="javascript/search.js"></script>
+
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(user) }}
+
+
+<div class="container snac" role="main">
+
+    <h1>Dashboard</h1>
+
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            <h3>Getting Started</h3>
+
+            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The first column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The second column gives quick access to view the most recently published Constellations on the SNAC prototype.</p>
+            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
+
+        
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Create New Constellation</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Use the button below to create a new constellation</p>
+                    <div class="list-group">
+                        <a href="?command=new" class="list-group-item list-group-item-success"><span class="glyphicon glyphicon-plus"></span> Create New Constellation</a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">In Progress Edits</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Continue where you left off on one of the following Constellations.</p>
+                    <div class="list-group">
+                        {% for link in data.editing %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Locked Edits</h3>
+                </div>
+                <div class="panel-body">
+                    <p>You have the following Constellations open in a browser for editing.  You may unlock them by clicking below, however your
+                    changes not previously saved may be lost.</p>
+                    <div class="list-group">
+                        {% for link in data.editing_lock %}
+                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panels that don't mean anything right now
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Needs Review</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Review and publish the following Constellations.</p>
+                    <div class="list-group">
+                        {% for link in data.reviewing %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">User Edit History</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Here is a list of your recent edits and submissions.</p>
+                    <div class="list-group">
+                        <a href="?command=edit" class="list-group-item">Oppenheimer, Robert J.</a>
+                        <a href="#" class="list-group-item">McFly, Martin J.</a>
+                        <a href="#" class="list-group-item">Simpson, Marge</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Special Records</h3>
+                </div>
+                <div class="panel-body">
+                    <p>These are special test records.</p>
+                    <div class="list-group">
+                        <a href="?command=edit&testid=1" class="list-group-item">Snac Test Record</a>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            
+            
+        <form class="form-horizontal" id="search_form" onsubmit="return false;">
+            <div class="well well-lg text-center">
+                    <input type="hidden" id="count" name="count" value="10">
+                    <input type="hidden" id="start" name="start" value="0">
+                    <div class="input-group">
+                        <input type="text" class="form-control"
+                            placeholder="Search for..." id="searchbox" name="term"> 
+                            <span class="input-group-btn">
+                                 <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                            </span>
+                    </div>
+                    
+                    <div id="search-results-box">
+                    </div>
+            </div>
+        </form>
+            
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">View Recently Published</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
+                    <div class="list-group">
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

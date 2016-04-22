@@ -1,10 +1,23 @@
 before_script:
-  - php composer.phar install
-  - cp ~/Config.php src/snac/Config.php
+    - cp ~/composer.phar .
+    - php composer.phar -n -q install
+    - cp ~/Config.php src/snac/Config.php
+    - rm -rf ~/public_html/snac_server
+    - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
+    - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
 
 stages:
+  - database
   - test
   - documentation
+
+update_database:
+  script:
+    - cd install && php install.php automate
+  stage: database
+  only:
+    - development
+    - master
 
 run_test:
   script:
@@ -12,10 +25,11 @@ run_test:
   stage: test
   only:
     - development
+    - master
 
 generate_docs:
   script:
-    - vendor/bin/phpdoc -d src/ -t doc/ -i src/snac/Config.php
+    - vendor/bin/phpdoc -d src/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
     - rsync -av doc/ /projects/snac_server/doc/
   stage: documentation
   only:

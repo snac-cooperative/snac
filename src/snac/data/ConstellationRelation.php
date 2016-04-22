@@ -15,7 +15,7 @@
 namespace snac\data;
 
 /**
- * Constellation Relationship
+ * Constellation Relationship.  See the abstract parent class for common methods setDBInfo() and getDBInfo().
  *
  * Data class to store the information about a relationship between Constellations
  *
@@ -25,16 +25,23 @@ namespace snac\data;
 class ConstellationRelation extends AbstractData {
 
     /**
+     * Source Constellation ID
+     * 
      * Postgres ID (source)
+     *
+     * Add commentary. Why is this necessary? This should be parent::getARK() and if that is true, we can get
+     * it at any time. 
      * 
      * @var int Source constellation ID
      */
     private $sourceConstellation = null;
 
     /**
+     * Target Constellation ID
+     * 
      * Postgres ID (target)
      * 
-     * @var int Target constellation ID[w
+     * @var int Target constellation ID
      */
     private $targetConstellation = null;
 
@@ -46,6 +53,8 @@ class ConstellationRelation extends AbstractData {
     private $sourceArkID = null;
 
     /**
+     * ArkID of the target
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@href
@@ -55,24 +64,30 @@ class ConstellationRelation extends AbstractData {
     private $targetArkID = null;
     
     /**
+     * Entity type of the target
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@role
      * 
-     * @var string Target entity type
+     * @var \snac\data\Term Target entity type
      */
     private $targetEntityType = null;
 
     /**
+     * Type of the relation
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@arcrole
      * 
-     * @var string Type of the constellation
+     * @var \snac\data\Term Type of the constellation
      */
     private $type = null;
 
     /**
+     * Alternate Type (unused)
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@type cpfRelation@xlink:type
@@ -80,20 +95,24 @@ class ConstellationRelation extends AbstractData {
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
      * 
-     * @var string Alternate type
+     * @var \snac\data\Term Alternate type
      */
     private $altType = null;
     
     /**
+     * Type of the relation
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/@cpfRelationType
      * 
-     * @var string CPF Relation Type
+     * @var \snac\data\Term CPF Relation Type
      */
     private $cpfRelationType = null;
 
     /**
+     * Content in the relation tag
+     * 
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/relationEntry
@@ -103,16 +122,10 @@ class ConstellationRelation extends AbstractData {
     private $content = null;
     
     /**
-     * From EAC-CPF tag(s):
+     * Descriptive Note
      * 
-     * * cpfRelation/date/*
-     * * cpfRelation/dateRange/*
+     * Descriptive note for the relation. 
      * 
-     * @var \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
-     */
-    private $dates = null;    
-    
-    /**
      * From EAC-CPF tag(s):
      * 
      * * cpfRelation/descriptiveNote
@@ -120,9 +133,19 @@ class ConstellationRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+    
+    /**
+     * Constructor
+     * 
+     * @param string[] $data optional An array of data to pre-fill this object
+     */
+    public function __construct($data = null) {
+        $this->setMaxDateCount(1);
+        parent::__construct($data);
+    }
 
     /**
-     * getter for $this->sourceConstellation
+     * Get the Source Constellation's ID 
      *
      * @return int Source constellation ID
      *
@@ -131,9 +154,21 @@ class ConstellationRelation extends AbstractData {
     {
         return $this->sourceConstellation;
     }
+
+    /**
+     * Set the Source Constellation's ID 
+     *
+     * @param int $sourceConstellation Source constellation ID
+     *
+     */
+    function setSourceConstellation($sourceConstellation)
+    {
+        $this->sourceConstellation = $sourceConstellation;
+    }
+
         
     /**
-     * getter for $this->targetConstellation
+     * Get the Target Constellation's ID 
      *
      * @return int Source constellation ID
      *
@@ -144,7 +179,9 @@ class ConstellationRelation extends AbstractData {
     }
             
     /**
-     * getter for $this->sourceArkID
+     * Get the Source Constellation's ARK ID
+     *
+     * Needs more commentary. Why does this exist instead of using parent::getARK()?
      *
      * @return string Source constellation ARK ID
      *
@@ -153,9 +190,21 @@ class ConstellationRelation extends AbstractData {
     {
         return $this->sourceArkID;
     }
-    
+
     /**
-     * getter for $this->targetArkID
+     * Set the Source Constellation's ARK ID
+     *
+     * Needs more commentary. Why does this exist instead of using parent::setARK()?
+     *
+     * @param string $sourceArkID Source constellation ARK ID
+     */
+    function setSourceArkID($sourceArkID)
+    {
+        $this->sourceArkID = $sourceArkID;
+    }
+
+    /**
+     * Get the Target Constellation's ARK ID 
      *
      * @return string Target constellation ARK ID
      *
@@ -166,11 +215,11 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->targetEntityType
+     * Get the Target Constellation's Entity Type 
      *
      * * cpfRelation/@role
      *
-     * @return string Target entity type
+     * @return \snac\data\Term Target entity type
      *
      */
     function getTargetEntityType()
@@ -179,11 +228,11 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->type
+     * Get the type of this relation (such as sameAs, correspondedWith, etc)
      *
      * * cpfRelation/@arcrole
      *
-     * @return string Type of the constellation
+     * @return \snac\data\Term Type of the constellation
      *
      */
     function getType()
@@ -192,15 +241,16 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->altType
-     *
+     * Get the xlink type. 
+     * 
+     * This should not be used, as xlink type should always be simple
      * 
      * * cpfRelation/@type cpfRelation@xlink:type
      *
      * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
      * serializing export.
      * 
-     * @return string Alternate type
+     * @return \snac\data\Term Alternate type
      *
      */
     function getAltType()
@@ -209,11 +259,15 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->cpfRelationType
+     * Get the secondary Relation type
+     * 
+     * ANF Used this as a second way of describing
+     * the normal relation type.  That is, "associative" for "associatedWith", and "temporal-after"
+     * for "isSucceededBy" 
      *
      * * cpfRelation/@cpfRelationType
      * 
-     * @return string CPF Relation Type
+     * @return \snac\data\Term CPF Relation Type
      *
      */
     function getCpfRelationType()
@@ -222,7 +276,7 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for $this->content
+     * Get the text/xml content of this relation 
      *
      * * cpfRelation/relationEntry
      * 
@@ -235,31 +289,9 @@ class ConstellationRelation extends AbstractData {
     }
 
     /**
-     * getter for NULL. Downstream foreach gets upset. When we expect an array, always return an array.
-     *
-     * * cpfRelation/date/*
-     * * cpfRelation/dateRange/*
+     * Get descriptive note
      * 
-     * @return \snac\data\SNACDate Dates of this relationship. A single SNACDate object.
-     *
-     */
-    function getDates()
-    {
-        // Don't return NULL. Downstream foreach gets upset. When we expect an array, always return an
-        // array. No dates is simply an empty array, but NULL implies that dates are conceptually not part of
-        // this universe.
-        if ($this->dates)
-        {
-            return $this->dates;
-        }
-        else
-        {
-            return array();
-        }
-    }
-
-    /**
-     * getter for $this->note
+     * Get the human readable descriptive note for this relation 
      *
      * * cpfRelation/descriptiveNote
      * 
@@ -284,14 +316,15 @@ class ConstellationRelation extends AbstractData {
             "targetConstellation" => $this->targetConstellation,
             "sourceArkID" => $this->sourceArkID,
             "targetArkID" => $this->targetArkID,
-            "targetEntityType" => $this->targetEntityType,
-            "type" => $this->type,
-            "altType" => $this->altType,
-            "cpfRelationType" => $this->cpfRelationType,
+            "targetEntityType" => $this->targetEntityType == null ? null : $this->targetEntityType->toArray($shorten),
+            "type" => $this->type == null ? null : $this->type->toArray($shorten),
+            "altType" => $this->altType == null ? null : $this->altType->toArray($shorten),
+            "cpfRelationType" => $this->cpfRelationType == null ? null : $this->cpfRelationType->toArray($shorten),
             "content" => $this->content,
-            "dates" => $this->dates == null ? null : $this->dates->toArray($shorten),
             "note" => $this->note
         );
+            
+        $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
         if ($shorten) {
@@ -316,43 +349,45 @@ class ConstellationRelation extends AbstractData {
         if (!isset($data["dataType"]) || $data["dataType"] != "ConstellationRelation")
             return false;
 
-        if (isset($data["sourceConstellation"]))
+        parent::fromArray($data);
+
+        if (isset($data["sourceConstellation"]) && $data["sourceConstellation"] != null)
             $this->sourceConstellation = $data["sourceConstellation"];
         else
             $this->sourceConstellation = null;
 
-        if (isset($data["targetConstellation"]))
+        if (isset($data["targetConstellation"]) && $data["targetConstellation"] != null)
             $this->targetConstellation = $data["targetConstellation"];
         else
             $this->targetConstellation = null;
 
-        if (isset($data["sourceArkID"]))
+        if (isset($data["sourceArkID"]) && $data["sourceArkID"] != null)
             $this->sourceArkID = $data["sourceArkID"];
         else
             $this->sourceArkID = null;
 
-        if (isset($data["targetArkID"]))
+        if (isset($data["targetArkID"]) && $data["targetArkID"] != null)
             $this->targetArkID = $data["targetArkID"];
         else
             $this->targetArkID = null;
 
-        if (isset($data["targetEntityType"]))
-            $this->targetEntityType = $data["targetEntityType"];
+        if (isset($data["targetEntityType"]) && $data["targetEntityType"] != null)
+            $this->targetEntityType = new \snac\data\Term($data["targetEntityType"]);
         else
             $this->targetEntityType = null;
 
-        if (isset($data["type"]))
-            $this->type = $data["type"];
+        if (isset($data["type"]) && $data["type"] != null)
+            $this->type = new \snac\data\Term($data["type"]);
         else
             $this->type = null;
 
-        if (isset($data["altType"]))
-            $this->altType = $data["altType"];
+        if (isset($data["altType"]) && $data["altType"] != null)
+            $this->altType = new \snac\data\Term($data["altType"]);
         else
             $this->altType = null;
 
-        if (isset($data["cpfRelationType"]))
-            $this->cpfRelationType = $data["cpfRelationType"];
+        if (isset($data["cpfRelationType"]) && $data["cpfRelationType"] != null)
+            $this->cpfRelationType = new \snac\data\Term($data["cpfRelationType"]);
         else
             $this->cpfRelationType = null;
 
@@ -360,11 +395,6 @@ class ConstellationRelation extends AbstractData {
             $this->content = $data["content"];
         else
             $this->content = null;
-
-        if (isset($data["dates"]))
-            $this->dates = new SNACDate($data["dates"]);
-        else
-            $this->dates = null;
 
         if (isset($data["note"]))
             $this->note = $data["note"];
@@ -396,17 +426,20 @@ class ConstellationRelation extends AbstractData {
     
     /**
      * Set the target entity type
+     *
+     * Feb 8 2016 renamed from setTargetType() to setTargetEntityType() in order to match the variable name,
+     * and to match getTargetEntityType().
      * 
-     * @param string $type Target's entity type
+     * @param \snac\data\Term $type Target's entity type
      */
-    public function setTargetType($type) {
+    public function setTargetEntityType($type) {
         $this->targetEntityType = $type;
     }
 
     /**
      * Set the relation type
      *
-     * @param string $type Type of the relation
+     * @param \snac\data\Term $type Type of the relation
      */
     public function setType($type) {
 
@@ -416,7 +449,7 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the CPF Relation type
      * 
-     * @param string $type CPF Relation Type
+     * @param \snac\data\Term $type CPF Relation Type
      */
     public function setCPFRelationType($type) {
         $this->cpfRelationType = $type;
@@ -425,7 +458,12 @@ class ConstellationRelation extends AbstractData {
     /**
      * Set the relation's alternate type
      *
-     * @param string $type Alternate type of the relation
+     * cpfRelation/@type cpfRelation@xlink:type
+     *
+     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+     * serializing export.
+     *
+     * @param \snac\data\Term $type Alternate type of the relation
      */
     public function setAltType($type) {
 
@@ -441,16 +479,6 @@ class ConstellationRelation extends AbstractData {
 
         $this->content = $content;
     }
-
-
-    /**
-     * Set the dates of this relation
-     * 
-     * @param \snac\data\SNACDate $date The date or range of this relation
-     */
-    public function setDates($date) {
-        $this->dates = $date;
-    }
     
     /**
      * Set the note for this constellation relation
@@ -460,5 +488,50 @@ class ConstellationRelation extends AbstractData {
     public function setNote($note) {
 
         $this->note = $note;
+    }
+
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\ConstellationRelation $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\ConstellationRelation))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+
+        if ($this->getSourceArkID() != $other->getSourceArkID() ||
+                $this->getTargetConstellation() != $other->getTargetConstellation() ||
+                $this->getTargetArkID() != $other->getTargetArkID() ||
+                $this->getContent() != $other->getContent() ||
+                $this->getNote() != $other->getNote())
+            return false;
+        
+        // If strict checking is off, then we might not have target or source constellation IDs.
+        if ($strict && ($this->getSourceConstellation() != $other->getSourceConstellation() ||
+                $this->getTargetConstellation() != $other->getTargetConstellation()))
+            return false;
+        
+        if (($this->getType() != null && !($this->getType()->equals($other->getType()))) ||
+                ($this->getType() == null && $other->getType() != null))
+            return false;
+                
+        if (($this->getAltType() != null && !($this->getAltType()->equals($other->getAltType()))) ||
+                ($this->getAltType() == null && $other->getAltType() != null))
+            return false;
+                
+        if (($this->getCpfRelationType() != null && !($this->getCpfRelationType()->equals($other->getCpfRelationType()))) ||
+                ($this->getCpfRelationType() == null && $other->getCpfRelationType() != null))
+            return false;
+
+        return true;
     }
 }

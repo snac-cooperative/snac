@@ -42,7 +42,7 @@ class DatabaseConnector {
      *
      * @param string $arg A php boolean of whatever type as long as it will test true or false.
      *
-     * 
+     * @return string Either 't or 'f', for use as boolean in Postgres SQL.
      */
     public static function boolToPg($arg)
     {
@@ -54,6 +54,28 @@ class DatabaseConnector {
         {
             return 'f';
         }
+    }
+
+    /**
+     * pg_execute() doesn't know to convert boolean to 't' and 'f' from Postgres to php true and false. We do it
+     * ourselves.
+     * 
+     * @param string $arg A php boolean of whatever type as long as it will test true or false.
+     *
+     * @return boolean Return php true or false.
+     */
+    public static function pgToBool($arg)
+    {
+        if ($arg == 't')
+        {
+            return true;
+        }
+        elseif ($arg == 'f')
+        {
+            return false;
+        }
+        // If we get down here, something is very wrong. Seems like this should be fatal.
+        printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
     }
 
     /**
@@ -78,7 +100,7 @@ class DatabaseConnector {
 
             // If the connection does not throw an exception, but the connector is false, then throw.
             if ($this->dbHandle === false) {
-                throw new Exception("Unable to connect to back-end database.");
+                throw new \Exception("Unable to connect to back-end database.");
             }
         } catch (Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out.
@@ -102,7 +124,7 @@ class DatabaseConnector {
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
-                throw new Exception("Database Prepare Error: " . $errorMessage);
+                throw new \Exception("Database Prepare Error: " . $errorMessage);
             }
         } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out
@@ -128,14 +150,14 @@ class DatabaseConnector {
             // Check for error
             if ($result === false) {
                 $errorMessage = \pg_last_error($this->dbHandle);
-                throw new Exception("Database Execute Error: " . $errorMessage);
+                throw new \Exception("Database Execute Error: " . $errorMessage);
             }
             
             $resultError = \pg_result_error($result);
             if ($resultError === false) {
-                throw new Exception("Database Execute Error: Could not return results -- malformed result");
+                throw new \Exception("Database Execute Error: Could not return results -- malformed result");
             } else if (!empty($resultError)) {
-                throw new Exception("Database Execute Error: " . $resultError);
+                throw new \Exception("Database Execute Error: " . $resultError);
             }
             
             return $result;
@@ -146,7 +168,10 @@ class DatabaseConnector {
     }
 
     /**
-     * Prepare and Execute a database statement
+     * Prepare and Execute a database statement. From the php docs on prepare(): [The first argument] stmtname
+     * may be "" to create an unnamed statement, in which case any pre-existing unnamed statement is
+     * automatically replaced; otherwise it is an error if the statement name is already defined in the
+     * current session.
      *
      * Handles both the prepare and execute stages.
      * 

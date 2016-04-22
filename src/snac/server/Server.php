@@ -39,13 +39,24 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     private $responseHeaders = array (
             "Content-Type: application/json"
-    );
+        );
+
+    /**
+     * Response Array
+     * @var string[] Response
+     */
+    private $response = array();
 
     /**
      *
      * @var int Timing information (ms)
      */
     private $timing = 0;
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
 
     /**
      * Constructor
@@ -55,9 +66,18 @@ class Server implements \snac\interfaces\ServerInterface {
      * @param array $input Input to the server
      */
     public function __construct($input) {
+        global $log;
 
         $this->input = $input;
         $this->timing = $_SERVER["REQUEST_TIME_FLOAT"];
+        $this->response = array(
+                "request" => $this->input,
+        );
+        
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('Server');
+        $this->logger->pushHandler($log);
     }
 
     /**
@@ -66,6 +86,94 @@ class Server implements \snac\interfaces\ServerInterface {
      * Starts the server
      */
     public function run() {
+
+        $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
+        // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
+        
+        if ($this->input == null || empty($this->input)) {
+            throw new \snac\exceptions\SNACInputException("No input given");
+        }
+        
+        
+        $db = new \snac\server\database\DBUtil();
+        
+        // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
+        $user = null;        
+        if (isset($this->input["user"])) {
+            $user = $this->input["user"];
+        }
+        
+
+        $executor = new \snac\server\ServerExecutor($user);
+        
+        // Uncomment the following to have authentication happen at each query.  Currently, we will only check
+        // authentication at login, so that we can ignore expiration of tokens.
+        //if (!$executor->authenticateUser($user)) {
+        //    throw new \snac\exceptions\SNACUserException("User is not authorized");
+        //}
+        
+
+        $this->logger->addDebug("Switching on user command");
+        
+        if (!isset($this->input["command"])) {                
+            throw new \snac\exceptions\SNACUnknownCommandException("No command given");
+            
+            
+        }
+
+        // Decide what to do based on the command given to the server
+        switch ($this->input["command"]) {
+
+
+            case "vocabulary":
+                $this->response = $executor->searchVocabulary($this->input);
+                break;
+                
+            case "reconcile":
+                break;
+                
+            case "start_session":
+                $this->response = $executor->startSession();
+                break;
+            
+            case "end_session":
+                $this->response = $executor->endSession();
+                
+            case "user_information":
+                $this->response = $executor->userInformation();
+                break;
+                
+            case "insert_constellation":
+                $this->response = $executor->writeConstellation($this->input);
+                break;
+            case "update_constellation":
+                $this->response = $executor->writeConstellation($this->input);
+                break;
+            
+            case "unlock_constellation":
+                $this->response = $executor->unlockConstellation($this->input);
+                break;
+                
+            case "publish_constellation":
+                $this->response = $executor->publishConstellation($this->input);
+                break;
+                
+            case "recently_published":
+                $this->response = $executor->getRecentlyPublished();
+                break;
+                
+            case "read":
+                $this->response = $executor->readConstellation($this->input);
+                break;
+                
+            case "edit":
+                $this->response = $executor->editConstellation($this->input);
+                break;
+                
+            default:
+                throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
+
+        }
 
         return;
     }
@@ -96,11 +204,7 @@ class Server implements \snac\interfaces\ServerInterface {
      */
     public function getResponse() {
         // TODO: Fill in body
-        $response = array (
-                "message" => "Successfully Queried",
-                "request" => $this->input,
-                "timing" => round((microtime(true) - $this->timing) * 1000, 2)
-        );
-        return json_encode($response, JSON_PRETTY_PRINT);
+        $this->response["timing"] =round((microtime(true) - $this->timing) * 1000, 2);
+        return json_encode($this->response, JSON_PRETTY_PRINT);
     }
 }

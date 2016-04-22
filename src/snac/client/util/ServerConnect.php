@@ -28,12 +28,20 @@ class ServerConnect {
      */
     private $serverURL;
 
+    private $logger = null;
+
     /**
      * Default constructor
      */
     public function __construct() {
+        global $log;
 
         $this->serverURL = \snac\Config::$INTERNAL_SERVERURL;
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('ServerConnect');
+        $this->logger->pushHandler($log);
+        
     }
 
     /**
@@ -47,7 +55,8 @@ class ServerConnect {
      *        back-end server
      */
     public function query($query) {
-        
+
+        $this->logger->addDebug("Sending the following server query", $query); 
         // Encode the query as json
         $data = json_encode($query);
         
@@ -64,8 +73,16 @@ class ServerConnect {
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $response = curl_exec($ch);
         curl_close($ch);
+
         
         // Return the server response as associative array
-        return json_decode($response, true);
+        $return = json_decode($response, true);
+        if ($return == null) {
+            $this->logger->addDebug("Got the following improper server response", array($response));
+            return $response;
+        }
+        
+        $this->logger->addDebug("Got the following server response", $return);
+        return $return;
     }
 }

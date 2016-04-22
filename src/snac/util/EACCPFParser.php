@@ -50,6 +50,67 @@ class EACCPFParser {
     private $unknowns;
 
     /**
+     * @var string $operation The operation to add to each element that is parsed
+     */
+    private $operation = null;
+
+    /**
+     * @var \snac\util\Vocabulary An object allowing the interaction with vocabulary terms from the
+     * database or another source.  It must provide the \snac\util\Vocabulary interface.
+     */
+    private $vocabulary;
+
+    /**
+     * Constructor. This reads all the vocab from the database, and therefore takes a second or two. You
+     * probably do not want multiple instances of this parser. Just create one instance and used it as a
+     * static class.
+     * 
+     * Order of operations to initialize is a bit unclear. The vocabulary can't exist until the data is
+     * parsed, so there must be some pre-parsing step. Generally, once the vocaulary table is populated, we
+     * keep using it, even if the database is reset.
+     *
+     * 
+     */ 
+    public function __construct() {
+        $this->vocabulary = null;
+    }
+
+    /**
+     * Set Vocabulary Source
+     *
+     * Use this method to change the vocabulary source. This is useful when testing to replace the vocabulary
+     * with a test version.
+     *
+     * @param \snac\util\Vocabulary $vocab A vocabulary to replace the object in this parser.
+     */
+    public function setVocabulary($vocab) {
+        $this->vocabulary = $vocab;
+    }
+
+    /**
+     * Use the Default Vocabulary
+     *
+     * Use this method to instantiate the default vocabulary.  This should be done if the vocabulary
+     * has never been overwritten by setVocabulary().
+     */
+    private function instantiateVocabulary() {
+        $this->vocabulary = new \snac\util\LocalVocabulary();
+    }
+
+    /**
+     * Set the Operation
+     *
+     * Set the operation for the entire constellation when parsing.  This sets the operation in every
+     * legal data structure (all except Term and GeoTerm) to be this operation.  If this method is not
+     * called, the resulting PHP Constellation object will have no operations.
+     *
+     * @param string $operation The operation to set
+     */
+    public function setConstellationOperation($operation) {
+        $this->operation = $operation;
+    }
+
+    /**
      * Parse a file into an identity constellation.
      *
      * @param string $filename Filename of the file to parse
@@ -62,6 +123,67 @@ class EACCPFParser {
         } catch (\Exception $e) {
             throw new \snac\exceptions\SNACParserException($e->getMessage());
         }
+    }
+
+    /**
+     * Create a Term object. Assume the vocab has already been initialized.
+     *
+     *  record_type, script_code, entity_type, event_type, name_type, occupation, language_code, gender,
+     *  nationality, maintenance_status, agent_type, document_role, document_type, function_type, function,
+     *  subject, date_type, relation_type, place_match, place_type, place_role, source_type
+     *
+     *  Contributor uses name_type. Find the type 'name_type' for contributor by querying the vocabulary
+     *  table. We know that a contributor type could be authorizedForm, therefore:
+     *
+     *  select * from vocabulary where value ilike '%authorizedform%';
+     *
+     * @param string $termString A string that can be found in the vocabulary
+     *
+     * @param string $vocab A vocabulary category such as "record_type", "language_code"
+     * 
+     * @return \snac\data\Term A Term object.
+     */
+    public function getTerm($termString, $vocab) {
+        if ($this->vocabulary == null)
+            $this->instantiateVocabulary();
+
+        $term = null;
+        if ($this->vocabulary != null) {
+            $term = $this->vocabulary->getTermByValue($termString, $vocab);
+        } else {
+            $term = new \snac\data\Term();
+            $term->setTerm($termString);   
+        }
+        return $term;
+    }
+    
+    /**
+     * Generate Display Name for Source
+     * 
+     * Generates a display name for a given source by inspecting the source and creating a name
+     * for this entity.  This will be stored in the database until updated by a human to create
+     * a more meaningful name.
+     * 
+     * @param \snac\data\Source $source Source object to create name for
+     * @param int $i optional The index into the source list
+     * @return string the display name
+     */
+    private function generateSourceDisplayName($source, $i = null) {
+        
+        $display = "";
+        
+        if ($i != null) {
+            $display .= "Source $i: ";
+        }
+        
+        if (stristr($source->getText(), "ead_entity"))
+            $display .= "EAD from ";
+        
+        if ($source->getURI() != null && $source->getURI() != "") {
+            $display .= $source->getURI();
+        }
+        
+        return $display; 
     }
 
     /**
@@ -78,6 +200,10 @@ class EACCPFParser {
       
         $this->unknowns = array ();
         $this->namespaces = $xml->getNamespaces(true);
+
+        $languageDeclaration = new \snac\data\Language();
+        
+        $sourceCounter = 1;
         
         foreach ($this->getChildren($xml) as $node) {
             if ($node->getName() == "control") {
@@ -87,7 +213,7 @@ class EACCPFParser {
                     switch ($control->getName()) {
                     case "recordId":
                         $identity->setArkID((string) $control);
-                        $this->arkID = $identity->toArray()['ark']; // Yes, toArray() and an index key all on one line.
+                        $this->arkID = (string) $control;
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -95,10 +221,15 @@ class EACCPFParser {
                             ), $catts);
                         break;
                     case "otherRecordId":
-                        $identity->addOtherRecordID($this->getValue($catts["localType"]), (string) $control);
+                        $term = $this->getTerm($this->getValue($catts["localType"]),"record_type");
+                        $sameas = new \snac\data\SameAs();
+                        $sameas->setType($term);
+                        $sameas->setURI((string) $control);
+                        $sameas->setOperation($this->operation);
+                        $identity->addOtherRecordID($sameas);
                         break;
                     case "maintenanceStatus":
-                        $identity->setMaintenanceStatus((string) $control);
+                        $identity->setMaintenanceStatus($this->getTerm((string) $control, "maintenance_status"));
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -138,7 +269,12 @@ class EACCPFParser {
                                     $code = $latts["languageCode"];
                                     unset($latts["languageCode"]);
                                 }
-                                $identity->setLanguage($code, (string) $lang);
+                                /*
+                                 * Set the language term globally
+                                 * Setting the language Term of a Language object.
+                                 */  
+                                $languageTerm = $this->getTerm($code, "language_code");
+                                $languageDeclaration->setLanguage($languageTerm);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -151,7 +287,13 @@ class EACCPFParser {
                                     $code = $latts["scriptCode"];
                                     unset($latts["scriptCode"]);
                                 }
-                                $identity->setScript($code, (string) $lang);
+
+                                /*
+                                 * Set the script term globally
+                                 * Setting the script Term of a Language object.
+                                 */ 
+                                $scriptTerm = $this->getTerm($code, "script_code");
+                                $languageDeclaration->setScript($scriptTerm);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -180,7 +322,7 @@ class EACCPFParser {
                                 $eatts = $this->getAttributes($mev);
                                 switch ($mev->getName()) {
                                 case "eventType":
-                                    $event->setEventType((string) $mev);
+                                    $event->setEventType($this->getTerm((string) $mev, "event_type"));
                                     break;
                                 case "eventDateTime":
                                     $event->setEventDateTime((string) $mev);
@@ -190,7 +332,7 @@ class EACCPFParser {
                                     }
                                     break;
                                 case "agentType":
-                                    $event->setAgentType((string) $mev);
+                                    $event->setAgentType($this->getTerm((string) $mev, "agent_type"));
                                     break;
                                 case "agent":
                                     $event->setAgent((string) $mev);
@@ -221,6 +363,7 @@ class EACCPFParser {
                                     $mevent->getName()
                                 ), $this->getAttributes($mevent));
                                 
+                            $event->setOperation($this->operation);
                             $identity->addMaintenanceEvent($event);
                         }
                         $this->markUnknownAtt(
@@ -230,7 +373,10 @@ class EACCPFParser {
                             ), $catts);
                         break;
                     case "conventionDeclaration":
-                        $identity->setConventionDeclaration((string) $control);
+                        $cd = new \snac\data\ConventionDeclaration();
+                        $cd->setText($control->asXML());
+                        $cd->setOperation($this->operation);
+                        $identity->addConventionDeclaration($cd);
                         $this->markUnknownAtt(
                             array (
                                 $node->getName(),
@@ -240,8 +386,31 @@ class EACCPFParser {
                     case "sources":
                         foreach ($this->getChildren($control) as $source) {
                             $satts = $this->getAttributes($source);
-                            $identity->addSource($this->getValue($satts['type']), $satts['href']);
-                            // TODO Need to handle the ObjectXMLWrap
+                            $sourceObj = new \snac\data\Source();
+                            if (isset($satts["type"])) {
+                                $sourceObj->setType($this->getTerm($this->getValue($satts['type']), "source_type"));
+                                unset($satts["type"]);
+                            }
+                            if (isset($satts["href"])) {
+                                $sourceObj->setURI($satts['href']);
+                                unset($satts["href"]);
+                            }
+                            foreach ($this->getChildren($source) as $innerSource) {
+                                if ($innerSource->getName() == "objectXMLWrap")
+                                    $sourceObj->setText($innerSource->asXML());
+                                else if ($innerSource->getName() == "descriptiveNote")
+                                    $sourceObj->setNote($innerSource->asXML());
+                                else
+                                    $this->markUnknownTag(
+                                        array (
+                                            $node->getName(),
+                                            $control->getName(),
+                                            $source->getName()
+                                        ), $innerSource);
+                            }
+                            $sourceObj->setDisplayName($this->generateSourceDisplayName($sourceObj, $sourceCounter++));
+                            $sourceObj->setOperation($this->operation);
+                            $identity->addSource($sourceObj);
                         }
                         break;
                     default:
@@ -265,10 +434,15 @@ class EACCPFParser {
                             $iatts = $this->getAttributes($ident);
                             switch ($ident->getName()) {
                             case "entityId":
-                                $identity->addOtherRecordID("entityId", (string) $ident);
+                                $term = $this->getTerm("entityID","record_type");
+                                $sameas = new \snac\data\SameAs();
+                                $sameas->setType($term);
+                                $sameas->setURI((string) $ident);
+                                $sameas->setOperation($this->operation);
+                                $identity->addOtherRecordID($sameas);
                                 break;
                             case "entityType":
-                                $identity->setEntityType((string) $ident);
+                                $identity->setEntityType($this->getTerm((string) $ident, "entity_type"));
                                 break;
                             case "nameEntry":
                                 $nameEntry = new \snac\data\NameEntry();
@@ -276,14 +450,20 @@ class EACCPFParser {
                                     $nameEntry->setPreferenceScore($iatts["preferenceScore"]);
                                     unset($iatts["preferenceScore"]);
                                 }
+                                $nameLanguage = new \snac\data\Language();
                                 if (isset($iatts["lang"])) {
-                                    $nameEntry->setLanguage($iatts["lang"]);
+                                    $nameLanguage->setLanguage($this->getTerm($iatts["lang"], "language_code"));
                                     unset($iatts["lang"]);
                                 }
                                 if (isset($iatts["scriptCode"])) {
-                                    $nameEntry->setScriptCode($iatts["scriptCode"]);
+                                    $nameLanguage->setScript($this->getTerm($iatts["scriptCode"], "script_code"));
                                     unset($iatts["scriptCode"]);
                                 }
+                                if (!$nameLanguage->isEmpty()) {
+                                    $nameLanguage->setOperation($this->operation);
+                                    $nameEntry->setLanguage($nameLanguage);
+                                }
+
                                 foreach ($this->getChildren($ident) as $npart) {
                                     switch ($npart->getName()) {
                                     case "part":
@@ -291,13 +471,17 @@ class EACCPFParser {
                                         break;
                                     case "alternativeForm":
                                     case "authorizedForm":
-                                        $nameEntry->addContributor($npart->getName(), (string) $npart);
+                                        $ctObj = new \snac\data\Contributor();
+                                        $ctObj->setType($this->getTerm($this->getValue($npart->getName()), 'name_type'));
+                                        $ctObj->setName((string) $npart);
+                                        $ctObj->setOperation($this->operation);
+                                        $nameEntry->addContributor($ctObj);
                                         break;
                                     case "useDates":
                                         foreach ($this->getChildren($npart) as $dateEntry) {
                                             if ($dateEntry->getName() == "dateRange" ||
                                                 $dateEntry->getName() == "date") {
-                                                $nameEntry->setUseDates(
+                                                $nameEntry->addDate(
                                                     $this->parseDate($dateEntry, 
                                                                      array (
                                                                          $node->getName(),
@@ -337,6 +521,7 @@ class EACCPFParser {
                                             $npart->getName()
                                         ), $this->getAttributes($npart));
                                 }
+                                $nameEntry->setOperation($this->operation);
                                 $identity->addNameEntry($nameEntry);
                                 break;
                             default:
@@ -375,7 +560,12 @@ class EACCPFParser {
                                                                              $desc2->getName(),
                                                                              $dates->getName()
                                                                          ));
-                                                $identity->addExistDates($date);
+                                                /* 
+                                                 * Old code: $identity->addExistDates($date);
+                                                 * Add a date object to the list of date objects for this constellation.
+                                                 */
+                                                $date->setOperation($this->operation);
+                                                $identity->addDate($date);
                                             } else {
                                                 $this->markUnknownTag(
                                                     array (
@@ -397,10 +587,41 @@ class EACCPFParser {
                                                                      $node->getName() . $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $identity->addExistDates($date);
+                                        $date->setOperation($this->operation);
+                                        $identity->addDate($date);
                                         break;
                                     case "descriptiveNote":
-                                        $identity->setExistDatesNote((string) $dates);
+                                        /*
+                                         *
+                                         * eac-cpf/cpfDescription/description/existDates/descriptiveNote
+                                         *
+                                         * Unclear intent of the original code.
+                                         *
+                                         * $identity->setExistDatesNote((string) $dates);
+                                         *
+                                         * $dates is an array SimpleXMLElement[], which is being typecast to a
+                                         * string. Whatever it does, we try to do the same thing with the new
+                                         * code.
+                                         *
+                                         * The original setExistDatesNote() from Constellation.php did this:
+                                         *
+                                         * $this->existDatesNote = $note;
+                                         *
+                                         * The original code clearly assumes only one date. Lets go with
+                                         * adding a note to the first date in the $identity Constellation
+                                         * object.
+                                         */ 
+                                        if ($firstDate = $identity->getDateList()[0])
+                                        {
+                                            $firstDate->setNote((string) $dates);
+                                        }
+                                        else
+                                        {
+                                            $message = sprintf("Warning: exists date note, but no exists date: %s\n", $this->arkID);
+                                            $stderr = fopen('php://stderr', 'w');
+                                            fwrite($stderr,"  $message\n");
+                                            fclose($stderr); 
+                                        }
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -423,17 +644,19 @@ class EACCPFParser {
                                 }
                                 break;
                             case "place":
+                                // Create a list of places to acrete
+                                $newPlaces = array();
                                 $place = new \snac\data\Place();
                                 $platts = $this->getAttributes($desc2);
                                 if (isset($platts["localType"])) {
-                                    $place->setType($this->getValue($platts["localType"]));
+                                    $place->setType($this->getTerm($this->getValue($platts["localType"]), "place_type"));
                                     unset($platts["localType"]);
                                 }
                                 foreach ($this->getChildren($desc2) as $placePart) {
                                     switch ($placePart->getName()) {
                                     case "date":
                                     case "dateRange":
-                                        $place->setDateRange(
+                                        $place->addDate(
                                             $this->parseDate($placePart, 
                                                              array (
                                                                  $node->getName(),
@@ -452,7 +675,7 @@ class EACCPFParser {
                                             ), $this->getAttributes($placePart));
                                         break;
                                     case "placeRole":
-                                        $place->setRole((string) $placePart);
+                                        $place->setRole($this->getTerm((string) $placePart, "place_role"));
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -462,13 +685,17 @@ class EACCPFParser {
                                             ), $this->getAttributes($placePart));
                                         break;
                                     case "placeEntry":
-                                        $place->addPlaceEntry(
-                                            $this->parsePlaceEntry($placePart, 
+                                        // placeEntry is now the new Place.  So we need to gather each of these
+                                        // individually, take everything from the place tag and add it to the
+                                        // Place objects created by the placeEntry tags, then add those Places
+                                        // to the identity constellation
+                                        array_push($newPlaces, $this->parsePlaceEntry($placePart, 
                                                                    array (
                                                                        $node->getName(),
                                                                        $desc->getName(),
                                                                        $desc2->getName()
                                                                    )));
+                                        
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -482,14 +709,28 @@ class EACCPFParser {
                                             ));
                                     }
                                 }
-                                $identity->addPlace($place);
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
                                         $desc->getName(),
                                         $desc2->getName()
                                     ), $platts);
+                                
+                                // Go through each placeEntry found and add the Place to the IC with
+                                // all the information from the <place> tag appended.
+                                foreach ($newPlaces as $newPlace) {
+                                    $newPlace->setType($place->getType());
+                                    foreach ($place->getDateList() as $date) {
+                                        $newPlace->addDate(clone($date));
+                                    }
+                                    $newPlace->setNote($place->getNote());
+                                    $newPlace->setRole($place->getRole());
+                                    $newPlace->setOperation($this->operation);
+                                    $identity->addPlace($newPlace);
+                                }
+                                
                                 break;
+                                
                             case "localDescription":
                                 $subTags = $this->getChildren($desc2);
                                 $subTag = $subTags[0];
@@ -507,13 +748,24 @@ class EACCPFParser {
                                 switch ($d2atts["localType"]) {
                                     // Each of these is in a sub element
                                 case "http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject":
-                                    $identity->addSubject((string) $subTag);
+                                    $subject = new \snac\data\Subject();
+                                    $subject->setTerm($this->getTerm((string) $subTag, "subject"));
+                                    $subject->setOperation($this->operation);
+                                    $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
-                                    $identity->setNationality((string) $subTag);
+                                    //TODO Sometimes nationality has non-standard placeEntry with only country code
+                                    $term = $this->getTerm((string) $subTag, "nationality");
+                                    $nationality = new \snac\data\Nationality();
+                                    $nationality->setTerm($term);
+                                    $nationality->setOperation($this->operation);
+                                    $identity->addNationality($nationality);
                                     break;
                                 case "http://viaf.org/viaf/terms#gender":
-                                    $identity->setGender($this->getValue((string) $subTag));
+                                    $gender = new \snac\data\Gender();
+                                    $gender->setTerm($this->getTerm($this->getValue((string) $subTag), "gender"));
+                                    $gender->setOperation($this->operation);
+                                    $identity->addGender($gender);
                                     break;
                                 default:
                                     $this->markUnknownTag(
@@ -527,6 +779,12 @@ class EACCPFParser {
                                 }
                                 break;
                             case "languageUsed":
+                                /*
+                                 * The test example test1.xml doesn't have langaugeUsed, only languageDeclaration, yet
+                                 * the test code clearly used to pass constellation langauge tests. How was that possible?
+                                 */ 
+                                $language = new \snac\data\Language();
+                                $updatedLanguage = false;
                                 foreach ($this->getChildren($desc2) as $lang) {
                                     $latts = $this->getAttributes($lang);
                                     switch ($lang->getName()) {
@@ -535,7 +793,9 @@ class EACCPFParser {
                                             $code = $latts["languageCode"];
                                             unset($latts["languageCode"]);
                                         }
-                                        $identity->setLanguageUsed($code, (string) $lang);
+                                        $tmp = $this->getTerm($code, "language_code");
+                                        $language->setLanguage($tmp);
+                                        $updatedLanguage = true;
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -549,7 +809,9 @@ class EACCPFParser {
                                             $code = $latts["scriptCode"];
                                             unset($latts["scriptCode"]);
                                         }
-                                        $identity->setScript($code, (string) $lang);
+                                        $tmp = $this->getTerm($code, "script_code");
+                                        $language->setScript($tmp);
+                                        $updatedLanguage = true;
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -567,6 +829,10 @@ class EACCPFParser {
                                             ), $lang);
                                     }
                                 }
+                                if ($updatedLanguage) {
+                                    $language->setOperation($this->operation);
+                                    $identity->addLanguageUsed($language);
+                                }
                                 $this->markUnknownAtt(
                                     array (
                                         $node->getName(),
@@ -575,18 +841,20 @@ class EACCPFParser {
                                     ), $d2atts);
                                 break;
                             case "generalContext":
-                                $identity->setGeneralContext($desc2->asXML());
+                                $gc = new \snac\data\GeneralContext();
+                                $gc->setText($desc2->asXML());
+                                $gc->setOperation($this->operation);
+                                $identity->addGeneralContext($gc);
                                 break;
                             case "legalStatus":
-                                $legalTerm = null;
-                                $legalVocab = null;
+                                $legalStatusTerm = null;
                                 foreach ($this->getChildren($desc2) as $legal) {
                                     $legalAtts = $this->getAttributes($legal);
                                     switch ($legal->getName()) {
                                     case "term":
-                                        $legalTerm = (string) $legal;
+                                        $legalStatusTerm = $this->getTerm((string) $legal, "legal_status");
                                         if (isset($legalAtts["vocabularySource"])) {
-                                            $legalVocab = $legalAtts["vocabularySource"];
+                                            $legalStatusTerm->setURI($legalAtts["vocabularySource"]);
                                             unset($legalAtts["vocabularySource"]);
                                         }
                                         break;
@@ -609,14 +877,24 @@ class EACCPFParser {
                                             $legal->getName()
                                         ), $legalAtts);
                                 }
-                                $identity->addLegalStatus($legalTerm, $legalVocab);
+                                if ($legalStatusTerm != null && !$legalStatusTerm->isEmpty()) {
+                                    $legalStatus = new \snac\data\LegalStatus();
+                                    $legalStatus->setTerm($legalStatusTerm);
+                                    $legalStatus->setOperation($this->operation);
+                                    $identity->addLegalStatus($legalStatus);
+                                }
                                 break;
                             case "mandate":
-                                // These are only seen in ANF, and they always have only a descriptiveNote
-                                $identity->setMandate($desc2->asXML());
+                                $mandate = new \snac\data\Mandate();
+                                $mandate->setText($desc2->asXML());
+                                $mandate->setOperation($this->operation);
+                                $identity->addMandate($mandate);
                                 break;
                             case "structureOrGenealogy":
-                                $identity->setStructureOrGenealogy($desc2->asXML());
+                                $sog = new \snac\data\StructureOrGenealogy();
+                                $sog->setText($desc2->asXML());
+                                $sog->setOperation($this->operation);
+                                $identity->addStructureOrGenealogy($sog);
                                 break;
                             case "occupation":
                                 $occupation = new \snac\data\Occupation();
@@ -624,7 +902,7 @@ class EACCPFParser {
                                     $oatts = $this->getAttributes($occ);
                                     switch ($occ->getName()) {
                                     case "term":
-                                        $occupation->setTerm((string) $occ);
+                                        $occupation->setTerm($this->getTerm((string) $occ, "occupation"));
                                         if (isset($oatts["vocabularySource"])) {
                                             $occupation->setVocabularySource($oatts["vocabularySource"]);
                                             unset($oatts["vocabularySource"]);
@@ -640,7 +918,12 @@ class EACCPFParser {
                                                                      $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $occupation->setDateRange($date);
+                                        /*
+                                         * Occupation extends AbstractData which has a date list.
+                                         *
+                                         * change setDateRange() to addDate()
+                                         */ 
+                                        $occupation->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -661,6 +944,7 @@ class EACCPFParser {
                                             $occ->getName()
                                         ), $oatts);
                                 }
+                                $occupation->setOperation($this->operation);
                                 $identity->addOccupation($occupation);
                                 $this->markUnknownAtt(
                                     array (
@@ -675,7 +959,7 @@ class EACCPFParser {
                                     $fatts = $this->getAttributes($fun);
                                     switch ($fun->getName()) {
                                     case "term":
-                                        $function->setTerm((string) $fun);
+                                        $function->setTerm($this->getTerm((string) $fun, "function"));
                                         if (isset($fatts["vocabularySource"])) {
                                             $function->setVocabularySource($fatts["vocabularySource"]);
                                             unset($fatts["vocabularySource"]);
@@ -691,7 +975,12 @@ class EACCPFParser {
                                                                      $desc->getName(),
                                                                      $desc2->getName()
                                                                  ));
-                                        $function->setDateRange($date);
+                                        /*
+                                         * Function extends AbstractData which has a date list.
+                                         *
+                                         * change setDateRange() to addDate()
+                                         */ 
+                                        $function->addDate($date);
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -714,9 +1003,10 @@ class EACCPFParser {
                                 }
                                 $fatts = $this->getAttributes($desc2);
                                 if (isset($fatts["localType"])) {
-                                    $function->setType($fatts["localType"]);
+                                    $function->setType(new \snac\data\Term($fatts["localType"]));
                                     unset($fatts["localType"]);
                                 }
+                                $function->setOperation($this->operation);
                                 $identity->addFunction($function);
                                 $this->markUnknownAtt(
                                     array (
@@ -726,7 +1016,15 @@ class EACCPFParser {
                                     ), $fatts);
                                 break;
                             case "biogHist":
-                                $identity->addBiogHist($desc2->asXML());
+                                $bh = new \snac\data\BiogHist();
+                                $bh->setText($desc2->asXML());
+                                /*
+                                 * Is it correct to set the language of the biogHist to the <languageDeclaration> element?
+                                 */ 
+                                $languageDeclaration->setOperation($this->operation);
+                                $bh->setLanguage($languageDeclaration);
+                                $bh->setOperation($this->operation);
+                                $identity->addBiogHist($bh);
                                 break;
                             default:
                                 $this->markUnknownTag(
@@ -757,81 +1055,154 @@ class EACCPFParser {
                             }
                             switch ($rel->getName()) {
                             case "cpfRelation":
-                                $relation = new \snac\data\ConstellationRelation();
-                                $relation->setType($this->getValue($ratts["arcrole"]));
-                                $relation->setTargetArkID($ratts['href']);
-                                $relation->setTargetType($this->getValue($ratts['role']));
-                                $relation->setAltType($this->getValue($ratts["type"]));
-                                if (isset($ratts['cpfRelationType'])) {
-                                    $relation->setCPFRelationType($ratts['cpfRelationType']);
-                                    unset($ratts["cpfRelationType"]);
-                                }
-                                unset($ratts["arcrole"]);
-                                unset($ratts["href"]);
-                                unset($ratts["role"]);
-                                unset($ratts["type"]);
-                                $children = $this->getChildren($rel);
-                                if (! empty($children)) {
-                                    $relation->setContent((string) $children[0]);
-                                }
-                                foreach ($children as $child) {
-                                    switch ($child->getName()) {
-                                    case "relationEntry":
-                                        $relation->setContent((string) $child);
-                                        break;
-                                    case "date":
-                                    case "dateRange":
-                                        $relation->setDates(
-                                            $this->parseDate($child, 
-                                                             array (
-                                                                 $node->getName(),
-                                                                 $desc->getName(),
-                                                                 $rel->getName()
-                                                             )));
-                                        break;
-                                    case "descriptiveNote":
-                                        $relation->setNote($child->asXML());
-                                        $this->markUnknownAtt(
-                                            array (
-                                                $node->getName(),
-                                                $desc->getName(),
-                                                $rel->getName(),
-                                                $child->getName()
-                                            ), $this->getAttributes($child));
-                                        break;
-                                    default:
-                                        $this->markUnknownTag(
-                                            array (
-                                                $node->getName(),
-                                                $desc->getName(),
-                                                $rel->getName()
-                                            ), 
-                                            array (
-                                                $child
-                                            ));
+                                
+                                // If this is a sameAs, we need to treat it differently:
+                                if ($this->getValue($ratts["arcrole"]) == "sameAs") {
+                                    $sameas = new \snac\data\SameAs();
+                                    $sameas->setURI($ratts['href']);
+                                    $sameas->setType($this->getTerm($this->getValue($ratts["arcrole"]), "record_type"));
+                                    unset($ratts["arcrole"]);
+                                    unset($ratts["href"]);
+                                    unset($ratts["role"]);
+                                    unset($ratts["type"]);
+                                    
+                                    $children = $this->getChildren($rel);
+                                    if (! empty($children)) {
+                                        $sameas->setText((string) $children[0]);
                                     }
+                                    foreach ($children as $child) {
+                                        switch ($child->getName()) {
+                                            case "relationEntry":
+                                                $sameas->setText((string) $child);
+                                                break;
+                                            case "date":
+                                            case "dateRange":
+                                                // SameAs cannot have dates
+                                                break;
+                                            case "descriptiveNote":
+                                                $scm = new \snac\data\SNACControlMetadata();
+                                                $scm->setSourceData($child->asXML());
+                                                $scm->setNote("Descriptive note parsed from EAC-CPF");
+                                                $scm->setOperation($this->operation);
+                                                $sameas->addSNACControlMetadata($scm);
+                                                $this->markUnknownAtt(
+                                                        array (
+                                                                $node->getName(),
+                                                                $desc->getName(),
+                                                                $rel->getName(),
+                                                                $child->getName()
+                                                        ), $this->getAttributes($child));
+                                                break;
+                                            default:
+                                                $this->markUnknownTag(
+                                                    array (
+                                                        $node->getName(),
+                                                        $desc->getName(),
+                                                        $rel->getName()
+                                                    ),
+                                                    array (
+                                                        $child
+                                                    ));
+                                        }
+                                    }
+                                    $this->markUnknownAtt(
+                                            array (
+                                                    $node->getName(),
+                                                    $desc->getName(),
+                                                    $rel->getName()
+                                            ), $ratts);
+                                    $sameas->setOperation($this->operation);
+                                    $identity->addOtherRecordID($sameas);
+                                } else { // real relation
+                                        
+                                    $relation = new \snac\data\ConstellationRelation();
+                                    
+                                    $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
+                                    $relation->setSourceArkID($identity->getArk());
+                                    $relation->setTargetArkID($ratts['href']);
+                                    $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+                                    /*
+                                     * cpfRelation/@type cpfRelation@xlink:type
+                                     *
+                                     * The only value this ever has is "simple". Daniel says not to save it, and implicitly hard code when
+                                     * serializing export.
+                                     */
+                                    $relation->setAltType($this->getTerm($this->getValue($ratts["type"]), "relation_type"));
+                                    if (isset($ratts['cpfRelationType'])) {
+                                        $relation->setCPFRelationType($this->getTerm($ratts['cpfRelationType'], "relation_type"));
+                                        unset($ratts["cpfRelationType"]);
+                                    }
+                                    unset($ratts["arcrole"]);
+                                    unset($ratts["href"]);
+                                    unset($ratts["role"]);
+                                    unset($ratts["type"]);
+                                    $children = $this->getChildren($rel);
+                                    if (! empty($children)) {
+                                        $relation->setContent((string) $children[0]);
+                                    }
+                                    foreach ($children as $child) {
+                                        switch ($child->getName()) {
+                                        case "relationEntry":
+                                            $relation->setContent((string) $child);
+                                            break;
+                                        case "date":
+                                        case "dateRange":
+                                            /*
+                                             * setDates() changed to addDate()
+                                             */ 
+                                            $relation->addDate(
+                                                $this->parseDate($child, 
+                                                                 array (
+                                                                     $node->getName(),
+                                                                     $desc->getName(),
+                                                                     $rel->getName()
+                                                                 )));
+                                            break;
+                                        case "descriptiveNote":
+                                            $relation->setNote($child->asXML());
+                                            $this->markUnknownAtt(
+                                                array (
+                                                    $node->getName(),
+                                                    $desc->getName(),
+                                                    $rel->getName(),
+                                                    $child->getName()
+                                                ), $this->getAttributes($child));
+                                            break;
+                                        default:
+                                            $this->markUnknownTag(
+                                                array (
+                                                    $node->getName(),
+                                                    $desc->getName(),
+                                                    $rel->getName()
+                                                ), 
+                                                array (
+                                                    $child
+                                                ));
+                                        }
+                                    }
+                                    $this->markUnknownAtt(
+                                        array (
+                                            $node->getName(),
+                                            $desc->getName(),
+                                            $rel->getName()
+                                        ), $ratts);
+                                    $relation->setOperation($this->operation);
+                                    $identity->addRelation($relation);
                                 }
-                                $this->markUnknownAtt(
-                                    array (
-                                        $node->getName(),
-                                        $desc->getName(),
-                                        $rel->getName()
-                                    ), $ratts);
-                                $identity->addRelation($relation);
                                 break;
                             case "resourceRelation":
                                 $relation = new \snac\data\ResourceRelation();
-                                $relation->setDocumentType($this->getValue($ratts["role"]));
+                                $relation->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
                                 $relation->setLink($ratts['href']);
-                                $relation->setLinkType($this->getValue($ratts['type']));
-                                $relation->setRole($this->getValue($ratts['arcrole']));
+                                $relation->setLinkType($this->getTerm($this->getValue($ratts['type']), "document_type"));
+                                $relation->setRole($this->getTerm($this->getValue($ratts['arcrole']), "document_role"));
                                 foreach ($this->getChildren($rel) as $relItem) {
                                     switch ($relItem->getName()) {
                                     case "relationEntry":
                                         $relation->setContent((string) $relItem);
                                         $relAtts = $this->getAttributes($relItem);
                                         if (isset($relAtts["localType"])) {
-                                            $relation->setRelationEntryType($this->getValue($relAtts["localType"]));
+                                            $relation->setRelationEntryType($this->getTerm($this->getValue($relAtts["localType"]), "relation_type"));
                                             unset($relAtts["localType"]);
                                         }
                                         $this->markUnknownAtt(
@@ -874,6 +1245,7 @@ class EACCPFParser {
                                             ));
                                     }
                                 }
+                                $relation->setOperation($this->operation);
                                 $identity->addResourceRelation($relation);
                                 break;
                             default:
@@ -904,6 +1276,7 @@ class EACCPFParser {
                 ));
             }
         }
+        $identity->setOperation($this->operation);
         return $identity;
     }
 
@@ -1062,11 +1435,32 @@ class EACCPFParser {
             // Handle the date range
             $date->setRange(true);
             foreach ($this->getChildren($dateElement) as $dateTag) {
+                /* 
+                 *   File /data/merge/99166-w62r7n84.xml ok.
+                 * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1255
+                 * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1279
+                 */
+
+                /* 
+                 * File /data/merge/99166-w6163116.xml ok.
+                 * PHP Notice:  Undefined index: localType in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1256
+                 */
+
                 $dateAtts = $this->getAttributes($dateTag);
                 switch ($dateTag->getName()) {
                 case "fromDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setFromDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $dateType = null;
+                        if (isset($dateAtts["localType"]))
+                            $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+
+                        if (! isset($dateAtts['standardDate']))
+                        {
+                            $dateAtts['standardDate'] = '';   
+                        }
+                        $date->setFromDate((string) $dateTag, 
+                                           $dateAtts["standardDate"], 
+                                           $dateType);
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1089,7 +1483,16 @@ class EACCPFParser {
                     break;
                 case "toDate":
                     if (((string) $dateTag) != null && ((string) $dateTag) != '') {
-                        $date->setToDate((string) $dateTag, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+                        $dateType = null;
+                        if (isset($dateAtts["localType"]))
+                            $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                        if (! isset($dateAtts['standardDate']))
+                        {
+                            $dateAtts['standardDate'] = '';   
+                        }
+                        $date->setToDate((string) $dateTag, 
+                                $dateAtts["standardDate"], 
+                                $dateType);
                         $notBefore = null;
                         $notAfter = null;
                         if (isset($dateAtts["notBefore"]))
@@ -1132,7 +1535,13 @@ class EACCPFParser {
                 // Handle the single date that appears
                 $date->setRange(false);
                 $dateAtts = $this->getAttributes($dateElement);
-                $date->setDate((string) $dateElement, $dateAtts["standardDate"], $this->getValue($dateAtts["localType"]));
+
+                $dateType = null;
+                if (isset($dateAtts["localType"]))
+                    $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
+                $date->setDate((string) $dateElement, 
+                        $dateAtts["standardDate"], 
+                        $dateType);
                 $notBefore = null;
                 $notAfter = null;
                 if (isset($dateAtts["notBefore"]))
@@ -1154,20 +1563,26 @@ class EACCPFParser {
             else
             {
                 /* Silently make dates with no standard date only partial complete.
+                 *
+                 * Arg 3 is type which is Term object
                  * 
                  * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
                  * $stderr = fopen('php://stderr', 'w');
                  * fwrite($stderr,"  $message\n");
                  * fclose($stderr); 
+                 * 
+                 * 
+                 * 
                  */
-                $date->setDate((string) $dateElement, '', '');
+                $date->setDate((string) $dateElement, '', null);
             }
         }
+        $date->setOperation($this->operation);
         return $date;
     }
 
     /**
-     * Parse a place entry XML tag into a \snac\data\PlaceEntry object.
+     * Parse a place entry XML tag into a \snac\data\Place object.
      * This is a recursively called function, since
      * some placeEntry tags are nested. The best example is the snac:placeEntry tag, which may include the following
      * placeEntry tag variants:
@@ -1181,39 +1596,48 @@ class EACCPFParser {
      *
      * @param \SimpleXMLElement $placeTag Place element to parse
      * @param string[] $xpath all pieces of the xpath leading up to the $placeTag element
-     * @return \snac\data\PlaceEntry resulting object
+     * @return \snac\data\Place resulting Place object
      */
     private function parsePlaceEntry($placeTag, $xpath) {
 
         $plAtts = $this->getAttributes($placeTag);
-        $placeEntry = new \snac\data\PlaceEntry();
+        $place = new \snac\data\Place();
+        $geoTerm = new \snac\data\GeoTerm();
+        
+        $geoInfoSet = false;
+        $score = 0;
         
         if (isset($plAtts["latitude"])) {
-            $placeEntry->setLatitude($plAtts["latitude"]);
+            $geoInfoSet = true;
+            $geoTerm->setLatitude($plAtts["latitude"]);
             unset($plAtts["latitude"]);
         }
         if (isset($plAtts["longitude"])) {
-            $placeEntry->setLongitude($plAtts["longitude"]);
+            $geoInfoSet = true;
+            $geoTerm->setLongitude($plAtts["longitude"]);
             unset($plAtts["longitude"]);
         }
         if (isset($plAtts["localType"])) {
-            $placeEntry->setType($plAtts["localType"]);
+            $place->setType($this->getTerm($plAtts["localType"], "place_type"));
             unset($plAtts["localType"]);
         }
         if (isset($plAtts["administrationCode"])) {
-            $placeEntry->setAdministrationCode($plAtts["administrationCode"]);
+            $geoInfoSet = true;
+            $geoTerm->setAdministrationCode($plAtts["administrationCode"]);
             unset($plAtts["administrationCode"]);
         }
         if (isset($plAtts["countryCode"])) {
-            $placeEntry->setCountryCode($plAtts["countryCode"]);
+            $geoInfoSet = true;
+            $geoTerm->setCountryCode($plAtts["countryCode"]);
             unset($plAtts["countryCode"]);
         }
         if (isset($plAtts["vocabularySource"])) {
-            $placeEntry->setVocabularySource($plAtts["vocabularySource"]);
+            $geoInfoSet = true;
+            $geoTerm->setVocabularySource($plAtts["vocabularySource"]);
             unset($plAtts["vocabularySource"]);
         }
         if (isset($plAtts["certaintyScore"])) {
-            $placeEntry->setCertaintyScore($plAtts["certaintyScore"]);
+            $score = $plAtts["certaintyScore"];
             unset($plAtts["certaintyScore"]);
         }
         $this->markUnknownAtt(array_merge($xpath, array (
@@ -1222,29 +1646,63 @@ class EACCPFParser {
         
         // Set the original string. If this is a snac:placeEntry, it will be empty, but there will be a sub-placeEntry
         // that will be found below to overwrite the original string
-        $placeEntry->setOriginal((string) $placeTag);
+        $place->setOriginal((string) $placeTag);
         
+        // Look for the children, check for a snac:placeEntryBestMaybeSame or snac:placeEntryLikelySame
         foreach ($this->getChildren($placeTag) as $child) {
             switch ($child->getName()) {
                 case "placeEntryBestMaybeSame":
                 case "placeEntryLikelySame":
-                    $placeEntry->setBestMatch(
-                            $this->parsePlaceEntry($child, 
-                                    array_merge($xpath, 
-                                            array (
-                                                    $placeTag->getName()
-                                            ))));
+                    // Use this as the GeoTerm for this object!
+                    $plAtts = $this->getAttributes($child);
+                    
+                    if (isset($plAtts["latitude"])) {
+                        $geoInfoSet = true;
+                        $geoTerm->setLatitude($plAtts["latitude"]);
+                        unset($plAtts["latitude"]);
+                    }
+                    if (isset($plAtts["longitude"])) {
+                        $geoInfoSet = true;
+                        $geoTerm->setLongitude($plAtts["longitude"]);
+                        unset($plAtts["longitude"]);
+                    }
+                    if (isset($plAtts["administrationCode"])) {
+                        $geoInfoSet = true;
+                        $geoTerm->setAdministrationCode($plAtts["administrationCode"]);
+                        unset($plAtts["administrationCode"]);
+                    }
+                    if (isset($plAtts["countryCode"])) {
+                        $geoInfoSet = true;
+                        $geoTerm->setCountryCode($plAtts["countryCode"]);
+                        unset($plAtts["countryCode"]);
+                    }
+                    if (isset($plAtts["vocabularySource"])) {
+                        $geoInfoSet = true;
+                        $geoTerm->setVocabularySource($plAtts["vocabularySource"]);
+                        unset($plAtts["vocabularySource"]);
+                    }
+                    if (isset($plAtts["certaintyScore"])) {
+                        $score = $plAtts["certaintyScore"];
+                        unset($plAtts["certaintyScore"]);
+                    }
+                    
+                    $geoTerm->setName((string) $child);
+
+                    $this->markUnknownAtt(array_merge(
+                            $xpath, 
+                            array (
+                                $placeTag->getName(),
+                                $child->getName()
+                            )), $plAtts);
+                    
                     break;
                 case "placeEntryMaybeSame":
-                    $placeEntry->addMaybeSame(
-                            $this->parsePlaceEntry($child, 
-                                    array_merge($xpath, 
-                                            array (
-                                                    $placeTag->getName()
-                                            ))));
+                    // Silently ignore the rest of the list
                     break;
                 case "placeEntry":
-                    $placeEntry->setOriginal((string) $child);
+                    // If a snac:placeEntry exists, then the original string is stored in another
+                    // internal placeEntry, so we must set it again.
+                    $place->setOriginal((string) $child);
                     $this->markUnknownAtt(
                             array_merge($xpath, 
                                     array (
@@ -1263,6 +1721,28 @@ class EACCPFParser {
             }
         }
         
-        return $placeEntry;
+        // Create a SCM object for this place to store the original.
+        
+        $scm = new \snac\data\SNACControlMetadata();
+        $scm->setSourceData($place->getOriginal());
+        $scm->setNote("Parsed from SNAC EAC-CPF.");
+        $scm->setOperation($this->operation);
+        $place->addSNACControlMetadata($scm);
+        
+        // If the geo information was set, try to find the real term
+        if ($geoInfoSet) {
+            $realGeoPlace = null;
+            if ($this->vocabulary != null) {
+                $realGeoPlace = $this->vocabulary->getGeoTermByURI($geoTerm->getVocabularySource());
+            }
+            if ($realGeoPlace != null)
+                $place->setGeoTerm($realGeoPlace);
+            else
+                $place->setGeoTerm($geoTerm);
+            $place->setScore($score);
+        }
+        
+        $place->setOperation($this->operation);
+        return $place;
     }
 }

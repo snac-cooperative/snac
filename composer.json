@@ -1,9 +1,14 @@
 {
     "require": {
-        "php": "~7.0"
+        "php": "~7.0",
+        "twig/twig": "~1.23",
+        "league/oauth2-client": "^1.1",
+        "league/oauth2-google": "^1.0",
+        "monolog/monolog": "^1.18",
+        "elasticsearch/elasticsearch": "~2.0@beta"
     },
     "require-dev": {
-        "phpdocumentor/phpdocumentor": "2.*",
+        "phpdocumentor/phpdocumentor": "*",
         "phpunit/phpunit": ">=5.0",
         "phpunit/php-invoker": "*",
         "phpunit/dbunit": ">=1.2",

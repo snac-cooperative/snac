@@ -1,0 +1,329 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:snac="http://socialarchive.iath.virginia.edu/" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <control>
+        <recordId>http://snac/test/record-1</recordId>
+        <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">taro/utcah/00015.c03</otherRecordId>
+        <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">yale/mssa.ms.0358.r038</otherRecordId>
+        <otherRecordId localType="http://viaf.org/viaf/terms#viafID">41866059</otherRecordId>
+        <maintenanceStatus>revised</maintenanceStatus>
+        <maintenanceAgency>
+            <agencyName>SNAC: Social Networks and Archival Context Project</agencyName>
+        </maintenanceAgency>
+        <languageDeclaration>
+            <language languageCode="eng">English</language>
+            <script scriptCode="Latn">Latin Alphabet</script>
+        </languageDeclaration>
+        <conventionDeclaration>
+            <citation>VIAF</citation>
+        </conventionDeclaration>
+        <maintenanceHistory>
+            <maintenanceEvent>
+                <eventType>revised</eventType>
+                <eventDateTime>2015-09-17</eventDateTime>
+                <agentType>machine</agentType>
+                <agent>CPF merge program</agent>
+                <eventDescription>Merge v2.0</eventDescription>
+            </maintenanceEvent>
+        </maintenanceHistory>
+        <sources>
+            <source xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.lib.utexas.edu/taro/utcah/00015/00015-P.html" xlink:type="simple">
+                <objectXMLWrap>
+                    <container xmlns="">
+                        <filename>/data/source/findingAids/taro/utcah/00015.xml</filename>
+                        <ead_entity en_type="persname" encodinganalog="100">Jefferson, Thomas, 1743-1826.</ead_entity>
+                    </container>
+                </objectXMLWrap>
+            </source>
+            <source xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.lib.utexas.edu/taro/utcah/03133/03133-P.html" xlink:type="simple">
+                <objectXMLWrap>
+                    <container xmlns="">
+                        <filename>/data/source/findingAids/taro/utcah/03133.xml</filename>
+                        <ead_entity en_type="persname" encodinganalog="600">Jefferson, Thomas, 1743-1826</ead_entity>
+                    </container>
+                </objectXMLWrap>
+            </source>
+            <source xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.worldcat.org/oclc/17352086" xlink:type="simple"/>
+            <source xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.worldcat.org/oclc/49310148" xlink:type="simple"/>
+            <source xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://hdl.loc.gov/loc.mss/eadmss.ms009141" xlink:type="simple">
+                <objectXMLWrap>
+                    <container xmlns="">
+                        <filename>/data/source/findingAids/lc/ms009141.xml</filename>
+                        <ead_entity altrender=":::PWEBRECON=^Jefferson%2C+Thomas%2C+1743-1826+Correspondence.^" en_type="persname" encodinganalog="600" role="subject" source="lcnaf">Jefferson, Thomas, 1743-1826--Correspondence.</ead_entity>
+                    </container>
+                </objectXMLWrap>
+            </source>
+        </sources>
+    </control>
+    <cpfDescription>
+        <identity>
+            <entityType>person</entityType>
+            <nameEntry snac:preferenceScore="99">
+                <part>Snac Test Record, 2016-.</part>
+                <authorizedForm>VIAF</authorizedForm>
+                <authorizedForm>howard</authorizedForm>
+                <authorizedForm>uct</authorizedForm>
+                <authorizedForm>aps</authorizedForm>
+                <authorizedForm>colu</authorizedForm>
+                <authorizedForm>inu</authorizedForm>
+                <authorizedForm>uchic</authorizedForm>
+                <authorizedForm>nwda</authorizedForm>
+                <authorizedForm>vah</authorizedForm>
+                <authorizedForm>taro</authorizedForm>
+                <authorizedForm>LC</authorizedForm>
+                <authorizedForm>rutu</authorizedForm>
+                <authorizedForm>pu</authorizedForm>
+                <authorizedForm>ncsu</authorizedForm>
+                <authorizedForm>nyu</authorizedForm>
+                <authorizedForm>NLA</authorizedForm>
+                <authorizedForm>unc</authorizedForm>
+                <authorizedForm>WorldCat</authorizedForm>
+                <authorizedForm>nara</authorizedForm>
+                <authorizedForm>crnlu</authorizedForm>
+                <authorizedForm>uut</authorizedForm>
+                <authorizedForm>yale</authorizedForm>
+                <authorizedForm>cjh</authorizedForm>
+                <authorizedForm>nypl</authorizedForm>
+                <authorizedForm>oac</authorizedForm>
+                <authorizedForm>lc</authorizedForm>
+                <authorizedForm>umi</authorizedForm>
+                <authorizedForm>LAC</authorizedForm>
+                <authorizedForm>harvard</authorizedForm>
+                <authorizedForm>pacscl</authorizedForm>
+            </nameEntry>
+            <nameEntry snac:preferenceScore="03">
+                <part>Snac Test Record</part>
+                <authorizedForm>aps</authorizedForm>
+                <alternativeForm>VIAF</alternativeForm>
+                <authorizedForm>harvard</authorizedForm>
+                <alternativeForm>nara</alternativeForm>
+                <authorizedForm>uks</authorizedForm>
+            </nameEntry>
+            <nameEntry snac:preferenceScore="02">
+                <part>Record, Snac Test</part>
+                <authorizedForm>VIAF</authorizedForm>
+            </nameEntry>
+        </identity>
+        <description>
+            <existDates>
+                <dateRange>
+                    <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth" standardDate="2016-02-23">2016-02-23</fromDate>
+                    <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" standardDate="2016-02-24">2016-02-24</toDate>
+                </dateRange>
+                <descriptiveNote>
+                    Sample existDates note should be on date range
+                </descriptiveNote>
+            </existDates>
+            <languageUsed>
+                <language languageCode="eng"/>
+                <script scriptCode="Zyyy"/>
+            </languageUsed>
+            <languageUsed>
+                <language languageCode="ita">Italian</language>
+                <script scriptCode="Zyyy">Unknown</script>
+            </languageUsed>
+            <languageUsed>
+                <language languageCode="dut">Dutch</language>
+                <script scriptCode="Zyyy">Unknown</script>
+            </languageUsed>
+            <languageUsed>
+                <language languageCode="gre">Greek, Modern (1453- )</language>
+                <script scriptCode="Zyyy">Unknown</script>
+            </languageUsed>
+            <languageUsed>
+                <language languageCode="lat">Latin</language>
+                <script scriptCode="Zyyy">Unknown</script>
+            </languageUsed>
+            <localDescription localType="http://viaf.org/viaf/terms#gender">
+                <term>Male</term>
+            </localDescription>
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>Embargo, 1807-1809</term>
+            </localDescription>
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>Slaves</term>
+            </localDescription>
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>Booksellers and bookselling</term>
+            </localDescription>
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>Private libraries</term>
+            </localDescription>
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <placeEntry>Virginia</placeEntry>
+                <dateRange>
+                    <fromDate standardDate="1808">1808</fromDate>
+                    <toDate standardDate="1890">1890</toDate>
+                </dateRange>
+            </place>
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <snac:placeEntry xmlns:snac="http://socialarchive.iath.virginia.edu/">
+                    <placeEntry>United States</placeEntry>
+                    <snac:placeEntryLikelySame administrationCode="00" certaintyScore="1.0" countryCode="US" latitude="39.76" longitude="-98.5" vocabularySource="http://www.geonames.org/6252001">United States</snac:placeEntryLikelySame>
+                </snac:placeEntry>
+            </place>
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <snac:placeEntry xmlns:snac="http://socialarchive.iath.virginia.edu/">
+                    <placeEntry>Virginia</placeEntry>
+                    <snac:placeEntryLikelySame administrationCode="VA" certaintyScore="1.0" countryCode="US" latitude="37.54812" longitude="-77.44675" vocabularySource="http://www.geonames.org/6254928">Virginia</snac:placeEntryLikelySame>
+                </snac:placeEntry>
+            </place>
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <placeEntry>United States - Social conditions - To 1865</placeEntry>
+                <date standardDate="1865-09-18">September 18, 1865</date>
+            </place>
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <placeEntry>Washington (D.C.)</placeEntry>
+            </place>
+            <localDescription localType="http://viaf.org/viaf/terms#nationalityOfEntity">
+                <placeEntry countryCode="US"/>
+            </localDescription>
+            <occupation>
+                <term>Inventors.</term>
+            </occupation>
+            <occupation>
+                <term>Philosophers.</term>
+            </occupation>
+            <biogHist>
+                <p xmlns="urn:isbn:1-931666-33-4">This record is a test record of SNAC.</p>
+                <citation xmlns="urn:isbn:1-931666-33-4">From the description of test records.</citation>
+                <p xmlns="urn:isbn:1-931666-33-4">Not much else is known about this sample record.</p>
+                <citation xmlns="urn:isbn:1-931666-33-4">From the guide to the José Francisco Correia da Serra letters, 1810-1823, 1810-1823, (American Philosophical Society)</citation>
+            </biogHist>
+        <structureOrGenealogy>
+            <p>Sample SOG</p>
+        </structureOrGenealogy>
+        <generalContext>
+            <p>Sample GC</p>
+        </generalContext>
+        <function>
+            <term vocabularySource="d5bhviikk9--y6te63k761ib">culture</term>
+        </function>
+        <legalStatus>
+            <term>Sample legal status</term>
+        </legalStatus>
+        <mandate>
+            <descriptiveNote>
+                <p>A sample mandate note</p>
+            </descriptiveNote>
+        </mandate>
+        </description>
+        <relations>
+            <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6qc06d0" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+                <relationEntry>Parsons, Edward Alexander, 1878-1962</relationEntry>
+            </cpfRelation>
+            <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6gq70hs" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+                <relationEntry>Wilkinson, James, 1757-1825</relationEntry>
+            </cpfRelation>
+            <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="http://www.worldcat.org/oclc/647953344" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+                <relationEntry>Jefferson, Thomas, 1743-1826. Thomas Jefferson legal opinion in Wayland Case [manuscript] 1782 August 16.</relationEntry>
+                <objectXMLWrap>
+                    <mods xmlns="http://www.loc.gov/mods/v3">
+                        <recordInfo>
+                            <recordOrigin>WorldCat:647953344</recordOrigin>
+                            <recordContentSource>ISIL:OCLC-VA064</recordContentSource>
+                        </recordInfo>
+                        <name>
+                            <namePart>Jefferson, Thomas, 1743-1826.</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <titleInfo>
+                            <title>Thomas Jefferson legal opinion in Wayland Case [manuscript] 1782 August 16.</title>
+                        </titleInfo>
+                        <abstract>Jefferson discusses the settlement of the estate of Adam Wayland of Culpeper Co., Va. He concludes that will does not protect Mrs. Wayland, who must claim legal rights. Cites Garbland vs. Mayot 2 Vernon 105, Cook vs. Cook ibid. 545, Bateman vs. Roach 9 Modern Cases in Law and Equity 104, and Coleman vs. Seymour 1 Vesey 209. His opinion is appended onto a presentation of the circumstances of the case, in another hand. An article, "The second Mrs. Wayland, an unpublished Jefferson opinion on a case in equity," 1965, by John Cook Wyllie is included (American Journal of Legal History, IX (1965), 64-68). </abstract>
+                        <name>
+                            <namePart>University of Virginia</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/rps">Repository</roleTerm>
+                            </role>
+                        </name>
+                    </mods>
+                </objectXMLWrap>
+                <descriptiveNote>
+                    <p>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader06">t</span>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader07">m</span>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader08"> </span>
+                    </p>
+                </descriptiveNote>
+            </resourceRelation>
+            <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="http://www.worldcat.org/oclc/647963768" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+                <relationEntry>Bradley, Stephen Row, 1754-1830. Jefferson's manuscript index to his account books and letters concerning the U.S. Bank and U.S. Post Office and 1776-1778 [manuscript] 1776-1778.</relationEntry>
+                <objectXMLWrap>
+                    <mods xmlns="http://www.loc.gov/mods/v3">
+                        <recordInfo>
+                            <recordOrigin>WorldCat:647963768</recordOrigin>
+                            <recordContentSource>ISIL:OCLC-VA064</recordContentSource>
+                        </recordInfo>
+                        <name>
+                            <namePart>Bradley, Stephen Row, 1754-1830</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <name>
+                            <namePart>Eatin, J. H., fl. 1867,</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <name>
+                            <namePart>Granger, Gideon, 1767-1822</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <name>
+                            <namePart>Habersham, Joseph, fl. 1811,</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <name>
+                            <namePart>Lennox, David, fl. 1811,</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/cre">Creator</roleTerm>
+                            </role>
+                        </name>
+                        <titleInfo>
+                            <title>Jefferson's manuscript index to his account books and letters concerning the U.S. Bank and U.S. Post Office and 1776-1778 [manuscript] 1776-1778.</title>
+                        </titleInfo>
+                        <abstract>In addition to Jefferson's index to his account books, the collection contains a letter, 1802 March 22, Gideon Granger to Stephen R. Bradley regarding a post office route in Virginia; a letter, 1811 January 14, Joseph Habersham to David Lennox regarding the Bank of the U.A; and a letter , 1867 February 15, J. H. Eatin to [Thorn?] on pay allowances for army officers. </abstract>
+                        <name>
+                            <namePart>University of Virginia</namePart>
+                            <role>
+                                <roleTerm valueURI="http://id.loc.gov/vocabulary/relators/rps">Repository</roleTerm>
+                            </role>
+                        </name>
+                    </mods>
+                </objectXMLWrap>
+                <descriptiveNote>
+                    <p>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader06">t</span>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader07">m</span>
+                        <span localType="http://socialarchive.iath.virginia.edu/control/term#Leader08"> </span>
+                    </p>
+                </descriptiveNote>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>Avtobiografii︠a︡ ; Zametki o shtate Virginii︠a︡</relationEntry>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>An act for establishing religious freedom, passed in the Assembly of Virginia in the beginning of the year 1786</relationEntry>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>17 February to 30 April 1801</relationEntry>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>議会慣例要錄</relationEntry>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>الديمقراطية الثورية : كيف بنيت امريكا : جمهورية الحرية</relationEntry>
+            </resourceRelation>
+            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
+                <relationEntry>Houdon in America; a collection of documents in the Jefferson papers in the Library of Congress</relationEntry>
+            </resourceRelation>
+        </relations>
+    </cpfDescription>
+</eac-cpf>

@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php">
-  <testsuites>
-    <testsuite name="SNAC_tests">
-      <directory>test</directory>
-    </testsuite>
-  </testsuites>
+<phpunit bootstrap="test/bootstrap.php">
+    <testsuites>
+        <testsuite name="SNAC_tests">
+            <directory>test</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist>
+            <directory suffix=".php">src</directory>
+            <exclude>
+                <directory>src/virtualhosts</directory>
+                <directory>src/snac/Config_dist.php</directory>
+                <directory>src/snac/Config.php</directory>
+            </exclude>
+        </whitelist>
+    </filter>
 </phpunit>

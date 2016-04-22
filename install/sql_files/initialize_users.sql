@@ -1,0 +1,26 @@
+--
+-- Insert base-level users and roles into the system 
+--
+
+-- Insert roles into the system 
+
+insert into role values (default, 'system', 'system services');
+insert into role values (default, 'dba', 'database administrator');
+insert into role values (default, 'web admin', 'web site administrator');
+insert into role values (default, 'sys admin', 'system administrator');
+insert into role values (default, 'editor', 'constellation editor, may modify any constellation data');
+
+-- We do not have a role for public. HRT is just something any user can do.
+-- insert into role values (default, 'Public HRT', 'Public and researcher, may view published constellations');
+
+
+-- Create the system (root-level) user for system services
+
+insert into appuser (username, email, fullname) values ('system@localhost', 'system@localhost', 'System Service');
+insert into appuser (username, email, fullname) values ('testing@localhost', 'testing@localhost', 'Database Testing User');
+
+-- Apply system services role to system user
+
+insert into appuser_role_link values
+((select id from appuser where username='system@localhost'),
+(select id from role where label='system'), true);

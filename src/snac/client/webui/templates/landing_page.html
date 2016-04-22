@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Prototype</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+
+<!-- SNAC includes -->
+<link rel="stylesheet" href="css/snac.css">
+<script src="javascript/search.js"></script>
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(user) }}
+
+
+<div class="container snac" role="main">
+
+		<h1>SNAC Prototype</h1>
+
+		<form class="form-horizontal" id="search_form" onsubmit="return false;">
+			<div class="well well-lg text-center">
+                    <input type="hidden" id="count" name="count" value="10">
+                    <input type="hidden" id="start" name="start" value="0">
+					<div class="input-group">
+						<input type="text" class="form-control"
+							placeholder="Search for..." id="searchbox" name="term"> 
+							<span class="input-group-btn">
+							     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+						    </span>
+					</div>
+					
+					<div id="search-results-box">
+					</div>
+			</div>
+		</form>
+
+		{% if not user.email %}  
+            <p class="text-center">
+    <a href="?command=login" class="btn btn-lg btn-warning"><span class="glyphicon glyphicon-user"></span> Login</a>
+    </p>
+            {% endif %}
+            
+            
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            <h3>Getting Started</h3>
+            
+            <p>Welcome to the SNAC Prototypical Prototype Interface.  This interface allows you to search, view, edit, create, and 
+            publish identity constellations in a prototype interface.  You may search and view constellations without logging in,
+            but to make any changes to a constellation, you need an authorized Google account.  Click the "Login" link above to 
+            log in with Google and authorize the SNAC Prototype.</p>
+            
+            <p>Use the search box above to find a record within SNAC to view.  Search results will appear right on this page below
+            the search bar.  Selecting one will take you to the view page.  That page is modeled after the <a href="http://socialarchive.iath.virginia.edu/">SNAC HRT</a>,
+            so it should feel familiar.  If you are logged in and have permissions, you will also see on that page a button to begin
+            editing the constellation.</p>
+            
+            <p>The box on the right, entitled "Recently Updated" will show you the most recently published constellations from
+            across the system.</p>
+            
+            <p>Once logged in, you'll have access to your Dashboard.  The dashboard shows which constellations are currently
+            checked out to you for editing, which ones you currently have open in an editor, and other information.  You may return
+            to this page at any time by clicking the "SNAC" link on the menu above.</p>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Recently Updated</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently updated Constellations.</p>
+                    <div class="list-group">
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

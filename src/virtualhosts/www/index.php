@@ -10,13 +10,31 @@
  *            the Regents of the University of California
  */
 
+
+/**
+ * Load dependencies
+ */
 include ("../../../vendor/autoload.php");
+
+/**
+ * If debug is on, turn on error reporting
+ */
+if (\snac\Config::$DEBUG_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 
 // Namespace shortcuts
 use \snac\client\webui\WebUI as WebUI;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
 
-// Use the GET variables as input
-$input = $_GET;
+// Set up the global log stream
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$WEBUI_LOGFILE, Logger::DEBUG);
+
+// Use the REQUEST (GET, POST, COOKIE) variables as input
+$input = $_REQUEST;
 
 // Instantiate and run the server
 $server = new WebUI($input);

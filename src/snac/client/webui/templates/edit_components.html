@@ -1,0 +1,839 @@
+{% macro displayGender(gender, i) %}
+    {% import 'widgets.html' as widgets %}  
+    
+                            <div class="panel panel-default" id="gender_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
+                                        <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version}}"/>
+                                        <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-8" id="select_gender_term_{{i}}">
+                                                    <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
+                                                    <input type="hidden" id="gender_term_term_{{i}}" name="gender_term_term_{{i}}" value="{{gender.term.term}}"/>
+                                                    <input type="hidden" id="gender_term_vocabtype_{{i}}" name="gender_term_vocabtype_{{i}}" value="gender"/>
+                                                    <input type="hidden" id="gender_term_minlength_{{i}}" name="gender_term_minlength_{{i}}" value="0"/>
+                                                    <p class="form-control-static">{{ gender.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-8">
+                                                    {{ widgets.displayURI(gender.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("gender", i, gender.term.term, "Gender", gender) }}
+                                        {{ widgets.optionsList("gender", i) }}
+                                    </div>
+                                </div>
+
+{% endmacro %}
+
+{% macro displayNameEntry(nameEntry, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="nameEntry_panel_{{i}}">
+                            <div class="panel-body">
+                                <div class="col-xs-10">
+                                    <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
+                                    <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
+                                    <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value=""/>
+                                    <div class="form-group">
+                                        <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4">
+                                            Original
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="text" class="form-control" value="{{ nameEntry.original }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4">
+                                            Preference Score
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
+                                    <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_nameEntry_languagelanguage_{{i}}">
+                                            <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
+                                            <input id="nameEntry_languagelanguage_term_{{i}}" name="nameEntry_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.term }}"/>
+                                            <input id="nameEntry_languagelanguage_vocabtype_{{i}}" name="nameEntry_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="nameEntry_languagelanguage_minlength_{{i}}" name="nameEntry_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ nameEntry.language.language.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_nameEntry_languagescript_{{i}}">
+                                            <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
+                                            <input id="nameEntry_languagescript_term_{{i}}" name="nameEntry_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.term }}"/>
+                                            <input id="nameEntry_languagescript_vocabtype_{{i}}" name="nameEntry_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="nameEntry_languagescript_minlength_{{i}}" name="nameEntry_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{ widgets.scmModal("nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
+                                {{ widgets.optionsList("nameEntry", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displaySameAs(other, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default" id="sameAs_panel_{{i}}">
+                            <div class="panel-body">
+                                <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
+                                <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
+                                <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
+                                            Relation Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4">
+                                            Role
+                                        </label>
+                                        <div class="col-xs-8" id="select_sameAs_type_{{i}}">
+                                            <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
+                                            <input id="sameAs_type_term_{{i}}" name="sameAs_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
+                                            <input id="sameAs_type_vocabtype_{{i}}" name="sameAs_type_vocabtype_{{i}}" type="hidden" class="form-control" value="record_type"/>
+                                            <input id="sameAs_type_minlength_{{i}}" name="sameAs_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ other.type.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{ widgets.scmModal("sameAs", i, other.uri, "Same-As Relation", other) }}
+                                {{ widgets.optionsList("sameAs", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displaySource(source, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default"  id="source_panel_{{i}}">
+                            <div class="panel-body">
+                                <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
+                                <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
+                                <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4">
+                                            Display Name
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="text" class="form-control" value="{{ source.displayName }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="source_text_{{ i }}" class="control-label col-xs-4">
+                                            Source Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
+                                        </div>
+                                    </div>
+
+                                    <input type="hidden" id="source_language_id_{{i}}" name="source_language_id_{{i}}" value="{{source.language.id}}"/>
+                                    <input type="hidden" id="source_language_version_{{i}}" name="source_language_version_{{i}}" value="{{sources.language.version}}"/>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
+                                            <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
+                                            <input id="source_languagelanguage_term_{{i}}" name="source_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.term }}"/>
+                                            <input id="source_languagelanguage_vocabtype_{{i}}" name="source_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="source_languagelanguage_minlength_{{i}}" name="source_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ source.language.language.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_source_languagescript_{{i}}">
+                                            <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
+                                            <input id="source_languagescript_term_{{i}}" name="source_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.term }}"/>
+                                            <input id="source_languagescript_vocabtype_{{i}}" name="source_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="source_languagescript_minlength_{{i}}" name="source_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ source.language.script.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="source_note_{{ i }}" class="control-label col-xs-4">
+                                            Descriptive Note
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
+                                        </div>
+                                    </div>
+
+
+                                </div>
+                                {{ widgets.scmModal("source", i, source.uri, "Source", source) }}
+                                {{ widgets.optionsList("source", i) }}
+
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displayResourceRelation(relation, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
+                            <div class="panel-body">
+                                <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
+                                <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
+                                            Relation Text
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
+                                            Role
+                                        </label>
+                                        <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
+                                            <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
+                                            <input id="resourceRelation_role_term_{{i}}" name="resourceRelation_role_term_{{i}}" type="hidden" class="form-control" value="{{ relation.role.term }}"/>
+                                            <input id="resourceRelation_role_vocabtype_{{i}}" name="resourceRelation_role_vocabtype_{{i}}" type="hidden" class="form-control" value="document_role"/>
+                                            <input id="resourceRelation_role_minlength_{{i}}" name="resourceRelation_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ relation.role.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
+                                            Link
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
+                                            Document Type
+                                        </label>
+                                        <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
+                                            <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
+                                            <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
+                                            <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
+                                            <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ relation.documentType.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4">
+                                            Descriptive Note
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
+                                            ObjectXMLWrap
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{ widgets.scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
+                                {{ widgets.optionsList("resourceRelation", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displayConstellationRelation(relation, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
+                            <div class="panel-body">
+                                <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
+                                <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                                <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
+                                <input id="constellationRelation_content_{{i}}" name="constellationRelation_content_{{i}}" type="hidden" value="{{ relation.content }}"/>
+                                <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetID_{{i}}" type="hidden" value="{{ relation.targetConstellation }}"/>
+                                <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="hidden" value="{{ relation.targetArkID }}"/>
+                                <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
+                                <div class="col-xs-10">
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Target
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <p class="form-control-static"><span style="font-weight: bold" id="constellationRelation_contentText_{{i}}">{{ relation.content }}</span><br>
+                                        <span id="constellationRelation_targetArkIDText_{{i}}">{{relation.targetArkID}} 
+                                        {% if relation.targetConstellation %}
+                                            <a class="label label-info" target="_blank" href="?command=view&constellationid={{relation.targetConstellation}}">View</a>
+                                        {% endif %}
+                                        </span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-4">
+                                        Type
+                                    </label>
+                                    <div class="col-xs-8" id="select_constellationRelation_type_{{i}}">
+                                        <input id="constellationRelation_type_id_{{i}}" name="constellationRelation_type_id_{{i}}" type="hidden" class="form-control" value="{{ relation.type.id }}"/>
+                                        <input id="constellationRelation_type_term_{{i}}" name="constellationRelation_type_term_{{i}}" type="hidden" class="form-control" value="{{ relation.type.term }}"/>
+                                        <input id="constellationRelation_type_vocabtype_{{i}}" name="constellationRelation_type_vocabtype_{{i}}" type="hidden" class="form-control" value="relation_type"/>
+                                        <input id="constellationRelation_type_minlength_{{i}}" name="constellationRelation_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ relation.type.term }}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4">
+                                        Descriptive Note
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{ widgets.scmModal("constellationRelation", i, relation.content, "Constellation Relation", relation) }}
+                            {{ widgets.optionsList("constellationRelation", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displayLanguageUsed(language, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default" id="language_panel_{{i}}">
+                            <div class="panel-body">
+                                <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
+                                <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
+                                <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Language
+                                        </label>
+                                        <div class="col-xs-8" id="select_language_language_{{i}}">
+                                            <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
+                                            <input id="language_language_term_{{i}}" name="language_language_term_{{i}}" type="hidden" class="form-control" value="{{ language.language.term }}"/>
+                                            <input id="language_language_vocabtype_{{i}}" name="language_language_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                            <input id="language_language_minlength_{{i}}" name="language_language_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ language.language.term }}</p>
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Script
+                                        </label>
+                                        <div class="col-xs-8" id="select_language_script_{{i}}">
+                                            <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
+                                            <input id="language_script_term_{{i}}" name="language_script_term_{{i}}" type="hidden" class="form-control" value="{{ language.script.term }}"/>
+                                            <input id="language_script_vocabtype_{{i}}" name="language_script_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                            <input id="language_script_minlength_{{i}}" name="language_script_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                            <p class="form-control-static">{{ language.script.term }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{ widgets.scmModal("language", i, language.language.term, "Language", language) }}
+                                {{ widgets.optionsList("language", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displaySubject(subject, i) %}
+    {% import 'widgets.html' as widgets %}  
+                        <div class="panel panel-default" id="subject_panel_{{i}}">
+                            <div class="panel-body">
+                                <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
+                                <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
+                                <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value=""/>
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-2">
+                                            Term
+                                        </label>
+                                        <div class="col-xs-10" id="select_subject_term_{{i}}">
+                                            <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
+                                            <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
+                                            <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
+                                            <p class="form-control-static">{{ subject.term.term }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-2">
+                                            URI
+                                        </label>
+                                        <div class="col-xs-10">
+                                            {{ widgets.displayURI(subject.term.uri) }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {{ widgets.scmModal("subject", i, subject.term.term, "Subject", subject) }}
+                                {{ widgets.optionsList("subject", i) }}
+                            </div>
+                        </div>
+    
+{% endmacro %}
+
+{% macro displayNationality(nationality, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="nationality_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
+                                        <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
+                                        <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_nationality_term_{{i}}">
+                                                    <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
+                                                    <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
+                                                    <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
+                                                    <p class="form-control-static">{{ nationality.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(nationality.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("nationality", i, nationality.term.term, "Nationality", nationality) }}
+                                        {{ widgets.optionsList("nationality", i) }}
+                                </div>
+                            </div>
+    
+{% endmacro %}
+
+{% macro displayFunction(function, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="function_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
+                                        <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
+                                        <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_function_term_{{i}}">
+                                                    <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
+                                                    <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
+                                                    <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
+                                                    <p class="form-control-static">{{ function.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(function.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("function", i, function.term.term, "Function", function) }}
+                                        {{ widgets.optionsList("function", i) }}
+                                </div>
+                            </div>
+    
+{% endmacro %}
+
+{% macro displayOccupation(occupation, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="occupation_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
+                                        <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
+                                        <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_occupation_term_{{i}}">
+                                                    <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
+                                                    <input type="hidden" id="occupation_term_term_{{i}}" name="occupation_term_term_{{i}}" value="{{occupation.term.term}}"/>
+                                                    <input type="hidden" id="occupation_term_vocabtype_{{i}}" name="occupation_term_vocabtype_{{i}}" value="occupation"/>
+                                                    <p class="form-control-static">{{ occupation.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(occupation.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("occupation", i, occupation.term.term, "Occupation", occupation) }}
+                                        {{ widgets.optionsList("occupation", i) }}
+                                </div>
+                            </div>
+    
+{% endmacro %}
+
+{% macro displayLegalStatus(legalStatus, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="legalStatus_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
+                                        <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
+                                        <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    Term
+                                                </label>
+                                                <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
+                                                    <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
+                                                    <input type="hidden" id="legalStatus_term_term_{{i}}" name="legalStatus_term_term_{{i}}" value="{{legalStatus.term.term}}"/>
+                                                    <input type="hidden" id="legalStatus_term_vocabtype_{{i}}" name="legalStatus_term_vocabtype_{{i}}" value="legal_status"/>
+                                                    <p class="form-control-static">{{ legalStatus.term.term }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="control-label col-xs-2">
+                                                    URI
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    {{ widgets.displayURI(legalStatus.term.uri) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
+                                        {{ widgets.optionsList("legalStatus", i) }}
+                                </div>
+                            </div>
+    
+{% endmacro %}
+
+{% macro displayPlace(place, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="place_panel_{{i}}">
+                                <div class="panel-body">
+                                    <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
+                                    <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
+                                    <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value=""/>
+                                    <div class="col-xs-10">
+                                        <div class="form-group">
+                                            <label for="place_original_{{ i }}" class="control-label col-xs-4">
+                                                Original
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}" readonly/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                Type
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_type_{{i}}">
+                                                <input id="place_type_id_{{i}}" name="place_type_id_{{i}}" type="hidden" class="form-control" value="{{ place.type.id }}"/>
+                                                <input id="place_type_term_{{i}}" name="place_type_term_{{i}}" type="hidden" class="form-control" value="{{ place.type.term }}"/>
+                                                <input id="place_type_vocabtype_{{i}}" name="place_type_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                                                <input id="place_type_minlength_{{i}}" name="place_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                                <p class="form-control-static">{{ place.type.term }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                Role
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_role_{{i}}">
+                                                <input id="place_role_id_{{i}}" name="place_role_id_{{i}}" type="hidden" class="form-control" value="{{ place.role.id }}"/>
+                                                <input id="place_role_term_{{i}}" name="place_role_term_{{i}}" type="hidden" class="form-control" value="{{ place.role.term }}"/>
+                                                <input id="place_role_vocabtype_{{i}}" name="place_role_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                                                <input id="place_role_minlength_{{i}}" name="place_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                                                <p class="form-control-static">{{ place.role.term }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="control-label col-xs-4">
+                                                GeoPlace Term
+                                            </label>
+                                            <div class="col-xs-8" id="select_place_geoplace_{{i}}">
+                                                <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                                                <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
+                                                <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
+                                                <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="4"/>
+                                                <p class="form-control-static">{{ place.geoplace.name }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_score_{{ i }}" class="control-label col-xs-4">
+                                                GeoPlace Score
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <input id="place_score_{{i}}" name="place_score_{{i}}" type="text" class="form-control" value="{{ place.score }}" readonly/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_confirmed_{{ i }}" class="control-label col-xs-4">
+                                                GeoPlace Confirmed
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
+                                                    {{ place.confirmed == 't' ? 'checked' : '' }}
+                                                    readonly/> True</label> 
+                                                <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false" 
+                                                    {{ place.confirmed == 't' ? '' : 'checked' }}
+                                                    readonly/> False</label> 
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="place_note_{{ i }}" class="control-label col-xs-4">
+                                                Descriptive Note
+                                            </label>
+                                            <div class="col-xs-8">
+                                                <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" readonly>{{ place.note }}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{ widgets.scmModal("place", i, place.original, "Place", place) }}
+                                    {{ widgets.optionsList("place", i) }}
+
+                                </div>
+                            </div>
+    
+{% endmacro %}
+
+
+{% macro displayConventionDeclaration(conventionDeclaration, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default">
+                                <div class="panel-body">
+                                        <input type="hidden" id="conventionDeclaration_id_{{i}}" name="conventionDeclaration_id_{{i}}" value="{{conventionDeclaration.id}}"/>
+                                        <input id="conventionDeclaration_version_{{i}}" name="conventionDeclaration_version_{{i}}" type="hidden" value="{{ conventionDeclaration.version }}"/>
+                                        <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" readonly>{{ conventionDeclaration.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
+                                        {{ widgets.optionsList("conventionDeclaration", i) }}
+                                </div>
+                            </div>
+{% endmacro %}
+
+{% macro displayGeneralContext(generalContext, i) %}
+    {% import 'widgets.html' as widgets %} 
+                            <div class="panel panel-default" id="generalContext_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
+                                        <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
+                                        <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="generalContext_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" readonly>{{ generalContext.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
+                                        {{ widgets.optionsList("generalContext", i) }}
+                                </div>
+                            </div> 
+{% endmacro %}
+
+{% macro displayStructureOrGenealogy(structureOrGenealogy, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
+                                        <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
+                                        <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" readonly>{{ structureOrGenealogy.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
+                                        {{ widgets.optionsList("structureOrGenealogy", i) }}
+                                </div>
+                            </div>
+{% endmacro %}
+
+{% macro displayMandate(mandate, i) %}
+    {% import 'widgets.html' as widgets %}  
+                            <div class="panel panel-default" id="mandate_panel_{{i}}">
+                                <div class="panel-body">
+                                        <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
+                                        <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>
+                                        <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value=""/>
+                                        <div class="col-xs-10">
+                                            <div class="form-group">
+                                                <label for="mandate_text_{{i}}" class="control-label col-xs-2">
+                                                    XML
+                                                </label>
+                                                <div class="col-xs-10">
+                                                    <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" readonly>{{ mandate.text }}</textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {{ widgets.scmModal("mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
+                                        {{ widgets.optionsList("mandate", i) }}
+                                </div>
+                            </div>
+{% endmacro %}
+
+{% macro displaySCM(short, i, j, scm) %}
+    {% import 'widgets.html' as widgets %}  
+                   <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
+                        <div class="panel-body">
+                            <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
+                            <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
+                            <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value=""/>
+                            <div class="col-xs-10">
+                                <div class="form-group">
+                                    <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Source Data
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" readonly>{{ scm.sourceData }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Citation (Source)
+                                        </label>
+                                    <div class="col-xs-8" id="selectsource_scm_{{short}}_citation_{{j}}_{{i}}">
+                                        <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
+                                        <input id="scm_{{short}}_citation_term_{{j}}_{{i}}" name="scm_{{short}}_citation_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.citation.displayName}}"/>
+                                        <p class="form-control-static">{{scm.citation.displayName}}</p>
+                                    </div>
+                                </div>
+                                
+                                
+                                <div class="form-group">
+                                    <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Sub Citation
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" readonly>{{ scm.subCitation }}</textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Descriptive Rule
+                                        </label>
+                                    <div class="col-xs-8" id="select_scm_{{short}}_descriptiveRule_{{j}}_{{i}}">
+                                        <input id="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.id }}"/>
+                                        <input id="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.term }}"/>
+                                        <input id="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="descriptive_rule"/>
+                                        <input id="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.descriptiveRule.term }}</p>
+                                    </div>
+                                </div>
+
+                                <input type="hidden" id="scm_{{short}}_language_id_{{j}}_{{i}}" name="scm_{{short}}_language_id_{{j}}_{{i}}" value="{{scm.language.id}}"/>
+                                <input type="hidden" id="scm_{{short}}_language_version_{{j}}_{{i}}" name="scm_{{short}}_language_version_{{j}}_{{i}}" value="{{scm.language.version}}"/>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Language
+                                    </label>
+                                    <div class="col-xs-8" id="select_scm_{{short}}_languagelanguage_{{j}}_{{i}}">
+                                        <input id="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.language.id }}"/>
+                                        <input id="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.language.language.term }}"/>
+                                        <input id="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                                        <input id="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.language.language.term }}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="control-label col-xs-4">
+                                        Script
+                                    </label>
+                                    <div class="col-xs-8" id="select_scm_{{short}}_languagescript_{{j}}_{{i}}">
+                                        <input id="scm_{{short}}_languagescript_id_{{j}}_{{i}}" name="scm_{{short}}_languagescript_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.id }}"/>
+                                        <input id="scm_{{short}}_languagescript_term_{{j}}_{{i}}" name="scm_{{short}}_languagescript_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.term }}"/>
+                                        <input id="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                                        <input id="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
+                                        <p class="form-control-static">{{ scm.language.script.term }}</p>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4">
+                                        Descriptive Note
+                                    </label>
+                                    <div class="col-xs-8">
+                                        <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" readonly>{{ scm.note }}</textarea>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            {{ widgets.scmOptionsList(short, i, j) }}
+
+                        </div>
+                    </div>
+
+{% endmacro %}

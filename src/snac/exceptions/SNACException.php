@@ -46,9 +46,12 @@ class SNACException extends \Exception {
         $toPrint = "{ \"error\" : ";
         $toPrint .= "{ \"type\": \"";
         $toPrint .= $this->type;
-        $toPrint .= "\", \"message\" : \"";
-        $toPrint .= $this->message;
-        $toPrint .= "\"},";
+        $toPrint .= "\", \"message\" : ";
+        if (is_string($this->message))
+            $toPrint .= "\"".$this->message."\"";
+        else
+            $toPrint .= $this->message;
+        $toPrint .= "},";
         $toPrint .= "\"timing\" : " . round((microtime(true) - $_SERVER["REQUEST_TIME_FLOAT"]) * 1000, 2);
         $toPrint .= "}";
         

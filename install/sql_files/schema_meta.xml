@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemaMeta xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://schemaspy.sourceforge.net/xmlschema/2011/02/05/schemaspy.meta.xsd">
+    <!--
+        Use this with schemaSpy so we don't have the constraints active in the db. Active constraints cause
+        performance issues, and given our php+sql environment, the constraints don't buy us anything.
+
+        The command below works for a Postgres database called "snac" with password "foobarbaz".
+
+	cd ~/snac
+
+	java -jar ~/bin/schemaSpy_5.0.0.jar -t pgsql -o ~/public_html/schema_spy_output -host localhost -dp /usr/share/java/postgresql-jdbc.jar -db scratch -s public -u snac -p foobarbaz -meta install/sql_files/schema_meta.xml
+
+    -->
+    <comments>
+        UnifiedDB Character Database
+    </comments>
+    <tables>
+        <table name="version_history">
+            <column name="user_id">
+                <foreignKey table="appuser" column="id"/>
+            </column>
+            <column name="role_id">
+                <foreignKey table="role" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="structure_genealogy" column="main_id"/>
+                <foreignKey table="general_context" column="main_id"/>
+                <foreignKey table="nationality" column="main_id"/>
+                <foreignKey table="nrd" column="main_id"/>
+                <foreignKey table="mandate" column="main_id"/>
+                <foreignKey table="convention_declaration" column="main_id"/>
+                <foreignKey table="gender" column="main_id"/>
+                <!--
+                    date_range has an fk back to the related table so it is not directly related via main_id.
+                    <foreignKey table="date_range" column="main_id"/>
+                -->
+                <foreignKey table="language" column="main_id"/>
+                <foreignKey table="otherid" column="main_id"/>
+                <foreignKey table="legal_status" column="main_id"/>
+                <foreignKey table="occupation" column="main_id"/>
+                <foreignKey table="function" column="main_id"/>
+                <foreignKey table="subject" column="main_id"/>
+                <foreignKey table="related_identity" column="main_id"/>
+                <foreignKey table="related_resource" column="main_id"/>
+                <foreignKey table="place_link" column="main_id"/>
+                <foreignKey table="source" column="main_id"/>
+                <foreignKey table="biog_hist" column="main_id"/>
+                <foreignKey table="name" column="main_id"/>
+            </column>
+            <column name="id">
+                <foreignKey table="structure_genealogy" column="version"/>
+                <foreignKey table="general_context" column="version"/>
+                <foreignKey table="nationality" column="version"/>
+                <foreignKey table="nrd" column="version"/>
+                <foreignKey table="mandate" column="version"/>
+                <foreignKey table="convention_declaration" column="version"/>
+                <foreignKey table="gender" column="version"/>
+                <!--
+                    date_range has an fk back to the related table so it is not directly related via main_id.
+                    <foreignKey table="date_range" column="version"/>
+                -->
+                <foreignKey table="language" column="version"/>
+                <foreignKey table="otherid" column="version"/>
+                <foreignKey table="legal_status" column="version"/>
+                <foreignKey table="occupation" column="version"/>
+                <foreignKey table="function" column="version"/>
+                <foreignKey table="subject" column="version"/>
+                <foreignKey table="related_identity" column="version"/>
+                <foreignKey table="related_resource" column="version"/>
+                <foreignKey table="place_link" column="version"/>
+                <foreignKey table="source" column="version"/>
+                <foreignKey table="biog_hist" column="version"/>
+                <foreignKey table="name" column="version"/>
+            </column>
+        </table>
+        <table name="appuser_role_link">
+            <column name="uid">
+                <foreignKey table="appuser" column="id"/>
+            </column>
+            <column name="rid">
+                <foreignKey table="role" column="id"/>
+            </column>
+        </table>
+        <table name="split_merge_history">
+            <column name="from_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="to_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+        </table>
+        <table name="nrd">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="entity_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="name">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+        </table>
+        <table name="name_component">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="name_id">
+                <foreignKey table="name" column="id"/>
+            </column>
+        </table>
+        <table name="name_contributor">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="name_id">
+                <foreignKey table="name" column="id"/>
+            </column>
+            <column name="name_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <!-- This table no longer exists.
+             <table name="contributor">
+                 <column name="version">
+                     <foreignKey table="version_history" column="id"/>
+                 </column>
+                 <column name="main_id">
+                     <foreignKey table="version_history" column="main_id"/>
+                 </column>
+             </table>
+        -->
+        <table name="date_range">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="from_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="to_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <!--
+                All the following are tables that individual date records are related to via fk_id. To get
+                this list one must look through the code in DBUtil.
+            -->
+            <column name="fk_id">
+                <foreignKey table="nrd" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="legal_status" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="subject" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="name" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="structure_genealogy" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="general_context" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="nationality" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="mandate" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="gender" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="biog_hist" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="occupation" column="id"/>
+            </column>
+            <!--
+                Class ConstellationRelation aka relation
+            -->
+            <column name="fk_id">
+                <foreignKey table="related_identity" column="id"/>
+            </column>
+            <!--
+                Class ResourceRelation 
+            -->
+            <column name="fk_id">
+                <foreignKey table="related_resource" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="function" column="id"/>
+            </column>
+        </table>
+        <table name="source">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="type_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="language_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="nrd" column="main_id"/>
+            </column>
+            <column name="id">
+                <foreignKey table="scm" column="citation_id"/>
+                <foreignKey table="scm" column="id"/>
+            </column>
+        </table>
+        <!-- 
+          <table name="source_link">
+              <column name="version">
+                  <foreignKey table="version_history" column="id"/>
+              </column>
+              <column name="main_id">
+                  <foreignKey table="version_history" column="main_id"/>
+              </column>
+              <column name="source_id">
+                  <foreignKey table="source" column="id"/>
+              </column>
+          </table>
+        -->
+        <!--
+            <table name="control">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="maintenance_status">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            </table>
+        -->
+        <!--
+            <table name="pre_snac_maintenance_history">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="event_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+              <column name="agent_type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            </table>
+        -->
+        <table name="occupation">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="occupation_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="place_link">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="geo_place_id">
+                <foreignKey table="geo_place" column="id"/>
+            </column>
+              <column name="role">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <!--
+                fk_id relates to tables that can have place info
+            -->
+        </table>
+        <table name="function">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="function_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="nationality">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="term_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="subject">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="term_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="related_identity">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="related_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="role">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+              <column name="arcrole">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+              <column name="type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+              <column name="date">
+                <foreignKey table="date_range" column="id"/>
+            </column>
+        </table>
+
+        <table name="related_resource">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="role">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="arcrole">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+
+        <table name="geo_place">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+        </table>
+
+        <table name="convention_declaration">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+        </table>
+
+        <table name="otherid">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="uri">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+              <column name="type">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+        </table>
+        <table name="language">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="language_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="script_id">
+                <foreignKey table="vocabulary" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="name" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="nrd" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="biog_hist" column="id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="source" column="id"/>
+            </column>
+        </table>
+
+        <table name="scm">
+            <column name="version">
+                <foreignKey table="version_history" column="id"/>
+            </column>
+            <column name="main_id">
+                <foreignKey table="version_history" column="main_id"/>
+            </column>
+            <column name="fk_id">
+                <foreignKey table="structure_genealogy" column="id"/>
+                <foreignKey table="general_context" column="id"/>
+                <foreignKey table="nationality" column="id"/>
+                <foreignKey table="nrd" column="id"/>
+                <foreignKey table="mandate" column="id"/>
+                <foreignKey table="convention_declaration" column="id"/>
+                <foreignKey table="gender" column="id"/>
+                <foreignKey table="date_range" column="id"/>
+                <foreignKey table="language" column="id"/>
+                <foreignKey table="otherid" column="id"/>
+                <foreignKey table="legal_status" column="id"/>
+                <foreignKey table="occupation" column="id"/>
+                <foreignKey table="function" column="id"/>
+                <foreignKey table="subject" column="id"/>
+                <foreignKey table="related_identity" column="id"/>
+                <foreignKey table="related_resource" column="id"/>
+                <foreignKey table="place_link" column="id"/>
+                <foreignKey table="source" column="id"/>
+                <foreignKey table="biog_hist" column="id"/>
+                <foreignKey table="name" column="id"/>
+            </column>
+        </table>
+    </tables>
+</schemaMeta>

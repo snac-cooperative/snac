@@ -9,10 +9,28 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+
+/**
+ * Load dependencies
+ */
 include ("../../../vendor/autoload.php");
+
+/**
+ * If debug is on, turn on error reporting
+ */
+if (\snac\Config::$DEBUG_MODE) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
 
 // Namespace shortcuts
 use \snac\server\Server as Server;
+use \Monolog\Logger;
+use \Monolog\Handler\StreamHandler;
+
+// Set up the global log stream
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 try {
     // Get the request body for processing
