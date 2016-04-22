@@ -528,6 +528,32 @@ $(document).ready(function() {
 		});
 	}
 	
+	// Code to handle adding new genders to the page
+	var existid = 1;
+	if ($('#next_exist_i').exists()) {
+	    existid = parseInt($('#next_exist_i').text());
+	}
+	console.log("Next Exist Date ID: " + existid);
+	if ($('#btn_add_exist_date').exists()){
+		$('#btn_add_exist_date').click(function(){
+            somethingHasBeenEdited = true;
+			var text = $('#exist_date_template').clone();
+	        var html = text.html().replace(/ZZ/g, existid);
+	        $('#add_exist_div').after(html);
+	        existid = existid + 1;
+	        return false;
+		});
+	}
+	if ($('#btn_add_exist_dateRange').exists()){
+		$('#btn_add_exist_dateRange').click(function(){
+            somethingHasBeenEdited = true;
+			var text = $('#exist_dateRange_template').clone();
+	        var html = text.html().replace(/ZZ/g, existid);
+	        $('#add_exist_div').after(html);
+	        existid = existid + 1;
+	        return false;
+		});
+	}
 
 	var nameEntryid = 1;
 	if ($('#next_nameEntry_i').exists()) {

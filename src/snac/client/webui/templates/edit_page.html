@@ -82,7 +82,8 @@ body {
 <body role="document" onLoad="updatePage();">
 {% import 'widgets.html' as widgets %}
 {% import 'edit_components.html' as components %}
-{% from 'date_entry.html' import dateEntry %}
+{% import 'date_entry.html' as dates %}
+
 
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(user) }}
@@ -227,8 +228,20 @@ body {
 
                     <div class="tab-pane" id="dates">
                         <h2>Exist Dates</h2>
+                        
+                        <div class="form-group" id="add_exist_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button> 
+                                <button class="btn btn-success" id="btn_add_exist_dateRange"><span class="glyphicon glyphicon-plus"></span> Add New Date Range</button>
+                            </div>
+                        </div>
 
-                        {{ dateEntry('Exist Dates', 'exist', data.dates.0) }}
+                        {% set i = 0 %}
+                        {% for exist in data.dates %}
+                            {{ components.displayExist(exist, i) }}
+                            {% set i = i + 1 %}
+                        {% endfor %}
+
                     </div>
 
 
@@ -713,6 +726,12 @@ body {
     </div>
     <div id="mandate_template" style="display:none">
     {{ components.displayMandate(null, 'ZZ') }}
+    </div>
+    <div id="exist_date_template" style="display:none">
+    {{ dates.dateEntry('Exist Dates', 'exist', null, 'ZZ') }}
+    </div>
+    <div id="exist_dateRange_template" style="display:none">
+    {{ dates.dateRangeEntry('Exist Dates', 'exist', null, 'ZZ') }}
     </div>
     <div id="scm_template" style="display:none">
     {{ components.displaySCM('SHORT', 'ZZ', 'YY', null) }}

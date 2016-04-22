@@ -745,6 +745,19 @@
                             </div>
 {% endmacro %}
 
+{% macro displayExist(exist, i) %}
+    {% import 'widgets.html' as widgets %}  
+    {% import 'date_entry.html' as dates %}  
+
+     
+    {% if exist.isRange %}
+        {{ dates.dateRangeEntry('Exist Dates', 'exist', exist, i) }}
+    {% else %}
+        {{ dates.dateEntry('Exist Dates', 'exist', exist, i) }}
+    {% endif %}
+
+{% endmacro %}
+
 {% macro displaySCM(short, i, j, scm) %}
     {% import 'widgets.html' as widgets %}  
                    <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
