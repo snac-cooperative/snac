@@ -6,7 +6,7 @@
                                         <input type="hidden" id="gender_id_{{i}}" name="gender_id_{{i}}" value="{{gender.id}}"/>
                                         <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version}}"/>
                                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="gender_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label class="control-label col-xs-2">
                                                     Term
@@ -39,7 +39,7 @@
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="nameEntry_panel_{{i}}">
                             <div class="panel-body">
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="nameEntry_datapart_{{i}}">
                                     <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
                                     <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
                                     <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value=""/>
@@ -100,7 +100,7 @@
                                 <input id="sameAs_id_{{i}}" name="sameAs_id_{{i}}" type="hidden" value="{{ other.id }}"/>
                                 <input id="sameAs_version_{{i}}" name="sameAs_version_{{i}}" type="hidden" value="{{ other.version }}"/>
                                 <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="sameAs_datapart_{{i}}">
                                     <div class="form-group">
                                         <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
                                             Relation Text
@@ -145,7 +145,7 @@
                                 <input id="source_id_{{i}}" name="source_id_{{i}}" type="hidden" value="{{ source.id }}"/>
                                 <input id="source_version_{{i}}" name="source_version_{{i}}" type="hidden" value="{{ source.version }}"/>
                                 <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="source_datapart_{{i}}">
                                     <div class="form-group">
                                         <label for="source_displayName_{{ i }}" class="control-label col-xs-4">
                                             Display Name
@@ -223,7 +223,7 @@
                                 <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                                 <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                                 <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="resourceRelation_datapart_{{i}}">
                                     <div class="form-group">
                                         <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
                                             Relation Text
@@ -300,7 +300,7 @@
                                 <input id="constellationRelation_targetID_{{i}}" name="constellationRelation_targetID_{{i}}" type="hidden" value="{{ relation.targetConstellation }}"/>
                                 <input id="constellationRelation_targetArkID_{{i}}" name="constellationRelation_targetArkID_{{i}}" type="hidden" value="{{ relation.targetArkID }}"/>
                                 <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="constellationRelation_datapart_{{i}}">
                                 <div class="form-group">
                                     <label class="control-label col-xs-4">
                                         Target
@@ -351,7 +351,7 @@
                                 <input id="language_id_{{i}}" name="language_id_{{i}}" type="hidden" value="{{ language.id }}"/>
                                 <input id="language_version_{{i}}" name="language_version_{{i}}" type="hidden" value="{{ language.version }}"/>
                                 <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="language_datapart_{{i}}">
                                     <div class="form-group">
                                         <label class="control-label col-xs-4">
                                             Language
@@ -394,7 +394,7 @@
                                 <input type="hidden" id="subject_id_{{i}}" name="subject_id_{{i}}" value="{{subject.id}}"/>
                                 <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
                                 <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value=""/>
-                                <div class="col-xs-10">
+                                <div class="col-xs-10" id="subject_datapart_{{i}}">
                                     <div class="form-group">
                                         <label class="control-label col-xs-2">
                                             Term
@@ -429,7 +429,7 @@
                                         <input type="hidden" id="nationality_id_{{i}}" name="nationality_id_{{i}}" value="{{nationality.id}}"/>
                                         <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
                                         <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="nationality_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label class="control-label col-xs-2">
                                                     Term
@@ -464,7 +464,7 @@
                                         <input type="hidden" id="function_id_{{i}}" name="function_id_{{i}}" value="{{function.id}}"/>
                                         <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
                                         <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="function_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label class="control-label col-xs-2">
                                                     Term
@@ -499,7 +499,7 @@
                                         <input type="hidden" id="occupation_id_{{i}}" name="occupation_id_{{i}}" value="{{occupation.id}}"/>
                                         <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
                                         <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="occupation_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label class="control-label col-xs-2">
                                                     Term
@@ -534,7 +534,7 @@
                                         <input type="hidden" id="legalStatus_id_{{i}}" name="legalStatus_id_{{i}}" value="{{legalStatus.id}}"/>
                                         <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
                                         <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="legalStatus_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label class="control-label col-xs-2">
                                                     Term
@@ -569,7 +569,7 @@
                                     <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
                                     <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
                                     <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value=""/>
-                                    <div class="col-xs-10">
+                                    <div class="col-xs-10" id="place_datapart_{{i}}">
                                         <div class="form-group">
                                             <label for="place_original_{{ i }}" class="control-label col-xs-4">
                                                 Original
@@ -660,7 +660,7 @@
                                         <input type="hidden" id="conventionDeclaration_id_{{i}}" name="conventionDeclaration_id_{{i}}" value="{{conventionDeclaration.id}}"/>
                                         <input id="conventionDeclaration_version_{{i}}" name="conventionDeclaration_version_{{i}}" type="hidden" value="{{ conventionDeclaration.version }}"/>
                                         <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="conventionDeclaration_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2">
                                                     XML
@@ -683,7 +683,7 @@
                                         <input type="hidden" id="generalContext_id_{{i}}" name="generalContext_id_{{i}}" value="{{generalContext.id}}"/>
                                         <input id="generalContext_version_{{i}}" name="generalContext_version_{{i}}" type="hidden" value="{{ generalContext.version }}"/>
                                         <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="generalContext_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label for="generalContext_text_{{i}}" class="control-label col-xs-2">
                                                     XML
@@ -706,7 +706,7 @@
                                         <input type="hidden" id="structureOrGenealogy_id_{{i}}" name="structureOrGenealogy_id_{{i}}" value="{{structureOrGenealogy.id}}"/>
                                         <input id="structureOrGenealogy_version_{{i}}" name="structureOrGenealogy_version_{{i}}" type="hidden" value="{{ structureOrGenealogy.version }}"/>
                                         <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="structureOrGenealogy_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2">
                                                     XML
@@ -729,7 +729,7 @@
                                         <input type="hidden" id="mandate_id_{{i}}" name="mandate_id_{{i}}" value="{{mandate.id}}"/>
                                         <input id="mandate_version_{{i}}" name="mandate_version_{{i}}" type="hidden" value="{{ mandate.version }}"/>
                                         <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value=""/>
-                                        <div class="col-xs-10">
+                                        <div class="col-xs-10" id="mandate_datapart_{{i}}">
                                             <div class="form-group">
                                                 <label for="mandate_text_{{i}}" class="control-label col-xs-2">
                                                     XML
@@ -752,7 +752,7 @@
                             <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
                             <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
                             <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value=""/>
-                            <div class="col-xs-10">
+                            <div class="col-xs-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
                                 <div class="form-group">
                                     <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4">
                                         Source Data
