@@ -3,6 +3,8 @@ var biogHistEditor = null;
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
 
+// Global Undo Set
+var undoSet = new Array();
 
 function displayErrorMessage(err) {
     var errorMsg = "";
@@ -64,8 +66,15 @@ function updateBiogHist() {
     }
     biogHistEditor.setSize("100%", null);
     biogHistEditor.refresh();
-}
+} 
 
+function undoEdit(short, i) {
+	makeUneditable(short, i);
+	
+	// restore the old content
+	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
+	
+}
 function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
@@ -75,6 +84,13 @@ function makeEditable(short, i) {
     if ($("#" + short + "_operation_" + i).val() == "delete")
         setDeleted(short, i);
 
+    undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
+    console.log(undoSet);
+    $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    	undoEdit(short, i);
+    });
 
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
@@ -145,6 +161,9 @@ function makeEditable(short, i) {
     
     // Asked to edit something, so make it globally known
     somethingHasBeenEdited = true;
+    
+
+	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
     		
     return false;
 }
@@ -215,8 +234,18 @@ function makeUneditable(short, i) {
 	    });
     }
     
+
+    $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-pencil\"></span> Edit");
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    	makeEditable(short, i);
+    });
+    
     // Clear the operation flag
     $("#" + short + "_operation_" + i).val("");
+    
+	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+
     return false;
 }
 
