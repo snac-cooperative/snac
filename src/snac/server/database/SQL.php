@@ -126,13 +126,8 @@ class SQL
     /**
      * Update password for an existing user.
      *
-<<<<<<< HEAD
-     * @param SNACDate[] $dates An array of SNACDate objects. We pass it to insertDate() and get a foreign key
-     * back. Our id is in table date_range, so we don't currently need the returned foreign key.
-=======
      * We assume the user exists. This will silently fail for non-existing user, although the calling code
      * won't be able to get a $appUserID for a non-existent user, so that's not a problem.
->>>>>>> development
      *
      * @param integer $appUserID The numeric user id
      *
@@ -340,18 +335,8 @@ class SQL
         return false;
     }
 
-<<<<<<< HEAD
-    
-    /** 
-     * Insert the non-repeating parts (non repeading data) of the constellation.
-     * 
-     * @param string[] $vhInfo associative list with keys: version, main_id
-     *
-     * @param SNACDate[] $existDates List SNACDate objects. Each one is passed to insertDate() unchanged.
-=======
     /**
      * Get user id email
->>>>>>> development
      *
      * Return the first user record based on email. Email is not unique, so there may be multiple users with
      * the same email address. This simply returns the first appuser record found. See the commentary with
@@ -457,13 +442,6 @@ class SQL
         $this->sdb->query("insert into appuser_role_link (uid, rid) values ($1, $2)",
                           array($uid, $newRoleID));
     }
-<<<<<<< HEAD
-    
-    /** 
-     * Insert a name into the database. This uses an old, arg style call as opposed to the newer array style
-     * calls. You must make sure here that the array() arg passed to execute() is correct. In the new style
-     * calls, that burden is placed on the calling code in DBUtils.
-=======
 
     /**
      * Add a role by label
@@ -476,7 +454,6 @@ class SQL
      * inserted.
      *
      * The "id not in..." prevents adding the same role twice.
->>>>>>> development
      * 
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param string $roleLable A role label
@@ -2493,12 +2470,7 @@ class SQL
      * It is intentional that the fields are not retrieved in any particular order because the row will be
      * saved as an associative list. That allows us to write the sql query in a more legible format.
      *
-<<<<<<< HEAD
-     * @param SNACDate[] $useDates Not currently implemented for table name. It needs to be inserted into
-     * table date_range using insertDate(). 
-=======
      * @param string[] $vhInfo associative list with keys: version, main_id
->>>>>>> development
      *
      * @return string[] An associative list with keys: version, main_id, ark_id, entity_type.
      */
@@ -2540,31 +2512,13 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-<<<<<<< HEAD
-     * @param string[] $argList A flat list of data for execute().
-     * 
-     * @param SNACDate $dates A single SNACDate object suitable for insertDate().
-     * 
-=======
      * @return string[] A list of associative list with keys: version, main_id, id, text.
      *
->>>>>>> development
      */
     public function selectBiogHist($vhInfo)
     {
         $qq = 'sbh';
         $this->sdb->prepare($qq,
-<<<<<<< HEAD
-                            'insert into function
-                            (version, main_id, function_type, vocabulary_source, note, function_id)
-                            values
-                            ($1, $2, $3, $4, $5,
-                            (select id from vocabulary where type=\'occupation\' and value=regexp_replace($6, \'^.*#\', \'\')))
-                            returning id');
-        
-        /* 
-         * Initialize $eArgs with $vhInfo, then push the rest of the args onto the execute list. 
-=======
                             'select
                             aa.version, aa.main_id, aa.id, aa.text
                             from biog_hist as aa,
@@ -2574,7 +2528,6 @@ class SQL
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
->>>>>>> development
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
@@ -2636,21 +2589,12 @@ class SQL
     /**
      * select other IDs
      *
-<<<<<<< HEAD
-     * @param string[] $vhInfo associative list with keys: version, main_id
-     * 
-     * @param SNACDate $dates A single SNACDate object.
-     *
-     * @param $argList Flat array of data suitable for execute(). We assume that DBUtils
-     * knows the php to sql field translation.
-=======
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
      *
      * Mar 25 2016: The fix described below only worked in certain cases. It is unclear why the subquery was
      * not just turned into a join like all the other tables. Fixed and this query works in at least one case
      * where the original failed. It failed when the versions were not in order.
->>>>>>> development
      *
      * I just noticed that otherid doesn't have is_deleted. There is a historical reason for that, but I
      * suspect history needs to be updated. Unless there is some really good reason otherid will never be
@@ -2709,41 +2653,17 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-<<<<<<< HEAD
-     * @param string[] $argList A flat array. The foreach before execute() simply copies all of them into a
-     * list to pass to execute(). We assume that DBUtils knows the order of data to send. If an order problem
-     * develops, fix it in the calling code, not down here. The whole point of DBUtils is to know php and SQL
-     * fields. The code down here only knows how to write database tables.
-=======
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
      * term_id.
      *
      * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
      * list of list.
->>>>>>> development
      *
      */
     public function selectSubject($vhInfo)
     {
         $qq = 'ssubj';
         $this->sdb->prepare($qq,
-<<<<<<< HEAD
-                            'insert into related_resource
-                            (version, main_id, role, relation_entry_type, href, arcrole, relation_entry, object_xml_wrap, descriptive_note)
-                            values
-                            ($1, $2,
-                            (select id from vocabulary where type=\'document_type\' and value=regexp_replace($3, \'^.*#\', \'\')),
-                            $4, $5,
-                            (select id from vocabulary where type=\'document_role\' and value=regexp_replace($6, \'^.*#\', \'\')),
-                            $7, $8, $9)');
-
-        /* 
-         * Combine vhInfo and the remaining args into a big array for execute(). Start by initializing the
-         * first two elements of the array with id and main_id from vhInfo.
-         */
-        $execList = array($vhInfo['version'], $vhInfo['main_id']);
-        foreach ($argList as $arg)
-=======
                             'select
                             aa.id, aa.version, aa.main_id, aa.term_id
                             from subject aa,
@@ -2759,7 +2679,6 @@ class SQL
                                             $vhInfo['main_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
->>>>>>> development
         {
             array_push($all, $row);
         }
@@ -2814,14 +2733,9 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-<<<<<<< HEAD
-     * @return integer[] Return a list of record id values meeting the version and main_id constriants.
-     * 
-=======
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
      * term_id. There may be multiple records returned.
      *
->>>>>>> development
      */
     public function selectLegalStatus($vhInfo)
     {
@@ -2859,15 +2773,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-<<<<<<< HEAD
-     * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, other_id,
-     * link_type.
-     * 
-=======
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
      * term_id. There may be multiple rows returned.
-     *
->>>>>>> development
      */
     public function selectGender($vhInfo)
     {
@@ -2903,13 +2810,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @return string[][] Return list of an associative list with keys: id, version, main_id,
-<<<<<<< HEAD
-     * subject_id. There may be multiple subjects returned.
-     * 
-=======
      * term_id. There may be multiple rows returned.
-     *
->>>>>>> development
      */
     public function selectNationality($vhInfo)
     {
@@ -2948,13 +2849,8 @@ class SQL
      *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
-<<<<<<< HEAD
-     * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, not, vocabulary_source, occupation_id
-     * 
-=======
      * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, note, vocabulary_source, occupation_id, date
      *
->>>>>>> development
      */
     public function selectOccupation($vhInfo)
     {
@@ -3005,13 +2901,9 @@ class SQL
      * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
      * version, main_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
      * arcrole, date. Date is an associative list with keys from table date_range. See selectDate().
-<<<<<<< HEAD
-     * 
-     */ 
-=======
      *
      */
->>>>>>> development
+
     public function selectRelation($vhInfo)
     {
         $qq = 'selectrelatedidentity';
@@ -3139,13 +3031,6 @@ class SQL
      /**
       * Select all names
       *
-<<<<<<< HEAD
-      * @param string[] $vhInfo with keys version, main_id.
-      *
-      * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
-      * preference_score, language, script_code, contributors. Key contributors is a list with keys: id,
-      * version, main_id, name_id, short_name, name_type.
-=======
       * Constrain on version and main_id. Code in DBUtils turns each returned list into a NameEntry
       * object. Order the returned records by preference_score descending so that preferred names are at the
       * beginning of the returned list. For ties, we also order by id, just so we'll be consistent. The
@@ -3162,7 +3047,6 @@ class SQL
       *
       * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
       * preference_score.
->>>>>>> development
       */
     public function selectName($vhInfo)
     {
@@ -3256,11 +3140,7 @@ class SQL
      * (oddly?) this didn't break until today.
      * 
      * @return string[] Return a flat array. This seems like a function that should return an associative
-<<<<<<< HEAD
-     * list. Currently, is only called in one place. 
-=======
      * list. Currently, is only called in one place.
->>>>>>> development
      */
     public function randomConstellationID()
     {
