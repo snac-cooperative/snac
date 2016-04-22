@@ -522,7 +522,7 @@ $(document).ready(function() {
             somethingHasBeenEdited = true;
 			var text = $('#gender_template').clone();
 	        var html = text.html().replace(/ZZ/g, genderid);
-	        $('#gender_pane').append(html);
+	        $('#add_gender_div').after(html);
 	        genderid = genderid + 1;
 	        return false;
 		});
