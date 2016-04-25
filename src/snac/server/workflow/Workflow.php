@@ -47,16 +47,13 @@ class Workflow
      * specific.
      *
      * @var string='login' The starting state for table traversal. Defaults to 'login'.
-     *
      */
     private $default_state = 'login';
 
     /**
      * A message we return to the calling code.
      *
-     *
      * @var string A message we return.
-     * 
      */
     private $msg = '';
     
@@ -92,25 +89,25 @@ class Workflow
     }
 
     /**
-     * Constructor. Currently known values for $tableAlias: 'client', 'server'. See Config.php and
+     * Constructor.
+     *
+     * Currently known values for $tableAlias: 'client', 'server'. See Config.php and
      * Config_dist.php. Assume (at least for now) that the state tables are in the same directory as this
      * file.
+     *
+     *  We must always be configured for a state table for the server.
      * 
      * @param string $tableAlias An alias name for the state table to read.
      */
-    public function __construct($tableAlias) {
-        if (! $tableAlias || ! (isset(Config::$stateTableAlias[$tableAlias])))
-        {
-            $tableAlias = 'server';
-        }
-        $fileName = Config::$stateTableAlias[$tableAlias];
-        readStateDate($fileName);
+    public function __construct($tableAlias='server') {
+        $fileName = \snac\Config::$stateTableAlias[$tableAlias];
+        $this->readStateData($fileName);
     }
 
     /*
-      Run Method
-
-      Runs the workflow engine. Or something.
+     * Run the workflow engine
+     *
+     * Runs the workflow engine. The real function is traverse().
     */
     public function run() 
     {
@@ -120,9 +117,7 @@ class Workflow
     
     
     /**
-     *
      * Turn the state table into a graphviz .gv graphic file. It reads the $table and writes file $file.
-     *
      *
      */
     public function makeGraph ()
@@ -212,7 +207,7 @@ class Workflow
             // if-page-dashboard to be true.
 
             // if (checkDemoCGI($test) && $test !~ m/if\-page/)
-            if (checkDemoCGI($test) && ! (preg_match('/if\-page/', $test)))
+            if ($this->checkDemoCGI($test) && ! (preg_match('/if\-page/', $test)))
             {
                 $checked = 'checked';
             }
@@ -254,11 +249,10 @@ class Workflow
      * @param string $msg
      *
      * @return void
-     *
      */
     private function msg($msg)
     {
-        $msg .= "$msg<br>\n";
+        $this->msg .= "$msg<br>\n";
     }
     
     // This is normally first called with $default_state, and state table traversal goes from there. 
@@ -276,7 +270,7 @@ class Workflow
         $xx = 0;
         while ($doNext)
         {
-            msg("<span style=\"background-color:lightblue;\">Going into state: $currState</span>");
+            $this->msg("<span style=\"background-color:lightblue;\">Going into state: $currState</span>");
             $lastFlag = 0;
             // if ($waitNext)
             // {
@@ -287,7 +281,7 @@ class Workflow
             {
                 if ($hr['edge'] == $currState)
                 {
-                    if ((dispatch($hr, 'test')) ||
+                    if (($this->dispatch($hr, 'test')) ||
                         ($hr['test'] == 'true') ||
                         ($hr['test'] == ''))
                     {
@@ -346,7 +340,7 @@ class Workflow
                         }
                         else
                         {
-                            msg(sprintf("<span style='background-color:lightgreen;'>Dispatch function: %s</span>", $hr['func']));
+                            $this->msg(sprintf("<span style='background-color:lightgreen;'>Dispatch function: %s</span>", $hr['func']));
                             
                             /* 
                              * Eventually, the state table will be sanity checked, and perhaps munged so that nothing
@@ -369,17 +363,17 @@ class Workflow
                     }
                     elseif ($hr['test'] && $verbose)
                     {
-                        msg(sprintf("If: %s is false,", $hr['test']));
+                        $this->msg(sprintf("If: %s is false,", $hr['test']));
                         if ($hr['func'])
                         {
-                            msg(sprintf("not running func: %s, ", $hr['func']));
+                            $this->msg(sprintf("not running func: %s, ", $hr['func']));
                         }
-                        msg(sprintf("not going to state: %s", $hr['next']));
+                        $this->msg(sprintf("not going to state: %s", $hr['next']));
                     }
                 }
                 else
                 {
-                    // msg("$hr['edge'] is not $currState last_flag: $lastFlag");
+                    // $this->msg("$hr['edge'] is not $currState last_flag: $lastFlag");
                 }
                 if ($lastFlag)
                 {
@@ -389,7 +383,7 @@ class Workflow
             $xx++;
             if ($xx > 30)
             {
-                msg("Error: inf loop catcher!");
+                $this->msg("Error: inf loop catcher!");
                 last;
             }
         }
@@ -544,13 +538,13 @@ class Workflow
          */
         if ($key == 'test')
         {
-            $val = checkDemoCGI($hr['$key']);
+            $val = $this->checkDemoCGI($hr['$key']);
             $val_text = 'false';
             if ($val)
             {
                 $val_text = 'true';
             }
-            msg(sprintf("checking: %s result: $val_text<br>\n", $hr['$key'] ));
+            $this->msg(sprintf("checking: %s result: $val_text<br>\n", $hr['$key'] ));
             return $val;
         }
         else
@@ -719,11 +713,11 @@ class Workflow
             {
                 if  (preg_match('/return/', $hr['func']))
                 {
-                    msg("Warning: unknown state following return");
+                    $this->msg("Warning: unknown state following return");
                 }
                 else
                 {
-                    msg(sprintf("Error: unknown state %s\n%s", $hr['next'], var_export($hr,1)));
+                    $this->msg(sprintf("Error: unknown state %s\n%s", $hr['next'], var_export($hr,1)));
                     $ok = false;
                 }
             }
@@ -736,14 +730,14 @@ class Workflow
         {
             if (! exists($nextStates{$state}))
             {
-                msg("No next-state for: $state");
+                $this->msg("No next-state for: $state");
                 $ok = 0;
             }
         }
         
         if (! $ok)
         {
-            msg("Failed state table sanity check (unknown or unreachable states)");
+            $this->msg("Failed state table sanity check (unknown or unreachable states)");
             return false;
         }
         return true;

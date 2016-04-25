@@ -56,7 +56,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
     }
 
-    
+   
     /**
      * {@inheritDoc}
      * @see PHPUnit_Framework_TestCase::setUp()
@@ -66,6 +66,32 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function setUp() 
     {
         // Consider creating a single parser instance here, and reusing it throughout.
+    }
+
+    /**
+     * Check multiple exist dates
+     *
+     * Verify that multiple exist dates are written to the db and read back from the db.
+     */ 
+    public function testMultiExistDate()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
+                                                 'testing multi exist date');
+        $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        printf("\ndbutiltest write from dates: %s, %s read from dates: %s, %s\n",
+               $cObj->getDateList()[0]->getFromDate(),
+               $cObj->getDateList()[1]->getFromDate(),
+               $newRetObj->getDateList()[0]->getFromDate(),
+               $newRetObj->getDateList()[1]->getFromDate());
+
+        $this->assertTrue(count($cObj->getDateList()) > 1);
+        $this->assertEquals(count($cObj->getDateList()), count($newRetObj->getDateList()));
+        
     }
 
     /**
