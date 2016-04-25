@@ -93,6 +93,43 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $this->assertTrue(count($cObj->getDateList()) > 1);
         $this->assertEquals(count($cObj->getDateList()), count($newRetObj->getDateList()));
+
+        $dateObj = new \snac\data\SNACDate();
+        $dateObj->setRange(true);
+        $dateObj->setFromDate('1940',
+                              '1940',
+                              null);
+        // $dateObj->setFromBC(false);
+        // $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
+        $dateObj->setToDate('1960',
+                            '1960',
+                            null);
+        // $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
+        // $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+        // $dateObj->setNote($singleDate['descriptive_note']);
+        // $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
+        $dateObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        
+        $newRetObj->addDate($dateObj);
+
+        /*
+         * printf("\ndbutiltest count after adding third: %s\n", count($newRetObj->getDateList()));
+         */
+        
+        // Yes, we are re-using $retObj.
+        $retObj = $this->dbu->writeConstellation($this->user, $newRetObj,
+                                                 'testing adding date to multi exist date');
+        $thirdRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        $this->assertEquals($thirdRetObj->getDateList()[2]->getFromDate(), '1940');
+        
+        /* 
+         * printf("\ndbutiltest count after reading third: %s\n", count($thirdRetObj->getDateList()));
+         * 
+         * printf("\ndbutiltest write thrid date: %s read third date: %s\n",
+         *        $newRetObj->getDateList()[2]->getFromDate(),
+         *        $thirdRetObj->getDateList()[2]->getFromDate());
+         */
         
     }
 

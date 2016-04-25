@@ -1328,7 +1328,16 @@ class SQL
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
      *
-     * The other date select function would be by original.id=date.fk_id. Maybe we only need by date.fk_id.
+     * Constrain sub query where fk_id=64056, but group by id and return max(version) by id. Remember, our
+     * unique key is always id,version. Joining the fk_id constrained subquery with the table on id and
+     * version gives us all of the relevant id,version records, and nothing else.
+     *
+     * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
+     * of only returning record(s) for the overall max version, so the bug was only apparent when there were
+     * at least 2 versions in group of records.
+     *
+     * (What "other" date select? This old comment is unclear.) The other date select function would be by
+     * original.id=date.fk_id. Maybe we only need by date.fk_id.
      *
      * @param integer $did A foreign key to record in another table.
      *
@@ -1347,8 +1356,8 @@ class SQL
                             aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
                             aa.from_type,aa.to_type
                             from date_range as aa,
-                            (select fk_id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            (select id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq, array($did, $version));
         $all = array();
