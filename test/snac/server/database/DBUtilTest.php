@@ -83,11 +83,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                  'testing multi exist date');
         $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        printf("\ndbutiltest write from dates: %s, %s read from dates: %s, %s\n",
-               $cObj->getDateList()[0]->getFromDate(),
-               $cObj->getDateList()[1]->getFromDate(),
-               $newRetObj->getDateList()[0]->getFromDate(),
-               $newRetObj->getDateList()[1]->getFromDate());
+        /* 
+         * printf("\ndbutiltest write from dates: %s, %s read from dates: %s, %s\n",
+         *        $cObj->getDateList()[0]->getFromDate(),
+         *        $cObj->getDateList()[1]->getFromDate(),
+         *        $newRetObj->getDateList()[0]->getFromDate(),
+         *        $newRetObj->getDateList()[1]->getFromDate());
+         */
 
         $this->assertTrue(count($cObj->getDateList()) > 1);
         $this->assertEquals(count($cObj->getDateList()), count($newRetObj->getDateList()));
