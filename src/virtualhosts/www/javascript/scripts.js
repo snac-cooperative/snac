@@ -433,7 +433,10 @@ function setDeleted(short, i) {
         $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
            return false;
         });
-    	
+    
+        // disable the SCM button
+        $("#" + short + "_scmbutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
+
     } else {
     	// set undelete
     	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
@@ -463,6 +466,9 @@ function setDeleted(short, i) {
         $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
            makeEditable(short, i); 
         });
+    
+        // restore the SCM button
+        $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
     	
     }
     
