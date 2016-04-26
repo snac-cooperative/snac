@@ -1,20 +1,99 @@
-{% macro dateEntry(name, short, snacDate) %}
+{% macro dateEntry(name, short, snacDate, i) %}
     {% import 'widgets.html' as widgets %}
-    {% set i = 0 %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
-	<div class="panel-heading">{{ name }}</div>
+	<div class="panel-heading">{{ name }} - Single Date</div>
 
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
             <input id="{{short}}_operation_{{i}}" name="{{short}}_operation_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_isrange_{{i}}" name="{{short}}_isrange_{{i}}" type="hidden" value="false"/>
+            <input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_endoriginal_{{i}}" name="{{short}}_endoriginal_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_endtype_id_{{i}}" name="{{short}}_endtype_id_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endontAfter_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_endnotAfter_{{i}}" name="{{short}}_endnotBefore_{{i}}" type="hidden" value=""/>
 	<div class="panel-body">
-		<div class="col-xs-10">
+		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
+			<div class="form-group">
+				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
+					Date </label>
+				<div class="col-xs-8">
+					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="text"
+						class="form-control" value="{{ snacDate.fromDate }}" placeholder="YYYY-MM-DD" readonly/>
+				</div>
+			</div>
+
+    			<div class="form-group">
+    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4">
+    					Original </label>
+    				<div class="col-xs-8">
+    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
+    						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
+    				</div>
+    			</div>
+
+            <div class="form-group">
+                <label class="control-label col-xs-4">
+                    Type
+                </label>
+                <div class="col-xs-8" id="select_{{short}}_starttype_{{i}}">
+                    <input type="hidden" id="{{short}}_starttype_id_{{i}}" name="{{short}}_starttype_id_{{i}}" value="{{snacDate.fromType.id}}"/>
+                    <input type="hidden" id="{{short}}_starttype_term_{{i}}" name="{{short}}_starttype_term_{{i}}" value="{{snacDate.fromType.term}}"/>
+                    <input type="hidden" id="{{short}}_starttype_vocabtype_{{i}}" name="{{short}}_starttype_vocabtype_{{i}}" value="date_type"/>
+                    <input type="hidden" id="{{short}}_starttype_minlength_{{i}}" name="{{short}}_starttype_minlength_{{i}}" value="0"/>
+                    <p class="form-control-static">{{ snacDate.fromType.term }}</p>
+                </div>
+            </div>
+			<div class="form-group">
+				<label for="{{short}}_startvotBefore_{{i}}" class="control-label col-xs-4">
+					Fuzzy Range </label>
+				<div class="col-xs-3">
+					<input id="{{short}}_startnotBefore_{{i}}"
+						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
+						value="{{ snacDate.fromRange.notBefore }}" placeholder="YYYY-MM-DD" readonly/>
+				</div>
+				<div class="col-xs-2 text-center">-</div>
+				<div class="col-xs-3">
+					<input id="{{short}}_startnotAfter_{{i}}"
+						name="{{short}}_startnotAfter_{{i}}" type="text" class="form-control"
+						value="{{ snacDate.fromRange.notAfter }}" placeholder="YYYY-MM-DD" readonly/>
+				</div>
+			</div>
+
+            <div class="form-group">
+                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4">
+                    Descriptive Note
+                </label>
+                <div class="col-xs-8">
+                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>
+                </div>
+            </div>
+		</div>
+
+        <!-- TODO: need to fix this up! -->
+        {{ widgets.scmModal(short, i, name, name, snacDate) }}
+        {{ widgets.optionsList(short, i) }}
+	</div>
+</div>
+{% endmacro %}
+
+{% macro dateRangeEntry(name, short, snacDate, i) %}
+    {% import 'widgets.html' as widgets %}
+<div class="panel panel-default" id="{{short}}_panel_{{i}}">
+	<div class="panel-heading">{{ name }} - Date Range</div>
+
+            <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
+            <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
+            <input id="{{short}}_operation_{{i}}" name="{{short}}_operation_{{i}}" type="hidden" value=""/>
+            <input id="{{short}}_isrange_{{i}}" name="{{short}}_isrange_{{i}}" type="hidden" value="true"/>
+	<div class="panel-body">
+		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
 			<div class="form-group">
 				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
 					Start </label>
 				<div class="col-xs-8">
 					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="text"
-						class="form-control" value="{{ snacDate.fromDate }}" readonly/>
+						class="form-control" value="{{ snacDate.fromDate }}" placeholder="YYYY-MM-DD" readonly/>
 				</div>
 			</div>
 
@@ -29,7 +108,7 @@
 
             <div class="form-group">
                 <label class="control-label col-xs-4">
-                    Start Type
+                    Start Date Type
                 </label>
                 <div class="col-xs-8" id="select_{{short}}_starttype_{{i}}">
                     <input type="hidden" id="{{short}}_starttype_id_{{i}}" name="{{short}}_starttype_id_{{i}}" value="{{snacDate.fromType.id}}"/>
@@ -41,17 +120,17 @@
             </div>
 			<div class="form-group">
 				<label for="{{short}}_startvotBefore_{{i}}" class="control-label col-xs-4">
-					Start Range </label>
+					Start Fuzzy Range </label>
 				<div class="col-xs-3">
 					<input id="{{short}}_startnotBefore_{{i}}"
 						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notBefore }}" readonly/>
+						value="{{ snacDate.fromRange.notBefore }}" placeholder="YYYY-MM-DD" readonly/>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
 				<div class="col-xs-3">
 					<input id="{{short}}_startnotAfter_{{i}}"
 						name="{{short}}_startnotAfter_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notAfter }}" readonly/>
+						value="{{ snacDate.fromRange.notAfter }}" placeholder="YYYY-MM-DD" readonly/>
 				</div>
 			</div>
 			<div class="form-group">
@@ -59,7 +138,7 @@
 					End </label>
 				<div class="col-xs-8">
 					<input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="text"
-						class="form-control" value="{{ snacDate.toDate }}" readonly/>
+						class="form-control" value="{{ snacDate.toDate }}" placeholder="YYYY-MM-DD" readonly/>
 				</div>
 			</div>
 
@@ -74,7 +153,7 @@
 
             <div class="form-group">
                 <label class="control-label col-xs-4">
-                    End Type
+                    End Date Type
                 </label>
                 <div class="col-xs-8" id="select_{{short}}_endtype_{{i}}">
                     <input type="hidden" id="{{short}}_endtype_id_{{i}}" name="{{short}}_endtype_id_{{i}}" value="{{snacDate.toType.id}}"/>
@@ -86,17 +165,17 @@
             </div>
 			<div class="form-group">
 				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4">
-					End Range </label>
+					End Fuzzy Range </label>
 				<div class="col-xs-3">
 					<input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endnotBefore_{{i}}"
 						type="text" class="form-control"
-						value="{{ snacDate.toRange.notBefore }}" readonly/>
+						value="{{ snacDate.toRange.notBefore }}" placeholder="YYYY-MM-DD" size="10" readonly/>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
 				<div class="col-xs-3">
 					<input id="{{short}}_endnotAfter_{{i}}" name="{{short}}_endnotAfter_{{i}}"
 						type="text" class="form-control"
-						value="{{ snacDate.toRange.notAfter }}" readonly/>
+						value="{{ snacDate.toRange.notAfter }}" placeholder="YYYY-MM-DD" size="10" readonly/>
 				</div>
 			</div>
 

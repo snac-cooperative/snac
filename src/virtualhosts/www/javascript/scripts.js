@@ -3,6 +3,8 @@ var biogHistEditor = null;
 // Has anything been edited on this page?
 var somethingHasBeenEdited = false;
 
+// Global Undo Set
+var undoSet = new Array();
 
 function displayErrorMessage(err) {
     var errorMsg = "";
@@ -64,8 +66,21 @@ function updateBiogHist() {
     }
     biogHistEditor.setSize("100%", null);
     biogHistEditor.refresh();
-}
+} 
 
+function undoEdit(short, i) {
+	makeUneditable(short, i);
+	
+	// restore the old content
+	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
+    
+    // restore the delete button
+    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+       setDeleted(short, i); 
+    });
+	
+}
 function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
@@ -75,6 +90,18 @@ function makeEditable(short, i) {
     if ($("#" + short + "_operation_" + i).val() == "delete")
         setDeleted(short, i);
 
+    // Add to the undo set
+    undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
+    
+    $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    	undoEdit(short, i);
+    });
+    $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("disabled");
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+        return false;
+    });
 
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
@@ -145,6 +172,9 @@ function makeEditable(short, i) {
     
     // Asked to edit something, so make it globally known
     somethingHasBeenEdited = true;
+    
+
+	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
     		
     return false;
 }
@@ -166,7 +196,7 @@ function makeUneditable(short, i) {
         if(obj.attr('id').indexOf(idstr) != -1 
             && obj.attr('id').indexOf("ZZ") == -1
             && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
-            console.log(obj);
+            
             if (obj.get(0).CodeMirror) {
                 obj.get(0).CodeMirror.toTextArea();
             }
@@ -215,8 +245,18 @@ function makeUneditable(short, i) {
 	    });
     }
     
+
+    $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-pencil\"></span> Edit");
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    	makeEditable(short, i);
+    });
+    
     // Clear the operation flag
     $("#" + short + "_operation_" + i).val("");
+    
+	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+
     return false;
 }
 
@@ -387,7 +427,16 @@ function setDeleted(short, i) {
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     	
         $("#" + short + "_operation_" + i).val("delete");
-    	
+    
+        // disable edit button
+        $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+           return false;
+        });
+    
+        // disable the SCM button
+        $("#" + short + "_scmbutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
+
     } else {
     	// set undelete
     	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
@@ -411,6 +460,15 @@ function setDeleted(short, i) {
         } else {
         	$("#" + short + "_operation_" + i).val("");
         }
+        
+        // restore edit button
+        $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+           makeEditable(short, i); 
+        });
+    
+        // restore the SCM button
+        $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
     	
     }
     
@@ -463,8 +521,49 @@ function setSCMDeleted(short, i, j) {
     return false;
 }
 
+function turnOnButtons(shortName, i) {
+
+    // Turn on the edit button
+    $("#"+shortName+"_editbutton_"+i).on("click", function() {
+        makeEditable(shortName, i);
+    });
+
+    // Turn on the delete buttons
+    $("#"+shortName+"_deletebutton_"+i).on("click", function() {
+        setDeleted(shortName, i);
+    });
+}
+
 $(document).ready(function() {
 
+
+    // Turn on the edit buttons
+    $("a[id*='editbutton']").each(function() {
+        var obj = $(this);
+        var pieces = obj.attr('id').split("_");
+
+        if (pieces.length == 3) {
+            var short = pieces[0];
+            var i = pieces[2];
+            obj.on("click", function() {
+                makeEditable(short, i);
+            });
+        }
+    });
+
+    // Turn on the delete buttons
+    $("a[id*='deletebutton']").each(function() {
+        var obj = $(this);
+        var pieces = obj.attr('id').split("_");
+
+        if (pieces.length == 3) {
+            var short = pieces[0];
+            var i = pieces[2];
+            obj.on("click", function() {
+                setDeleted(short, i);
+            });
+        }
+    });
 
 	// Attach functions to the entityType select
 	if ($('#entityType').exists()) {
@@ -492,12 +591,41 @@ $(document).ready(function() {
             somethingHasBeenEdited = true;
 			var text = $('#gender_template').clone();
 	        var html = text.html().replace(/ZZ/g, genderid);
-	        $('#gender_pane').append(html);
+	        $('#add_gender_div').after(html);
+            turnOnButtons("gender", genderid);
 	        genderid = genderid + 1;
 	        return false;
 		});
 	}
 	
+	// Code to handle adding new genders to the page
+	var existid = 1;
+	if ($('#next_exist_i').exists()) {
+	    existid = parseInt($('#next_exist_i').text());
+	}
+	console.log("Next Exist Date ID: " + existid);
+	if ($('#btn_add_exist_date').exists()){
+		$('#btn_add_exist_date').click(function(){
+            somethingHasBeenEdited = true;
+			var text = $('#exist_date_template').clone();
+	        var html = text.html().replace(/ZZ/g, existid);
+	        $('#add_exist_div').after(html);
+            turnOnButtons("exist", existid);
+	        existid = existid + 1;
+	        return false;
+		});
+	}
+	if ($('#btn_add_exist_dateRange').exists()){
+		$('#btn_add_exist_dateRange').click(function(){
+            somethingHasBeenEdited = true;
+			var text = $('#exist_dateRange_template').clone();
+	        var html = text.html().replace(/ZZ/g, existid);
+	        $('#add_exist_div').after(html);
+            turnOnButtons("exist", existid);
+	        existid = existid + 1;
+	        return false;
+		});
+	}
 
 	var nameEntryid = 1;
 	if ($('#next_nameEntry_i').exists()) {
@@ -510,6 +638,7 @@ $(document).ready(function() {
 			var text = $('#nameEntry_template').clone();
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
+            turnOnButtons("nameEntry", nameEntryid);
 	        nameEntryid = nameEntryid + 1;
 	        return false;
 		});
@@ -526,6 +655,7 @@ $(document).ready(function() {
 			var text = $('#sameAs_template').clone();
 	        var html = text.html().replace(/ZZ/g, sameAsid);
 	        $('#add_sameAs_div').after(html);
+            turnOnButtons("sameAs", sameAsid);
 	        sameAsid = sameAsid + 1;
 	        return false;
 		});
@@ -542,6 +672,7 @@ $(document).ready(function() {
 			var text = $('#source_template').clone();
 	        var html = text.html().replace(/ZZ/g, sourceid);
 	        $('#add_source_div').after(html);
+            turnOnButtons("source", sourceid);
 	        sourceid = sourceid + 1;
 	        return false;
 		});
@@ -558,6 +689,7 @@ $(document).ready(function() {
 			var text = $('#resourceRelation_template').clone();
 	        var html = text.html().replace(/ZZ/g, resourceRelationid);
 	        $('#add_resourceRelation_div').after(html);
+            turnOnButtons("resourceRelation", resourceRelationid);
 	        resourceRelationid = resourceRelationid + 1;
 	        return false;
 		});
@@ -584,6 +716,7 @@ $(document).ready(function() {
 		        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
 		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
 		        
+                turnOnButtons("constellationRelation", constellationRelationid);
 		        makeEditable("constellationRelation", constellationRelationid);
 		        
 		        constellationRelationid = constellationRelationid + 1;
@@ -619,6 +752,7 @@ $(document).ready(function() {
 			var text = $('#language_template').clone();
 	        var html = text.html().replace(/ZZ/g, languageid);
 	        $('#add_language_div').after(html);
+            turnOnButtons("language", languageid);
 	        languageid = languageid + 1;
 	        return false;
 		});
@@ -635,6 +769,7 @@ $(document).ready(function() {
 			var text = $('#subject_template').clone();
 	        var html = text.html().replace(/ZZ/g, subjectid);
 	        $('#add_subject_div').after(html);
+            turnOnButtons("subject", subjectid);
 	        subjectid = subjectid + 1;
 	        return false;
 		});
@@ -651,6 +786,7 @@ $(document).ready(function() {
 			var text = $('#nationality_template').clone();
 	        var html = text.html().replace(/ZZ/g, nationalityid);
 	        $('#add_nationality_div').after(html);
+            turnOnButtons("nationality", nationalityid);
 	        nationalityid = nationalityid + 1;
 	        return false;
 		});
@@ -667,6 +803,7 @@ $(document).ready(function() {
 			var text = $('#function_template').clone();
 	        var html = text.html().replace(/ZZ/g, functionid);
 	        $('#add_function_div').after(html);
+            turnOnButtons("function", functionid);
 	        functionid = functionid + 1;
 	        return false;
 		});
@@ -683,6 +820,7 @@ $(document).ready(function() {
 			var text = $('#occupation_template').clone();
 	        var html = text.html().replace(/ZZ/g, occupationid);
 	        $('#add_occupation_div').after(html);
+            turnOnButtons("occupation", occupationid);
 	        occupationid = occupationid + 1;
 	        return false;
 		});
@@ -699,6 +837,7 @@ $(document).ready(function() {
 			var text = $('#legalStatus_template').clone();
 	        var html = text.html().replace(/ZZ/g, legalStatusid);
 	        $('#add_legalStatus_div').after(html);
+            turnOnButtons("legalStatus", legalStatusid);
 	        legalStatusid = legalStatusid + 1;
 	        return false;
 		});
@@ -715,6 +854,7 @@ $(document).ready(function() {
 			var text = $('#place_template').clone();
 	        var html = text.html().replace(/ZZ/g, placeid);
 	        $('#add_place_div').after(html);
+            turnOnButtons("place", placeid);
 	        placeid = placeid + 1;
 	        return false;
 		});
@@ -731,6 +871,7 @@ $(document).ready(function() {
 			var text = $('#conventionDeclaration_template').clone();
 	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
 	        $('#add_conventionDeclaration_div').after(html);
+            turnOnButtons("conventionDeclaration", conventionDeclarationid);
 	        conventionDeclarationid = conventionDeclarationid + 1;
 	        return false;
 		});
@@ -747,6 +888,7 @@ $(document).ready(function() {
 			var text = $('#generalContext_template').clone();
 	        var html = text.html().replace(/ZZ/g, generalContextid);
 	        $('#add_generalContext_div').after(html);
+            turnOnButtons("generalContext", generalContextid);
 	        generalContextid = generalContextid + 1;
 	        return false;
 		});
@@ -763,6 +905,7 @@ $(document).ready(function() {
 			var text = $('#structureOrGenealogy_template').clone();
 	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
 	        $('#add_structureOrGenealogy_div').after(html);
+            turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
 	        structureOrGenealogyid = structureOrGenealogyid + 1;
 	        return false;
 		});
@@ -779,6 +922,7 @@ $(document).ready(function() {
 			var text = $('#mandate_template').clone();
 	        var html = text.html().replace(/ZZ/g, mandateid);
 	        $('#add_mandate_div').after(html);
+            turnOnButtons("mandate", mandateid);
 	        mandateid = mandateid + 1;
 	        return false;
 		});
