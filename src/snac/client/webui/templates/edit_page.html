@@ -45,39 +45,8 @@
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </script>
+<link rel="stylesheet" href="css/snac.css">
 
-<style>
-body {
-    padding-top: 70px;
-    padding-bottom: 30px;
-}
-
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
-
-.snac > p > .btn {
-    margin: 5px 0;
-}
-
-.snac .navbar .container {
-    width: auto;
-}
-.tab-pane {
-
-    border-left: 1px solid #ddd;
-    border-right: 1px solid #ddd;
-    border-bottom: 1px solid #ddd;
-    border-radius: 0px 0px 5px 5px;
-    padding: 10px;
-}
-
-.nav-tabs {
-    margin-bottom: 0;
-}
-</style>
 </head>
 <body role="document" onLoad="updatePage();">
 {% import 'widgets.html' as widgets %}

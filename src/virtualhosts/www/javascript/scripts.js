@@ -73,6 +73,12 @@ function undoEdit(short, i) {
 	
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
+    
+    // restore the delete button
+    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+       setDeleted(short, i); 
+    });
 	
 }
 function makeEditable(short, i) {
@@ -91,6 +97,10 @@ function makeEditable(short, i) {
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
     	undoEdit(short, i);
+    });
+    $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("disabled");
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+        return false;
     });
 
     var idstr = "_" + i;
@@ -417,6 +427,12 @@ function setDeleted(short, i) {
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     	
         $("#" + short + "_operation_" + i).val("delete");
+    
+        // disable edit button
+        $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+           return false;
+        });
     	
     } else {
     	// set undelete
@@ -441,6 +457,12 @@ function setDeleted(short, i) {
         } else {
         	$("#" + short + "_operation_" + i).val("");
         }
+        
+        // restore edit button
+        $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+           makeEditable(short, i); 
+        });
     	
     }
     
@@ -495,6 +517,34 @@ function setSCMDeleted(short, i, j) {
 
 $(document).ready(function() {
 
+
+    // Turn on the edit buttons
+    $("a[id*='editbutton']").each(function() {
+        var obj = $(this);
+        var pieces = obj.attr('id').split("_");
+
+        if (pieces.length == 3) {
+            var short = pieces[0];
+            var i = pieces[2];
+            obj.on("click", function() {
+                makeEditable(short, i);
+            });
+        }
+    });
+
+    // Turn on the delete buttons
+    $("a[id*='deletebutton']").each(function() {
+        var obj = $(this);
+        var pieces = obj.attr('id').split("_");
+
+        if (pieces.length == 3) {
+            var short = pieces[0];
+            var i = pieces[2];
+            obj.on("click", function() {
+                setDeleted(short, i);
+            });
+        }
+    });
 
 	// Attach functions to the entityType select
 	if ($('#entityType').exists()) {
