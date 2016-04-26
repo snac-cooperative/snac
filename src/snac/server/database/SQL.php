@@ -840,6 +840,14 @@ class SQL
     /**
      * Select records from table source by foreign key
      *
+     * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
+     * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
+     * us all of the relevant id,version records, and nothing else.
+     *
+     * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
+     * of only returning record(s) for the overall max version, so the bug was only apparent when there were
+     * at least 2 versions in group of records.
+     *
      * @param integer $fkID A foreign key to record in another table.
      *
      * @param integer $version The constellation version. For edits this is max version of the
@@ -1328,9 +1336,9 @@ class SQL
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
      *
-     * Constrain sub query where fk_id=64056, but group by id and return max(version) by id. Remember, our
-     * unique key is always id,version. Joining the fk_id constrained subquery with the table on id and
-     * version gives us all of the relevant id,version records, and nothing else.
+     * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
+     * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
+     * us all of the relevant id,version records, and nothing else.
      *
      * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
      * of only returning record(s) for the overall max version, so the bug was only apparent when there were
@@ -1376,7 +1384,16 @@ class SQL
      * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
      *
      * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
-     * place applies. We do not know or care what the other record is.
+     * place applies. We do not know or care what the other record is, and that works because all the ids come
+     * from a single SQL sequence and therefore are unique.
+     *
+     * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
+     * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
+     * us all of the relevant id,version records, and nothing else.
+     *
+     * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
+     * of only returning record(s) for the overall max version, so the bug was only apparent when there were
+     * at least 2 versions in group of records.
      *
      * @param integer $tid A foreign key to record in the other table.
      *
@@ -1486,6 +1503,14 @@ class SQL
      * Select a meta data record. We expect only one record, and will only return one (or zero). The query
      * relies on table.id==fk_id where $tid is a foreign key of the record to which this applies. We do not
      * know or care what the other record is.
+     *
+     * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
+     * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
+     * us all of the relevant id,version records, and nothing else.
+     *
+     * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
+     * of only returning record(s) for the overall max version, so the bug was only apparent when there were
+     * at least 2 versions in group of records.
      *
      * @param integer $tid A foreign key to record in another table.
      *
@@ -1918,14 +1943,20 @@ class SQL
      * This is not language controlled vocabulary. That is in the vocabulary table. This table links vocab id
      * (language, script) to another table. Language objects are denormalized views of link and vocab tables.
      *
-     * Note: This always gets the max version (most recent) for a given fkID. (Really? What is $version?)
-     * Published records (older than a specific edit) might show the edit (more recent) language. This is
-     * untested.  fix.
+     * Note: This always gets the most recent <= $version for a given subquery id.
      *
      * Select fields for a language object knowing a fkID value of the related table. This relies on the
      * language.fk_id==orig_table.id. $fkID is a foreign key of the record to which this language
      * applies. This (mostly) does not know or care what the other record is. Note that for the
      * "foreign-key-across-all-tables" to work, all the tables must use the same sequence (that is: id_seq).
+     *
+     * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
+     * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
+     * us all of the relevant id,version records, and nothing else.
+     *
+     * An old bug grouped the subquery in fk_id, and then joined on fk_id, which was wrong. It had the effect
+     * of only returning record(s) for the overall max version, so the bug was only apparent when there were
+     * at least 2 versions in group of records.
      *
      * @param integer $fkID A foreign key to record in another table.
      *
