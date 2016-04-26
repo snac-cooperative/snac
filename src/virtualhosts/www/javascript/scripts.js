@@ -515,6 +515,19 @@ function setSCMDeleted(short, i, j) {
     return false;
 }
 
+function turnOnButtons(shortName, i) {
+
+    // Turn on the edit button
+    $("#"+shortName+"_editbutton_"+i).on("click", function() {
+        makeEditable(shortName, i);
+    });
+
+    // Turn on the delete buttons
+    $("#"+shortName+"_deletebutton_"+i).on("click", function() {
+        setDeleted(shortName, i);
+    });
+}
+
 $(document).ready(function() {
 
 
@@ -573,6 +586,7 @@ $(document).ready(function() {
 			var text = $('#gender_template').clone();
 	        var html = text.html().replace(/ZZ/g, genderid);
 	        $('#add_gender_div').after(html);
+            turnOnButtons("gender", genderid);
 	        genderid = genderid + 1;
 	        return false;
 		});
@@ -590,6 +604,7 @@ $(document).ready(function() {
 			var text = $('#exist_date_template').clone();
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
+            turnOnButtons("exist", existid);
 	        existid = existid + 1;
 	        return false;
 		});
@@ -600,6 +615,7 @@ $(document).ready(function() {
 			var text = $('#exist_dateRange_template').clone();
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
+            turnOnButtons("exist", existid);
 	        existid = existid + 1;
 	        return false;
 		});
@@ -616,6 +632,7 @@ $(document).ready(function() {
 			var text = $('#nameEntry_template').clone();
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
+            turnOnButtons("nameEntry", nameEntryid);
 	        nameEntryid = nameEntryid + 1;
 	        return false;
 		});
@@ -632,6 +649,7 @@ $(document).ready(function() {
 			var text = $('#sameAs_template').clone();
 	        var html = text.html().replace(/ZZ/g, sameAsid);
 	        $('#add_sameAs_div').after(html);
+            turnOnButtons("sameAs", sameAsid);
 	        sameAsid = sameAsid + 1;
 	        return false;
 		});
@@ -648,6 +666,7 @@ $(document).ready(function() {
 			var text = $('#source_template').clone();
 	        var html = text.html().replace(/ZZ/g, sourceid);
 	        $('#add_source_div').after(html);
+            turnOnButtons("source", sourceid);
 	        sourceid = sourceid + 1;
 	        return false;
 		});
@@ -664,6 +683,7 @@ $(document).ready(function() {
 			var text = $('#resourceRelation_template').clone();
 	        var html = text.html().replace(/ZZ/g, resourceRelationid);
 	        $('#add_resourceRelation_div').after(html);
+            turnOnButtons("resourceRelation", resourceRelationid);
 	        resourceRelationid = resourceRelationid + 1;
 	        return false;
 		});
@@ -690,6 +710,7 @@ $(document).ready(function() {
 		        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
 		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
 		        
+                turnOnButtons("constellationRelation", constellationRelationid);
 		        makeEditable("constellationRelation", constellationRelationid);
 		        
 		        constellationRelationid = constellationRelationid + 1;
@@ -725,6 +746,7 @@ $(document).ready(function() {
 			var text = $('#language_template').clone();
 	        var html = text.html().replace(/ZZ/g, languageid);
 	        $('#add_language_div').after(html);
+            turnOnButtons("language", languageid);
 	        languageid = languageid + 1;
 	        return false;
 		});
@@ -741,6 +763,7 @@ $(document).ready(function() {
 			var text = $('#subject_template').clone();
 	        var html = text.html().replace(/ZZ/g, subjectid);
 	        $('#add_subject_div').after(html);
+            turnOnButtons("subject", subjectid);
 	        subjectid = subjectid + 1;
 	        return false;
 		});
@@ -757,6 +780,7 @@ $(document).ready(function() {
 			var text = $('#nationality_template').clone();
 	        var html = text.html().replace(/ZZ/g, nationalityid);
 	        $('#add_nationality_div').after(html);
+            turnOnButtons("nationality", nationalityid);
 	        nationalityid = nationalityid + 1;
 	        return false;
 		});
@@ -773,6 +797,7 @@ $(document).ready(function() {
 			var text = $('#function_template').clone();
 	        var html = text.html().replace(/ZZ/g, functionid);
 	        $('#add_function_div').after(html);
+            turnOnButtons("function", functionid);
 	        functionid = functionid + 1;
 	        return false;
 		});
@@ -789,6 +814,7 @@ $(document).ready(function() {
 			var text = $('#occupation_template').clone();
 	        var html = text.html().replace(/ZZ/g, occupationid);
 	        $('#add_occupation_div').after(html);
+            turnOnButtons("occupation", occupationid);
 	        occupationid = occupationid + 1;
 	        return false;
 		});
@@ -805,6 +831,7 @@ $(document).ready(function() {
 			var text = $('#legalStatus_template').clone();
 	        var html = text.html().replace(/ZZ/g, legalStatusid);
 	        $('#add_legalStatus_div').after(html);
+            turnOnButtons("legalStatus", legalStatusid);
 	        legalStatusid = legalStatusid + 1;
 	        return false;
 		});
@@ -821,6 +848,7 @@ $(document).ready(function() {
 			var text = $('#place_template').clone();
 	        var html = text.html().replace(/ZZ/g, placeid);
 	        $('#add_place_div').after(html);
+            turnOnButtons("place", placeid);
 	        placeid = placeid + 1;
 	        return false;
 		});
@@ -837,6 +865,7 @@ $(document).ready(function() {
 			var text = $('#conventionDeclaration_template').clone();
 	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
 	        $('#add_conventionDeclaration_div').after(html);
+            turnOnButtons("conventionDeclaration", conventionDeclarationid);
 	        conventionDeclarationid = conventionDeclarationid + 1;
 	        return false;
 		});
@@ -853,6 +882,7 @@ $(document).ready(function() {
 			var text = $('#generalContext_template').clone();
 	        var html = text.html().replace(/ZZ/g, generalContextid);
 	        $('#add_generalContext_div').after(html);
+            turnOnButtons("generalContext", generalContextid);
 	        generalContextid = generalContextid + 1;
 	        return false;
 		});
@@ -869,6 +899,7 @@ $(document).ready(function() {
 			var text = $('#structureOrGenealogy_template').clone();
 	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
 	        $('#add_structureOrGenealogy_div').after(html);
+            turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
 	        structureOrGenealogyid = structureOrGenealogyid + 1;
 	        return false;
 		});
@@ -885,6 +916,7 @@ $(document).ready(function() {
 			var text = $('#mandate_template').clone();
 	        var html = text.html().replace(/ZZ/g, mandateid);
 	        $('#add_mandate_div').after(html);
+            turnOnButtons("mandate", mandateid);
 	        mandateid = mandateid + 1;
 	        return false;
 		});
