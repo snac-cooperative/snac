@@ -109,6 +109,13 @@
                     <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth" standardDate="2016-02-23">2016-02-23</fromDate>
                     <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" standardDate="2016-02-24">2016-02-24</toDate>
                 </dateRange>
+                <dateRange>
+                    <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth" standardDate="1912">1912</fromDate>
+                    <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" standardDate="1992">1992</toDate>
+                </dateRange>
+                <descriptiveNote>
+                    Sample existDates note should be on date range
+                </descriptiveNote>
             </existDates>
             <languageUsed>
                 <language languageCode="eng"/>

@@ -229,25 +229,32 @@ class DBUser
      * looks for a user with the given email address.  This is NOT a check of existence, since that would
      * require uniqueness.  This is a "get me the first user you find that has email address..."
      *
+     * Important to copy the session token from arg $user into $newUser that has come back from the database.
+     *
      * @param \snac\data\User A user object with a good value for getUserID() or getUserName().
      *
      * @return \snac\data\User Returns a user object or false.
      */
     public function readUser($user)
     {
-        
+        $newUser = null;
         if ($newUserRec = $this->sql->selectUserByID($user->getUserID()))
         {
-            return $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec);
         }
         else if ($newUserRec = $this->sql->selectUserByUserName($user->getUserName()))
         {
-            return $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec);
         }
         else if ($newUserRec = $this->sql->selectUserByEmail($user->getEmail()))
         {
             // Warning: the returned user may not be the only user with the given email address.
-            return $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec);
+        }
+        if ($newUser)
+        {
+            $newUser->setToken($user->getToken());
+            return $newUser;
         }
         return false;
     }

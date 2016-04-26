@@ -4,7 +4,6 @@
    *
    * License:
    *
-   *
    * @author Tom Laudeman
    * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
    * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -49,7 +48,6 @@ use \snac\server\validation\validators\HasOperationValidator;
  * rather than being passed to the constructor.
  *
  * @author Tom Laudeman
- *
  */
 class DBUtil
 {
@@ -59,12 +57,11 @@ class DBUtil
      * @var \snac\server\database\SQL low-level SQL class
      */
     private $sql = null;
-
+    
     /**
      * Used by setDeleted() and clearDeleted() to check table name.
      *
      * @var string[] Associative list where keys are table names legal to delete from.
-     *
      */
     private $canDelete = null;
 
@@ -317,7 +314,6 @@ class DBUtil
 
 
     /**
-     *
      * Read published by ID
      *
      * Read a published constellation by constellation ID (aka main_id, mainID) from the database.
@@ -993,6 +989,7 @@ class DBUtil
                                 $this->populateTerm($singleDate['to_type']));
             $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+            $dateObj->setNote($singleDate['descriptive_note']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
             $this->populateMeta($vhInfo, $dateObj);
 
@@ -1649,6 +1646,7 @@ class DBUtil
                                           $date->getToRange()['notBefore'],
                                           $date->getToRange()['notAfter'],
                                           $date->getToDateOriginal(),
+                                          $date->getNote(),
                                           $tableName,
                                           $tableID);
             $date->setID($rid);
@@ -2284,11 +2282,13 @@ class DBUtil
     /**
      * Read the status of a constellation.
      *
-     * Read the status of a constellation, with optional version. If version is not supplied, then the most recent version is used.
+     * Read the status of a constellation, with optional version. If version is not supplied, then the most
+     * recent version is used.
      *
      * @param integer $mainID The constellation ID
      *
-     * @param integer $version optional The version number or if empty, return the status for the most recent version.
+     * @param integer $version optional The version number or if empty, return the status for the most recent
+     * version.
      *
      * @return string status. Return the version_history.status value.
      */
@@ -2436,13 +2436,25 @@ class DBUtil
      * @param string $note Human written note from the person who edit this data. This is a version commit
      * message.
      *
+     * @param string $statusArg optional Status value, most likely "ingest cpf" that means we are creating a
+     * new record and need to capture maintenance info. The default is 'locked editing' which makes sense
+     * since we can't write unless we are editing. Or maybe 'currently editing'.
+     *
      * @return \snac\data\Constellation|boolean the original constellation object modified to include id and version, or
      * false if the user could not perform the action
      *
      */
-    public function writeConstellation($user, $argObj, $note)
+    public function writeConstellation($user, $argObj, $note, $statusArg='locked editing')
     {
+        /*
+         * We can initialize $status to either $defaultStatus or $statusArg. I'm not sure it makes much
+         * difference. We do use $defaultStatus later to set the status after creating a version_history
+         * record for 'ingest cpf'.
+         */  
+        $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
+        $status = $defaultStatus;
         if ($user == null || $user->getUserID() == null) {
+            printf("\ndbutil user or userid is null\n");
             return false;
         }
         
@@ -2472,7 +2484,6 @@ class DBUtil
              * cause a new mainID to be minted.
              *
              */ 
-            $status = 'locked editing';
             $mainID = null;
         }
         elseif ($op == null)
@@ -2497,7 +2508,6 @@ class DBUtil
                  * I guess this is an insert. We don't have a mainID, so this must be a new constellation.
                  *
                  */ 
-                $status = 'locked editing';
             }
         }
         else
@@ -2532,18 +2542,21 @@ class DBUtil
         }
         
         /*
-         * On insert, the constellation may have a status property 'ingest cpf' in which case we create a
-         * special ingest version where the note is the maintenance info as json. Do not use var $vhInfo which
-         * will be initialized below. Do initialize or update $mainID.
+         * On insert, the constellation may have a status property 'ingest cpf' which signals we are creating
+         * a new record. We create a special ingest version where the note is the maintenance info as json. Do
+         * not use var $vhInfo which will be initialized below. Do initialize or update $mainID.
          *
-         * Incoming status is 'ingest cpf'. After writing a version_history record, change status to 'locked editing'.
+         * This only runs when $statusArg is 'ingest cpf' and the operation is insert.
+         *
+         * After writing a version_history record, change status to 'locked editing'. 
          */ 
-        if ($op == \snac\data\AbstractData::$OPERATION_INSERT && $cObj->getStatus() == 'ingest cpf')
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT && $statusArg == 'ingest cpf')
         {
             $maintNote = $this->maintenanceNote($cObj);
-            $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $cObj->getStatus(), $maintNote);
+            $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $statusArg, $maintNote);
             $mainID = $vhInfoIngest['main_id'];
-            $cObj->setStatus = 'locked editing';
+            $status = $defaultStatus;
+            $cObj->setStatus($status);
         }
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
@@ -2566,7 +2579,8 @@ class DBUtil
      *
      * @param int[] $vhInfo A list with keys 'main_id' and 'version'
      *
-     * @param \snac\data\Constellation $cObj a constellation object passed by reference.
+     * @param \snac\data\Constellation $cObj A constellation object. Remember that php objects are passed by
+     * reference.
      *
      * No return value. $cObj is passed by reference, and is changed in place by the save functions, as
      * necessary to update/populate id and version.
@@ -2651,6 +2665,11 @@ class DBUtil
         $cObj = $this->selectConstellation($vhInfo, $summary);
         if ($cObj)
         {
+            /*
+             * If you wanted to fill in Constellation->status aka setStatus() this would be the place to
+             * readConstellationStatus() and setStatus(). Status is intentionally not populated because the
+             * server may change it on the fly.
+             */
             return $cObj;
         }
         return false;

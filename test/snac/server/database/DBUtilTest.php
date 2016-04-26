@@ -56,7 +56,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
     }
 
-    
+   
     /**
      * {@inheritDoc}
      * @see PHPUnit_Framework_TestCase::setUp()
@@ -66,6 +66,130 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     public function setUp() 
     {
         // Consider creating a single parser instance here, and reusing it throughout.
+    }
+
+    /**
+     * Check multiple related
+     *
+     * Check multiple versions for multiple records of related second order data: source, date, place
+     * (place_link), meta (scm), language.
+     *
+     * Verify that multiples of each are written to the db and read back from the db when some of the multis
+     * have different version numbers.
+     */ 
+    public function testMultiSecondOrderData()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
+                                                 'testing multi exist date');
+        $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        $firstSourceCount = count($newRetObj->getSources());
+        $firstPlaceCount = count($newRetObj->getPlaces());
+        $firstSCMCount = count($newRetObj->getPlaces()[0]->getSNACControlMetadata());
+        $placeID = $newRetObj->getPlaces()[0]->getID();
+        $firstLangCount = count($newRetObj->getLanguagesUsed());
+        $firstDateCount = count($newRetObj->getDateList());
+
+        $this->assertTrue(count($cObj->getDateList()) > 1);
+        $this->assertEquals(count($cObj->getDateList()), count($newRetObj->getDateList()));
+
+        $dateObj = new \snac\data\SNACDate();
+        $dateObj->setRange(true);
+        $dateObj->setFromDate('1940',
+                              '1940',
+                              null);
+        // $dateObj->setFromBC(false);
+        // $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
+        $dateObj->setToDate('1960',
+                            '1960',
+                            null);
+        // $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
+        // $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+        // $dateObj->setNote($singleDate['descriptive_note']);
+        // $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
+        $dateObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        
+        $newRetObj->addDate($dateObj);
+
+        $newSource = new \snac\data\Source();
+        $newSource->setNote("new added source");
+        $newSource->setURI("http://example.com/newsource");
+        $newSource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $newRetObj->addSource($newSource);
+
+        // place
+        $newPlace = new \snac\data\Place();
+        $newPlace->setOriginal("Foo City");
+        $newPlace->setNote("Test place");
+        $newPlace->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $newRetObj->addPlace($newPlace);
+        
+        // scm
+        $newSCM = new \snac\data\SNACControlMetadata();
+        $newSCM->setSourceData("third paragraph page 25");
+        $newSCM->setNote("test scm");
+        $newSCM->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        foreach($newRetObj->getPlaces() as $gObj)
+        {
+            if ($placeID == $gObj->getID())
+            {
+                $gObj->addSNACControlMetadata($newSCM);
+                break;
+            }
+        }
+        // language aka languagesUsed
+        $newLang = clone($newRetObj->getLanguagesUsed()[0]);
+        $newLang->setID(null);
+        $newLang->setVersion(null);
+        $newLang->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        // Note singular "language" for add, although get has plural.
+        $newRetObj->addLanguageUsed($newLang);
+
+        // Yes, we are re-using $retObj.
+        $retObj = $this->dbu->writeConstellation($this->user, $newRetObj,
+                                                 'testing adding date to multi exist date');
+        $thirdRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
+        $this->assertEquals(count($thirdRetObj->getSources()), $firstSourceCount+1);
+        $this->assertEquals(count($thirdRetObj->getPlaces()), $firstPlaceCount+1);
+        foreach($thirdRetObj->getPlaces() as $gObj)
+        {
+            if ($placeID == $gObj->getID())
+            {
+                $this->assertEquals(count($gObj->getSNACControlMetadata()), $firstSCMCount+1);
+                break;
+            }
+        }
+        $this->assertEquals(count($thirdRetObj->getLanguagesUsed()), $firstLangCount+1);
+        $this->assertEquals(count($thirdRetObj->getDateList()), $firstDateCount+1);
+
+        /*
+         * Every other time this test is run, the returned dates are in a different order. Unclear why, but we
+         * don't have an "order by" clause in the SQL, so changing order is sort of expected. Create the tests
+         * to be independent of order. There must be 3 dates.
+         */ 
+
+        $firstDateList = array();
+        foreach($newRetObj->getDateList() as $gObj)
+        {
+            array_push($firstDateList, $gObj->getFromDate());
+        }
+        sort($firstDateList);
+
+        $secondDateList = array();
+        foreach($thirdRetObj->getDateList() as $gObj)
+        {
+            array_push($secondDateList, $gObj->getFromDate());
+        }
+        sort($secondDateList);
+
+        $this->assertEquals($firstDateList[0], $secondDateList[0]);
+        $this->assertEquals($firstDateList[1], $secondDateList[1]);
+        $this->assertEquals($firstDateList[2], $secondDateList[2]);
     }
 
     /**
@@ -189,6 +313,34 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($newContribVersion > $contribVersion);
     }
 
+    /**
+     * Ingest the full CPF test using the optional status arg
+     *
+     * Write a constellation with the optional status 'ingest cpf' to test contellation creation and
+     * maintenance info capture in the version_history record.
+     */
+    public function testFullCPFIngestCPFStatus()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $retObj = $this->dbu->writeConstellation($this->user, // $user
+                                                 $cObj,       // $argObj
+                                                 'testing ingest full CPF record with ingest cpf', // $note
+                                                 'ingest cpf'); // $statusArg
+        $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
+        
+        // Get the most recent version.
+        $readObj = $this->dbu->readConstellation($retObj->getID());
+        
+        /*
+         * The constellation object does not contain a populated status because the server may change it. If
+         * you want status you must call readConstellationStatus() and get it directly from the db.
+         */ 
+        $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
+    }
+    
     /**
      * Insert a test record, then change the status to update and make sure that nrd is updated.
      *
@@ -347,6 +499,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      * Read the record back from the db, and make sure the ARK and entity type are correct.
      *
      * Delete a constellation, then attempt a read and make sure it did not read.
+     *
+     * Apr 21 2016 Added <descriptiveNote> to existDates in test_record.xml and verified that it shows up in
+     * the JSON from parsing and reading back out of the db. There's no explicit test for that here, just like
+     * there's no explicit test for all the other CPF elements.
      */
     public function testFullCPFWithEditList()
     {
