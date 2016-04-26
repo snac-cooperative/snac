@@ -69,11 +69,15 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Check multiple exist dates
+     * Check multiple related
      *
-     * Verify that multiple exist dates are written to the db and read back from the db.
+     * Check multiple versions for multiple records of related second order data: source, date, place
+     * (place_link), meta (scm), language.
+     *
+     * Verify that multiples of each are written to the db and read back from the db when some of the multis
+     * have different version numbers.
      */ 
-    public function testMultiExistDate()
+    public function testMultiSecondOrderData()
     {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -83,13 +87,12 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
                                                  'testing multi exist date');
         $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        /* 
-         * printf("\ndbutiltest write from dates: %s, %s read from dates: %s, %s\n",
-         *        $cObj->getDateList()[0]->getFromDate(),
-         *        $cObj->getDateList()[1]->getFromDate(),
-         *        $newRetObj->getDateList()[0]->getFromDate(),
-         *        $newRetObj->getDateList()[1]->getFromDate());
-         */
+        $firstSourceCount = count($newRetObj->getSources());
+        $firstPlaceCount = count($newRetObj->getPlaces());
+        $firstSCMCount = count($newRetObj->getPlaces()[0]->getSNACControlMetadata());
+        $placeID = $newRetObj->getPlaces()[0]->getID();
+        $firstLangCount = count($newRetObj->getLanguagesUsed());
+        $firstDateCount = count($newRetObj->getDateList());
 
         $this->assertTrue(count($cObj->getDateList()) > 1);
         $this->assertEquals(count($cObj->getDateList()), count($newRetObj->getDateList()));
@@ -112,25 +115,81 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         
         $newRetObj->addDate($dateObj);
 
-        /*
-         * printf("\ndbutiltest count after adding third: %s\n", count($newRetObj->getDateList()));
-         */
+        $newSource = new \snac\data\Source();
+        $newSource->setNote("new added source");
+        $newSource->setURI("http://example.com/newsource");
+        $newSource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $newRetObj->addSource($newSource);
+
+        // place
+        $newPlace = new \snac\data\Place();
+        $newPlace->setOriginal("Foo City");
+        $newPlace->setNote("Test place");
+        $newPlace->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $newRetObj->addPlace($newPlace);
         
+        // scm
+        $newSCM = new \snac\data\SNACControlMetadata();
+        $newSCM->setSourceData("third paragraph page 25");
+        $newSCM->setNote("test scm");
+        $newSCM->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        foreach($newRetObj->getPlaces() as $gObj)
+        {
+            if ($placeID == $gObj->getID())
+            {
+                $gObj->addSNACControlMetadata($newSCM);
+                break;
+            }
+        }
+        // language aka languagesUsed
+        $newLang = clone($newRetObj->getLanguagesUsed()[0]);
+        $newLang->setID(null);
+        $newLang->setVersion(null);
+        $newLang->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        // Note singular "language" for add, although get has plural.
+        $newRetObj->addLanguageUsed($newLang);
+
         // Yes, we are re-using $retObj.
         $retObj = $this->dbu->writeConstellation($this->user, $newRetObj,
                                                  'testing adding date to multi exist date');
         $thirdRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        $this->assertEquals($thirdRetObj->getDateList()[2]->getFromDate(), '1940');
-        
-        /* 
-         * printf("\ndbutiltest count after reading third: %s\n", count($thirdRetObj->getDateList()));
-         * 
-         * printf("\ndbutiltest write thrid date: %s read third date: %s\n",
-         *        $newRetObj->getDateList()[2]->getFromDate(),
-         *        $thirdRetObj->getDateList()[2]->getFromDate());
-         */
-        
+        $this->assertEquals(count($thirdRetObj->getSources()), $firstSourceCount+1);
+        $this->assertEquals(count($thirdRetObj->getPlaces()), $firstPlaceCount+1);
+        foreach($thirdRetObj->getPlaces() as $gObj)
+        {
+            if ($placeID == $gObj->getID())
+            {
+                $this->assertEquals(count($gObj->getSNACControlMetadata()), $firstSCMCount+1);
+                break;
+            }
+        }
+        $this->assertEquals(count($thirdRetObj->getLanguagesUsed()), $firstLangCount+1);
+        $this->assertEquals(count($thirdRetObj->getDateList()), $firstDateCount+1);
+
+        /*
+         * Every other time this test is run, the returned dates are in a different order. Unclear why, but we
+         * don't have an "order by" clause in the SQL, so changing order is sort of expected. Create the tests
+         * to be independent of order. There must be 3 dates.
+         */ 
+
+        $firstDateList = array();
+        foreach($newRetObj->getDateList() as $gObj)
+        {
+            array_push($firstDateList, $gObj->getFromDate());
+        }
+        sort($firstDateList);
+
+        $secondDateList = array();
+        foreach($thirdRetObj->getDateList() as $gObj)
+        {
+            array_push($secondDateList, $gObj->getFromDate());
+        }
+        sort($secondDateList);
+
+        $this->assertEquals($firstDateList[0], $secondDateList[0]);
+        $this->assertEquals($firstDateList[1], $secondDateList[1]);
+        $this->assertEquals($firstDateList[2], $secondDateList[2]);
     }
 
     /**

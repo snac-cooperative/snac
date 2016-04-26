@@ -2454,6 +2454,7 @@ class DBUtil
         $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
         $status = $defaultStatus;
         if ($user == null || $user->getUserID() == null) {
+            printf("\ndbutil user or userid is null\n");
             return false;
         }
         

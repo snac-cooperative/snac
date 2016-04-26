@@ -855,8 +855,8 @@ class SQL
         $this->sdb->prepare($qq,
                             'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
-                            (select fk_id,max(version) as version from source where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            (select id,max(version) as version from source where fk_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($fkID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
@@ -1394,8 +1394,8 @@ class SQL
                             aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
                             aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
                             from place_link as aa,
-                            (select fk_id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            (select id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq, array($tid, $version));
         $all = array();
@@ -1504,8 +1504,8 @@ class SQL
                             aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
                             aa.rule_id, aa.note
                             from scm as aa,
-                            (select fk_id,max(version) as version from scm where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            (select id,max(version) as version from scm where fk_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq, array($tid, $version));
         $all = array();
@@ -1940,8 +1940,8 @@ class SQL
         $this->sdb->prepare($qq,
                             'select aa.version, aa.main_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
                             from language as aa,
-                            (select fk_id,max(version) as version from language where fk_id=$1 and version<=$2 group by fk_id) as bb
-                            where not is_deleted and aa.fk_id=bb.fk_id and aa.version=bb.version');
+                            (select id,max(version) as version from language where fk_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($fkID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
