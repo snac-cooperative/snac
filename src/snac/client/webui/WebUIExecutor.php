@@ -599,8 +599,8 @@ class WebUIExecutor {
             ])->setRetries(0)->build();
             
             $params = [ 
-                    'index' => 'rtest',
-                    'type' => 'prototype_name_search',
+                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'body' => [ 
                             'query' => [ 
                                     'query_string' => [ 

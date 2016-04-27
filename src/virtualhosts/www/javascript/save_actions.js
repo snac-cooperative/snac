@@ -135,6 +135,11 @@ $(document).ready(function() {
 
                     // Everything's been saved, so mark not in editing
                     somethingHasBeenEdited = false;
+                    
+                    // Clear the undo set
+                    undoSet = new Array();
+                    
+                    
                     $('#notification-message').slideUp();
                     // Show the success alert
                     $('#success-message').html("<p>Saved successfully!</p>");
