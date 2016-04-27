@@ -340,6 +340,49 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */ 
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
     }
+
+    public function testFullCPFDateIsRange()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        /*
+         * Explicitly set isRange to false on all exist dates. The bug is/was that on reading it becomes true.
+         */ 
+        foreach($cObj->getDateList() as $gObj)
+        {
+            /*
+             * setRange() w/o "Is" and getIsRange() w/ "Is" are the setter and getter.
+             */ 
+            $gObj->setRange(false);
+            $this->assertFalse($gObj->getIsRange());
+        }
+
+        /*
+         * Put the new object through json and back to make sure that retains the false isRange settings.
+         */ 
+        $json = $cObj->toJSON();
+        $secondObj = new \snac\data\Constellation();
+        $secondObj->fromJSON($json);
+
+        $retObj = $this->dbu->writeConstellation($this->user, // $user
+                                                 $secondObj,       // $argObj
+                                                 'testing ingest full CPF record with ingest cpf', // $note
+                                                 'ingest cpf'); // $statusArg
+        $this->assertTrue($secondObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
+        
+        $readObj = $this->dbu->readConstellation($retObj->getID());
+
+        foreach($readObj->getDateList() as $gObj)
+        {
+            /*
+             * setRange() w/o "Is" and getIsRange() w/ "Is" are the setter and getter.
+             */
+            $this->assertFalse($gObj->getIsRange());
+        }
+    }
+
+
     
     /**
      * Insert a test record, then change the status to update and make sure that nrd is updated.

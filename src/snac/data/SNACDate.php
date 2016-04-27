@@ -284,13 +284,24 @@ class SNACDate extends AbstractData {
     /**
      * Is this date a range
      * 
-     * Tells whether this SNACDate object contains a range (from-to) or just a single date (from) 
+     * Tells whether this SNACDate object contains a range (from-to) or just a single date (from)
+     *
+     * Something has broken a couple of times round tripping isRange to the database and back. Make absolutely
+     * certain that we only return true and false by only returning true and false based on the truthiness of
+     * $this->isRange rather than its actual value.
      *
      * @return boolean If this SNACDate object contains a range or a single date
      */
     function getIsRange()
     {
         return $this->isRange;
+        /* 
+         * if ($this->isRange)
+         * {
+         *     return true;
+         * }
+         * return false;
+         */
     }
 
     /**
@@ -420,12 +431,26 @@ class SNACDate extends AbstractData {
 
     /**
      * Set whether or not this is a date range.
+     *
+     * Test the truthiness of $isRange because this keeps breaking. Postgres and php have a disagreement on
+     * what is true, and even using DBUtil functions to convert has not solved the problem
      * 
      * @param boolean $isRange Whether or not this is a range
      */
     public function setRange($isRange) {
-
         $this->isRange = $isRange;
+        
+        /* 
+         * if ($isRange !== true && $isRange !== false)
+         * {
+         *     printf("\nSNACDate.php isRange problem: $isRange\n");
+         * }
+         * if ($isRange)
+         * {
+         *     $this->isRange = true;
+         * }
+         * $this->isRange = false;
+         */
     }
 
     /**
