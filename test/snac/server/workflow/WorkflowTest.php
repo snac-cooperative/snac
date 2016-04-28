@@ -23,9 +23,8 @@ class WorkflowTest extends PHPUnit_Framework_TestCase
     public function testConstructor()
     {
         /* 
-         * $dbu = new snac\server\database\DBUtil();
-         * 
-         * $wfObj = new snac\server\workflow\Workflow('server');
+         * $this->dbu = new \snac\server\database\DBUtil();
+         * $wfObj = new \snac\server\workflow\Workflow('server');
          * 
          * // Did we get a non-null object?
          * $this->assertNotNull($wfObj);

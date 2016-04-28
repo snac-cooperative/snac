@@ -16,7 +16,7 @@
 namespace snac\server\database;
 
 use \snac\Config as Config;
-use snac\exceptions\SNACDatabaseException;
+use \snac\exceptions\SNACDatabaseException;
 
 /**
  * Database Connector Class
@@ -63,8 +63,8 @@ class DatabaseConnector {
         /*
          * We can easily change the above code so we never get here, but if we do get here, this exception will be thrown.
          */ 
-        printf("\nDatabaseConnector.php boolToPg() Unable convert arg to bool: $arg\n");
-        throw new \Exception("DatabaseConnector.php boolToPg() Unable convert arg to bool: $arg");
+        // printf("\nDatabaseConnector.php boolToPg() Unable convert arg to bool: $arg\n");
+        throw new \snac\exceptions\SNACDatabaseException("DatabaseConnector.php boolToPg() Unable convert arg to bool: $arg");
     }
 
     /**
@@ -92,8 +92,8 @@ class DatabaseConnector {
             return false;
         }
         // If we get down here, something is very wrong. Seems like this should be fatal.
-        printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
-        throw new \Exception("DatabaseConnector.php pgToBool() Error: arg: $arg cannot convert to true or false");
+        // printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
+        throw new \snac\exceptions\SNACDatabaseException("DatabaseConnector.php pgToBool() Error: arg: $arg cannot convert to true or false");
     }
 
     /**
@@ -120,7 +120,7 @@ class DatabaseConnector {
             if ($this->dbHandle === false) {
                 throw new \Exception("Unable to connect to back-end database.");
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out.
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
         }

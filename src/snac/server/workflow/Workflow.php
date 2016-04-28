@@ -133,7 +133,7 @@ class Workflow
         fprintf($out, "digraph States \{\n"); 
         
         // $hr was "hashref" but php doesn't have refs, so this is a tableRow or something.
-        foreach ($table as $hr)
+        foreach ($this->table as $hr)
         {
             $trans = '';
             if ($hr['test'] != '' && $hr['func'] != '')
@@ -180,7 +180,7 @@ class Workflow
         $unique = array();
         $allTests;
         // First we need a list of unique tests.
-        foreach ($table as $hr)
+        foreach ($this->table as $hr)
         {
             if ($hr['test'] && ! isset($unique[$hr['test']]))
             {
@@ -277,7 +277,7 @@ class Workflow
             //     $currState = $waitNext;
             // }
             // $waitNext = '';
-            foreach ($table as $hr)
+            foreach ($this->table as $hr)
             {
                 if ($hr['edge'] == $currState)
                 {
@@ -401,7 +401,6 @@ class Workflow
      * @return string $html The html fragment that is a table element of the workflow state table.
      *
      */
-
     public function tableToHtml()
     {
         $html = "<table border=\"1\">\n";
@@ -412,7 +411,7 @@ class Workflow
         }
         $html .= "</tr>\n";
         
-        foreach ($table as $hr)
+        foreach ($this->table as $hr)
         {
             $html .= "<tr>\n";
             foreach (array('edge', 'test', 'func', 'next') as $key)
@@ -582,23 +581,26 @@ class Workflow
              * headings that humans use to remind themselves which column is which.
              */
             fgets($fd);
-            while (($temp = fgets($fs)))
+            while (($temp = fgets($fd)))
             {
                 $newList = array();
                 
                 // Remove the leading | and optional whitespace. 
-                preg_replace('/^\|\s*/', '', $temp);
-                
+                $temp = preg_replace('/^\|\s*/', '', $temp);
+                printf("\ntemp1:%s\n", $temp);
+
+
                 if ((preg_match('/^\s*#/', $temp)))
                 {
                     // We have a comment, ignore this line.
-                    next;
+                    continue;
                 }
                 
                 if ((preg_match('/^\-\-/', $temp)))
                 {
                     // We have a separator line, ignore. org-mode tables 
-                    next;
+                    printf("\nmsg: have separator, continuing\n");
+                    continue;
                 }
                 
                 // Make sure there is a terminal \n which makes the regex both simpler and more robust.
@@ -611,7 +613,7 @@ class Workflow
                 // Get all the fields before we start so the code below is cleaner, and we want all the line
                 // splitting regex to happen here so we can swap between tab-separated, whitespace-separated, and
                 // whatever.
-                
+
                 $hasValues = 0;
                 $fields = array();
                 $myMatches = array();
@@ -628,16 +630,27 @@ class Workflow
                  * effect. The main purpose of the callback is to supply the replacement value. We replace the
                  * matched (and captured) value with the empty string ''.
                  *
+                 * /g in php is the optional $limit arg which defaults to -1 which is no limit.
+                 *
                  */ 
-                while ((preg_replace_callback('/^(.*?)(?:\s*\|\s+|\n)/smg', 
-                                              function($matches) 
-                                              {
-                                                  global $myMatches;
-                                                  $myMatches = $matches;
-                                                  return '';
-                                              },
-                                              $temp)))
+                while (($temp = preg_replace_callback('/^(.*?)(?:\s*\|(?:\s+|\n))/sm', 
+                                                      function($matches) 
+                                                      {
+                                                          global $myMatches;
+                                                          $myMatches = $matches;
+                                                          printf("\nf-matches: %s\n", var_export($matches, 1));
+                                                          return '';
+                                                      },
+                                                      $temp, 1, $repsDone)))
                 {
+                    printf("\nrepsDone: $repsDone\n");
+                    if (count($myMatches) == 0)
+                    {
+                        printf("break, have a blank line: %s\n", $temp);
+                        break;
+                    }
+                    printf("\n temp:%s\nmyMatches: %s\n", $temp, var_export($myMatches, 1));
+
                     /* 
                      * Clean up "$var" and "func()" to be "var" and "func".
                      * Remove () from func() and $ from $var
@@ -656,6 +669,8 @@ class Workflow
                         $hasValues = 1;
                     }
                     array_push($fields, $raw);
+                    // Re-initialize $myMatches here at the end of the loop
+                    $myMatches = array();
                 }
                 
                 /*
@@ -667,13 +682,13 @@ class Workflow
                                      'test' => $fields[1],
                                      'func' => $fields[2],
                                      'next' => $fields[3]);
-                    array_push($table, $newList);
+                    array_push($this->table, $newList);
                 }
             }
         }
-        fclose($fp);
+        fclose($fd);
+        printf("\ntable:\n%s\n", json_encode($this->table));
     }
-
 
 
     public function sanityCheckStates()
@@ -688,11 +703,11 @@ class Workflow
          * in the state table, jump() has an argument which is the state to jump to.
          *
          */
-        foreach ($table as $hr)
+        foreach ($this->table as $hr)
         {
             if ($hr['edge'])
             {
-                $knownStates{$hr['edge']}++;
+                $this->knownStates{$hr['edge']}++;
             }
             if ($hr['next'])
             {
@@ -707,9 +722,9 @@ class Workflow
         /*
          * Check for unknown states in next.
          */ 
-        foreach ($table as $hr)
+        foreach ($this->table as $hr)
         {
-            if ($hr['next'] && ! isset($knownStates{$hr['next']}))
+            if ($hr['next'] && ! isset($this->knownStates{$hr['next']}))
             {
                 if  (preg_match('/return/', $hr['func']))
                 {
@@ -726,7 +741,7 @@ class Workflow
         /*
          * Check for states which can never be reached due to no next.
          */
-        foreach ($knownStates as $state => $value)
+        foreach ($this->knownStates as $state => $value)
         {
             if (! exists($nextStates{$state}))
             {
