@@ -62,6 +62,30 @@ class ConstellationPostMapper {
         $this->logger->pushHandler($log);
     }
 
+
+    /**
+     * Parse a boolean
+     *
+     * Parses a boolean string or variable into an actual boolean.
+     *
+     */
+    private function parseBoolean($boolean) {
+        $type = gettype($boolean);
+        switch($type) {
+            case "boolean":
+                return $boolean;
+                break;
+            case "string":
+                if ($boolean == "true")
+                    return true;
+                else
+                    return false;
+                break;
+            default:
+                return false;
+        }
+    }
+    
     /**
      * Get Operation
      * 
@@ -634,7 +658,12 @@ class ConstellationPostMapper {
             $date->setNote($data["note"]);
             $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
             $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
-            $date->setRange($data["isrange"]);
+            
+            if ($data["isrange"] === "true")
+                $date->setRange(true);
+            else
+                $date->setRange(false);
+
             $date->setToDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
             $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
 
