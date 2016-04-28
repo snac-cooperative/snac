@@ -47,6 +47,12 @@ class SQL
     private $deleted = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
+
+
+    /**
      * The constructor
      *
      * Makes the outside $db a local variable. I did this out of a general sense of avoiding
@@ -65,6 +71,44 @@ class SQL
         $this->sdb = $db;
         $this->deleted = $deletedValue;
     }
+
+    /**
+     * Enable logging
+     *
+     * For various reasons, logging is not enabled by default. Call this to enabled it for objects of this class.
+     *
+     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
+     * with no problems.
+     *
+     */ 
+    public function enableLogging()
+    {
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('Server');
+            $this->logger->pushHandler($log);
+        }
+    }
+
+    /**
+     * Wrap logging
+     *
+     * When logging is disabled, we don't want to call the logger which would generate errors.
+     *
+     * @param string $msg The logging messages
+     *
+     * @param string[] $debugArray An associative list of keys and values to send to the logger.
+     */
+    private function logDebug($msg, $debugArray)
+    {
+        if ($this->logger)
+        {
+            $this->logger->addDebug($msg, $debugArray);
+        }
+    }
+      
 
     /**
      * Insert a new user aka appuser
@@ -3668,22 +3712,41 @@ class SQL
      *
      * This method allows searching the vocabulary table for a given type and value
      *
+     * Any term which is a key in $useStartsWith will use a "starts with" type of ilike match. That is, the
+     * $query must be at the beginning of the search. The default is for $query to occur anywhere.
+     *
+     * Add new terms as keys in $useStartsWith as necessary. The choice of value 1 is not arbitrary, and works
+     * well in most situations where a hash aka associative list is being used in a control statement.
+     *
      * @param string $term The "type" term for what type of vocabulary to search
      * @param string $query The string to search through the vocabulary
+     * @return string[][] Returns a list of lists with keys id, value.
      */
     public function searchVocabulary($term, $query)
     {
+        $useStartsWith = array('script_code' => 1,
+                               'language_code' => 1,
+                               'gender' => 1,
+                               'nationality' => 1);
+        $likeStr = "%$query%";
+        if (isset($useStartsWith[$term]))
+        {
+            $likeStr = "$query%";
+        }
+
+        $this->enableLogging();
+        $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
+        
         $result = $this->sdb->query('select id,value
                                     from vocabulary
-                                    where type=$1 and value ilike $2 order by value asc limit 100;',
-                array($term, "%".$query."%"));
+                                    where type=$1 and value ilike $2 order by value asc limit 100',
+                                    array($term, $likeStr));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
-    
     }
 
     /**
