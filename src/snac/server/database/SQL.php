@@ -3734,8 +3734,10 @@ class SQL
             $likeStr = "$query%";
         }
 
-        $this->enableLogging();
-        $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
+        /* 
+         * $this->enableLogging();
+         * $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
+         */
         
         $result = $this->sdb->query('select id,value
                                     from vocabulary
