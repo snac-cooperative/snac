@@ -131,6 +131,15 @@ class DBUtil
         }
         return false;
     }
+    
+    /**
+     * @var \Monolog\Logger $logger the logger for this server
+     *
+     * See enableLogging() in this file.
+     */
+    private $logger = null;
+
+
     /** 
      * Constructor
      *
@@ -194,6 +203,45 @@ class DBUtil
                                  'snac\data\Source' => 'source',
                                  'snac\data\Subject' => 'subject');
     }
+
+    /**
+     * Enable logging
+     *
+     * For various reasons, logging is not enabled by default. Call this to enabled it for objects of this class.
+     *
+     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
+     * with no problems.
+     */ 
+    public function enableLogging()
+    {
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('DBUtil');
+            $this->logger->pushHandler($log);
+        }
+    }
+
+    /**
+     * Wrap logging
+     *
+     * When logging is disabled, we don't want to call the logger because we don't want to generate errors. We
+     * also don't want logs to just magically start up. Doing logging should be very intentional, especially
+     * in a low level class like SQL. Call enableLogging() before calling logDebug().
+     *
+     * @param string $msg The logging messages
+     *
+     * @param string[] $debugArray An associative list of keys and values to send to the logger.
+     */
+    private function logDebug($msg, $debugArray=array())
+    {
+        if ($this->logger)
+        {
+            $this->logger->addDebug($msg, $debugArray);
+        }
+    }
+    
 
     /**
      * Table name for a given class.
@@ -332,10 +380,9 @@ class DBUtil
             return $cObj;
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
-        // force asking for a published constellation. Returning false means the request didn't work. This
-        // might be worth logging.
-
-        // printf("\nWarning: cannot get constellation id: $mainID\n");
+        // force asking for a published constellation. Returning false means the request didn't work.
+        $this->enableLogging();
+        $this->logDebug(sprintf("Warning: cannot get constellation id: $mainID (This is expected for test testFullCPFWithEditList)"));
         return false;
     }
 
@@ -929,12 +976,6 @@ class DBUtil
                 $ctObj->setName($contrib['short_name']);
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
-                /* 
-                 * printf("dbutil selecting contri version: %s got version %s nameID: %s\n",
-                 *        $vhInfo['version'],
-                 *        $contrib['version'],
-                 *        $neObj->getID());
-                 */
             }
             $this->populateDate($vhInfo, $neObj);
             $cObj->addNameEntry($neObj);
@@ -1428,6 +1469,8 @@ class DBUtil
             else
             {
                 $msg = sprintf("Cannot add Source to class: %s\n", $class);
+                $this->enableLogging();
+                $this->logDebug($msg);
                 die($msg);
             }
         }
@@ -2369,12 +2412,12 @@ class DBUtil
 
             // Right now, we're passing null as the role ID.  We may change this to a role from the user object
             $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
-            // printf("\ndbutil wc mints new version: %s\n", $vhInfo['version']);
             return $vhInfo['version'];
         }
         else
         {
-            printf("DBUtil.php Error: bad status $status\n");
+            $this->enableLogging();
+            $this->logDebug("DBUtil.php Error: bad status $status\n");
         }
         return false;
     }
@@ -2454,7 +2497,8 @@ class DBUtil
         $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
         $status = $defaultStatus;
         if ($user == null || $user->getUserID() == null) {
-            printf("\ndbutil user or userid is null\n");
+            $this->enableLogging();
+            $this->logDebug("dbutil user or userid is null");
             return false;
         }
         
@@ -2513,7 +2557,8 @@ class DBUtil
         else
         {
             $json = $cObj->toJSON();
-            printf("\nError: Bad operation: $op\n%s\n", $json);
+            $this->enableLogging();
+            $this->logDebug(sprintf("Error: Bad operation: $op\n%s", $json));
             die();
         }
 
@@ -2532,13 +2577,16 @@ class DBUtil
         if (!$ve->validateConstellation($cObj))
         {
             // problem
-            printf("\nDBUtil.php Error: Validation failed: %s\n", $ve->getErrors());
+            $this->enableLogging();
+            $this->logDebug(sprintf("Error: Validation failed: %s", $ve->getErrors()));
         }
         if (! $status)
         {
-            printf("\nDBUtil.php Error: writeConstellation() cannot determine version status.\n");
-            printf("operation: %s mainID: %s\n",
-                   $op, $mainID);
+            $this->enableLogging();
+            $msg = sprintf("Error: writeConstellation() cannot determine version status.\n");
+            $msg .= sprintf("operation: %s mainID: %s\n",
+                            $op, $mainID);
+            $this->logDebug($msg);
         }
         
         /*
@@ -2618,7 +2666,6 @@ class DBUtil
          * and version? Those numbers were minted way back in writeConstellation(). Is there some reason that
          * we didn't call the $cObj setters back there?
          */ 
-        // printf("dbutil Setting constellation id: %s\n", $vhInfo['version']);
         $cObj->setID($vhInfo['main_id']);
         $cObj->setVersion($vhInfo['version']);
     }
@@ -3012,7 +3059,6 @@ class DBUtil
             $nameID = $ndata->getID();
             if ($this->prepOperation($vhInfo, $ndata))
             {
-                // printf("\ndbutil name operation: %s mainID: %s version: %s\n", $ndata->getOperation(), $ndata->getID(), $ndata->getVersion());
                 $nameID = $this->sql->insertName($vhInfo, 
                                                  $ndata->getOriginal(),
                                                  $ndata->getPreferenceScore(),
@@ -3096,10 +3142,10 @@ class DBUtil
             $snCount = $this->sql->siblingNameCount($cObj->getID());
             if (($table == 'name') && ($snCount <= 1))
             {
-                // Need a message and logging for this.
-                printf("DBUtil.php Error: Cannot delete the only name for id: %s count: %s\n",
-                       $cObj->getID(),
-                       $this->sql->siblingNameCount($cObj->getID()));
+                $this->enableLogging();
+                $this->logDebug(sprintf("DBUtil.php Error: Cannot delete the only name for id: %s count: %s\n",
+                                        $cObj->getID(),
+                                        $this->sql->siblingNameCount($cObj->getID())));
                 return false;
             }
             $this->sql->sqlSetDeleted($table, $cObj->getID(), $vhInfo['version']);
@@ -3108,8 +3154,11 @@ class DBUtil
         }
         else
         {
-            // Hmmm. Need to warn the user and write into the log.
-            printf("DBUtil.php Error: Cannot set deleted on class: %s table: $table json: %s\n", get_class($cObj), $cObj->toJSON());
+            // Warn the user and write into the log.
+            $this->enableLogging();
+            $this->logDebug(sprintf("DBUtil.php Error: Cannot set deleted on class: %s table: $table json: %s\n", 
+                                    get_class($cObj),
+                                    $cObj->toJSON()));
             return false;
         }
     }
@@ -3143,8 +3192,9 @@ class DBUtil
         
         if (! isset($this->canDelete[$table]))
         {
-            // Hmmm. Need to warn the user and write into the log.
-            printf("Cannot clear deleted on table: $table\n");
+            // Warn the user and write into the log.
+            $this->enableLogging();
+            $this->logDebug(sprintf("Cannot clear deleted on table: $table"));
             return null;
         }
         $newVersion = $this->sql->updateVersionHistory($user->getUserID(), $roleID, $icstatus, $note, $main_id);

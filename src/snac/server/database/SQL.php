@@ -61,6 +61,9 @@ class SQL
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
      * any clear need.
      *
+     * The constructor does not enable logging for performance reasons. Use the function enableLogging() below
+     * to enable it on an as-needed basis.
+     *
      * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
      *
      * @param string $deletedValue optional Optional param in case the value of status deleted ever changes
@@ -79,7 +82,6 @@ class SQL
      *
      * Check that we don't have a logger before creating a new one. This can be called as often as one wants
      * with no problems.
-     *
      */ 
     public function enableLogging()
     {
@@ -87,7 +89,7 @@ class SQL
         if (! $this->logger)
         {
             // create a log channel
-            $this->logger = new \Monolog\Logger('Server');
+            $this->logger = new \Monolog\Logger('SQL');
             $this->logger->pushHandler($log);
         }
     }
@@ -95,7 +97,9 @@ class SQL
     /**
      * Wrap logging
      *
-     * When logging is disabled, we don't want to call the logger which would generate errors.
+     * When logging is disabled, we don't want to call the logger because we don't want to generate errors. We
+     * also don't want logs to just magically start up. Doing logging should be very intentional, especially
+     * in a low level class like SQL. Call enableLogging() before calling logDebug().
      *
      * @param string $msg The logging messages
      *

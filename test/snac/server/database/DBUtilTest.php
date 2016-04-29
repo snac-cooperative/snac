@@ -673,6 +673,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * deleted.
          *     
          * Try to get it, then test the returned value to be false.
+         *
+         * Interestingly, this now also writes a log message.
          */
         $tryObj = $this->dbu->readPublishedConstellationByID($deletedObj->getID());
         $postDeleteJSON = "";
