@@ -47,6 +47,12 @@ class SQL
     private $deleted = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     */
+    private $logger;
+
+
+    /**
      * The constructor
      *
      * Makes the outside $db a local variable. I did this out of a general sense of avoiding
@@ -54,6 +60,9 @@ class SQL
      * critical to the application, and is read-only after intialization. Breaking it or changing it in any
      * way will break everything, whether global or not. Passing it in here to get local scope doesn't meet
      * any clear need.
+     *
+     * The constructor does not enable logging for performance reasons. Use the function enableLogging() below
+     * to enable it on an as-needed basis.
      *
      * @param \snac\server\database\DatabaseConnector $db A working, initialized DatabaseConnector object.
      *
@@ -65,6 +74,45 @@ class SQL
         $this->sdb = $db;
         $this->deleted = $deletedValue;
     }
+
+    /**
+     * Enable logging
+     *
+     * For various reasons, logging is not enabled by default. Call this to enabled it for objects of this class.
+     *
+     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
+     * with no problems.
+     */ 
+    public function enableLogging()
+    {
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('SQL');
+            $this->logger->pushHandler($log);
+        }
+    }
+
+    /**
+     * Wrap logging
+     *
+     * When logging is disabled, we don't want to call the logger because we don't want to generate errors. We
+     * also don't want logs to just magically start up. Doing logging should be very intentional, especially
+     * in a low level class like SQL. Call enableLogging() before calling logDebug().
+     *
+     * @param string $msg The logging messages
+     *
+     * @param string[] $debugArray An associative list of keys and values to send to the logger.
+     */
+    private function logDebug($msg, $debugArray)
+    {
+        if ($this->logger)
+        {
+            $this->logger->addDebug($msg, $debugArray);
+        }
+    }
+      
 
     /**
      * Insert a new user aka appuser
@@ -3668,22 +3716,43 @@ class SQL
      *
      * This method allows searching the vocabulary table for a given type and value
      *
+     * Any term which is a key in $useStartsWith will use a "starts with" type of ilike match. That is, the
+     * $query must be at the beginning of the search. The default is for $query to occur anywhere.
+     *
+     * Add new terms as keys in $useStartsWith as necessary. The choice of value 1 is not arbitrary, and works
+     * well in most situations where a hash aka associative list is being used in a control statement.
+     *
      * @param string $term The "type" term for what type of vocabulary to search
      * @param string $query The string to search through the vocabulary
+     * @return string[][] Returns a list of lists with keys id, value.
      */
     public function searchVocabulary($term, $query)
     {
+        $useStartsWith = array('script_code' => 1,
+                               'language_code' => 1,
+                               'gender' => 1,
+                               'nationality' => 1);
+        $likeStr = "%$query%";
+        if (isset($useStartsWith[$term]))
+        {
+            $likeStr = "$query%";
+        }
+
+        /* 
+         * $this->enableLogging();
+         * $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
+         */
+        
         $result = $this->sdb->query('select id,value
                                     from vocabulary
-                                    where type=$1 and value ilike $2 order by value asc limit 100;',
-                array($term, "%".$query."%"));
+                                    where type=$1 and value ilike $2 order by value asc limit 100',
+                                    array($term, $likeStr));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
-    
     }
 
     /**
