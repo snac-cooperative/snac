@@ -16,7 +16,7 @@
 namespace snac\server\database;
 
 use \snac\Config as Config;
-use snac\exceptions\SNACDatabaseException;
+use \snac\exceptions\SNACDatabaseException;
 
 /**
  * Database Connector Class
@@ -36,9 +36,15 @@ class DatabaseConnector {
     private $dbHandle = null;
     
     /**
+     * Convert php boolean to Postgres 
+     *
      * pg_execute() doesn't know to convert boolean to 't' and 'f' as required by Postgres. We can do it
      * ourselves.  Interestingly, the return value is a single character string containing t or f. In SQL it
      * would be literally 't'.
+     *
+     * Treat string 'true' as true, and 'false' as false just in case.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
      *
      * @param string $arg A php boolean of whatever type as long as it will test true or false.
      *
@@ -46,20 +52,31 @@ class DatabaseConnector {
      */
     public static function boolToPg($arg)
     {
-        if ($arg)
+        if ($arg === true || $arg == 'true')
         {
             return 't';
         }
-        else
+        else if ($arg === false || $arg == 'false')
         {
             return 'f';
         }
+        /*
+         * We can easily change the above code so we never get here, but if we do get here, this exception will be thrown.
+         */ 
+        // printf("\nDatabaseConnector.php boolToPg() Unable convert arg to bool: $arg\n");
+        throw new \snac\exceptions\SNACDatabaseException("DatabaseConnector.php boolToPg() Unable convert arg to bool: $arg");
     }
 
     /**
-     * pg_execute() doesn't know to convert boolean to 't' and 'f' from Postgres to php true and false. We do it
-     * ourselves.
+     * Convert Postgres boolean to php
+     *
+     * pg_execute() doesn't know to convert boolean to 't' and 'f' from Postgres to php true and false. We do
+     * it ourselves.
+     *
+     * This is for Postgres boolean types which may only have values 't' or 'f'. Any other value is an error.
      * 
+     * @throws \snac\exceptions\SNACDatabaseException
+
      * @param string $arg A php boolean of whatever type as long as it will test true or false.
      *
      * @return boolean Return php true or false.
@@ -75,7 +92,8 @@ class DatabaseConnector {
             return false;
         }
         // If we get down here, something is very wrong. Seems like this should be fatal.
-        printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
+        // printf("\nDatabaseConnector.php Error: arg: $arg cannot convert to true or false\n");
+        throw new \snac\exceptions\SNACDatabaseException("DatabaseConnector.php pgToBool() Error: arg: $arg cannot convert to true or false");
     }
 
     /**
@@ -102,7 +120,7 @@ class DatabaseConnector {
             if ($this->dbHandle === false) {
                 throw new \Exception("Unable to connect to back-end database.");
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             // Replace any exceptions with the SNAC Database Exception and re-throw back out.
             throw new \snac\exceptions\SNACDatabaseException($e->getMessage());
         }
