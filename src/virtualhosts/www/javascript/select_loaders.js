@@ -4,8 +4,8 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
         minLength = 4;
     }
 
-        if(selectItem.attr('id').indexOf(idMatch) != -1
-            && selectItem.attr('id').indexOf("ZZ") == -1) {
+        if(selectItem.attr('id').endsWith(idMatch)
+            && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
                     ajax: {
                         url: "?command=vocabulary&type="+type,
@@ -25,7 +25,8 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                     width: '100%',
                     minimumInputLength: minLength,
                     allowClear: true,
-                    theme: 'classic'
+                    theme: 'classic',
+                    placeholder: 'Select'
                 });
             }
 }
@@ -55,7 +56,8 @@ function scm_source_select_replace(selectItem, idMatch) {
                     width: '100%',
                     minimumInputLength: 0,
                     allowClear: true,
-                    theme: 'classic'
+                    theme: 'classic',
+                    placeholder: 'Select'
                 });
             }
 }

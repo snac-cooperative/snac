@@ -37,6 +37,7 @@
 
 {% macro displayNameEntry(nameEntry, i) %}
     {% import 'widgets.html' as widgets %}  
+    {% import _self as components %}   
                             <div class="panel panel-default" id="nameEntry_panel_{{i}}">
                             <div class="panel-body">
                                 <div class="col-xs-10" id="nameEntry_datapart_{{i}}">
@@ -85,12 +86,90 @@
                                             <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
                                         </div>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-4">
+                                            Type
+                                        </label>
+                                        <div class="col-xs-8 well well-sm">
+                                        {% set j = 0 %}
+                                        {% for contributor in nameEntry.contributors %}
+                                            {{ components.displayContributor(contributor, i, j) }}
+                                            {% set j = j + 1 %}
+                                        {% endfor %}
+                                        <span id='nameEntry_contributor_next_j_{{i}}' style='display:none;'>{{j}}</span>
+                                        
+                                        <div class="form-group" id="nameEntry_contributor_add_div_{{i}}">
+                                            <div class="col-xs-12 text-center">
+                                                <button class="btn btn-success" id="nameEntry_contributor_add_{{i}}" 
+                                                    onClick="return newNameEntryContributor({{i}});" disabled>
+                                                    <span class="glyphicon glyphicon-plus-sign"></span> Add Type
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                                 {{ widgets.scmModal("nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
                                 {{ widgets.optionsList("nameEntry", i) }}
                             </div>
                         </div>
     
+{% endmacro %}
+
+{% macro displayContributor(contributor, i, j) %}
+                                            <div class="panel panel-body" id="nameEntry_contributor_{{j}}_panel_{{i}}">
+                                                <input type="hidden" id="nameEntry_contributor_{{j}}_id_{{i}}" 
+                                                    name="nameEntry_contributor_{{j}}_id_{{i}}" 
+                                                    value="{{contributor.id}}"/>
+                                                <input type="hidden" id="nameEntry_contributor_{{j}}_version_{{i}}" 
+                                                    name="nameEntry_contributor_{{j}}_version_{{i}}" 
+                                                    value="{{contributor.version}}"/>
+                                                <input type="hidden" id="nameEntry_contributor_{{j}}_operation_{{i}}" 
+                                                    name="nameEntry_contributor_{{j}}_operation_{{i}}" 
+                                                    value="{{contributor.operation}}"/>
+                                                <div class="form-group">
+                                                    <label class="control-label col-xs-4">
+                                                        Contributor
+                                                    </label>
+                                                    <div class="col-xs-6">
+                                                        <input id="nameEntry_contributor_{{j}}_name_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_name_{{i}}" 
+                                                            class="form-control" value="{{contributor.name}}" 
+                                                            placeholder="Contributor" readonly>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="control-label col-xs-4">
+                                                        Type
+                                                    </label>
+                                                    <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_type_{{i}}">
+                                                        <input id="nameEntry_contributor_{{j}}_type_id_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_type_id_{{i}}" 
+                                                            type="hidden" class="form-control" 
+                                                            value="{{ contributor.type.id }}"/>
+                                                        <input id="nameEntry_contributor_{{j}}_type_term_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_type_term_{{i}}" 
+                                                            type="hidden" class="form-control" 
+                                                            value="{{ contributor.type.term }}"/>
+                                                        <input id="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}" 
+                                                            type="hidden" class="form-control" value="name_type"/>
+                                                        <input id="nameEntry_contributor_{{j}}_type_minlength_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_type_minlength_{{i}}" 
+                                                            type="hidden" class="form-control" value="0"/>
+                                                        <p class="form-control-static">{{ contributor.type.term }}</p>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center">
+                                                    <button class="btn btn-danger" 
+                                                        id="nameEntry_contributor_{{j}}_remove_{{i}}" 
+                                                        onClick="return setContributorDeleted('nameEntry_contributor_{{j}}', '{{i}}');" disabled>
+                                                        <span class="glyphicon glyphicon-minus-sign"></span> Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+
 {% endmacro %}
 
 {% macro displaySameAs(other, i) %}

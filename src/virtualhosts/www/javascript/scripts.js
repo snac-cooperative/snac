@@ -74,13 +74,68 @@ function undoEdit(short, i) {
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
     
-    // restore the delete button
-    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
-    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
-       setDeleted(short, i); 
-    });
 	
 }
+
+// Note: idStr must not have the "_" pre-appended
+function textToSelect(shortName, idStr) {
+    $("div[id^='select_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("select_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
+            var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
+            var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
+            
+            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' placeholder='Select'>"+
+                    "<option></option>"+
+                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "</select>"+
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" " +
+                        "name=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" value=\""+vocabtype+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
+                        "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>");
+            
+            vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
+            
+        }
+    });
+}
+
+function selectToText(shortName, idStr) {
+    $("div[id^='select_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("select_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_id_"+idStr+ " option:selected").text();
+            var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
+            var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
+        
+            cont.html("<input type=\"hidden\" id=\""+shortName+"_"+name+"_id_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_id_"+idStr+"\" value=\""+id+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_term_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_term_"+idStr+"\" value=\""+term+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" " +
+                        "name=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" value=\""+vocabtype+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
+                        "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>" +
+                        "<p class=\"form-control-static\">"+term+"</p>");
+            
+        }
+    });
+}
+
+
 function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
@@ -106,21 +161,27 @@ function makeEditable(short, i) {
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("readonly");
         }
     });
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("readonly");
+        }
+    });
+    $("button[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.removeAttr("disabled");
         }
     });
     // Turn on CodeMirror Editors
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 
-            && obj.attr('id').indexOf("ZZ") == -1
+        if(obj.attr('id').endsWith(idstr)
+            && !obj.attr('id').endsWith("ZZ")
             && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
             obj.get(0).CodeMirror = CodeMirror.fromTextArea(obj.get(0), {
               lineNumbers: true,
@@ -133,35 +194,13 @@ function makeEditable(short, i) {
     var sawSelect = false;
     $("select[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
         }
     });
     
     if (!sawSelect) {
-	    $("div[id^='select_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[2];
-	            var id = $("#"+short+"_"+name+"_id_"+i).val();
-	            var term = $("#"+short+"_"+name+"_term_"+i).val();
-	            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
-	            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
-		        
-	            cont.html("<select id='"+short+"_"+name+"_id_"+i+"' name='"+short+"_"+name+"_id_"+i+"' class='form-control'>"+
-	                    "<option></option>"+
-	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-	                    "</select>"+
-                        "<input type=\"hidden\" id=\""+short+"_"+name+"_vocabtype_"+i+"\" " +
-                        	"name=\""+short+"_"+name+"_vocabtype_"+i+"\" value=\""+vocabtype+"\"/>" +
-                        "<input type=\"hidden\" id=\""+short+"_"+name+"_minlength_"+i+"\" " +
-                        	"name=\""+short+"_"+name+"_minlength_"+i+"\" value=\""+minlength+"\"/>");
-	            
-	            vocab_select_replace($("#"+short+"_"+name+"_id_"+i), i, vocabtype, minlength);
-	            
-	        }
-	    });
+        textToSelect(short, i);
     }
     
     // Set this data's operation value appropriately
@@ -186,15 +225,15 @@ function makeUneditable(short, i) {
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("readonly", "true");
         }
     });
     // Remove CodeMirror editors
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 
-            && obj.attr('id').indexOf("ZZ") == -1
+        if(obj.attr('id').endsWith(idstr) 
+            && !obj.attr('id').endsWith("ZZ")
             && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
             
             if (obj.get(0).CodeMirror) {
@@ -204,10 +243,17 @@ function makeUneditable(short, i) {
                 //obj.get(0).CodeMirror.toTextArea();
         }
     });
+    // Disable buttons
+    $("button[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.attr("disabled", "true");
+        }
+    });
     // Make textareas read-only
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("readonly", "true");
         }
     });
@@ -215,45 +261,36 @@ function makeUneditable(short, i) {
     var sawSelect = false;
     $("select[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
         }
     });
     // If a select box was seen, undo it
     if (sawSelect) {
-	    $("div[id^='select_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[2];
-	            var id = $("#"+short+"_"+name+"_id_"+i).val();
-	            var term = $("#"+short+"_"+name+"_id_"+i+ " option:selected").text();
-	            var vocabtype = $("#"+short+"_"+name+"_vocabtype_"+i).val();
-	            var minlength = $("#"+short+"_"+name+"_minlength_"+i).val();
-	        
-	            cont.html("<input type=\"hidden\" id=\""+short+"_"+name+"_id_"+i+"\" " +
-                    	"name=\""+short+"_"+name+"_id_"+i+"\" value=\""+id+"\"/>" +
-                        "<input type=\"hidden\" id=\""+short+"_"+name+"_term_"+i+"\" " +
-                    	"name=\""+short+"_"+name+"_term_"+i+"\" value=\""+term+"\"/>" +
-                        "<input type=\"hidden\" id=\""+short+"_"+name+"_vocabtype_"+i+"\" " +
-                        	"name=\""+short+"_"+name+"_vocabtype_"+i+"\" value=\""+vocabtype+"\"/>" +
-                        "<input type=\"hidden\" id=\""+short+"_"+name+"_minlength_"+i+"\" " +
-                        	"name=\""+short+"_"+name+"_minlength_"+i+"\" value=\""+minlength+"\"/>" +
-                        	"<p class=\"form-control-static\">"+term+"</p>");
-	            
-	        }
-	    });
+        selectToText(short, i);
     }
     
-
+    // restore the edit button
     $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-pencil\"></span> Edit");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
     	makeEditable(short, i);
     });
     
-    // Clear the operation flag
-    $("#" + short + "_operation_" + i).val("");
+    // restore the delete button
+    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+       setDeleted(short, i); 
+    });
+    
+    // Clear the operation flags
+    //$("#" + short + "_operation_" + i).val("");
+    $("input[id^='"+short+"_']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith("_operation" + idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.val("");
+        }
+    });
     
 	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
 
@@ -418,15 +455,23 @@ function makeSCMUneditable(short, i, j) {
     return false;
 }
 
+function setContributorDeleted(shortName, i) {
+    if ($("#" + shortName + "_operation_" + i).val() != "delete") {
+        $("#" + shortName + "_remove_" + i).removeClass("btn-danger").addClass("btn-warning");
+        $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+    } else {
+        $("#" + shortName + "_remove_" + i).removeClass("btn-warning").addClass("btn-danger");
+        $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-minus-sign\"></span> Remove");
+    }
+
+    return subSetDeleted(shortName, i);
+}
 
 function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
-    	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
-    	
-        $("#" + short + "_operation_" + i).val("delete");
     
         // disable edit button
         $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
@@ -439,11 +484,34 @@ function setDeleted(short, i) {
 
     } else {
     	// set undelete
-    	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-trash\"></span> Trash");
-        
 
+        // restore edit button
+        $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+           makeEditable(short, i); 
+        });
+    
+        // restore the SCM button
+        $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
+    	
+    }
+    
+    return subSetDeleted(short, i);
+}
+
+
+function subSetDeleted(short, i) {
+    if ($("#" + short + "_operation_" + i).val() != "delete") {
+    	// set deleted
+    	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
+    	
+        $("#" + short + "_operation_" + i).val("delete");
+    } else {
+    	// set undelete
+    	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
+        
         // If this thing was deleted but is supposed to be an update, then return it back to update status
         var sawSelect = false;
         $("select[id^='"+short+"_']").each(function() {
@@ -461,15 +529,6 @@ function setDeleted(short, i) {
         	$("#" + short + "_operation_" + i).val("");
         }
         
-        // restore edit button
-        $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
-        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
-           makeEditable(short, i); 
-        });
-    
-        // restore the SCM button
-        $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
-    	
     }
     
     // Asked to delete something, so make it globally known
@@ -931,3 +990,22 @@ $(document).ready(function() {
 	
 });
 
+function newNameEntryContributor(i) {
+	var nextid = 1;
+	if ($('#nameEntry_contributor_next_j_'+i).exists()) {
+	    nextid = parseInt($('#nameEntry_contributor_next_j_'+i).text());
+	}
+	console.log("Creating new name entry contributor for nameEntry " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#contributor_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#nameEntry_contributor_add_div_'+i).before(html);
+
+    $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
+    makeEditable("nameEntry_contributor_" + nextid, i); 
+
+    // Put the updated version number back in the DOM
+    $('#nameEntry_contributor_next_j_'+i).text(++nextid);
+    
+    return false;
+}

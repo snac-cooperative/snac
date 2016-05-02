@@ -288,11 +288,18 @@ class ConstellationPostMapper {
      * @param \snac\data\AbstractData $object Main object to reconcile
      * @param \snac\data\AbstractData $other Object to reconcile against
      * @param boolean $checkLang optional Whether or not to check the language
+     * @return boolean true if the objects reconcile (equal) or false otherwise
      */
     public function reconcileObject($object, $other, $checkLang = false) {
-        if ($object == null || $other == null) {
-            return;
+        if ($object == null && $other == null) {
+            return true;
         }
+
+        if ($object == null || $other == null) {
+            return false;
+        }
+
+        $success = false;
 
         if ($object->getOperation() != null &&
                 $object->equals($other, false) && $object->getOperation() == $other->getOperation()) {
@@ -304,6 +311,9 @@ class ConstellationPostMapper {
             // Other object is the one that we received from the server (with new ID and/or version)
             $this->updates[$piece["idField"]] = $other->getID();
             $this->updates[$piece["versionField"]] = $other->getVersion();
+
+            // Set success to be true (they matched)
+            $success = true;
         }
         
         // This is highly inefficient!
@@ -324,10 +334,12 @@ class ConstellationPostMapper {
             }
         }
         
-        // Check the language if we need to, based on the parameter
+        // Reconcile the language if we need to, based on the parameter
         if ($checkLang) {
            $this->reconcileObject($object->getLanguage(), $other->getLanguage());
         }
+
+        return $success;
     }
     
     /**
@@ -418,7 +430,14 @@ class ConstellationPostMapper {
         
         foreach ($this->constellation->getNameEntries() as $nameEntry) {
             foreach ($constellation->getNameEntries() as $other) {
-                $this->reconcileObject($nameEntry, $other, true);
+                if ($this->reconcileObject($nameEntry, $other, true)) {
+
+                    foreach ($nameEntry->getContributors() as $contributor) {
+                        foreach ($other->getContributors() as $otherContrib) {
+                            $this->reconcileObject($contributor, $otherContrib);
+                        }
+                    }
+                }
             }
         }
         
@@ -552,7 +571,7 @@ class ConstellationPostMapper {
                 if (! isset($nested[$parts[0]][$parts[3]][$parts[1]]))
                     $nested[$parts[0]][$parts[3]][$parts[1]] = array ();
                 $nested[$parts[0]][$parts[3]][$parts[1]][$parts[2]] = $v;
-            } else if (count($parts) == 5) {
+            } else if (count($parts) == 5 && $parts[0] == "scm") {
                 // five parts: scm repeating
                 // scm_key_subkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey] = value
                 if (! isset($nested[$parts[1]][$parts[4]]))
@@ -561,10 +580,25 @@ class ConstellationPostMapper {
                     $nested[$parts[1]][$parts[4]][$parts[0]] = array ();
                 if (! isset($nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]]))
                     $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]] = array ();
-                if (! isset($nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]]))
-                    $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]] = array ();
                 $nested[$parts[1]][$parts[4]][$parts[0]][$parts[3]][$parts[2]] = $v;
-            } else if (count($parts) == 6) {
+            } else if (count($parts) == 5 && $parts[0] != "scm") {
+                // five parts: non-scm repeating
+                // nameEntry_contributor_23_name_0
+                // nameEntry_contributor_{{j}}_id_{{i}}
+                // key, index = nameEntry, 0
+                // subkey, index = contributor, 23
+                // subsubkey = name
+                // 0___1______2_________3________4
+                // key_subkey_subindex_subsubkey_index => value ==> 
+                //                      nested[key][index][subkey][subindex][subsubkey] = value
+                if (! isset($nested[$parts[0]][$parts[4]]))
+                    $nested[$parts[0]][$parts[4]] = array ();
+                if (! isset($nested[$parts[0]][$parts[4]][$parts[1]]))
+                    $nested[$parts[0]][$parts[4]][$parts[1]] = array ();
+                if (! isset($nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]]))
+                    $nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]] = array ();
+                $nested[$parts[0]][$parts[4]][$parts[1]][$parts[2]][$parts[3]] = $v;
+            } else if (count($parts) == 6 && $parts[0] == "scm") {
                 // six parts: scm repeating
                 // scm_key_subkey_subsubkey_subindex_index => value ==> nested[key][index][scm][subindex][subkey][subsubkey] = value
                 // {{short}}_scm_languagescript_id_{{j}}_{{i}}
@@ -576,12 +610,29 @@ class ConstellationPostMapper {
                     $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]] = array ();
                 if (! isset($nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]]))
                     $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]] = array ();
-                if (! isset($nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]]))
-                    $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]] = array ();
                 $nested[$parts[1]][$parts[5]][$parts[0]][$parts[4]][$parts[2]][$parts[3]] = $v;
+            } else if (count($parts) == 6 && $parts[0] != "scm") {
+                // six parts: non-scm repeating
+                // nameEntry_contributor_23_type_id_0
+                // key, index = nameEntry, 0
+                // subkey, subindex = contributor, 23
+                // subsubkey = type
+                // subsubsubkey = id 
+                // 0___1______2________3_________4____________5
+                // key_subkey_subindex_subsubkey_subsubsubkey_index => value ==> 
+                //                      nested[key][index][subkey][subindex][subsubkey][subsubsubkey] = value
+                if (! isset($nested[$parts[0]][$parts[5]]))
+                    $nested[$parts[0]][$parts[5]] = array ();
+                if (! isset($nested[$parts[0]][$parts[5]][$parts[1]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]] = array ();
+                if (! isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[2]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[2]] = array ();
+                if (! isset($nested[$parts[0]][$parts[5]][$parts[1]][$parts[2]][$parts[3]]))
+                    $nested[$parts[0]][$parts[5]][$parts[1]][$parts[2]][$parts[3]] = array ();
+                $nested[$parts[0]][$parts[5]][$parts[1]][$parts[2]][$parts[3]][$parts[4]] = $v;
             }
         }
-        
+
         // NRD-level Information
         if (isset($nested["ark"]))
             $this->constellation->setArkID($nested["ark"]);
@@ -845,6 +896,7 @@ class ConstellationPostMapper {
             // If the user added an object, but didn't actually edit it
             if ($data["id"] == "" && $data["operation"] != "insert")
                 continue;
+            $this->logger->addDebug("Parsing Name Entry", $data);
             $nameEntry = new \snac\data\NameEntry();
             $nameEntry->setID($data["id"]);
             $nameEntry->setVersion($data["version"]);
@@ -856,7 +908,30 @@ class ConstellationPostMapper {
             $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
             
             $nameEntry->setAllSNACControlMetadata($this->parseSCM($data, "nameEntry", $k));
-            
+
+            // right now, update contributors if updating name entry
+            if (isset($data["contributor"])) {
+                foreach ($data["contributor"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through contributor", $cData);
+                    $contributor = new \snac\data\Contributor();
+                    $contributor->setID($cData["id"]);
+                    $contributor->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $contributor->setOperation($this->getOperation($cData));
+                    else
+                        $contributor->setOperation($this->getOperation($data));
+
+                    $contributor->setName($cData["name"]);
+                    $contributor->setType($this->parseTerm($cData["type"]));
+
+                    $this->addToMapping("nameEntry_contributor_".$l, $k, $cData, $contributor);
+
+                    $nameEntry->addContributor($contributor);
+                }
+            }
+
             $this->addToMapping("nameEntry", $k, $data, $nameEntry);
             
             $this->constellation->addNameEntry($nameEntry);
