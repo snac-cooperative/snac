@@ -140,14 +140,10 @@ function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
         return false;
-    
     // If it's deleted, then you better undelete it first
     if ($("#" + short + "_operation_" + i).val() == "delete")
         setDeleted(short, i);
 
-    // Add to the undo set
-    undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
-    
     $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
@@ -157,6 +153,20 @@ function makeEditable(short, i) {
     $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
         return false;
     });
+	
+    $("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
+
+    return subMakeEditable(short, i);
+}
+
+function subMakeEditable(short, i) {
+    // No editing if it's already in edit mode
+    if ($("#" + short + "_operation_" + i).val() == "update")
+        return false;
+    
+    // Add to the undo set
+    undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
+    
 
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
@@ -174,7 +184,7 @@ function makeEditable(short, i) {
     $("button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.removeAttr("disabled");
+            obj.removeAttr("disabled").removeClass("snac-hidden");
         }
     });
     // Turn on CodeMirror Editors
@@ -211,9 +221,6 @@ function makeEditable(short, i) {
     
     // Asked to edit something, so make it globally known
     somethingHasBeenEdited = true;
-    
-
-	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
     		
     return false;
 }
@@ -247,7 +254,7 @@ function makeUneditable(short, i) {
     $("button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.attr("disabled", "true");
+            obj.attr("disabled", "true").addClass("snac-hidden");
         }
     });
     // Make textareas read-only
@@ -1002,7 +1009,7 @@ function newNameEntryContributor(i) {
     $('#nameEntry_contributor_add_div_'+i).before(html);
 
     $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
-    makeEditable("nameEntry_contributor_" + nextid, i); 
+    subMakeEditable("nameEntry_contributor_" + nextid, i); 
 
     // Put the updated version number back in the DOM
     $('#nameEntry_contributor_next_j_'+i).text(++nextid);

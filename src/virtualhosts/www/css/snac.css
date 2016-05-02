@@ -13,6 +13,10 @@ body {
     margin: 5px 0;
 }
 
+.snac-hidden {
+    display: none;
+}
+
 .snac .navbar .container {
     width: auto;
 }
