@@ -39,6 +39,7 @@ function addSCMEntry(short, i){
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
     $('#add_scm_'+short+'_'+i+'_div').after(html);
     $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
+    turnOnSCMButtons(short, i, j);
     return false;
 }
 
@@ -55,7 +56,7 @@ function updatePage() {
 
 function updateBiogHist() {
     return; // right now, not doing this
-    
+    /** 
     if (biogHistEditor == null) {
         biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
               lineNumbers: true,
@@ -66,6 +67,7 @@ function updateBiogHist() {
     }
     biogHistEditor.setSize("100%", null);
     biogHistEditor.refresh();
+    **/
 } 
 
 function undoEdit(short, i) {
@@ -73,8 +75,14 @@ function undoEdit(short, i) {
 	
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
-    
+}
+
+function undoSCMEdit(short, i, j) {
+	var id = j + "_" + i;
+	makeSCMUneditable(short, i, j);
 	
+	// restore the old content
+	$("#scm_" + short + "_datapart_" + id).replaceWith(undoSet["scm_"+short+"-"+id]);
 }
 
 // Note: idStr must not have the "_" pre-appended
@@ -106,6 +114,28 @@ function textToSelect(shortName, idStr) {
         }
     });
 }
+
+function sourceTextToSelect(shortName, idStr) {
+
+    $("div[id^='selectsource_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith(idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("selectsource_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
+            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control'>"+
+                    "<option></option>"+
+                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "</select>");
+            scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), idStr);
+        }
+    });
+}
+
 
 function selectToText(shortName, idStr) {
     $("div[id^='select_"+shortName+"']").each(function() {
@@ -211,6 +241,7 @@ function subMakeEditable(short, i) {
     
     if (!sawSelect) {
         textToSelect(short, i);
+        sourceTextToSelect(short, i);
     }
     
     // Set this data's operation value appropriately
@@ -224,7 +255,6 @@ function subMakeEditable(short, i) {
     		
     return false;
 }
-
 
 function makeUneditable(short, i) {
 
@@ -306,87 +336,28 @@ function makeUneditable(short, i) {
 
 function makeSCMEditable(short, i, j) {
 	var id = j + "_" + i;
-	
+    var scmshort = "scm_" + short;	
+   
     // No editing if it's already in edit mode
-    if ($("#scm_" + short + "_operation_" + id).val() == "update")
+    if ($("#" + scmshort + "_operation_" + id).val() == "update")
         return false;
-    
     // If it's deleted, then you better undelete it first
-    if ($("#scm_" + short + "_operation_" + id).val() == "delete")
+    if ($("#" + scmshort + "_operation_" + id).val() == "delete")
         setSCMDeleted(short, i, j);
 
-
-    var idstr = "_" + j + "_" + i;
-    $("input[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.removeAttr("readonly");
-        }
+    $("#" + scmshort + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
+    $("#" + scmshort + "_editbutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+    $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() { 
+    	undoSCMEdit(short, i, j);
     });
-    $("textarea[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.removeAttr("readonly");
-        }
+    $("#" + scmshort + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
+    $("#" + scmshort + "_deletebutton_" + id).off('click').on("click", function() { 
+        return false;
     });
+	
+    $("#" + scmshort + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
     
-
-    var sawSelect = false;
-    $("select[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            sawSelect = true;
-        }
-    });
-
-    if (!sawSelect) {
-	    $("div[id^='select_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
-	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
-	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
-	            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
-	                    "<option></option>"+
-	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-	                    "</select>"+
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" value=\""+vocabtype+"\"/>" +
-                    	"<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>");
-	            vocab_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr, vocabtype, minlength);
-	        }
-	    });
-	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_term"+idstr).val();
-	            cont.html("<select id='scm_"+short+"_"+name+"_id"+idstr+"' name='scm_"+short+"_"+name+"_id"+idstr+"' class='form-control'>"+
-	                    "<option></option>"+
-	                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-	                    "</select>");
-	            scm_source_select_replace($("#scm_"+short+"_"+name+"_id"+idstr), idstr);
-	        }
-	    });
-    }
-    
-
-    if ($("#scm_" + short + "_id_" + id).val() != "")
-    	$("#scm_" + short + "_operation_" + id).val("update");
-    else
-    	$("#scm_" + short + "_operation_" + id).val("insert");
-    
-    // Asked to edit something, so make it globally known
-    somethingHasBeenEdited = true;
-    		
-    
-    return false;
+    return subMakeEditable(scmshort, id); 
 }
 
 
@@ -457,8 +428,24 @@ function makeSCMUneditable(short, i, j) {
 	    });
     }
     
+    // restore the edit button
+    $("#scm_" + short + "_editbutton" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"glyphicon glyphicon-pencil\"></span>");
+    $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() { 
+    	makeSCMEditable(short, i, j);
+    });
+    
+    // restore the delete button
+    $("#scm_" + short + "_deletebutton" + idstr).addClass("list-group-item-danger").removeClass("disabled");
+    $("#scm_" + short + "_deletebutton" + idstr).off('click').on("click", function() { 
+       setSCMDeleted(short, i, j); 
+    });
+    
+    
     // Clear the operation flag
     $("#scm_" + short + "_operation_" + j + "_" + i).val("");
+	
+    $("#scm_" + short + "_panel" + idstr).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
     return false;
 }
 
@@ -523,7 +510,7 @@ function subSetDeleted(short, i) {
         var sawSelect = false;
         $("select[id^='"+short+"_']").each(function() {
             var obj = $(this);
-            if(obj.attr('id').indexOf("_" + i) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
+            if(obj.attr('id').endsWith("_" + i)  && !obj.attr('id').endsWith("ZZ")) {
                 sawSelect = true;
             }
         });
@@ -549,42 +536,29 @@ function setSCMDeleted(short, i, j) {
 	var id = j + '_' + i;
     if ($("#scm_" + short + "_operation_" + id).val() != "delete") {
     	// set deleted
-    	$("#scm_" + short + "_panel_" + id).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("list-group-item-warning");
         $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
     	
-        $("#scm_" + short + "_operation_" + id).val("delete");
+        // disable edit button
+        $("#scm_" + short + "_editbutton_" + id).removeClass("list-group-item-info").addClass("disabled");
+        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() { 
+           return false;
+        });
     	
     } else {
     	// set undelete
-    	$("#scm_" + short + "_panel_" + id).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-warning").addClass("list-group-item-danger");
         $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-trash\"></span>");
         
-
-        // If this thing was deleted but is supposed to be an update, then return it back to update status
-        var sawSelect = false;
-        $("select[id^='scm_"+short+"_']").each(function() {
-            var obj = $(this);
-            if(obj.attr('id').indexOf("_" + id) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-                sawSelect = true;
-            }
+        // restore edit button
+        $("#scm_" + short + "_editbutton_" + id).addClass("list-group-item-info").removeClass("disabled");
+        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() { 
+           makeSCMEditable(short, i, j); 
         });
-        if (sawSelect) {
-    	    if ($("#scm_" + short + "_id_" + id).val() != "")
-    	    	$("#scm_" + short + "_operation_" + id).val("update");
-    	    else
-    	    	$("#scm_" + short + "_operation_" + id).val("insert");
-        } else {
-        	$("#scm_" + short + "_operation_" + id).val("");
-        }
     	
     }
-    
-    // Asked to delete something, so make it globally known
-    somethingHasBeenEdited = true;
-    
-    return false;
+     
+    return subSetDeleted("scm_"+short, id);
 }
 
 function turnOnButtons(shortName, i) {
@@ -600,6 +574,20 @@ function turnOnButtons(shortName, i) {
     });
 }
 
+function turnOnSCMButtons(shortName, i, j) {
+
+    // Turn on the edit button
+    $("#scm_"+shortName+"_editbutton_"+j+"_"+i).on("click", function() {
+        makeSCMEditable(shortName, i, j);
+    });
+
+    // Turn on the delete buttons
+    $("#scm_"+shortName+"_deletebutton_"+j+"_"+i).on("click", function() {
+        setSCMDeleted(shortName, i, j);
+    });
+}
+
+
 $(document).ready(function() {
 
 
@@ -614,6 +602,13 @@ $(document).ready(function() {
             obj.on("click", function() {
                 makeEditable(short, i);
             });
+        } else if (pieces.length == 5) {
+            var short = pieces[1];
+            var i = pieces[4];
+            var j = pieces[3];
+            obj.on("click", function() {
+                makeSCMEditable(short, i, j);
+            });
         }
     });
 
@@ -627,6 +622,13 @@ $(document).ready(function() {
             var i = pieces[2];
             obj.on("click", function() {
                 setDeleted(short, i);
+            });
+        } else if (pieces.length == 5) {
+            var short = pieces[1];
+            var i = pieces[4];
+            var j = pieces[3];
+            obj.on("click", function() {
+                setSCMDeleted(short, i, j);
             });
         }
     });
