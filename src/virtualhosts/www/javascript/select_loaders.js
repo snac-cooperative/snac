@@ -1,4 +1,13 @@
-
+/**
+ * Replace a select that is linked to a Vocabulary search
+ *
+ * Replaces the select with a select2 object capable of making AJAX queries
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ * @param  string idMatch    ID string for the object on the page
+ * @param  string type       The type of the vocabulary term
+ * @param  int    minLength  The minimum required length of the autocomplete search
+ */
 function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
         minLength = 4;
@@ -31,10 +40,17 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
             }
 }
 
-
+/**
+ * Replace a select that is linked to a Constellation Source search
+ *
+ * Replaces the select with a select2 object capable of making AJAX queries
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ * @param  string idMatch    ID string for the object on the page
+ */
 function scm_source_select_replace(selectItem, idMatch) {
-        if(selectItem.attr('id').indexOf(idMatch) != -1
-            && selectItem.attr('id').indexOf("ZZ") == -1) {
+        if(selectItem.attr('id').endsWith(idMatch)
+            && !selectItem.attr('id').endsWith("ZZ")) {
         		var icid = $("#constellationid").val();
         		var icversion = $("#version").val();
                 selectItem.select2({
@@ -62,7 +78,9 @@ function scm_source_select_replace(selectItem, idMatch) {
             }
 }
 
-
+/**
+ * Replace all the selects that exist on the page when the page has finished loading
+ */
 $(document).ready(function() {
 
     // Use select2 to display the select dropdowns

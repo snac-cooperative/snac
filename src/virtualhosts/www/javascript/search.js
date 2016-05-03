@@ -1,11 +1,19 @@
 jQuery.fn.exists = function(){return this.length>0;}
 
 
-
+/**
+ * Set the search position (page number)
+ * @param int start The starting position
+ */
 function setSearchPosition(start) {
     $('#start').val(start);
 }
 
+/**
+ * Search with AJAX and update the display of search results
+ *
+ * @return boolean false to play nice with the browser
+ */
 function searchAndUpdate() {
     if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
         $("#search-results-box").html("");
@@ -69,24 +77,15 @@ function searchAndUpdate() {
 /**
  * Only load this script once the document is fully loaded
  */
-
 $(document).ready(function() {
-    /**
-      $(function() {
-      $( "#searchbox" ).autocomplete({
-      source: "?command=search",
-      minLength: 2,
-      select: function( event, ui ) {
-      }
-      });
-      });**/
+
 
 
     // Preview button
     if($('#searchbutton').exists()) {
         $('#searchbutton').click(function(){
 
-            // Do the same thing as the auto-complete 
+            // Do the same thing as the auto-complete
             setSearchPosition(0); searchAndUpdate();
 
         });
@@ -98,9 +97,6 @@ $(document).ready(function() {
     $('#searchbox').keyup(function() {
         clearTimeout(timeoutID);
         var $target = $(this);
-        timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500); 
+        timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500);
     });
 });
-
-
-

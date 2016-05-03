@@ -1,9 +1,9 @@
 /**
  * Edit-Page Save Actions
  *
- * Contains code that handles what happens in the GUI when 
+ * Contains code that handles what happens in the GUI when
  * the user clicks any save button.
- * 
+ *
  *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -17,7 +17,7 @@ jQuery.fn.exists = function(){return this.length>0;}
  * Only load this script once the document is fully loaded
  */
 $(document).ready(function() {
-    
+
 
 
     // Save and Continue button
@@ -40,8 +40,8 @@ $(document).ready(function() {
                 }, 10000);
         		return;
         	}
-        	
-        	
+
+
         	// If nothing has changed, alert the user and do nothing
         	if (somethingHasBeenEdited == false) {
                 $('#notification-message').html("<p>No new changes to save.</p>");
@@ -53,7 +53,7 @@ $(document).ready(function() {
                 }, 7000);
         		return;
         	}
-        	
+
             // Open up the warning alert box and note that we are saving
             $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
             $('#notification-message').slideDown();
@@ -85,16 +85,16 @@ $(document).ready(function() {
                 		console.log("updating: " + key + " to value " + data.updates[key]);
                 		$('#' + key).val(data.updates[key]);
                 	}
-                	
+
                 	// Remove the global operation, if one is set
                 	$('#operation').val("");
 
                 	// Remove any deleted items
-                	// Note: deleted items will have the deleted-component class added to them, so 
+                	// Note: deleted items will have the deleted-component class added to them, so
                 	//       this line will just remove anything with that class from the DOM
                     $('.deleted-component').remove();
 
-                	
+
                 	// Return edited items back to unedited state
                 	$("div[id*='_panel_']").each(function() {
                 		// for any div that has _panel_ in its name, we should check the ID
@@ -104,7 +104,7 @@ $(document).ready(function() {
             	        // Don't look at any of the ZZ hidden panels
 	            	    if (cont.attr('id').indexOf("ZZ") == -1) {
 	            	        var split = cont.attr('id').split("_");
-	            	        
+
 	            	        // Split reveals a normal panel:
 	            	        if (split.length == 3) {
 	            	        	var short = split[0];
@@ -130,16 +130,16 @@ $(document).ready(function() {
 	        	            	}
 	            	        }
             	        }
-        	            
+
                 	});
 
                     // Everything's been saved, so mark not in editing
                     somethingHasBeenEdited = false;
-                    
+
                     // Clear the undo set
                     undoSet = new Array();
-                    
-                    
+
+
                     $('#notification-message').slideUp();
                     // Show the success alert
                     $('#success-message').html("<p>Saved successfully!</p>");
@@ -161,7 +161,7 @@ $(document).ready(function() {
     // Save and Dashboard button
     if($('#save_and_dashboard').exists()) {
         $('#save_and_dashboard').click(function(){
-        	
+
         	// If EntityType and NameEntry do not have values, then don't let the user save
         	var noNameEntryText = true;
         	$("input[id^='nameEntry_original_']").each(function() {
@@ -178,32 +178,32 @@ $(document).ready(function() {
                 }, 10000);
         		return;
         	}
-        	
+
         	// If nothing has changed, alert the user and unlock
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Updating Constellation state... Please wait.</p>");
 		        $('#notification-message').slideDown();
-		
+
 		        // Publish by AJAX call
 		        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
 		                somethingHasBeenEdited = false;
-		                
+
 		                $('#notification-message').slideUp();
-		                
+
 		                $('#success-message').html("<p>Constellation state updated. Going to dashboard.</p>");
 		                setTimeout(function(){
 		                    $('#success-message').slideDown();
 		                }, 500);
 		                setTimeout(function(){
-		                	
+
 		                    // Go to dashboard
 		                    window.location.href = "?command=dashboard";
-		                    
+
 		                }, 1000);
-		
+
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
@@ -211,7 +211,7 @@ $(document).ready(function() {
 		            }
 		        });
         	} else {
-	        	
+
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
@@ -231,26 +231,26 @@ $(document).ready(function() {
                     }
 
                 });
-	
+
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // No longer in editing, save succeeded
 	                    somethingHasBeenEdited = false;
-	                    
+
 	                    $('#notification-message').slideUp();
-	                    
+
 	                    // Go to dashboard
 		                $('#success-message').html("<p>Constellation Saved. Going to dashboard.</p>");
 		                setTimeout(function(){
 		                    $('#success-message').slideDown();
 		                }, 500);
                         setTimeout(function(){
-                            
+
                             // Go to dashboard
                             window.location.href = "?command=dashboard";
-                            
+
                         }, 1000);
 	                } else {
 	                    $('#notification-message').slideUp();
@@ -265,7 +265,7 @@ $(document).ready(function() {
     // Save and Submit button
     if($('#save_and_submit').exists()) {
         $('#save_and_submit').click(function(){
-        	
+
         	// If EntityType and NameEntry do not have values, then don't let the user save or publish
         	var noNameEntryText = true;
         	$("input[id^='nameEntry_original_']").each(function() {
@@ -287,27 +287,27 @@ $(document).ready(function() {
         	if (somethingHasBeenEdited == false) {
 		        $('#notification-message').html("<p>No new changes to save.  Publishing Constellation... Please wait.</p>");
 		        $('#notification-message').slideDown();
-		
+
 		        // Publish by AJAX call
 		        $.post("?command=publish", $("#constellation_form").serialize(), function (data) {
 		            // Check the return value from the ajax. If success, then go to dashboard
 		            if (data.result == "success") {
 		                // Edit succeeded, so save mode off
 		                somethingHasBeenEdited = false;
-		                
+
 		                $('#notification-message').slideUp();
-		                
+
 		                $('#success-message').html("<p>Constellation Published. Going to dashboard.</p>");
 		                setTimeout(function(){
 		                    $('#success-message').slideDown();
 		                }, 500);
 		                setTimeout(function(){
-		                	
+
 		                    // Go to dashboard
 		                    window.location.href = "?command=dashboard";
-		                    
+
 		                }, 1000);
-		
+
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
@@ -315,7 +315,7 @@ $(document).ready(function() {
 		            }
 		        });
         	} else {
-	        	
+
 	            // Open up the warning alert box and note that we are saving
 	            $('#notification-message').html("<p>Saving and Publishing Constellation... Please wait.</p>");
 	            $('#notification-message').slideDown();
@@ -335,26 +335,26 @@ $(document).ready(function() {
                     }
 
                 });
-	
+
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
 	                if (data.result == "success") {
 	                    // Edit succeeded, so save mode off
 	                    somethingHasBeenEdited = false;
-	                    
+
 	                    $('#notification-message').slideUp();
 
-		                
+
 		                $('#success-message').html("<p>Constellation Saved and Published. Going to dashboard.</p>");
 		                setTimeout(function(){
 		                    $('#success-message').slideDown();
 		                }, 500);
 		                setTimeout(function(){
-		                	
+
 		                    // Go to dashboard
 		                    window.location.href = "?command=dashboard";
-		                    
+
 		                }, 1000);
 	                } else {
 	                    $('#notification-message').slideUp();
@@ -365,13 +365,13 @@ $(document).ready(function() {
         	}
         });
     }
-    
-    
+
+
 
     // Cancel button
     if($('#cancel').exists()) {
         $('#cancel').click(function(){
-        	
+
         	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
         	$("input[id^='nameEntry_original_']").each(function() {
@@ -383,30 +383,30 @@ $(document).ready(function() {
                 window.location.href = "?command=dashboard";
         		return;
         	}
-            
+
             if(somethingHasBeenEdited){
                 if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
                     // Don't want to cancel, so exit!
                     return;
                 }
             }
-        	
+
         	// Unlock
 	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
 	            // Check the return value from the ajax. If success, then go to dashboard
 	            if (data.result == "success") {
-	                somethingHasBeenEdited = false;         
+	                somethingHasBeenEdited = false;
 	                $('#success-message').html("<p>Constellation unlocked. Going to dashboard.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
 	                }, 500);
 	                setTimeout(function(){
-	                	
+
 	                    // Go to dashboard
 	                    window.location.href = "?command=dashboard";
-	                    
+
 	                }, 1000);
-	
+
 	            } else {
 	                $('#notification-message').slideUp();
 	                // Something went wrong in the ajax call. Show an error and don't go anywhere.
@@ -416,7 +416,7 @@ $(document).ready(function() {
         });
     }
 
-    
+
 
     // Preview button
     if($('#preview').exists()) {
@@ -435,13 +435,18 @@ $(document).ready(function() {
             });
         });
     }
-    
-    
-    
 
-    // Set the message to display if you try to leave the page without saving changes
-    
-	function unloadPage(e){ 
+
+
+
+    /**
+     * What to do on page unload (leaving the page)
+     *
+     * Set the message to display if you try to leave the page without saving changes
+     *
+     * @param  event e The event that happened
+     */
+	function unloadPage(e) { 
 		if(somethingHasBeenEdited){
 			var message = 'You may have unsaved changes on this Constellation.  Are you sure you want to leave the page and risk losing those edits?';
 			var e = e || window.event;

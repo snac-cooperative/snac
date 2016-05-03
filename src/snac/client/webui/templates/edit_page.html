@@ -16,8 +16,10 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
 <!-- Helper Scripts -->
+<!--
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+-->
 
 <!-- Tiny MCE text editor
 <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
@@ -48,7 +50,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <link rel="stylesheet" href="css/snac.css">
 
 </head>
-<body role="document" onLoad="updatePage();">
+<body role="document">
 {% import 'widgets.html' as widgets %}
 {% import 'edit_components.html' as components %}
 {% import 'date_entry.html' as dates %}
@@ -66,7 +68,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         {% else %}
             <h1>New Constellation</h1>
         {% endif %}
-        
+
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
         <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
@@ -80,7 +82,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="active"><a href="#nameEntries" role="tab" data-toggle="tab">Basic Info</a></li>
                     <li><a href="#dates" role="tab" data-toggle="tab">Dates</a></li>
-                    <li><a href="#biogHists" role="tab" data-toggle="tab" onMouseUp="updateBiogHist()">BiogHist</a></li>
+                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
                     <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
                     <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Vocabs <span class="caret"></span></a>
@@ -114,13 +116,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
 
                 </ul>
-                
+
                 <div class="tab-content">
-                    
+
                     <div class="tab-pane active" id="nameEntries">
                         <h2>Basic Information</h2>
-                      
-                        <div class="well well-lg"> 
+
+                        <div class="well well-lg">
                             <p><span style="font-weight: bold;">Instructions: </span> When saving an Identity Constellation, the <em>Entity Type</em> and at least one <em>Name Entry</em> are required.</p>
                         </div>
 
@@ -133,7 +135,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             Entity Type <span style="color: #b40404">*</span>
                                         </label>
                                         <div class="col-xs-8">
-                                            <select id="entityType" name="entityType" class="form-control selectpicker">
+                                            <select id="entityType" name="entityType" class="form-control">
                                                 <option></option>
                                                 <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
                                             </select>
@@ -169,13 +171,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
                             </div>
                         </div>
-                        
+
 
                     </div>
-                    
+
                     <div class="tab-pane" id="genders">
                         <h2>Genders</h2>
-                        
+
                         <div class="form-group" id="add_gender_div">
                             <div class="col-xs-12 text-center">
                                 <button class="btn btn-success" id="btn_add_gender"><span class="glyphicon glyphicon-plus"></span> Add New Gender</button>
@@ -189,7 +191,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             {{ components.displayGender(gender, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
-                        
+
                         <span id='next_gender_i' style='display:none;'>{{i}}</span>
 
 
@@ -197,10 +199,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     <div class="tab-pane" id="dates">
                         <h2>Exist Dates</h2>
-                        
+
                         <div class="form-group" id="add_exist_div">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button> 
+                                <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button>
                                 <button class="btn btn-success" id="btn_add_exist_dateRange"><span class="glyphicon glyphicon-plus"></span> Add New Date Range</button>
                             </div>
                         </div>
@@ -221,7 +223,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="panel-body" id="biogHist_panel_0">
                             <div class="col-xs-10" id="biogHist_datapart_0">
                                 <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
-                                <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/> 
+                                <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
                                 {% if data.biogHists[0].id %}
                                     <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
                                 {% else %}
@@ -288,7 +290,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
-                        
+
                         <div class="form-group" id="add_source_div">
                             <div class="col-xs-12 text-center">
                                 <button class="btn btn-success" id="btn_add_source"><span class="glyphicon glyphicon-plus"></span> Add New Source</button>
@@ -325,7 +327,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Constellation Relations</h2>
-                        
+
                         <div class="form-group" id="add_constellationRelation_div">
                             <div class="col-xs-12 text-center">
                                 <button class="btn btn-success" id="btn_add_constellationRelation" data-toggle="modal" data-target="#relationSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation</button>
@@ -344,7 +346,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     <div class="tab-pane" id="languagesUsed">
                         <h2>Languages Used</h2>
-                        
+
                         <div class="form-group" id="add_language_div">
                             <div class="col-xs-12 text-center">
                                 <button class="btn btn-success" id="btn_add_language"><span class="glyphicon glyphicon-plus"></span> Add New Language</button>
@@ -454,7 +456,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         <div class="tab-pane" id="places">
                             <h2>Places</h2>
-                            
+
                             <div class="form-group" id="add_place_div">
                                 <div class="col-xs-12 text-center">
                                     <button class="btn btn-success" id="btn_add_place"><span class="glyphicon glyphicon-plus"></span> Add New Place</button>
@@ -554,14 +556,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
-                    
+
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>
                         </div>
                         <div class="panel-body">
                             <p>You may perform any of the following actions on this constellation.</p>
-                            <!-- 
+                            <!--
                             <div class="list-group">
                                 <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
                             </div>
@@ -723,7 +725,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <h4 class="modal-title" id="previewLabel">Preview</h4>
             </div>
             <div class="modal-body" id="previewPaneContent">
-                
+
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
@@ -748,9 +750,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 	                    <input type="hidden" id="relation-search-start" name="start" value="0">
 	                    <div class="form-group">
 	                        <input type="text" class="form-control"
-	                            placeholder="Search for..." id="relation-searchbox" name="term"> 
+	                            placeholder="Search for..." id="relation-searchbox" name="term">
 	                    </div>
-	                    
+
 	                    <div id="relation-results-box">
 	                    </div>
                     </div>

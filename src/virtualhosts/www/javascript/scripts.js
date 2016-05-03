@@ -6,11 +6,18 @@ var somethingHasBeenEdited = false;
 // Global Undo Set
 var undoSet = new Array();
 
+/**
+ * Display Error message
+ *
+ * Displays the error message box to the user with the given error message
+ *
+ * @param string|object err The error message (string) or error object containing a message and type string
+ */
 function displayErrorMessage(err) {
     var errorMsg = "";
     if ((typeof err) == "string")
         errorMsg = err;
-    else if (err.message) 
+    else if (err.message)
         errorMsg = err.message;
     else if (err.type)
         errorMsg = err.type;
@@ -31,6 +38,15 @@ function displayErrorMessage(err) {
     }, 500);
 }
 
+/**
+ * Add SCM GUI object
+ *
+ * Adds a GUI SCM object to the SCM modal for the given "short" type of data indexed by i
+ *
+ * @param string short The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i The index of the object to add an SCM object to.
+ * @returns boolean false to keep the browser from redrawing the page
+ */
 function addSCMEntry(short, i){
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
@@ -43,49 +59,56 @@ function addSCMEntry(short, i){
     return false;
 }
 
-function updatePage() {
-    $('.selectpicker').selectpicker();
-    /*
-        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
-              lineNumbers: true,
-              lineWrapping: true,
-              viewportMargin: Infinity,
-              mode: {name: "xml"}
-          });*/
-}
-
-function updateBiogHist() {
-    return; // right now, not doing this
-    /** 
-    if (biogHistEditor == null) {
-        biogHistEditor = CodeMirror.fromTextArea(document.getElementById("biogHist"), {
-              lineNumbers: true,
-              lineWrapping: true,
-              viewportMargin: Infinity,
-              mode: {name: "xml"}
-              });
-    }
-    biogHistEditor.setSize("100%", null);
-    biogHistEditor.refresh();
-    **/
-} 
-
+/**
+ * Undo Edit
+ *
+ * Returns the html for the (short, i) panel back to its original state, i.e. removes
+ * the edit.  Before doing this, to clean up the page, it first makes the edited version
+ * uneditable.
+ *
+ * @param string short The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i The index within the edit page of the object.
+ */
 function undoEdit(short, i) {
 	makeUneditable(short, i);
-	
+
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
 }
 
+/**
+ * Undo SCM Edit
+ *
+ * Takes an SCM GUI object (j) for a data object (short, i) and returns it back to its
+ * original state (removing the edit).  Before doing this, to clean up the page and JS, it first
+ * makes the edited version uneditable, then replaces the HTML.
+ *
+ * @param string short The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i The index within the edit page of the object.
+ * @param string|int j The index within the data object SCM list on the edit page of the SCM object.
+ */
 function undoSCMEdit(short, i, j) {
 	var id = j + "_" + i;
 	makeSCMUneditable(short, i, j);
-	
+
 	// restore the old content
 	$("#scm_" + short + "_datapart_" + id).replaceWith(undoSet["scm_"+short+"-"+id]);
 }
 
-// Note: idStr must not have the "_" pre-appended
+/**
+ * Change vocabulary input divs to selects
+ *
+ * Changes all div's with id "select_" for a given data object (shortName, idStr) from a list of
+ * inputs defining the parameters to a select (view mode) to a select box (edit mode).  It then
+ * calls the select2 function to replace the select with an AJAX-compatible select.
+ *
+ * This function handles VOCABULARY select boxes ONLY.
+ *
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
 function textToSelect(shortName, idStr) {
     $("div[id^='select_"+shortName+"']").each(function() {
         var cont = $(this);
@@ -99,7 +122,7 @@ function textToSelect(shortName, idStr) {
             var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
             var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
             var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
-            
+
             cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' placeholder='Select'>"+
                     "<option></option>"+
                     "<option value=\""+id+"\" selected>"+term+"</option>"+
@@ -108,13 +131,27 @@ function textToSelect(shortName, idStr) {
                         "name=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" value=\""+vocabtype+"\"/>" +
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>");
-            
+
             vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
-            
+
         }
     });
 }
 
+/**
+ * Change source list input divs to selects
+ *
+ * Changes all div's with id "selectsource_" for a given data object (shortName, idStr) from a list of
+ * inputs defining the parameters to a select (view mode) to a select box (edit mode).  It then
+ * calls the select2 function to replace the select with an AJAX-compatible select.
+ *
+ * This function handles CONSTELLATION SOURCE OBJECT select boxes ONLY.
+ *
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
 function sourceTextToSelect(shortName, idStr) {
 
     $("div[id^='selectsource_"+shortName+"']").each(function() {
@@ -136,7 +173,19 @@ function sourceTextToSelect(shortName, idStr) {
     });
 }
 
-
+/**
+ * Change vocabulary selects to divs of inputs
+ *
+ * Changes all div's with id "select_" for a given data object (shortName, idStr) from a select
+ * box (edit mode) to a list of inputs defining the parameters to a select (view mode).
+ *
+ * This function handles VOCABULARY select boxes ONLY.
+ *
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
 function selectToText(shortName, idStr) {
     $("div[id^='select_"+shortName+"']").each(function() {
         var cont = $(this);
@@ -150,7 +199,7 @@ function selectToText(shortName, idStr) {
             var term = $("#"+shortName+"_"+name+"_id_"+idStr+ " option:selected").text();
             var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
             var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
-        
+
             cont.html("<input type=\"hidden\" id=\""+shortName+"_"+name+"_id_"+idStr+"\" " +
                     "name=\""+shortName+"_"+name+"_id_"+idStr+"\" value=\""+id+"\"/>" +
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_term_"+idStr+"\" " +
@@ -160,12 +209,21 @@ function selectToText(shortName, idStr) {
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>" +
                         "<p class=\"form-control-static\">"+term+"</p>");
-            
+
         }
     });
 }
 
-
+/**
+ * Make a data object editable
+ *
+ * Make the GUI pane for a given constellation object (short, i) editable.  Sets up the edit and delete
+ * buttons for first-order data objects.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
 function makeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
@@ -176,27 +234,37 @@ function makeEditable(short, i) {
 
     $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
-    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
     	undoEdit(short, i);
     });
     $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("disabled");
-    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() {
         return false;
     });
-	
+
     $("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
 
     return subMakeEditable(short, i);
 }
 
+/**
+ * Make a data object editable
+ *
+ * Make the GUI pane for a given constellation object (short, i) editable.  Handles removing the read-only
+ * statuses and changing divs into selects.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
 function subMakeEditable(short, i) {
     // No editing if it's already in edit mode
     if ($("#" + short + "_operation_" + i).val() == "update")
         return false;
-    
+
     // Add to the undo set
     undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
-    
+
 
     var idstr = "_" + i;
     $("input[id^='"+short+"_']").each(function() {
@@ -238,24 +306,34 @@ function subMakeEditable(short, i) {
             sawSelect = true;
         }
     });
-    
+
     if (!sawSelect) {
         textToSelect(short, i);
         sourceTextToSelect(short, i);
     }
-    
+
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
     	$("#" + short + "_operation_" + i).val("update");
     else
     	$("#" + short + "_operation_" + i).val("insert");
-    
+
     // Asked to edit something, so make it globally known
     somethingHasBeenEdited = true;
-    		
+
     return false;
 }
 
+/**
+ * Make a data object uneditable
+ *
+ * Make the GUI pane for a given constellation object (short, i) un-editable.  Sets up the edit and delete
+ * buttons for first-order data objects.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
 function makeUneditable(short, i) {
 
 	// Make inputs read-only
@@ -269,10 +347,10 @@ function makeUneditable(short, i) {
     // Remove CodeMirror editors
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) 
+        if(obj.attr('id').endsWith(idstr)
             && !obj.attr('id').endsWith("ZZ")
             && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
-            
+
             if (obj.get(0).CodeMirror) {
                 obj.get(0).CodeMirror.toTextArea();
             }
@@ -306,20 +384,20 @@ function makeUneditable(short, i) {
     if (sawSelect) {
         selectToText(short, i);
     }
-    
+
     // restore the edit button
     $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
     $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-pencil\"></span> Edit");
-    $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+    $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
     	makeEditable(short, i);
     });
-    
+
     // restore the delete button
     $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
-    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() { 
-       setDeleted(short, i); 
+    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() {
+       setDeleted(short, i);
     });
-    
+
     // Clear the operation flags
     //$("#" + short + "_operation_" + i).val("");
     $("input[id^='"+short+"_']").each(function() {
@@ -328,16 +406,27 @@ function makeUneditable(short, i) {
             obj.val("");
         }
     });
-    
+
 	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
 
     return false;
 }
 
+/**
+ * Make an SCM data object editable
+ *
+ * Make the GUI pane for an SCM (j) of a given constellation object (short, i) editable.  Sets up the edit and delete
+ * buttons for first-order data objects.
+ *
+ * @param string shortName  The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i      The index within the edit page of the object.
+ * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
+ * @return boolean          False to play nice with the browser
+ */
 function makeSCMEditable(short, i, j) {
 	var id = j + "_" + i;
-    var scmshort = "scm_" + short;	
-   
+    var scmshort = "scm_" + short;
+
     // No editing if it's already in edit mode
     if ($("#" + scmshort + "_operation_" + id).val() == "update")
         return false;
@@ -347,20 +436,30 @@ function makeSCMEditable(short, i, j) {
 
     $("#" + scmshort + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
     $("#" + scmshort + "_editbutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
-    $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() { 
+    $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() {
     	undoSCMEdit(short, i, j);
     });
     $("#" + scmshort + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
-    $("#" + scmshort + "_deletebutton_" + id).off('click').on("click", function() { 
+    $("#" + scmshort + "_deletebutton_" + id).off('click').on("click", function() {
         return false;
     });
-	
+
     $("#" + scmshort + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
-    
-    return subMakeEditable(scmshort, id); 
+
+    return subMakeEditable(scmshort, id);
 }
 
-
+/**
+ * Make an SCM data object un-editable
+ *
+ * Make the GUI pane for an SCM object (j) for a given constellation object (short, i) un-editable.  Sets up the edit and delete
+ * buttons for SCM data objects.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
+ * @return boolean         False to play nice with the browser
+ */
 function makeSCMUneditable(short, i, j) {
 
 	// Make inputs read-only
@@ -397,7 +496,7 @@ function makeSCMUneditable(short, i, j) {
 	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
 	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
 	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
-	        
+
 	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
                     	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
                         "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
@@ -407,7 +506,7 @@ function makeSCMUneditable(short, i, j) {
                         "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
                         	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>" +
                         	"<p class=\"form-control-static\">"+term+"</p>");
-	            
+
 	        }
 	    });
 	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
@@ -417,38 +516,46 @@ function makeSCMUneditable(short, i, j) {
 	            var name = split[3];
 	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
 	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
-	        
+
 	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
                     	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
                         "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
                     	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
                         	"<p class=\"form-control-static\">"+term+"</p>");
-	            
+
 	        }
 	    });
     }
-    
+
     // restore the edit button
     $("#scm_" + short + "_editbutton" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
     $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"glyphicon glyphicon-pencil\"></span>");
-    $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() { 
+    $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() {
     	makeSCMEditable(short, i, j);
     });
-    
+
     // restore the delete button
     $("#scm_" + short + "_deletebutton" + idstr).addClass("list-group-item-danger").removeClass("disabled");
-    $("#scm_" + short + "_deletebutton" + idstr).off('click').on("click", function() { 
-       setSCMDeleted(short, i, j); 
+    $("#scm_" + short + "_deletebutton" + idstr).off('click').on("click", function() {
+       setSCMDeleted(short, i, j);
     });
-    
-    
+
+
     // Clear the operation flag
     $("#scm_" + short + "_operation_" + j + "_" + i).val("");
-	
+
     $("#scm_" + short + "_panel" + idstr).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
     return false;
 }
 
+/**
+ * Set a Contributor Object as deleted
+ *
+ * Sets the contributor object (shortName, i) as deleted or undeleted and makes the appropriate changes.
+ *
+ * @param string shortName The short name of the contributor object.
+ * @param string|int i     The index within the edit page of the object.
+ */
 function setContributorDeleted(shortName, i) {
     if ($("#" + shortName + "_operation_" + i).val() != "delete") {
         $("#" + shortName + "_remove_" + i).removeClass("btn-danger").addClass("btn-warning");
@@ -461,18 +568,26 @@ function setContributorDeleted(shortName, i) {
     return subSetDeleted(shortName, i);
 }
 
+/**
+ * Set a first-order data object as deleted
+ *
+ * Sets a first-order data object (short, i) as deleted or undeleted and makes the appropriate changes throughout the page.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ */
 function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
         $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
-    
+
         // disable edit button
         $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
-        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
            return false;
         });
-    
+
         // disable the SCM button
         $("#" + short + "_scmbutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
 
@@ -483,29 +598,37 @@ function setDeleted(short, i) {
 
         // restore edit button
         $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
-        $("#" + short + "_editbutton_" + i).off('click').on("click", function() { 
-           makeEditable(short, i); 
+        $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
+           makeEditable(short, i);
         });
-    
+
         // restore the SCM button
         $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
-    	
+
     }
-    
+
     return subSetDeleted(short, i);
 }
 
-
+/**
+ * Make the delete/undelete happen
+ *
+ * Actually performs the changes to the object, affecting the operation and panel color.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
 function subSetDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
     	$("#" + short + "_panel_" + i).removeClass("panel-default").addClass("alert-danger").addClass("deleted-component");
-    	
+
         $("#" + short + "_operation_" + i).val("delete");
     } else {
     	// set undelete
     	$("#" + short + "_panel_" + i).removeClass("alert-danger").addClass("panel-default").removeClass("deleted-component");
-        
+
         // If this thing was deleted but is supposed to be an update, then return it back to update status
         var sawSelect = false;
         $("select[id^='"+short+"_']").each(function() {
@@ -522,45 +645,59 @@ function subSetDeleted(short, i) {
         } else {
         	$("#" + short + "_operation_" + i).val("");
         }
-        
+
     }
-    
+
     // Asked to delete something, so make it globally known
     somethingHasBeenEdited = true;
-    
+
     return false;
 }
 
-
+/**
+ * Set an SCM data object as deleted
+ *
+ * Sets an SCM object (j) for a constellation object (short, i) as deleted or undeleted and makes the appropriate changes throughout the page.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
+ */
 function setSCMDeleted(short, i, j) {
 	var id = j + '_' + i;
     if ($("#scm_" + short + "_operation_" + id).val() != "delete") {
     	// set deleted
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("list-group-item-warning");
         $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
-    	
+
         // disable edit button
         $("#scm_" + short + "_editbutton_" + id).removeClass("list-group-item-info").addClass("disabled");
-        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() { 
+        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() {
            return false;
         });
-    	
+
     } else {
     	// set undelete
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-warning").addClass("list-group-item-danger");
         $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-trash\"></span>");
-        
+
         // restore edit button
         $("#scm_" + short + "_editbutton_" + id).addClass("list-group-item-info").removeClass("disabled");
-        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() { 
-           makeSCMEditable(short, i, j); 
+        $("#scm_" + short + "_editbutton_" + id).off('click').on("click", function() {
+           makeSCMEditable(short, i, j);
         });
-    	
+
     }
-     
+
     return subSetDeleted("scm_"+short, id);
 }
 
+/**
+ * Turn on the Edit/Delete buttons for an object
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ */
 function turnOnButtons(shortName, i) {
 
     // Turn on the edit button
@@ -574,6 +711,13 @@ function turnOnButtons(shortName, i) {
     });
 }
 
+/**
+ * Turn on the Edit/Delete buttons for an SCM object
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
+ */
 function turnOnSCMButtons(shortName, i, j) {
 
     // Turn on the edit button
@@ -587,7 +731,38 @@ function turnOnSCMButtons(shortName, i, j) {
     });
 }
 
+/**
+ * Create a new Name Entry Contributor object on page
+ *
+ * Puts a new Name Entry contributor object DIV on the page and attaches it correctly to the DOM and javascript.
+ *
+ * @param  int     i    The index on the page of the nameEntry to add this contributor to
+ * @return boolean      false to play nice with the browser.
+ */
+function newNameEntryContributor(i) {
+	var nextid = 1;
+	if ($('#nameEntry_contributor_next_j_'+i).exists()) {
+	    nextid = parseInt($('#nameEntry_contributor_next_j_'+i).text());
+	}
+	console.log("Creating new name entry contributor for nameEntry " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#contributor_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#nameEntry_contributor_add_div_'+i).before(html);
 
+    $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
+    subMakeEditable("nameEntry_contributor_" + nextid, i);
+
+    // Put the updated version number back in the DOM
+    $('#nameEntry_contributor_next_j_'+i).text(++nextid);
+
+    return false;
+}
+
+
+/**
+ * Things to do when the page finishes loading
+ */
 $(document).ready(function() {
 
 
@@ -647,7 +822,7 @@ $(document).ready(function() {
 	}
 
 	// Attach functions to each of the "+ Add New _______" buttons
-	
+
 	// Code to handle adding new genders to the page
 	var genderid = 1;
 	if ($('#next_gender_i').exists()) {
@@ -665,7 +840,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	// Code to handle adding new genders to the page
 	var existid = 1;
 	if ($('#next_exist_i').exists()) {
@@ -711,7 +886,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var sameAsid = 1;
 	if ($('#next_sameAs_i').exists()) {
 	    sameAsid = parseInt($('#next_sameAs_i').text());
@@ -728,7 +903,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var sourceid = 1;
 	if ($('#next_source_i').exists()) {
 	    sourceid = parseInt($('#next_source_i').text());
@@ -745,7 +920,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var resourceRelationid = 1;
 	if ($('#next_resourceRelation_i').exists()) {
 	    resourceRelationid = parseInt($('#next_resourceRelation_i').text());
@@ -763,11 +938,11 @@ $(document).ready(function() {
 		});
 	}
 	var constellationRelationid = 1;
-	
+
 	if ($('#next_constellationRelation_i').exists()) {
 	    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
 	}
-	console.log("Next constellationRelation ID: " + constellationRelationid);	
+	console.log("Next constellationRelation ID: " + constellationRelationid);
 	if ($('#btn_create_constellationRelation').exists()){
 		$('#btn_create_constellationRelation').click(function(){
 	        var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
@@ -783,17 +958,17 @@ $(document).ready(function() {
 
 		        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
 		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
-		        
+
                 turnOnButtons("constellationRelation", constellationRelationid);
 		        makeEditable("constellationRelation", constellationRelationid);
-		        
+
 		        constellationRelationid = constellationRelationid + 1;
-		        
+
 		        return true;
-	        	
+
 	        }
-	        
-	        
+
+
 	        return false;
 		});
 	}
@@ -808,7 +983,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-**/	
+**/
 	var languageid = 1;
 	if ($('#next_language_i').exists()) {
 	    languageid = parseInt($('#next_language_i').text());
@@ -825,7 +1000,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var subjectid = 1;
 	if ($('#next_subject_i').exists()) {
 	    subjectid = parseInt($('#next_subject_i').text());
@@ -842,7 +1017,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var nationalityid = 1;
 	if ($('#next_nationality_i').exists()) {
 	    nationalityid = parseInt($('#next_nationality_i').text());
@@ -859,7 +1034,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var functionid = 1;
 	if ($('#next_function_i').exists()) {
 	    functionid = parseInt($('#next_function_i').text());
@@ -876,7 +1051,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var occupationid = 1;
 	if ($('#next_occupation_i').exists()) {
 	    occupationid = parseInt($('#next_occupation_i').text());
@@ -893,7 +1068,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var legalStatusid = 1;
 	if ($('#next_legalStatus_i').exists()) {
 	    legalStatusid = parseInt($('#next_legalStatus_i').text());
@@ -910,7 +1085,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var placeid = 1;
 	if ($('#next_place_i').exists()) {
 	    placeid = parseInt($('#next_place_i').text());
@@ -927,7 +1102,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var conventionDeclarationid = 1;
 	if ($('#next_conventionDeclaration_i').exists()) {
 	    conventionDeclarationid = parseInt($('#next_conventionDeclaration_i').text());
@@ -944,7 +1119,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var generalContextid = 1;
 	if ($('#next_generalContext_i').exists()) {
 	    generalContextid = parseInt($('#next_generalContext_i').text());
@@ -961,7 +1136,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var structureOrGenealogyid = 1;
 	if ($('#next_structureOrGenealogy_i').exists()) {
 	    structureOrGenealogyid = parseInt($('#next_structureOrGenealogy_i').text());
@@ -978,7 +1153,7 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
+
 	var mandateid = 1;
 	if ($('#next_mandate_i').exists()) {
 	    mandateid = parseInt($('#next_mandate_i').text());
@@ -995,26 +1170,6 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
-	
-	
+
+
 });
-
-function newNameEntryContributor(i) {
-	var nextid = 1;
-	if ($('#nameEntry_contributor_next_j_'+i).exists()) {
-	    nextid = parseInt($('#nameEntry_contributor_next_j_'+i).text());
-	}
-	console.log("Creating new name entry contributor for nameEntry " + i + " with id: " + nextid);
-    somethingHasBeenEdited = true;
-    var text = $('#contributor_template').clone();
-    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
-    $('#nameEntry_contributor_add_div_'+i).before(html);
-
-    $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
-    subMakeEditable("nameEntry_contributor_" + nextid, i); 
-
-    // Put the updated version number back in the DOM
-    $('#nameEntry_contributor_next_j_'+i).text(++nextid);
-    
-    return false;
-}
