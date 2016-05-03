@@ -3,3 +3,7 @@ composer.lock
 composer.phar
 vendor/
 log/
+.idea/
+test/
+src/virtualhosts/log
+src/virtualhosts/output
