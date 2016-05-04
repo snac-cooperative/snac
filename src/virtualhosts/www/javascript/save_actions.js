@@ -86,6 +86,9 @@ $(document).ready(function() {
                 		$('#' + key).val(data.updates[key]);
                 	}
 
+                    // Clear the save message
+                    $('#savemessage').val("");
+
                 	// Remove the global operation, if one is set
                 	$('#operation').val("");
 
