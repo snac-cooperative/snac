@@ -155,6 +155,8 @@ class ConstellationPostMapper {
         $scmArray = array ();
         
         foreach ($objectWithSCM["scm"] as $j => $scm) {
+            if (($scm["id"] == null || $scm["id"] == "") && $scm["operation"] != "insert")
+                continue;
             $scmObject = new \snac\data\SNACControlMetadata();
             if ($scm["id"] != "")
                 $scmObject->setID($scm["id"]);

@@ -289,14 +289,17 @@ function subMakeEditable(short, i) {
     $("textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr)
-            && !obj.attr('id').endsWith("ZZ")
-            && (obj.attr('id').indexOf('_text_') != -1 || obj.attr('id').indexOf('_source_') != -1)) {
-            obj.get(0).CodeMirror = CodeMirror.fromTextArea(obj.get(0), {
-              lineNumbers: true,
-              lineWrapping: true,
-              viewportMargin: Infinity,
-              mode: {name: "xml"}
-          });
+            && !obj.attr('id').endsWith("ZZ")) {
+            // remove the short name from the string we're parsing
+            var idStr = obj.attr('id').replace(short, "");
+            if (idStr.indexOf('_text_') != -1 || idStr.indexOf('_source_') != -1) {
+                obj.get(0).CodeMirror = CodeMirror.fromTextArea(obj.get(0), {
+                  lineNumbers: true,
+                  lineWrapping: true,
+                  viewportMargin: Infinity,
+                  mode: {name: "xml"}
+                });
+            }
         }
     });
     var sawSelect = false;
