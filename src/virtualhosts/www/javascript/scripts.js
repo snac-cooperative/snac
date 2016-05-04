@@ -1174,5 +1174,16 @@ $(document).ready(function() {
 		});
 	}
 
+    // Load tooltips
+    $(function () {
+          $('[data-toggle="tooltip"]').tooltip()
+    })
+    
+    // Load popovers
+    $(function () {
+          $('[data-toggle="popover"]').popover({
+                trigger: 'hover'
+          })
+    })
 
 });

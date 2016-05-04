@@ -311,7 +311,7 @@ class WebUIExecutor {
         
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
-        
+
         $this->logger->addDebug("writing constellation", $constellation->toArray());
         
         // Build a data structure to send to the server
@@ -320,6 +320,9 @@ class WebUIExecutor {
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
         $request["user"] = $user->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
         $serverResponse = $this->connect->query($request);
         
         $response = array();
@@ -378,6 +381,9 @@ class WebUIExecutor {
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
         $request["user"] = $user->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
         $serverResponse = $this->connect->query($request);
         
         $response = array ();
@@ -445,6 +451,9 @@ class WebUIExecutor {
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
         $request["user"] = $user->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
         $serverResponse = $this->connect->query($request);
     
         $response = array ();

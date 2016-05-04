@@ -361,6 +361,11 @@ class ServerExecutor {
                 if (isset($input["constellation"])) {
 
                     $result = null;
+
+                    // Get the message, if the client supplied one
+                    $saveLog = null;
+                    if (isset($input["message"]) && $input["message"] != null && $input["message"] != "")
+                        $saveLog = $input["message"];
                     
                     // If the constellation has an ID, then we should check that it's actually checked-out to the user
                     // and the user is currently editing it!
@@ -378,14 +383,18 @@ class ServerExecutor {
                             }
                         }
 
+                        if ($saveLog == null)
+                            $saveLog = "Edits in Web UI";
                         if ($inList)
-                            $result = $this->cStore->writeConstellation($this->user, $constellation, "Edits in Web UI");
+                            $result = $this->cStore->writeConstellation($this->user, $constellation, $saveLog);
                     
                     // If the constellation does not currently have and ID, then we should write it and have it checked
                     // out to the user that wrote it.  Also, update the status to be currently editing
                     } else {
                         $this->logger->addDebug("Writing a new constellation");
-                        $result = $this->cStore->writeConstellation($this->user, $constellation, "New Constellation from Web UI");
+                        if ($saveLog == null)
+                            $saveLog = "New Constellation from Web UI";
+                        $result = $this->cStore->writeConstellation($this->user, $constellation, $saveLog);
                         if ($result != null) {
                             $version = $this->cStore->writeConstellationStatus($this->user, $result->getID(), 
                                     "currently editing", "New constellation is already in edit");
