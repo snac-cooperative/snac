@@ -1182,7 +1182,8 @@ $(document).ready(function() {
     // Load popovers
     $(function () {
           $('[data-toggle="popover"]').popover({
-                trigger: 'hover'
+                trigger: 'hover',
+                container: 'body'
           })
     })
 
