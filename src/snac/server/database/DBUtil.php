@@ -342,7 +342,7 @@ class DBUtil
      * @param string $arkID An ARK
      * @param boolean $summary optional Optional arg if true then return summary constellation.
      *
-     * @return \snac\data\Constellation A PHP constellation object.
+     * @return \snac\data\Constellation|boolean A PHP constellation object or false if none found.
      *
      */
     public function readPublishedConstellationByARK($arkID, $summary=false)
