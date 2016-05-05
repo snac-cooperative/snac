@@ -22,7 +22,13 @@
 $('.selectpicker').selectpicker();
 </script>
 
+<!-- SNAC Styles -->
 <link rel="stylesheet" href="css/snac.css">
+
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+<script src="javascript/select_loaders.js"></script>
+<script src="javascript/scripts.js"></script>
 <script src="javascript/search.js"></script>
 
 </head>
@@ -91,7 +97,7 @@ $('.selectpicker').selectpicker();
                     changes not previously saved may be lost.</p>
                     <div class="list-group">
                         {% for link in data.editing_lock %}
-                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="badge pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>
