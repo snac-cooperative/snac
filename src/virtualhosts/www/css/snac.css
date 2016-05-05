@@ -21,6 +21,11 @@ body {
     width: auto;
 }
 
+.control-label-subtext {
+    font-size: 12px;
+    font-weight: normal;
+}.
+
 .tab-pane {
 
     border-left: 1px solid #ddd;
