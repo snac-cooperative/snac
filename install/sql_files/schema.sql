@@ -217,18 +217,22 @@ create table session (
 -- script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
 -- exist_date    int,          -- fk to date_range.id
 
+-- May 5 2016 Remove field id. Table nrd is the only table to not have a field id. This us due to nrd's id
+-- being the constellation id. The id of table nrd is Constellation->getID() which is the constellation id,
+-- not a table id as with all other data objects. Since "the id" of table nrd is the constellation id, we put
+-- that value in nrd.main_id as always. There are no tables that are related to nrd.
+
 create table nrd (
-    id            int default nextval('id_seq'),
     version       int not null,
     main_id       int not null, -- fk to version_history.main_id
     is_deleted    boolean default false,
     ark_id        text,         -- control/cpfId
     entity_type   int not null, -- (fk to vocabulary.id) corp, pers, family
-    primary key (id, version)
+    primary key (main_id, version)
     );
 
 create unique index nrd_idx1 on nrd (ark_id,version,main_id);
-create unique index nrd_idx2 on nrd(id,main_id,version);
+create unique index nrd_idx2 on nrd(main_id,version);
 
 -- I considered naming field text "value", but text is not a reserved word (amazingly), and although "text" is
 -- overused, it fits our convention here.
