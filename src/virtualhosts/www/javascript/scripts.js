@@ -817,8 +817,8 @@ function textToDate(shortName, idStr) {
 
             var dateParts = parseDate(dateStr);
 
-            var html = "<input type='text' style='width:17%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> "; 
-
+            var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
+            html += "<span class='form-control-static'> - </span>";
             html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' placeholder='Month'>"+
                     "<option></option>";
             var months = ["January", "February", "March", "April", "May",
@@ -833,15 +833,16 @@ function textToDate(shortName, idStr) {
                     html += "<option value=\""+mInt+"\">"+value+"</option>";
             });
             html += "<select> ";
-            html += "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
+            html += "<span class='form-control-static'> - </span>";
+            html += "<input type='text' style='width:14%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> "; 
             html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
             cont.html(html);
 
             $("#"+shortName+"_"+name+"_month_"+idStr).select2({
-                    width: '60%',
+                    width: '57%',
                     allowClear: true,
                     theme: 'classic',
-                    placeholder: 'Select'
+                    placeholder: 'Month'
                 });
 
         }
