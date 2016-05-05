@@ -1856,10 +1856,11 @@ class SQL
      * @param string $name Name of the contributor
      *
      * @param integer $typeID Vocabulary fk id of the type of this contributor.
+     * @param integer $ruleID Vocabulary fk id of the rule of this contributor.
      * 
      * @return integer $id Return the existing id, or the newly minted id. 
      */
-    public function insertContributor($vhInfo, $id, $nameID, $name, $typeID)
+    public function insertContributor($vhInfo, $id, $nameID, $name, $typeID, $ruleID)
     {
         if ($nameID == null)
         {
@@ -1877,16 +1878,17 @@ class SQL
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
-                            (version, main_id, id, name_id, short_name, name_type)
+                            (version, main_id, id, name_id, short_name, name_type, rule)
                             values
-                            ($1, $2, $3, $4, $5, $6)');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
                                   $vhInfo['main_id'],
                                   $id,
                                   $nameID,
                                   $name,
-                                  $typeID));
+                                  $typeID,
+                                  $ruleID));
         $this->sdb->deallocate($qq_2);
         return $id;
     }
@@ -3199,7 +3201,7 @@ class SQL
         $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_2,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.short_name, aa.name_type, aa.name_id
+                            aa.id, aa.version, aa.main_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
                             from name_contributor as aa,
                             (select name_id,max(version) as version from name_contributor where name_id=$1 and version<=$2 group by name_id) as bb
                             where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');

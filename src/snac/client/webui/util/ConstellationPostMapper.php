@@ -927,6 +927,7 @@ class ConstellationPostMapper {
 
                     $contributor->setName($cData["name"]);
                     $contributor->setType($this->parseTerm($cData["type"]));
+                    $contributor->setRule($this->parseTerm($cData["rule"]));
 
                     $this->addToMapping("nameEntry_contributor_".$l, $k, $cData, $contributor);
 

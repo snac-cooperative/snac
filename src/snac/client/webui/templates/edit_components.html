@@ -161,6 +161,28 @@
                                                         <p class="form-control-static">{{ contributor.type.term }}</p>
                                                     </div>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label class="control-label col-xs-4">
+                                                        Rules
+                                                    </label>
+                                                    <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_rule_{{i}}">
+                                                        <input id="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
+                                                            type="hidden" class="form-control" 
+                                                            value="{{ contributor.rule.id }}"/>
+                                                        <input id="nameEntry_contributor_{{j}}_rule_term_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_rule_term_{{i}}" 
+                                                            type="hidden" class="form-control" 
+                                                            value="{{ contributor.rule.term }}"/>
+                                                        <input id="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}" 
+                                                            type="hidden" class="form-control" value="name_rule"/>
+                                                        <input id="nameEntry_contributor_{{j}}_rule_minlength_{{i}}" 
+                                                            name="nameEntry_contributor_{{j}}_rule_minlength_{{i}}" 
+                                                            type="hidden" class="form-control" value="0"/>
+                                                        <p class="form-control-static">{{ contributor.rule.term }}</p>
+                                                    </div>
+                                                </div>
                                                 <div class="text-center">
                                                     <button class="btn btn-danger snac-hidden" 
                                                         id="nameEntry_contributor_{{j}}_remove_{{i}}" 

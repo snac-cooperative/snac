@@ -349,6 +349,7 @@ create table name_contributor (
     name_id        int,  -- (fk to name.id)
     short_name     text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
     name_type      int,  -- (fk to vocabulary.id) -- type of name (authorizedForm, alternativeForm)
+    rule           int,  -- (fk to vocabulary.id) -- rule used to formulate the bame by this contributing entity 
     primary key(id, version)
     );
 

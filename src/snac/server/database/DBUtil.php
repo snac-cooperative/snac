@@ -973,6 +973,7 @@ class DBUtil
             {
                 $ctObj = new \snac\data\Contributor();
                 $ctObj->setType($this->populateTerm($contrib['name_type']));
+                $ctObj->setRule($this->populateTerm($contrib['rule']));
                 $ctObj->setName($contrib['short_name']);
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
@@ -3089,7 +3090,8 @@ class DBUtil
                                                              $cb->getID(),
                                                              $nameID,
                                                              $cb->getName(),
-                                                             $this->thingID($cb->getType()));
+                                                             $this->thingID($cb->getType()),
+                                                             $this->thingID($cb->getRule()));
                         $cb->setID($rid);
                         $cb->setVersion($vhInfo['version']);
                     }

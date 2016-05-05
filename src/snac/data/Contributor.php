@@ -39,6 +39,12 @@ class Contributor extends AbstractData {
     private $type = null;
 
     /**
+     * @var \snac\data\Term Rule the contributor used to define this name entry 
+     *
+     */
+    private $rule = null;
+    
+    /**
      * @var string Name of the contributor.
      * 
      * A simple string.
@@ -78,6 +84,28 @@ class Contributor extends AbstractData {
     }
 
     /**
+     * Get the rule controlled vocab
+     *
+     * @return \snac\data\Term Rule controlled vocabulary term
+     * 
+     */ 
+    public function getRule()
+    {
+        return $this->rule;
+    }
+
+    /**
+     * Set the rule controlled vocab
+     *
+     * @param \snac\data\Term $rule Rule controlled vocabulary term
+     * 
+     */ 
+    public function setRule($rule)
+    {
+        $this->rule = $rule;
+    }
+
+    /**
      * Get the name
      *
      * @return string Name of the contributor
@@ -110,6 +138,7 @@ class Contributor extends AbstractData {
         $return = array(
             "dataType" => "Contributor",
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
+            "rule" => $this->rule == null ? null : $this->rule->toArray($shorten),
             "name" => $this->name
         );
             
@@ -144,6 +173,11 @@ class Contributor extends AbstractData {
             $this->type = new Term($data["type"]);
         else
             $this->type = null;
+
+        if (isset($data["rule"]) && $data["rule"] != null)
+            $this->rule = new Term($data["rule"]);
+        else
+            $this->rule = null;
 
         if (isset($data["name"]))
             $this->name = $data["name"];
