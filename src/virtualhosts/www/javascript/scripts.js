@@ -313,6 +313,7 @@ function subMakeEditable(short, i) {
     if (!sawSelect) {
         textToSelect(short, i);
         sourceTextToSelect(short, i);
+        textToDate(short, i);
     }
 
     // Set this data's operation value appropriately
@@ -386,6 +387,7 @@ function makeUneditable(short, i) {
     // If a select box was seen, undo it
     if (sawSelect) {
         selectToText(short, i);
+        dateToText(short,i);
     }
 
     // restore the edit button
@@ -761,6 +763,185 @@ function newNameEntryContributor(i) {
 
     return false;
 }
+
+/**
+ * Parse a date string into parts
+ */
+function parseDate(dateString) {
+   var pieces = dateString.split("-");
+   if (pieces.length == 3)
+      return {
+          year : parseInt(pieces[0]),
+          month : parseInt(pieces[1]),
+          day : parseInt(pieces[2])
+      }; 
+   else if (pieces.length == 2)
+      return {
+          year : parseInt(pieces[0]),
+          month : parseInt(pieces[1]),
+          day : ''
+      }; 
+   else if (pieces.length == 1 && pieces[0] != '')
+      return {
+          year : parseInt(pieces[0]),
+          month : '',
+          day : ''
+      }; 
+   else return {
+       year : '', month : '', day : ''
+   }
+}
+
+/**
+ * Change date input divs to select and boxes
+ *
+ * Changes all div's with id "date_" for a given data object (shortName, idStr) from a list of
+ * inputs defining the parameters (view mode) to a inputs and a select (edit mode).  It then
+ * calls the select2 function to replace the select with one matching the rest of the page.
+ *
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
+function textToDate(shortName, idStr) {
+    $("div[id^='date_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("date_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var dateStr = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            var dateParts = parseDate(dateStr);
+
+            var html = "<input type='text' style='width:17%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> "; 
+
+            html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' placeholder='Month'>"+
+                    "<option></option>";
+            var months = ["January", "February", "March", "April", "May",
+                            "June", "July", "August", "September", "October", "November", "December"];
+
+            months.forEach(function(value, key) {
+                var mInt = key + 1;
+
+                if (mInt == dateParts.month)
+                    html += "<option value=\""+mInt+"\" selected>"+value+"</option>";
+                else
+                    html += "<option value=\""+mInt+"\">"+value+"</option>";
+            });
+            html += "<select> ";
+            html += "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            cont.html(html);
+
+            $("#"+shortName+"_"+name+"_month_"+idStr).select2({
+                    width: '60%',
+                    allowClear: true,
+                    theme: 'classic',
+                    placeholder: 'Select'
+                });
+
+        }
+    });
+}
+
+/**
+ * Pad an integer
+ *
+ * This is a helper function to pad an integer with 0s for display.  This is useful to pad
+ * a month or day with a leading 0.
+ *
+ * @param int|string num The number to pad
+ * @param int size The total width of the desired output
+ * @return string A string containing a size-wide integer representation, 0-padded
+ */
+function pad(num, size) {
+    var s = num+"";
+    while (s.length < size) s = "0" + s;
+    return s;
+}
+
+/**
+ * Updates the standard date input field 
+ *
+ * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
+ * area, then this function will update the hidden standard date (YYYY-MM-DD) field with the
+ * newest values from the human-enterable field.
+ *
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
+function updateDate(shortName, idStr) {
+    $("div[id^='date_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("date_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+           
+            if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) { 
+                var year = pad($("#"+shortName+"_"+name+"_year_"+idStr).val(), 4); 
+                var day = pad($("#"+shortName+"_"+name+"_day_"+idStr).val(), 2); 
+                var month = pad($("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val(), 2); 
+
+                
+                var dateStr = year;
+                if (month != "" && month != "00") {
+                    dateStr += "-" + month;
+                    if (day != "" && day != "00") {
+                        dateStr += "-" + day;
+                    }
+                }
+                
+                $("#"+shortName+"_"+name+"_"+idStr).val(dateStr);
+            }
+
+        }
+    });
+}
+
+/**
+ * Return editable date area back to text 
+ *
+ * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
+ * area, then this function will return the editable area back to the view mode text, replacing
+ * the edit boxes with a paragraph containing the computed standard date string (YYYY-MM-DD).
+ *  
+ * Note: idStr must not have the "_" pre-appended
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int idStr The index within the edit page of the object.
+ */
+function dateToText(shortName, idStr) {
+    $("div[id^='date_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("date_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+           
+            updateDate(shortName, idStr);
+
+            
+            var dateStr = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            var html = "<p class='form-control-static'>"+dateStr+"</p>";
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            cont.html(html);
+
+        }
+    });
+}
+
 
 
 /**

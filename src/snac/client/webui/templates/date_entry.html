@@ -17,9 +17,10 @@
 			<div class="form-group">
 				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
 					Date </label>
-				<div class="col-xs-8">
-					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="text"
-						class="form-control" value="{{ snacDate.fromDate }}" placeholder="YYYY-MM-DD" readonly/>
+                <div class="col-xs-8" id="date_{{short}}_start_{{i}}">
+                    <p class="form-control-static">{{ snacDate.fromDate }}</p>
+					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="hidden"
+						value="{{ snacDate.fromDate }}"/>
 				</div>
 			</div>
 
@@ -91,9 +92,10 @@
 			<div class="form-group">
 				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
 					Start </label>
-				<div class="col-xs-8">
-					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="text"
-						class="form-control" value="{{ snacDate.fromDate }}" placeholder="YYYY-MM-DD" readonly/>
+                <div class="col-xs-8" id="date_{{short}}_start_{{i}}">
+                    <p class="form-control-static">{{ snacDate.fromDate }}</p>
+					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="hidden"
+						value="{{ snacDate.fromDate }}"/>
 				</div>
 			</div>
 
@@ -136,9 +138,10 @@
 			<div class="form-group">
 				<label for="{{short}}_end_{{i}}" class="control-label col-xs-4">
 					End </label>
-				<div class="col-xs-8">
-					<input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="text"
-						class="form-control" value="{{ snacDate.toDate }}" placeholder="YYYY-MM-DD" readonly/>
+                <div class="col-xs-8" id="date_{{short}}_end_{{i}}">
+                    <p class="form-control-static">{{ snacDate.toDate }}</p>
+					<input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="hidden"
+						value="{{ snacDate.toDate }}"/>
 				</div>
 			</div>
 
