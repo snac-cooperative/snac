@@ -666,13 +666,13 @@ class DBUtil
         $this->populateFunction($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
         $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj, $cObj->getID()); // getID only works here because nrd.id=nrd.main_id
+        $this->populateLanguage($vhInfo, $cObj, $cObj->getID()); // Constellation->getID() returns main_id aka nrd.main_id
         $this->populateLegalStatus($vhInfo, $cObj);
         $this->populateMandate($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
         $this->populateOccupation($vhInfo, $cObj);
         $this->populateOtherRecordID($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj, $cObj->getID()); // getID only works here because nrd.id=nrd.main_id
+        $this->populatePlace($vhInfo, $cObj, $cObj->getID()); // Constellation->getID() returns main_id aka nrd.main_id
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateSubject($vhInfo, $cObj);
         $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
@@ -993,8 +993,6 @@ class DBUtil
      * Note: $cObj passed by reference and changed in place.
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'main_id'.
-     *
-     * @param int $rowID the nrd.id actual row id from table nrd.
      *
      * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      */
@@ -1509,7 +1507,7 @@ class DBUtil
             $theOp == \snac\data\AbstractData::$OPERATION_INSERT)
         {
             /*
-             * Table nrd is special, and the id is main_id.
+             * Table nrd is special, and the identifier is main_id.
              */ 
             $this->sql->insertNrd($vhInfo,
                                   $cObj->getArk(),
@@ -1634,6 +1632,9 @@ class DBUtil
     /**
      * Save date list of constellation
      *
+     * The related table is 'version_history'. Very early on, we thought of nrd as the root of the
+     * constellation, but that is inaccruate.
+     *
      * @param integer[] $vhInfo list with keys version, main_id.
      * 
      * @param $cObj \snac\data\Constellation object
@@ -1642,7 +1643,7 @@ class DBUtil
     {
         foreach ($cObj->getDateList() as $date)
         {
-            $this->saveDate($vhInfo, $date, 'nrd', $vhInfo['main_id']);
+            $this->saveDate($vhInfo, $date, 'version_history', $vhInfo['main_id']);
             /*
              * We don't saveMeta() after save functions, only after insert functions. saveDate() calls
              * saveMeta() internally.
@@ -2645,14 +2646,14 @@ class DBUtil
         $this->saveGender($vhInfo, $cObj);
         $this->saveGeneralContext($vhInfo, $cObj);
         $this->saveLegalStatus($vhInfo, $cObj);
-        $this->saveLanguage($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+        $this->saveLanguage($vhInfo, $cObj, 'version_history', $vhInfo['main_id']);
         $this->saveMandate($vhInfo, $cObj);
         $this->saveName($vhInfo, $cObj);
         $this->saveNationality($vhInfo, $cObj);
         $this->saveNrd($vhInfo, $cObj);
         $this->saveOccupation($vhInfo, $cObj);
         $this->saveOtherRecordID($vhInfo, $cObj);
-        $this->savePlace($vhInfo, $cObj, 'nrd', $vhInfo['main_id']);
+        $this->savePlace($vhInfo, $cObj, 'version_history', $vhInfo['main_id']);
         $this->saveStructureOrGenealogy($vhInfo, $cObj);
         $this->saveSubject($vhInfo, $cObj);
         $this->saveRelation($vhInfo, $cObj); // aka cpfRelation, constellationRelation, related_identity
@@ -2879,7 +2880,8 @@ class DBUtil
      *
      * @param \snac\data\Source $gObj The Source object
      *
-     * @param string $fkTable The name of the containing object's table. This will be 'nrd' for constellation source.
+     * @param string $fkTable The name of the containing object's table. This will be 'version_history' for
+     * constellation source. Table 'nrd' is a data table, not the root of the constellation.
      *
      * @param integer $fkID The record id of the containing table.
      *

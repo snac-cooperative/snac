@@ -859,12 +859,15 @@ class SQL
      *
      * nrd.main_id is the constellation id.
      *
-     * nrd.id is a typical row id (aka record id)
+     * Do not use nrd.id. The row identifier for nrd is nrd.main_id. Do not join to table nrd. If you need to
+     * join to the constellation use version_history.main_id. They are both the same, but nrd is a data table,
+     * and version_history is the "root" of the constellation.
      *
-     * Constellation->getID() gets the main_id aka constellation id
+     * Constellation->getID() gets the main_id aka constellation id aka nrd.main_id aka
+     * version_history.main_id.
      *
      * non-constellation->getID() gets the row id. Non-constellation objects get the main_id from the
-     * constellation, and it is not stored in these objects themselves. I mention this (again) because it
+     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
      * (again) caused confusion in the SQL below (now fixed).
      *
      * @param string $arkID The ARK id of a constellation
@@ -3226,6 +3229,10 @@ class SQL
      * Mar 4 2016: Changed "nrd.id=date_range.fk_id" to "nrd.main_id=date_range.fk_id" because getID of
      * nrd is main_id not id as with other tables and other objects. We changed this a while back, but
      * (oddly?) this didn't break until today.
+     *
+     * May 6 2016: In fact, even using table nrd here is questionable. "the constellation" is
+     * version_history. It works to use nrd.main_id because this is the same value as version_history.main_id,
+     * but intellectually this is inaccurate.
      * 
      * @return string[] Return a flat array. This seems like a function that should return an associative
      * list. Currently, is only called in one place.
