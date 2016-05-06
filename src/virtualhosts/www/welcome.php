@@ -103,7 +103,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             for (var i = 0; i < scripts.length; i++) {
                 requests.push($.ajax({
                     url : scripts[i],
-                    cache : false,
+                        cache : false,
+                        dataType : "text",
                     complete: function(xhr, success) {
                         if (success != "success")
                             somethingWrong(scripts[i]);

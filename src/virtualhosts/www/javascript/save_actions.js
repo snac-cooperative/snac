@@ -18,8 +18,6 @@ jQuery.fn.exists = function(){return this.length>0;}
  */
 $(document).ready(function() {
 
-
-
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
