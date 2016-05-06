@@ -888,19 +888,21 @@ function updateDate(shortName, idStr) {
             var name = divStr.replace(regex, "");
            
             if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) { 
-                var year = pad($("#"+shortName+"_"+name+"_year_"+idStr).val(), 4); 
-                var day = pad($("#"+shortName+"_"+name+"_day_"+idStr).val(), 2); 
-                var month = pad($("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val(), 2); 
+                var year = $("#"+shortName+"_"+name+"_year_"+idStr).val(); 
+                var day = $("#"+shortName+"_"+name+"_day_"+idStr).val(); 
+                var month = $("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val(); 
 
-                
-                var dateStr = year;
-                if (month != "" && month != "00") {
-                    dateStr += "-" + month;
-                    if (day != "" && day != "00") {
-                        dateStr += "-" + day;
+                var dateStr = "";
+                if (year != "") {
+                    dateStr += pad(year, 4);
+                    if (month != "") {
+                        dateStr += "-" + pad(month,2);
+                        if (day != "") {
+                            dateStr += "-" + pad(day,2);
+                        }
                     }
                 }
-                
+
                 $("#"+shortName+"_"+name+"_"+idStr).val(dateStr);
             }
 
