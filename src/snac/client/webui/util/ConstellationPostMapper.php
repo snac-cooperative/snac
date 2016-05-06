@@ -635,6 +635,8 @@ class ConstellationPostMapper {
             }
         }
 
+        $this->logger->addDebug("parsed values", $nested);
+
         // NRD-level Information
         if (isset($nested["ark"]))
             $this->constellation->setArkID($nested["ark"]);
@@ -679,8 +681,9 @@ class ConstellationPostMapper {
             $this->constellation->addSource($source);
         }
         
-        // Constellation SCM
-        $this->constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"], "constellation", 1));
+        // Constellation SCM, which is hard-coded to have id=1 (see edit_page.html template)
+        if (isset($nested["constellation"][1]))
+            $this->constellation->setAllSNACControlMetadata($this->parseSCM($nested["constellation"][1], "constellation", 1));
         
         foreach ($nested["gender"] as $k => $data) {
             // If the user added an object, but didn't actually edit it
