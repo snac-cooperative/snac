@@ -16,13 +16,13 @@
    * Run a demo with function data:
    * scripts/get_constellation_demo.php 486 13129 | less
    *
-   * That was determined by select * from function, and using the version and main_id from a record with a
+   * That was determined by select * from function, and using the version and ic_id from a record with a
    * non-null function_id and function_type.
    *
    * Run a demo with multiple otherId values:
    * scripts/get_constellation_demo.php 2 15 | less
    *
-   * Get the example but running a query and looking for a main_id has multiple values for other_id. 
+   * Get the example but running a query and looking for a ic_id has multiple values for other_id. 
    * select * from otherid;
    *
    *
@@ -30,7 +30,7 @@
    *
    * scripts/get_constellation_demo.php 5 49
    *
-   * Discovery version 5 and main_id 49 by looking for multi-subject main_id in the query results:
+   * Discovery version 5 and ic_id 49 by looking for multi-subject ic_id in the query results:
    * select * from subject limit 10;
    * 
    */
@@ -82,9 +82,9 @@ function foo_main ()
     $xx = 0;
     if ($argc>1)
     {
-        printf("Using version: %s main_id: %s\n", $argv[1], $argv[2]);
+        printf("Using version: %s ic_id: %s\n", $argv[1], $argv[2]);
         $cObj = $dbu->selectConstellation(array('version' => $argv[1],
-                                        'main_id' =>$argv[2]),
+                                        'ic_id' =>$argv[2]),
                                   $appUserID);
     }
     else

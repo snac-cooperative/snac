@@ -756,7 +756,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * We need the new version of the deleted record, which becomes the max(version) of the constellation.
          *
          * Older code used $mNObj->getNameEntries()[0]->getMainID() for the mainID, but it is better that
-         * mainID aka main_id exist only in the Constellation object. Or that we have a variable outside the
+         * mainID aka ic_id exist only in the Constellation object. Or that we have a variable outside the
          * object as we do here.
          *
          */  
@@ -767,7 +767,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         /* 
          * Post delete. The delete operation mints a new version number which is returned in the object
-         * returned by writeConstellation().  We combine the new version and the known (and unchanged main_id)
+         * returned by writeConstellation().  We combine the new version and the known (and unchanged ic_id)
          * to create a new vhInfo associative list. Then we pass that to readConstellation() to get the
          * current copy of the constellation from the database.
          *
@@ -849,7 +849,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         /*
          * Check a couple of db info values for the Constellation. This is the constellation version aka
          * max(version) aka max(version_history.id) for the constellation. This is also
-         * version_history.main_id aka the constellation id (which is not the per-table record id since there
+         * version_history.ic_id aka the constellation id (which is not the per-table record id since there
          * is no singular table for a constellation).
          */
         $this->assertTrue($cObj->getVersion() > 0);
@@ -864,7 +864,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          *
          * Since this is a function, getVersion() returns the version of this function which may be <= the constellation.
          *
-         * Also, this is the per-table record id aka table.id (not the constellation main_id).
+         * Also, this is the per-table record id aka table.id (not the constellation ic_id).
          */
         if (($fObj = $cObj->getFunctions()))
         {
