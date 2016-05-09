@@ -250,6 +250,23 @@ $(document).ready(function() {
 
                 });
 
+                // Go through all the panels and update any dates
+                $("div[id*='_panel_']").each(function() {
+                    var cont = $(this);
+                    // Don't look at any of the ZZ hidden panels
+                    if (cont.attr('id').indexOf("ZZ") == -1) {
+                        var split = cont.attr('id').split("_");
+
+                        // Split reveals a normal panel:
+                        if (split.length == 3) {
+                            var short = split[0];
+                            var id = split[2];
+                            
+                            updateDate(short, id);
+                        }
+                    }
+                });
+        
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
@@ -353,6 +370,24 @@ $(document).ready(function() {
                     }
 
                 });
+            
+                // Go through all the panels and update any dates
+                $("div[id*='_panel_']").each(function() {
+                    var cont = $(this);
+                    // Don't look at any of the ZZ hidden panels
+                    if (cont.attr('id').indexOf("ZZ") == -1) {
+                        var split = cont.attr('id').split("_");
+
+                        // Split reveals a normal panel:
+                        if (split.length == 3) {
+                            var short = split[0];
+                            var id = split[2];
+                            
+                            updateDate(short, id);
+                        }
+                    }
+                });
+        
 
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
