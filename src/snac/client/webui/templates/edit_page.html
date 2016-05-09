@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Editing {{ ark }}</title>
+{% if data.id %}
+    <title>SNAC Editing: {{data.nameEntries.0.original}}</title>
+{% else %}
+    <title>SNAC Editing: New Constellation</title>
+{% endif %}
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
