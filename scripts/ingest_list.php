@@ -57,6 +57,15 @@ $seenArks = array();
 
 foreach ($arks as $ark) {
 
+    // Use a hack to check the number of relations
+    // do curl -s $ark  | grep "badge pull-right" | sed 's/^.*">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'; done
+
+    $rels = shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'");
+    if ($rels > 200) {
+        echo "Skipping: $ark (too many relations)\n";
+        continue;
+    }
+
     // Create a full path file name
     //$filename = $argv[1]."/$short_file";
     list($junk, $parts) = explode("ark:/", $ark);
@@ -85,6 +94,12 @@ foreach ($arks as $ark) {
 
     foreach ($constellation->getRelations() as $rel) {
         $relArk = $rel->getTargetArkID();
+        
+        $rels = shell_exec("curl -s $relArk  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'");
+        if ($rels > 200) {
+            continue;
+        }
+        
         // If we haven't already seen it, it's not in the initial desired set, and it actually is an ARK
         if (!in_array($relArk, $seenArks) && !in_array($relArk, $arks) && strpos($relArk, "ark") !== false) {
             // Get filename from ARK
