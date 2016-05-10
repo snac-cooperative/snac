@@ -2082,7 +2082,7 @@ class DBUtil
             if ($this->prepOperation($vhInfo, $fdata))
             {
                 $rid = $this->sql->insertResourceRelation($vhInfo,
-                                                          $fdata->getDocumentType()->getID(), // xlink:role
+                                                          $this->thingID($fdata->getDocumentType()), // xlink:role
                                                           $this->thingID($fdata->getEntryType()), // relationEntry@localType
                                                           $fdata->getLink(), // xlink:href
                                                           $this->thingID($fdata->getRole()), // xlink:arcrole
