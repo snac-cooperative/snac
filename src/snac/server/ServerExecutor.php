@@ -829,7 +829,14 @@ class ServerExecutor {
         
             $return = array();
             foreach ($results["hits"]["hits"] as $i => $val) {
-                array_push($return, $this->cStore->readPublishedConstellationByID($val["_source"]["id"], true)->toArray());
+                $related = new \snac\data\Constellation();
+                $related->setID($val["_source"]["id"]);
+                $related->setArkID($val["_source"]["arkID"]);
+                $relatedName = new \snac\data\NameEntry();
+                $relatedName->setOriginal($val["_source"]["nameEntry"]);
+                $related->addNameEntry($relatedName);
+                array_push($return, $related->toArray());
+                //array_push($return, $this->cStore->readPublishedConstellationByID($val["_source"]["id"], true)->toArray());
             }
         
             $this->logger->addDebug("Created search response to the user", $return);
