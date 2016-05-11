@@ -60,9 +60,9 @@ foreach ($arks as $ark) {
     // Use a hack to check the number of relations
     // do curl -s $ark  | grep "badge pull-right" | sed 's/^.*">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'; done
 
-    $rels = shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'");
+    $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
     if ($rels > 200) {
-        echo "Skipping: $ark (too many relations)\n";
+        echo "Skipping: $ark (too many relations: $rels)\n";
         continue;
     }
 
@@ -75,12 +75,20 @@ foreach ($arks as $ark) {
     $parsedFile = true;
 
     // Print out a message stating that this file is being parsed
-    echo "Parsing: $filename\n";
+    echo "Parsing: $filename (relations: $rels)\n";
 
     $constellation = $e->parseFile($filename);
 
-    // Write the constellation to the DB
-    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    // Make sure it isn't already in the database
+    $check = $dbu->readPublishedConstellationByARK($constellation->getArk(), true);
+
+    $written = null;
+    if ($check !== false) {
+        $written = $dbu->readConstellation($check->getID());
+    } else {
+        // Write the constellation to the DB
+        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+    }
 
     // Update it to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
@@ -90,15 +98,19 @@ foreach ($arks as $ark) {
 
     $seenArks[$written->getID()] = $written->getArk();
     
-    echo "   Relations: ";
+    echo "   Relations: \n";
 
     foreach ($constellation->getRelations() as $rel) {
         $relArk = $rel->getTargetArkID();
-        
-        $rels = shell_exec("curl -s $relArk  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'");
+        list($junk, $parts) = explode("ark:/", $relArk);
+        $relArk = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
+         
+        $rels = trim(shell_exec("curl -s $relArk  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
         if ($rels > 200) {
+            echo "      skipping: $relArk (relations: $rels)\n";
             continue;
         }
+        echo "       parsing: $relArk (relations: $rels)\n";
         
         // If we haven't already seen it, it's not in the initial desired set, and it actually is an ARK
         if (!in_array($relArk, $seenArks) && !in_array($relArk, $arks) && strpos($relArk, "ark") !== false) {
@@ -109,12 +121,25 @@ foreach ($arks as $ark) {
 
             // Parse the constellation
             $constellation = $e->parseFile($filename);
+            
+            // Make sure it isn't already in the database
+            $check = $dbu->readPublishedConstellationByARK($constellation->getArk(), true);
 
-            // Write to database and add to list of new constellations to parse
-            $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+            $written = null;
+            if ($check !== false) {
+                $written = $dbu->readConstellation($check->getID());
+            } else {
+                try {
+                    // Write the constellation to the DB
+                    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+                } catch (\Exception $e) {
+                    echo "         - silently ignoring error...\n";
+                }
+            }
+
             $dbu->writeConstellationStatus($user, $written->getID(), "published");
             indexESearch($written);
-            echo ".";
+            //echo ".";
 
             // Push the ark onto the list of seen arks (so we don't duplicate)
             $seenArks[$written->getID()] = $written->getArk();
@@ -140,12 +165,18 @@ foreach ($seenArks as $id => $ark) {
             }
         }
     }
+    
     // Update the constellation in the database 
-    $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations");
-    $dbu->writeConstellationStatus($user, $written->getID(), "published");
-    indexESearch($written);
-    file_put_contents("log", $written->toJSON(), FILE_APPEND);
-    echo "\n    Published\n";
+    try {
+        // Write the constellation to the DB
+        $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations");
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
+        indexESearch($written);
+        file_put_contents("log", $written->toJSON(), FILE_APPEND);
+        echo "\n    Published\n";
+    } catch (\Exception $e) {
+        echo "      silently ignoring error...\n";
+    }
 }
 
 
