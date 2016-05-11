@@ -18,7 +18,7 @@ namespace snac\client\util;
  * server's response (as associative array).
  *
  * @author Robbie Hott
- *        
+ *
  */
 class ServerConnect {
 
@@ -37,11 +37,11 @@ class ServerConnect {
         global $log;
 
         $this->serverURL = \snac\Config::$INTERNAL_SERVERURL;
-        
+
         // create a log channel
         $this->logger = new \Monolog\Logger('ServerConnect');
         $this->logger->pushHandler($log);
-        
+
     }
 
     /**
@@ -53,17 +53,18 @@ class ServerConnect {
      *
      * @param array $query Associative array of the query information to send to the
      *        back-end server
+     * @return string[] The response from the server
      */
     public function query($query) {
 
-        $this->logger->addDebug("Sending the following server query", $query); 
+        $this->logger->addDebug("Sending the following server query", $query);
         // Encode the query as json
         $data = json_encode($query);
-        
+
         // Use CURL to send request to the internal server
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->serverURL);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, 
+        curl_setopt($ch, CURLOPT_HTTPHEADER,
                 array (
                         'Content-Type: application/json',
                         'Content-Length: ' . strlen($data)
@@ -74,14 +75,14 @@ class ServerConnect {
         $response = curl_exec($ch);
         curl_close($ch);
 
-        
+
         // Return the server response as associative array
         $return = json_decode($response, true);
         if ($return == null) {
             $this->logger->addDebug("Got the following improper server response", array($response));
             return $response;
         }
-        
+
         $this->logger->addDebug("Got the following server response", $return);
         return $return;
     }
