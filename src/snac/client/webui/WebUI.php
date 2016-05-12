@@ -91,7 +91,16 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Create the display for local templates
         $display = new display\Display();
-        
+
+
+        // Code to take the site down for maintenance
+        if (0) {
+            $display->setTemplate("down_page");
+            array_push($this->responseHeaders, "Content-Type: text/html");
+            $this->response = $display->getDisplay();
+            return;
+        }
+        // End Code for maintenance
 
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
