@@ -19,8 +19,11 @@
                          html += "<div class='col-xs-1'><input type='radio' name='relationChoice' id='relationChoice' value='"+data.results[key].id+"'></div>";
                          html += "<div class='col-xs-10'><h4 class='list-group-item-heading'>"+data.results[key].nameEntry+"</h4>";
                          html += "<p class='list-group-item-text'>"+data.results[key].arkID+" <a class='label label-info' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'>View</a></p></div>";
-                         html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntry+"'/>";
-                         html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+data.results[key].arkID+"'/>";
+                         html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntry.replace("'", "&#39;")+"'/>";
+                         var arkID = "";
+                         if (data.results[key].arkID != null)
+                             arkID = data.results[key].arkID;
+                         html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
                          html += "<input type='hidden' id='relationChoice_entityType_"+data.results[key].id+"' value='"+data.results[key].entityType+"'/>";
                          html += "</div></div>";
                      }
