@@ -55,13 +55,15 @@ $arks = file($argv[2], FILE_IGNORE_NEW_LINES);
 
 $seenArks = array();
 
+$relationLimit = 350;
+
 foreach ($arks as $ark) {
 
     // Use a hack to check the number of relations
     // do curl -s $ark  | grep "badge pull-right" | sed 's/^.*">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'; done
 
     $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
-    if ($rels > 200) {
+    if ($rels > $relationLimit) {
         echo "Skipping: $ark (too many relations: $rels)\n";
         continue;
     }
@@ -106,7 +108,7 @@ foreach ($arks as $ark) {
         $relArk = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
          
         $rels = trim(shell_exec("curl -s $relArk  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
-        if ($rels > 200) {
+        if ($rels > $relationLimit) {
             echo "      skipping: $relArk (relations: $rels)\n";
             continue;
         }

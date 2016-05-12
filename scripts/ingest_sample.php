@@ -71,14 +71,20 @@ if (is_dir($argv[1])) {
 
         $constellation = $e->parseFile($filename);
         
-        // Write the constellations to the DB
-        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+        list($junk, $parts) = explode("ark:/", $constellation->getArk());
+        $ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
         
-        // Update them to be published
-        $dbu->writeConstellationStatus($user, $written->getID(), "published");
-        
-        indexESearch($written);
+        $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
 
+        if ($rels < 350) {
+            // Write the constellations to the DB
+            $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+            
+            // Update them to be published
+            $dbu->writeConstellationStatus($user, $written->getID(), "published");
+            
+            indexESearch($written);
+        }
     }
 
     // Write some large test samples as published (too big to edit now) 
@@ -89,6 +95,7 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     // Jefferson
     echo "Parsing: Thomas Jefferson\n";
@@ -97,6 +104,7 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     // Oppenheimer
     echo "Parsing: Robert Oppenheimer\n";
@@ -105,6 +113,7 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     // Joseph Henry (large record) 
     echo "Parsing: Joseph Henry\n";
@@ -113,6 +122,7 @@ if (is_dir($argv[1])) {
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
+    $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     //Now, write samples to edit
     echo "Parsing: Sparse other sample files .";
