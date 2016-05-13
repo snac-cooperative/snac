@@ -56,6 +56,7 @@ function addSCMEntry(short, i){
     $('#add_scm_'+short+'_'+i+'_div').after(html);
     $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
     turnOnSCMButtons(short, i, j);
+    makeSCMEditable(short, i, j);
     return false;
 }
 
@@ -1023,6 +1024,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, genderid);
 	        $('#add_gender_div').after(html);
             turnOnButtons("gender", genderid);
+            makeEditable("gender", genderid);
 	        genderid = genderid + 1;
 	        return false;
 		});
@@ -1041,6 +1043,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
             turnOnButtons("exist", existid);
+            makeEditable("exist", existid);
 	        existid = existid + 1;
 	        return false;
 		});
@@ -1052,6 +1055,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
             turnOnButtons("exist", existid);
+            makeEditable("exist", existid);
 	        existid = existid + 1;
 	        return false;
 		});
@@ -1069,6 +1073,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
             turnOnButtons("nameEntry", nameEntryid);
+            makeEditable("nameEntry", nameEntryid);
 	        nameEntryid = nameEntryid + 1;
 	        return false;
 		});
@@ -1086,6 +1091,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, sameAsid);
 	        $('#add_sameAs_div').after(html);
             turnOnButtons("sameAs", sameAsid);
+            makeEditable("sameAs", sameAsid);
 	        sameAsid = sameAsid + 1;
 	        return false;
 		});
@@ -1103,6 +1109,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, sourceid);
 	        $('#add_source_div').after(html);
             turnOnButtons("source", sourceid);
+            makeEditable("source", sourceid);
 	        sourceid = sourceid + 1;
 	        return false;
 		});
@@ -1120,6 +1127,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, resourceRelationid);
 	        $('#add_resourceRelation_div').after(html);
             turnOnButtons("resourceRelation", resourceRelationid);
+            makeEditable("resourceRelation", resourceRelationid);
 	        resourceRelationid = resourceRelationid + 1;
 	        return false;
 		});
@@ -1183,6 +1191,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, languageid);
 	        $('#add_language_div').after(html);
             turnOnButtons("language", languageid);
+            makeEditable("language", languageid);
 	        languageid = languageid + 1;
 	        return false;
 		});
@@ -1200,6 +1209,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, subjectid);
 	        $('#add_subject_div').after(html);
             turnOnButtons("subject", subjectid);
+            makeEditable("subject", subjectid);
 	        subjectid = subjectid + 1;
 	        return false;
 		});
@@ -1217,6 +1227,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, nationalityid);
 	        $('#add_nationality_div').after(html);
             turnOnButtons("nationality", nationalityid);
+            makeEditable("nationality", nationalityid);
 	        nationalityid = nationalityid + 1;
 	        return false;
 		});
@@ -1234,6 +1245,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, functionid);
 	        $('#add_function_div').after(html);
             turnOnButtons("function", functionid);
+            makeEditable("function", functionid);
 	        functionid = functionid + 1;
 	        return false;
 		});
@@ -1251,6 +1263,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, occupationid);
 	        $('#add_occupation_div').after(html);
             turnOnButtons("occupation", occupationid);
+            makeEditable("occupation", occupationid);
 	        occupationid = occupationid + 1;
 	        return false;
 		});
@@ -1268,6 +1281,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, legalStatusid);
 	        $('#add_legalStatus_div').after(html);
             turnOnButtons("legalStatus", legalStatusid);
+            makeEditable("legalStatus", legalStatusid);
 	        legalStatusid = legalStatusid + 1;
 	        return false;
 		});
@@ -1285,6 +1299,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, placeid);
 	        $('#add_place_div').after(html);
             turnOnButtons("place", placeid);
+            makeEditable("place", placeid);
 	        placeid = placeid + 1;
 	        return false;
 		});
@@ -1302,6 +1317,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
 	        $('#add_conventionDeclaration_div').after(html);
             turnOnButtons("conventionDeclaration", conventionDeclarationid);
+            makeEditable("conventionDeclaration", conventionDeclarationid);
 	        conventionDeclarationid = conventionDeclarationid + 1;
 	        return false;
 		});
@@ -1319,6 +1335,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, generalContextid);
 	        $('#add_generalContext_div').after(html);
             turnOnButtons("generalContext", generalContextid);
+            makeEditable("generalContext", generalContextid);
 	        generalContextid = generalContextid + 1;
 	        return false;
 		});
@@ -1336,6 +1353,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
 	        $('#add_structureOrGenealogy_div').after(html);
             turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
+            makeEditable("structureOrGenealogy", structureOrGenealogyid);
 	        structureOrGenealogyid = structureOrGenealogyid + 1;
 	        return false;
 		});
@@ -1353,6 +1371,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, mandateid);
 	        $('#add_mandate_div').after(html);
             turnOnButtons("mandate", mandateid);
+            makeEditable("mandate", mandateid);
 	        mandateid = mandateid + 1;
 	        return false;
 		});
