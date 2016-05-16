@@ -49,7 +49,7 @@ $('.selectpicker').selectpicker();
             <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The first column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The second column gives quick access to view the most recently published Constellations on the SNAC prototype.</p>
             <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
 
-        
+
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
@@ -83,7 +83,17 @@ $('.selectpicker').selectpicker();
                     <p>Continue where you left off on one of the following Constellations.</p>
                     <div class="list-group">
                         {% for link in data.editing %}
-                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">
+                            {{link.nameEntry}}
+                            <span class="pull-right btn-group">
+                                <a href="?command=view&constellationid={{link.id}}&version={{link.version}}" class="btn btn-primary" title="View">
+                                    <span class="glyphicon glyphicon-eye-open"></span>
+                                </a>
+                                <a href="?command=publish&constellationid={{link.id}}&version={{link.version}}" class="btn btn-primary" title="Publish">
+                                    <span class="glyphicon glyphicon-upload"></span>
+                                </a>
+                            </span>
+                        </a>
                         {% endfor %}
                     </div>
                 </div>
@@ -102,7 +112,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
-            
+
             <!-- Panels that don't mean anything right now
             <div class="panel panel-warning">
                 <div class="panel-heading">
@@ -117,7 +127,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
-            
+
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">User Edit History</h3>
@@ -131,7 +141,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
-            
+
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">Special Records</h3>
@@ -147,25 +157,25 @@ $('.selectpicker').selectpicker();
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            
-            
+
+
         <form class="form-horizontal" id="search_form" onsubmit="return false;">
             <div class="well well-lg text-center">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
                     <div class="input-group">
                         <input type="text" class="form-control"
-                            placeholder="Search for..." id="searchbox" name="term"> 
+                            placeholder="Search for..." id="searchbox" name="term">
                             <span class="input-group-btn">
                                  <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
                             </span>
                     </div>
-                    
+
                     <div id="search-results-box">
                     </div>
             </div>
         </form>
-            
+
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>
