@@ -549,11 +549,15 @@ class ServerExecutor {
 
                 if (isset($result) && $result !== false) {
                     $this->logger->addDebug("successfully published constellation");
+                    // Return the passed-in constellation from the user, with the new version number
                     $constellation->setVersion($result);
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
-        
-        
+
+                    // Read in the constellation from the database to update elastic search
+                    //      currently, we only need the summary for the name entries
+                    $published = $this->cStore->readPublishedConstellationByID($constellation->getID(), true);
+
                     // add to elastic search
                     $eSearch = null;
                     if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -562,27 +566,27 @@ class ServerExecutor {
                         ->setRetries(0)
                         ->build();
                     }
-        
+
                     $this->logger->addDebug("Created elastic search client to update");
-        
+
                     if ($eSearch != null) {
                         $params = [
                                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                                'id' => $constellation->getID(),
+                                'id' => $published->getID(),
                                 'body' => [
-                                        'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
-                                        'entityType' => $constellation->getEntityType()->getID(),
-                                        'arkID' => $constellation->getArk(),
-                                        'id' => $constellation->getID(),
+                                        'nameEntry' => $published->getPreferredNameEntry()->getOriginal(),
+                                        'entityType' => $published->getEntityType()->getID(),
+                                        'arkID' => $published->getArk(),
+                                        'id' => $published->getID(),
                                         'timestamp' => date('c')
                                 ]
                         ];
-        
+
                         $eSearch->index($params);
                         $this->logger->addDebug("Updated elastic search with newly published constellation");
                     }
-        
+
                 } else {
                     $this->logger->addDebug("could not publish the constellation");
                     $response["result"] = "failure";

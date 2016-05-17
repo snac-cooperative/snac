@@ -294,8 +294,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "publish") {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->publishConstellation($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
+            // if published by constellationid parameter, then send them to the dashboard.
+            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                header("Location: index.php?command=dashboard");
+                return;
+            } else {
+                $this->response = json_encode($response, JSON_PRETTY_PRINT);
+                array_push($this->responseHeaders, "Content-Type: text/json");
+            }
             return;
 
         } else if ($this->input["command"] == "vocabulary") {
