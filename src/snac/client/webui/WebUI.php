@@ -65,12 +65,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $this->input = $input;
         if (!isset($this->input["command"]))
             $this->input["command"] = "";
-        
+
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUI');
         $this->logger->pushHandler($log);
-        
+
         return;
     }
 
@@ -85,7 +85,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
     public function run() {
 
         $this->logger->debug("Starting to handle user request", $this->input);
-        
+
         // Create an executor to perform all the actions
         $executor = new WebUIExecutor();
 
@@ -104,7 +104,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
-        
+
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
@@ -113,7 +113,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "view"
         );
-        
+
 
         // *****************************************
         // Session and User Information
@@ -146,7 +146,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $token = unserialize($_SESSION['token']);
             $ownerDetails = unserialize($_SESSION['user_details']);
             $user = unserialize($_SESSION['snac_user']);
-            
+
             if ($user->getToken()["expires"] <= time()) {
                 // if the user's token has expired, we need to ask for a refresh
                 // if the refresh is successful, then great, keep going.
@@ -156,7 +156,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // startSNACSession will connect to the server and ask to start a session.  The server will
                 // reissue the session and extend the token expiration if the session does already exist.
-                $tmpUser = $executor->startSNACSession($user); 
+                $tmpUser = $executor->startSNACSession($user);
                 if ($tmpUser !== false) {
                     $user = $tmpUser;
                     $_SESSION["snac_user"] = serialize($user);
@@ -166,14 +166,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     // if they were actually trying to get a JSON response.
                 }
             }
-            
+
             // Create the PHP User object
             // $user = $executor->createUser($ownerDetails, $token);
-            
+
             // Set the user information into the display object
             $display->setUserData($user->toArray());
         }
-        
+
 
         // *************************************************
         // Workflow: Handle user commands, perform actions
@@ -182,67 +182,67 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Session-Level Commands
         if ($this->input["command"] == "login") {
-        
+
             // Destroy the old session
             session_destroy();
             // Restart the session
             session_name("SNACWebUI");
             session_start();
-        
+
             // if the user wants to log in, then send them to the login server
             $authUrl = $provider->getAuthorizationUrl();
             header('Location: ' . $authUrl);
-        
+
         } else if ($this->input["command"] == "login2") {
-        
+
             // OAuth Stuff //
             // Try to get an access token (using the authorization code grant)
             $token = $provider->getAccessToken('authorization_code',
                     array('code' => $_GET['code']));
-            
-            
-            
+
+
+
             // Set the token in session variable
             $_SESSION['token'] = serialize($token);
-        
+
             // We got an access token, let's now get the owner details
             $ownerDetails = $provider->getResourceOwner($token);
-            
-        
+
+
             // Set the user details in the session
             $_SESSION['user_details'] = serialize($ownerDetails);
-            
-            
-            
+
+
+
             $tokenUnserialized = unserialize($_SESSION['token']);
             $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
             // Create the PHP User object
             $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
-            
+
             $tmpUser = $executor->startSNACSession($user);
 
             if ($tmpUser !== false)
                 $user = $tmpUser;
 
-            $_SESSION['snac_user'] = serialize($user); 
+            $_SESSION['snac_user'] = serialize($user);
 
             // Go directly to the Dashboard, do not pass Go, do not collect $200
             header('Location: index.php?command=dashboard');
-        
+
         } else if ($this->input["command"] == "logout") {
-            
+
             $executor->endSNACSession($user);
-        
+
             // Destroy the old session
             session_destroy();
             // Restart the session
             session_name("SNACWebUI");
             session_start();
             $_SESSION = array();
-        
+
             // Go to the homepage
             header('Location: index.php');
-        
+
         // Editing, Preview, View, and Other Commands
         } else if ($this->input["command"] == "edit") {
             $executor->displayEditPage($this->input, $display, $user);
@@ -309,7 +309,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
-            
+
         } else {
             // The WebUI is displaying the landing page only
             $executor->displayLandingPage($display);
@@ -347,5 +347,5 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "Content-Type: text/html"
         );
     }
-    
+
 }
