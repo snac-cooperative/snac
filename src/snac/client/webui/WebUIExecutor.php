@@ -115,6 +115,8 @@ class WebUIExecutor {
     public function displayViewPage(&$input, &$display, &$user) {
         $query = array();
         $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
         $query["command"] = "read";
         if (isset($user) && $user != null)
             $query["user"] = $user->toArray();
