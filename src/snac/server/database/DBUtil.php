@@ -419,7 +419,8 @@ class DBUtil
      *
      * List constellations that meet all these criteria: 1) most recent,  2) current user, 3) given status
      *
-     * This function returns valid, partial constellations. 
+     * This function returns valid, partial, summary constellations. The last arg to readConstellation() is
+     * $summary and we pass true.
      *
      * Status defaults to 'locked editing'. The default is: user has the constellation locked for edit. Note:
      * 'locked editing' and 'currently editing' are different with different meanings.
@@ -429,7 +430,7 @@ class DBUtil
      * constellation. This will not return any constellation for which the most recent version does not match
      * status and user.
      *
-     * Mar 29 2016 Robbie suggests we only return partial constellations here with enough data to build
+     * Mar 29 2016 Robbie suggests we only return partial, summary constellations here with enough data to build
      * UI. Partial means: table nrd and table name_entry. We tried returning the full constellations, but that
      * was simply too much data to send to the web browser. The return values here are valid constellations
      * and can be treated as normal constellations which keeps all the code consistent. However, by only
@@ -457,7 +458,8 @@ class DBUtil
      * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
      * a config value. Must be -1 for all, or an integer. Default to the config when missing.
      *
-     * @return \snac\data\Constellation[] A list of  PHP constellation object, or an empty array when there are no constellations.
+     * @return \snac\data\Constellation[] A list of PHP constellation object (which might be summary objects),
+     * or an empty array when there are no constellations.
      */
     public function listConstellationsWithStatusForUser($user,
                                                         $status='locked editing',
@@ -493,7 +495,7 @@ class DBUtil
     /**
      * List constellations most recent by status for any user
      *
-     * Return a list of valid (but partial) constellations for a single status, but for any user, and the most
+     * Return a list of valid (but partial, summary) constellations for a single status, but for any user, and the most
      * recent version.
      *
      * List constellations that meet all these criteria: 1) most recent, 2) given status. User is ignored,
@@ -1372,12 +1374,18 @@ class DBUtil
     }
 
     /**
-     * Populate full source list from the database
+     * Populate Constellation source list
      *
-     * Select source from the database based on Constellation ID, create a source object and add it to the
-     * passed in $cObj. Note that Constellation will have a list of Source via addSource(), but
-     * SNACControlMetadata only has a single Source via setCitation(). Best to just take our medicine and
-     * encapsulate the complexity inside here populateSourceByID().
+     * Source is first-order data, especially as viewed by the Constellation. However, Constellation sources
+     * are also "linked" by some SCMs, when an SCM has a citation.
+     * 
+     * This is sort of a wrapper function which is necessary because Constellation objects have multiple
+     * source objects in a list. This function is called from selectConstellation() and is specific to the
+     * Constellation object.  Thus, this code adds each source to the Constellation. The helper function is
+     * populateSourceByID() which can only do a single Source per call.
+     *
+     * We get a list of Source records from selectSourceIDList() (thus the "List" in the name).  SCM also has
+     * a single source, and therefore SCM directly calls populateSourceByID().
      *
      * Constellation version aka version_history.id is always the "newest". If only SCM changed, then
      * constellation version would be the same as the SCM version. Thus we should use $vhInfo['verion'].
@@ -1403,12 +1411,19 @@ class DBUtil
 
     
     /**
-     * Create a source object from the database
+     * Populate one source object 
      *
-     * Select source from the database based on Source id (not constellation id), create a source object and
-     * add it to the passed in $cObj. Note that Constellation will have a list of Source via addSource(), but
-     * SNACControlMetadata only has a single Source via setCitation(). Best to just take our medicine and
-     * encapsulate the complexity inside here populateSourceByID().
+     * This adds a single source to Constellation or SCM. The calling code will loop for Constellation,
+     * possibly adding multple Sources to the Constellation.
+     *
+     * Select a source from the database based on Source id (not constellation id), create a source object and
+     * add it to the passed in $cObj. $cObj can be either a Constellation or SCM. This function is called in a
+     * loop for Constellation, but only called once for SCM. For the Constellation-loop call see
+     * populateSourceConstellation().
+     *
+     * Note that Constellation will have a list (array) of Source via addSource(), but SNACControlMetadata
+     * only has a single Source via setCitation(). The code below checks the get_class() of $cObj to know
+     * which method to call.
      *
      * Constellation version aka version_history.id is always the "newest". If only SCM changed, then
      * constellation version would be the same as the SCM version. Thus we should use $vhInfo['verion'].
@@ -1416,14 +1431,19 @@ class DBUtil
      * If something else changed, then the Constellation version is newer than the SCM version, and we
      * should still use the constellation version (because always use the newest version available).
      *
+     * Note that source is first-order data, especially as viewed by the Constellation. However, these
+     * first-order sources may also be "linked" by some SCMs, when an SCM has a citation.
+     *
      * apr 4 remove             $newObj->setType($this->populateTerm($rec['type_id']));
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
      *
-     * @param \snac\data\Constellation $cObj Constellation object, passed by reference (as is the default in
-     * php for objects as parameters), and changed in place
+     * @param object $cObj Either a \snac\data\Constellation Constellation object, or a
+     * \snac\data\SNACControlMetadata object. (In PHP all objects are passed by reference as is the default in
+     * php for objects as parameters, and changed in place.)
      *
-     * @param integer $sourceID Source record id. 
+     * @param integer $sourceID Source record id. This is a source.id value, and is different than foreign
+     * keys in some other uses of $fkID in other functions.
      */
     private function populateSourceByID($vhInfo, $cObj, $sourceID)
     {
@@ -2856,23 +2876,14 @@ class DBUtil
             }
             $this->saveLanguage($vhInfo, $metaObj, 'scm', $metaID);
             /*
-             * Citation has become a link (foreign key) to Source table. No need to save separately.
+             * Citation has become a Source and has an ID to a Source table record. No need to save
+             * separately.
              */ 
-            /* 
-             * $citeID = null;
-             * /\*
-             *  * Yes single = aka if the assignment is successful
-             *  *\/
-             * if ($cite = $metaObj->getCitation())
-             * {
-             *     $this->saveSourceLink($vhInfo, $cite, 'scm', $metaID);
-             * }
-             */
         }
     }
 
     /**
-     * Save a Source link
+     * Save a Source link. Not used.
      *
      * Source objects exist in their own table, so when any part of a constellation needs a source, it links
      * to it. This writes those links. These links have version control. There may be SCM for these links.
@@ -2887,21 +2898,23 @@ class DBUtil
      * @param integer $fkID The record id of the containing table.
      *
      */
-    private function saveSourceLink($vhInfo, $gObj, $fkTable, $fkID)
-    {
-        die("DBUtil saveSourceLink Not used. Source links are single-sided relations foreign key relations to table source.\n");
-        $genericRecordID = $gObj->getID();
-        if ($this->prepOperation($vhInfo, $gObj))
-        {
-            $genericRecordID = $this->sql->insertSourceLink($vhInfo,
-                                                            $gObj->getID(),
-                                                            $fkTable,
-                                                            $fkID);
-            $gObj->setID($genericRecordID);
-            $gObj->setVersion($vhInfo['version']);
-        }
-        $this->saveMeta($vhInfo, $gObj, 'source_link', $genericRecordID);
-    }
+    /* 
+     * private function saveSourceLink($vhInfo, $gObj, $fkTable, $fkID)
+     * {
+     *     die("DBUtil saveSourceLink Not used. Source links are single-sided relations foreign key relations to table source.\n");
+     *     $genericRecordID = $gObj->getID();
+     *     if ($this->prepOperation($vhInfo, $gObj))
+     *     {
+     *         $genericRecordID = $this->sql->insertSourceLink($vhInfo,
+     *                                                         $gObj->getID(),
+     *                                                         $fkTable,
+     *                                                         $fkID);
+     *         $gObj->setID($genericRecordID);
+     *         $gObj->setVersion($vhInfo['version']);
+     *     }
+     *     $this->saveMeta($vhInfo, $gObj, 'source_link', $genericRecordID);
+     * }
+     */
 
     /**
      * Write constellation sources to the database

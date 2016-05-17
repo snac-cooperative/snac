@@ -930,8 +930,8 @@ class SQL
      * Select all source id only by constellation ID
      *
      * Select only source.id values for a given constellation ID. Use this to get constellation source id
-     * values, which higher level code uses to call populateSourceByID(). If you want full source record data,
-     * then you should use selectSourceByID().
+     * values, which higher level code uses inside populateSourceConstellation(), and which calls
+     * populateSourceByID(). If you want full source record data, then you should use selectSourceByID().
      *
      * @param integer $mainID A foreign key to record in another table.
      *
@@ -939,7 +939,6 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A list of list (records) with key 'id'
-     *
      */
     public function selectSourceIDList($mainID, $version)
     {
@@ -965,7 +964,7 @@ class SQL
      *
      * Select source where the most recent version <= $version for source id $sourceID and not deleted.
      *
-     * @param integer $fkID A foreign key to record in another table.
+     * @param integer $sourceID A record ID here in the source table. Not a foreign key.
      *
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
@@ -1017,7 +1016,7 @@ class SQL
      * @param string $uri URI of this source
      *
      * @return integer The id value of this record. Sources have a language, so we need to return the $id
-     * which is used by language as a foreign key.
+     * because it is used by language as a foreign key.
      *
      */
     public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri)
@@ -3333,21 +3332,20 @@ class SQL
      * Return the lowest ic_id for a multi-name constellation with 2 or more non-deleted names. Returns a
      * version and ic_id for the constelletion to which this name belongs.
      *
+     * This is a helper/convenience function for testing purposes only.
+     *
      * Note: When getting a version number, we must always look for max(version_history.version) as version to be
      * sure we have "the" constellation version number.
      *
-     * Note: Use boolean "is true" short syntax "is_deleted" in the sql because it is unambiguous, and it
-     * saves escaping \'t\' which is necessary in the verbose syntax.
-     *
-     * This is a helper/convenience function for testing purposes only.
+     * Subquery zz returns count of names that are not deleted, grouped by ic_id (akd main_id, aka
+     * constellation id). Join that to version history, and constrain for zz.count>1 and you have multi-name
+     * constellations, then limit to 1 result.
      *
      * @return integer[] Returns a vhInfo associateve list of integers with key names 'version' and
      * 'ic_id'. The ic_id is from table 'name' for the multi-alt string name. That ic_id is a
      * constellation id, so we call selectCurrentVersion() to get the current version for that
      * constellation. This allows us to return a conventional vhInfo associative list which is conventient
      * return value. (Convenient, in that we do extra work so the calling code is simpler.)
-     *
-     *
      */
     public function sqlMultiNameConstellationID()
     {
@@ -3355,7 +3353,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'select max(vh.version) as version, vh.id as ic_id
                             from version_history as vh,
-                            (select count(distinct(aa.version)),aa.ic_id from name as aa
+                            (select count(distinct(aa.id)),aa.ic_id from name as aa
                             where aa.id not in (select id from name where is_deleted) group by ic_id order by ic_id) as zz
                             where
                             vh.id=zz.ic_id and

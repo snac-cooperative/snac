@@ -470,20 +470,20 @@ create table language (
 
 create unique index language_idx1 on date_range(id,ic_id,version);
 
--- From the <source> element. The href and objectXMLWrap are not consistently used, so this may be
--- unnecessary. There will (often?) be a related entry in table language, related on source.id=language.fk_id.
+-- From the <source> element. This appears to derive from /eac-cpf/control/source in the CPF. The href and
+-- objectXMLWrap is not consistently used. There will (often?) be a related entry in table language, related
+-- on source.id=language.fk_id.
 --
--- From Source.php:
---
--- Snac Source File. A "source" is a citation source, and has qualities of an authority file although every
--- source is independent, even if it seems to be a duplicate.  This appears to derive from
--- /eac-cpf/control/source in the CPF. Going forward we use it for all sources.  For example,
--- SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
+-- SNAC Source File. A "source" is a cited (citation) source, and has qualities of an authority file.
+-- Currently, each constellation has its own list of sources. (Other constellations might duplicate these
+-- sources, but each constellation thinks its sources are unique).  Going forward we use this table for all
+-- sources.  For example, SNACControlMetadata->citation is a Source object. Constellation->sources is a list
+-- of sources.
 -- 
 -- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
 -- just like date. 
 
--- Apr 4 2016. Switching to list of sources per constellation. Finally removing type, which is always
+-- Apr 4 2016. We have switched to per constellation list of sources. Finally removing type, which is always
 -- "simple", and essentially not used. Removing fk_id and fk_table since sources are linked to each
 -- constellation by ic_id. Any constellation component using a source does a relational link aka foreign key
 -- by source.id
@@ -491,7 +491,7 @@ create unique index language_idx1 on date_range(id,ic_id,version);
 create table source (
     id           int default nextval('id_seq'),
     version      int not null,
-    ic_id      int not null,
+    ic_id        int not null,
     is_deleted   boolean default false,
     display_name text,    -- User entered display name to distinguish sources, esp in the UI
     text         text,    -- Text of this source
