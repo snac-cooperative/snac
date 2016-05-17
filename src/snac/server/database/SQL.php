@@ -1566,11 +1566,13 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Related table name.
+     * 
      * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
      * version, ic_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
      * calling code has any use for fk_id, so we don't return it.
      */
-    public function selectMeta($tid, $version)
+    public function selectMeta($tid, $version, $fkTable)
     {
         $qq = 'select_meta';
         $this->sdb->prepare($qq, 
@@ -1578,10 +1580,10 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data, 
                             aa.rule_id, aa.note
                             from scm as aa,
-                            (select id,max(version) as version from scm where fk_id=$1 and version<=$2 group by id) as bb
+                            (select id,max(version) as version from scm where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($tid, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

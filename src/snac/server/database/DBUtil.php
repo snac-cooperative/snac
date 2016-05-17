@@ -644,6 +644,7 @@ class DBUtil
      */
     private function selectConstellation($vhInfo, $summary=false)
     {
+        $tableName = 'version_history';
         $cObj = new \snac\data\Constellation();
         $this->populateNrd($vhInfo, $cObj);
         $this->populateNameEntry($vhInfo, $cObj);
@@ -660,9 +661,9 @@ class DBUtil
          * Constellation SCM aka populateMeta() call moved here from populateNrd() because it is *not* the scm
          * for table nrd.
          */ 
-        $this->populateMeta($vhInfo, $cObj);
+        $this->populateMeta($vhInfo, $cObj, $tableName);
         $this->populateBiogHist($vhInfo, $cObj);
-        $this->populateDate($vhInfo, $cObj); // "Constellation Date" in SQL these dates are linked to table nrd.
+        $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
         $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
         $this->populateConventionDeclaration($vhInfo, $cObj);
         $this->populateFunction($vhInfo, $cObj);
@@ -747,7 +748,7 @@ class DBUtil
             $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
             $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $this->populateMeta($vhInfo, $gObj);
+            $this->populateMeta($vhInfo, $gObj, 'otherid');
             $cObj->addOtherRecordID($gObj);
         }
     }
@@ -791,9 +792,11 @@ class DBUtil
      */
     private function populatePlace($vhInfo, $cObj, $fkID, $fkTable)
     {
+        
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
+        $tableName = 'place_link';
         $gRows = $this->sql->selectPlace($fkID, $vhInfo['version'], $fkTable);
         foreach ($gRows as $rec)
         {
@@ -806,7 +809,7 @@ class DBUtil
             $gObj->setConfirmed($this->db->pgToBool($rec['confirmed']));
             $gObj->setNote($rec['note']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $this->populateMeta($vhInfo, $gObj);
+            $this->populateMeta($vhInfo, $gObj, $tableName);
             /*
              * Feb 11 2016 At some point, probably in the last few days, setSource() disappeared from class
              * Place. This is probably due to all AbstractData getting SNACControlMetadata (SCM) properties.
@@ -816,7 +819,7 @@ class DBUtil
              *
              * A whole raft of place related properties have been moved from Place to GeoTerm.
              */
-            $this->populateDate($vhInfo, $gObj);
+            $this->populateDate($vhInfo, $gObj, $tableName);
             $cObj->addPlace($gObj);
         }
     }
@@ -838,35 +841,37 @@ class DBUtil
      *
      * @param integer $version Constellation version number
      *
+     * @param string $fkTable Name of the related table aka foreign table aka  
      */
-    private function populateMeta($vhInfo, $cObj)
+    private function populateMeta($vhInfo, $cObj, $fkTable)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
+         * I'm pretty sure that first arg is an $fkID.
          */
-        if( $recList = $this->sql->selectMeta($cObj->getID(), $vhInfo['version']))
-        {
-            foreach($recList as $rec)
+        if ( $recList = $this->sql->selectMeta($cObj->getID(), $vhInfo['version'], $fkTable))
             {
-                $gObj = new \snac\data\SNACControlMetadata();
-                $gObj->setSubCitation($rec['sub_citation']);
-                $gObj->setSourceData($rec['source_data']);
-                $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
-                $gObj->setNote($rec['note']);
-                $gObj->setDBInfo($rec['version'], $rec['id']);
-                /*
-                 * Prior to creating the Language object, language was strange and not fully functional. Now
-                 * language is a related record that links back here via our record id as a foreign key.
-                 */ 
-                $this->populateLanguage($vhInfo, $gObj, $rec['id']);
-                /*
-                 * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
-                 * addSource() for Constellation object.
-                 */ 
-                $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
-                $cObj->addSNACControlMetadata($gObj);
+                foreach($recList as $rec)
+                    {
+                        $gObj = new \snac\data\SNACControlMetadata();
+                        $gObj->setSubCitation($rec['sub_citation']);
+                        $gObj->setSourceData($rec['source_data']);
+                        $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
+                        $gObj->setNote($rec['note']);
+                        $gObj->setDBInfo($rec['version'], $rec['id']);
+                        /*
+                         * Prior to creating the Language object, language was strange and not fully functional. Now
+                         * language is a related record that links back here via our record id as a foreign key.
+                         */ 
+                        $this->populateLanguage($vhInfo, $gObj, $rec['id']);
+                        /*
+                         * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
+                         * addSource() for Constellation object.
+                         */ 
+                        $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
+                        $cObj->addSNACControlMetadata($gObj);
+                    }
             }
-        }
     }
     
 
@@ -893,7 +898,7 @@ class DBUtil
             $gObj = new \snac\data\LegalStatus();
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $this->populateMeta($vhInfo, $gObj);
+            $this->populateMeta($vhInfo, $gObj, 'legal_status');
             $cObj->addLegalStatus($gObj);
         }
     }
@@ -922,7 +927,7 @@ class DBUtil
             $gObj = new \snac\data\Subject();
             $gObj->setTerm($this->populateTerm($rec['term_id']));
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $this->populateMeta($vhInfo, $gObj);
+            $this->populateMeta($vhInfo, $gObj, 'subject');
             $cObj->addSubject($gObj);
         }
     }
@@ -957,6 +962,7 @@ class DBUtil
      */
     private function populateNameEntry($vhInfo, $cObj)
     {
+        $tableName = 'name';
         $neRows = $this->sql->selectName($vhInfo);
         foreach ($neRows as $oneName)
         {
@@ -964,7 +970,7 @@ class DBUtil
             $neObj->setOriginal($oneName['original']);
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']); 
-            $this->populateMeta($vhInfo, $neObj);
+            $this->populateMeta($vhInfo, $neObj, $tableName);
             $this->populateLanguage($vhInfo, $neObj, $oneName['id']);
             /*
              * This line works because $oneName['id'] == $neObj->getID(). Both are record id, not
@@ -979,7 +985,7 @@ class DBUtil
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
             }
-            $this->populateDate($vhInfo, $neObj);
+            $this->populateDate($vhInfo, $neObj, $tableName);
             $cObj->addNameEntry($neObj);
         }
     }
@@ -996,9 +1002,11 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
      *
-     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
+     * @param object $cObj \snac\data\Constellation object or other object with related date.
+     * 
+     * @param string $fkTable The related table name.
      */
-    private function populateDate($vhInfo, $cObj)
+    private function populateDate($vhInfo, $cObj, $fkTable)
     {
         /*
          * Sanity check the number of dates allowed for this object $cObj. If zero, then immediately
@@ -1014,7 +1022,7 @@ class DBUtil
         {
             $breakAfterOne = true;
         }
-        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version']);
+        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version'], $fkTable);
 
         foreach ($dateRows as $singleDate)
         {
@@ -1032,7 +1040,7 @@ class DBUtil
             $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
             $dateObj->setNote($singleDate['descriptive_note']);
             $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
-            $this->populateMeta($vhInfo, $dateObj);
+            $this->populateMeta($vhInfo, $dateObj, 'date_range');
 
             $cObj->addDate($dateObj);
             if ($breakAfterOne)
@@ -1156,7 +1164,7 @@ class DBUtil
             $newObj = new \snac\data\ConventionDeclaration();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'convention_declaration');
             $cObj->addConventionDeclaration($newObj);
         }
     }
@@ -1210,7 +1218,7 @@ class DBUtil
             $newObj = new \snac\data\StructureOrGenealogy();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'structure_genealogy');
             $cObj->addStructureOrGenealogy($newObj);
         }
     }
@@ -1237,7 +1245,7 @@ class DBUtil
             $newObj = new \snac\data\GeneralContext();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'general_context');
             $cObj->addGeneralContext($newObj);
         }
     }
@@ -1291,7 +1299,7 @@ class DBUtil
             $newObj = new \snac\data\Nationality();
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'nationality');
             $cObj->addNationality($newObj);
         }
     }
@@ -1355,7 +1363,7 @@ class DBUtil
             $newObj->setVocabularySource($item['vocabulary_source']);
             $newObj->setNote($item['note']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'language');
             $class = get_class($cObj);
             /*
              * Class specific method for setting/adding a language.
@@ -1467,7 +1475,7 @@ class DBUtil
             }
             $newObj->setType($type);
 
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'source');
             /*
              * setLanguage() is a Language object.
              */
@@ -1563,7 +1571,7 @@ class DBUtil
             $newObj = new \snac\data\Mandate();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'mandate');
             $cObj->addMandate($newObj);
         }
     }
@@ -2137,7 +2145,7 @@ class DBUtil
             $newObj = new \snac\data\Gender();
             $newObj->setTerm($this->populateTerm($item['term_id']));
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'gender');
             $cObj->addGender($newObj);
         }
     }
@@ -2162,7 +2170,7 @@ class DBUtil
             $newObj = new \snac\data\BiogHist();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj);
+            $this->populateMeta($vhInfo, $newObj, 'biog_hist');
             $this->populateLanguage($vhInfo, $newObj, $item['id']);
             $cObj->addBiogHist($newObj);
         }
@@ -2193,6 +2201,7 @@ class DBUtil
      */
     private function populateOccupation($vhInfo, $cObj)
     {
+        $tableName = 'occupation';
         $occRows = $this->sql->selectOccupation($vhInfo);
         foreach ($occRows as $oneOcc)
         {
@@ -2201,8 +2210,8 @@ class DBUtil
             $occObj->setVocabularySource($oneOcc['vocabulary_source']);
             $occObj->setNote($oneOcc['note']);
             $occObj->setDBInfo($oneOcc['version'], $oneOcc['id']);
-            $this->populateMeta($vhInfo, $occObj);
-            $this->populateDate($vhInfo, $occObj);
+            $this->populateMeta($vhInfo, $occObj, $tableName);
+            $this->populateDate($vhInfo, $occObj, $tableName);
             $cObj->addOccupation($occObj);
         }
     }
@@ -2247,6 +2256,7 @@ class DBUtil
      */
     private function populateRelation($vhInfo, $cObj)
     {
+        $tableName = 'related_identity';
         $relRows = $this->sql->selectRelation($vhInfo);
         foreach ($relRows as $oneRel)
         {
@@ -2262,8 +2272,8 @@ class DBUtil
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
-            $this->populateMeta($vhInfo, $relatedObj);
-            $this->populateDate($vhInfo, $relatedObj);
+            $this->populateMeta($vhInfo, $relatedObj, $tableName);
+            $this->populateDate($vhInfo, $relatedObj, $tableName);
             $cObj->addRelation($relatedObj);
         }
     }
@@ -2307,7 +2317,7 @@ class DBUtil
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
-            $this->populateMeta($vhInfo, $rrObj);
+            $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
             $cObj->addResourceRelation($rrObj);
         }
     }
@@ -2324,6 +2334,7 @@ class DBUtil
      */
     private function populateFunction($vhInfo, $cObj)
     {
+        $tableName = 'function';
         $funcRows = $this->sql->selectFunction($vhInfo);
         foreach ($funcRows as $oneFunc)
         {
@@ -2333,12 +2344,12 @@ class DBUtil
             $fObj->setVocabularySource($oneFunc['vocabulary_source']);
             $fObj->setNote($oneFunc['note']);
             $fObj->setDBInfo($oneFunc['version'], $oneFunc['id']);
-            $this->populateMeta($vhInfo, $fObj);
+            $this->populateMeta($vhInfo, $fObj, $tableName);
 
             /*
              * Must call $fOjb->setDBInfo() before calling populateDate()
              */
-            $this->populateDate($vhInfo, $fObj);
+            $this->populateDate($vhInfo, $fObj, $tableName);
             $cObj->addFunction($fObj);
         }
     }
