@@ -674,7 +674,7 @@ class DBUtil
         $this->populateNationality($vhInfo, $cObj);
         $this->populateOccupation($vhInfo, $cObj);
         $this->populateOtherRecordID($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj, $cObj->getID()); // Constellation->getID() returns ic_id aka nrd.ic_id
+        $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateSubject($vhInfo, $cObj);
         $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
@@ -787,14 +787,14 @@ class DBUtil
      *
      * @param integer $fkID An integer foreign key of the table that has a place.
      *
-     *
+     * @param string $fkTable Table name of the foreign (related) table.
      */
-    private function populatePlace($vhInfo, $cObj, $fkID)
+    private function populatePlace($vhInfo, $cObj, $fkID, $fkTable)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectPlace($fkID, $vhInfo['version']);
+        $gRows = $this->sql->selectPlace($fkID, $vhInfo['version'], $fkTable);
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Place();

@@ -1443,10 +1443,12 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table, matches $tid aka fk_id aka fkID. 
+     *
      * @return string[] A list of fields/value as list keys matching the database field names: id,
      * version, ic_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
      */
-    public function selectPlace($tid, $version)
+    public function selectPlace($tid, $version, $fkTable)
     {
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
@@ -1454,10 +1456,10 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original, 
                             aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
                             from place_link as aa,
-                            (select id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by id) as bb
+                            (select id,max(version) as version from place_link where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($tid, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
