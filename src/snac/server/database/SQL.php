@@ -1395,22 +1395,26 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table.
+     *
      * @return string[] A list of date_range fields/value as list keys matching the database field names.
      */
-    public function selectDate($did, $version)
+    public function selectDate($did, $version, $fkTable)
     {
         $qq = 'select_date';
-        $this->sdb->prepare($qq, 
-                            'select 
-                            aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
-                            aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
-                            aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
-                            aa.from_type,aa.to_type
-                            from date_range as aa,
-                            (select id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($did, $version));
+        $query = 'select 
+        aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
+        aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+        aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
+        aa.from_type,aa.to_type
+        from date_range as aa,
+        (select id,max(version) as version from date_range where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($did, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1452,12 +1456,12 @@ class SQL
     {
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
-                            'select 
-                            aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original, 
-                            aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
-                            from place_link as aa,
-                            (select id,max(version) as version from place_link where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+                         'select 
+                         aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original, 
+                         aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
+                         from place_link as aa,
+                         (select id,max(version) as version from place_link where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+                         where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq, array($tid, $version, $fkTable));
         $all = array();
@@ -2020,17 +2024,21 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table.
+     *
      * @return string[] A list of location fields as list with keys matching the database field names.
      */
-    public function selectLanguage($fkID, $version)
+    public function selectLanguage($fkID, $version, $fkTable)
     {
         $qq = 'select_language';
-        $this->sdb->prepare($qq,
-                            'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
-                            from language as aa,
-                            (select id,max(version) as version from language where fk_id=$1 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
-        $result = $this->sdb->execute($qq, array($fkID, $version));
+
+        $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from language as aa,
+        (select id,max(version) as version from language where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+        
+        $this->sdb->prepare($qq, $query);
+        $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2969,18 +2977,20 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $rid = $row['id'];
-            $dateList = $this->selectDate($rid, $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
-                // Prine says: "Stop wishing for bad luck and knocking on wood"
-            }
+            /* 
+             * $rid = $row['id'];
+             * $dateList = $this->selectDate($rid, $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
+             *     // Prine says: "Stop wishing for bad luck and knocking on wood"
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -2997,7 +3007,7 @@ class SQL
      *
      * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
      * version, ic_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
-     * arcrole, date. Date is an associative list with keys from table date_range. See selectDate().
+     * arcrole, date. 
      *
      */
 
@@ -3022,17 +3032,19 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $relationId = $row['id'];
-            $dateList = $this->selectDate($relationId, $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                //TODO Throw warning or log
-            }
+            /* 
+             * $relationId = $row['id'];
+             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     //TODO Throw warning or log
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -3086,7 +3098,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @return string[][] Return a list of list. The inner list has keys: id, version, ic_id, function_type,
-     * note, date. Key date is also a list assoc array of date info from selectDate().
+     * note, date. 
      *
      */
     public function selectFunction($vhInfo)
@@ -3108,16 +3120,18 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $dateList = $this->selectDate($row['id'], $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                // TODO: Throw a warning or log
-            }
+            /* 
+             * $dateList = $this->selectDate($row['id'], $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     // TODO: Throw a warning or log
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);

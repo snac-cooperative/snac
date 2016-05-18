@@ -669,7 +669,7 @@ class DBUtil
         $this->populateFunction($vhInfo, $cObj);
         $this->populateGender($vhInfo, $cObj);
         $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj, $cObj->getID()); // Constellation->getID() returns ic_id aka nrd.ic_id
+        $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
         $this->populateLegalStatus($vhInfo, $cObj);
         $this->populateMandate($vhInfo, $cObj);
         $this->populateNationality($vhInfo, $cObj);
@@ -792,7 +792,6 @@ class DBUtil
      */
     private function populatePlace($vhInfo, $cObj, $fkID, $fkTable)
     {
-        
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
@@ -850,28 +849,29 @@ class DBUtil
          * I'm pretty sure that first arg is an $fkID.
          */
         if ( $recList = $this->sql->selectMeta($cObj->getID(), $vhInfo['version'], $fkTable))
+        {
+            foreach($recList as $rec)
             {
-                foreach($recList as $rec)
-                    {
-                        $gObj = new \snac\data\SNACControlMetadata();
-                        $gObj->setSubCitation($rec['sub_citation']);
-                        $gObj->setSourceData($rec['source_data']);
-                        $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
-                        $gObj->setNote($rec['note']);
-                        $gObj->setDBInfo($rec['version'], $rec['id']);
-                        /*
-                         * Prior to creating the Language object, language was strange and not fully functional. Now
-                         * language is a related record that links back here via our record id as a foreign key.
-                         */ 
-                        $this->populateLanguage($vhInfo, $gObj, $rec['id']);
-                        /*
-                         * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
-                         * addSource() for Constellation object.
-                         */ 
-                        $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
-                        $cObj->addSNACControlMetadata($gObj);
-                    }
+                $gObj = new \snac\data\SNACControlMetadata();
+                $gObj->setSubCitation($rec['sub_citation']);
+                $gObj->setSourceData($rec['source_data']);
+                $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
+                $gObj->setNote($rec['note']);
+                $gObj->setDBInfo($rec['version'], $rec['id']);
+                /*
+                 * Prior to creating the Language object, language was strange and not fully functional. Now
+                 * language is a related record that links back here via our record id as a foreign key.
+                 */ 
+                $this->populateLanguage($vhInfo, $gObj, $rec['id'], 'scm');
+                /*
+                 * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
+                 * addSource() for Constellation object. SCM has only a single source, so it calls
+                 * populateSourceByID().
+                 */ 
+                $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
+                $cObj->addSNACControlMetadata($gObj);
             }
+        }
     }
     
 
@@ -971,7 +971,7 @@ class DBUtil
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']); 
             $this->populateMeta($vhInfo, $neObj, $tableName);
-            $this->populateLanguage($vhInfo, $neObj, $oneName['id']);
+            $this->populateLanguage($vhInfo, $neObj, $oneName['id'], $tableName);
             /*
              * This line works because $oneName['id'] == $neObj->getID(). Both are record id, not
              * constellation id. Both are non-null when reading from the database.
@@ -1342,18 +1342,20 @@ class DBUtil
      * 
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
      *
-     * @param integer[] $vhInfo list with keys version, ic_id.
+     * @param object $cObj An object. May be: \snac\data\Constellation, snac\data\SNACControlMetadata,
+     * snac\data\Source, snac\data\BiogHist. Passed by reference, and changed in place
      *
-     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
+     * @param string $fkTable Table name of the related table.
      *
      */
-    private function populateLanguage($vhInfo, $cObj, $fkID)
+    private function populateLanguage($vhInfo, $cObj, $fkID, $fkTable)
     {
-        // getID() is the constellation ID. In reality, these tables are related on table.id
-        // $rows = $this->sql->selectLanguage($cObj->getID(), $cObj->getVersion());
-
-        // This reflects reality table.id=language.fk_id
-        $rows = $this->sql->selectLanguage($fkID, $vhInfo['version']);
+        /* 
+         * This reflects reality table.id=language.fk_id. Do not use the $cObj->getID(). The calling code
+         * knows which ID to use. In one case the calling code does pass $cObj->getID() for $fkID, but we
+         * can't know that down here, so we must use the $fkID param.
+         */
+        $rows = $this->sql->selectLanguage($fkID, $vhInfo['version'], $fkTable);
 
         foreach ($rows as $item)
         {
@@ -1455,9 +1457,9 @@ class DBUtil
      */
     private function populateSourceByID($vhInfo, $cObj, $sourceID)
     {
+        $tableName = 'source';
         // Constellation version aka version_history.id is always the "newest". See note above.
         $rows = $this->sql->selectSourceByID($sourceID, $vhInfo['version']);
-
         foreach ($rows as $rec)
         {
             $newObj = new \snac\data\Source();
@@ -1475,11 +1477,11 @@ class DBUtil
             }
             $newObj->setType($type);
 
-            $this->populateMeta($vhInfo, $newObj, 'source');
+            $this->populateMeta($vhInfo, $newObj, $tableName);
             /*
              * setLanguage() is a Language object.
              */
-            $this->populateLanguage($vhInfo, $newObj, $rec['id']);
+            $this->populateLanguage($vhInfo, $newObj, $rec['id'], $tableName);
 
             $class = get_class($cObj);
             if ($class == 'snac\data\Constellation')
@@ -2164,14 +2166,15 @@ class DBUtil
      */
     private function populateBiogHist($vhInfo, $cObj)
     {
+        $tableName = 'biog_hist';
         $rows = $this->sql->selectBiogHist($vhInfo);
         foreach ($rows as $item)
         {
             $newObj = new \snac\data\BiogHist();
             $newObj->setText($item['text']);
             $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj, 'biog_hist');
-            $this->populateLanguage($vhInfo, $newObj, $item['id']);
+            $this->populateMeta($vhInfo, $newObj, $tableName);
+            $this->populateLanguage($vhInfo, $newObj, $item['id'], $tableName);
             $cObj->addBiogHist($newObj);
         }
     }
@@ -3034,6 +3037,7 @@ class DBUtil
      */ 
     private function saveBiogHist($vhInfo, $cObj)
     {
+        $tableName = 'biog_hist';
         foreach ($cObj->getBiogHistList() as $biogHist)
         {
             $bid = $biogHist->getID();
@@ -3045,10 +3049,10 @@ class DBUtil
                 $biogHist->setID($bid);
                 $biogHist->setVersion($vhInfo['version']);
             }
-            $this->saveMeta($vhInfo, $biogHist, 'biog_hist', $bid);
+            $this->saveMeta($vhInfo, $biogHist, $tableName, $bid);
             if ($lang = $biogHist->getLanguage())
             {
-                $this->saveLanguage($vhInfo, $biogHist, 'biog_hist', $bid);
+                $this->saveLanguage($vhInfo, $biogHist, $tableName, $bid);
             }
         }
     }
