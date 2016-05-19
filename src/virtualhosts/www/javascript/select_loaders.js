@@ -34,7 +34,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                     width: '100%',
                     minimumInputLength: minLength,
                     allowClear: true,
-                    theme: 'classic',
+                    theme: 'bootstrap',
                     placeholder: 'Select'
                 });
             }
@@ -72,7 +72,7 @@ function scm_source_select_replace(selectItem, idMatch) {
                     width: '100%',
                     minimumInputLength: 0,
                     allowClear: true,
-                    theme: 'classic',
+                    theme: 'bootstrap',
                     placeholder: 'Select'
                 });
             }
