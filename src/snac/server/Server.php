@@ -158,6 +158,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->publishConstellation($this->input);
                 break;
                 
+            case "delete_constellation":
+                $this->response = $executor->deleteConstellation($this->input);
+                break;
+                
             case "recently_published":
                 $this->response = $executor->getRecentlyPublished();
                 break;

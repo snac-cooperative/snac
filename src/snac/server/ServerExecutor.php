@@ -607,6 +607,101 @@ class ServerExecutor {
     }
 
     /**
+     * Delete Constellation
+     *
+     * Updates the status of the given input's constellation to "deleted."  On successful delete, this method
+     * also updates the Elastic Search indices to remove this Constellation, if ES is being used
+     * in this install.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \Exception
+     * @return string[] The response to send to the client
+     */
+    public function deleteConstellation(&$input) {
+
+        $response = array();
+        try {
+            $this->logger->addDebug("Deleting constellation");
+            if (isset($input["constellation"])) {
+                $constellation = new \snac\data\Constellation($input["constellation"]);
+
+                // Check the status of the constellation.  Make sure the input has the old version number (read the summary)
+                // and then only publish if the user has permission (it was locked to them, etc).
+
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                $inList = false;
+                $userList = array_merge(
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
+                );
+                foreach ($userList as $item) {
+                    if ($item->getID() == $constellation->getID()) {
+                        $inList = true;
+                        break;
+                    }
+                }
+
+                $result = false;
+
+                // If this constellation is the correct version, and the user was editing it, then delete it
+                if ($current->getVersion() == $constellation->getVersion() && $inList) {
+
+                    // TODO: Replace this with the correct method to delete
+                    $result = $constellation->getVersion();
+                    //$result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                      //                                                  "published", "User published constellation");
+                }
+
+                if (isset($result) && $result !== false) {
+                    $this->logger->addDebug("successfully published constellation");
+                    // Return the passed-in constellation from the user, with the new version number
+                    $constellation->setVersion($result);
+                    $response["constellation"] = $constellation->toArray();
+                    $response["result"] = "success";
+
+                    // update elastic search
+                    $eSearch = null;
+                    if (\snac\Config::$USE_ELASTIC_SEARCH) {
+                        $eSearch = \Elasticsearch\ClientBuilder::create()
+                        ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+                        ->setRetries(0)
+                        ->build();
+                    }
+
+                    $this->logger->addDebug("Created elastic search client to update");
+
+                    if ($eSearch != null) {
+                        $params = [
+                                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                                'id' => $published->getID()
+                        ];
+
+                        $eSearch->delete($params);
+                        $this->logger->addDebug("Updated elastic search to remove constellation");
+                    }
+
+                } else {
+                    $this->logger->addDebug("could not delete the constellation");
+                    $response["result"] = "failure";
+                    $response["error"] = "cannot delete an out-of-date copy of the constellation";
+                }
+            } else {
+                $this->logger->addDebug("no constellation given to delete");
+                $response["result"] = "failure";
+                $response["error"] = "missing constellation information";
+            }
+        } catch (\Exception $e) {
+            $this->logger->addError("deleting constellation threw an exception");
+            $response["result"] = "failure";
+            throw $e;
+        }
+        return $response;
+
+    }
+
+    /**
      * Read Constellation
      *
      * Looks for a constellationid, arkid, or testid in the input, and then reads the constellation data and
