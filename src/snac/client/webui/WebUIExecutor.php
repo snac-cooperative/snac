@@ -131,7 +131,7 @@ class WebUIExecutor {
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
                 $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData($constellation);
+                $display->setData(array_merge($constellation, array("preview"=> isset($input["version"]) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
                 $display->setTemplate("error_page");
@@ -569,6 +569,53 @@ class WebUIExecutor {
         // Build a data structure to send to the server
         $request = array (
                 "command" => "publish_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $request["user"] = $user->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["publish"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
+
+    /**
+     * Delete Constellation
+     *
+     * Requests the server to delete the given constellation.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function deleteConstellation(&$input, &$user) {
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $this->logger->addDebug("deleting constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "delete_constellation"
         );
 
         // Send the query to the server

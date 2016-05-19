@@ -276,7 +276,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $response = $executor->unlockConstellation($this->input, $user);
             // if unlocked by constellationid parameter, then send them to the dashboard.
             if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                header("Location: index.php?command=dashboard");
+                header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
                 return;
             } else {
                 $this->response = json_encode($response, JSON_PRETTY_PRINT);
@@ -296,7 +296,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $response = $executor->publishConstellation($this->input, $user);
             // if published by constellationid parameter, then send them to the dashboard.
             if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                header("Location: index.php?command=dashboard");
+                header("Location: index.php?command=dashboard&message=Constellation successfully published");
+                return;
+            } else {
+                $this->response = json_encode($response, JSON_PRETTY_PRINT);
+                array_push($this->responseHeaders, "Content-Type: text/json");
+            }
+            return;
+
+        } else if ($this->input["command"] == "delete") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->deleteConstellation($this->input, $user);
+            // if deleted by constellationid parameter, then send them to the dashboard.
+            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
                 return;
             } else {
                 $this->response = json_encode($response, JSON_PRETTY_PRINT);

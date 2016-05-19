@@ -8,6 +8,7 @@
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
@@ -42,6 +43,11 @@ $('.selectpicker').selectpicker();
 
     <h1>Dashboard</h1>
 
+    <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
@@ -112,7 +118,7 @@ $('.selectpicker').selectpicker();
                     changes not previously saved may be lost.</p>
                     <div class="list-group">
                         {% for link in data.editing_lock %}
-                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <span class="glyphicon glyphicon-lock"></span> </span> {{link.nameEntry}}</a>
+                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>

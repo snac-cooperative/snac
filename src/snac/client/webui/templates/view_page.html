@@ -104,7 +104,7 @@ body {
       <div class="main_content">
          <div id="identity">
             <div class="name">
-               <h1>
+               <h1 style="display:inline;">
                   <span title="authorized form of name" class="person" data-xsl="identity">{{data.nameEntries.0.original}}
                     {% if data.entityType.term == 'person' %}
                      <span class="icon-ind x2"></span>
@@ -115,7 +115,11 @@ body {
                     {% endif %}
                   </span> 
                </h1>
-               <a data-toggle="modal" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+               <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
+
+               {% if data.preview %}
+               <h3 style="padding-left: 30px; display: inline; color: #3c763d;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+               {% endif %}
             </div>
             <div>
                <div class="biog">
