@@ -562,7 +562,7 @@ function makeSCMUneditable(short, i, j) {
  * @param string shortName The short name of the contributor object.
  * @param string|int i     The index within the edit page of the object.
  */
-function setContributorDeleted(shortName, i) {
+function setRepeatedDataDeleted(shortName, i) {
     if ($("#" + shortName + "_operation_" + i).val() != "delete") {
         $("#" + shortName + "_remove_" + i).removeClass("btn-danger").addClass("btn-warning");
         $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
@@ -735,6 +735,44 @@ function turnOnSCMButtons(shortName, i, j) {
     $("#scm_"+shortName+"_deletebutton_"+j+"_"+i).on("click", function() {
         setSCMDeleted(shortName, i, j);
     });
+}
+
+/**
+ * Create a new Name Entry Component object on page
+ *
+ * Puts a new Name Entry component object DIV on the page and attaches it correctly to the DOM and javascript.
+ *
+ * @param  int     i    The index on the page of the nameEntry to add this component to
+ * @return boolean      false to play nice with the browser.
+ */
+function newNameEntryComponent(i) {
+	var nextid = 1;
+	if ($('#nameEntry_component_next_j_'+i).exists()) {
+	    nextid = parseInt($('#nameEntry_component_next_j_'+i).text());
+	}
+	console.log("Creating new name entry component for nameEntry " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#component_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#nameEntry_component_add_div_'+i).before(html);
+
+    $('#nameEntry_component_' + nextid + '_operation_' + 1).val("insert");
+    subMakeEditable("nameEntry_component_" + nextid, i);
+
+    select_replace($("#nameEntry_component_"+nextid+"_type_"+i), i);
+
+    // Put the updated version number back in the DOM
+    $('#nameEntry_component_next_j_'+i).text(++nextid);
+
+    return false;
+}
+
+function updateNameEntryHeading(i) {
+    var text = "";
+    for (var j = 0; j < parseInt($('#nameEntry_component_next_j_'+i).text()); j++) {
+         text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
+    }
+    $("#nameEntry_heading_"+i).text(text);
 }
 
 /**

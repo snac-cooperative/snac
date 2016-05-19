@@ -78,6 +78,17 @@ function scm_source_select_replace(selectItem, idMatch) {
             }
 }
 
+
+function select_replace(selectItem, idMatch) {
+        if(selectItem.attr('id').endsWith(idMatch)
+            && !selectItem.attr('id').endsWith("ZZ")) {
+                selectItem.select2({
+                    allowClear: true,
+                    theme: 'bootstrap'
+                });
+            }
+}
+
 /**
  * Replace all the selects that exist on the page when the page has finished loading
  */
