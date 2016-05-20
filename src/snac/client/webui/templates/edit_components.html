@@ -146,7 +146,7 @@
 {% endmacro %}
 
 {% macro displayComponent(component, i, j) %}
-                                            <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}">
+                                            <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
                                                 <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}" 
                                                     name="nameEntry_component_{{j}}_id_{{i}}" 
                                                     value="{{component.id}}"/>
@@ -156,19 +156,19 @@
                                                 <input type="hidden" id="nameEntry_component_{{j}}_operation_{{i}}" 
                                                     name="nameEntry_component_{{j}}_operation_{{i}}" 
                                                     value="{{component.operation}}"/>
-                                                <div class="form-group">
+                                                <div class="">
                                                     <div class="input-group select2-bootstrap-append">
                                                         <select id="nameEntry_component_{{j}}_type_{{i}}" name="nameEntry_component_{{j}}_type_{{i}}" class="form-control" style="width: 50%"
-                                                            placeholder="Type">
+                                                            data-placeholder="Part">
                                                             <option></option>
-                                                            <optgroup label="Personal">
-                                                                <option value="1">Name</option>
-                                                                <option value="2">Forename</option>
+                                                            <optgroup label="Person">
                                                                 <option value="3">Surname</option>
+                                                                <option value="2">Forename</option>
                                                                 <option value="4">NameAddition</option>
                                                                 <option value="5">RomanNumeral</option>
                                                                 <option value="6">Date</option>
                                                                 <option value="7">NameExpansion</option>
+                                                                <option value="1">UnspecifiedName</option>
                                                             </optgroup>
                                                             <optgroup label="Corporate Body">
                                                                 <option value="8">Name</option>

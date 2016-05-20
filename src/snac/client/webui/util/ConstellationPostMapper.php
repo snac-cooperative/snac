@@ -938,6 +938,30 @@ class ConstellationPostMapper {
                 }
             }
 
+            // right now, update components if updating name entry
+            if (isset($data["component"])) {
+                foreach ($data["component"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through component", $cData);
+                    $component = new \snac\data\NameComponent();
+                    $component->setID($cData["id"]);
+                    $component->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $component->setOperation($this->getOperation($cData));
+                    else
+                        $component->setOperation($this->getOperation($data));
+
+                    $component->setText($cData["text"]);
+                    $component->setType($this->parseTerm($cData["type"]));
+                    $component->setOrder($l);
+
+                    $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
+
+                    $nameEntry->addComponent($component);
+                }
+            }
+
             $this->addToMapping("nameEntry", $k, $data, $nameEntry);
             
             $this->constellation->addNameEntry($nameEntry);

@@ -565,10 +565,10 @@ function makeSCMUneditable(short, i, j) {
 function setRepeatedDataDeleted(shortName, i) {
     if ($("#" + shortName + "_operation_" + i).val() != "delete") {
         $("#" + shortName + "_remove_" + i).removeClass("btn-danger").addClass("btn-warning");
-        $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+        $("#" + shortName + "_remove_" + i).html("<i class=\"fa fa-undo\" aria-hidden=\"true\"></i>");
     } else {
         $("#" + shortName + "_remove_" + i).removeClass("btn-warning").addClass("btn-danger");
-        $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-minus-sign\"></span> Remove");
+        $("#" + shortName + "_remove_" + i).html("<span class=\"glyphicon glyphicon-minus-sign\"></span>");
     }
 
     return subSetDeleted(shortName, i);
