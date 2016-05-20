@@ -47,6 +47,13 @@ class NameEntry extends AbstractData {
     private $preferenceScore;
 
     /**
+     * Component List
+     * 
+     * @var \snac\data\NameComponent[] List of Name Components
+     */
+    private $components;
+    
+    /**
      * Contributor List
      * 
      * From EAC-CPF tag(s):
@@ -84,6 +91,7 @@ class NameEntry extends AbstractData {
      */
     public function __construct($data = null) {
 
+        $this->components = array ();
         $this->contributors = array ();
         $this->setMaxDateCount(1);
         parent::__construct($data);
@@ -155,9 +163,13 @@ class NameEntry extends AbstractData {
             "original" => $this->original,
             "preferenceScore" => $this->preferenceScore,
             "contributors" => array(),
+            "components" => array(),
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
         );
         
+
+        foreach ($this->components as $i => $v)
+            $return["components"][$i] = $v->toArray($shorten);
 
         foreach ($this->contributors as $i => $v)
             $return["contributors"][$i] = $v->toArray($shorten);
@@ -198,6 +210,13 @@ class NameEntry extends AbstractData {
         else
             $this->preferenceScore = null;
         
+        unset($this->components);
+        $this->components = array();
+        if (isset($data["components"]))
+            foreach ($data["components"] as $i => $entry)
+                if ($entry != null)
+                    $this->components[$i] = new \snac\data\NameComponent($entry);
+
         unset($this->contributors);
         $this->contributors = array();
         if (isset($data["contributors"]))
