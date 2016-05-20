@@ -1838,6 +1838,53 @@ class SQL
     }
 
     /**
+     * Insert a component record
+     *
+     * Related to name where component.name_id=name.id. This is a one-sided fk relationship also used for
+     * date and language.
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id if this component. If null one will be minted. The id (existing or new) is always returned.
+     *
+     * @param integer $nameID Record id of related name
+     *
+     * @param string $text Text of the component
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this component.
+     * @param integer $order The ordering of this component in the name entry
+     * 
+     * @return integer $id Return the existing id, or the newly minted id. 
+     */
+    public function insertComponent($vhInfo, $id, $nameID, $text, $typeID, $order)
+    {
+        if ($nameID == null)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to write a component for a non-existent name entry");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq_2 = 'insert_component';
+        $this->sdb->prepare($qq_2,
+                            'insert into name_component
+                            (version, main_id, id, name_id, nc_value, nc_label, c_order)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['version'],
+                                  $vhInfo['main_id'],
+                                  $id,
+                                  $nameID,
+                                  $text,
+                                  $typeID,
+                                  $order));
+        $this->sdb->deallocate($qq_2);
+        return $id;
+    }
+
+    /**
      * Insert a contributor record
      *
      * Related to name where contributor.name_id=name.id. This is a one-sided fk relationship also used for

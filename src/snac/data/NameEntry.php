@@ -129,6 +129,17 @@ class NameEntry extends AbstractData {
     }
 
     /**
+     * Get the list of components for this name entry 
+     *
+     * @return \snac\data\NameComponent[] Components providing this name entry including their type for this name entry
+     *
+     */
+    public function getComponents()
+    {
+        return $this->components;
+    }
+    
+    /**
      * Get the list of contributors for this name entry 
      *
      * @return \snac\data\Contributor[] Contributors providing this name entry including their type for this name entry
@@ -253,6 +264,16 @@ class NameEntry extends AbstractData {
     }
     
     /**
+     * Add component to the list of components.
+     * 
+     * @param \snac\data\NameComponent $component Component object
+     */
+    public function addComponent($component) {
+
+        array_push($this->components, $component);
+    }
+    
+    /**
      * Add contributor to the list of contributors.
      * 
      * @param \snac\data\Contributor $contributor Contributor object
@@ -299,6 +320,9 @@ class NameEntry extends AbstractData {
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
                  
+        if (!$this->checkArrayEqual($this->getComponents(), $other->getComponents(), $strict))
+            return false;
+        
         if (!$this->checkArrayEqual($this->getContributors(), $other->getContributors(), $strict))
             return false;
         

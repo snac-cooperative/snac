@@ -177,4 +177,32 @@ abstract class NameComponent extends AbstractData {
     }
 
 
+    /**
+     *
+     * {@inheritDoc}
+     *
+     * @param \snac\data\NameEntry $other Other object
+     * @param boolean $strict optional Whether or not to check id, version, and operation
+     * @return boolean true on equality, false otherwise
+     *       
+     * @see \snac\data\AbstractData::equals()
+     */
+    public function equals($other, $strict = true) {
+
+        if ($other == null || ! ($other instanceof \snac\data\NameComponent))
+            return false;
+        
+        if (! parent::equals($other, $strict))
+            return false;
+        
+        if ($this->getText() != $other->getText())
+            return false;
+        if ($this->getOrder() != $other->getOrder())
+            return false;
+        
+        if (($this->getType() != null && ! $this->getType()->equals($other->getType(), $strict)) ||
+                 ($this->getType() == null && $other->getType() != null))
+            return false;
+        return true;
+    }
 }

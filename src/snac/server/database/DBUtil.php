@@ -3068,6 +3068,25 @@ class DBUtil
                 $ndata->setVersion($vhInfo['version']);
             }
             $this->saveMeta($vhInfo, $ndata, 'name', $nameID);
+            if ($componentList = $ndata->getComponents())
+            {
+                foreach($componentList as $cp)
+                {
+                    // Why initialize $rid? if(true) $rid will be set and used.
+                    $rid = $cp->getID();
+                    if ($this->prepOperation($vhInfo, $cp))
+                    {
+                        $rid = $this->sql->insertComponent($vhInfo,
+                                                             $cp->getID(),
+                                                             $nameID,
+                                                             $cp->getText(),
+                                                             $this->thingID($cp->getType()),
+                                                             $cp->getOrder());
+                        $cb->setID($rid);
+                        $cb->setVersion($vhInfo['version']);
+                    }
+                }
+            }
             if ($contribList = $ndata->getContributors())
             {
                 /*
