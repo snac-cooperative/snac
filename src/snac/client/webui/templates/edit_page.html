@@ -137,8 +137,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="panel-body">
                                 <div class="col-xs-10">
                                     <div class="form-group">
-                                        <label for="entityType" class="control-label col-xs-4">
-                                            Entity Type <span style="color: #b40404">*</span>
+                                        <label for="entityType" class="control-label col-xs-4" title="Help" data-content="{{X.entitytype.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{X.entitytype.display}} <span style="color: #b40404">*</span>
                                         </label>
                                         <div class="col-xs-8">
                                             <select id="entityType" name="entityType" class="form-control">
@@ -148,8 +148,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="entityType" class="control-label col-xs-4">
-                                            SNAC Control Metadata
+                                        <label for="entityType" class="control-label col-xs-4"  title="{{X.snaccontrolmetadata.tooltip}}" data-toggle="tooltip" data-placement="top">
+                                            {{X.snaccontrolmetadata.display}}
                                         </label>
                                         <div class="col-xs-8">
                                             {{ widgets.scmButton('constellation', '1') }}

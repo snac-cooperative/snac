@@ -1,0 +1,31 @@
+{
+    "entitytype" : {
+        "display" : "Entity Type",
+        "tooltip" : "The type of the entity described"
+    },
+    "snaccontrolmetadata" : {
+        "display" : "SNAC Control Metadata",
+        "tooltip" : "Control metadata applied to the entire Constellation"
+    },
+    "nameheading" : {
+        "display" : "Name Heading",
+        "tooltip" : "The computed name heading from the components"
+    },
+    "components" : {
+        "display" : "Components",
+        "tooltip" : "The ordered components of the name"
+    },
+    "preferencescore" : {
+        "display" : "The numerical preference of this name entry in SNAC",
+        "tooltip" : ""
+    },
+    "language" : {
+        "display" : "Language",
+        "tooltip" : "The ISO-standard language of this data element"
+    },
+    "script" : {
+        "display" : "Script",
+        "tooltip" : "The ISO-standard script of this data element"
+    }
+
+}

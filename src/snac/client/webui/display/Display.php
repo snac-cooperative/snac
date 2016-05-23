@@ -31,6 +31,12 @@ class Display {
     private $data = array();
 
     /**
+     *
+     * @var string[] Language tags for the display object
+     */
+    private $language = null;
+
+    /**
      * Constructor
      *
      * Creates the object.  May pass the template filename as a parameter to build the template.
@@ -45,9 +51,9 @@ class Display {
 
     /**
      * Set Display Data
-     * 
+     *
      * Sets the data fields to use in the template.
-     * 
+     *
      * @param string[] $data Associative array of data strings
      */
     public function setData($data) {
@@ -56,9 +62,9 @@ class Display {
 
     /**
      * Set User Data
-     * 
+     *
      * Sets the user fields for use in the template
-     * 
+     *
      * @param string[] $data Associative array of user information
      */
     public function setUserData($data) {
@@ -67,9 +73,9 @@ class Display {
 
     /**
      * Add Debug Data
-     * 
+     *
      * Adds debug data to the data sent to the template.
-     * 
+     *
      * @param string $name The name of this debug information
      * @param string[] $data Associative array of debug information as strings
      */
@@ -81,7 +87,7 @@ class Display {
 
     /**
      * Set the template
-     * 
+     *
      * Sets the template for this display object.
      * @param string $template The name of the template (without extension)
      * @param string $extension optional The extension of the template, if it is not html
@@ -91,11 +97,25 @@ class Display {
     }
 
     /**
+    * Set the template language
+    *
+    * Sets the language for this display object.
+    * @param string $language The language for the display (without extension)
+    */
+    public function setLanguage($language) {
+        $this->language = json_decode(file_get_contents($language.".json"), true);
+    }
+
+    /**
      * Generate the page to return
      *
      * @return string Page to return to the user
      */
     public function getDisplay() {
+
+        if ($this->language != null) {
+            $this->data["X"] = $this->language;
+        }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array(
