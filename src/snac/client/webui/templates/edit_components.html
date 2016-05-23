@@ -158,6 +158,54 @@
                                                     value="{{component.operation}}"/>
                                                 <div class="">
                                                     <div class="input-group select2-bootstrap-append">
+                                                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 49%">
+                                                            <input id="nameEntry_component_{{j}}_type_id_{{i}}" 
+                                                                name="nameEntry_component_{{j}}_type_id_{{i}}" 
+                                                                type="hidden" class="form-control" 
+                                                                value="{{ component.type.id }}"/>
+                                                            <input id="nameEntry_component_{{j}}_type_term_{{i}}" 
+                                                                name="nameEntry_component_{{j}}_type_term_{{i}}" 
+                                                                type="hidden" class="form-control" 
+                                                                value="{{ component.type.term }}"/>
+                                                            <input id="nameEntry_component_{{j}}_type_vocabtype_{{i}}" 
+                                                                name="nameEntry_component_{{j}}_type_vocabtype_{{i}}" 
+                                                                type="hidden" class="form-control" value="name_component"/>
+                                                            <input id="nameEntry_component_{{j}}_type_minlength_{{i}}" 
+                                                                name="nameEntry_component_{{j}}_type_minlength_{{i}}" 
+                                                                type="hidden" class="form-control" value="0"/>
+                                                            <input id="nameEntry_component_{{j}}_type_placeholder_{{i}}"
+                                                                type="hidden" value="Part"/>
+                                                            <input id="nameEntry_component_{{j}}_type_defaultOptions_{{i}}"
+                                                                type="hidden" value="
+                                                                <option></option>
+                                                                <optgroup label='Person'>
+                                                                    <option value='3'>Surname</option>
+                                                                    <option value='2'>Forename</option>
+                                                                    <option value='4'>NameAddition</option>
+                                                                    <option value='5'>RomanNumeral</option>
+                                                                    <option value='6'>Date</option>
+                                                                    <option value='7'>NameExpansion</option>
+                                                                    <option value='1'>UnspecifiedName</option>
+                                                                </optgroup>
+                                                                <!--<optgroup label='Corporate Body'>
+                                                                    <option value='8'>Name</option>
+                                                                    <option value='9'>JurisdictionName</option>
+                                                                    <option value='a'>SubdivisionName</option>
+                                                                    <option value='b'>NameAddition</option>
+                                                                    <option value='c'>Number</option>
+                                                                    <option value='d'>Location</option>
+                                                                    <option value='e'>Date</option>
+                                                                </optgroup>
+                                                                <optgroup label='Family'>
+                                                                    <option value='f'>FamilyName</option>
+                                                                    <option value='g'>FamilyType</option>
+                                                                    <option value='h'>Place</option>
+                                                                    <option value='i'>Date</option>
+                                                                </optgroup>-->
+                                                            "/>
+                                                            <p class="form-control-static">{{ component.type.term }}</p>
+                                                        </div>
+                                                        <!--
                                                         <select id="nameEntry_component_{{j}}_type_{{i}}" name="nameEntry_component_{{j}}_type_{{i}}" class="form-control" style="width: 50%"
                                                             data-placeholder="Part">
                                                             <option></option>
@@ -186,13 +234,14 @@
                                                                 <option value="i">Date</option>
                                                             </optgroup>
                                                         </select>
+                                                        -->
                                                         <input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}" 
-                                                            class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})">
+                                                            class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})" readOnly>
 
 
                                                         <span class="input-group-btn">
-                                                            <button class="btn btn-danger" 
-                                                                id="nameEntry_component_{{j}}_remove_{{i}}" 
+                                                            <button class="btn btn-danger snac-hidden" 
+                                                                id="nameEntry_component_{{j}}_remove_{{i}}" disabled 
                                                                 onClick="return setRepeatedDataDeleted('nameEntry_component_{{j}}', '{{i}}');">
                                                                 <span class="glyphicon glyphicon-minus-sign"></span>
                                                             </button>

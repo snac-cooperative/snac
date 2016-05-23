@@ -123,10 +123,18 @@ function textToSelect(shortName, idStr) {
             var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
             var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
             var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
+            var placeholder = "Select";
+            if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
+                placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
+            }
+            var options = "";
+            if ($("#"+shortName+"_"+name+"_defaultOptions_"+idStr).exists()) {
+                options = $("#"+shortName+"_"+name+"_defaultOptions_"+idStr).val();
+            }
 
-            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' placeholder='Select'>"+
+            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' data-placeholder='"+placeholder+"'>"+
                     "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "<option value=\""+id+"\" selected>"+term+"</option>"+ options +
                     "</select>"+
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" value=\""+vocabtype+"\"/>" +
@@ -759,7 +767,7 @@ function newNameEntryComponent(i) {
     $('#nameEntry_component_' + nextid + '_operation_' + 1).val("insert");
     subMakeEditable("nameEntry_component_" + nextid, i);
 
-    select_replace($("#nameEntry_component_"+nextid+"_type_"+i), i);
+    select_replace($("#nameEntry_component_"+nextid+"_type_id_"+i), i);
 
     // Put the updated version number back in the DOM
     $('#nameEntry_component_next_j_'+i).text(++nextid);
