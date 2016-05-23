@@ -103,7 +103,7 @@ class Display {
     * @param string $language The language for the display (without extension)
     */
     public function setLanguage($language) {
-        $this->language = json_decode(file_get_contents($language.".json"), true);
+        $this->language = json_decode(file_get_contents(\snac\Config::$TEMPLATE_LANGUAGE_DIR ."/$language.json"), true);
     }
 
     /**
