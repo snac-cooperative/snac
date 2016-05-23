@@ -7,7 +7,7 @@
         "display" : "SNAC Control Metadata",
         "tooltip" : "Control metadata applied to the entire Constellation"
     },
-    "nameheading" : {
+    "nameHeading" : {
         "display" : "Name Heading",
         "tooltip" : "The computed name heading from the components"
     },
@@ -15,9 +15,9 @@
         "display" : "Components",
         "tooltip" : "The ordered components of the name"
     },
-    "preferencescore" : {
-        "display" : "The numerical preference of this name entry in SNAC",
-        "tooltip" : ""
+    "preferenceScore" : {
+        "display" : "Preference Score",
+        "tooltip" : "The numerical preference of this name entry in SNAC"
     },
     "language" : {
         "display" : "Language",
