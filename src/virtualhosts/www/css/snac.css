@@ -91,6 +91,9 @@ body {
     background-image: none;
 }
 
+.select2-container--bootstrap {
+    display: inline-block;
+}
 
 @media (min-width: 992px) {
     .affix {
