@@ -842,7 +842,7 @@ function textToDate(shortName, idStr) {
             $("#"+shortName+"_"+name+"_month_"+idStr).select2({
                     width: '57%',
                     allowClear: true,
-                    theme: 'classic',
+                    theme: 'bootstrap',
                     placeholder: 'Month'
                 });
 
