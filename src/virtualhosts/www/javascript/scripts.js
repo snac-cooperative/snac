@@ -820,7 +820,7 @@ function textToDate(shortName, idStr) {
 
             var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
             html += "<span class='form-control-static'> - </span>";
-            html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' placeholder='Month'>"+
+            html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' data-placeholder='Month' style='width: 57%; margin-bottom: 5px; display: inline-block;'>"+
                     "<option></option>";
             var months = ["January", "February", "March", "April", "May",
                             "June", "July", "August", "September", "October", "November", "December"];
