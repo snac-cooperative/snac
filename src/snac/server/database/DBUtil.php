@@ -3161,7 +3161,7 @@ class DBUtil
      * should be the same as $id.
      *
      */
-    public function setDeleted($vhInfo, $cObj)
+    private function setDeleted($vhInfo, $cObj)
     {
         /*
          * If this object is associated with a table that allows delete, then deleteOK() will return a
