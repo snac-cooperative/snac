@@ -48,7 +48,7 @@ abstract class AbstractData implements \Serializable {
     /**
      *
      * The record id, or constellation id for this class. This has two different meanings, depending on the
-     * class. For Constellation.php this is the main_id of the constellation aka version_history.main_id. For
+     * class. For Constellation.php this is the ic_id of the constellation aka version_history.ic_id. For
      * all other classes this is table.id, which is the record id, not the constellation id.
      *
      * @var int $id 
@@ -267,7 +267,7 @@ abstract class AbstractData implements \Serializable {
      *
      * @param int $version A version number. If $version is true for any meaning of true, then assign it to our private variable.
      *
-     * @param int $id An id number. For constellation objects this is version_history.main_id. For all other
+     * @param int $id An id number. For constellation objects this is version_history.ic_id. For all other
      * objects this is table.id. If $id is true for any meaning of true, then assign it to our private
      * variable.
      * 
@@ -303,7 +303,7 @@ abstract class AbstractData implements \Serializable {
 
 
     /**
-     * Get the ID of this data structure. See comments for getDBInfo(). Class constellation this is main_id. All
+     * Get the ID of this data structure. See comments for getDBInfo(). Class constellation this is ic_id. All
      * other classes this is table.id.
      *
      *  @return int ID of this structure
@@ -314,10 +314,10 @@ abstract class AbstractData implements \Serializable {
 
 
     /**
-     * Set the id of this object. See comments for setDBInfo(). Class constellation this is main_id. All
+     * Set the id of this object. See comments for setDBInfo(). Class constellation this is ic_id. All
      * other classes this is table.id.
      *
-     * @param int $id Set the constellation main_id, or Object record id aka table.id for all other objects.
+     * @param int $id Set the constellation ic_id, or Object record id aka table.id for all other objects.
      */
     public function setID($id) {
         $this->id = $id;

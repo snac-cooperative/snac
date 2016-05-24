@@ -8,6 +8,14 @@
         "uri": null,
         "description": null
     },
+    "otherRecordIDs": [],
+    "maintenanceStatus": null,
+    "maintenanceAgency": null,
+    "maintenanceEvents": [],
+    "sources": [],
+    "legalStatuses": [],
+    "conventionDeclarations": [],
+    "languagesUsed": [],
     "nameEntries": [
         {
             "dataType": "NameEntry",
@@ -22,6 +30,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "VIAF",
                     "id": null,
                     "version": null,
@@ -36,6 +45,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "howard",
                     "id": null,
                     "version": null,
@@ -50,6 +60,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "uct",
                     "id": null,
                     "version": null,
@@ -64,6 +75,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "aps",
                     "id": null,
                     "version": null,
@@ -78,6 +90,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "colu",
                     "id": null,
                     "version": null,
@@ -92,6 +105,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "inu",
                     "id": null,
                     "version": null,
@@ -106,6 +120,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "uchic",
                     "id": null,
                     "version": null,
@@ -120,6 +135,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "nwda",
                     "id": null,
                     "version": null,
@@ -134,6 +150,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "vah",
                     "id": null,
                     "version": null,
@@ -148,6 +165,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "taro",
                     "id": null,
                     "version": null,
@@ -162,6 +180,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "LC",
                     "id": null,
                     "version": null,
@@ -176,6 +195,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "rutu",
                     "id": null,
                     "version": null,
@@ -190,6 +210,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "pu",
                     "id": null,
                     "version": null,
@@ -204,6 +225,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "ncsu",
                     "id": null,
                     "version": null,
@@ -218,6 +240,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "nyu",
                     "id": null,
                     "version": null,
@@ -232,6 +255,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "NLA",
                     "id": null,
                     "version": null,
@@ -246,6 +270,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "unc",
                     "id": null,
                     "version": null,
@@ -260,6 +285,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "WorldCat",
                     "id": null,
                     "version": null,
@@ -274,6 +300,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "nara",
                     "id": null,
                     "version": null,
@@ -288,6 +315,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "crnlu",
                     "id": null,
                     "version": null,
@@ -302,6 +330,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "uut",
                     "id": null,
                     "version": null,
@@ -316,6 +345,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "yale",
                     "id": null,
                     "version": null,
@@ -330,6 +360,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "cjh",
                     "id": null,
                     "version": null,
@@ -344,6 +375,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "nypl",
                     "id": null,
                     "version": null,
@@ -358,6 +390,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "oac",
                     "id": null,
                     "version": null,
@@ -372,6 +405,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "lc",
                     "id": null,
                     "version": null,
@@ -386,6 +420,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "umi",
                     "id": null,
                     "version": null,
@@ -400,6 +435,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "LAC",
                     "id": null,
                     "version": null,
@@ -414,6 +450,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "harvard",
                     "id": null,
                     "version": null,
@@ -428,6 +465,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "pacscl",
                     "id": null,
                     "version": null,
@@ -441,5 +479,21 @@
             "operation": null,
             "dates": []
         }
-    ]
+    ],
+    "occupations": [],
+    "biogHists": [],
+    "relations": [],
+    "resourceRelations": [],
+    "functions": [],
+    "places": [],
+    "subjects": [],
+    "nationalities": [],
+    "genders": [],
+    "generalContexts": [],
+    "structureOrGenealogies": [],
+    "mandates": [],
+    "id": null,
+    "version": null,
+    "operation": null,
+    "dates": []
 }
