@@ -1,4 +1,25 @@
 {
+    "_comment" : "%%% The following are commands on the page",
+    
+    "edit" : {
+        "display" : "Edit",
+        "tooltip" : "Edit this data element"
+    },
+    "undo" : {
+        "display" : "Undo",
+        "tooltip" : "Undo editing and return to original state"
+    },
+    "trash" : {
+        "display" : "Trash",
+        "tooltip" : "Delete this data element from the Constellation"
+    },
+    "scm" : {
+        "display" : "SCM",
+        "tooltip" : "SNAC Control Metadata for this data element"
+    },
+
+    "_comment" : "%%% The following are global data elements",
+
     "entitytype" : {
         "display" : "Entity Type",
         "tooltip" : "The type of the entity described"
@@ -6,6 +27,33 @@
     "snaccontrolmetadata" : {
         "display" : "SNAC Control Metadata",
         "tooltip" : "Control metadata applied to the entire Constellation"
+    },
+    "ark" : {
+        "display" : "Permalink",
+        "tooltip" : "The permanent identifier for this Constellation"
+    },
+    
+    "_comment" : "%%% Global pieces",
+    
+    "language" : {
+        "display" : "Language",
+        "tooltip" : "The ISO-standard language of this data element"
+    },
+    "script" : {
+        "display" : "Script",
+        "tooltip" : "The ISO-standard script of this data element"
+    },
+    "descriptiveNote" : {
+        "display" : "Descriptive Note",
+        "tooltip" : "A note about this data element"
+    },
+    
+    "_comment" : "%%% Name Entry pieces",
+    
+    "nameEntry" : {
+        "display" : "Name Entry",
+        "plural" : "Name Entries",
+        "tooltip" : "Name entry elements for this Constellation"
     },
     "nameHeading" : {
         "display" : "Name Heading",
@@ -19,13 +67,221 @@
         "display" : "Preference Score",
         "tooltip" : "The numerical preference of this name entry in SNAC"
     },
-    "language" : {
-        "display" : "Language",
-        "tooltip" : "The ISO-standard language of this data element"
+    "contributor" : {
+        "display" : "Type",
+        "tooltip" : "Type of the name for a given institution"
     },
-    "script" : {
-        "display" : "Script",
-        "tooltip" : "The ISO-standard script of this data element"
-    }
+    "contributorName" : {
+        "display" : "Authority List",
+        "tooltip" : "The name of the authority, i.e. WorldCat"
+    },
+    "contributorType" : {
+        "display" : "Type",
+        "tooltip" : "Type of the name for this authority"
+    },
+    "contributorRules" : {
+        "display" : "Rules",
+        "tooltip" : "Descriptive rules used to formulate this name heading"
+    },
+    
+    "_comment" : "%%% Date Pieces",
+    
+    "existDate" : {
+        "display" : "Exist Date",
+        "plural" : "Exist Dates",
+        "tooltip" : "Dates of existence for this Constellation"
+    },
+    "date" : {
+        "display" : "Date",
+        "plural" : "Dates",
+        "tooltip" : "A date element, similar to EAC-CPF date tags"
+    },
+    "dateRange" : {
+        "display" : "Date Range",
+        "plural" : "Date Ranges",
+        "tooltip" : "A date element, similar to EAC-CPF dateRange tags"
+    },
+    "machineDate" : {
+        "display" : "Date",
+        "tooltip" : "Machine-readable date, in the format YYYY-MM-DD.  Pieces are required left-to-right, but day or day and month may be left off."
+    },
+    "naturalDate" : {
+        "display" : "Date",
+        "tooltip" : "The date in a human readable format. This date should only be used for reference."
+    },
+    "dateType" : {
+        "display" : "Type",
+        "tooltip" : "Defines what type of date this is"
+    },
+    "fuzzyRange" : {
+        "display" : "Fuzzy Range",
+        "tooltip" : "If the date is imprecise, i.e. 2nd century, use these fields to give bounds on the imprecision, i.e. 0100-0199"
+    },
+    "startMachineDate" : {
+        "display" : "Start Date",
+        "tooltip" : "Machine-readable start date for this range, in the format YYYY-MM-DD.  Pieces are required left-to-right, but day or day and month may be left off."
+    },
+    "startNaturalDate" : {
+        "display" : "Start Date",
+        "tooltip" : "The range start date in a human readable format. This date should only be used for reference."
+    },
+    "startDateType" : {
+        "display" : "Start Date Type",
+        "tooltip" : "Defines the type of date of the start date in the range"
+    },
+    "startFuzzyRange" : {
+        "display" : "Start Fuzzy Range",
+        "tooltip" : "If the start date is imprecise, i.e. 2nd century, use these fields to give bounds on the imprecision, i.e. 0100-0199"
+    },
+    "endMachineDate" : {
+        "display" : "End Date",
+        "tooltip" : "Machine-readable end date for this range, in the format YYYY-MM-DD.  Pieces are required left-to-right, but day or day and month may be left off."
+    },
+    "endNaturalDate" : {
+        "display" : "End Date",
+        "tooltip" : "The range end date in a human readable format. This date should only be used for reference."
+    },
+    "endDateType" : {
+        "display" : "End Date Type",
+        "tooltip" : "Defines the type of date of the end date in the range"
+    },
+    "endFuzzyRange" : {
+        "display" : "End Fuzzy Range",
+        "tooltip" : "If the end date is imprecise, i.e. 2nd century, use these fields to give bounds on the imprecision, i.e. 0100-0199"
+    },
 
+    "_comment" : "%%% Biog Hist pieces",
+
+    "biogHist" : {
+        "display" : "Biographical History",
+        "tooltip" : "The XML biographical history note"
+    },
+
+    "_comment" : "%%% Place data elements",
+
+    "placeOriginal" : {
+        "display" : "Original",
+        "tooltip" : "The text of this place entry"
+    },
+    "placeType" : {
+        "display" : "Type",
+        "tooltip" : "The type of this place"
+    },
+    "placeRole" : {
+        "display" : "Role",
+        "tooltip" : "The role of this place in relation to the Constellation"
+    },
+    "placeGeoTerm" : {
+        "display" : "GeoPlace Term",
+        "tooltip" : "A geographical place term from a controlled vocabulary of Geographical Places, i.e. GeoNames"
+    },
+    "placeGeoTermScore" : {
+        "display" : "GeoPlace Score",
+        "tooltip" : "How likely it is that this GeoPlace is the place mentioned"
+    },
+    "placeGeoTermConfirmed" : {
+        "display" : "GeoPlace Confirmed",
+        "tooltip" : "This GeoPlace was human-confirmed to be the same place as the one mentioned in Original above"
+    },
+
+    "_comment" : "%%% Controlled vocabulary elements",
+
+    "term" : {
+        "display" : "Term",
+        "tooltip" : "The controlled-vocabulary term for this data element"
+    },
+    "uri" : {
+        "display" : "URI",
+        "tooltip" : "The auto-populated URI for the Term selected above"
+    },
+   
+    "_comment" : "%%% XML/Text elements",
+
+    "xml" : {
+        "display" : "XML",
+        "tooltip" : "The XML-source for this data element"
+    },
+
+    "_comment" : "%%% SameAs elements",
+
+    "sameAsText" : {
+        "display" : "Relation Text",
+        "tooltip" : "The human-readable text that appears in a relation entry"
+    },
+    "sameAsRole" : {
+        "display" : "Role",
+        "tooltip" : "How this Identity Constellation is related to the external identity"
+    },
+    "sameAsURI" : {
+        "display" : "URI",
+        "tooltip" : "The permanent link to the external identity"
+    },
+
+    "_comment" : "%%% Constellation Relation elements",
+
+    "relationTarget" : {
+        "display" : "Target",
+        "tooltip" : "The Constellation that is the target of the described relationship"
+    },
+    "relationType" : {
+        "display" : "Type",
+        "tooltip" : "How this Identity Constellation is related to the Target"
+    },
+
+    "_comment" : "%%% Resource Relation elements",
+
+    "resourceText" : {
+        "display" : "Relation Text",
+        "tooltip" : "The human-readable text that appears in a relation entry"
+    },
+    "resourceRole" : {
+        "display" : "Role",
+        "tooltip" : "How this Identity Constellation is related to the resource"
+    },
+    "resourceURI" : {
+        "display" : "Link",
+        "tooltip" : "The permanent link (URI) to the external resource"
+    },
+    "resourceDocumentType" : {
+        "display" : "Document Type",
+        "tooltip" : "The type of this resource"
+    },
+    "resourceXML" : {
+        "display" : "ObjectXMLWrap",
+        "tooltip" : "The XML of the object used to create this relationship"
+    },
+
+    "_comment" : "%%% Source elements",
+
+    "sourceDisplayName" : {
+        "display" : "Display Name",
+        "tooltip" : "The editor/human-readable name of this source, shown in the Citation box of the SCM entry box"
+    },
+    "sourceURI" : {
+        "display" : "URI",
+        "tooltip" : "The permanent link (if one exists) to this external source"
+    },
+    "sourceText" : {
+        "display" : "Source Text",
+        "tooltip" : "A textual representation of this source, i.e. a full bibliographic citation"
+    },
+
+    "_comment" : "%%% SCM elements",
+
+    "scmSourceData" : {
+        "display" : "Source Data",
+        "tooltip" : "The data for the described data element, as it appeared in the source"
+    },
+    "scmCitation" : {
+        "display" : "Citation (Source)",
+        "tooltip" : "The source object from this Constellation where the information on this data element was found"
+    },
+    "scmSubCitation" : {
+        "display" : "Sub Citation",
+        "tooltip" : "A clarifying piece of information to refine the Citation, i.e. pages 12-15"
+    },
+    "scmDescriptiveRule" : {
+        "display" : "Descriptive Rule",
+        "tooltip" : "The rule used in formulating the data element from the Source Data above"
+    }
 }
