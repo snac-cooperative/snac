@@ -48,9 +48,9 @@ function displayErrorMessage(err) {
  * @returns boolean false to keep the browser from redrawing the page
  */
 function addSCMEntry(short, i){
-	var id = j + "_" + i;
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
+	var id = j + "_" + i;
     somethingHasBeenEdited = true;
 	var text = $('#scm_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
