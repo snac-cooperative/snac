@@ -1,7 +1,7 @@
 {% macro dateEntry(X, name, short, snacDate, i) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
-	<div class="panel-heading">{{ name }} - Single Date</div>
+	<div class="panel-heading">{{ name }} - {{ X.date.display }}</div>
 
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
@@ -15,8 +15,8 @@
 	<div class="panel-body">
 		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
 			<div class="form-group">
-				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
-					Date <br><span class="control-label-subtext">Machine-Readable</span></label>
+				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4" data-content="{{X.machineDate.tooltip}}" data-toggle="popover" data-placement="top">
+					{{ X.machineDate.display }} <br><span class="control-label-subtext">Machine-Readable</span></label>
                 <div class="col-xs-8" id="date_{{short}}_start_{{i}}">
                     <p class="form-control-static">{{ snacDate.fromDate }}</p>
 					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="hidden"
@@ -25,8 +25,8 @@
 			</div>
 
     			<div class="form-group">
-    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4">
-                        Date <br><span class="control-label-subtext">Natural Language</span></label>
+    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.naturalDate.tooltip}}" data-toggle="popover" data-placement="top">
+                        {{ X.naturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
     				<div class="col-xs-8">
     					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
     						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
@@ -34,8 +34,8 @@
     			</div>
 
             <div class="form-group">
-                <label class="control-label col-xs-4">
-                    Type
+                <label class="control-label col-xs-4" data-content="{{X.dateType.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.dateType.display }}
                 </label>
                 <div class="col-xs-8" id="select_{{short}}_starttype_{{i}}">
                     <input type="hidden" id="{{short}}_starttype_id_{{i}}" name="{{short}}_starttype_id_{{i}}" value="{{snacDate.fromType.id}}"/>
@@ -46,8 +46,8 @@
                 </div>
             </div>
 			<div class="form-group">
-				<label for="{{short}}_startvotBefore_{{i}}" class="control-label col-xs-4">
-					Fuzzy Range </label>
+				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.fuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
+					{{ X.fuzzyRange.display }} </label>
 				<div class="col-xs-3">
 					<input id="{{short}}_startnotBefore_{{i}}"
 						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
@@ -62,8 +62,8 @@
 			</div>
 
             <div class="form-group">
-                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4">
-                    Descriptive Note
+                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.descriptiveNote.display }}
                 </label>
                 <div class="col-xs-8">
                     <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>
@@ -81,7 +81,7 @@
 {% macro dateRangeEntry(X, name, short, snacDate, i) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
-	<div class="panel-heading">{{ name }} - Date Range</div>
+	<div class="panel-heading">{{ name }} - {{ X.dateRange.display }}</div>
 
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
@@ -90,8 +90,8 @@
 	<div class="panel-body">
 		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
 			<div class="form-group">
-				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4">
-                    Start Date <br><span class="control-label-subtext">Machine-Readable</span></label>
+				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4" data-content="{{X.startMachineDate.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.startMachineDate.display }} <br><span class="control-label-subtext">Machine-Readable</span></label>
                 <div class="col-xs-8" id="date_{{short}}_start_{{i}}">
                     <p class="form-control-static">{{ snacDate.fromDate }}</p>
 					<input id="{{short}}_start_{{i}}" name="{{short}}_start_{{i}}" type="hidden"
@@ -100,8 +100,8 @@
 			</div>
 
     			<div class="form-group">
-    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4">
-    					Start Date <br><span class="control-label-subtext">Natural Language</span></label>
+    				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.startNaturalDate.tooltip}}" data-toggle="popover" data-placement="top">
+    					{{ X.startNaturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
     				<div class="col-xs-8">
     					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
     						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
@@ -109,8 +109,8 @@
     			</div>
 
             <div class="form-group">
-                <label class="control-label col-xs-4">
-                    Start Date Type
+                <label class="control-label col-xs-4" data-content="{{X.startDateType.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.startDateType.display }}
                 </label>
                 <div class="col-xs-8" id="select_{{short}}_starttype_{{i}}">
                     <input type="hidden" id="{{short}}_starttype_id_{{i}}" name="{{short}}_starttype_id_{{i}}" value="{{snacDate.fromType.id}}"/>
@@ -121,8 +121,8 @@
                 </div>
             </div>
 			<div class="form-group">
-				<label for="{{short}}_startvotBefore_{{i}}" class="control-label col-xs-4">
-					Start Fuzzy Range </label>
+				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.startFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
+					{{ X.startFuzzyRange.display }} </label>
 				<div class="col-xs-3">
 					<input id="{{short}}_startnotBefore_{{i}}"
 						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
@@ -136,8 +136,8 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label for="{{short}}_end_{{i}}" class="control-label col-xs-4">
-					End Date <br><span class="control-label-subtext">Machine-Readable</span></label>
+				<label for="{{short}}_end_{{i}}" class="control-label col-xs-4" data-content="{{X.endMachineDate.tooltip}}" data-toggle="popover" data-placement="top">
+					{{ X.endMachineDate.display }} <br><span class="control-label-subtext">Machine-Readable</span></label>
                 <div class="col-xs-8" id="date_{{short}}_end_{{i}}">
                     <p class="form-control-static">{{ snacDate.toDate }}</p>
 					<input id="{{short}}_end_{{i}}" name="{{short}}_end_{{i}}" type="hidden"
@@ -146,8 +146,8 @@
 			</div>
 
             <div class="form-group">
-                <label for="{{short}}_endoriginal_{{i}}" class="control-label col-xs-4">
-                    End Date <br><span class="control-label-subtext">Natural Language</span></label>
+                <label for="{{short}}_endoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.endNaturalDate.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.endNaturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
                 <div class="col-xs-8">
                     <input id="{{short}}_endoriginal_{{i}}" name="{{short}}_endoriginal_{{i}}" type="text"
                         class="form-control" value="{{ snacDate.toDateOriginal }}" readonly/>
@@ -155,8 +155,8 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-xs-4">
-                    End Date Type
+                <label class="control-label col-xs-4" data-content="{{X.endDateType.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.endDateType.display }}
                 </label>
                 <div class="col-xs-8" id="select_{{short}}_endtype_{{i}}">
                     <input type="hidden" id="{{short}}_endtype_id_{{i}}" name="{{short}}_endtype_id_{{i}}" value="{{snacDate.toType.id}}"/>
@@ -167,8 +167,8 @@
                 </div>
             </div>
 			<div class="form-group">
-				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4">
-					End Fuzzy Range </label>
+				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.endFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
+					{{ X.endFuzzyRange.display }} </label>
 				<div class="col-xs-3">
 					<input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endnotBefore_{{i}}"
 						type="text" class="form-control"
@@ -184,8 +184,8 @@
 
 
             <div class="form-group">
-                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4">
-                    Descriptive Note
+                <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.descriptiveNote.display }}
                 </label>
                 <div class="col-xs-8">
                     <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>

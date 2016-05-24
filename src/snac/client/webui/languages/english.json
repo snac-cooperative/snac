@@ -48,6 +48,17 @@
         "tooltip" : "A note about this data element"
     },
     
+    "_comment" : "%%% Languages Used",
+    
+    "languageUsed" : {
+        "display" : "Language",
+        "tooltip" : "The ISO-standard language used by the identity described in this Constellation"
+    },
+    "scriptUsed" : {
+        "display" : "Script",
+        "tooltip" : "The ISO-standard script used by the identity described in this Constellation"
+    },
+    
     "_comment" : "%%% Name Entry pieces",
     
     "nameEntry" : {
@@ -92,8 +103,8 @@
         "tooltip" : "Dates of existence for this Constellation"
     },
     "date" : {
-        "display" : "Date",
-        "plural" : "Dates",
+        "display" : "Single Date",
+        "plural" : "Single Dates",
         "tooltip" : "A date element, similar to EAC-CPF date tags"
     },
     "dateRange" : {
