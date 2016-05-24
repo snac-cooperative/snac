@@ -8,8 +8,8 @@
                                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="gender_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                                                   {{ X.term.display }} 
                                                 </label>
                                                 <div class="col-xs-8" id="select_gender_term_{{i}}">
                                                     <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
@@ -20,8 +20,8 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-8">
                                                     {{ widgets.displayURI(X, gender.term.uri) }}
@@ -87,8 +87,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Type
+                                        <label class="control-label col-xs-4" data-content="{{X.contributor.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.contributor.display }}
                                         </label>
                                         <div class="col-xs-8 well well-sm">
                                         {% set j = 0 %}
@@ -129,8 +129,8 @@
                                                     name="nameEntry_contributor_{{j}}_operation_{{i}}" 
                                                     value="{{contributor.operation}}"/>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Authority List
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorName.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorName.display }}
                                                     </label>
                                                     <div class="col-xs-6">
                                                         <input id="nameEntry_contributor_{{j}}_name_{{i}}" 
@@ -140,8 +140,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Type
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorType.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorType.display }}
                                                     </label>
                                                     <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_type_{{i}}">
                                                         <input id="nameEntry_contributor_{{j}}_type_id_{{i}}" 
@@ -162,8 +162,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Rules
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorRules.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorRules.display }}
                                                     </label>
                                                     <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_rule_{{i}}">
                                                         <input id="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
@@ -203,16 +203,16 @@
                                 <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="sameAs_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
-                                            Relation Text
+                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
+                                           {{ X.sameAsText.display }} 
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4">
-                                            Role
+                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsRole.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sameAsRole.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_sameAs_type_{{i}}">
                                             <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
@@ -223,8 +223,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
+                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURI.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sameAsURI.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
@@ -248,24 +248,24 @@
                                 <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="source_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4">
-                                            Display Name
+                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceDisplayName.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceDisplayName.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="text" class="form-control" value="{{ source.displayName }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
+                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceURI.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_text_{{ i }}" class="control-label col-xs-4">
-                                            Source Text
+                                        <label for="source_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceText.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceText.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
@@ -275,8 +275,8 @@
                                     <input type="hidden" id="source_language_id_{{i}}" name="source_language_id_{{i}}" value="{{source.language.id}}"/>
                                     <input type="hidden" id="source_language_version_{{i}}" name="source_language_version_{{i}}" value="{{sources.language.version}}"/>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
+                                        <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.language.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
                                             <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
@@ -287,8 +287,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
+                                        <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.script.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_source_languagescript_{{i}}">
                                             <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
@@ -299,8 +299,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_note_{{ i }}" class="control-label col-xs-4">
-                                            Descriptive Note
+                                        <label for="source_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.descriptiveNote.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
