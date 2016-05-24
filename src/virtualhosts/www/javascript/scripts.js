@@ -75,6 +75,7 @@ function undoEdit(short, i) {
 
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
+    turnOnTooltips(short,i);
 }
 
 /**
@@ -94,6 +95,7 @@ function undoSCMEdit(short, i, j) {
 
 	// restore the old content
 	$("#scm_" + short + "_datapart_" + id).replaceWith(undoSet["scm_"+short+"-"+id]);
+    turnOnTooltips("scm_"+short, id);
 }
 
 /**
