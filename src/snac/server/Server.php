@@ -106,11 +106,10 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $executor = new \snac\server\ServerExecutor($user);
         
-        // Uncomment the following to have authentication happen at each query.  Currently, we will only check
-        // authentication at login, so that we can ignore expiration of tokens.
-        //if (!$executor->authenticateUser($user)) {
-        //    throw new \snac\exceptions\SNACUserException("User is not authorized");
-        //}
+        // Authentication happens at each query
+        if (!$executor->authenticateUser($user)) {
+            throw new \snac\exceptions\SNACUserException("User is not authorized");
+        }
         
 
         $this->logger->addDebug("Switching on user command");
