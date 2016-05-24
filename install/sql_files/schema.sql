@@ -138,16 +138,20 @@ create index version_history_idx1 on version_history(status);
 
 create table appuser (
         id           int primary key default nextval('id_seq'),
-        active       boolean default 't', -- true for active account
-        username     text unique,         -- text-based user id, the user email address
-        email        text,                -- non-unique, current default is username is also email
-        first        text,                -- first name
-        last         text,                -- last name
-        fullname     text,                -- full name text
-        password     text,
-        avatar       text,                -- url
-        avatar_small text,                -- url
-        avatar_large text                 -- url
+        active          boolean default 't', -- true for active account
+        username        text unique,         -- text-based user id, the user email address
+        email           text,                -- non-unique, current default is username is also email
+        first           text,                -- first name
+        last            text,                -- last name
+        fullname        text,                -- full name text
+        password        text,
+        avatar          text,                -- url
+        avatar_small    text,                -- url
+        avatar_large    text,                -- url
+        work_email      text,
+        work_phone      text,
+        affiliation     int,                 -- fk to version_history.id aka constellation ID aka ic_id.
+        preferred_rules text                 -- preferred descriptive name rules
         );
 
 -- Linking table to handle role membership for users Do we need a 'primary' role boolean field? This would be

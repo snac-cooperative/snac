@@ -127,15 +127,32 @@ class SQL
      * @param string $avatarSmall The small avatar
      * @param string $avatarLarge The large avatar
      * @param string $email The email address, not unique
+     * @param string $workEmail Work email address
+     * @param string $workPhone Work phone number
+     * @param integer $affiliationID Foreign key to ic_id of the SNAC constellation for affiliated institution
+     * @param string $preferredRules Preferred descriptive name rules
      * @return integer Record row id, unique, from sequence id_seq.
      */ 
-    public function insertUser($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    public function insertUser($userName, 
+                               $firstName, 
+                               $lastName, 
+                               $fullName, 
+                               $avatar, 
+                               $avatarSmall, 
+                               $avatarLarge, 
+                               $email,
+                               $workEmail,
+                               $workPhone,
+                               $affiliationID,
+                               $preferredRules)
     {
         $result = $this->sdb->query(
-            'insert into appuser (username, first, last, fullname, avatar, avatar_small, avatar_large, email)
-            values ($1, $2, $3, $4, $5, $6, $7, $8)
+            'insert into appuser 
+            (username, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email, work_phone, affiliation, preferred_rules)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             returning id',
-            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email,
+                  $workEmail, $workPhone, $affiliationID, $preferredRules));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
@@ -368,13 +385,15 @@ class SQL
      * @param string $email The email address
      * @param string $userName The user name
      */ 
-    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName)
+    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
+                               $workEmail, $workPhone, $affiliationID, $preferredRules)
     {
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, userName=$9
+            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, preferred_rules=$13
             where appuser.id=$1 returning id',
-            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName));
+            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
+                  $workEmail, $workPhone, $affiliationID, $preferredRules));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
         {
@@ -443,13 +462,15 @@ class SQL
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * 
-     * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email
+     * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email,
+     * work_phone, affiliation, preferred_rules
      */ 
     public function selectUserByID($uid)
     {
         $result = $this->sdb->query(
             "select id,active,username,email,first,last,
-            fullname,avatar,avatar_small,avatar_large from appuser where appuser.id=$1",
+            fullname,avatar,avatar_small,avatar_large,work_email, work_phone, affiliation,preferred_rules
+            from appuser where appuser.id=$1",
             array($uid));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('active', $row))

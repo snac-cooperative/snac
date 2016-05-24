@@ -439,7 +439,21 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        $readObj->getEntityType()->setID(697);
+        /*
+         * We are expecting only one result. Search the vocab list so even if the IDs change, we will get the
+         * correct id for entity_type family.
+         */ 
+        $vocabList = $this->dbu->searchVocabulary('entity_type', 'family');
+        if (count($vocabList) != 1)
+        {
+            throw new \snac\exceptions\SNACException("Did not get exactly 1 result for 'entity_type' and 'family'.");
+        }
+        if ($vocabList[0]['value'] != 'family')
+        {
+            throw new \snac\exceptions\SNACException("Did not get expected 'family' as value.");
+        }
+
+        $readObj->getEntityType()->setID($vocabList[0]['id']);
         $readObj->getEntityType()->setTerm('family');
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $xObj = $this->dbu->writeConstellation($this->user, $readObj,
