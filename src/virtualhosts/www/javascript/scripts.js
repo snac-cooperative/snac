@@ -50,12 +50,14 @@ function displayErrorMessage(err) {
 function addSCMEntry(short, i){
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
+	var id = j + "_" + i;
     somethingHasBeenEdited = true;
 	var text = $('#scm_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, j).replace(/SHORT/g, short);
     $('#add_scm_'+short+'_'+i+'_div').after(html);
     $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
     turnOnSCMButtons(short, i, j);
+    turnOnTooltips("scm_"+short, id);
     makeSCMEditable(short, i, j);
     return false;
 }
@@ -75,6 +77,7 @@ function undoEdit(short, i) {
 
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
+    turnOnTooltips(short,i);
 }
 
 /**
@@ -94,6 +97,7 @@ function undoSCMEdit(short, i, j) {
 
 	// restore the old content
 	$("#scm_" + short + "_datapart_" + id).replaceWith(undoSet["scm_"+short+"-"+id]);
+    turnOnTooltips("scm_"+short, id);
 }
 
 /**
@@ -725,6 +729,23 @@ function turnOnButtons(shortName, i) {
     });
 }
 
+function turnOnTooltips(shortName, i) {
+    // Load tooltips
+    $(function () {
+          $('#'+shortName+'_panel_'+ i +' [data-toggle="tooltip"]').tooltip()
+    })
+    
+    // Load popovers
+    $(function () {
+          $('#'+shortName+'_panel_'+ i +' [data-toggle="popover"]').popover({
+                trigger: 'hover',
+                container: 'body'
+          })
+    })
+
+
+}
+
 /**
  * Turn on the Edit/Delete buttons for an SCM object
  *
@@ -803,6 +824,7 @@ function newNameEntryContributor(i) {
     $('#nameEntry_contributor_add_div_'+i).before(html);
 
     $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
+    turnOnTooltips("nameEntry_contributor_" + nextid, i);
     subMakeEditable("nameEntry_contributor_" + nextid, i);
 
     // Put the updated version number back in the DOM
@@ -866,7 +888,7 @@ function textToDate(shortName, idStr) {
 
             var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
             html += "<span class='form-control-static'> - </span>";
-            html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' placeholder='Month'>"+
+            html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' data-placeholder='Month' style='width: 57%; margin-bottom: 5px; display: inline-block;'>"+
                     "<option></option>";
             var months = ["January", "February", "March", "April", "May",
                             "June", "July", "August", "September", "October", "November", "December"];
@@ -888,7 +910,7 @@ function textToDate(shortName, idStr) {
             $("#"+shortName+"_"+name+"_month_"+idStr).select2({
                     width: '57%',
                     allowClear: true,
-                    theme: 'classic',
+                    theme: 'bootstrap',
                     placeholder: 'Month'
                 });
 
@@ -1070,6 +1092,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, genderid);
 	        $('#add_gender_div').after(html);
             turnOnButtons("gender", genderid);
+            turnOnTooltips("gender", genderid);
             makeEditable("gender", genderid);
 	        genderid = genderid + 1;
 	        return false;
@@ -1089,6 +1112,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
             turnOnButtons("exist", existid);
+            turnOnTooltips("exist", existid);
             makeEditable("exist", existid);
 	        existid = existid + 1;
 	        return false;
@@ -1101,6 +1125,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, existid);
 	        $('#add_exist_div').after(html);
             turnOnButtons("exist", existid);
+            turnOnTooltips("exist", existid);
             makeEditable("exist", existid);
 	        existid = existid + 1;
 	        return false;
@@ -1119,6 +1144,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, nameEntryid);
 	        $('#add_nameEntry_div').after(html);
             turnOnButtons("nameEntry", nameEntryid);
+            turnOnTooltips("nameEntry", nameEntryid);
             makeEditable("nameEntry", nameEntryid);
 	        nameEntryid = nameEntryid + 1;
 	        return false;
@@ -1137,6 +1163,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, sameAsid);
 	        $('#add_sameAs_div').after(html);
             turnOnButtons("sameAs", sameAsid);
+            turnOnTooltips("sameAs", sameAsid);
             makeEditable("sameAs", sameAsid);
 	        sameAsid = sameAsid + 1;
 	        return false;
@@ -1155,6 +1182,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, sourceid);
 	        $('#add_source_div').after(html);
             turnOnButtons("source", sourceid);
+            turnOnTooltips("source", sourceid);
             makeEditable("source", sourceid);
 	        sourceid = sourceid + 1;
 	        return false;
@@ -1173,6 +1201,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, resourceRelationid);
 	        $('#add_resourceRelation_div').after(html);
             turnOnButtons("resourceRelation", resourceRelationid);
+            turnOnTooltips("resourceRelation", resourceRelationid);
             makeEditable("resourceRelation", resourceRelationid);
 	        resourceRelationid = resourceRelationid + 1;
 	        return false;
@@ -1201,6 +1230,7 @@ $(document).ready(function() {
 		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
 
                 turnOnButtons("constellationRelation", constellationRelationid);
+                turnOnTooltips("constellationRelation", constellationRelationid);
 		        makeEditable("constellationRelation", constellationRelationid);
 
 		        constellationRelationid = constellationRelationid + 1;
@@ -1237,6 +1267,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, languageid);
 	        $('#add_language_div').after(html);
             turnOnButtons("language", languageid);
+            turnOnTooltips("language", languageid);
             makeEditable("language", languageid);
 	        languageid = languageid + 1;
 	        return false;
@@ -1255,6 +1286,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, subjectid);
 	        $('#add_subject_div').after(html);
             turnOnButtons("subject", subjectid);
+            turnOnTooltips("subject", subjectid);
             makeEditable("subject", subjectid);
 	        subjectid = subjectid + 1;
 	        return false;
@@ -1273,6 +1305,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, nationalityid);
 	        $('#add_nationality_div').after(html);
             turnOnButtons("nationality", nationalityid);
+            turnOnTooltips("nationality", nationalityid);
             makeEditable("nationality", nationalityid);
 	        nationalityid = nationalityid + 1;
 	        return false;
@@ -1291,6 +1324,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, functionid);
 	        $('#add_function_div').after(html);
             turnOnButtons("function", functionid);
+            turnOnTooltips("function", functionid);
             makeEditable("function", functionid);
 	        functionid = functionid + 1;
 	        return false;
@@ -1309,6 +1343,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, occupationid);
 	        $('#add_occupation_div').after(html);
             turnOnButtons("occupation", occupationid);
+            turnOnTooltips("occupation", occupationid);
             makeEditable("occupation", occupationid);
 	        occupationid = occupationid + 1;
 	        return false;
@@ -1327,6 +1362,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, legalStatusid);
 	        $('#add_legalStatus_div').after(html);
             turnOnButtons("legalStatus", legalStatusid);
+            turnOnTooltips("legalStatus", legalStatusid);
             makeEditable("legalStatus", legalStatusid);
 	        legalStatusid = legalStatusid + 1;
 	        return false;
@@ -1345,6 +1381,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, placeid);
 	        $('#add_place_div').after(html);
             turnOnButtons("place", placeid);
+            turnOnTooltips("place", placeid);
             makeEditable("place", placeid);
 	        placeid = placeid + 1;
 	        return false;
@@ -1363,6 +1400,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
 	        $('#add_conventionDeclaration_div').after(html);
             turnOnButtons("conventionDeclaration", conventionDeclarationid);
+            turnOnTooltips("conventionDeclaration", conventionDeclarationid);
             makeEditable("conventionDeclaration", conventionDeclarationid);
 	        conventionDeclarationid = conventionDeclarationid + 1;
 	        return false;
@@ -1381,6 +1419,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, generalContextid);
 	        $('#add_generalContext_div').after(html);
             turnOnButtons("generalContext", generalContextid);
+            turnOnTooltips("generalContext", generalContextid);
             makeEditable("generalContext", generalContextid);
 	        generalContextid = generalContextid + 1;
 	        return false;
@@ -1399,6 +1438,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
 	        $('#add_structureOrGenealogy_div').after(html);
             turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
+            turnOnTooltips("structureOrGenealogy", structureOrGenealogyid);
             makeEditable("structureOrGenealogy", structureOrGenealogyid);
 	        structureOrGenealogyid = structureOrGenealogyid + 1;
 	        return false;
@@ -1417,6 +1457,7 @@ $(document).ready(function() {
 	        var html = text.html().replace(/ZZ/g, mandateid);
 	        $('#add_mandate_div').after(html);
             turnOnButtons("mandate", mandateid);
+            turnOnTooltips("mandate", mandateid);
             makeEditable("mandate", mandateid);
 	        mandateid = mandateid + 1;
 	        return false;

@@ -1,4 +1,4 @@
-{% macro displayGender(gender, i) %}
+{% macro displayGender(X, gender, i) %}
     {% import 'widgets.html' as widgets %}  
     
                             <div class="panel panel-default" id="gender_panel_{{i}}">
@@ -8,8 +8,8 @@
                                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="gender_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                                                   {{ X.term.display }} 
                                                 </label>
                                                 <div class="col-xs-8" id="select_gender_term_{{i}}">
                                                     <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
@@ -20,22 +20,22 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-8">
-                                                    {{ widgets.displayURI(gender.term.uri) }}
+                                                    {{ widgets.displayURI(X, gender.term.uri) }}
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("gender", i, gender.term.term, "Gender", gender) }}
-                                        {{ widgets.optionsList("gender", i) }}
+                                        {{ widgets.scmModal(X, "gender", i, gender.term.term, "Gender", gender) }}
+                                        {{ widgets.optionsList(X, "gender", i) }}
                                     </div>
                                 </div>
 
 {% endmacro %}
 
-{% macro displayNameEntry(nameEntry, i) %}
+{% macro displayNameEntry(X, nameEntry, i) %}
     {% import 'widgets.html' as widgets %}  
     {% import _self as components %}   
                             <div class="panel panel-default" id="nameEntry_panel_{{i}}">
@@ -45,8 +45,8 @@
                                     <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
                                     <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value=""/>
                                     <div class="form-group">
-                                        <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4">
-                                            Name Heading
+                                        <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.nameHeading.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.nameHeading.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <p class="form-control-static" id="nameEntry_heading_{{i}}">{{nameEntry.original}} </p>
@@ -54,13 +54,13 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Components
+                                        <label class="control-label col-xs-4" data-content="{{X.nameComponents.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.nameComponents.display }} 
                                         </label>
                                         <div class="col-xs-8 well well-sm">
                                             {% set j = 0 %}
                                             {% for component in nameEntry.components %}
-                                                {{ components.displayComponent(component, i, j) }}
+                                                {{ components.displayComponent(X, component, i, j) }}
                                                 {% set j = j + 1 %}
                                             {% endfor %}
                                             
@@ -78,8 +78,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4">
-                                            Preference Score
+                                        <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4" data-content="{{X.preferenceScore.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.preferenceScore.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
@@ -88,8 +88,8 @@
                                     <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
                                     <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
+                                        <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.language.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_nameEntry_languagelanguage_{{i}}">
                                             <input id="nameEntry_languagelanguage_id_{{i}}" name="nameEntry_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.language.id }}"/>
@@ -100,8 +100,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
+                                        <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.script.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_nameEntry_languagescript_{{i}}">
                                             <input id="nameEntry_languagescript_id_{{i}}" name="nameEntry_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.language.script.id }}"/>
@@ -113,39 +113,37 @@
                                     </div>
                                     <!--
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Type
+                                        <label class="control-label col-xs-4" data-content="{{X.contributor.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.contributor.display }}
                                         </label>
                                         <div class="col-xs-8 well well-sm">
-                                            {% set j = 0 %}
-                                            {% for contributor in nameEntry.contributors %}
-                                                {{ components.displayContributor(contributor, i, j) }}
-                                                {% set j = j + 1 %}
-                                            {% endfor %}
-                                            
-                                            <span id='nameEntry_contributor_next_j_{{i}}' style='display:none;'>{{j}}</span>
-                                            
-                                            <div class="form-group" id="nameEntry_contributor_add_div_{{i}}">
-                                                <div class="col-xs-12 text-center">
-                                                    <button class="btn btn-success snac-hidden" id="nameEntry_contributor_add_{{i}}" 
-                                                        onClick="return newNameEntryContributor({{i}});" disabled>
-                                                        <span class="glyphicon glyphicon-plus-sign"></span> Add Type
-                                                    </button>
-                                                </div>
+                                        {% set j = 0 %}
+                                        {% for contributor in nameEntry.contributors %}
+                                            {{ components.displayContributor(X, contributor, i, j) }}
+                                            {% set j = j + 1 %}
+                                        {% endfor %}
+                                        <span id='nameEntry_contributor_next_j_{{i}}' style='display:none;'>{{j}}</span>
+                                        
+                                        <div class="form-group" id="nameEntry_contributor_add_div_{{i}}">
+                                            <div class="col-xs-12 text-center">
+                                                <button class="btn btn-success snac-hidden" id="nameEntry_contributor_add_{{i}}" 
+                                                    onClick="return newNameEntryContributor({{i}});" disabled>
+                                                    <span class="glyphicon glyphicon-plus-sign"></span> Add Type
+                                                </button>
                                             </div>
 
                                         </div>
                                     </div>
                                     -->
                                 </div>
-                                {{ widgets.scmModal("nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
-                                {{ widgets.optionsList("nameEntry", i) }}
+                                {{ widgets.scmModal(X, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
+                                {{ widgets.optionsList(X, "nameEntry", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displayComponent(component, i, j) %}
+{% macro displayComponent(X, component, i, j) %}
                                             <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
                                                 <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}" 
                                                     name="nameEntry_component_{{j}}_id_{{i}}" 
@@ -273,7 +271,7 @@
 {% endmacro %}
 
 
-{% macro displayContributor(contributor, i, j) %}
+{% macro displayContributor(X, contributor, i, j) %}
                                             <div class="panel panel-body" id="nameEntry_contributor_{{j}}_panel_{{i}}">
                                                 <input type="hidden" id="nameEntry_contributor_{{j}}_id_{{i}}" 
                                                     name="nameEntry_contributor_{{j}}_id_{{i}}" 
@@ -285,8 +283,8 @@
                                                     name="nameEntry_contributor_{{j}}_operation_{{i}}" 
                                                     value="{{contributor.operation}}"/>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Authority List
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorName.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorName.display }}
                                                     </label>
                                                     <div class="col-xs-6">
                                                         <input id="nameEntry_contributor_{{j}}_name_{{i}}" 
@@ -296,8 +294,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Type
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorType.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorType.display }}
                                                     </label>
                                                     <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_type_{{i}}">
                                                         <input id="nameEntry_contributor_{{j}}_type_id_{{i}}" 
@@ -318,8 +316,8 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label class="control-label col-xs-4">
-                                                        Rules
+                                                    <label class="control-label col-xs-4" data-content="{{X.contributorRules.tooltip}}" data-toggle="popover" data-placement="top">
+                                                        {{ X.contributorRules.display }}
                                                     </label>
                                                     <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_rule_{{i}}">
                                                         <input id="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
@@ -350,7 +348,7 @@
 
 {% endmacro %}
 
-{% macro displaySameAs(other, i) %}
+{% macro displaySameAs(X, other, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default" id="sameAs_panel_{{i}}">
                             <div class="panel-body">
@@ -359,16 +357,16 @@
                                 <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="sameAs_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4">
-                                            Relation Text
+                                        <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
+                                           {{ X.sameAsText.display }} 
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4">
-                                            Role
+                                        <label for="sameAs_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsRole.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sameAsRole.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_sameAs_type_{{i}}">
                                             <input id="sameAs_type_id_{{i}}" name="sameAs_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
@@ -379,8 +377,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
+                                        <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURI.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sameAsURI.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
@@ -388,14 +386,14 @@
                                     </div>
                                 </div>
 
-                                {{ widgets.scmModal("sameAs", i, other.uri, "Same-As Relation", other) }}
-                                {{ widgets.optionsList("sameAs", i) }}
+                                {{ widgets.scmModal(X, "sameAs", i, other.uri, "Same-As Relation", other) }}
+                                {{ widgets.optionsList(X, "sameAs", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displaySource(source, i) %}
+{% macro displaySource(X, source, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default"  id="source_panel_{{i}}">
                             <div class="panel-body">
@@ -404,24 +402,24 @@
                                 <input id="source_operation_{{i}}" name="source_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="source_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4">
-                                            Display Name
+                                        <label for="source_displayName_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceDisplayName.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceDisplayName.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="text" class="form-control" value="{{ source.displayName }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4">
-                                            URI
+                                        <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceURI.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_text_{{ i }}" class="control-label col-xs-4">
-                                            Source Text
+                                        <label for="source_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceText.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.sourceText.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
@@ -431,8 +429,8 @@
                                     <input type="hidden" id="source_language_id_{{i}}" name="source_language_id_{{i}}" value="{{source.language.id}}"/>
                                     <input type="hidden" id="source_language_version_{{i}}" name="source_language_version_{{i}}" value="{{sources.language.version}}"/>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
+                                        <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.language.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_source_languagelanguage_{{i}}">
                                             <input id="source_languagelanguage_id_{{i}}" name="source_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.language.id }}"/>
@@ -443,8 +441,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
+                                        <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.script.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_source_languagescript_{{i}}">
                                             <input id="source_languagescript_id_{{i}}" name="source_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ source.language.script.id }}"/>
@@ -455,8 +453,8 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="source_note_{{ i }}" class="control-label col-xs-4">
-                                            Descriptive Note
+                                        <label for="source_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.descriptiveNote.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
@@ -465,15 +463,15 @@
 
 
                                 </div>
-                                {{ widgets.scmModal("source", i, source.uri, "Source", source) }}
-                                {{ widgets.optionsList("source", i) }}
+                                {{ widgets.scmModal(X, "source", i, source.uri, "Source", source) }}
+                                {{ widgets.optionsList(X, "source", i) }}
 
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displayResourceRelation(relation, i) %}
+{% macro displayResourceRelation(X, relation, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
                             <div class="panel-body">
@@ -482,16 +480,16 @@
                                 <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="resourceRelation_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4">
-                                            Relation Text
+                                        <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceText.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.resourceText.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4">
-                                            Role
+                                        <label for="resourceRelation_role_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceRole.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.resourceRole.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_resourceRelation_role_{{i}}">
                                             <input id="resourceRelation_role_id_{{i}}" name="resourceRelation_role_id_{{i}}" type="hidden" class="form-control" value="{{ relation.role.id }}"/>
@@ -502,16 +500,16 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4">
-                                            Link
+                                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.resourceURI.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4">
-                                            Document Type
+                                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.resourceDocumentType.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
                                             <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
@@ -522,16 +520,16 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4">
-                                            Descriptive Note
+                                        <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.descriptiveNote.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4">
-                                            ObjectXMLWrap
+                                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.resourceXML.display }}
                                         </label>
                                         <div class="col-xs-8">
                                             <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
@@ -539,14 +537,14 @@
                                     </div>
                                 </div>
 
-                                {{ widgets.scmModal("resourceRelation", i, relation.content, "Resource Relation", relation) }}
-                                {{ widgets.optionsList("resourceRelation", i) }}
+                                {{ widgets.scmModal(X, "resourceRelation", i, relation.content, "Resource Relation", relation) }}
+                                {{ widgets.optionsList(X, "resourceRelation", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displayConstellationRelation(relation, i) %}
+{% macro displayConstellationRelation(X, relation, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
                             <div class="panel-body">
@@ -559,8 +557,8 @@
                                 <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
                                 <div class="col-xs-10" id="constellationRelation_datapart_{{i}}">
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Target
+                                    <label class="control-label col-xs-4" data-content="{{X.relationTarget.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.relationTarget.display }}
                                     </label>
                                     <div class="col-xs-8">
                                         <p class="form-control-static"><span style="font-weight: bold" id="constellationRelation_contentText_{{i}}">{{ relation.content }}</span><br>
@@ -573,8 +571,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-4">
-                                        Type
+                                    <label for="constellationRelation_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.relationType.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.relationType.display }}
                                     </label>
                                     <div class="col-xs-8" id="select_constellationRelation_type_{{i}}">
                                         <input id="constellationRelation_type_id_{{i}}" name="constellationRelation_type_id_{{i}}" type="hidden" class="form-control" value="{{ relation.type.id }}"/>
@@ -585,8 +583,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4">
-                                        Descriptive Note
+                                    <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.descriptiveNote.display }}
                                     </label>
                                     <div class="col-xs-8">
                                         <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
@@ -594,14 +592,14 @@
                                 </div>
                             </div>
 
-                            {{ widgets.scmModal("constellationRelation", i, relation.content, "Constellation Relation", relation) }}
-                            {{ widgets.optionsList("constellationRelation", i) }}
+                            {{ widgets.scmModal(X, "constellationRelation", i, relation.content, "Constellation Relation", relation) }}
+                            {{ widgets.optionsList(X, "constellationRelation", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displayLanguageUsed(language, i) %}
+{% macro displayLanguageUsed(X, language, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default" id="language_panel_{{i}}">
                             <div class="panel-body">
@@ -610,8 +608,8 @@
                                 <input id="language_operation_{{i}}" name="language_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="language_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Language
+                                        <label class="control-label col-xs-4" data-content="{{X.languageUsed.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.languageUsed.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_language_language_{{i}}">
                                             <input id="language_language_id_{{i}}" name="language_language_id_{{i}}" type="hidden" class="form-control" value="{{ language.language.id }}"/>
@@ -624,8 +622,8 @@
 
 
                                     <div class="form-group">
-                                        <label class="control-label col-xs-4">
-                                            Script
+                                        <label class="control-label col-xs-4" data-content="{{X.scriptUsed.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.scriptUsed.display }}
                                         </label>
                                         <div class="col-xs-8" id="select_language_script_{{i}}">
                                             <input id="language_script_id_{{i}}" name="language_script_id_{{i}}" type="hidden" class="form-control" value="{{ language.script.id }}"/>
@@ -637,14 +635,14 @@
                                     </div>
                                 </div>
 
-                                {{ widgets.scmModal("language", i, language.language.term, "Language", language) }}
-                                {{ widgets.optionsList("language", i) }}
+                                {{ widgets.scmModal(X, "language", i, language.language.term, "Language", language) }}
+                                {{ widgets.optionsList(X, "language", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displaySubject(subject, i) %}
+{% macro displaySubject(X, subject, i) %}
     {% import 'widgets.html' as widgets %}  
                         <div class="panel panel-default" id="subject_panel_{{i}}">
                             <div class="panel-body">
@@ -653,8 +651,8 @@
                                 <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value=""/>
                                 <div class="col-xs-10" id="subject_datapart_{{i}}">
                                     <div class="form-group">
-                                        <label class="control-label col-xs-2">
-                                            Term
+                                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.term.display }}
                                         </label>
                                         <div class="col-xs-10" id="select_subject_term_{{i}}">
                                             <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
@@ -664,22 +662,22 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="control-label col-xs-2">
-                                            URI
+                                        <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{ X.uri.display }}
                                         </label>
                                         <div class="col-xs-10">
-                                            {{ widgets.displayURI(subject.term.uri) }}
+                                            {{ widgets.displayURI(X, subject.term.uri) }}
                                         </div>
                                     </div>
                                 </div>
-                                {{ widgets.scmModal("subject", i, subject.term.term, "Subject", subject) }}
-                                {{ widgets.optionsList("subject", i) }}
+                                {{ widgets.scmModal(X, "subject", i, subject.term.term, "Subject", subject) }}
+                                {{ widgets.optionsList(X, "subject", i) }}
                             </div>
                         </div>
     
 {% endmacro %}
 
-{% macro displayNationality(nationality, i) %}
+{% macro displayNationality(X, nationality, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="nationality_panel_{{i}}">
                                 <div class="panel-body">
@@ -688,8 +686,8 @@
                                         <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="nationality_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                                                    {{ X.term.display }}
                                                 </label>
                                                 <div class="col-xs-10" id="select_nationality_term_{{i}}">
                                                     <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
@@ -700,22 +698,22 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{ X.uri.tooltip }}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-10">
-                                                    {{ widgets.displayURI(nationality.term.uri) }}
+                                                    {{ widgets.displayURI(X, nationality.term.uri) }}
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("nationality", i, nationality.term.term, "Nationality", nationality) }}
-                                        {{ widgets.optionsList("nationality", i) }}
+                                        {{ widgets.scmModal(X, "nationality", i, nationality.term.term, "Nationality", nationality) }}
+                                        {{ widgets.optionsList(X, "nationality", i) }}
                                 </div>
                             </div>
     
 {% endmacro %}
 
-{% macro displayFunction(function, i) %}
+{% macro displayFunction(X, function, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="function_panel_{{i}}">
                                 <div class="panel-body">
@@ -724,8 +722,8 @@
                                         <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="function_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                                                    {{ X.term.display }}
                                                 </label>
                                                 <div class="col-xs-10" id="select_function_term_{{i}}">
                                                     <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
@@ -735,22 +733,22 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{ X.uri.tooltip }}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-10">
-                                                    {{ widgets.displayURI(function.term.uri) }}
+                                                    {{ widgets.displayURI(X, function.term.uri) }}
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("function", i, function.term.term, "Function", function) }}
-                                        {{ widgets.optionsList("function", i) }}
+                                        {{ widgets.scmModal(X, "function", i, function.term.term, "Function", function) }}
+                                        {{ widgets.optionsList(X, "function", i) }}
                                 </div>
                             </div>
     
 {% endmacro %}
 
-{% macro displayOccupation(occupation, i) %}
+{% macro displayOccupation(X, occupation, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="occupation_panel_{{i}}">
                                 <div class="panel-body">
@@ -759,8 +757,8 @@
                                         <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="occupation_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.term.display }}
                                                 </label>
                                                 <div class="col-xs-10" id="select_occupation_term_{{i}}">
                                                     <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
@@ -770,22 +768,22 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-10">
-                                                    {{ widgets.displayURI(occupation.term.uri) }}
+                                                    {{ widgets.displayURI(X, occupation.term.uri) }}
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("occupation", i, occupation.term.term, "Occupation", occupation) }}
-                                        {{ widgets.optionsList("occupation", i) }}
+                                        {{ widgets.scmModal(X, "occupation", i, occupation.term.term, "Occupation", occupation) }}
+                                        {{ widgets.optionsList(X, "occupation", i) }}
                                 </div>
                             </div>
     
 {% endmacro %}
 
-{% macro displayLegalStatus(legalStatus, i) %}
+{% macro displayLegalStatus(X, legalStatus, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="legalStatus_panel_{{i}}">
                                 <div class="panel-body">
@@ -794,8 +792,8 @@
                                         <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="legalStatus_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    Term
+                                                <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.term.display }}
                                                 </label>
                                                 <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
                                                     <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
@@ -805,22 +803,22 @@
                                                 </div>
                                             </div>
                                             <div class="form-group">
-                                                <label class="control-label col-xs-2">
-                                                    URI
+                                                <label class="control-label col-xs-2" data-content="{{X.uri.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.uri.display }}
                                                 </label>
                                                 <div class="col-xs-10">
-                                                    {{ widgets.displayURI(legalStatus.term.uri) }}
+                                                    {{ widgets.displayURI(X, legalStatus.term.uri) }}
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
-                                        {{ widgets.optionsList("legalStatus", i) }}
+                                        {{ widgets.scmModal(X, "legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
+                                        {{ widgets.optionsList(X, "legalStatus", i) }}
                                 </div>
                             </div>
     
 {% endmacro %}
 
-{% macro displayPlace(place, i) %}
+{% macro displayPlace(X, place, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="place_panel_{{i}}">
                                 <div class="panel-body">
@@ -829,16 +827,16 @@
                                     <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value=""/>
                                     <div class="col-xs-10" id="place_datapart_{{i}}">
                                         <div class="form-group">
-                                            <label for="place_original_{{ i }}" class="control-label col-xs-4">
-                                                Original
+                                            <label for="place_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeOriginal.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeOriginal.display }}
                                             </label>
                                             <div class="col-xs-8">
                                                 <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}" readonly/>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                Type
+                                            <label class="control-label col-xs-4" data-content="{{X.placeType.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeType.display }}
                                             </label>
                                             <div class="col-xs-8" id="select_place_type_{{i}}">
                                                 <input id="place_type_id_{{i}}" name="place_type_id_{{i}}" type="hidden" class="form-control" value="{{ place.type.id }}"/>
@@ -849,8 +847,8 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                Role
+                                            <label class="control-label col-xs-4" data-content="{{X.placeRole.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeRole.display }}
                                             </label>
                                             <div class="col-xs-8" id="select_place_role_{{i}}">
                                                 <input id="place_role_id_{{i}}" name="place_role_id_{{i}}" type="hidden" class="form-control" value="{{ place.role.id }}"/>
@@ -861,8 +859,8 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label class="control-label col-xs-4">
-                                                GeoPlace Term
+                                            <label class="control-label col-xs-4" data-content="{{X.placeGeoTerm.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeGeoTerm.display }}
                                             </label>
                                             <div class="col-xs-8" id="select_place_geoplace_{{i}}">
                                                 <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
@@ -873,16 +871,16 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="place_score_{{ i }}" class="control-label col-xs-4">
-                                                GeoPlace Score
+                                            <label for="place_score_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermScore.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeGeoTermScore.display }}
                                             </label>
                                             <div class="col-xs-8">
                                                 <input id="place_score_{{i}}" name="place_score_{{i}}" type="text" class="form-control" value="{{ place.score }}" readonly/>
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="place_confirmed_{{ i }}" class="control-label col-xs-4">
-                                                GeoPlace Confirmed
+                                            <label for="place_confirmed_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermConfirmed.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.placeGeoTermConfirmed.display }}
                                             </label>
                                             <div class="col-xs-8">
                                                 <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
@@ -894,16 +892,16 @@
                                             </div>
                                         </div>
                                         <div class="form-group">
-                                            <label for="place_note_{{ i }}" class="control-label col-xs-4">
-                                                Descriptive Note
+                                            <label for="place_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                                {{ X.descriptiveNote.display }}
                                             </label>
                                             <div class="col-xs-8">
                                                 <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" readonly>{{ place.note }}</textarea>
                                             </div>
                                         </div>
                                     </div>
-                                    {{ widgets.scmModal("place", i, place.original, "Place", place) }}
-                                    {{ widgets.optionsList("place", i) }}
+                                    {{ widgets.scmModal(X, "place", i, place.original, "Place", place) }}
+                                    {{ widgets.optionsList(X, "place", i) }}
 
                                 </div>
                             </div>
@@ -911,7 +909,7 @@
 {% endmacro %}
 
 
-{% macro displayConventionDeclaration(conventionDeclaration, i) %}
+{% macro displayConventionDeclaration(X, conventionDeclaration, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default">
                                 <div class="panel-body">
@@ -920,21 +918,21 @@
                                         <input id="conventionDeclaration_operation_{{i}}" name="conventionDeclaration_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="conventionDeclaration_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
+                                                <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.xml.display }}
                                                 </label>
                                                 <div class="col-xs-10">
                                                     <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" readonly>{{ conventionDeclaration.text }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
-                                        {{ widgets.optionsList("conventionDeclaration", i) }}
+                                        {{ widgets.scmModal(X, "conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
+                                        {{ widgets.optionsList(X, "conventionDeclaration", i) }}
                                 </div>
                             </div>
 {% endmacro %}
 
-{% macro displayGeneralContext(generalContext, i) %}
+{% macro displayGeneralContext(X, generalContext, i) %}
     {% import 'widgets.html' as widgets %} 
                             <div class="panel panel-default" id="generalContext_panel_{{i}}">
                                 <div class="panel-body">
@@ -943,21 +941,21 @@
                                         <input id="generalContext_operation_{{i}}" name="generalContext_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="generalContext_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label for="generalContext_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
+                                                <label for="generalContext_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.xml.display }}
                                                 </label>
                                                 <div class="col-xs-10">
                                                     <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" readonly>{{ generalContext.text }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
-                                        {{ widgets.optionsList("generalContext", i) }}
+                                        {{ widgets.scmModal(X, "generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
+                                        {{ widgets.optionsList(X, "generalContext", i) }}
                                 </div>
                             </div> 
 {% endmacro %}
 
-{% macro displayStructureOrGenealogy(structureOrGenealogy, i) %}
+{% macro displayStructureOrGenealogy(X, structureOrGenealogy, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
                                 <div class="panel-body">
@@ -966,21 +964,21 @@
                                         <input id="structureOrGenealogy_operation_{{i}}" name="structureOrGenealogy_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="structureOrGenealogy_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
+                                                <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.xml.display }}
                                                 </label>
                                                 <div class="col-xs-10">
                                                     <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" readonly>{{ structureOrGenealogy.text }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
-                                        {{ widgets.optionsList("structureOrGenealogy", i) }}
+                                        {{ widgets.scmModal(X, "structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
+                                        {{ widgets.optionsList(X, "structureOrGenealogy", i) }}
                                 </div>
                             </div>
 {% endmacro %}
 
-{% macro displayMandate(mandate, i) %}
+{% macro displayMandate(X, mandate, i) %}
     {% import 'widgets.html' as widgets %}  
                             <div class="panel panel-default" id="mandate_panel_{{i}}">
                                 <div class="panel-body">
@@ -989,34 +987,34 @@
                                         <input id="mandate_operation_{{i}}" name="mandate_operation_{{i}}" type="hidden" value=""/>
                                         <div class="col-xs-10" id="mandate_datapart_{{i}}">
                                             <div class="form-group">
-                                                <label for="mandate_text_{{i}}" class="control-label col-xs-2">
-                                                    XML
+                                                <label for="mandate_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
+                                                    {{ X.xml.display }}
                                                 </label>
                                                 <div class="col-xs-10">
                                                     <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" readonly>{{ mandate.text }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
-                                        {{ widgets.scmModal("mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
-                                        {{ widgets.optionsList("mandate", i) }}
+                                        {{ widgets.scmModal(X, "mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
+                                        {{ widgets.optionsList(X, "mandate", i) }}
                                 </div>
                             </div>
 {% endmacro %}
 
-{% macro displayExist(exist, i) %}
+{% macro displayExist(X, exist, i) %}
     {% import 'widgets.html' as widgets %}  
     {% import 'date_entry.html' as dates %}  
 
      
     {% if exist.isRange %}
-        {{ dates.dateRangeEntry('Exist Dates', 'exist', exist, i) }}
+        {{ dates.dateRangeEntry(X, 'Exist Dates', 'exist', exist, i) }}
     {% else %}
-        {{ dates.dateEntry('Exist Dates', 'exist', exist, i) }}
+        {{ dates.dateEntry(X, 'Exist Dates', 'exist', exist, i) }}
     {% endif %}
 
 {% endmacro %}
 
-{% macro displaySCM(short, i, j, scm) %}
+{% macro displaySCM(X, short, i, j, scm) %}
     {% import 'widgets.html' as widgets %}  
                    <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
                         <div class="panel-body">
@@ -1025,16 +1023,16 @@
                             <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value=""/>
                             <div class="col-xs-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
                                 <div class="form-group">
-                                    <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4">
-                                        Source Data
+                                    <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.scmSourceData.display }}
                                     </label>
                                     <div class="col-xs-8">
                                         <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" readonly>{{ scm.sourceData }}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Citation (Source)
+                                    <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.scmCitation.display }}
                                         </label>
                                     <div class="col-xs-8" id="selectsource_scm_{{short}}_citation_{{j}}_{{i}}">
                                         <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
@@ -1045,16 +1043,16 @@
                                 
                                 
                                 <div class="form-group">
-                                    <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4">
-                                        Sub Citation
+                                    <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.scmSubCitation.display }}
                                     </label>
                                     <div class="col-xs-8">
                                         <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" readonly>{{ scm.subCitation }}</textarea>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Descriptive Rule
+                                    <label class="control-label col-xs-4" data-content="{{X.scmDescriptiveRule.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.scmDescriptiveRule.display }}
                                         </label>
                                     <div class="col-xs-8" id="select_scm_{{short}}_descriptiveRule_{{j}}_{{i}}">
                                         <input id="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.id }}"/>
@@ -1068,8 +1066,8 @@
                                 <input type="hidden" id="scm_{{short}}_language_id_{{j}}_{{i}}" name="scm_{{short}}_language_id_{{j}}_{{i}}" value="{{scm.language.id}}"/>
                                 <input type="hidden" id="scm_{{short}}_language_version_{{j}}_{{i}}" name="scm_{{short}}_language_version_{{j}}_{{i}}" value="{{scm.language.version}}"/>
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Language
+                                    <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.language.display }}
                                     </label>
                                     <div class="col-xs-8" id="select_scm_{{short}}_languagelanguage_{{j}}_{{i}}">
                                         <input id="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.language.id }}"/>
@@ -1080,8 +1078,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Script
+                                    <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.script.display }}
                                     </label>
                                     <div class="col-xs-8" id="select_scm_{{short}}_languagescript_{{j}}_{{i}}">
                                         <input id="scm_{{short}}_languagescript_id_{{j}}_{{i}}" name="scm_{{short}}_languagescript_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.id }}"/>
@@ -1092,8 +1090,8 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4">
-                                        Descriptive Note
+                                    <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.descriptiveNote.display }}
                                     </label>
                                     <div class="col-xs-8">
                                         <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" readonly>{{ scm.note }}</textarea>
@@ -1102,7 +1100,7 @@
 
 
                             </div>
-                            {{ widgets.scmOptionsList(short, i, j) }}
+                            {{ widgets.scmOptionsList(X, short, i, j) }}
 
                         </div>
                     </div>

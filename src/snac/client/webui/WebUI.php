@@ -91,7 +91,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
         // Create the display for local templates
         $display = new display\Display();
-
+        $display->setLanguage("english");
 
         // Code to take the site down for maintenance
         if (0) {

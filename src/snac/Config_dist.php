@@ -111,6 +111,11 @@ class Config {
     /**
      * @var string Location of the template directory
      */
+    public static $TEMPLATE_LANGUAGE_DIR = "full/path/to/src/snac/client/webui/template/languages";
+
+    /**
+     * @var string Location of the template directory
+     */
     public static $TEMPLATE_DIR = "full/path/to/src/snac/client/webui/templates";
 
     /**

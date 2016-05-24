@@ -1,14 +1,14 @@
-{% macro optionsList(short, i) %}
+{% macro optionsList(X, short, i) %}
 <div class="col-xs-2">
     <div class="list-group">
-        <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span class="glyphicon glyphicon-leaf"></span> SCM</a>
-        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span> Edit</a>
-        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span> Trash</a>
+        <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span class="glyphicon glyphicon-leaf"></span> {{ X.scm.display }}</a>
+        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span> {{ X.edit.display }}</a>
+        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span> {{ X.trash.display }}</a>
     </div>
 </div>
 {% endmacro %}
 
-{% macro displayURI(uri) %}
+{% macro displayURI(X, uri) %}
     {% if uri %}
         <p class="form-control-static">uri</p>
     {% else %}
@@ -16,7 +16,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro scmButton(short, i) %}
+{% macro scmButton(X, short, i) %}
 <!--<div class="col-xs-2">-->
     <button type="button" class="btn btn-default" data-toggle="modal"
     data-target="#{{short}}_scm_modal_{{i}}">
@@ -25,7 +25,7 @@
 <!--</div>-->
 {% endmacro %}
 
-{% macro scmOptionsList(short, i, j) %}
+{% macro scmOptionsList(X, short, i, j) %}
 <div class="col-xs-2">
     <div class="list-group text-center">
         <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span></a>
@@ -34,7 +34,7 @@
 </div>
 {% endmacro %}
 
-{% macro scmModal(short, i, title, type, data) %}
+{% macro scmModal(X, short, i, title, type, data) %}
     {% import _self as widgets %}   
     {% import 'edit_components.html' as components %}
 <div class="modal fade scm-modal" id="{{short}}_scm_modal_{{i}}" tabindex="-1"
@@ -61,7 +61,7 @@
                     {% set j = 0 %}
                     {% for scm in data.snacControlMetadata %}
                     
-                        {{ components.displaySCM(short, i, j, scm) }}
+                        {{ components.displaySCM(X, short, i, j, scm) }}
  
                     {% set j = j + 1 %}
                     {% endfor %}

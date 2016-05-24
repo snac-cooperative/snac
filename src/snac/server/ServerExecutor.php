@@ -128,6 +128,7 @@ class ServerExecutor {
      * @return boolean true if user authenticated, false if not
      */
     public function authenticateUser($user) {
+        $this->logger->addDebug("Starting Authentication function");
         if ($user != null) {
             $this->logger->addDebug("Attempting to authenticate user", $user->toArray());
 
@@ -192,7 +193,9 @@ class ServerExecutor {
             return false;
         }
 
+
         // If the user is null, then we're okay on authentication (no permissions)
+        $this->logger->addDebug("User object was null: no permissions but okay auth");
         return true;
     }
 
