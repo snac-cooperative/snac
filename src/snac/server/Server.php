@@ -106,13 +106,17 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $executor = new \snac\server\ServerExecutor($user);
         
+        $this->logger->addDebug("Authenticating User");
+        
         // Authentication happens at each query
+        if ($user != null)
+            $user = new \snac\data\User($user);
         if (!$executor->authenticateUser($user)) {
             throw new \snac\exceptions\SNACUserException("User is not authorized");
         }
         
 
-        $this->logger->addDebug("Switching on user command");
+        $this->logger->addDebug("Switching on command");
         
         if (!isset($this->input["command"])) {                
             throw new \snac\exceptions\SNACUnknownCommandException("No command given");
