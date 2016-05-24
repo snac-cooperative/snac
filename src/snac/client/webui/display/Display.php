@@ -35,6 +35,12 @@ class Display {
      * @var string[] Language tags for the display object
      */
     private $language = null;
+    
+    /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    private $logger = null;
+
 
     /**
      * Constructor
@@ -44,8 +50,13 @@ class Display {
      * @param string optional $template Filename of the template to load
      */
     public function __construct($template = null) {
+        global $log;
 
         $this->templateFileName = $template;
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('Display');
+        $this->logger->pushHandler($log);
         return;
     }
 
