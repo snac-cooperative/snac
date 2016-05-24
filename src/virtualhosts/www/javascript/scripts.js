@@ -801,7 +801,8 @@ function updateNameEntryHeading(i) {
     for (var j = 0; j < parseInt($('#nameEntry_component_next_j_'+i).text()); j++) {
          text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
     }
-    $("#nameEntry_heading_"+i).text(text);
+    $("#nameEntry_heading_"+i).text(text.trim());
+    $("#nameEntry_original_"+i).val(text.trim());
 }
 
 /**

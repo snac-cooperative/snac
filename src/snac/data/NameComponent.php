@@ -20,7 +20,7 @@ namespace snac\data;
  *
  * @author Robbie Hott
  */
-abstract class NameComponent extends AbstractData {
+class NameComponent extends AbstractData {
 
     /**
      * string $text The text of the name component
