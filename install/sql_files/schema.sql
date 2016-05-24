@@ -324,9 +324,9 @@ create table name_component (
         name_id int,  -- fk to name.id
         version int,
      is_deleted boolean default false,
-       nc_label text, -- at least semi-controlled vocab or at least semi-controlled? Surname, forename, etc.
-       nc_value text, -- the string value of the component, Smith, John, etc.
-        c_order int,  -- component order within this name, assuming direct order? Or assume indirect order?
+       nc_label int,  -- typeID, getType() fk to vocabulary.id, surname, forename, etc.
+       nc_value text, -- text, getText(), the string value of the component, Smith, John, etc.
+        c_order int,  -- component order within this name, as entered.
         primary key(id, version)
     );
 

@@ -135,6 +135,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "ANF",
                     "id": null,
                     "version": null,
@@ -142,6 +143,7 @@
                     "dates": []
                 }
             ],
+            "components": [],
             "language": {
                 "dataType": "Language",
                 "language": {
@@ -173,6 +175,7 @@
             "original": "Test Collectivit\u00e9",
             "preferenceScore": null,
             "contributors": [],
+            "components": [],
             "language": null,
             "id": null,
             "version": null,
@@ -210,6 +213,7 @@
             "original": "Collectivit\u00e9 test",
             "preferenceScore": null,
             "contributors": [],
+            "components": [],
             "language": null,
             "id": null,
             "version": null,

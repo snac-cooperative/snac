@@ -962,11 +962,11 @@ class DBUtil
             $neObj->setOriginal($oneName['original']);
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']); 
-            $this->populateMeta($vhInfo, $neObj);
-            $this->populateLanguage($vhInfo, $neObj, $oneName['id']);
             /*
-             * This line works because $oneName['id'] == $neObj->getID(). Both are record id, not
-             * constellation id. Both are non-null when reading from the database.
+             * Contributor
+             * 
+             * This line works because $oneName['id'] == $neObj->getID() after calling setDBInfo(). Both are
+             * record id, not constellation id. Both are non-null when reading from the database.
              */ 
             $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
             foreach ($cRows as $contrib)
@@ -978,6 +978,30 @@ class DBUtil
                 $ctObj->setDBInfo($contrib['version'], $contrib['id']);
                 $neObj->addContributor($ctObj);
             }
+
+            /*
+             * Component
+             */
+            $componentRows = $this->sql->selectComponent($neObj->getID(), $vhInfo['version']);
+            foreach ($componentRows as $cp)
+            {
+                /* 
+                 * | class         | json key        | php property                        | getter     | setter      | SQL field   |
+                 * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
+                 * | NameComponent | "text"          | $this->text                         | getText()  | setText()   | nc_value    |
+                 * | NameComponent | "order"         | $this->order                        | getOrder() | setOrder()  | c_order     |
+                 * | NameComponent | "type"          | $this->type                         | getType()  | setType()   | nc_label    |
+                 * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
+                 */
+                $cpObj = new \snac\data\NameComponent();
+                $cpObj->setText($cp['nc_value']);
+                $cpObj->setOrder($cp['c_order']);
+                $cpObj->setType($this->populateTerm($cp['nc_label']));
+                $cpObj->setDBInfo($cp['version'], $cp['id']);
+                $neObj->addComponent($cpObj);
+            }
+            $this->populateMeta($vhInfo, $neObj);
+            $this->populateLanguage($vhInfo, $neObj, $oneName['id']);
             $this->populateDate($vhInfo, $neObj);
             $cObj->addNameEntry($neObj);
         }
@@ -3068,22 +3092,23 @@ class DBUtil
                 $ndata->setVersion($vhInfo['version']);
             }
             $this->saveMeta($vhInfo, $ndata, 'name', $nameID);
+            /*
+             * Inline the code that would be saveComponent() because it is only used here. 
+             */ 
             if ($componentList = $ndata->getComponents())
             {
                 foreach($componentList as $cp)
                 {
-                    // Why initialize $rid? if(true) $rid will be set and used.
-                    $rid = $cp->getID();
                     if ($this->prepOperation($vhInfo, $cp))
                     {
                         $rid = $this->sql->insertComponent($vhInfo,
-                                                             $cp->getID(),
-                                                             $nameID,
-                                                             $cp->getText(),
-                                                             $this->thingID($cp->getType()),
-                                                             $cp->getOrder());
-                        $cb->setID($rid);
-                        $cb->setVersion($vhInfo['version']);
+                                                           $cp->getID(),
+                                                           $nameID,
+                                                           $cp->getText(),
+                                                           $this->thingID($cp->getType()),
+                                                           $cp->getOrder());
+                        $cp->setID($rid);
+                        $cp->setVersion($vhInfo['version']);
                     }
                 }
             }
