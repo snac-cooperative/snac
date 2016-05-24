@@ -241,8 +241,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
                                 <input type="hidden" id="biogHist_language_version_0" name="biogHist_language_version_0" value="{{data.biogHists[0].language.version}}"/>
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Language
+                                    <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.language.display }}
                                     </label>
                                     <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
                                         <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
@@ -255,8 +255,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
                                 <div class="form-group">
-                                    <label class="control-label col-xs-4">
-                                        Script
+                                    <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                                        {{ X.script.display }}
                                     </label>
                                     <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
                                         <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
@@ -590,8 +590,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                         <div class="panel-body">
                             <div class="form-group">
-                                <label for="ark" class="control-label col-xs-3">
-                                    Permalink
+                                <label for="ark" class="control-label col-xs-3" data-content="{{X.ark.tooltip}}" data-toggle="popover" data-placement="top">
+                                    {{ X.ark.display }}
                                 </label>
                                 <div class="col-xs-9">
                                     <p class="form-control-static">{{ data.ark }}</p>

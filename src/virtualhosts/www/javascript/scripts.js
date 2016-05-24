@@ -48,6 +48,7 @@ function displayErrorMessage(err) {
  * @returns boolean false to keep the browser from redrawing the page
  */
 function addSCMEntry(short, i){
+	var id = j + "_" + i;
 	//next_scm_{{short}}_{{i}}_j
 	var j = parseInt($('#next_scm_'+short+'_'+i+'_j').text());
     somethingHasBeenEdited = true;
@@ -56,6 +57,7 @@ function addSCMEntry(short, i){
     $('#add_scm_'+short+'_'+i+'_div').after(html);
     $('#next_scm_'+short+'_'+i+'_j').text(j + 1);
     turnOnSCMButtons(short, i, j);
+    turnOnTooltips("scm_"+short, id);
     makeSCMEditable(short, i, j);
     return false;
 }
@@ -776,6 +778,7 @@ function newNameEntryContributor(i) {
     $('#nameEntry_contributor_add_div_'+i).before(html);
 
     $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
+    turnOnTooltips("nameEntry_contributor_" + nextid, i);
     subMakeEditable("nameEntry_contributor_" + nextid, i);
 
     // Put the updated version number back in the DOM
