@@ -427,6 +427,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * someone messes with vocabulary this should break. Multilingual vocabulary will break this, and will
          * break a query to retrieve the 697, so there's not much point in trying to use a query instead of
          * simply hard coding the id.
+         *
+         * (old)
          * 
          * wfdb=> select * from vocabulary where type='entity_type';
          *  id  |    type     |     value     | uri | description 
@@ -435,11 +437,22 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          *  697 | entity_type | family        |     | 
          *  696 | entity_type | corporateBody |     | 
          * (3 rows)
+         *
+         * may 24 2016 Things were added to the vocab, now the id value is different
+         * 
+         * wfdb=> select * from vocabulary where type='entity_type';
+         * id  |    type     |     value     | uri | description 
+         * -----+-------------+---------------+-----+-------------
+         * 700 | entity_type | person        |     | 
+         * 699 | entity_type | family        |     | 
+         * 698 | entity_type | corporateBody |     | 
+         * (3 rows)
+         
          */
 
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
-        $readObj->getEntityType()->setID(697);
+        $readObj->getEntityType()->setID(699);
         $readObj->getEntityType()->setTerm('family');
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $xObj = $this->dbu->writeConstellation($this->user, $readObj,

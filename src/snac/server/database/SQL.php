@@ -1885,6 +1885,39 @@ class SQL
     }
 
     /**
+     * Select a list of name component records
+     *
+     * Select all related name_component records and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * name_component.name_id=name.id.
+     *
+     * @param integer $nameID Record id of related name.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+     */
+    public function selectComponent($nameID, $version)
+    {
+        $qq_2 = 'select_component';
+        $this->sdb->prepare($qq_2,
+                            'select 
+                            aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+                            from name_component as aa,
+                            (select name_id,max(version) as version from name_component where name_id=$1 and version<=$2 group by name_id) as bb
+                            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq_2, array($nameID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
+
+    /**
      * Insert a contributor record
      *
      * Related to name where contributor.name_id=name.id. This is a one-sided fk relationship also used for
