@@ -29,6 +29,11 @@ class Config {
 
 
     /**
+     * @var boolean Whether the system in OFFLINE (Maintenance) mode
+     */
+    public static $SITE_OFFLINE = false;
+
+    /**
      * @var boolean Whether the system is in DEBUG mode
      */
     public static $DEBUG_MODE = true;

@@ -94,7 +94,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $display->setLanguage("english");
 
         // Code to take the site down for maintenance
-        if (0) {
+        if (\snac\Config::$SITE_OFFLINE) {
             $display->setTemplate("down_page");
             array_push($this->responseHeaders, "Content-Type: text/html");
             $this->response = $display->getDisplay();
