@@ -178,7 +178,11 @@ class ServerExecutor {
             } else if ($this->user !== false && $this->user->getToken() != null) {
                 // Try to add the session (check google first)
 
-                if ($this->checkOAuth($this->user) &&
+                if (isset($this->user->getToken()["authority"]) &&
+                    $this->user->getToken()["authority"] == "snac") {
+                    // This was a fake but legit token from SNAC
+                    return true;
+                } else if ($this->checkOAuth($this->user) &&
                     $this->uStore->addSession($this->user)) {
                     // Google approved the session and we successfully added it
                     return true;

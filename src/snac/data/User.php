@@ -370,7 +370,8 @@ class User implements \Serializable {
     public function generateTemporarySession($hours = 2) {
         $token = array(
                 "access_token" => time(),                // use time() to be unique-ish
-                "expires" => time() + ($hours * 60 * 60) // Generates expiration $hours away
+                "expires" => time() + ($hours * 60 * 60), // Generates expiration $hours away
+                "authority" => "snac"                   // We faked this session
         );
         $this->setToken($token);
     }
