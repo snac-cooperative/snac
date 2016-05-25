@@ -28,12 +28,17 @@ CREATE SEQUENCE "vocabulary_id_seq";
 -- case. Our controlled vocabulary and authority data will often not be reloaded when the rest of the database
 -- is reset.
 
+-- Field entity_group is used to group the name_component vocabulary for the 3 known entity types. There are
+-- only 3 possible values for entity_group, which are the row id for the three vocabulary.type='entity_type'
+-- rows. vocabulary.type will be 'name_component' when entity_group is not null.
+
 create table if not exists vocabulary (
-        id          int primary key default nextval('vocabulary_id_seq'),
-        type        text,        -- Type of the vocab
-        value       text,        -- Value of the controlled vocab term
-        uri         text,        -- URI for this controlled vocab term, if it exists
-        description text         -- Textual description of this vocab term
+        id           int primary key default nextval('vocabulary_id_seq'),
+        type         text, -- Type of the vocab
+        value        text, -- Value of the controlled vocab term
+        uri          text, -- URI for this controlled vocab term, if it exists
+        description  text, -- Textual description of this vocab term
+        entity_group int   -- name component grouping, self join vocabulary.id where type='entity_type'
         );
 
 create unique index vocabulary_idx on vocabulary(id);
