@@ -1869,12 +1869,11 @@ class SQL
         $qq_2 = 'insert_component';
         $this->sdb->prepare($qq_2,
                             'insert into name_component
-                            (version, main_id, id, name_id, nc_value, nc_label, c_order)
+                            (version, id, name_id, nc_value, nc_label, c_order)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7)');
+                            ($1, $2, $3, $4, $5, $6)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
-                                  $vhInfo['main_id'],
                                   $id,
                                   $nameID,
                                   $text,
