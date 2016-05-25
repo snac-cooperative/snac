@@ -95,6 +95,16 @@ body {
     display: inline-block;
 }
 
+.select2-bootstrap-append .form-control-static {
+    width: 100%; 
+    padding-right: 10px;
+    display: table;
+    text-align: right;
+    table-layout: fixed;
+    float:left;
+}
+/* <p style="width: 100%; padding-right: 10px;" class="control-label select2-container--bootstrap">Part</p> */
+
 @media (min-width: 992px) {
     .affix {
         position: fixed;
