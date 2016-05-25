@@ -130,7 +130,7 @@ class DBUser
      *
      * @param \snac\data\User $user A user object.
      *
-     * @return \snacData\User Return the cloned User with the userID set (and all other fields populated)
+     * @return \snac\data\User Return the cloned User with the userID set (and all other fields populated)
      */
     public function createUser($user)
     {
@@ -143,7 +143,11 @@ class DBUser
                                                 $user->getAvatar(),
                                                 $user->getAvatarSmall(),
                                                 $user->getAvatarLarge(),
-                                                $user->getEmail());
+                                                $user->getEmail(),
+                                                $user->getWorkEmail(),
+                                                $user->getWorkPhone(),
+                                                $user->getAffiliationID(),
+                                                $user->getPreferredRules());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
             $this->addDefaultRole($newUser);
@@ -193,7 +197,11 @@ class DBUser
                                       $user->getAvatarSmall(),
                                       $user->getAvatarLarge(),
                                       $user->getEmail(),
-                                      $user->getUserName());
+                                      $user->getUserName(),
+                                      $user->getWorkEmail(),
+                                      $user->getWorkPhone(),
+                                      $user->getAffiliationID(),
+                                      $user->getPreferredRules());
     }
     
 
@@ -284,6 +292,10 @@ class DBUser
         $user->setAvatarLarge($record['avatar_large']);
         $user->setEmail($record['email']);
         $user->setRoleList($this->listUserRole($user));
+        $user->setWorkEmail($record['work_email']);
+        $user->setWorkPhone($record['work_phone']);
+        $user->setAffiliationID($record['affiliation']);
+        $user->setPreferredRules($record['preferred_rules']);
         return $user;
     }
 

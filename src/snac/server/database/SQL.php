@@ -127,15 +127,32 @@ class SQL
      * @param string $avatarSmall The small avatar
      * @param string $avatarLarge The large avatar
      * @param string $email The email address, not unique
+     * @param string $workEmail Work email address
+     * @param string $workPhone Work phone number
+     * @param integer $affiliationID Foreign key to ic_id of the SNAC constellation for affiliated institution
+     * @param string $preferredRules Preferred descriptive name rules
      * @return integer Record row id, unique, from sequence id_seq.
      */ 
-    public function insertUser($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email)
+    public function insertUser($userName, 
+                               $firstName, 
+                               $lastName, 
+                               $fullName, 
+                               $avatar, 
+                               $avatarSmall, 
+                               $avatarLarge, 
+                               $email,
+                               $workEmail,
+                               $workPhone,
+                               $affiliationID,
+                               $preferredRules)
     {
         $result = $this->sdb->query(
-            'insert into appuser (username, first, last, fullname, avatar, avatar_small, avatar_large, email)
-            values ($1, $2, $3, $4, $5, $6, $7, $8)
+            'insert into appuser 
+            (username, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email, work_phone, affiliation, preferred_rules)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             returning id',
-            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email));
+            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email,
+                  $workEmail, $workPhone, $affiliationID, $preferredRules));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
@@ -368,13 +385,15 @@ class SQL
      * @param string $email The email address
      * @param string $userName The user name
      */ 
-    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName)
+    public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
+                               $workEmail, $workPhone, $affiliationID, $preferredRules)
     {
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, userName=$9
+            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, preferred_rules=$13
             where appuser.id=$1 returning id',
-            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName));
+            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
+                  $workEmail, $workPhone, $affiliationID, $preferredRules));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
         {
@@ -443,13 +462,15 @@ class SQL
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * 
-     * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email
+     * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email,
+     * work_phone, affiliation, preferred_rules
      */ 
     public function selectUserByID($uid)
     {
         $result = $this->sdb->query(
             "select id,active,username,email,first,last,
-            fullname,avatar,avatar_small,avatar_large from appuser where appuser.id=$1",
+            fullname,avatar,avatar_small,avatar_large,work_email, work_phone, affiliation,preferred_rules
+            from appuser where appuser.id=$1",
             array($uid));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('active', $row))
@@ -608,16 +629,16 @@ class SQL
      *
      * @param integer $mainID The constellation ID
      * 
-     * @return integer Version number from version_history.id returned as 'version', as is our convention.
+     * @return integer Version number from version_history.version 
      *
      */
     public function selectCurrentVersion($mainID)
     {
         $result = $this->sdb->query(
-            'select max(id) as version 
-            from version_history
-            where version_history.main_id=$1',
-            array($mainID));
+                                    'select max(version) as version 
+                                    from version_history
+                                    where version_history.id=$1',
+                                    array($mainID));
         $row = $this->sdb->fetchrow($result);
         return $row['version'];
     }
@@ -637,8 +658,8 @@ class SQL
     public function selectStatus($mainID, $version)
     {
         $result = $this->sdb->query(
-            'select status from version_history where main_id=$1 and id=$2',
-            array($mainID, $version));
+                                    'select status from version_history where id=$1 and version=$2',
+                                    array($mainID, $version));
         $row = $this->sdb->fetchrow($result);
         return $row['status'];
     }
@@ -666,7 +687,7 @@ class SQL
      * @param integer $offset An offset to jump into the list of records in the database. Not optional
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
-     * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
+     * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */ 
     public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
     {
@@ -681,12 +702,12 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
 
         $queryString = sprintf(
-            'select aa.id as version, aa.main_id
+            'select aa.version, aa.id as ic_id
             from version_history as aa,
-            (select max(bb.id) as id,bb.main_id from version_history as bb group by bb.main_id) as cc
+            (select max(bb.version) as version,bb.id from version_history as bb group by bb.id) as cc
             where
-            aa.main_id=cc.main_id and
             aa.id=cc.id and
+            aa.version=cc.version and
             aa.user_id=$1 and
             aa.status = $2 %s %s', $limitStr, $offsetStr);
         $result = $this->sdb->query($queryString,
@@ -694,7 +715,7 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $mainID = $row['main_id'];
+            $mainID = $row['ic_id'];
             $version = $row['version'];
             /*
              * I think the query above works, returning the max() only when that version also has the required
@@ -795,7 +816,7 @@ class SQL
      * @param integer $offset An offset to jump into the list of records in the database. Not optional
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
-     * @return string[] Associative list with keys 'version', 'main_id'. Values are integers.
+     * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */ 
     public function selectListByStatus($status = 'published', $limit, $offset)
     {
@@ -804,21 +825,21 @@ class SQL
         $limitStr = $this->doLOValue('limit', $limit);
         $offsetStr = $this->doLOValue('offset', $offset);
         $queryString = sprintf(
-            'select aa.id as version, aa.main_id
+            'select aa.version, aa.id as ic_id
             from version_history as aa,
-            (select max(bb.id) as id,bb.main_id from version_history as bb group by bb.main_id) as cc
+            (select max(bb.version) as version,bb.id from version_history as bb group by bb.id) as cc
             where
-            aa.main_id=cc.main_id and
             aa.id=cc.id and
+            aa.version=cc.version and
             aa.status = $1
-            order by aa.id desc %s %s', $limitStr, $offsetStr);
+            order by aa.version desc %s %s', $limitStr, $offsetStr);
         
         $result = $this->sdb->query($queryString,
                                     array($status));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $mainID = $row['main_id'];
+            $mainID = $row['ic_id'];
             $version = $row['version'];
             /*
              * I think the query above works, returning the max() only when that version also has the required
@@ -857,31 +878,34 @@ class SQL
     /**
      * select mainID by arkID
      *
-     * nrd.main_id is the constellation id.
+     * nrd.ic_id is the constellation id.
      *
-     * nrd.id is a typical row id (aka record id)
+     * Do not use nrd.id. The row identifier for nrd is nrd.ic_id. Do not join to table nrd. If you need to
+     * join to the constellation use version_history.id. They are both the same, but nrd is a data table,
+     * and version_history is the "root" of the constellation.
      *
-     * Constellation->getID() gets the main_id aka constellation id
+     * Constellation->getID() gets the ic_id aka constellation id aka nrd.ic_id aka
+     * version_history.id.
      *
-     * non-constellation->getID() gets the row id. Non-constellation objects get the main_id from the
-     * constellation, and it is not stored in these objects themselves. I mention this (again) because it
+     * non-constellation->getID() gets the row id. Non-constellation objects get the ic_id from the
+     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
      * (again) caused confusion in the SQL below (now fixed).
      *
      * @param string $arkID The ARK id of a constellation
      *
-     * @return integer The constellation ID aka mainID akd main_id aka version_history.main_id.
+     * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
      */
     public function selectMainID($arkID)
     {
         $result = $this->sdb->query(
-            'select nrd.main_id
+            'select nrd.ic_id
             from version_history, nrd
             where
             nrd.ark_id=$1
-            and version_history.main_id=nrd.main_id',
+            and version_history.id=nrd.ic_id',
             array($arkID));
         $row = $this->sdb->fetchrow($result);
-        return $row['main_id'];
+        return $row['ic_id'];
     }
 
 
@@ -902,14 +926,14 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A list of records (list of lists) with inner keys matching the database field names:
-     * version, main_id, id, text, note, uri, language_id.
+     * version, ic_id, id, text, note, uri, language_id.
      *
      */
     public function selectSource($fkID, $version)
     {
         $qq = 'select_source';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where fk_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -927,8 +951,8 @@ class SQL
      * Select all source id only by constellation ID
      *
      * Select only source.id values for a given constellation ID. Use this to get constellation source id
-     * values, which higher level code uses to call populateSourceByID(). If you want full source record data,
-     * then you should use selectSourceByID().
+     * values, which higher level code uses inside populateSourceConstellation(), and which calls
+     * populateSourceByID(). If you want full source record data, then you should use selectSourceByID().
      *
      * @param integer $mainID A foreign key to record in another table.
      *
@@ -936,7 +960,6 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A list of list (records) with key 'id'
-     *
      */
     public function selectSourceIDList($mainID, $version)
     {
@@ -944,7 +967,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'select aa.id
                             from source as aa,
-                            (select id,max(version) as version from source where main_id=$1 and version<=$2 group by id) as bb
+                            (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($mainID, $version));
         $all = array();
@@ -962,20 +985,20 @@ class SQL
      *
      * Select source where the most recent version <= $version for source id $sourceID and not deleted.
      *
-     * @param integer $fkID A foreign key to record in another table.
+     * @param integer $sourceID A record ID here in the source table. Not a foreign key.
      *
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
      * @return string[] A single source record keys matching the database field names:
-     * version, main_id, id, text, note, uri, language_id.
+     * version, ic_id, id, text, note, uri, language_id.
      *
      */
     public function selectSourceByID($sourceID, $version)
     {
         $qq = 'select_source_by_id';
         $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
                             from source as aa,
                             (select id,max(version) as version from source where id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
@@ -993,7 +1016,7 @@ class SQL
     /**
      * Insert a record into table source.
      *
-     * Write a source objec to the database. These are per-constellation so they have main_id and no foreign
+     * Write a source objec to the database. These are per-constellation so they have ic_id and no foreign
      * keys. These are linked to other tables by putting a source.id foreign key in that related table. 
      * Language related is a Language object, and is saved in table language. It is related where
      * source.id=language.fk_id. There is no language_id in table source, and there should not be. However, a
@@ -1001,7 +1024,7 @@ class SQL
      * The "type" field was always "simple" and is no longer used.
      * 
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -1014,7 +1037,7 @@ class SQL
      * @param string $uri URI of this source
      *
      * @return integer The id value of this record. Sources have a language, so we need to return the $id
-     * which is used by language as a foreign key.
+     * because it is used by language as a foreign key.
      *
      */
     public function insertSource($vhInfo, $id, $displayName, $text, $note, $uri)
@@ -1026,12 +1049,12 @@ class SQL
         $qq = 'insert_source';
         $this->sdb->prepare($qq,
                             'insert into source
-                            (version, main_id, id, display_name, text, note, uri)
+                            (version, ic_id, id, display_name, text, note, uri)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
-                                  $vhInfo['main_id'],
+                                  $vhInfo['ic_id'],
                                   $id,
                                   $displayName,
                                   $text,
@@ -1047,7 +1070,7 @@ class SQL
      *
      * If the $id arg is null, get a new id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param int $id Record id.
      *
@@ -1063,12 +1086,12 @@ class SQL
         $qq = 'insert_bioghist';
         $this->sdb->prepare($qq,
                             'insert into biog_hist
-                            (version, main_id, id, text)
+                            (version, ic_id, id, text)
                             values
                             ($1, $2, $3, $4)');
         $this->sdb->execute($qq,
                             array($vhInfo['version'],
-                                  $vhInfo['main_id'],
+                                  $vhInfo['ic_id'],
                                   $id,
                                   $text));
         $this->sdb->deallocate($qq);
@@ -1079,7 +1102,7 @@ class SQL
     /**
      * Insert a constellation occupation. If the $id arg is null, get a new id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param int $id Record id occupation.id
      *
@@ -1100,12 +1123,12 @@ class SQL
         $qq = 'insert_occupation';
         $this->sdb->prepare($qq,
                             'insert into occupation
-                            (version, main_id, id, occupation_id, vocabulary_source, note)
+                            (version, ic_id, id, occupation_id, vocabulary_source, note)
                             values
                             ($1, $2, $3, $4, $5, $6)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $termID,
                                             $vocabularySource,
@@ -1154,11 +1177,11 @@ class SQL
     /**
      * Insert a version_history record.
      *
-     * This always increments the version_history.id which is the version number. An old comment said: "That
+     * This always increments the version_history.version which is the version number. An old comment said: "That
      * needs to not be incremented in some cases." That is certainly not possible now. Our rule is: always
      * increment version on any database operation.
      *
-     * The $mainID aka main_id may not be minted. If we have an existing $mainID we do not create a new
+     * The $mainID aka ic_id may not be minted. If we have an existing $mainID we do not create a new
      * one. This would be the case for update and delete.
      *
      * @param integer $mainID Constellation id
@@ -1174,10 +1197,7 @@ class SQL
      *
      * @param string $note A string the user enters to identify what changed in this version.
      *
-     * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
-     * returned as 'id', but all the code knows that as the version number, so this code plays nice by
-     * returning it as 'version'. Note the "returning ..." part of the query.
-     *
+     * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'.
      */
     public function insertVersionHistory($mainID, $userid, $role, $status, $note)
     {
@@ -1186,18 +1206,18 @@ class SQL
             $mainID = $this->selectID();
         }
         $qq = 'insert_version_history';
-        // We need version_history.id and version_history.main_id returned.
+        // We need version_history.id and version_history.id returned.
         $this->sdb->prepare($qq, 
                             'insert into version_history 
-                            (main_id, user_id, role_id, status, is_current, note)
+                            (id, user_id, role_id, status, is_current, note)
                             values
                             ($1, $2, $3, $4, $5, $6)
-                            returning id as version');
+                            returning version');
 
         $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
         $vhInfo['version'] = $row['version'];
-        $vhInfo['main_id'] = $mainID;
+        $vhInfo['ic_id'] = $mainID;
         $this->sdb->deallocate($qq);
         return $vhInfo;
     }
@@ -1206,12 +1226,12 @@ class SQL
     /**
      * New insert into version_history
      *
-     * We already know the version_history.id aka version, and main_id, so we are not relying on the default
-     * values. This all happens because we are using the same main_id across an entire constellation. And we
+     * We already know the version_history.version, and ic_id, so we are not relying on the default
+     * values. This all happens because we are using the same ic_id across an entire constellation. And we
      * might be using the same version across many Constellations and other inserts all in this current
      * session.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $appUserID User id
      *
@@ -1221,7 +1241,7 @@ class SQL
      *
      * @param string $note Note for this version
      *
-     * @return string[] $vhInfo associative list with keys: version, main_id
+     * @return string[] $vhInfo associative list with keys: version, ic_id
      *
      */
     public function insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note)
@@ -1229,13 +1249,13 @@ class SQL
         $qq = 'insert_into_version_history';
         $this->sdb->prepare($qq, 
                             'insert into version_history 
-                            (id, main_id, user_id, role_id, status, is_current, note)
+                            (version, id, user_id, role_id, status, is_current, note)
                             values 
                             ($1, $2, $3, $4, $5, $6, $7)
-                            returning id as version, main_id;');
+                            returning version, id as ic_id;');
 
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version'], $vhInfo['main_id'], $appUserID, $roleID, $status, true, $note));
+                                      array($vhInfo['version'], $vhInfo['ic_id'], $appUserID, $roleID, $status, true, $note));
         $vhInfo = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $vhInfo;
@@ -1244,7 +1264,7 @@ class SQL
     /**
      * Update a version_history record
      *
-     * Get a new version but keeping the existing main_id. This also uses DatabaseConnector->query() in an
+     * Get a new version but keeping the existing ic_id. This also uses DatabaseConnector->query() in an
      * attempt to be more efficient, or perhaps just less verbose.
      *
      * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
@@ -1258,14 +1278,11 @@ class SQL
      *
      * @param string $note A string the user enters to identify what changed in this version.
      *
-     * @param integer $main_id Constellation id
+     * @param integer $ic_id Constellation id
      *
-     * @return string[] $vhInfo An assoc list with keys 'version', 'main_id'. Early on, version_history.id was
-     * returned as 'id', but all the code knows that as the version number, so this code plays nice by
-     * returning it as 'version'. Note the "returning ..." part of the query.
-     *
+     * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'. 
      */
-    public function updateVersionHistory($appUserID, $roleID, $status, $note, $main_id)
+    public function updateVersionHistory($appUserID, $roleID, $status, $note, $ic_id)
     {
         /*
          * Note: query() as opposed to prepare() and execute()
@@ -1275,12 +1292,11 @@ class SQL
          *
          */
         $result = $this->sdb->query('insert into version_history
-                                    (main_id, user_id, role_id, status, is_current, note)
+                                    (id, user_id, role_id, status, is_current, note)
                                     values
                                     ($1, $2, $3, $4, $5, $6)
-                                    returning id as version'
-                                    ,
-                                    array($main_id, $appUserID, $roleID, $status, true, $note));
+                                    returning version',
+                                    array($ic_id, $appUserID, $roleID, $status, true, $note));
         $row = $this->sdb->fetchrow($result);
         return $row['version'];
     }
@@ -1292,7 +1308,7 @@ class SQL
      * SNACDate.php has fromDateOriginal and toDateOriginal, but the CPF lacks date components, and the
      * database "original" is only the single original string.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      * @param integer $id Record id. If null a new one will be minted.
      * @param integer $isRange Boolean if this is a date range
      * @param string $fromDate The from date
@@ -1341,7 +1357,7 @@ class SQL
         $qq = 'insert_date';
         $this->sdb->prepare($qq,
                             'insert into date_range
-                            (version, main_id, id, is_range, 
+                            (version, ic_id, id, is_range, 
                             from_date, from_type, from_bc, from_not_before, from_not_after, from_original,
                             to_date, to_type, to_bc, to_not_before, to_not_after, to_original, descriptive_note, fk_table, fk_id)
                             values
@@ -1349,7 +1365,7 @@ class SQL
         
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'], 
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $isRange,
                                             $fromDate,
@@ -1400,22 +1416,26 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table.
+     *
      * @return string[] A list of date_range fields/value as list keys matching the database field names.
      */
-    public function selectDate($did, $version)
+    public function selectDate($did, $version, $fkTable)
     {
         $qq = 'select_date';
-        $this->sdb->prepare($qq, 
-                            'select 
-                            aa.id, aa.version, aa.main_id, aa.is_range, aa.descriptive_note,
-                            aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
-                            aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
-                            aa.from_type,aa.to_type
-                            from date_range as aa,
-                            (select id,max(version) as version from date_range where fk_id=$1 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($did, $version));
+        $query = 'select 
+        aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
+        aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+        aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
+        aa.from_type,aa.to_type
+        from date_range as aa,
+        (select id,max(version) as version from date_range where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($did, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1448,21 +1468,23 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table, matches $tid aka fk_id aka fkID. 
+     *
      * @return string[] A list of fields/value as list keys matching the database field names: id,
-     * version, main_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
+     * version, ic_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
      */
-    public function selectPlace($tid, $version)
+    public function selectPlace($tid, $version, $fkTable)
     {
         $qq = 'select_place';
         $this->sdb->prepare($qq, 
-                            'select 
-                            aa.id, aa.version, aa.main_id, aa.confirmed, aa.original, 
-                            aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
-                            from place_link as aa,
-                            (select id,max(version) as version from place_link where fk_id=$1 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+                         'select 
+                         aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original, 
+                         aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
+                         from place_link as aa,
+                         (select id,max(version) as version from place_link where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+                         where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($tid, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1476,7 +1498,7 @@ class SQL
     /**
      * Insert into place_link.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      * 
      * @param integer $id The id
      *
@@ -1520,13 +1542,13 @@ class SQL
         $qq = 'insert_place';
         $this->sdb->prepare($qq,
                             'insert into place_link
-                            (version, main_id, id, confirmed, original, geo_place_id, type, role, note, score,  fk_id, fk_table)
+                            (version, ic_id, id, confirmed, original, geo_place_id, type, role, note, score,  fk_id, fk_table)
                             values 
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $confirmed,
                                             $original,
@@ -1548,9 +1570,13 @@ class SQL
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
      * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
      *
-     * Select a meta data record. We expect only one record, and will only return one (or zero). The query
-     * relies on table.id==fk_id where $tid is a foreign key of the record to which this applies. We do not
-     * know or care what the other record is.
+     * Old comment: Select a meta data record. We expect only one record, and will only return one (or zero).
+     *
+     * May 6 2016: Reading the code, we will return zero or many records. I'm pretty sure that anything which
+     * can have an SCM can have multiple SCM records related to it.
+     *
+     * The query relies on table.id==fk_id where $tid is a foreign key of the record to which this applies. We
+     * do not know or care what the other record is.
      *
      * Constrain sub query where fk_id, but group by id and return max(version) by id. Remember, our unique
      * key is always id,version. Joining the fk_id constrained subquery with the table on id and version gives
@@ -1565,22 +1591,24 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Related table name.
+     * 
      * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
-     * version, main_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
+     * version, ic_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
      * calling code has any use for fk_id, so we don't return it.
      */
-    public function selectMeta($tid, $version)
+    public function selectMeta($tid, $version, $fkTable)
     {
         $qq = 'select_meta';
         $this->sdb->prepare($qq, 
                             'select 
-                            aa.id, aa.version, aa.main_id, aa.citation_id, aa.sub_citation, aa.source_data, 
+                            aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data, 
                             aa.rule_id, aa.note
                             from scm as aa,
-                            (select id,max(version) as version from scm where fk_id=$1 and version<=$2 group by id) as bb
+                            (select id,max(version) as version from scm where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
 
-        $result = $this->sdb->execute($qq, array($tid, $version));
+        $result = $this->sdb->execute($qq, array($tid, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1603,7 +1631,7 @@ class SQL
      * $ruleID. The language is related back to this table where scm.id=language.fk_id and
      * scm.version=language.version. (Or something like that with version. It might be complicated.)
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id of this table.
      *
@@ -1633,12 +1661,12 @@ class SQL
         $qq = 'insert_meta';
         $this->sdb->prepare($qq,
                             'insert into scm
-                            (version, main_id, id, citation_id, sub_citation, source_data,
+                            (version, ic_id, id, citation_id, sub_citation, source_data,
                             rule_id, note, fk_id, fk_table)
                             values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $citationID,
                                             $subCitation,
@@ -1725,11 +1753,15 @@ class SQL
      * Insert nrd record
      *
      * Insert the non-repeating parts (non repeading data) of the constellation. No need to return a value as
-     * the nrd row key is main_id,version which corresponds to the row key in all other tables being
-     * id,version. Table nrd is the 1:1 table for the constellation, therefore it is logical (and consistent)
-     * for it not to have a table.id field.
+     * the nrd row key is ic_id,version which corresponds to the row key in all other tables being
+     * id,version. Table nrd is the 1:1 table for the constellation. The peculiar thing about nrd is that
+     * there is no corresponding php object. The Constellation has entityTyp and ARK, but the Constellation is
+     * not an "nrd object".
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * We happen to know that nrd.id currently the constellation ic_id. We are also sure that you do not want
+     * to use this field for anything. We are writing a value into it for the sake of consistency.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param string $ark_id ARK string. There was a reason why I added _id to distinguish this from something
      * else with the naked name "ark".
@@ -1737,16 +1769,18 @@ class SQL
      * @param integer $entity_type A foreign key into table vocabulary, handled by Term related functions here and in
      * DBUtils.
      *
+     * @param integer $tableID Value for nrd.id. 
+     *
      */
-    public function insertNrd($vhInfo, $ark_id, $entity_type)
+    public function insertNrd($vhInfo, $ark_id, $entity_type, $tableID)
     {
         $qq = 'insert_nrd';
         $this->sdb->prepare($qq,
                             'insert into nrd
-                            (version, main_id, ark_id, entity_type)
+                            (version, ic_id, ark_id, entity_type, id)
                             values
-                            ($1, $2, $3, $4)');
-        $execList = array($vhInfo['version'], $vhInfo['main_id'], $ark_id, $entity_type);
+                            ($1, $2, $3, $4, $5)');
+        $execList = array($vhInfo['version'], $vhInfo['ic_id'], $ark_id, $entity_type, $tableID);
         $result = $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
     }
@@ -1757,7 +1791,7 @@ class SQL
      * Insert an ID from records that were merged into this constellation. For the sake of convention, we put
      * the SQL columns in the same order as the function args.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param int $id The id of this record, otherid.id
      *
@@ -1779,13 +1813,13 @@ class SQL
         $qq = 'insert_other_id';
         $this->sdb->prepare($qq,
                             'insert into otherid
-                            (version, main_id, id, text, type, uri)
+                            (version, ic_id, id, text, type, uri)
                             values
                             ($1, $2, $3, $4, $5, $6)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $text,
                                             $typeID,
@@ -1801,7 +1835,7 @@ class SQL
      * those insert functions for this name's language and contributors. Our concern here is tightly focused
      * on writing to table name. Nothing else.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param string $original The original name string
      *
@@ -1824,12 +1858,12 @@ class SQL
         $qq_1 = 'insert_name';
         $this->sdb->prepare($qq_1,
                             'insert into name
-                            (version, main_id, original, preference_score, id)
+                            (version, ic_id, original, preference_score, id)
                             values
                             ($1, $2, $3, $4, $5)');
         $result = $this->sdb->execute($qq_1,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $original,
                                             $preferenceScore,
                                             $nameID));
@@ -1847,7 +1881,7 @@ class SQL
      * name_contributor to keep the existing id values. Also, do not update if not changed. Implies a
      * name_contributor object with a $operation like everything else.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id if this contributor. If null one will be minted. The id (existing or new) is always returned.
      *
@@ -1878,12 +1912,12 @@ class SQL
         $qq_2 = 'insert_contributor';
         $this->sdb->prepare($qq_2,
                             'insert into name_contributor
-                            (version, main_id, id, name_id, short_name, name_type, rule)
+                            (version, ic_id, id, name_id, short_name, name_type, rule)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
-                                  $vhInfo['main_id'],
+                                  $vhInfo['ic_id'],
                                   $id,
                                   $nameID,
                                   $name,
@@ -1901,7 +1935,7 @@ class SQL
      *
      * If the $id arg is null, get a new id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -1925,11 +1959,11 @@ class SQL
         $qq = 'insert_function';
         $this->sdb->prepare($qq,
                             'insert into function
-                            (version, main_id, id, function_type, vocabulary_source, note, function_id)
+                            (version, ic_id, id, function_type, vocabulary_source, note, function_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7)');
         $eArgs = array($vhInfo['version'],
-                       $vhInfo['main_id'],
+                       $vhInfo['ic_id'],
                        $id,
                        $type,
                        $vocabularySource,
@@ -1943,7 +1977,7 @@ class SQL
     /**
      * Insert a Language link record
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id of this languae link
      *
@@ -1970,11 +2004,11 @@ class SQL
         $qq = 'insert_language';
         $this->sdb->prepare($qq,
                             'insert into language
-                            (version, main_id, id, language_id, script_id, vocabulary_source, note, fk_table, fk_id)
+                            (version, ic_id, id, language_id, script_id, vocabulary_source, note, fk_table, fk_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9)');
         $eArgs = array($vhInfo['version'],
-                       $vhInfo['main_id'],
+                       $vhInfo['ic_id'],
                        $id,
                        $languageID,
                        $scriptID,
@@ -2013,17 +2047,21 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
+     * @param string $fkTable Name of the related table.
+     *
      * @return string[] A list of location fields as list with keys matching the database field names.
      */
-    public function selectLanguage($fkID, $version)
+    public function selectLanguage($fkID, $version, $fkTable)
     {
         $qq = 'select_language';
-        $this->sdb->prepare($qq,
-                            'select aa.version, aa.main_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
-                            from language as aa,
-                            (select id,max(version) as version from language where fk_id=$1 and version<=$2 group by id) as bb
-                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
-        $result = $this->sdb->execute($qq, array($fkID, $version));
+
+        $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from language as aa,
+        (select id,max(version) as version from language where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+        
+        $this->sdb->prepare($qq, $query);
+        $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2038,7 +2076,7 @@ class SQL
      * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2056,13 +2094,13 @@ class SQL
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
                             'insert into subject
-                            (version, main_id, id, term_id)
+                            (version, ic_id, id, term_id)
                             values
                             ($1, $2, $3, $4)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $termID));
         $this->sdb->deallocate($qq);
@@ -2075,7 +2113,7 @@ class SQL
      * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2093,13 +2131,13 @@ class SQL
         $qq = 'insert_nationality';
         $this->sdb->prepare($qq,
                             'insert into nationality
-                            (version, main_id, id, term_id)
+                            (version, ic_id, id, term_id)
                             values
                             ($1, $2, $3, $4)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $termID));
         $this->sdb->deallocate($qq);
@@ -2112,7 +2150,7 @@ class SQL
      * Data is currently only a string from the Constellation. If $id is null, get
      * a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2130,13 +2168,13 @@ class SQL
         $qq = 'insert_gender';
         $this->sdb->prepare($qq,
                             'insert into gender
-                            (version, main_id, id, term_id)
+                            (version, ic_id, id, term_id)
                             values
                             ($1, $2, $3, $4)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $termID));
         $this->sdb->deallocate($qq);
@@ -2149,11 +2187,11 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id.
+     * @param string[] $vhInfo associative list with keys: version, ic_id.
      *
      * @param string $table The table this text is related to.
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
      * 
      */
@@ -2177,15 +2215,15 @@ class SQL
         $this->sdb->prepare($qq,
                             sprintf(
                                 'select
-                                aa.id, aa.version, aa.main_id, aa.text
+                                aa.id, aa.version, aa.ic_id, aa.text
                                 from %s aa,
-                                (select id, max(version) as version from %s where version<=$1 and main_id=$2 group by id) as bb
+                                (select id, max(version) as version from %s where version<=$1 and ic_id=$2 group by id) as bb
                                 where not aa.is_deleted and
                                 aa.id=bb.id
                                 and aa.version=bb.version', $table, $table));
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2204,7 +2242,7 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2213,7 +2251,7 @@ class SQL
      * @param string $table One of the approved tables to which this data is being written. These tables are
      * identical except for the name, so this core code saves duplication. See also selectTextCore().
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id. There may be multiple rows returned.
      *
      */
@@ -2238,12 +2276,12 @@ class SQL
         $this->sdb->prepare($qq,
                             sprintf(
                                 'insert into %s
-                                (version, main_id, id, text)
+                                (version, ic_id, id, text)
                                 values
                                 ($1, $2, $3, $4)', $table));
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $text));
         $this->sdb->deallocate($qq);
@@ -2256,7 +2294,7 @@ class SQL
      * Data is currently only a string from the Constellation. If
      * $id is null, get a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2276,7 +2314,7 @@ class SQL
      * Data is currently only a string from the Constellation. If
      * $id is null, get a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2296,7 +2334,7 @@ class SQL
      * Data is currently only a string from the Constellation. If $id
      * is null, get a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2316,7 +2354,7 @@ class SQL
      * Data is currently only a string from the Constellation. If $id
      * is null, get a new record id. Always return $id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
      *
@@ -2336,9 +2374,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
      * 
      */
@@ -2351,9 +2389,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
      * 
      */
@@ -2368,9 +2406,9 @@ class SQL
      * DBUtils has code to turn the return values into objects in a
      * Constellation object.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
      * 
      */
@@ -2385,9 +2423,9 @@ class SQL
      * DBUtils has code to turn the return values into objects in a
      * Constellation object.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
      * 
      */
@@ -2402,7 +2440,7 @@ class SQL
      * related identity is also known as table related_identity, aka constellation relation, aka cpf relation,
      * aka ConstellationRelation object. We first insert into related_identity saving the inserted record id.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $targetID The constellation id of the related entity (aka the relation)
      *
@@ -2444,14 +2482,14 @@ class SQL
         $qq = 'insert_relation'; // aka insert_related_identity
         $this->sdb->prepare($qq,
                             'insert into related_identity
-                            (version, main_id, related_id, related_ark, role, arcrole,
+                            (version, ic_id, related_id, related_ark, role, arcrole,
                             relation_type, relation_entry, descriptive_note, id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
 
         // Combine vhInfo and the remaining args into a big array for execute().
         $execList = array($vhInfo['version'],
-                          $vhInfo['main_id'],
+                          $vhInfo['ic_id'],
                           $targetID,
                           $targetArkID,
                           $targetEntityTypeID,
@@ -2474,7 +2512,7 @@ class SQL
      * Use data from php ResourceRelation object. It is assumed that the calling code in DBUtils knows the php
      * to sql fields. Note keys in $argList have a fixed order.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType aka xlink:role
      * @param integer $entryType Vocab id value of entry type aka relationEntry@localType
@@ -2505,7 +2543,7 @@ class SQL
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, main_id, id, role, relation_entry_type, href, arcrole, relation_entry,
+                            (version, ic_id, id, role, relation_entry_type, href, arcrole, relation_entry,
                             object_xml_wrap, descriptive_note)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
@@ -2513,7 +2551,7 @@ class SQL
          * Combine vhInfo and the remaining args into a big array for execute().
          */
         $execList = array($vhInfo['version'], // 1
-                          $vhInfo['main_id'], // 2
+                          $vhInfo['ic_id'], // 2
                           $id, // 3
                           $relationEntryType, // 4
                           $entryType, // 5
@@ -2560,27 +2598,27 @@ class SQL
      * It is intentional that the fields are not retrieved in any particular order because the row will be
      * saved as an associative list. That allows us to write the sql query in a more legible format.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[] An associative list with keys: version, main_id, ark_id, entity_type.
+     * @return string[] An associative list with keys: version, ic_id, ark_id, entity_type.
      */
     public function selectNrd($vhInfo)
     {
         $qq = 'sc';
         $this->sdb->prepare($qq,
                             'select
-                            aa.version,aa.main_id,aa.ark_id,aa.entity_type
+                            aa.version,aa.ic_id,aa.ark_id,aa.entity_type
                             from nrd as aa,
-                            (select main_id, max(version) as version from nrd where version<=$1 and main_id=$2 group by main_id) as bb
+                            (select ic_id, max(version) as version from nrd where version<=$1 and ic_id=$2 group by ic_id) as bb
                             where not aa.is_deleted and
-                            aa.main_id=bb.main_id
+                            aa.ic_id=bb.ic_id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
         return $row;
@@ -2600,9 +2638,9 @@ class SQL
      * the calling code figure it out. As of Jan 28 2016, Constellation.php defines private var $biogHists as
      * \snac\data\BiogHist[]. The Constellation is already supporting a list of biogHist.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[] A list of associative list with keys: version, main_id, id, text.
+     * @return string[] A list of associative list with keys: version, ic_id, id, text.
      *
      */
     public function selectBiogHist($vhInfo)
@@ -2610,18 +2648,18 @@ class SQL
         $qq = 'sbh';
         $this->sdb->prepare($qq,
                             'select
-                            aa.version, aa.main_id, aa.id, aa.text
+                            aa.version, aa.ic_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select main_id, max(version) as version from biog_hist where version<=$1 and main_id=$2 group by main_id) as bb
+                            (select ic_id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by ic_id) as bb
                             where not aa.is_deleted and
-                            aa.main_id=bb.main_id
+                            aa.ic_id=bb.ic_id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $rowList = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2639,14 +2677,14 @@ class SQL
      * versions. All queries deal with multiple version by using a subquery. This function is probably
      * redundant.
      *
-     * Select flat list of distinct id values meeting the version and main_id constraint. Specifically a
+     * Select flat list of distinct id values meeting the version and ic_id constraint. Specifically a
      * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
      * have several versions while other otherid.id values are different (and single) versions.
      *
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return integer[] Return a list of record id values meeting the version and main_id constriants.
+     * @return integer[] Return a list of record id values meeting the version and ic_id constriants.
      *
      */
     public function matchORID($vhInfo)
@@ -2658,14 +2696,14 @@ class SQL
                             distinct(id)
                             from otherid
                             where
-                            version=(select max(version) from otherid where version<=$1 and main_id=$2)
-                            and main_id=$2');
+                            version=(select max(version) from otherid where version<=$1 and ic_id=$2)
+                            and ic_id=$2');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2692,20 +2730,20 @@ class SQL
      * 
      * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
      * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
-     * was all fairly odd, but worked. This code now follows our idiom for main_id and version constraint via
+     * was all fairly odd, but worked. This code now follows our idiom for ic_id and version constraint via
      * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
      * database versions, and the otherRecordID JSON looks correct.
      * 
      * select
-     * id, version, main_id, text, uri, type
+     * id, version, ic_id, text, uri, type
      * from otherid
      * where
      * version=(select max(version) from otherid where version<=$1)
-     * and main_id=$2 order by id
+     * and ic_id=$2 order by id
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[] Return an associative ist of otherid rows with keys: id, version, main_id, text, uri,
+     * @return string[] Return an associative ist of otherid rows with keys: id, version, ic_id, text, uri,
      * type, link_type. otherid.type is an integer fk id from vocabulary, not that we need to concern
      * ourselves with that here.
      *
@@ -2715,15 +2753,15 @@ class SQL
         $qq = 'sorid';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.text, aa.uri, aa.type
+                            aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
                             from otherid as aa,
-                            (select id,max(version) as version from otherid where version<=$1 and main_id=$2 group by id) as bb
+                            (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
                             where
                             aa.id = bb.id and 
                             aa.version = bb.version order by id asc');
 
         $all = array();
-        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['main_id']));
+        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['ic_id']));
         while($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
@@ -2741,9 +2779,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id.
      *
      * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
@@ -2755,9 +2793,9 @@ class SQL
         $qq = 'ssubj';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.term_id
+                            aa.id, aa.version, aa.ic_id, aa.term_id
                             from subject aa,
-                            (select id, max(version) as version from subject where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from subject where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
@@ -2766,7 +2804,7 @@ class SQL
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2779,7 +2817,7 @@ class SQL
     /**
      * Insert legalStatus.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $termID Vocabulary foreign key for the term.
      *
@@ -2797,13 +2835,13 @@ class SQL
         $qq = 'insert_subject';
         $this->sdb->prepare($qq,
                             'insert into legal_status
-                            (version, main_id, id, term_id)
+                            (version, ic_id, id, term_id)
                             values
                             ($1, $2, $3, $4)');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id'],
+                                            $vhInfo['ic_id'],
                                             $id,
                                             $termID));
         $this->sdb->deallocate($qq);
@@ -2815,15 +2853,15 @@ class SQL
      * Select legalStatus.
      *
      * Like subject, these are directly linked to Constellation only, and not to any other tables. Therefore
-     * we only need version and main_id.
+     * we only need version and ic_id.
      *
      * DBUtils has code to turn the returned values into legalStatus in a Constellation object.
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id. There may be multiple records returned.
      *
      */
@@ -2832,9 +2870,9 @@ class SQL
         $qq = 'ssubj';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.term_id
+                            aa.id, aa.version, aa.ic_id, aa.term_id
                             from legal_status aa,
-                            (select id, max(version) as version from legal_status where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from legal_status where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
@@ -2843,7 +2881,7 @@ class SQL
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2861,9 +2899,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id. There may be multiple rows returned.
      */
     public function selectGender($vhInfo)
@@ -2871,15 +2909,15 @@ class SQL
         $qq = 'select_gender';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.term_id
+                            aa.id, aa.version, aa.ic_id, aa.term_id
                             from gender aa,
-                            (select id, max(version) as version from gender where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from gender where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2897,9 +2935,9 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return list of an associative list with keys: id, version, main_id,
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * term_id. There may be multiple rows returned.
      */
     public function selectNationality($vhInfo)
@@ -2907,15 +2945,15 @@ class SQL
         $qq = 'select_gender';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.term_id
+                            aa.id, aa.version, aa.ic_id, aa.term_id
                             from nationality aa,
-                            (select id, max(version) as version from nationality where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from nationality where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2937,9 +2975,9 @@ class SQL
      * the query more of a standard template.  Assuming this works and is a good idea, we should port this to
      * all the other select queries.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return a list of lists. Inner list has keys: id, version, main_id, note, vocabulary_source, occupation_id, date
+     * @return string[][] Return a list of lists. Inner list has keys: id, version, ic_id, note, vocabulary_source, occupation_id, date
      *
      */
     public function selectOccupation($vhInfo)
@@ -2947,9 +2985,9 @@ class SQL
         $qq = 'socc';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.note, aa.vocabulary_source, aa.occupation_id
+                            aa.id, aa.version, aa.ic_id, aa.note, aa.vocabulary_source, aa.occupation_id
                             from occupation as aa,
-                            (select id, max(version) as version from occupation where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from occupation where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
@@ -2958,22 +2996,24 @@ class SQL
          */
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            $rid = $row['id'];
-            $dateList = $this->selectDate($rid, $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
-                // Prine says: "Stop wishing for bad luck and knocking on wood"
-            }
+            /* 
+             * $rid = $row['id'];
+             * $dateList = $this->selectDate($rid, $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
+             *     // Prine says: "Stop wishing for bad luck and knocking on wood"
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -2986,11 +3026,11 @@ class SQL
      * Related identity aka cpf relation. Code in DBUtils turns the returned array into a
      * ConstellationRelation object.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
-     * version, main_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
-     * arcrole, date. Date is an associative list with keys from table date_range. See selectDate().
+     * version, ic_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
+     * arcrole, date. 
      *
      */
 
@@ -2999,33 +3039,35 @@ class SQL
         $qq = 'selectrelatedidentity';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.related_id, aa.related_ark,
+                            aa.id, aa.version, aa.ic_id, aa.related_id, aa.related_ark,
                             aa.relation_entry, aa.descriptive_note, aa.relation_type,
                             aa.role,
                             aa.arcrole
                             from related_identity as aa,
-                            (select id, max(version) as version from related_identity where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from related_identity where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $relationId = $row['id'];
-            $dateList = $this->selectDate($relationId, $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                //TODO Throw warning or log
-            }
+            /* 
+             * $relationId = $row['id'];
+             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     //TODO Throw warning or log
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -3035,12 +3077,12 @@ class SQL
     /**
      * select related archival resource records
      *
-     * Where $vhInfo 'version' and 'main_id'. Code in DBUtils knows how to turn the return value into a pgp
+     * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a pgp
      * ResourceRelation object.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return a list of lists. Inner list keys: id, version, main_id, relation_entry_type,
+     * @return string[][] Return a list of lists. Inner list keys: id, version, ic_id, relation_entry_type,
      * href, relation_entry, object_xml_wrap, descriptive_note, role, arcrole
      *
      */
@@ -3049,19 +3091,19 @@ class SQL
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id,
+                            aa.id, aa.version, aa.ic_id,
                             aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
                             aa.role,
                             aa.arcrole
                             from related_resource as aa,
-                            (select id, max(version) as version from related_resource where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -3074,12 +3116,12 @@ class SQL
     /**
      * Select all function records
      *
-     * Constrain on version and main_id. Code in DBUtils turns the return value into a SNACFunction object.
+     * Constrain on version and ic_id. Code in DBUtils turns the return value into a SNACFunction object.
      *
-     * @param string[] $vhInfo associative list with keys: version, main_id
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @return string[][] Return a list of list. The inner list has keys: id, version, main_id, function_type,
-     * note, date. Key date is also a list assoc array of date info from selectDate().
+     * @return string[][] Return a list of list. The inner list has keys: id, version, ic_id, function_type,
+     * note, date. 
      *
      */
     public function selectFunction($vhInfo)
@@ -3087,30 +3129,32 @@ class SQL
         $qq = 'select_function';
         $this->sdb->prepare($qq,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.function_type, aa.vocabulary_source, aa.note,
+                            aa.id, aa.version, aa.ic_id, aa.function_type, aa.vocabulary_source, aa.note,
                             aa.function_id
                             from function as aa,
-                            (select id, max(version) as version from function where version<=$1 and main_id=$2 group by id) as bb
+                            (select id, max(version) as version from function where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
                             aa.id=bb.id
                             and aa.version=bb.version');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
-                                            $vhInfo['main_id']));
+                                            $vhInfo['ic_id']));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            $dateList = $this->selectDate($row['id'], $vhInfo['version']);
-            $row['date'] = array();
-            if (count($dateList)>=1)
-            {
-                $row['date'] = $dateList[0];
-            }
-            if (count($dateList)>1)
-            {
-                // TODO: Throw a warning or log
-            }
+            /* 
+             * $dateList = $this->selectDate($row['id'], $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     // TODO: Throw a warning or log
+             * }
+             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -3121,7 +3165,7 @@ class SQL
      /**
       * Select all names
       *
-      * Constrain on version and main_id. Code in DBUtils turns each returned list into a NameEntry
+      * Constrain on version and ic_id. Code in DBUtils turns each returned list into a NameEntry
       * object. Order the returned records by preference_score descending so that preferred names are at the
       * beginning of the returned list. For ties, we also order by id, just so we'll be consistent. The
       * consistency may help testing more than UI related issues (where names should consistently appear in
@@ -3133,9 +3177,9 @@ class SQL
       * This code only knows about selecting from table name. DBUtil knows that to build a constellation it is
       * necessary to also get information related to name.
       *
-      * @param string[] $vhInfo with keys version, main_id.
+      * @param string[] $vhInfo with keys version, ic_id.
       *
-      * @return string[][] Return a list of lists. The inner list has keys: id, version, main_id, original,
+      * @return string[][] Return a list of lists. The inner list has keys: id, version, ic_id, original,
       * preference_score.
       */
     public function selectName($vhInfo)
@@ -3143,24 +3187,24 @@ class SQL
         $qq_1 = 'selname';
         $this->sdb->prepare($qq_1,
                             'select
-                            aa.is_deleted,aa.id,aa.version, aa.main_id, aa.original, aa.preference_score
+                            aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
                             from name as aa,
-                            (select id,max(version) as version from name where version<=$1 and main_id=$2 group by id) as bb
+                            (select id,max(version) as version from name where version<=$1 and ic_id=$2 group by id) as bb
                             where
                             aa.id = bb.id and not aa.is_deleted and 
                             aa.version = bb.version order by preference_score desc,id asc');
         
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
-                                                 $vhInfo['main_id']));
+                                                 $vhInfo['ic_id']));
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
             /* 
-             * printf("\nsn: id: %s version: %s main_id: %s original: %s is_deleted: %s\n",
+             * printf("\nsn: id: %s version: %s ic_id: %s original: %s is_deleted: %s\n",
              *        $name_row['id'],
              *        $name_row['version'],
-             *        $name_row['main_id'],
+             *        $name_row['ic_id'],
              *        $name_row['original'],
              *        $name_row['is_deleted']);
              */
@@ -3182,9 +3226,9 @@ class SQL
      * contributors together, as opposed to per-name contributors which is what I recollect that we want.
      *
      * 'select
-     * aa.id,aa.version, aa.main_id, aa.name_id, aa.short_name,aa.name_type
+     * aa.id,aa.version, aa.ic_id, aa.name_id, aa.short_name,aa.name_type
      * from  name_contributor as aa,
-     * (select id, max(version) as version from name_contributor where version<=$1 and main_id=$2 group by id) as bb
+     * (select id, max(version) as version from name_contributor where version<=$1 and ic_id=$2 group by id) as bb
      * where not aa.is_deleted and
      * aa.id=bb.id
      * and aa.version=bb.version
@@ -3194,14 +3238,14 @@ class SQL
      *
      * @param integer $version The version number.
      *
-     * @return string[] List of list, one inner list per contributor keys: id, version, main_id, type, name, name_id
+     * @return string[] List of list, one inner list per contributor keys: id, version, ic_id, type, name, name_id
      */
     public function selectContributor($nameID, $version)
     {
         $qq_2 = 'selcontributor';
         $this->sdb->prepare($qq_2,
                             'select
-                            aa.id, aa.version, aa.main_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
+                            aa.id, aa.version, aa.ic_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
                             from name_contributor as aa,
                             (select name_id,max(version) as version from name_contributor where name_id=$1 and version<=$2 group by name_id) as bb
                             where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
@@ -3223,11 +3267,15 @@ class SQL
      * doesn't need to say date_range.fk_id since fk_is is unique to date_range, but it makes the join
      * criteria somewhat more obvious.
      *
-     * Note: Must select max(version_history.id) as version. The max() version is the Constellation version.
+     * Note: Must select max(version_history.version) The max() version is the Constellation version.
      *
-     * Mar 4 2016: Changed "nrd.id=date_range.fk_id" to "nrd.main_id=date_range.fk_id" because getID of
-     * nrd is main_id not id as with other tables and other objects. We changed this a while back, but
+     * Mar 4 2016: Changed "nrd.id=date_range.fk_id" to "nrd.ic_id=date_range.fk_id" because getID of
+     * nrd is ic_id not id as with other tables and other objects. We changed this a while back, but
      * (oddly?) this didn't break until today.
+     *
+     * May 6 2016: In fact, even using table nrd here is questionable. "the constellation" is
+     * version_history. It works to use nrd.ic_id because this is the same value as version_history.id,
+     * but intellectually this is inaccurate.
      * 
      * @return string[] Return a flat array. This seems like a function that should return an associative
      * list. Currently, is only called in one place.
@@ -3236,28 +3284,28 @@ class SQL
     {
         $qq = 'rcid';
         $this->sdb->prepare($qq,
-                            'select max(version_history.id) as version, version_history.main_id
+                            'select max(version_history.version) as version, version_history.id as ic_id
                             from nrd,date_range, version_history
                             where
-                            nrd.main_id=date_range.fk_id and
-                            nrd.main_id=version_history.main_id
+                            nrd.ic_id=date_range.fk_id and
+                            nrd.ic_id=version_history.id
                             and not date_range.is_deleted 
                             and version_history.status <> $1
-                            group by version_history.main_id
-                            order by version_history.main_id
+                            group by version_history.id
+                            order by version_history.id
                             limit 1');
 
         $result = $this->sdb->execute($qq, array($this->deleted));
         $row = $this->sdb->fetchrow($result);
         $this->sdb->deallocate($qq);
-        return array($row['version'], $row['main_id']);
+        return array($row['version'], $row['ic_id']);
     }
 
 
     /**
      * Most recent version by status
      *
-     * Helper function to return the most recent status version for a given main_id. If the status is anything
+     * Helper function to return the most recent status version for a given ic_id. If the status is anything
      * except deleted, then the version number must be greater than any existing deleted version. If the
      * deleted version is greater, then whatever status we were asked for was deleted.
      *
@@ -3269,11 +3317,11 @@ class SQL
      * v3:undelete 
      * v4:locked editing
      *
-     * @param integer $mainID id value matching version_history.main_id.
+     * @param integer $mainID id value matching version_history.id.
      *
      * @param string $status Constellation status we need
      *
-     * @return integer Version number from version_history.id returned as 'version', as is our convention.
+     * @return integer Version number from version_history.version, as is our convention.
      *
      */
     public function selectCurrentVersionByStatus($mainID, $status)
@@ -3302,10 +3350,10 @@ class SQL
             $deletedVersion = $this->selectCurrentVersionByStatus($mainID, $this->deleted);
         }
         $result = $this->sdb->query(
-            'select max(id) as version
+            'select max(version) as version
             from version_history
             where 
-            version_history.main_id=$1 and status=$2',
+            version_history.id=$1 and status=$2',
             array($mainID, $status));
 
         $row = $this->sdb->fetchrow($result);
@@ -3320,48 +3368,47 @@ class SQL
 
 
     /**
-     * Return the lowest main_id
+     * Return the lowest ic_id
      *
-     * Return the lowest main_id for a multi-name constellation with 2 or more non-deleted names. Returns a
-     * version and main_id for the constelletion to which this name belongs.
-     *
-     * Note: When getting a version number, we must always look for max(version_history.id) as version to be
-     * sure we have "the" constellation version number.
-     *
-     * Note: Use boolean "is true" short syntax "is_deleted" in the sql because it is unambiguous, and it
-     * saves escaping \'t\' which is necessary in the verbose syntax.
+     * Return the lowest ic_id for a multi-name constellation with 2 or more non-deleted names. Returns a
+     * version and ic_id for the constelletion to which this name belongs.
      *
      * This is a helper/convenience function for testing purposes only.
      *
+     * Note: When getting a version number, we must always look for max(version_history.version) as version to be
+     * sure we have "the" constellation version number.
+     *
+     * Subquery zz returns count of names that are not deleted, grouped by ic_id (akd main_id, aka
+     * constellation id). Join that to version history, and constrain for zz.count>1 and you have multi-name
+     * constellations, then limit to 1 result.
+     *
      * @return integer[] Returns a vhInfo associateve list of integers with key names 'version' and
-     * 'main_id'. The main_id is from table 'name' for the multi-alt string name. That main_id is a
+     * 'ic_id'. The ic_id is from table 'name' for the multi-alt string name. That ic_id is a
      * constellation id, so we call selectCurrentVersion() to get the current version for that
      * constellation. This allows us to return a conventional vhInfo associative list which is conventient
      * return value. (Convenient, in that we do extra work so the calling code is simpler.)
-     *
-     *
      */
     public function sqlMultiNameConstellationID()
     {
         $qq = 'mncid';
         $this->sdb->prepare($qq,
-                            'select max(vh.id) as version, vh.main_id
+                            'select max(vh.version) as version, vh.id as ic_id
                             from version_history as vh,
-                            (select count(distinct(aa.id)),aa.main_id from name as aa
-                            where aa.id not in (select id from name where is_deleted) group by main_id order by main_id) as zz
+                            (select count(distinct(aa.id)),aa.ic_id from name as aa
+                            where aa.id not in (select id from name where is_deleted) group by ic_id order by ic_id) as zz
                             where
-                            vh.main_id=zz.main_id and
+                            vh.id=zz.ic_id and
                             vh.status <> $1 and 
-                            zz.count>1 group by vh.main_id limit 1');
+                            zz.count>1 group by vh.id limit 1');
 
         $result = $this->sdb->execute($qq, array($this->deleted));
         $row = $this->sdb->fetchrow($result);
 
-        $version = $this->selectCurrentVersion($row['main_id']);
+        $version = $this->selectCurrentVersion($row['ic_id']);
 
         $this->sdb->deallocate($qq);
         return array('version' => $version,
-                     'main_id' => $row['main_id']);
+                     'ic_id' => $row['ic_id']);
     }
 
 
@@ -3389,34 +3436,34 @@ class SQL
     /**
      * Get a set of 100 records
      *
-     * Only return data (version, main_id) that might be necessary for display
-     * in the dashboard. Version and main_id are sufficient to call selectConstellation(). The name is added
+     * Only return data (version, ic_id) that might be necessary for display
+     * in the dashboard. Version and ic_id are sufficient to call selectConstellation(). The name is added
      * on the off chance that this could be used in some UI that needed a name displayed for the
      * constellation.
      *
      * Note: query() as opposed to prepare() and execute()
      *
-     * @return string[] A list of 100 lists. Inner list keys are: 'version', 'main_id', 'formatted_name'. At
+     * @return string[] A list of 100 lists. Inner list keys are: 'version', 'ic_id', 'formatted_name'. At
      * this time 'formatted_name' is from table name.original
      */
     public function selectDemoRecs()
     {
         $sql =
-            'select max(id) as version,main_id
+            'select max(version) as version, id as ic_id
             from version_history
             where version_history.status <> $1
-            group by main_id order by main_id limit 100';
+            group by id order by id limit 100';
 
         $result = $this->sdb->query($sql, array($this->deleted));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
             $nRow = $this->selectName(array('version' => $row['version'],
-                                            'main_id' => $row['main_id']));
+                                            'ic_id' => $row['ic_id']));
             if (count($nRow) == 0)
             {
                 // Yikes, cannot have a constellation with zero names.
-                printf("\nError: SQL.php No names for version: %s main_id: %s\n", $row['version'], $row['main_id']);
+                printf("\nError: SQL.php No names for version: %s ic_id: %s\n", $row['version'], $row['ic_id']);
             }
 
             /*
@@ -3447,9 +3494,9 @@ class SQL
      * record that has already been marked as deleted. Therefore (in theory) here we will never be asked to
      * delete an is_deleted record.
      *
-     * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
-     * and used by higher level code to build the constellation, but by and large main_id is not used for
-     * record updates, so the code below makes no explicit mention of main_id.
+     * The unique primary key for a table is id,version. Field ic_id is the relational grouping field,
+     * and used by higher level code to build the constellation, but by and large ic_id is not used for
+     * record updates, so the code below makes no explicit mention of ic_id.
      *
      * @param string $table A valid table name, created from internal data only, since there is a risk here of
      * SQL injection attack.
@@ -3484,9 +3531,9 @@ class SQL
      * record that has already been marked as deleted. Therefore (in theory) here we will never be asked to
      * delete an is_deleted record.
      *
-     * The unique primary key for a table is id,version. Field main_id is the relational grouping field,
-     * and used by higher level code to build the constellation, but by and large main_id is not used for
-     * record updates, so the code below makes no explicit mention of main_id.
+     * The unique primary key for a table is id,version. Field ic_id is the relational grouping field,
+     * and used by higher level code to build the constellation, but by and large ic_id is not used for
+     * record updates, so the code below makes no explicit mention of ic_id.
      *
      * @param string $table A valid table name, created from internal data only, since there is a risk here of
      * SQL injection attack.
@@ -3537,7 +3584,7 @@ class SQL
             /* This is a crude way to test for multiple rows.
              * 
              * This happened when some inserts during testing went wrong. Might be something to test for,
-             * and/or add a primary key constraint. There can be only one main_id for a given id.
+             * and/or add a primary key constraint. There can be only one ic_id for a given id.
              */  
             printf("Error: sqlSetDeleted() selects multiple rows: %s for table: $table id: $id newVersion: $newVersion \n",
                    count($row));
@@ -3603,23 +3650,23 @@ class SQL
     public function siblingNameCount($recID)
     {
         /*
-         * Get the main_id for $recID
+         * Get the ic_id for $recID
          */ 
         $result = $this->sdb->query(
-            "select aa.main_id from name as aa,
-            (select id, main_id, max(version) as version from name group by id,main_id) as bb
-            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.main_id=bb.main_id and aa.id=$1",
+            "select aa.ic_id from name as aa,
+            (select id, ic_id, max(version) as version from name group by id,ic_id) as bb
+            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.ic_id=bb.ic_id and aa.id=$1",
             array($recID));
 
         $row = $this->sdb->fetchrow($result);
-        $mainID = $row['main_id'];
+        $mainID = $row['ic_id'];
 
         /*
-         * Use the main_id to find not is_deleted sibling names.
+         * Use the ic_id to find not is_deleted sibling names.
          */ 
         $result = $this->sdb->query(
             "select count(*) as count from name as aa,
-            (select id, max(version) as version from name where main_id=$1 group by id) as bb
+            (select id, max(version) as version from name where ic_id=$1 group by id) as bb
             where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version",
             array($mainID));
 
@@ -3644,7 +3691,7 @@ class SQL
      * Note that Postgres names the column from the count() function 'count', so we do not need to alias the
      * column. I used the explicit alias just to make intent clear.
      *
-     * @param $mainID Integer constellation id usually from version_history.main_id.
+     * @param $mainID Integer constellation id usually from version_history.id.
      *
      * @return interger Number of names meeting the criteria. Zero if no names or if the query fails.
      *
@@ -3653,8 +3700,8 @@ class SQL
     {
         $selectSQL =
             "select count(*) as count from name as aa,
-            (select id, main_id, max(version) as version from name group by id,main_id) as bb
-            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.main_id=bb.main_id and aa.main_id=$1";
+            (select id, ic_id, max(version) as version from name group by id,ic_id) as bb
+            where aa.id=bb.id and not aa.is_deleted and aa.version=bb.version and aa.ic_id=bb.ic_id and aa.ic_id=$1";
 
         $result = $this->sdb->query($selectSQL, array($mainID));
         $row = $this->sdb->fetchrow($result);

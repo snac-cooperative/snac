@@ -73,8 +73,8 @@ drop sequence if exists id_seq;
 --
 
 -- Sequence for data table record id values It is very, very important that both table.id and
--- version_history.main_id use this sequence. These two are used as foreign keys between table date_range and
--- other tables. Failure for nrd.main_id and table.id to be unique will (would) break data_range foreign
+-- version_history.ic_id use this sequence. These two are used as foreign keys between table date_range and
+-- other tables. Failure for nrd.ic_id and table.id to be unique will (would) break data_range foreign
 -- keys. (And might break other foreign keys and sql queries as well.)
 CREATE SEQUENCE "id_seq";
 
@@ -94,13 +94,13 @@ CREATE SEQUENCE "version_history_id_seq";
 
 -- Table version_history is the root table for a EAC-CPF identity constellation, in the sense that the meta
 -- data here describes the history, and all data table record versions. Note: the main identity id value is
--- version_history.main_id.
+-- version_history.ic_id.
 
 -- identity constellation record status (is_locked, is_published) is handled here. The lock needs to be here if we increment version
 -- number only on modified tables. (Why?)
 
 -- We are using the multi-version model where field version is only updated in updated data tables. Selecting version is is:
--- select * from foo where version=(select max(version) from foo where id=$yy and version<=$vv) and main_id=$mm
+-- select * from foo where version=(select max(version) from foo where id=$yy and version<=$vv) and ic_id=$mm
 
 -- A record must be inserted into version_history for every change of data or change of status.
 
@@ -115,16 +115,16 @@ CREATE SEQUENCE "version_history_id_seq";
 -- testing.
 
 create table version_history (
-        id int default nextval('version_history_id_seq'),
-        main_id int default nextval('id_seq'), -- main constellation id, when inserting a new identity, allow this to default
-        is_locked boolean default false,       -- (not used) boolean, true is locked by version_history.user_id
-        user_id int,                           -- fk to appuser.id
-        role_id int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
-        timestamp timestamp default now(),     -- now()
-        status text,                           -- a curated list of status terms.
-        is_current boolean,                    -- (not used) most current published, optional field to enhance performance
-        note text,                             -- checkin message
-        primary key (id, main_id)
+        id         int default nextval('id_seq'), -- constellation id, aka ic_id, use default when inserting new constellation
+        version    int default nextval('version_history_id_seq'),
+        is_locked  boolean default false,         -- (not used, see status) boolean, true is locked by version_history.user_id
+        user_id    int,                           -- fk to appuser.id
+        role_id    int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
+        timestamp  timestamp default now(),       -- now()
+        status     text,                          -- a curated list of status terms.
+        is_current boolean,                       -- (not used) most current published, optional field to enhance performance
+        note       text,                          -- checkin message
+        primary key (id, version)
         );
 
 -- We will often select status='published' so we need an index
@@ -138,16 +138,20 @@ create index version_history_idx1 on version_history(status);
 
 create table appuser (
         id           int primary key default nextval('id_seq'),
-        active       boolean default 't', -- true for active account
-        username     text unique,         -- text-based user id, the user email address
-        email        text,                -- non-unique, current default is username is also email
-        first        text,                -- first name
-        last         text,                -- last name
-        fullname     text,                -- full name text
-        password     text,
-        avatar       text,                -- url
-        avatar_small text,                -- url
-        avatar_large text                 -- url
+        active          boolean default 't', -- true for active account
+        username        text unique,         -- text-based user id, the user email address
+        email           text,                -- non-unique, current default is username is also email
+        first           text,                -- first name
+        last            text,                -- last name
+        fullname        text,                -- full name text
+        password        text,
+        avatar          text,                -- url
+        avatar_small    text,                -- url
+        avatar_large    text,                -- url
+        work_email      text,
+        work_phone      text,
+        affiliation     int,                 -- fk to version_history.id aka constellation ID aka ic_id.
+        preferred_rules text                 -- preferred descriptive name rules
         );
 
 -- Linking table to handle role membership for users Do we need a 'primary' role boolean field? This would be
@@ -183,8 +187,8 @@ create table session (
 -- data has been moved to table version_history. Or somewhere else? Where?
 
 -- create table split_merge_history (
---     from_id             int, -- fk nrd.id, also version_history.main_id
---     to_id               int, -- fk nrd.id, also version_history.main_id
+--     from_id             int, -- fk nrd.id, also version_history.ic_id
+--     to_id               int, -- fk nrd.id, also version_history.ic_id
 --     timestamp           timestamp default now()
 --     );
 
@@ -195,13 +199,13 @@ create table session (
 -- Note1: table.version is always the same as nrd.version (constellation version). This won't be commented in
 -- every table.
 
--- Note2: table.main_id is always the same as the related version_history.main_id. This won't be commented in
+-- Note2: table.ic_id is always the same as the related version_history.ic_id. This won't be commented in
 -- every table.
 
 -- Table nrd is data with a 1:1 to the constellation. The glue of the constellation is table version_history,
 -- although in historical times (before versioning) table nrd was "the" central CPF table.
 
--- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, main_id.
+-- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, ic_id.
 -- Move to table: 
 -- convention_declaration text,
 -- mandate text,
@@ -217,18 +221,26 @@ create table session (
 -- script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
 -- exist_date    int,          -- fk to date_range.id
 
-create table nrd (
-    id            int default nextval('id_seq'),
-    version       int not null,
-    main_id       int not null, -- fk to version_history.main_id
-    is_deleted    boolean default false,
-    ark_id        text,         -- control/cpfId
-    entity_type   int not null, -- (fk to vocabulary.id) corp, pers, family
-    primary key (id, version)
-    );
+-- Change nrd.id to not use a default. We are currently writing the ic_id into nrd.id, even though nrd.id is
+-- never used. The "id" of nrd is the constellation id. Any foreign key to nrd must use the ic_id. The id of
+-- table nrd is Constellation->getID() which is the constellation id, not a table id as with all other data
+-- objects. Since "the id" of table nrd is the constellation id, we put that value in nrd.ic_id as
+-- always. There are no tables that are related to nrd.
+--
+-- Important: the is no php object that corresponds to nrd, thus no object for which nrd.id = Object->getID(). Remember, Constellation->getID() is nrd.ic_id.
 
-create unique index nrd_idx1 on nrd (ark_id,version,main_id);
-create unique index nrd_idx2 on nrd(id,main_id,version);
+create table nrd (
+        id          integer,
+        version     int not null,
+        ic_id     int not null, -- fk to version_history.ic_id
+        is_deleted  boolean default false,
+        ark_id      text,         -- control/cpfId
+        entity_type int not null, -- (fk to vocabulary.id) corp, pers, family
+        primary key (ic_id, version)
+        );
+
+create unique index nrd_idx1 on nrd (ark_id,version,ic_id);
+create unique index nrd_idx2 on nrd(ic_id,version);
 
 -- I considered naming field text "value", but text is not a reserved word (amazingly), and although "text" is
 -- overused, it fits our convention here.
@@ -236,54 +248,54 @@ create unique index nrd_idx2 on nrd(id,main_id,version);
 create table convention_declaration (
     id            int default nextval('id_seq'),
     version       int not null,
-    main_id       int not null, -- fk to version_history.main_id
+    ic_id       int not null, -- fk to version_history.ic_id
     is_deleted    boolean default false,
     text text                  -- the text term
 );
 
-create unique index convention_declaration_idx1 on convention_declaration(id,main_id,version);
+create unique index convention_declaration_idx1 on convention_declaration(id,ic_id,version);
 
 create table mandate (
     id            int default nextval('id_seq'),
     version       int not null,
-    main_id       int not null, -- fk to version_history.main_id
+    ic_id       int not null, -- fk to version_history.ic_id
     is_deleted    boolean default false,
     text text                   -- the text term
 );
 
-create unique index mandate_idx1 on mandate(id,main_id,version);
+create unique index mandate_idx1 on mandate(id,ic_id,version);
 
 create table general_context (
     id            int default nextval('id_seq'),
     version       int not null,
-    main_id       int not null, -- fk to version_history.main_id
+    ic_id       int not null, -- fk to version_history.ic_id
     is_deleted    boolean default false,
     text text                  -- the text term
 );
 
-create unique index general_context_idx1 on general_context(id,main_id,version);
+create unique index general_context_idx1 on general_context(id,ic_id,version);
 
 create table structure_genealogy (
     id            int default nextval('id_seq'),
     version       int not null,
-    main_id       int not null, -- fk to version_history.main_id
+    ic_id       int not null, -- fk to version_history.ic_id
     is_deleted    boolean default false,
     text text                  -- the text term
 );
 
-create unique index structure_genealogy_idx1 on structure_genealogy(id,main_id,version);
+create unique index structure_genealogy_idx1 on structure_genealogy(id,ic_id,version);
 
 -- The biog_hist language is in table language, and is related to this where biog_hist.id=language.fk_id
 
 create table biog_hist (
     id               int default nextval('id_seq'),
     version          int not null,
-    main_id          int not null,
+    ic_id          int not null,
     is_deleted       boolean default false,
     text text
 );
 
-create unique index biog_hist_idx2 on biog_hist(id,main_id,version);
+create unique index biog_hist_idx2 on biog_hist(id,ic_id,version);
 
 
 -- Name string. There may be multiple of these per identity constellation, nrd one-to-many name.
@@ -307,7 +319,7 @@ create unique index biog_hist_idx2 on biog_hist(id,main_id,version);
 create table name (
     id               int default nextval('id_seq'),
     version          int not null,
-    main_id          int not null,
+    ic_id          int not null,
     is_deleted       boolean default false,
     preference_score float, -- Preference to use this name
     original         text,  -- actual name (in <part>)
@@ -316,7 +328,7 @@ create table name (
 
 -- Parsed components of name string. There are multiple of these per one name.
 
--- Note: no main_id because this table only related to name.id, and through that to the identity
+-- Note: no ic_id because this table only related to name.id, and through that to the identity
 -- constellation.
 
 create table name_component (
@@ -344,7 +356,7 @@ create unique index name_component_idx1 on name_component(id,name_id,version);
 create table name_contributor (
     id             int default nextval('id_seq'),
     version        int not null,
-    main_id        int not null,
+    ic_id        int not null,
     is_deleted     boolean default false,
     name_id        int,  -- (fk to name.id)
     short_name     text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
@@ -353,7 +365,7 @@ create table name_contributor (
     primary key(id, version)
     );
 
-create unique index name_contributor_idx1 on name_contributor(id,main_id,version);
+create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
 
 -- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
 -- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
@@ -372,13 +384,13 @@ create unique index name_contributor_idx1 on name_contributor(id,main_id,version
 -- create table contributor (
 --     id         int default nextval('id_seq'),
 --     version    int not null,
---     main_id    int not null,
+--     ic_id    int not null,
 --     is_deleted boolean default false,
 --     short_name text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
 --     primary key(id, version)
 --     );
 -- create unique index contributor_idx1 on contributor (short_name);
--- create unique index contributor_idx2 on contributor (id,version,main_id);
+-- create unique index contributor_idx2 on contributor (id,version,ic_id);
 
 
 
@@ -417,7 +429,7 @@ create unique index name_contributor_idx1 on name_contributor(id,main_id,version
 create table date_range (
         id               int default nextval('id_seq'),
         version          int not null,
-        main_id          int not null,
+        ic_id          int not null,
         is_deleted       boolean default false,
         is_range         boolean default false, -- distinguish 1 or 2 dates from a range with possibly missing bounds
         missing_from     boolean default false, -- from date is missing or unknown, only is_range=t
@@ -441,7 +453,7 @@ create table date_range (
         primary          key(id, version)
         );
 
-create unique index date_range_idx1 on date_range(id,main_id,version);
+create unique index date_range_idx1 on date_range(id,ic_id,version);
 
 
 -- This corresponds to a php Language object, and has both language id values and script_id values. This is
@@ -450,7 +462,7 @@ create unique index date_range_idx1 on date_range(id,main_id,version);
 create table language (
         id              int default nextval('id_seq'),
         version           int not null,
-        main_id           int not null,
+        ic_id           int not null,
         is_deleted        boolean default false,
         language_id       int,  -- fk to vocabulary
         script_id         int,  -- fk to vocabulary
@@ -461,30 +473,30 @@ create table language (
         primary         key(id, version)
         );
 
-create unique index language_idx1 on date_range(id,main_id,version);
+create unique index language_idx1 on date_range(id,ic_id,version);
 
--- From the <source> element. The href and objectXMLWrap are not consistently used, so this may be
--- unnecessary. There will (often?) be a related entry in table language, related on source.id=language.fk_id.
+-- From the <source> element. This appears to derive from /eac-cpf/control/source in the CPF. The href and
+-- objectXMLWrap is not consistently used. There will (often?) be a related entry in table language, related
+-- on source.id=language.fk_id.
 --
--- From Source.php:
---
--- Snac Source File. A "source" is a citation source, and has qualities of an authority file although every
--- source is independent, even if it seems to be a duplicate.  This appears to derive from
--- /eac-cpf/control/source in the CPF. Going forward we use it for all sources.  For example,
--- SNACControlMetadata->citation is a Source object. Constellation->sources is a list of sources.
+-- SNAC Source File. A "source" is a cited (citation) source, and has qualities of an authority file.
+-- Currently, each constellation has its own list of sources. (Other constellations might duplicate these
+-- sources, but each constellation thinks its sources are unique).  Going forward we use this table for all
+-- sources.  For example, SNACControlMetadata->citation is a Source object. Constellation->sources is a list
+-- of sources.
 -- 
 -- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
 -- just like date. 
 
--- Apr 4 2016. Switching to list of sources per constellation. Finally removing type, which is always
+-- Apr 4 2016. We have switched to per constellation list of sources. Finally removing type, which is always
 -- "simple", and essentially not used. Removing fk_id and fk_table since sources are linked to each
--- constellation by main_id. Any constellation component using a source does a relational link aka foreign key
+-- constellation by ic_id. Any constellation component using a source does a relational link aka foreign key
 -- by source.id
 
 create table source (
     id           int default nextval('id_seq'),
     version      int not null,
-    main_id      int not null,
+    ic_id        int not null,
     is_deleted   boolean default false,
     display_name text,    -- User entered display name to distinguish sources, esp in the UI
     text         text,    -- Text of this source
@@ -497,7 +509,7 @@ create table source (
 -- Not true that href values do not repeat. Why did we think href would be unique across the table?
 -- create unique index source_idx1 on source (href);
 
-create unique index source_idx2 on source (id,version,main_id);
+create unique index source_idx2 on source (id,version,ic_id);
 
 -- Source is related to whatever needs it by putting a source.id foreign key in the table that wants to refer
 -- back to a source. There is no need for this linking table because we do not have a many-to-many relation.
@@ -507,13 +519,13 @@ create unique index source_idx2 on source (id,version,main_id);
 -- create table source_link (
 --     id         int default nextval('id_seq'),
 --     version    int not null,
---     main_id    int not null,
+--     ic_id    int not null,
 --     is_deleted boolean default false,
 --     fk_id      int, -- fk to the related table.id, always or usually nrd.id
 --     source_id  int, -- fk to source.id
 --     primary key(id, version)
 --     );
--- create unique index source__link_idx1 on source_link (id,version,main_id);
+-- create unique index source__link_idx1 on source_link (id,version,ic_id);
 
 -- Feb 10 2016 Data in <control> is planned to be stored elsewhere, probably version_history.
 
@@ -524,14 +536,14 @@ create unique index source_idx2 on source (id,version,main_id);
 -- create table control (
 --     id                  int default nextval('id_seq'),
 --     version             int not null,
---     main_id             int not null,
+--     ic_id             int not null,
 --     is_deleted          boolean default false,
 --     maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
 --     maintenance_status  int,  -- (fk to vocabulary.id) 
 --     conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
 --     primary key(id, version)
 --     );
--- create unique index control_idx1 on control(id,main_id,version);
+-- create unique index control_idx1 on control(id,ic_id,version);
 
 -- Feb 10 2016. Table pre_snac_maintenance_history not used. I think all of the pre-merge history was thrown
 -- out. Also, history and status will be captured in table version_history.
@@ -541,7 +553,7 @@ create unique index source_idx2 on source (id,version,main_id);
 -- create table pre_snac_maintenance_history (
 --     id                  int default nextval('id_seq'),
 --     version             int not null,
---     main_id int not null,
+--     ic_id int not null,
 --     is_deleted boolean default false,
 --     modified_time       date,
 --     event_type          int,  -- (fk to vocabulary.id)     
@@ -550,7 +562,7 @@ create unique index source_idx2 on source (id,version,main_id);
 --     description         text,
 --     primary key(id, version)
 --     );
--- create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,main_id,version);
+-- create unique index pre_snac_maintenance_history_idx1 on pre_snac_maintenance_history(id,ic_id,version);
 
 -- Are all these controlled vocabulary-type of things really the same, and should be in a unified
 -- tagging/markup table? (occupation, function, nationality, subject
@@ -562,7 +574,7 @@ create unique index source_idx2 on source (id,version,main_id);
 create table occupation (
     id                int default nextval('id_seq'),
     version           int not null,
-    main_id           int not null,
+    ic_id           int not null,
     is_deleted        boolean default false,
     occupation_id     int,  -- (fk to vocabulary.id)
     vocabulary_source text, -- occupation/term/@vocabularySource
@@ -570,12 +582,12 @@ create table occupation (
     primary key(id, version)
     );
 
-create unique index occupation_idx1 on occupation(id,main_id,version);
+create unique index occupation_idx1 on occupation(id,ic_id,version);
 
 create table function (
     id                int default nextval('id_seq'),
     version           int not null,
-    main_id           int not null,
+    ic_id           int not null,
     is_deleted        boolean default false,
     function_id       int,  -- function/term, fk to vocabulary.id
     function_type     text, -- function/@localType, null?, "DerivedFromRole"?, text for now, should be a fk to vocabulary.id
@@ -584,40 +596,40 @@ create table function (
     primary key(id, version)
     );
 
-create unique index function_idx1 on function(id,main_id,version);
+create unique index function_idx1 on function(id,ic_id,version);
 
 create table nationality (
     id             int default nextval('id_seq'),
     version        int not null,
-    main_id        int not null,
+    ic_id        int not null,
     is_deleted     boolean default false,
     term_id int,  -- (fk to vocabulary.id for a given nationality)
     primary key(id, version)
     );
 
-create unique index nationality_idx1 on nationality(id,main_id,version);
+create unique index nationality_idx1 on nationality(id,ic_id,version);
 
 create table subject (
     id         int default nextval('id_seq'),
     version    int not null,
-    main_id    int not null,
+    ic_id    int not null,
     is_deleted boolean default false,
     term_id int, -- (fk to vocabulary.id)
     primary key(id, version)
     );
 
-create unique index subject_idx1 on subject(id,main_id,version);
+create unique index subject_idx1 on subject(id,ic_id,version);
 
 create table legal_status (
     id         int default nextval('id_seq'),
     version    int not null,
-    main_id    int not null,
+    ic_id    int not null,
     is_deleted boolean default false,
     term_id int, -- (fk to vocabulary.id)
     primary key(id, version)
     );
 
-create unique index legal_status_idx1 on legal_status(id,main_id,version);
+create unique index legal_status_idx1 on legal_status(id,ic_id,version);
 
 -- Jan 28 2016. This is newer than nationality, subject. I considered naming term_id vocab_id because "term"
 -- is overused. However, term_id is conventional and descriptive.
@@ -625,18 +637,18 @@ create unique index legal_status_idx1 on legal_status(id,main_id,version);
 create table gender (
     id         int default nextval('id_seq'),
     version    int not null,
-    main_id    int not null,
+    ic_id    int not null,
     is_deleted boolean default false,
     term_id int, -- (fk to vocabulary.id)
     primary key(id, version)
     );
 
-create unique index gender_idx1 on gender(id,main_id,version);
+create unique index gender_idx1 on gender(id,ic_id,version);
 
 
 -- <cpfRelation> Was table cpf_relations. Fields moved here from the old table document: arcrole, role, href, type,
 -- cpfRelationType. cpfRelation/relationEntry is a name, and (sadly) is not always identical to the preferred
--- name in the related record.  Field version relates to main_id, since this is a 1-way relation.
+-- name in the related record.  Field version relates to ic_id, since this is a 1-way relation.
 
 -- todo: remove extracted_record_id which is only in extracted CPF records, not in post-merge CPF records.
 
@@ -648,9 +660,9 @@ create unique index gender_idx1 on gender(id,main_id,version);
 create table related_identity (
     id                  int default nextval('id_seq'),
     version             int not null,
-    main_id             int not null,
+    ic_id             int not null,
     is_deleted          boolean default false,
-    related_id          int,  -- fk to version_history.main_id of the related identity, was main_id2
+    related_id          int,  -- fk to version_history.ic_id of the related identity, was ic_id2
     related_ark         text,
     role                int,  -- @xlink:role, fk to vocabulary.id, corporateBody, person, family
     arcrole             int,  -- @xlink:arcrole, (fk to vocabulary.id) associatedWith, correspondedWith, etc, was relation_type
@@ -664,14 +676,14 @@ create table related_identity (
     primary key(id, version)
     );
 
-create unique index related_identity_idx1 on related_identity(id,main_id,version);
+create unique index related_identity_idx1 on related_identity(id,ic_id,version);
 
 -- resourceRelation
 
 create table related_resource (
     id                  int default nextval('id_seq'),
     version             int not null,
-    main_id             int not null,
+    ic_id             int not null,
     is_deleted          boolean default false, --
     role                int,                   -- @xlink:role, fk to vocabulary.id, type document_type, e.g. ArchivalResource
     arcrole             int,                   -- @xlnk:arcrole, fk to vocabulary.id type document_role, creatorOf, referencedIn, etc
@@ -685,7 +697,7 @@ create table related_resource (
     primary key(id, version)
     );
 
-create unique index related_resource_idx1 on related_resource(id,main_id,version);
+create unique index related_resource_idx1 on related_resource(id,ic_id,version);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
 -- 
@@ -694,7 +706,7 @@ create unique index related_resource_idx1 on related_resource(id,main_id,version
 create table scm (
     id           int default nextval('id_seq'),
     version      int not null,
-    main_id      int not null,
+    ic_id      int not null,
     is_deleted   boolean default false,
     citation_id  int,  -- fk to source.id
     sub_citation text, -- human readable location within the source
@@ -707,15 +719,15 @@ create table scm (
 
 
 -- Link constellation to original imported record id, aka extract record id. Probably does not need version
--- since this is not user-editable, but we give everything id, version, and main_id for the sake of
+-- since this is not user-editable, but we give everything id, version, and ic_id for the sake of
 -- consistency.
 
 create table otherid (
         id         int default nextval('id_seq'),
         version    int not null,
-        main_id    int not null,
+        ic_id    int not null,
         text text, -- unclear what this is parse from in CPF. See SameAs.php.
-        uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.main_id
+        uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.ic_id
         type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
         primary    key(id, version)
     );
@@ -759,7 +771,7 @@ create table otherid (
 -- create table place (
 --     id         int default nextval('id_seq'),
 --     version    int not null,
---     main_id    int not null,
+--     ic_id    int not null,
 --     is_deleted boolean default false,
 --     original   text, -- the original place text
 --     type       int,  -- fk to vocabulary.id, from place/@localType
@@ -768,7 +780,7 @@ create table otherid (
 --     primary key(id, version)
 --     );
 
--- create unique index place_idx1 on place(id,main_id,version);
+-- create unique index place_idx1 on place(id,ic_id,version);
 
 -- One to many linking table between place and geo_place. For the usual reasons SNAC place entry is
 -- denormalized. Some of these fields are in the SNAC XML.
@@ -782,7 +794,7 @@ create table otherid (
 create table place_link (
         id           int default nextval('id_seq'),
         version      int not null,
-        main_id      int not null,
+        ic_id      int not null,
         is_deleted   boolean default false,
         fk_id        int,                   -- fk to related table.id
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
@@ -796,4 +808,4 @@ create table place_link (
         primary key(id, version)
     );
 
-create unique index place_link_idx1 on place_link(id,main_id,version);
+create unique index place_link_idx1 on place_link(id,ic_id,version);

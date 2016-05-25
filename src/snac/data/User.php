@@ -85,6 +85,35 @@ class User implements \Serializable {
     private $roleList = null;
     
     /**
+     * Work email
+     *
+     * @var string Work email 
+     */
+    private $workEmail = null;
+
+    /**
+     * Work phone
+     *
+     * @var string Work phone 
+     */
+    private $workPhone = null;
+
+    /**
+     * Affiliation Constellation ID
+     *
+     * @var integer Affiliation constellation ID aka ic_id
+     */
+    private $affiliationID = null;
+
+    /**
+     * Preferred descriptive name rules
+     *
+     * @var string Preferred rules
+     */
+    private $preferredRules = null;
+
+
+    /**
      * Constructor 
      * 
      * @param string[] $data Array object of User information
@@ -344,6 +373,86 @@ class User implements \Serializable {
                 "expires" => time() + ($hours * 60 * 60) // Generates expiration $hours away
         );
         $this->setToken($token);
+    }
+
+    /**
+     * Get work email
+     *
+     * @return string Work email 
+     */
+    public function getWorkEmail()
+    {
+        return $this->workEmail;
+    }
+
+    /**
+     * Get work phone
+     *
+     * @return string Work phone 
+     */
+    public function getWorkPhone()
+    {
+        return $this->workPhone;
+    }
+
+    /**
+     * Get affiliation Constellation ID
+     *
+     * @return integer Affiliation constellation ID aka ic_id
+     */
+    public function getAffiliationID()
+    {
+        return $this->affiliationID;
+    }
+
+    /**
+     * Get preferred descriptive name rules
+     *
+     * @return string Preferred rules
+     */
+    public function getPreferredRules()
+    {
+        return $this->preferredRules;
+    }
+
+    /**
+     * Set work email
+     *
+     * @param  string $workEmail Work email 
+     */
+    public function setWorkEmail($workEmail)
+    {
+        $this->workEmail = $workEmail;
+    }
+
+    /**
+     * Set work phone
+     *
+     * @param string $workPhone Work phone 
+     */
+    public function setWorkPhone($workPhone)
+    {
+        $this->workPhone = $workPhone;
+    }
+
+    /**
+     * Set affiliation Constellation ID
+     *
+     * @param integer $affiliationID Affiliation constellation ID aka ic_id
+     */
+    public function setAffiliationID($affiliationID)
+    {
+        $this->affiliationID = $affiliationID;
+    }
+
+    /**
+     * Set preferred descriptive name rules
+     *
+     * @param string $preferredRules Preferred rules
+     */
+    public function setPreferredRules($preferredRules)
+    {
+        $this->preferredRules = $preferredRules;
     }
 
     /**

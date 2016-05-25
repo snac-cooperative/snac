@@ -135,6 +135,7 @@
                         "uri": null,
                         "description": null
                     },
+                    "rule": null,
                     "name": "ANF",
                     "id": null,
                     "version": null,
