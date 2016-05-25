@@ -13,9 +13,11 @@ var undoSet = new Array();
  *
  * @param string|object err The error message (string) or error object containing a message and type string
  */
-function displayErrorMessage(err) {
+function displayErrorMessage(err, data) {
     var errorMsg = "";
-    if ((typeof err) == "string")
+    if (typeof err === 'undefined') 
+        errorMsg = "an unknown problem occurred";
+    else if ((typeof err) == "string")
         errorMsg = err;
     else if (err.message)
         errorMsg = err.message;
@@ -36,6 +38,9 @@ function displayErrorMessage(err) {
     setTimeout(function(){
         $('#error-message').slideDown();
     }, 500);
+
+    // For reference, put the server response in the console
+    console.log(data);
 }
 
 /**

@@ -170,7 +170,7 @@ $(document).ready(function() {
                 } else {
                     $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error.
-                    displayErrorMessage(data.error);
+                    displayErrorMessage(data.error,data);
                 }
             });
         });
@@ -225,7 +225,7 @@ $(document).ready(function() {
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error);
+                        displayErrorMessage(data.error,data);
 		            }
 		        });
         	} else {
@@ -290,7 +290,7 @@ $(document).ready(function() {
 	                } else {
 	                    $('#notification-message').slideUp();
 	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error);
+                        displayErrorMessage(data.error,data);
 	                }
 	            });
         	}
@@ -346,7 +346,7 @@ $(document).ready(function() {
 		            } else {
 		                $('#notification-message').slideUp();
 		                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error);
+                        displayErrorMessage(data.error,data);
 		            }
 		        });
         	} else {
@@ -412,7 +412,7 @@ $(document).ready(function() {
 	                } else {
 	                    $('#notification-message').slideUp();
 	                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                        displayErrorMessage(data.error);
+                        displayErrorMessage(data.error,data);
 	                }
 	            });
         	}
@@ -463,7 +463,7 @@ $(document).ready(function() {
 	            } else {
 	                $('#notification-message').slideUp();
 	                // Something went wrong in the ajax call. Show an error and don't go anywhere.
-                    displayErrorMessage(data.error);
+                    displayErrorMessage(data.error,data);
 	            }
 	        });
         });
