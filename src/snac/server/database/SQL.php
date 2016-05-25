@@ -3851,10 +3851,15 @@ class SQL
      * well in most situations where a hash aka associative list is being used in a control statement.
      *
      * @param string $term The "type" term for what type of vocabulary to search
+     *
      * @param string $query The string to search through the vocabulary
+     *
+     * @param integer $entityTypeID Numeric key related to vocabulary.id where type='entity_type' of one of
+     * the three entity types.
+     *
      * @return string[][] Returns a list of lists with keys id, value.
      */
-    public function searchVocabulary($term, $query)
+    public function searchVocabulary($term, $query, $entityTypeID)
     {
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
@@ -3870,11 +3875,27 @@ class SQL
          * $this->enableLogging();
          * $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
          */
-        
-        $result = $this->sdb->query('select id,value
-                                    from vocabulary
-                                    where type=$1 and value ilike $2 order by value asc limit 100',
-                                    array($term, $likeStr));
+        if ($entityTypeID == null)
+        {
+            $queryStr =
+                      'select id,value
+                      from vocabulary
+                      where type=$1 and value ilike $2 order by value asc limit 100';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr));
+        } 
+        else
+        {
+            /*
+             * If we have a non-null entityTypeID then the type should be 'name_component'. We could check
+             * that although it isn't really necessary. When called with some other type, no records will be
+             * returned, presumably because the only values using entity_group are type='name_component'.
+             */ 
+            $queryStr =
+                      'select id,value
+                      from vocabulary
+                      where type=$1 and value ilike $2 and entity_group=$3 order by value asc limit 100';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr, $entityTypeID));
+        }
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

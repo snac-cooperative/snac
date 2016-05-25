@@ -3001,10 +3001,15 @@ class DBUtil
      * Searches the vocabulary and returns an array of id, value pairs.
      * 
      * @param string $type vocabulary type
+     *
      * @param string $query search string
+     *
+     * @param integer $entityTypeID The vocabulary.id of one of the 3 entity type records. Used for selecting
+     * name component vocabulary sensitive to context of entity type.
+     * 
      * @return string[][] list of results
      */
-    public function searchVocabulary($type, $query) {
+    public function searchVocabulary($type, $query, $entityTypeID=null) {
 
         if ($type == 'geo_place') {
             $results = $this->sql->searchPlaceVocabulary($query);
@@ -3017,7 +3022,7 @@ class DBUtil
             }
             return $retVal;
         }
-        return $this->sql->searchVocabulary($type, $query);
+        return $this->sql->searchVocabulary($type, $query, $entityTypeID);
     }
     
 
