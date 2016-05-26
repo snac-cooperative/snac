@@ -261,7 +261,8 @@ class ServerExecutor {
         $response = array();
         $response["results"] = $this->cStore->searchVocabulary(
                 $input["type"],
-                $input["query_string"]);
+                $input["query_string"],
+                $input["entityType"]);
         return $response;
     }
 
