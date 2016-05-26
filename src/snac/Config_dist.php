@@ -66,7 +66,7 @@ class Config {
 
     /**
      *
-     * @var string directory to write the log files
+     * @var string directory to write the log files. Must be / terminated.
      */
     public static $LOG_DIR = "";
     
