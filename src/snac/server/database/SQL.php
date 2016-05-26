@@ -3889,11 +3889,23 @@ class SQL
              * If we have a non-null entityTypeID then the type should be 'name_component'. We could check
              * that although it isn't really necessary. When called with some other type, no records will be
              * returned, presumably because the only values using entity_group are type='name_component'.
+             *
+             * The values for type name_component are at the end of vocabulary.sql.
+             *
+             * We need an "or" clause because NameAddition and Date are used for multiple name
+             * components. Ideally, NameAddition is person and corporateBody and not family, but to simplify
+             * things we say null is all three for NameAddition and Date.
+             *
+             * If null becomes a problem, zero or some other integer that is not an entity type would probably
+             * work just as well. Better perhaps since nulls preclude using entity_group in a primary key.
+             *
+             * It might be better to return these ordered by id instead of value. The UI may have expectations
+             * about the order.
              */ 
             $queryStr =
                       'select id,value
                       from vocabulary
-                      where type=$1 and value ilike $2 and entity_group=$3 order by value asc limit 100';
+                      where type=$1 and value ilike $2 and (entity_group=$3 or entity_group is null) order by value asc limit 100';
             $result = $this->sdb->query($queryStr, array($term, $likeStr, $entityTypeID));
         }
         $all = array();
