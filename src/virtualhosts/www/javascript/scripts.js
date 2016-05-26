@@ -793,7 +793,7 @@ function newNameEntryComponent(i) {
     $('#nameEntry_component_' + nextid + '_operation_' + 1).val("insert");
     subMakeEditable("nameEntry_component_" + nextid, i);
 
-    select_replace($("#nameEntry_component_"+nextid+"_type_id_"+i), i);
+    vocab_select_replace($("#nameEntry_component_"+nextid+"_type_id_"+i), "_"+i, 'name_component', 0);
 
     // Put the updated version number back in the DOM
     $('#nameEntry_component_next_j_'+i).text(++nextid);
