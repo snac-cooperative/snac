@@ -341,6 +341,82 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
     }
 
+    /**
+     * Test name component related code 
+     *
+     * Test both saving and reading name components, as well as searchVocabulary() which has special behavior
+     * related to name components.
+     *
+     */
+    public function testSearchVocabularyNameComponent()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $cObj->getNameEntries()[0]->setOriginal("Foo Bar Test");
+        $componentObj = new \snac\data\NameComponent();
+        $componentObj->setText("Foo");
+        $componentObj->setOrder(1);
+
+        $entList = $this->dbu->searchVocabulary('entity_type', '');
+
+        $personID = 0; 
+        foreach($entList as $ent)
+        {
+            // Only one record will match.
+            if ($ent['value'] == 'person')
+            {
+                $personID = $ent['id'];
+            }
+        }
+
+        $svList = $this->dbu->searchVocabulary('name_component', 'Surname', $personID);
+
+        $ctObj = new \snac\data\Term();
+        foreach($svList as $svocab)
+        {
+            // Only one record will match. 
+            if ($svocab['value'] == 'Surname')
+            {
+                $ctObj->setID($svocab['id']);
+                $ctObj->setType('name_component');
+                $ctObj->setTerm($svocab['value']);
+            }
+        }
+
+        $componentObj->setType($ctObj);
+        $componentObj->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj->getNameEntries()[0]->addComponent($componentObj);
+
+        $retObj = $this->dbu->writeConstellation($this->user, // $user
+                                                 $cObj,       // $argObj
+                                                 'testing ingest full CPF record with ingest cpf', // $note
+                                                 'ingest cpf'); // $statusArg
+        $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
+        
+        // Get the most recent version.
+        $readObj = $this->dbu->readConstellation($retObj->getID());
+        
+        /*
+         * Change to 1 for debugging.  Do we have an environment var for debug mode? 
+         */ 
+        if (0)
+        {
+            $cfile = fopen('name_component_json.txt', 'w');
+            $ncJSON = $readObj->toJSON();
+            fwrite($cfile, $ncJSON);
+            fclose($cfile);
+        }
+
+        /*
+         * The constellation object does not contain a populated status because the server may change it. If
+         * you want status you must call readConstellationStatus() and get it directly from the db.
+         */ 
+        $this->assertEquals($this->dbu->readConstellationStatus($readObj->getID()), 'locked editing');
+    }
+
+
     public function testFullCPFDateIsRange()
     {
         $eParser = new \snac\util\EACCPFParser();

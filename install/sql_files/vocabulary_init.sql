@@ -29,8 +29,12 @@ CREATE SEQUENCE "vocabulary_id_seq";
 -- is reset.
 
 -- Field entity_group is used to group the name_component vocabulary for the 3 known entity types. There are
--- only 3 possible values for entity_group, which are the row id for the three vocabulary.type='entity_type'
--- rows. vocabulary.type will be 'name_component' when entity_group is not null.
+-- only 3 possible values (plus null) for entity_group, which are the row id for the three
+-- vocabulary.type='entity_type' rows.
+--
+-- Two name components apply to all entity types: NameAddition, Date. These two have entity_group set to null.
+-- 
+-- Name component vocabulary is at the end of install/sql_files/vocabulary.sql.
 
 create table if not exists vocabulary (
         id           int primary key default nextval('vocabulary_id_seq'),
