@@ -21,6 +21,7 @@
 <script language="javascript">
 $('.selectpicker').selectpicker();
 </script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 <!-- Tiny MCE text editor -->
 <script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
@@ -44,6 +45,18 @@ body {
 .snac .navbar .container {
     width: auto;
 }
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
 </style>
 </head>
 <body role="document">
@@ -53,17 +66,18 @@ body {
 
 <div class="container snac" role="main">
 
-		<h1>SNAC Prototype</h1>
 
-        <div class="row marketing">
-			<div class="alert alert-success col-md-12">
-                <h2 class="text-center">Site Maintenance</h2>
+        <div class="row row-centered">
+            <div class="col-md-2 col-centered">
+                <p class="text-center" style="font-size:240px; color: #F2F5A9;"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></p>
+            </div>
+			<div class="col-md-4 col-centered">
+                <h2>Site Maintenance</h2>
                 
-                
-                <p>The prototype is currently down for maintenance.</p>
+                <p>We apologize for the inconvenience, but the prototype is currently down for maintenance.  We're adjusting the bits in the database and will be back up soon.</p>
                 
 			</div>
-			</div>
+        </div>
  
 </div>
 </body>

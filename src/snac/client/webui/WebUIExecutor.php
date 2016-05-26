@@ -727,6 +727,7 @@ class WebUIExecutor {
         $request = array ();
         $request["command"] = "vocabulary";
         $request["type"] = $input["type"];
+        $request["entityType"] = $input["entityType"];
         if (isset($request["type"])) {
             if (strpos($request["type"], "ic_") !== false) {
                 $this->logger->addDebug("Requesting Sources as Vocabulary List");

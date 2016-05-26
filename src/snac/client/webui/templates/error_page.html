@@ -11,6 +11,7 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
@@ -44,6 +45,19 @@ body {
 .snac .navbar .container {
     width: auto;
 }
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
 </style>
 </head>
 <body role="document">
@@ -53,25 +67,23 @@ body {
 
 <div class="container snac" role="main">
 
-		<h1>An Error Occurred</h1>
-
-        <div class="row marketing">
-			<div class="alert alert-danger col-md-12">
-                <h2 class="text-center">We're sorry</h2>
+        <div class="row row-centered">
+            <div class="col-md-2 col-centered">
+                <p class="text-center" style="font-size:240px; color: #F5A9A9;"><i class="fa fa-exclamation-circle" aria-hidden="true"></i></p>
+            </div>
+			<div class="col-md-4 col-centered">
+                <h2>We're Sorry</h2>
                 
                 <p>Something has gone awry in your previous response.  We got the following message from the server.  Please use
-                your browser's back button or the menu at the top to return to what you had been doing.   Thanks!</p>
-                
-                <p>&nbsp;</p>
-                
-                <div class="alert alert-warning text-left">
-                    <h3>{{data.type}}</h3>
-                    
-                    <p>{{data.message}}</p>
-                </div>
+                                your browser's back button or the menu at the top to return to what you had been doing.   Thanks!</p>
                 
 			</div>
+        </div>
+        <div class="row row-centered">
+            <div class="col-md-6 col-centered">
+                <p><strong>{{data.type}}</strong>: {{data.message}}</p>
 			</div>
+        </div>
  
 </div>
 </body>

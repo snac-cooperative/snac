@@ -94,7 +94,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $display->setLanguage("english");
 
         // Code to take the site down for maintenance
-        if (0) {
+        if (\snac\Config::$SITE_OFFLINE) {
             $display->setTemplate("down_page");
             array_push($this->responseHeaders, "Content-Type: text/html");
             $this->response = $display->getDisplay();
@@ -221,8 +221,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             $tmpUser = $executor->startSNACSession($user);
 
-            if ($tmpUser !== false)
-                $user = $tmpUser;
+            if ($tmpUser === false) {
+                session_destroy();
+                $display->setTemplate("error_page");
+                $display->setData(array(
+                    "type" => "Invalid User",
+                    "message" => "The Google account does not exist in our system. Please log-in again with a different account."
+                ));
+                array_push($this->responseHeaders, "Content-Type: text/html");
+                $this->response = $display->getDisplay();
+                return;
+
+            }
+            $user = $tmpUser;
 
             $_SESSION['snac_user'] = serialize($user);
 

@@ -1120,7 +1120,8 @@ class EACCPFParser {
                                     $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
                                     $relation->setSourceArkID($identity->getArk());
                                     $relation->setTargetArkID($ratts['href']);
-                                    $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
+                                    if (isset($ratts["role"]))
+                                        $relation->setTargetEntityType($this->getTerm($this->getValue($ratts['role']), "entity_type"));
                                     /*
                                      * cpfRelation/@type cpfRelation@xlink:type
                                      *

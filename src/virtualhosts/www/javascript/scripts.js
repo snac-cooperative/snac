@@ -13,9 +13,11 @@ var undoSet = new Array();
  *
  * @param string|object err The error message (string) or error object containing a message and type string
  */
-function displayErrorMessage(err) {
+function displayErrorMessage(err, data) {
     var errorMsg = "";
-    if ((typeof err) == "string")
+    if (typeof err === 'undefined') 
+        errorMsg = "an unknown problem occurred";
+    else if ((typeof err) == "string")
         errorMsg = err;
     else if (err.message)
         errorMsg = err.message;
@@ -36,6 +38,9 @@ function displayErrorMessage(err) {
     setTimeout(function(){
         $('#error-message').slideDown();
     }, 500);
+
+    // For reference, put the server response in the console
+    console.log(data);
 }
 
 /**
@@ -788,7 +793,7 @@ function newNameEntryComponent(i) {
     $('#nameEntry_component_' + nextid + '_operation_' + 1).val("insert");
     subMakeEditable("nameEntry_component_" + nextid, i);
 
-    select_replace($("#nameEntry_component_"+nextid+"_type_id_"+i), i);
+    vocab_select_replace($("#nameEntry_component_"+nextid+"_type_id_"+i), "_"+i, 'name_component', 0);
 
     // Put the updated version number back in the DOM
     $('#nameEntry_component_next_j_'+i).text(++nextid);

@@ -22,9 +22,9 @@
 $('.selectpicker').selectpicker();
 </script>
 
-<!-- Tiny MCE text editor -->
-<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
-<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+<!-- SNAC Scripts -->
+<script src="javascript/profile.js"></script>
+
 <style>
 body {
     padding-top: 70px;
@@ -53,40 +53,90 @@ body {
 
 <div class="container snac" role="main">
 
-    <h1>User Profile</h1>
-    
-    <div class="col-md-4">
-        <div class="thumbnail">
-            <img src="{{data.user.avatarLarge}}" alt="avatar">
+    <h1>User Profile: {{data.user.fullName}}</h1>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="thumbnail">
+                <img src="{{data.user.avatarLarge}}" alt="avatar">
+            </div>
+            <h5>Options</h5>
+            <div class="list-group">
+                <a href="#" id="edit" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span> {{ X.edit.display }}</a>
+            </div>
         </div>
-    </div>
-    
-    <div class="col-md-8">
-        <h2>{{data.user.fullName}}</h2>
         
-        <div class="form-horizontal">
-	        <div class="form-group">
-	            <label class="control-label col-xs-2">First Name</label>
-	            <div class="col-xs-10">
-	                <p class="form-control-static">{{data.user.firstName}}</p>
-	            </div>
-	        </div>
-	        
-	        
-	        <div class="form-group">
-	            <label class="control-label col-xs-2">Last Name</label>
-	            <div class="col-xs-10">
-	                <p class="form-control-static">{{data.user.lastName}}</p>
-	            </div>
-	        </div>
-	        
-	        <div class="form-group">
-	            <label class="control-label col-xs-2">Email</label>
-	            <div class="col-xs-10">
-	                <p class="form-control-static">{{data.user.email}}</p>
-	            </div>
-	        </div>
-        </div>  
+        <div class="col-md-8">
+            <h3>Login Information</h3>
+            
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Username</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.userName}}</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Google Email</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.email}}</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Password</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static"><em>Google Authentication</em></p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Affiliation</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.affiliation}}</p>
+                    </div>
+                </div>
+
+                <h3>Personal Information</h3>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">First Name</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.firstName}}</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Last Name</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.lastName}}</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Full Name</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.fullName}}</p>
+                    </div>
+                </div>
+                
+                <h3>Contact Information</h3>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Work Email</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.workEmail}}</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Work Phone</label>
+                    <div class="col-xs-10">
+                        <p class="form-control-static">{{data.user.workPhone}}</p>
+                    </div>
+                </div>
+            </div>  
+        </div>
     </div>
 </div>
 </body>
