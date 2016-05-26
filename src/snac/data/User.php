@@ -474,6 +474,9 @@ class User implements \Serializable {
                 "avatarSmall" => $this->avatarSmall,
                 "avatarLarge" => $this->avatarLarge,
                 "email" => $this->email,
+                "workEmail" => $this->workEmail,
+                "workPhone" => $this->workPhone,
+                "affiliation" => $this->affiliationID,
                 "token" => $this->token
         );
         
@@ -542,6 +545,21 @@ class User implements \Serializable {
             $this->email = $data["email"];
         else
             $this->email = null;
+        
+        if (isset($data["workEmail"]))
+            $this->workEmail = $data["workEmail"];
+        else
+            $this->workEmail = null;
+        
+        if (isset($data["workPhone"]))
+            $this->workPhone = $data["workPhone"];
+        else
+            $this->workPhone = null;
+        
+        if (isset($data["affiliation"]))
+            $this->affiliationID = $data["affiliation"];
+        else
+            $this->affiliationID = null;
         
         if (isset($data["token"]))
             $this->token = $data["token"];

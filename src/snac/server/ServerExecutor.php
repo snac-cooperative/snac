@@ -148,13 +148,7 @@ class ServerExecutor {
 
                 if ($this->user === false) {
                     // The user wasn't found in the database
-
-                    // For version 1.1.0, we will go ahead and add them
-                    // if the token is valid
-                    if ($this->checkOAuth($user))
-                        $this->user = $this->uStore->createUser($user);
-                    else
-                        throw new \snac\exceptions\SNACUserException("Invalid OAuth user");
+                    throw new \snac\exceptions\SNACUserException("Invalid OAuth user");
                 }
             } else {
                 throw new \snac\exceptions\SNACUserException("Username required for login");
@@ -162,6 +156,21 @@ class ServerExecutor {
 
             $this->logger->addDebug("The user was found in the database", $this->user->toArray());
             $this->user->setToken($user->getToken());
+
+            // Use the values passed in from the client to update the user object,
+            // if applicable
+            $this->user->setAvatar($user->getAvatar());
+            $this->user->setAvatarSmall($user->getAvatarSmall());
+            $this->user->setAvatarLarge($user->getAvatarLarge());
+            if ($this->user->getFirstName() == null)
+                $this->user->setFirstName($user->getFirstName());
+            if ($this->user->getLastName() == null)
+                $this->user->setLastName($user->getLastName());
+            if ($this->user->getFullName() == null)
+                $this->user->setFullName($user->getFullName());
+            if ($this->user->getEmail() == null)
+                $this->user->setEmail($user->getEmail());
+            $this->uStore->saveUser($this->user);
             $this->logger->addDebug("Updated the user with their token", $this->user->toArray());
 
             if ($this->user !== false && $this->uStore->sessionExists($this->user)) {
