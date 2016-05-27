@@ -89,8 +89,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
                 $this->dbu->eraseUser($oldUser);
             }
         }
-        
-
     }
 
     public function testBasic()

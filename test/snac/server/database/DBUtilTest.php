@@ -68,6 +68,40 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         // Consider creating a single parser instance here, and reusing it throughout.
     }
 
+
+    /**
+     * Check that name components come back the correct order. Minimal check really only looks at the first
+     * element, but that should be enough, especially since we will eventually replace all the vocabulary code.
+     */ 
+    public function testNameComponentOrder()
+    {
+        $entityTypeList = $this->dbu->searchVocabulary('entity_type', '');
+        foreach($entityTypeList as $ent)
+        {
+            /* 
+             * printf("\ndbutiltest eid: %s ev: %s list: %s\n",
+             *        $ent['id'],
+             *        $ent['value'],
+             *        var_export($this->dbu->searchVocabulary('name_component','', $ent['id']),1));
+             */
+            $vocabList = $this->dbu->searchVocabulary('name_component','', $ent['id']);
+            if ($ent['value'] == 'person')
+            {
+                $this->assertEquals('Surname', $vocabList[0]['value']);
+            }
+            else if ($ent['value'] == 'corporateBody')
+            {
+                $this->assertEquals('Name', $vocabList[0]['value']);
+            }
+            else
+            {
+                $this->assertEquals('FamilyName', $vocabList[0]['value']);
+            }
+        }
+    }        
+
+
+
     /**
      * Check multiple related
      *
