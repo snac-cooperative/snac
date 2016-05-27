@@ -268,6 +268,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "profile") {
             $executor->displayProfilePage($display, $user);
 
+        } else if ($this->input["command"] == "update_profile") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->saveProfile($this->input, $user);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->saveConstellation($this->input, $user);

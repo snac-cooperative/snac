@@ -297,6 +297,56 @@ class WebUIExecutor {
     }
 
     /**
+     * Save User Profile 
+     *
+     * Asks the server to update the profile of the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveProfile(&$input, &$user) {
+
+
+
+        $user->setFirstName($input["firstName"]);
+        $user->setLastName($input["lastName"]);
+        $user->setWorkPhone($input["workPhone"]);
+        $user->setWorkEmail($input["workEmail"]);
+        $user->setFullName($input["fullName"]);
+
+        $this->logger->addDebug("Updated the User Object", $user->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_user_information");
+
+        // Send the query to the server
+        $request["user"] = $user->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            if (isset($serverResponse["user"])) {
+                $response["user"] = $serverResponse["user"];
+            }
+        }
+
+        if ($response["result"] == "success")
+            $_SESSION["snac_user"] = serialize($user);
+        
+        return $response;
+    }
+
+    /**
      * Save Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an

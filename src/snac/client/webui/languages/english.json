@@ -1,6 +1,10 @@
 {
     "_comment" : "%%% The following are commands on the page",
     
+    "save" : {
+        "display" : "Save",
+        "tooltip" : "Save"
+    },
     "edit" : {
         "display" : "Edit",
         "tooltip" : "Edit this data element"

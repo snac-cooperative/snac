@@ -236,6 +236,40 @@ class ServerExecutor {
         return $response;
     }
 
+
+    /**
+     * Update the User Information
+     *
+     * Calls saveUser to save the user information to the database.  Then returns the user object.
+     *
+     * @return string[] The response to send to the client
+     */
+    public function updateUserInformation(&$input) {
+        $response = array();
+
+        $updated = new \snac\data\User($input["user"]);
+
+        $this->user->setFirstName($updated->getFirstName());
+        $this->user->setLastName($updated->getLastName());
+        $this->user->setFullName($updated->getFullName());
+        $this->user->setEmail($updated->getEmail());
+        $this->user->setWorkEmail($updated->getWorkEmail());
+        $this->user->setWorkPhone($updated->getWorkPhone());
+
+
+        $success = $this->uStore->saveUser($this->user);
+
+        if ($success === true) {
+            $response["user"] = $this->user->toArray();
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+
+        return $response;
+    }
+
+
     /**
      * End user session
      *

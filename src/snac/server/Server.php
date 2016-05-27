@@ -146,6 +146,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->userInformation();
                 break;
                 
+            case "update_user_information":
+                $this->response = $executor->updateUserInformation($this->input);
+                break;
+                
             case "insert_constellation":
                 $this->response = $executor->writeConstellation($this->input);
                 break;

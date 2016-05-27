@@ -52,16 +52,17 @@ body {
 
 
 <div class="container snac" role="main">
-
+<form id="profile_form">
     <h1>User Profile: {{data.user.fullName}}</h1>
     <div class="row">
         <div class="col-md-4">
             <div class="thumbnail">
                 <img src="{{data.user.avatarLarge}}" alt="avatar">
             </div>
-            <h5>Options</h5>
+            <h4>Options</h4>
             <div class="list-group">
                 <a href="#" id="edit" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span> {{ X.edit.display }}</a>
+                <a href="#" id="update" class="list-group-item list-group-item-success" onClick="event.preventDefault();" style="display:none;"><span class="glyphicon glyphicon-pencil"></span> {{ X.save.display }}</a>
             </div>
         </div>
         
@@ -71,29 +72,39 @@ body {
             <div class="form-horizontal">
                 <div class="form-group">
                     <label class="control-label col-xs-2">Username</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10" id="userNameDiv">
                         <p class="form-control-static">{{data.user.userName}}</p>
+                        <input type="hidden" id="userName" name="userName" value="{{data.user.userName}}"/>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Google Email</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10" id="emailDiv">
                         <p class="form-control-static">{{data.user.email}}</p>
+                        <input type="hidden" id="email" name="email" value="{{data.user.email}}"/>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Password</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10" id="passwordDiv">
                         <p class="form-control-static"><em>Google Authentication</em></p>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Affiliation</label>
-                    <div class="col-xs-10">
-                        <p class="form-control-static">{{data.user.affiliation}}</p>
+                    <div class="col-xs-10" id="affiliationDiv">
+                        <p class="form-control-static">{{data.user.affiliation.nameEntries.0.original}}
+                            {% if data.user.affiliation.ark %}
+                                <br>
+                                <span><em>{{data.user.affiliation.ark}} </em>
+                                <a class="label label-info" target="_blank" href="?command=view&constellationid={{data.user.affiliation.id}}">View</a>
+                                </span>
+                            {% endif %}
+                        </p>
+                        <input type="hidden" id="affiliationid" name="affiliationid" value="{{data.user.affiliation.id}}"/>
                     </div>
                 </div>
 
@@ -101,22 +112,25 @@ body {
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">First Name</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10 editable" id="firstNameDiv">
                         <p class="form-control-static">{{data.user.firstName}}</p>
+                        <input type="hidden" id="firstName" name="firstName" value="{{data.user.firstName}}"/>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Last Name</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10 editable" id="lastNameDiv">
                         <p class="form-control-static">{{data.user.lastName}}</p>
+                        <input type="hidden" id="lastName" name="lastName" value="{{data.user.lastName}}"/>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Full Name</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10 editable" id="fullNameDiv">
                         <p class="form-control-static">{{data.user.fullName}}</p>
+                        <input type="hidden" id="fullName" name="fullName" value="{{data.user.fullName}}"/>
                     </div>
                 </div>
                 
@@ -124,20 +138,23 @@ body {
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Work Email</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10 editable" id="workEmailDiv">
                         <p class="form-control-static">{{data.user.workEmail}}</p>
+                        <input type="hidden" id="workEmail" name="workEmail" value="{{data.user.workEmail}}"/>
                     </div>
                 </div>
                 
                 <div class="form-group">
                     <label class="control-label col-xs-2">Work Phone</label>
-                    <div class="col-xs-10">
+                    <div class="col-xs-10 editable" id="workPhoneDiv">
                         <p class="form-control-static">{{data.user.workPhone}}</p>
+                        <input type="hidden" id="workPhone" name="workPhone" value="{{data.user.workPhone}}"/>
                     </div>
                 </div>
             </div>  
         </div>
     </div>
+</form>
 </div>
 </body>
 </html>
