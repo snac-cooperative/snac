@@ -93,7 +93,14 @@ body {
                 <div class="form-group">
                     <label class="control-label col-xs-2">Affiliation</label>
                     <div class="col-xs-10">
-                        <p class="form-control-static">{{data.user.affiliation}}</p>
+                        <p class="form-control-static">{{data.user.affiliation.nameEntries.0.original}}
+                            {% if data.user.affiliation.ark %}
+                                <br>
+                                <span><em>{{data.user.affiliation.ark}} </em>
+                                <a class="label label-info" target="_blank" href="?command=view&constellationid={{data.user.affiliation.id}}">View</a>
+                                </span>
+                            {% endif %}
+                        </p>
                     </div>
                 </div>
 
