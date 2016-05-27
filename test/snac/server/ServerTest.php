@@ -87,6 +87,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
            "command" => "vocabulary",
                 "type" => "entity_type",
                 "query_string" => "",
+                "entity_type" => "",
                 "user" => $this->user->toArray()
         ));
         $server->run();

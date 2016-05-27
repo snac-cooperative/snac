@@ -727,7 +727,9 @@ class WebUIExecutor {
         $request = array ();
         $request["command"] = "vocabulary";
         $request["type"] = $input["type"];
-        $request["entityType"] = $input["entityType"];
+        $request["entity_type"] = null; 
+        if (isset($input["entity_type"]))
+            $request["entity_type"] = $input["entity_type"];
         if (isset($request["type"])) {
             if (strpos($request["type"], "ic_") !== false) {
                 $this->logger->addDebug("Requesting Sources as Vocabulary List");
@@ -769,6 +771,7 @@ class WebUIExecutor {
                 foreach ($serverResponse["results"] as $k => $v)
                     $serverResponse["results"][$k]["text"] = $v["value"];
 
+                $this->logger->addDebug("Sending response back to client", $serverResponse);
                     // Send the response back to the web client
                 return $serverResponse;
             }

@@ -17,7 +17,9 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
                     ajax: {
-                        url: function() { return "?command=vocabulary&type="+type+"&entityType="+$("#entityType").val();},
+                        url: function() {
+                            return "?command=vocabulary&type="+type+"&entity_type="+$("#entityType").val();
+                        },
                         dataType: 'json',
                         delay: 250,
                         data: function (params) {
