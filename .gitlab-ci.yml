@@ -5,6 +5,7 @@ before_script:
     - rm -rf ~/public_html/snac_server
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
+    - ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
 
 stages:
   - database
