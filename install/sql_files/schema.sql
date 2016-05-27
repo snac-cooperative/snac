@@ -150,7 +150,7 @@ create table appuser (
         avatar_large    text,                -- url
         work_email      text,
         work_phone      text,
-        affiliation     int,                 -- fk to version_history.id aka constellation ID aka ic_id.
+        affiliation     int,                 -- fk is version_history.id aka constellation ID aka ic_id.
         preferred_rules text                 -- preferred descriptive name rules
         );
 

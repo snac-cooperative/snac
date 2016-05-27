@@ -25,6 +25,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
      */ 
     private $dbu = null;
 
+    /**
+     * Database Utility object
+     *
+     * We need to be able to read a constellation, so we need a DBUtil object.
+     *
+     * @var snac\server\database\DBUtil object.
+     */
+    private $dbutil;
 
     /**
      * Constructor
@@ -42,6 +50,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
     public function __construct() 
     {
         $this->dbu = new snac\server\database\DBUser();
+        $this->dbutil = new \snac\server\database\DBUtil();
+
         // Prototypeing..
         // $this->traverseHead();
         // exit();
@@ -96,6 +106,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setAvatarSmall("http://example.com/avatar_small");
         $userObj->setAvatarLarge("http://example.com/avatar_large");
         $userObj->setEmail("mst3k@example.com");
+
+        /*
+         * Hard code the ARK for UVa. This means that the UVa constellation must be in the database.
+         * When second param is true, we get a summary constellation.
+         */ 
+        $inst = $this->dbutil->readPublishedConstellationByArk('http://n2t.net/ark:/99166/w6xq0t7h', true);
+        $userObj->setAffiliation($inst);
+
         $newUser = $this->dbu->createUser($userObj);
 
         $this->assertNotNull($newUser);
@@ -152,8 +170,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Write out the user object as for review.
          */ 
         /* 
-         * $cfile = fopen('user_object.txt', 'w');
-         * fwrite($cfile, var_export($newUser, 1));
+         * $cfile = fopen('user_object_json.txt', 'w');
+         * fwrite($cfile, $newUser->toJSON());
          * fclose($cfile);
          */
 

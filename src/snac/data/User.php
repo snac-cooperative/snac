@@ -99,11 +99,11 @@ class User implements \Serializable {
     private $workPhone = null;
 
     /**
-     * Affiliation Constellation ID
+     * Affiliation Constellation
      *
-     * @var integer Affiliation constellation ID aka ic_id
+     * @var snac\data\Constellation Populated as a summary mini-constellation.
      */
-    private $affiliationID = null;
+    private $affiliation = null;
 
     /**
      * Preferred descriptive name rules
@@ -397,13 +397,13 @@ class User implements \Serializable {
     }
 
     /**
-     * Get affiliation Constellation ID
+     * Get affiliation Constellation
      *
-     * @return integer Affiliation constellation ID aka ic_id
+     * @return snac\data\Constellation Affiliation constellation, in summary form
      */
-    public function getAffiliationID()
+    public function getAffiliation()
     {
-        return $this->affiliationID;
+        return $this->affiliation;
     }
 
     /**
@@ -437,13 +437,13 @@ class User implements \Serializable {
     }
 
     /**
-     * Set affiliation Constellation ID
+     * Set affiliation Constellation
      *
-     * @param integer $affiliationID Affiliation constellation ID aka ic_id
+     * @param snac\data\Constellation $affiliation Affiliation constellation, only summary fields populated.
      */
-    public function setAffiliationID($affiliationID)
+    public function setAffiliation($affiliation)
     {
-        $this->affiliationID = $affiliationID;
+        $this->affiliation = $affiliation;
     }
 
     /**
@@ -476,7 +476,7 @@ class User implements \Serializable {
                 "email" => $this->email,
                 "workEmail" => $this->workEmail,
                 "workPhone" => $this->workPhone,
-                "affiliation" => $this->affiliationID,
+                "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token
         );
         
@@ -556,10 +556,10 @@ class User implements \Serializable {
         else
             $this->workPhone = null;
         
-        if (isset($data["affiliation"]))
-            $this->affiliationID = $data["affiliation"];
+        if (isset($data["affiliation"]) && $data['affiliation'] != null)
+            $this->affiliation = new \snac\data\Constellation($data["affiliation"]);
         else
-            $this->affiliationID = null;
+            $this->affiliation = null;
         
         if (isset($data["token"]))
             $this->token = $data["token"];

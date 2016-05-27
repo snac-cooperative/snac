@@ -384,6 +384,10 @@ class SQL
      * @param string $avatarLarge The large avatar
      * @param string $email The email address
      * @param string $userName The user name
+     * @param string $workEmail Work email
+     * @param string $workPhone Work phone
+     * @param integer $affiliationID Constellation ID aka ic_id integer version_history.id
+     * @param string $preferredRules Preferred name descriptive rules.
      */ 
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
                                $workEmail, $workPhone, $affiliationID, $preferredRules)

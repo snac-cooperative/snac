@@ -38,15 +38,25 @@ class DBUser
      */
     private $db = null;
 
+    /**
+     * Database Utility object
+     *
+     * We need to be able to read a constellation, so we need a DBUtil object.
+     *
+     * @var snac\server\database\DBUtil object.
+     */
+    private $dbutil;
+
     /** 
      * Constructor
      *
-     * The constructor for the DBUtil class. Set up a database connector, and SQL object. All database layers
+     * The constructor for the class. Set up a database connector, and SQL object. All database layers
      * should behave this way, so DBUtil looks like this (but with some additional bookkeeping vars).
      */
     public function __construct()
     {
         $this->db = new \snac\server\database\DatabaseConnector();
+        $this->dbutil = new \snac\server\database\DBUtil();
 
         /*
          * Passing the value of deleted to the SQL constructor is a valiant, but probably pointless, attempt
@@ -122,6 +132,9 @@ class DBUser
      *
      * Param $user is not modified, although it is cloned and the clone has the userID added, and the clone is
      * returned on success.
+     *
+     * Affiliation is a Constellation, but only has the minimal summary fields. We save the Constellation ID
+     * aka ic_id aka getID() to the database.
      * 
      * Return the new user object on success.
      *
@@ -146,7 +159,7 @@ class DBUser
                                                 $user->getEmail(),
                                                 $user->getWorkEmail(),
                                                 $user->getWorkPhone(),
-                                                $user->getAffiliationID(),
+                                                $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
                                                 $user->getPreferredRules());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
@@ -200,7 +213,7 @@ class DBUser
                                       $user->getUserName(),
                                       $user->getWorkEmail(),
                                       $user->getWorkPhone(),
-                                      $user->getAffiliationID(),
+                                      $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
                                       $user->getPreferredRules());
     }
     
@@ -294,7 +307,16 @@ class DBUser
         $user->setRoleList($this->listUserRole($user));
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
-        $user->setAffiliationID($record['affiliation']);
+
+        /* 
+         * readConstellation($mainID, $version=null, $summary=false)
+         * 
+         * The ic_id aka $mainID is the affiliation field from the db. We pass null for version in order to
+         * get the most recent. We pass true for $summary so that we get a summary constellation which only
+         * has ic_id, entityType, ARK, Name entry.
+         */
+        $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, true));
+
         $user->setPreferredRules($record['preferred_rules']);
         return $user;
     }
