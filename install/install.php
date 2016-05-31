@@ -103,7 +103,7 @@ else
 
 if ($response == "yes") {
     $retval = 0;
-    echo "  Attempting to update the Config.php file.\n";
+    echo "  Attempting to update the Config.php file.\n\n";
     system("cd ../ && sed -i 's/SITE_OFFLINE = false/SITE_OFFLINE = true/g' src/snac/Config.php\n", $retval);
     
     if ($retval != 0) {
@@ -431,7 +431,7 @@ if ($response == "yes") {
         $filename = "setup_files/users.csv";
     $retval = 0;
     echo "  Attempting to read and import user accounts from $filename.\n";
-    system("cd ../scripts/add_users.php $filename setup_files/institutions.csv\n", $retval);
+    system("../scripts/add_users.php setup_files/institutions.csv $filename\n", $retval);
     
     if ($retval != 0) {
         echo "  There was a problem importing the users.\n\n";
