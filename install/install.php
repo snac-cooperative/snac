@@ -92,6 +92,30 @@ if ($dbHandle === false) {
     die("ERR: Unable to connect to database.\n");
 }
 
+
+$siteoffline = false;
+echo "Would you like to take the site offline during this process?\n ('yes' or 'no'): "; 
+$response = "yes";
+if (!$automate)
+    $response = trim(fgets(STDIN));
+else
+    echo "yes\n";
+
+if ($response == "yes") {
+    $retval = 0;
+    echo "  Attempting to update the Config.php file.\n";
+    system("cd ../ && sed -i 's/SITE_OFFLINE = false/SITE_OFFLINE = true/g' src/snac/Config.php\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem taking the site offline.\n\n";
+    }
+    // We took the site offline during the process
+    $siteoffline = true;
+} else {
+    echo "  Not taking the site offline.\n\n";
+}
+
+
 echo "Would you like to load the schema (tables, indicies) into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
@@ -416,3 +440,12 @@ if ($response == "yes") {
     echo "  Not importing user accounts.\n\n";
 }
 
+if ($siteoffline) {
+    $retval = 0;
+    echo "Attempting to bring the site back online.\n";
+    system("cd ../ && sed -i 's/SITE_OFFLINE = true/SITE_OFFLINE = false/g' src/snac/Config.php\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem bringing the site back online.\n\n";
+    }
+}
