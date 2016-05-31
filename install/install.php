@@ -311,7 +311,7 @@ if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
 }
 
 
-echo "Would you like to load a sampling of records into the database?\n ('yes' or 'no'): "; 
+echo "Would you like to load a small sampling of records (100) into the database?\n ('yes' or 'no'): "; 
 $response = "yes";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -338,4 +338,81 @@ if ($response == "yes") {
     echo "  Not ingesting sample records.\n\n";
 }
 
+
+echo "Would you like to load the May 2016 sample set of records into the database?\n";
+echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): "; 
+$response = "yes";
+if (!$automate)
+    $response = trim(fgets(STDIN));
+else
+    echo "yes\n";
+
+if ($response == "yes") {
+    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    $dir = null;
+    if (!$automate)
+        $dir = trim(fgets(STDIN));
+    if ($dir == null || $dir == "")
+        $dir = "/data/merge/";
+    $retval = 0;
+    echo "  Attempting to ingest May 2016 sample records from $dir.\n";
+    system("cd ../scripts && ./ingest_list.php $dir ../install/setup_files/may2016-list.txt\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem ingesting the May 2016 sample records.\n\n";
+    }
+} else {
+    echo "  Not ingesting May 2016 sample records.\n\n";
+}
+
+echo "Would you like to load the set of institution records into the database?\n";
+echo "These include most instutitions participating in the SNAC cooperative, and are needed for SNAC Users\n  ('yes' or 'no'): "; 
+$response = "yes";
+if (!$automate)
+    $response = trim(fgets(STDIN));
+else
+    echo "yes\n";
+
+if ($response == "yes") {
+    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    $dir = null;
+    if (!$automate)
+        $dir = trim(fgets(STDIN));
+    if ($dir == null || $dir == "")
+        $dir = "/data/merge/";
+    $retval = 0;
+    echo "  Attempting to ingest institution records from $dir.\n";
+    system("cd ../scripts && ./ingest_institutions.php $dir ../install/setup_files/institutions.csv\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem ingesting the institution records.\n\n";
+    }
+} else {
+    echo "  Not ingesting institution records.\n\n";
+}
+
+echo "Would you like to load a set of users into the database?\n See setup_files/users_dist.csv for the file format\n ('yes' or 'no'): "; 
+$response = "yes";
+if (!$automate)
+    $response = trim(fgets(STDIN));
+else
+    echo "yes\n";
+
+if ($response == "yes") {
+    echo "  What is the path to the user file to import? [default: setup_files/users.csv]\n  :";
+    $filename = null;
+    if (!$automate)
+        $filename = trim(fgets(STDIN));
+    if ($filename == null || $filename == "")
+        $filename = "setup_files/users.csv";
+    $retval = 0;
+    echo "  Attempting to read and import user accounts from $filename.\n";
+    system("cd ../scripts/add_users.php $filename setup_files/institutions.csv\n", $retval);
+    
+    if ($retval != 0) {
+        echo "  There was a problem importing the users.\n\n";
+    }
+} else {
+    echo "  Not importing user accounts.\n\n";
+}
 
