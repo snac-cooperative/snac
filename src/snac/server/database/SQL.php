@@ -4019,4 +4019,22 @@ class SQL
         return $allVocab;
     }
 
+    /**
+     * Select unique constellation ids
+     *
+     * Used for a one time export of all records. Seems like it might be useful later.
+     *
+     * @return string[] List of constellation id values.
+     */ 
+    public function selectAllConstellationID()
+    {
+        $selectSQL = "select distinct(ic_id) from nrd";
+        $result = $this->sdb->query($selectSQL, array());
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['ic_id']);
+        }
+        return $all;
+    }
+
 }

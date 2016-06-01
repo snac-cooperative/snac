@@ -591,7 +591,7 @@ class DBUtil
      * Get the SQL object
      *
      * Utility function to return the SQL object for this DBUtil instance. Currently only used for testing,
-     * and that may be the only valid use.
+     * and that may be the only valid use. This might have been called getSQL().
      *
      * @return \snac\server\database\SQL Return the SQL object of this DBUtil instance.
      */
