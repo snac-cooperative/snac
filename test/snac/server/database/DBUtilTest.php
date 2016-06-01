@@ -78,24 +78,6 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      */ 
     public function testNameComponentOrder()
     {
-        $icIDList = $this->dbu->sqlObj()->selectAllConstellationID();
-
-        $allCons = array();
-        $xx = 0;
-        foreach($icIDList as $icID)
-        {
-            printf("Working on: %s\n", $icID);
-            $cObj = $this->dbu->readConstellation($icID);
-            array_push($allCons, $cObj);
-            $xx++;
-            if ($xx > 1)
-            {
-                break;
-            }
-        }
-
-        printf("%s\n", json_encode($allCons));
-
         $entityTypeList = $this->dbu->searchVocabulary('entity_type', '');
         foreach($entityTypeList as $ent)
         {

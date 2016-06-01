@@ -2620,7 +2620,7 @@ class DBUtil
             $this->enableLogging();
             $opErrorMsg = sprintf("Error: Bad operation: $op\n%s", $json);
             $this->logDebug($opErrorMsg);
-            throw new \snac\exceptions\SNACDatabaseException($opErrorMsg);
+            throw new \snac\exceptions\SNACException($opErrorMsg);
         }
 
         /*
