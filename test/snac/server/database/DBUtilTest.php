@@ -39,6 +39,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * In cases where tests need to happen in order, all the ordered tests are most easily done inside one
      * test, with multiple assertions.
+     *
+     * Notice that nowhere do we set up the logger. I'm guessing this is due to this test class extending
+     * PHPUnit_Framework_TestCase.
      */ 
     public function __construct() 
     {
@@ -67,6 +70,58 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         // Consider creating a single parser instance here, and reusing it throughout.
     }
+
+
+    /**
+     * Check that name components come back the correct order. Minimal check really only looks at the first
+     * element, but that should be enough, especially since we will eventually replace all the vocabulary code.
+     */ 
+    public function testNameComponentOrder()
+    {
+        $icIDList = $this->dbu->sqlObj()->selectAllConstellationID();
+
+        $allCons = array();
+        $xx = 0;
+        foreach($icIDList as $icID)
+        {
+            printf("Working on: %s\n", $icID);
+            $cObj = $this->dbu->readConstellation($icID);
+            array_push($allCons, $cObj);
+            $xx++;
+            if ($xx > 1)
+            {
+                break;
+            }
+        }
+
+        printf("%s\n", json_encode($allCons));
+
+        $entityTypeList = $this->dbu->searchVocabulary('entity_type', '');
+        foreach($entityTypeList as $ent)
+        {
+            /* 
+             * printf("\ndbutiltest eid: %s ev: %s list: %s\n",
+             *        $ent['id'],
+             *        $ent['value'],
+             *        var_export($this->dbu->searchVocabulary('name_component','', $ent['id']),1));
+             */
+            $vocabList = $this->dbu->searchVocabulary('name_component','', $ent['id']);
+            if ($ent['value'] == 'person')
+            {
+                $this->assertEquals('Surname', $vocabList[0]['value']);
+            }
+            else if ($ent['value'] == 'corporateBody')
+            {
+                $this->assertEquals('Name', $vocabList[0]['value']);
+            }
+            else
+            {
+                $this->assertEquals('FamilyName', $vocabList[0]['value']);
+            }
+        }
+    }        
+
+
 
     /**
      * Check multiple related

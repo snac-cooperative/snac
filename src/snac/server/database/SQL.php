@@ -3894,7 +3894,7 @@ class SQL
              * that although it isn't really necessary. When called with some other type, no records will be
              * returned, presumably because the only values using entity_group are type='name_component'.
              *
-             * The values for type name_component are at the end of vocabulary.sql.
+             * The values for type name_component are at the end of the file install/sql_files/vocabulary.sql.
              *
              * We need an "or" clause because NameAddition and Date are used for multiple name
              * components. Ideally, NameAddition is person and corporateBody and not family, but to simplify
@@ -3917,7 +3917,85 @@ class SQL
         {
             array_push($all, $row);
         }
+        if ($term == 'name_component' && count($all) > 1)
+        {
+            return $this->specialSort($all);
+        }
         return $all;
+    }
+
+    /**
+     * Temporary function to brute force order name components.
+     *
+     * Sort $orig to put it in the order we want, not the order it exists in the database. Could have added
+     * another column to the db (or created a second table for vocabulary structure), but that would require a
+     * db rebuild as well as altering the vocabulary initialization SQL. That might have been less work that
+     * this (or more elegant) but this fix is totally localized right here.
+     *
+     * This also removes NameAddition from family by not including it in the $dest list.
+     *
+     * @param string[][] $orig A list of list with keys 'id','value'.
+     *
+     * @return string[][] Sorted copy of the $orig list.
+     */ 
+    private function specialSort($orig)
+    {
+        /*
+         * List of keys and the order in which they should appear.
+         */  
+        $personList = array('Surname' => 0,
+                            'Forename' => 1,
+                            'NameAddition' => 2,
+                            'RomanNumeral' => 3,
+                            'Date' => 4,
+                            'NameExpansion' => 5,
+                            'UnspecifiedName' => 6);
+
+        $corpList = array('Name' => 0,
+                          'JurisdictionName' => 1,
+                          'SubdivisionName' => 2,
+                          'NameAddition' => 3,
+                          'Number' => 4,
+                          'Location' => 5,
+                          'Date' => 6);
+
+        $familyList = array('FamilyName' => 0,
+                            'FamilyType' => 1,
+                            'Place' => 2,
+                            'Date' => 3,
+                            'NameAddition' => -1);
+
+        if ('Forename' == $orig[1]['value'])
+        {
+            $useList = $personList;
+        }
+        else if ('JurisdictionName' == $orig[1]['value'])
+        {
+            $useList = $corpList;
+        }
+        else
+        {
+            $useList = $familyList;
+        }
+
+        $dest = array();
+        foreach($orig as $record)
+        {
+            /* 
+             * Throw out anything with a negative index because that was never supposed to be in the list.
+             * Specifically 'NameAddition' for family.
+             */
+            if ($useList[$record['value']] >= 0)
+            {
+                $dest[$useList[$record['value']]] = $record;
+            }
+        }
+        /*
+         * PHP gets the integer keys right, but treats the list as an associative list with numeric keys out
+         * of order. ksort() fixes that.
+         */ 
+        ksort($dest);
+        return $dest;
     }
 
     /**
@@ -3939,6 +4017,24 @@ class SQL
             array_push($allVocab, $row);
         }
         return $allVocab;
+    }
+
+    /**
+     * Select unique constellation ids
+     *
+     * Used for a one time export of all records. Seems like it might be useful later.
+     *
+     * @return string[] List of constellation id values.
+     */ 
+    public function selectAllConstellationID()
+    {
+        $selectSQL = "select distinct(ic_id) from nrd";
+        $result = $this->sdb->query($selectSQL, array());
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['ic_id']);
+        }
+        return $all;
     }
 
 }
