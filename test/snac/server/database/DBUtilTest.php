@@ -28,6 +28,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     private $user = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     *
+     * See enableLogging() in this file.
+     */
+    private $logger = null;
+
+    /**
      * Constructor
      *
      * Note about how things are different here in testing world vs normal execution:
@@ -665,6 +672,39 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $longerSourceList = $postAddObj->getSources();
         $this->assertEquals(count($sourceList)+1, count($longerSourceList));
+    }
+
+    /**
+     * Test delete by changing status
+     *
+     * Change constellation status to deleted in order to delete the whole constellation.
+     */
+    public function testDeleteViaWriteConstellationStatus()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cObj->getPlaces()[1]->setConfirmed(true);
+        $firstJSON = $cObj->toJSON();
+
+        $startingARK = $cObj->getArk();
+        $startingEntity = $cObj->getEntityType()->getTerm();
+
+        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
+                                                 'ingest in order to delete via status');
+
+        $delVersion = $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'deleted');
+
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('DBUtil');
+            $this->logger->pushHandler($log);
+        }
+        $this->logger->addDebug(sprintf("delete via status version: %s ic_id: %s", $delVersion, $retObj->getID()));
+
+        $this->assertNotFalse($delVersion);
     }
 
     /**
