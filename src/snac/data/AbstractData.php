@@ -250,9 +250,28 @@ abstract class AbstractData implements \Serializable {
      */
     public function addDate($dateObj)
     {
-        if ($this->maxDateCount != 0 ||
+        if ($this->maxDateCount != 0 &&
                 (count($this->dateList) < $this->maxDateCount)) {
             array_push($this->dateList, $dateObj);
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * Set the Date List
+     *
+     * Sets the date list to be the given list of SNACDate objects, if this object can legally
+     * hold that many dates.
+     *
+     * @param \snac\data\SNACDate[] A list of date objects
+     * @return boolean true on success, false on failure
+     *
+     */
+    public function setDateList($dateList)
+    {
+        if ($this->maxDateCount > 0 && count($dateList) < $this->maxDateCount) {
+            $this->dateList = $dateList;
             return true;
         }
         return false;
