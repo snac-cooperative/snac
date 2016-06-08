@@ -1,6 +1,6 @@
 {% macro displayGender(X, gender, i) %}
-    {% import 'widgets.html' as widgets %}  
-    
+    {% import 'widgets.html' as widgets %}
+
         <div class="panel panel-default" id="gender_panel_{{i}}">
             <div class="panel-body">
                     <div class="col-xs-10" id="gender_datapart_{{i}}">
@@ -9,7 +9,7 @@
                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value=""/>
                         <div class="form-group">
                             <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
-                               {{ X.term.display }} 
+                               {{ X.term.display }}
                             </label>
                             <div class="col-xs-8" id="select_gender_term_{{i}}">
                                 <input type="hidden" id="gender_term_id_{{i}}" name="gender_term_id_{{i}}" value="{{gender.term.id}}"/>
@@ -36,8 +36,8 @@
 {% endmacro %}
 
 {% macro displayNameEntry(X, nameEntry, i) %}
-    {% import 'widgets.html' as widgets %}  
-    {% import _self as components %}   
+    {% import 'widgets.html' as widgets %}
+    {% import _self as components %}
         <div class="panel panel-default" id="nameEntry_panel_{{i}}">
         <div class="panel-body">
             <div class="col-xs-10" id="nameEntry_datapart_{{i}}">
@@ -55,7 +55,7 @@
                 </div>
                 <div class="form-group">
                     <label class="control-label col-xs-4" data-content="{{X.nameComponents.tooltip}}" data-toggle="popover" data-placement="top">
-                        {{ X.nameComponents.display }} 
+                        {{ X.nameComponents.display }}
                     </label>
                     <div class="col-xs-8 well well-sm">
                         {% set j = 0 %}
@@ -63,12 +63,12 @@
                             {{ components.displayComponent(X, component, i, j) }}
                             {% set j = j + 1 %}
                         {% endfor %}
-                        
+
                         <span id='nameEntry_component_next_j_{{i}}' style='display:none;'>{{j}}</span>
-                        
+
                         <div class="form-group" id="nameEntry_component_add_div_{{i}}">
                             <div class="col-xs-12 text-center">
-                                <button class="btn btn-success snac-hidden" id="nameEntry_component_add_{{i}}" 
+                                <button class="btn btn-success snac-hidden" id="nameEntry_component_add_{{i}}"
                                     onClick="return newNameEntryComponent({{i}});" disabled>
                                     <span class="glyphicon glyphicon-plus-sign"></span> Add Component
                                 </button>
@@ -123,10 +123,10 @@
                         {% set j = j + 1 %}
                     {% endfor %}
                     <span id='nameEntry_contributor_next_j_{{i}}' style='display:none;'>{{j}}</span>
-                    
+
                     <div class="form-group" id="nameEntry_contributor_add_div_{{i}}">
                         <div class="col-xs-12 text-center">
-                            <button class="btn btn-success snac-hidden" id="nameEntry_contributor_add_{{i}}" 
+                            <button class="btn btn-success snac-hidden" id="nameEntry_contributor_add_{{i}}"
                                 onClick="return newNameEntryContributor({{i}});" disabled>
                                 <span class="glyphicon glyphicon-plus-sign"></span> Add Type
                             </button>
@@ -141,54 +141,56 @@
             {{ widgets.optionsListWithDate(X, "nameEntry", i) }}
         </div>
     </div>
-    
+
 {% endmacro %}
 
 {% macro displayComponent(X, component, i, j) %}
         <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
-            <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}" 
-                name="nameEntry_component_{{j}}_id_{{i}}" 
-                value="{{component.id}}"/>
-            <input type="hidden" id="nameEntry_component_{{j}}_version_{{i}}" 
-                name="nameEntry_component_{{j}}_version_{{i}}" 
-                value="{{component.version}}"/>
-            <input type="hidden" id="nameEntry_component_{{j}}_operation_{{i}}" 
-                name="nameEntry_component_{{j}}_operation_{{i}}" 
-                value="{{component.operation}}"/>
-            <div>
-                <div class="input-group select2-bootstrap-append">
-                    <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 49%">
-                        <input id="nameEntry_component_{{j}}_type_id_{{i}}" 
-                            name="nameEntry_component_{{j}}_type_id_{{i}}" 
-                            type="hidden" class="form-control" 
-                            value="{{ component.type.id }}"/>
-                        <input id="nameEntry_component_{{j}}_type_term_{{i}}" 
-                            name="nameEntry_component_{{j}}_type_term_{{i}}" 
-                            type="hidden" class="form-control" 
-                            value="{{ component.type.term }}"/>
-                        <input id="nameEntry_component_{{j}}_type_vocabtype_{{i}}" 
-                            name="nameEntry_component_{{j}}_type_vocabtype_{{i}}" 
-                            type="hidden" class="form-control" value="name_component"/>
-                        <input id="nameEntry_component_{{j}}_type_minlength_{{i}}" 
-                            name="nameEntry_component_{{j}}_type_minlength_{{i}}" 
-                            type="hidden" class="form-control" value="0"/>
-                        <input id="nameEntry_component_{{j}}_type_placeholder_{{i}}"
-                            type="hidden" value="Part"/>
-                        <p class="form-control-static">{{ component.type.term }}</p>
+            <div id="nameEntry_component_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}"
+                    name="nameEntry_component_{{j}}_id_{{i}}"
+                    value="{{component.id}}"/>
+                <input type="hidden" id="nameEntry_component_{{j}}_version_{{i}}"
+                    name="nameEntry_component_{{j}}_version_{{i}}"
+                    value="{{component.version}}"/>
+                <input type="hidden" id="nameEntry_component_{{j}}_operation_{{i}}"
+                    name="nameEntry_component_{{j}}_operation_{{i}}"
+                    value="{{component.operation}}"/>
+                <div>
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 49%">
+                            <input id="nameEntry_component_{{j}}_type_id_{{i}}"
+                                name="nameEntry_component_{{j}}_type_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ component.type.id }}"/>
+                            <input id="nameEntry_component_{{j}}_type_term_{{i}}"
+                                name="nameEntry_component_{{j}}_type_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ component.type.term }}"/>
+                            <input id="nameEntry_component_{{j}}_type_vocabtype_{{i}}"
+                                name="nameEntry_component_{{j}}_type_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="name_component"/>
+                            <input id="nameEntry_component_{{j}}_type_minlength_{{i}}"
+                                name="nameEntry_component_{{j}}_type_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="nameEntry_component_{{j}}_type_placeholder_{{i}}"
+                                type="hidden" value="Part"/>
+                            <p class="form-control-static">{{ component.type.term }}</p>
+                        </div>
+                        <input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}"
+                            class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})"
+                            value="{{ component.text  }}" readOnly>
+
+
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger snac-hidden"
+                                id="nameEntry_component_{{j}}_remove_{{i}}" disabled
+                                onClick="return setRepeatedDataDeleted('nameEntry_component_{{j}}', '{{i}}');">
+                                <span class="glyphicon glyphicon-minus-sign"></span>
+                            </button>
+                        </span>
                     </div>
-                    <input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}" 
-                        class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})" 
-                        value="{{ component.text  }}" readOnly>
-
-
-                    <span class="input-group-btn">
-                        <button class="btn btn-danger snac-hidden" 
-                            id="nameEntry_component_{{j}}_remove_{{i}}" disabled 
-                            onClick="return setRepeatedDataDeleted('nameEntry_component_{{j}}', '{{i}}');">
-                            <span class="glyphicon glyphicon-minus-sign"></span>
-                        </button>
-                    </span>
-                </div> 
+                </div>
             </div>
         </div>
 
@@ -197,23 +199,23 @@
 
 {% macro displayContributor(X, contributor, i, j) %}
         <div class="panel panel-body" id="nameEntry_contributor_{{j}}_panel_{{i}}">
-            <input type="hidden" id="nameEntry_contributor_{{j}}_id_{{i}}" 
-                name="nameEntry_contributor_{{j}}_id_{{i}}" 
+            <input type="hidden" id="nameEntry_contributor_{{j}}_id_{{i}}"
+                name="nameEntry_contributor_{{j}}_id_{{i}}"
                 value="{{contributor.id}}"/>
-            <input type="hidden" id="nameEntry_contributor_{{j}}_version_{{i}}" 
-                name="nameEntry_contributor_{{j}}_version_{{i}}" 
+            <input type="hidden" id="nameEntry_contributor_{{j}}_version_{{i}}"
+                name="nameEntry_contributor_{{j}}_version_{{i}}"
                 value="{{contributor.version}}"/>
-            <input type="hidden" id="nameEntry_contributor_{{j}}_operation_{{i}}" 
-                name="nameEntry_contributor_{{j}}_operation_{{i}}" 
+            <input type="hidden" id="nameEntry_contributor_{{j}}_operation_{{i}}"
+                name="nameEntry_contributor_{{j}}_operation_{{i}}"
                 value="{{contributor.operation}}"/>
             <div class="form-group">
                 <label class="control-label col-xs-4" data-content="{{X.contributorName.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.contributorName.display }}
                 </label>
                 <div class="col-xs-6">
-                    <input id="nameEntry_contributor_{{j}}_name_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_name_{{i}}" 
-                        class="form-control" value="{{contributor.name}}" 
+                    <input id="nameEntry_contributor_{{j}}_name_{{i}}"
+                        name="nameEntry_contributor_{{j}}_name_{{i}}"
+                        class="form-control" value="{{contributor.name}}"
                         readonly>
                 </div>
             </div>
@@ -222,19 +224,19 @@
                     {{ X.contributorType.display }}
                 </label>
                 <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_type_{{i}}">
-                    <input id="nameEntry_contributor_{{j}}_type_id_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_type_id_{{i}}" 
-                        type="hidden" class="form-control" 
+                    <input id="nameEntry_contributor_{{j}}_type_id_{{i}}"
+                        name="nameEntry_contributor_{{j}}_type_id_{{i}}"
+                        type="hidden" class="form-control"
                         value="{{ contributor.type.id }}"/>
-                    <input id="nameEntry_contributor_{{j}}_type_term_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_type_term_{{i}}" 
-                        type="hidden" class="form-control" 
+                    <input id="nameEntry_contributor_{{j}}_type_term_{{i}}"
+                        name="nameEntry_contributor_{{j}}_type_term_{{i}}"
+                        type="hidden" class="form-control"
                         value="{{ contributor.type.term }}"/>
-                    <input id="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}" 
+                    <input id="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}"
+                        name="nameEntry_contributor_{{j}}_type_vocabtype_{{i}}"
                         type="hidden" class="form-control" value="name_type"/>
-                    <input id="nameEntry_contributor_{{j}}_type_minlength_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_type_minlength_{{i}}" 
+                    <input id="nameEntry_contributor_{{j}}_type_minlength_{{i}}"
+                        name="nameEntry_contributor_{{j}}_type_minlength_{{i}}"
                         type="hidden" class="form-control" value="0"/>
                     <p class="form-control-static">{{ contributor.type.term }}</p>
                 </div>
@@ -244,26 +246,26 @@
                     {{ X.contributorRules.display }}
                 </label>
                 <div class="col-xs-6" id="select_nameEntry_contributor_{{j}}_rule_{{i}}">
-                    <input id="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_rule_id_{{i}}" 
-                        type="hidden" class="form-control" 
+                    <input id="nameEntry_contributor_{{j}}_rule_id_{{i}}"
+                        name="nameEntry_contributor_{{j}}_rule_id_{{i}}"
+                        type="hidden" class="form-control"
                         value="{{ contributor.rule.id }}"/>
-                    <input id="nameEntry_contributor_{{j}}_rule_term_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_rule_term_{{i}}" 
-                        type="hidden" class="form-control" 
+                    <input id="nameEntry_contributor_{{j}}_rule_term_{{i}}"
+                        name="nameEntry_contributor_{{j}}_rule_term_{{i}}"
+                        type="hidden" class="form-control"
                         value="{{ contributor.rule.term }}"/>
-                    <input id="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}" 
+                    <input id="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}"
+                        name="nameEntry_contributor_{{j}}_rule_vocabtype_{{i}}"
                         type="hidden" class="form-control" value="name_rule"/>
-                    <input id="nameEntry_contributor_{{j}}_rule_minlength_{{i}}" 
-                        name="nameEntry_contributor_{{j}}_rule_minlength_{{i}}" 
+                    <input id="nameEntry_contributor_{{j}}_rule_minlength_{{i}}"
+                        name="nameEntry_contributor_{{j}}_rule_minlength_{{i}}"
                         type="hidden" class="form-control" value="0"/>
                     <p class="form-control-static">{{ contributor.rule.term }}</p>
                 </div>
             </div>
             <div class="text-center">
-                <button class="btn btn-danger snac-hidden" 
-                    id="nameEntry_contributor_{{j}}_remove_{{i}}" 
+                <button class="btn btn-danger snac-hidden"
+                    id="nameEntry_contributor_{{j}}_remove_{{i}}"
                     onClick="return setRepeatedDataDeleted('nameEntry_contributor_{{j}}', '{{i}}');" disabled>
                     <span class="glyphicon glyphicon-minus-sign"></span> Remove
                 </button>
@@ -273,7 +275,7 @@
 {% endmacro %}
 
 {% macro displaySameAs(X, other, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="sameAs_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="sameAs_datapart_{{i}}">
@@ -282,7 +284,7 @@
                     <input id="sameAs_operation_{{i}}" name="sameAs_operation_{{i}}" type="hidden" value=""/>
                     <div class="form-group">
                         <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
-                           {{ X.sameAsText.display }} 
+                           {{ X.sameAsText.display }}
                         </label>
                         <div class="col-xs-8">
                             <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
@@ -314,11 +316,11 @@
                 {{ widgets.optionsList(X, "sameAs", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displaySource(X, source, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default"  id="source_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="source_datapart_{{i}}">
@@ -392,11 +394,11 @@
 
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayResourceRelation(X, relation, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="resourceRelation_datapart_{{i}}">
@@ -469,7 +471,7 @@
 {% endmacro %}
 
 {% macro displayConstellationRelation(X, relation, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="constellationRelation_datapart_{{i}}">
@@ -486,7 +488,7 @@
                         </label>
                         <div class="col-xs-8">
                             <p class="form-control-static"><span style="font-weight: bold" id="constellationRelation_contentText_{{i}}">{{ relation.content }}</span><br>
-                            <span id="constellationRelation_targetArkIDText_{{i}}">{{relation.targetArkID}} 
+                            <span id="constellationRelation_targetArkIDText_{{i}}">{{relation.targetArkID}}
                             {% if relation.targetConstellation %}
                                 <a class="label label-info" target="_blank" href="?command=view&constellationid={{relation.targetConstellation}}">View</a>
                             {% endif %}
@@ -520,11 +522,11 @@
                 {{ widgets.optionsList(X, "constellationRelation", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayLanguageUsed(X, language, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="language_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="language_datapart_{{i}}">
@@ -563,11 +565,11 @@
                 {{ widgets.optionsList(X, "language", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displaySubject(X, subject, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="subject_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="subject_datapart_{{i}}">
@@ -598,11 +600,11 @@
                 {{ widgets.optionsList(X, "subject", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayNationality(X, nationality, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="nationality_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="nationality_datapart_{{i}}">
@@ -634,11 +636,11 @@
                 {{ widgets.optionsList(X, "nationality", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayFunction(X, function, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="function_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="function_datapart_{{i}}">
@@ -669,11 +671,11 @@
                 {{ widgets.optionsList(X, "function", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayOccupation(X, occupation, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="occupation_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="occupation_datapart_{{i}}">
@@ -704,11 +706,11 @@
                 {{ widgets.optionsList(X, "occupation", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayLegalStatus(X, legalStatus, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="legalStatus_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="legalStatus_datapart_{{i}}">
@@ -739,11 +741,11 @@
                 {{ widgets.optionsList(X, "legalStatus", i) }}
             </div>
         </div>
-    
+
 {% endmacro %}
 
 {% macro displayPlace(X, place, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="place_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="place_datapart_{{i}}">
@@ -809,10 +811,10 @@
                         <div class="col-xs-8">
                             <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
                                 {{ place.confirmed == 't' ? 'checked' : '' }}
-                                readonly/> True</label> 
-                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false" 
+                                readonly/> True</label>
+                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false"
                                 {{ place.confirmed == 't' ? '' : 'checked' }}
-                                readonly/> False</label> 
+                                readonly/> False</label>
                         </div>
                     </div>
                     <div class="form-group">
@@ -834,7 +836,7 @@
 
 
 {% macro displayConventionDeclaration(X, conventionDeclaration, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="conventionDeclaration_panel_{{i}}">
             <div class="panel-body">
                     <div class="col-xs-10" id="conventionDeclaration_datapart_{{i}}">
@@ -857,7 +859,7 @@
 {% endmacro %}
 
 {% macro displayGeneralContext(X, generalContext, i) %}
-    {% import 'widgets.html' as widgets %} 
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="generalContext_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="generalContext_datapart_{{i}}">
@@ -876,11 +878,11 @@
                 {{ widgets.scmModal(X, "generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
                 {{ widgets.optionsList(X, "generalContext", i) }}
             </div>
-        </div> 
+        </div>
 {% endmacro %}
 
 {% macro displayStructureOrGenealogy(X, structureOrGenealogy, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="structureOrGenealogy_datapart_{{i}}">
@@ -903,7 +905,7 @@
 {% endmacro %}
 
 {% macro displayMandate(X, mandate, i) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="mandate_panel_{{i}}">
             <div class="panel-body">
                     <div class="col-xs-10" id="mandate_datapart_{{i}}">
@@ -926,10 +928,10 @@
 {% endmacro %}
 
 {% macro displayExist(X, exist, i) %}
-    {% import 'widgets.html' as widgets %}  
-    {% import 'date_entry.html' as dates %}  
+    {% import 'widgets.html' as widgets %}
+    {% import 'date_entry.html' as dates %}
 
-     
+
     {% if exist.isRange %}
         {{ dates.dateRangeEntry(X, 'Exist Dates', 'exist', exist, i) }}
     {% else %}
@@ -939,7 +941,7 @@
 {% endmacro %}
 
 {% macro displaySCM(X, short, i, j, scm) %}
-    {% import 'widgets.html' as widgets %}  
+    {% import 'widgets.html' as widgets %}
        <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
@@ -964,8 +966,8 @@
                             <p class="form-control-static">{{scm.citation.displayName}}</p>
                         </div>
                     </div>
-                    
-                    
+
+
                     <div class="form-group">
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
