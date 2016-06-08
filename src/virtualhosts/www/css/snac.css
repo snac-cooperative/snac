@@ -43,6 +43,11 @@ body {
     color: #000000;
 }
 
+.date-modal .modal-dialog {
+    color: #000000;
+    width: 790px;
+}
+
 .ui-autocomplete {
     position: absolute;
     top: 100%;
@@ -93,6 +98,7 @@ body {
 
 .select2-container--bootstrap {
     display: inline-block;
+    margin-bottom: 5px;
 }
 
 .select2-bootstrap-append .form-control-static {

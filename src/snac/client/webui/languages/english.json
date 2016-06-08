@@ -17,6 +17,10 @@
         "display" : "Trash",
         "tooltip" : "Delete this data element from the Constellation"
     },
+    "date" : {
+        "display" : "Date",
+        "tooltip" : "Dates associated with this data element"
+    },
     "scm" : {
         "display" : "SCM",
         "tooltip" : "SNAC Control Metadata for this data element"
@@ -110,7 +114,7 @@
         "plural" : "Exist Dates",
         "tooltip" : "Dates of existence for this Constellation"
     },
-    "date" : {
+    "singleDate" : {
         "display" : "Single Date",
         "plural" : "Single Dates",
         "tooltip" : "A date element, similar to EAC-CPF date tags"

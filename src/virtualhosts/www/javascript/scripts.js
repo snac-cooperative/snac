@@ -44,6 +44,54 @@ function displayErrorMessage(err, data) {
 }
 
 /**
+ * Add sub-Date GUI object
+ *
+ * Adds a Date GUI object to the Date modal for the given "short" type of data indexed by i
+ *
+ * @param string short The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i The index of the object to add a date object to.
+ * @returns boolean false to keep the browser from redrawing the page
+ */
+function addDateEntry(short, i){
+	//next_date_{{short}}_{{i}}_j
+	var j = parseInt($('#next_date_'+short+'_'+i+'_j').text());
+	var id = j + "_" + i;
+    somethingHasBeenEdited = true;
+	var text = $('#sub_date_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/XX/g, j).replace(/SHORT/g, short);
+    $('#add_date_'+short+'_'+i+'_div').after(html);
+    $('#next_date_'+short+'_'+i+'_j').text(j + 1);
+    turnOnButtons(short+"_date"+j, i);
+    turnOnTooltips(short+"_date_"+j, i);
+    makeEditable(short + "_date_"+j, i);
+    return false;
+}
+
+/**
+ * Add sub-Date GUI object
+ *
+ * Adds a Date GUI object to the Date modal for the given "short" type of data indexed by i
+ *
+ * @param string short The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i The index of the object to add a date object to.
+ * @returns boolean false to keep the browser from redrawing the page
+ */
+function addDateRangeEntry(short, i){
+	//next_date_{{short}}_{{i}}_j
+	var j = parseInt($('#next_date_'+short+'_'+i+'_j').text());
+	var id = j + "_" + i;
+    somethingHasBeenEdited = true;
+	var text = $('#sub_dateRange_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/XX/g, j).replace(/SHORT/g, short);
+    $('#add_date_'+short+'_'+i+'_div').after(html);
+    $('#next_date_'+short+'_'+i+'_j').text(j + 1);
+    turnOnButtons(short+"_date"+j, i);
+    turnOnTooltips(short+"_date_"+j, i);
+    makeEditable(short + "_date_"+j, i);
+    return false;
+}
+
+/**
  * Add SCM GUI object
  *
  * Adds a GUI SCM object to the SCM modal for the given "short" type of data indexed by i
@@ -251,7 +299,7 @@ function makeEditable(short, i) {
         setDeleted(short, i);
 
     $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
-    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-undo\"></span> Undo");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
     	undoEdit(short, i);
     });
@@ -285,26 +333,26 @@ function subMakeEditable(short, i) {
 
 
     var idstr = "_" + i;
-    $("input[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("readonly");
         }
     });
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("readonly");
         }
     });
-    $("button[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("disabled").removeClass("snac-hidden");
         }
     });
     // Turn on CodeMirror Editors
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr)
             && !obj.attr('id').endsWith("ZZ")) {
@@ -321,7 +369,7 @@ function subMakeEditable(short, i) {
         }
     });
     var sawSelect = false;
-    $("select[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " select[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
@@ -360,14 +408,14 @@ function makeUneditable(short, i) {
 
 	// Make inputs read-only
     var idstr = "_" + i;
-    $("input[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("readonly", "true");
         }
     });
     // Remove CodeMirror editors
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr)
             && !obj.attr('id').endsWith("ZZ")
@@ -381,14 +429,14 @@ function makeUneditable(short, i) {
         }
     });
     // Disable buttons
-    $("button[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("disabled", "true").addClass("snac-hidden");
         }
     });
     // Make textareas read-only
-    $("textarea[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("readonly", "true");
@@ -396,7 +444,7 @@ function makeUneditable(short, i) {
     });
     // Check for a select box
     var sawSelect = false;
-    $("select[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " select[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
@@ -410,7 +458,7 @@ function makeUneditable(short, i) {
 
     // restore the edit button
     $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#" + short + "_editbutton_" + i).html("<span class=\"glyphicon glyphicon-pencil\"></span> Edit");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
     	makeEditable(short, i);
     });
@@ -423,7 +471,7 @@ function makeUneditable(short, i) {
 
     // Clear the operation flags
     //$("#" + short + "_operation_" + i).val("");
-    $("input[id^='"+short+"_']").each(function() {
+    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith("_operation" + idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.val("");
@@ -458,7 +506,7 @@ function makeSCMEditable(short, i, j) {
         setSCMDeleted(short, i, j);
 
     $("#" + scmshort + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
-    $("#" + scmshort + "_editbutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+    $("#" + scmshort + "_editbutton_" + id).html("<span class=\"fa fa-undo\"></span>");
     $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() {
     	undoSCMEdit(short, i, j);
     });
@@ -552,7 +600,7 @@ function makeSCMUneditable(short, i, j) {
 
     // restore the edit button
     $("#scm_" + short + "_editbutton" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"glyphicon glyphicon-pencil\"></span>");
+    $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
     $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() {
     	makeSCMEditable(short, i, j);
     });
@@ -603,7 +651,7 @@ function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
-        $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-remove-sign\"></span> Undo");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-undo\"></span> Undo");
 
         // disable edit button
         $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
@@ -611,19 +659,25 @@ function setDeleted(short, i) {
            return false;
         });
 
+        // disable the Date button
+        $("#" + short + "_datebutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
+
         // disable the SCM button
         $("#" + short + "_scmbutton_" + i).removeClass("list-group-item-success").addClass("disabled").prop('disabled', true);
 
     } else {
     	// set undelete
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
-        $("#" + short + "_deletebutton_" + i).html("<span class=\"glyphicon glyphicon-trash\"></span> Trash");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-trash-o\"></span> Trash");
 
         // restore edit button
         $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
         $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
            makeEditable(short, i);
         });
+
+        // restore the Date button
+        $("#" + short + "_datebutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
 
         // restore the SCM button
         $("#" + short + "_scmbutton_" + i).addClass("list-group-item-success").removeClass("disabled").prop('disabled', false);
@@ -691,7 +745,7 @@ function setSCMDeleted(short, i, j) {
     if ($("#scm_" + short + "_operation_" + id).val() != "delete") {
     	// set deleted
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("list-group-item-warning");
-        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"fa fa-undo\"></span>");
 
         // disable edit button
         $("#scm_" + short + "_editbutton_" + id).removeClass("list-group-item-info").addClass("disabled");
@@ -702,7 +756,7 @@ function setSCMDeleted(short, i, j) {
     } else {
     	// set undelete
         $("#scm_" + short + "_deletebutton_" + id).removeClass("list-group-item-warning").addClass("list-group-item-danger");
-        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"glyphicon glyphicon-trash\"></span>");
+        $("#scm_" + short + "_deletebutton_" + id).html("<span class=\"fa fa-trash-o\"></span>");
 
         // restore edit button
         $("#scm_" + short + "_editbutton_" + id).addClass("list-group-item-info").removeClass("disabled");
@@ -1039,12 +1093,18 @@ $(document).ready(function() {
             obj.on("click", function() {
                 makeEditable(short, i);
             });
-        } else if (pieces.length == 5) {
+        } else if (pieces.length == 5 && pieces[0] == "scm") {
             var short = pieces[1];
             var i = pieces[4];
             var j = pieces[3];
             obj.on("click", function() {
                 makeSCMEditable(short, i, j);
+            });
+        } else if (pieces.length == 5) {
+            var short = pieces[0] + "_" + pieces[1] + "_" + pieces[2];
+            var i = pieces[4];
+            obj.on("click", function() {
+                makeEditable(short, i);
             });
         }
     });
@@ -1060,12 +1120,18 @@ $(document).ready(function() {
             obj.on("click", function() {
                 setDeleted(short, i);
             });
-        } else if (pieces.length == 5) {
+        } else if (pieces.length == 5 && pieces[0] == "scm") {
             var short = pieces[1];
             var i = pieces[4];
             var j = pieces[3];
             obj.on("click", function() {
                 setSCMDeleted(short, i, j);
+            });
+        } else if (pieces.length == 5) {
+            var short = pieces[0] + "_" + pieces[1] + "_" + pieces[2];
+            var i = pieces[4];
+            obj.on("click", function() {
+                setDeleted(short, i);
             });
         }
     });
