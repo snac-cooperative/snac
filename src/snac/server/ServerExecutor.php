@@ -630,6 +630,7 @@ class ServerExecutor {
                                         'entityType' => $published->getEntityType()->getID(),
                                         'arkID' => $published->getArk(),
                                         'id' => $published->getID(),
+                                        'degree' => count($published->getRelations()),
                                         'timestamp' => date('c')
                                 ]
                         ];

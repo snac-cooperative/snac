@@ -19,7 +19,7 @@ abstract class Elastic implements Stage {
     /**
      * @var string Elastic Search result field to search
      */
-    protected $field = "official";
+    protected $field = "nameEntry";
 
     /**
      * @var string Operator to use in the search
@@ -54,7 +54,7 @@ abstract class Elastic implements Stage {
      *
      * @param \snac\data\Constellation $search The identity to be evaluated.
      * @param \snac\data\Constellation[] $list A list of identities to evaluate against.  This
-     * may be null.  
+     * may be null.
      * @return array An array of matches and strengths,
      * `{"id":identity, "strength":float}`.
      *
@@ -66,14 +66,17 @@ abstract class Elastic implements Stage {
 
         // Create elastic search client
         try {
-            $client = \Elasticsearch\ClientBuilder::create()->build();
+            $client = \Elasticsearch\ClientBuilder::create()
+            ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
+            ->setRetries(0)
+            ->build();
         } catch (Error $e) {
             die("Could not instantiate Elastic Search");
         }
 
         $searchParams = array();
-        $searchParams['index'] = 'snac';
-        $searchParams['type']  = 'name_and_rels';
+        $searchParams['index'] = \snac\Config::$ELASTIC_SEARCH_BASE_INDEX;
+        $searchParams['type']  = \snac\Config::$ELASTIC_SEARCH_BASE_TYPE;
         $searchParams['body']['query']['match'][$this->field]["query"] = $search_string;
         if ($this->minMatch != null)
             $searchParams['body']['query']['match'][$this->field]['minimum_should_match'] = $this->minMatch;
@@ -84,25 +87,25 @@ abstract class Elastic implements Stage {
 
         // Run the query
         $queryResponse = $client->search($searchParams);
-        
+
         // Return the results
         $results = array();
         foreach($queryResponse["hits"]["hits"] as $hit) {
             $id = new \snac\data\Constellation();
             $name = new \snac\data\NameEntry();
-            $name->setOriginal($hit["_source"]["official"]);
+            $name->setOriginal($hit["_source"]["nameEntry"]);
             $id->addNameEntry($name);
-            $id->setArkID($hit["_source"]["ark_id"]);
+            $id->setArkID($hit["_source"]["arkID"]);
 
             $result = new \snac\data\ReconciliationResult();
             $result->setIdentity($id);
             $result->setStrength($hit["_score"]);
-            $result->setProperty("degree", $hit["_source"]["num_relations"]);
+            $result->setProperty("degree", $hit["_source"]["degree"]);
             array_push($results, $result);
         }
         return $results;
 
-    } 
+    }
 
     /**
      * Create search string

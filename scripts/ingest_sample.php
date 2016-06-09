@@ -2,7 +2,7 @@
 <?php
 /**
  * Bulk ingest of files given on standard input
- * 
+ *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -49,8 +49,8 @@ if (is_dir($argv[1])) {
     $dh = opendir($argv[1]);
     printf("Done.\n");
     $xx = 0;
-    
-    // Create new parser 
+
+    // Create new parser
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
     printf("Done creating new parser.\n");
@@ -60,7 +60,7 @@ if (is_dir($argv[1])) {
         if ($short_file == '.' or $short_file == '..') {
             continue;
         }
-        
+
         // Create a full path file name
         $filename = $argv[1]."/$short_file";
 
@@ -70,24 +70,24 @@ if (is_dir($argv[1])) {
         echo "Parsing: $filename\n";
 
         $constellation = $e->parseFile($filename);
-        
+
         list($junk, $parts) = explode("ark:/", $constellation->getArk());
         $ark = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
-        
+
         $rels = trim(shell_exec("curl -s $ark  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
 
         if ($rels < 350) {
             // Write the constellations to the DB
             $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
-            
+
             // Update them to be published
             $dbu->writeConstellationStatus($user, $written->getID(), "published");
-            
+
             indexESearch($written);
         }
     }
 
-    // Write some large test samples as published (too big to edit now) 
+    // Write some large test samples as published (too big to edit now)
     // Washington
     echo "Parsing: George Washington\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6028ps4.xml");
@@ -115,7 +115,7 @@ if (is_dir($argv[1])) {
     indexESearch($written);
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
-    // Joseph Henry (large record) 
+    // Joseph Henry (large record)
     echo "Parsing: Joseph Henry\n";
     $constellation = $e->parseFile($argv[1]."/99166-w6st7qq0.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
@@ -155,7 +155,7 @@ if (is_dir($argv[1])) {
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
-    
+
     echo "Parsing: SNAC Sample test file (from db test)\n";
     $constellation = $e->parseFile("../test/snac/server/database/test_record.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
@@ -163,8 +163,8 @@ if (is_dir($argv[1])) {
     indexESearch($written);
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
-    echo "\nCompleted input of sample data.\n\n"; 
-    
+    echo "\nCompleted input of sample data.\n\n";
+
 }
 
 // If no file was parsed, then print the output that something went wrong
@@ -191,10 +191,11 @@ function indexESearch($written) {
                         'entityType' => $written->getEntityType()->getID(),
                         'arkID' => $written->getArk(),
                         'id' => $written->getID(),
+                        'degree' => count($written->getRelations()),
                         'timestamp' => date("c")
                 ]
         ];
-    
+
         $eSearch->index($params);
     }
 }
