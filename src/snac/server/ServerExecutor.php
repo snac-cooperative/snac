@@ -1013,4 +1013,38 @@ class ServerExecutor {
 
         return $user;
     }
+
+    /**
+     * Reconcile Constellation
+     *
+     * Given a Constellation on the input, this runs a staged Reconciliation Engine against the
+     * database and returns the list of possible matches.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
+    public function reconcileConstellation(&$input) {
+        $engine = new \snac\server\identityReconciliation\ReconciliationEngine();
+
+        // Add stages to run
+        $engine->addStage("ElasticOriginalNameEntry");
+        $engine->addStage("ElasticNameOnly");
+        $engine->addStage("ElasticSeventyFive");
+        $engine->addStage("OriginalLength");
+        $engine->addStage("MultiStage", "ElasticNameOnly", "OriginalLengthDifference");
+        $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
+
+        // Run the reconciliation engine against this identity
+        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+        $engine->reconcile($constellation);
+
+
+        $results = array();
+        // Strip the Constellations out of the results and return them
+        foreach ($engine->getResults() as $k => $v) {
+            $results[$k] = $v->toArray();
+        }
+        return array("reconciliation" => $results, "result" => 'success');
+    }
 }
