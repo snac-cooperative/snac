@@ -275,6 +275,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;
 
+        } else if ($this->input["command"] == "new_reconcile") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->reconcilePieces($this->input, $user);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
         } else if ($this->input["command"] == "save") {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->saveConstellation($this->input, $user);

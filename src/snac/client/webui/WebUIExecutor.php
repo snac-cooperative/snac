@@ -92,7 +92,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayNewEditPage(&$display) {
-        $display->setTemplate("edit_page");
+        $display->setTemplate("new_constellation_page");
         $constellation = new \snac\data\Constellation();
         $constellation->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
         $constellation->addNameEntry(new \snac\data\NameEntry());
@@ -297,7 +297,7 @@ class WebUIExecutor {
     }
 
     /**
-     * Save User Profile 
+     * Save User Profile
      *
      * Asks the server to update the profile of the user.
      *
@@ -342,7 +342,44 @@ class WebUIExecutor {
 
         if ($response["result"] == "success")
             $_SESSION["snac_user"] = serialize($user);
-        
+
+        return $response;
+    }
+
+    /**
+    * Reconcile Pieces
+    *
+    * This method takes the constellation pieces from the input (similar to a "Save" in editing), builds
+    * a Constellation out of those pieces and then asks the server to perform Identity Reconciliation
+    * within SNAC on this constellation.  The results are returned to the client.
+    *
+    * @param string[] $input Post/Get inputs from the webui
+    * @param \snac\data\User $user The current user object
+    * @return string[] The web ui's response to the client (array ready for json_encode)
+    */
+    public function reconcilePieces(&$input, &$user) {
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+        // Get the constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        $this->logger->addDebug("reconciling constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"reconcile");
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $request["user"] = $user->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+            $response = array($serverResponse);
+        } 
+
         return $response;
     }
 
@@ -777,7 +814,7 @@ class WebUIExecutor {
         $request = array ();
         $request["command"] = "vocabulary";
         $request["type"] = $input["type"];
-        $request["entity_type"] = null; 
+        $request["entity_type"] = null;
         if (isset($input["entity_type"]))
             $request["entity_type"] = $input["entity_type"];
         if (isset($request["type"])) {

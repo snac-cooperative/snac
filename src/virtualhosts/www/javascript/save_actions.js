@@ -83,12 +83,12 @@ $(document).ready(function() {
                     if (split.length == 3) {
                         var short = split[0];
                         var id = split[2];
-                        
+
                         updateDate(short, id);
                     }
                 }
             });
-        
+
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
@@ -261,12 +261,12 @@ $(document).ready(function() {
                         if (split.length == 3) {
                             var short = split[0];
                             var id = split[2];
-                            
+
                             updateDate(short, id);
                         }
                     }
                 });
-        
+
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
@@ -370,7 +370,7 @@ $(document).ready(function() {
                     }
 
                 });
-            
+
                 // Go through all the panels and update any dates
                 $("div[id*='_panel_']").each(function() {
                     var cont = $(this);
@@ -382,12 +382,12 @@ $(document).ready(function() {
                         if (split.length == 3) {
                             var short = split[0];
                             var id = split[2];
-                            
+
                             updateDate(short, id);
                         }
                     }
                 });
-        
+
 
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
@@ -491,6 +491,89 @@ $(document).ready(function() {
 
 
 
+    // Save and Dashboard button
+    if($('#continue_and_reconcile').exists()) {
+        $('#continue_and_reconcile').click(function(){
+
+            // If EntityType and NameEntry do not have values, then don't let the user save
+            var noNameEntryText = true;
+            $("input[id^='nameEntry_original_']").each(function() {
+                if ($(this).val() != "")
+                noNameEntryText = false;
+            });
+            if ($('#entityType').val() == "" || noNameEntryText) {
+                $('#error-message').html("<p>Entity Type and at least one Name Entry required for continuing.</p>");
+                setTimeout(function(){
+                    $('#error-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#error-message').slideUp();
+                }, 10000);
+                return;
+            }
+
+
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Reconciling Constellation... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Save any XML editor contents back to their text areas before saving
+            $("textarea[id*='_text_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
+            // Go through all the panels and update any dates
+            $("div[id*='_panel_']").each(function() {
+                var cont = $(this);
+                // Don't look at any of the ZZ hidden panels
+                if (cont.attr('id').indexOf("ZZ") == -1) {
+                    var split = cont.attr('id').split("_");
+
+                    // Split reveals a normal panel:
+                    if (split.length == 3) {
+                        var short = split[0];
+                        var id = split[2];
+
+                        updateDate(short, id);
+                    }
+                }
+            });
+
+            // Send the data back by AJAX call
+            $.post("?command=new_reconcile", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    // We got the reconciliation results from the WebUI, which we now need to display
+                    console.log(data);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        });
+    }
+
+
+
 
     /**
      * What to do on page unload (leaving the page)
@@ -499,7 +582,7 @@ $(document).ready(function() {
      *
      * @param  event e The event that happened
      */
-	function unloadPage(e) { 
+	function unloadPage(e) {
 		if(somethingHasBeenEdited){
 			var message = 'You may have unsaved changes on this Constellation.  Are you sure you want to leave the page and risk losing those edits?';
 			var e = e || window.event;
