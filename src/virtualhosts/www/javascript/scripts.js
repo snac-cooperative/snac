@@ -15,7 +15,7 @@ var undoSet = new Array();
  */
 function displayErrorMessage(err, data) {
     var errorMsg = "";
-    if (typeof err === 'undefined') 
+    if (typeof err === 'undefined')
         errorMsg = "an unknown problem occurred";
     else if ((typeof err) == "string")
         errorMsg = err;
@@ -793,7 +793,7 @@ function turnOnTooltips(shortName, i) {
     $(function () {
           $('#'+shortName+'_panel_'+ i +' [data-toggle="tooltip"]').tooltip()
     })
-    
+
     // Load popovers
     $(function () {
           $('#'+shortName+'_panel_'+ i +' [data-toggle="popover"]').popover({
@@ -903,19 +903,19 @@ function parseDate(dateString) {
           year : parseInt(pieces[0]),
           month : parseInt(pieces[1]),
           day : parseInt(pieces[2])
-      }; 
+      };
    else if (pieces.length == 2)
       return {
           year : parseInt(pieces[0]),
           month : parseInt(pieces[1]),
           day : ''
-      }; 
+      };
    else if (pieces.length == 1 && pieces[0] != '')
       return {
           year : parseInt(pieces[0]),
           month : '',
           day : ''
-      }; 
+      };
    else return {
        year : '', month : '', day : ''
    }
@@ -946,7 +946,7 @@ function textToDate(shortName, idStr) {
 
             var dateParts = parseDate(dateStr);
 
-            var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
+            var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>";
             html += "<span class='form-control-static'> - </span>";
             html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' data-placeholder='Month' style='width: 57%; margin-bottom: 5px; display: inline-block;'>"+
                     "<option></option>";
@@ -963,8 +963,8 @@ function textToDate(shortName, idStr) {
             });
             html += "<select> ";
             html += "<span class='form-control-static'> - </span>";
-            html += "<input type='text' style='width:14%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> "; 
-            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            html += "<input type='text' style='width:14%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> ";
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>";
             cont.html(html);
 
             $("#"+shortName+"_"+name+"_month_"+idStr).select2({
@@ -995,7 +995,7 @@ function pad(num, size) {
 }
 
 /**
- * Updates the standard date input field 
+ * Updates the standard date input field
  *
  * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
  * area, then this function will update the hidden standard date (YYYY-MM-DD) field with the
@@ -1015,11 +1015,11 @@ function updateDate(shortName, idStr) {
             // remove the idstr to receive the name of this element
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
-           
-            if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) { 
-                var year = $("#"+shortName+"_"+name+"_year_"+idStr).val(); 
-                var day = $("#"+shortName+"_"+name+"_day_"+idStr).val(); 
-                var month = $("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val(); 
+
+            if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) {
+                var year = $("#"+shortName+"_"+name+"_year_"+idStr).val();
+                var day = $("#"+shortName+"_"+name+"_day_"+idStr).val();
+                var month = $("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val();
 
                 var dateStr = "";
                 if (year != "") {
@@ -1040,12 +1040,12 @@ function updateDate(shortName, idStr) {
 }
 
 /**
- * Return editable date area back to text 
+ * Return editable date area back to text
  *
  * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
  * area, then this function will return the editable area back to the view mode text, replacing
  * the edit boxes with a paragraph containing the computed standard date string (YYYY-MM-DD).
- *  
+ *
  * Note: idStr must not have the "_" pre-appended
  *
  * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
@@ -1060,14 +1060,14 @@ function dateToText(shortName, idStr) {
             // remove the idstr to receive the name of this element
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
-           
+
             updateDate(shortName, idStr);
 
-            
+
             var dateStr = $("#"+shortName+"_"+name+"_"+idStr).val();
 
             var html = "<p class='form-control-static'>"+dateStr+"</p>";
-            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>";
             cont.html(html);
 
         }
@@ -1081,6 +1081,11 @@ function dateToText(shortName, idStr) {
  */
 $(document).ready(function() {
 
+
+    // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
+    // to be true...
+    if ($('#operation').val() == 'insert')
+        somethingHasBeenEdited = true;
 
     // Turn on the edit buttons
     $("a[id*='editbutton']").each(function() {
@@ -1540,7 +1545,7 @@ $(document).ready(function() {
     $(function () {
           $('[data-toggle="tooltip"]').tooltip()
     })
-    
+
     // Load popovers
     $(function () {
           $('[data-toggle="popover"]').popover({
