@@ -505,7 +505,7 @@ class Constellation extends AbstractData {
      * be actually the name, i.e. Surname, Forename, or Name.  Currently, it is only
      * an alias to `getPreferredNameEntry`.
      *
-     * @return string preferred name entry string
+     * @return \snac\data\NameEntry preferred name entry string
      */
     public function getPreferredNameOnly() {
         return $this->getPreferredNameEntry();
