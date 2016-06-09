@@ -48,6 +48,15 @@
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+
+/**
+ * Only load this script once the document is fully loaded
+ */
+$(document).ready(function() {
+
+    // make the first name entry editable
+    makeEditable("nameEntry", 0);
+});
 </script>
 <link rel="stylesheet" href="css/snac.css">
 
