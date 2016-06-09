@@ -21,9 +21,9 @@
    .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
    .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
    .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
-   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov 
-   { float: left; 
-   margin-right: 0.33em; }     
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov
+   { float: left;
+   margin-right: 0.33em; }
 </style>
 
 <!-- Latest compiled and minified CSS -->
@@ -113,7 +113,7 @@ body {
                     {% elseif data.entityType.term == 'family' %}
                      <span class="icon-fam x2"></span>
                     {% endif %}
-                  </span> 
+                  </span>
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
 
@@ -143,7 +143,7 @@ body {
                            {% endfor %}
                         </div>
                         <div data-xsl="language">
-                           <label>Language: </label> 
+                           <label>Language: </label>
                             {% for lang in data.languagesUsed %}
                                 {{ lang.language.description }},
                             {% endfor %}
@@ -161,8 +161,8 @@ body {
                   {% endif %}
                   </div>
                   <br clear="both"></br>
-                  <div class="well well-sm">Biographical notes are generated from 
-                     the bibliographic and archival source records supplied by 
+                  <div class="well well-sm">Biographical notes are generated from
+                     the bibliographic and archival source records supplied by
                      <a href="http://socialarchive.iath.virginia.edu/datacontrib.html">data contributors</a>.
                   </div>
                </div>
@@ -172,7 +172,7 @@ body {
                      <div class="panel panel-default" data-xsl="relatedCollections">
                         <div class="panel-heading">
                            <h4>
-                           
+
                                         {% set numRels = 0 %}
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.documentType.term == 'ArchivalResource' %}
@@ -285,7 +285,7 @@ body {
                         </div>
                         <div id="linkedData" class="panel-collapse collapse">
                            <div class="panel-body">
-                           
+
                                         {% for sameas in data.otherRecordIDs %}
                                             <div class="related">
                                                 <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
@@ -315,12 +315,12 @@ body {
                               <div>
                                  <div class="sprite-icons-worldcat"></div>
                                  <a href="http://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
-                              </div> 
+                              </div>
                         -->
                            </div>
                         </div>
                      </div>
-                     <h3>Related names in 
+                     <h3>Related names in
                         <abbr class="initialism">SNAC</abbr>
                      </h3>
 
@@ -482,28 +482,28 @@ body {
                   </div>
                </div>
                <div class="others">
+                  {% if user.email and not data.preview %}
                   <h3>Actions:</h3>
                   <div class="list-group">
-                    {% if user.email %}
                         {% if data.status == 'editable' %}
-                        <a class="list-group-item list-group-item-info" 
+                        <a class="list-group-item list-group-item-info"
                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                         {% else %}
-                        <a class="list-group-item list-group-item-danger disabled" 
+                        <a class="list-group-item list-group-item-danger disabled"
                            href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
-                        {% endif %}   
-                    {% endif %}
+                        {% endif %}
                   </div>
-                  
+                  {% endif %}
+
                   {% if debug %}
                   <h3>Debug:</h3>
                   <div class="list-group">
-                     
+
                       <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
                       <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
 
                   </div>
-                  
+
                     <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
                         <div class="modal-dialog" role="document" style="width:90%;">
                             <div class="modal-content">
@@ -539,9 +539,9 @@ body {
                             </div>
                         </div>
                     </div>
-                  
+
                   {% endif %}
-                  
+
                   <h3>Subjects:</h3>
                   <!--
                   <div class="alert alert-info">not available for this record</div>
@@ -555,7 +555,7 @@ body {
                     </ul>
                   {% else %}
                     <div class="alert alert-info">not available for this record</div>
-                  {% endif %}                  
+                  {% endif %}
 
                   <h3>Occupations:</h3>
                   <!--
@@ -563,12 +563,12 @@ body {
                      <li>
                         <a href="/snac/search?sectionType=cpfdescription&amp;f1-occupation=Cabinet officers">
                            Cabinet officers.
-                           
+
                         </a>
                      </li>
                   </ul>
                   -->
-                  
+
                   {% if data.occupations|length > 0 %}
                     <ul>
                     <!-- {% for occupation in data.occupations %} -->
@@ -577,8 +577,8 @@ body {
                     </ul>
                   {% else %}
                     <div class="alert alert-info">not available for this record</div>
-                  {% endif %}   
-                  
+                  {% endif %}
+
                </div>
                <div>
                   <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"

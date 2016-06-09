@@ -157,7 +157,8 @@ class WebUIExecutor {
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
                 $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData(array_merge($constellation, array("preview"=> isset($input["version"]) ? true : false)));
+                $display->setData(array_merge($constellation,
+                    array("preview"=> (isset($input["version"]) || isset($input["preview"])) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
                 $display->setTemplate("error_page");

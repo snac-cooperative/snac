@@ -575,7 +575,7 @@ $(document).ready(function() {
                             html += "<div class='col-xs-8'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
                             html += "<p class='list-group-item-text'>"+data.results[key].ark+"</p></div>";
                             html += "<div class='col-xs-4 list-group'>";
-                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
+                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&preview&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
                             html += "<a class='list-group-item list-group-item-info' href='?command=edit&constellationid="+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
                             html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
                             var arkID = "";
