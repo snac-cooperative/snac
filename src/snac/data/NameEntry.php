@@ -20,15 +20,15 @@ namespace snac\data;
  * Storage class for name entries.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class NameEntry extends AbstractData {
 
     /**
      * Original string for the name
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * nameEntry/part
      *
      * @var string Original name given in this entry
@@ -37,28 +37,28 @@ class NameEntry extends AbstractData {
 
     /**
      * Preference Score
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * nameEntry/@preferenceScore
-     * 
+     *
      * @var float Preference score given to this entry
      */
     private $preferenceScore;
 
     /**
      * Component List
-     * 
+     *
      * @var \snac\data\NameComponent[] List of Name Components
      */
     private $components;
-    
+
     /**
      * Contributor List
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
-     * 'type' as a string:  
+     *
+     * 'type' as a string:
      * * nameEntry/alternativeForm
      * * nameEntry/authorizedForm
      *
@@ -67,19 +67,19 @@ class NameEntry extends AbstractData {
      * @var \snac\data\Contributor[] List of Contributor
      */
     private $contributors;
-    
+
     /**
      * Language
-     * 
+     *
      * From EAC-CPF tag(s):
-     * 
+     *
      * * nameEntry/@lang
      * * nameEntry/@scriptcode
-     * 
+     *
      * @var \snac\data\Language Language of the entry
      */
     private $language;
-    
+
     /**
      * Constructor.
      *
@@ -87,7 +87,7 @@ class NameEntry extends AbstractData {
      * send objects around the system, not for generally creating a new object.
      *
      * @return NameEntry object
-     * 
+     *
      */
     public function __construct($data = null) {
 
@@ -96,11 +96,11 @@ class NameEntry extends AbstractData {
         $this->setMaxDateCount(1);
         parent::__construct($data);
     }
-    
+
     /**
-     * Get the original 
-     * 
-     * Get the original (full combined nameString/header) for this name Entry 
+     * Get the original
+     *
+     * Get the original (full combined nameString/header) for this name Entry
      *
      * @return string Original name given in this entry
      *
@@ -113,23 +113,23 @@ class NameEntry extends AbstractData {
 
     /**
      * Get the SNAC preference score
-     * 
+     *
      *  Get the preference score for display of this name Entry
      *
      * @return float Preference score given to this entry
      *
      *
-     */ 
+     */
     public function getPreferenceScore()
     {
         if ($this->preferenceScore == null)
             return 0;
-       
+
         return $this->preferenceScore;
     }
 
     /**
-     * Get the list of components for this name entry 
+     * Get the list of components for this name entry
      *
      * @return \snac\data\NameComponent[] Components providing this name entry including their type for this name entry
      *
@@ -138,9 +138,9 @@ class NameEntry extends AbstractData {
     {
         return $this->components;
     }
-    
+
     /**
-     * Get the list of contributors for this name entry 
+     * Get the list of contributors for this name entry
      *
      * @return \snac\data\Contributor[] Contributors providing this name entry including their type for this name entry
      *
@@ -151,7 +151,7 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Get the language that this name entry is written in (language and script) 
+     * Get the language that this name entry is written in (language and script)
      *
      * @return \snac\data\Language Language of the entry. If you then call the Language object's getLanguage()
      * it returns a Term object. Language getScript() returns a Term object for the script.
@@ -163,8 +163,8 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Returns this object's data as an associative array. 
-     * 
+     * Returns this object's data as an associative array.
+     *
      * @param boolean $shorten optional Whether or not to include null/empty components
      * @return string[][] This objects data in array form
      */
@@ -177,7 +177,7 @@ class NameEntry extends AbstractData {
             "components" => array(),
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
         );
-        
+
 
         foreach ($this->components as $i => $v)
             $return["components"][$i] = $v->toArray($shorten);
@@ -208,9 +208,9 @@ class NameEntry extends AbstractData {
     public function fromArray($data) {
         if (!isset($data["dataType"]) || $data["dataType"] != "NameEntry")
             return false;
-       
+
         parent::fromArray($data);
-            
+
         if (isset($data["original"]))
             $this->original = $data["original"];
         else
@@ -220,7 +220,7 @@ class NameEntry extends AbstractData {
             $this->preferenceScore = $data["preferenceScore"];
         else
             $this->preferenceScore = null;
-        
+
         unset($this->components);
         $this->components = array();
         if (isset($data["components"]))
@@ -235,8 +235,8 @@ class NameEntry extends AbstractData {
                 if ($entry != null)
                     $this->contributors[$i] = new \snac\data\Contributor($entry);
 
-                
-        if (isset($data["language"]) && $data["language"] != null) 
+
+        if (isset($data["language"]) && $data["language"] != null)
             $this->language = new Language($data["language"]);
         else
             $this->language = null;
@@ -246,7 +246,7 @@ class NameEntry extends AbstractData {
 
     /**
      * Set the original name.
-     * 
+     *
      * @param string $original Original name
      */
     public function setOriginal($original) {
@@ -255,47 +255,37 @@ class NameEntry extends AbstractData {
     }
 
     /**
-     * Get the original name.
-     * 
-     * @return string Original name
-     */
-    public function getOriginal() {
-
-        return $this->original;
-    }
-    
-    /**
      * Set the language
-     * 
+     *
      * @param \snac\data\Language $lang Language
      */
     public function setLanguage($lang) {
         $this->language = $lang;
     }
-    
+
     /**
      * Add component to the list of components.
-     * 
+     *
      * @param \snac\data\NameComponent $component Component object
      */
     public function addComponent($component) {
 
         array_push($this->components, $component);
     }
-    
+
     /**
      * Add contributor to the list of contributors.
-     * 
+     *
      * @param \snac\data\Contributor $contributor Contributor object
      */
     public function addContributor($contributor) {
 
         array_push($this->contributors, $contributor);
     }
-    
+
     /**
      * Set the preference score.
-     * 
+     *
      * @param float $score Preference score associated with this name entry
      */
     public function setPreferenceScore($score) {
@@ -310,32 +300,32 @@ class NameEntry extends AbstractData {
      * @param \snac\data\NameEntry $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || ! ($other instanceof \snac\data\NameEntry))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getOriginal() != $other->getOriginal())
             return false;
         if ($this->getPreferenceScore() != $other->getPreferenceScore())
             return false;
-        
+
         if (($this->getLanguage() != null && ! $this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                  ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-                 
+
         if (!$this->checkArrayEqual($this->getComponents(), $other->getComponents(), $strict))
             return false;
-        
+
         if (!$this->checkArrayEqual($this->getContributors(), $other->getContributors(), $strict))
             return false;
-        
+
         return true;
     }
 }

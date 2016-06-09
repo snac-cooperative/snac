@@ -499,6 +499,19 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get the preferred name only
+     *
+     * This method should return only the parts of the name that are considered to
+     * be actually the name, i.e. Surname, Forename, or Name.  Currently, it is only
+     * an alias to `getPreferredNameEntry`.
+     *
+     * @return string preferred name entry string
+     */
+    public function getPreferredNameOnly() {
+        return $this->getPreferredNameEntry();
+    }
+
+    /**
      * Get the occupations
      *
      * @return \snac\data\Occupation[] List of occupations
@@ -1377,28 +1390,5 @@ class Constellation extends AbstractData {
         return true;
     }
 
-    /**
-     * Gets the preferred name entry string
-     *
-     * @return string preferred name entry string
-     */
-    public function getPreferredNameEntry() {
-        if (isset($this->nameEntries[0]))
-            return $this->nameEntries[0]->getOriginal();
-        else
-            return "";
-    }
 
-    /**
-     * Gets the preferred name entry string (name only)
-     *
-     * @return string preferred name entry string
-     */
-    public function getPreferredNameOnly() {
-        // TODO: fix this
-        if (isset($this->nameEntries[0]))
-            return $this->nameEntries[0]->getOriginal();
-        else
-            return "";
-    }
 }
