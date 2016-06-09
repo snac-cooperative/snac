@@ -43,6 +43,7 @@ class SNACDegree implements helpers\Stage {
             $id = $res->getIdentity();
             $result = 0;
             $degree = $res->getProperty("degree");
+            $resultDeg = 0;
             if ($degree != null && $degree > 0)
                 $resultDeg = 5 * log($degree);
             if (is_nan($resultDeg) || is_infinite($resultDeg))
