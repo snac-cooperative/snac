@@ -85,13 +85,13 @@ class WebUIExecutor {
     }
 
     /**
-     * Display New Edit Page
+     * Display New Simple Page
      *
-     * Creates a blank "new constellation" edit page and loads it into the display.
+     * Creates a blank "new constellation" simple edit page and loads it into the display.
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
-    public function displayNewEditPage(&$display) {
+    public function displayNewPage(&$display) {
         $display->setTemplate("new_constellation_page");
         $constellation = new \snac\data\Constellation();
         $constellation->setOperation(\snac\data\Constellation::$OPERATION_INSERT);
@@ -101,6 +101,32 @@ class WebUIExecutor {
         }
         $this->logger->addDebug("Setting constellation data into the page template");
         $display->setData($constellation);
+    }
+
+    /**
+     * Display New Edit Page
+     *
+     * Fills the display object with the edit page for a given user, using a constellation from the input
+     * rather than from the database
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+     public function displayNewEditPage(&$input, &$display) {
+         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+         $mapper->allowTermLookup();
+
+         // Get the constellation object
+         $constellation = $mapper->serializeToConstellation($input);
+         $this->logger->addDebug("Setting NEW constellation data", $constellation->toArray());
+
+         $display->setTemplate("edit_page");
+         if (\snac\Config::$DEBUG_MODE == true) {
+             $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+         }
+         $this->logger->addDebug("Setting constellation data into the page template");
+         $display->setData($constellation);
     }
 
     /**
@@ -373,12 +399,19 @@ class WebUIExecutor {
         $request["user"] = $user->toArray();
         $serverResponse = $this->connect->query($request);
 
-        $response = $serverResponse;
+        $response = array("results" => array());
 
         if (!is_array($serverResponse)) {
             $this->logger->addDebug("server's response: $serverResponse");
-            $response = array($serverResponse);
-        } 
+            return array($serverResponse);
+        } else if (isset($serverResponse["reconciliation"])) {
+            $response["result"] = $serverResponse["result"];
+            foreach ($serverResponse["reconciliation"] as $k => $v) {
+                if ($v["strength"] > 5.0) {
+                    $response["results"][$k] = $v["identity"];
+                }
+            }
+        }
 
         return $response;
     }

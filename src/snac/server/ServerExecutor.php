@@ -302,10 +302,20 @@ class ServerExecutor {
      */
     public function searchVocabulary(&$input) {
         $response = array();
-        $response["results"] = $this->cStore->searchVocabulary(
+        if (isset($input["term_id"])) {
+            $term = $this->cStore->populateTerm($input["term_id"]);
+            if ($term != null) {
+                $response["term"] = $term->toArray();
+            } else {
+                $response["term"] = null;
+            }
+        } else {
+            $response["results"] = $this->cStore->searchVocabulary(
                 $input["type"],
                 $input["query_string"],
                 $input["entity_type"]);
+        }
+
         return $response;
     }
 
@@ -1037,7 +1047,7 @@ class ServerExecutor {
         $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
 
         // Run the reconciliation engine against this identity
-        $constellation = new \snac\data\Constellation($this->input["constellation"]);
+        $constellation = new \snac\data\Constellation($input["constellation"]);
         $engine->reconcile($constellation);
 
 

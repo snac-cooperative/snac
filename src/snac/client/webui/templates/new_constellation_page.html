@@ -64,7 +64,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 <div class="container snac" role="main">
 
-    <form class="form-horizontal" id="constellation_form">
+    <form class="form-horizontal" id="constellation_form" action="?command=new_edit" method="post">
         <h1>New Constellation</h1>
 
         <!-- Constellation Data -->
@@ -313,50 +313,19 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     </div>
 
 
-<div class="modal fade" id="previewPane" tabindex="-1" role="dialog" aria-labelledby="previewPane">
-    <div class="modal-dialog" role="document" style="width:90%;">
-        <div class="modal-content">
-            <div class="modal-header primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="previewLabel">Preview</h4>
-            </div>
-            <div class="modal-body" id="previewPaneContent">
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="relationSearchPane" tabindex="-1" role="dialog" aria-labelledby="relationSearchPane">
+<div class="modal fade" id="reconcilePane" tabindex="-1" role="dialog" aria-labelledby="reconcilePane">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header primary">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="relationSearchLabel">Choose Relationship</h4>
+                <h4 class="modal-title" id="reconcileLabel">Reconciliation Results</h4>
             </div>
-            <div class="modal-body" id="relationSearchPaneContent">
-                <form class="form-horizontal" id="relation_search_form" onsubmit="return false;">
-                    <div class="modal-body">
-                        <p>Use the search box below to find a Constellation.  Select one by using the radio button to the left. You may view any constellation
-                        by choosing the "View" link next to the ARK</p>
-	                    <input type="hidden" id="relation-search-count" name="count" value="10">
-	                    <input type="hidden" id="relation-search-start" name="start" value="0">
-	                    <div class="form-group">
-	                        <input type="text" class="form-control"
-	                            placeholder="Search for..." id="relation-searchbox" name="term">
-	                    </div>
+            <div class="modal-body" id="reconcileModalContent">
 
-	                    <div id="relation-results-box">
-	                    </div>
-                    </div>
-                </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+                <button type="button" class="btn btn-info" id="confirm_create_new">Create New Constellation</button> &nbsp;
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

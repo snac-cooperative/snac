@@ -563,12 +563,49 @@ $(document).ready(function() {
                     // We got the reconciliation results from the WebUI, which we now need to display
                     console.log(data);
 
+                    var html = "";
+                    html += "<p class='text-left'>Before continuing, please check the following Constellation matches.  If the "
+                            + " Constellation you wish to add is below, please edit it (if it is not checked out) rather than "
+                            + " creating a duplicate.</p>";
+                    html += "<div class='list-group text-left' style='margin-bottom:0px'>";
+                    if (data.results.length > 0) {
+                        for (var key in data.results) {
+                            //html += "<div class='input-group'><span class='input-group-addon'><input type='radio'></span><p class='form-static'>Blah</p><span class='input-group-button'><button class='btn btn-default' type='button'>View</button></span></div>";
+                            html += "<div class='list-group-item'><div class='row'>";
+                            html += "<div class='col-xs-8'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
+                            html += "<p class='list-group-item-text'>"+data.results[key].ark+"</p></div>";
+                            html += "<div class='col-xs-4 list-group'>";
+                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
+                            html += "<a class='list-group-item list-group-item-info' href='?command=edit&constellationid="+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
+                            html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
+                            var arkID = "";
+                            if (data.results[key].ark != null)
+                                arkID = data.results[key].ark;
+                            html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
+                            html += "</div></div>";
+                        }
+                    } else {
+                        html += "<a href='#' class='list-group-item list-group-item-danger' onClick='return false;'>No results found.</a>";
+                    }
+                    html += "</div>";
+
+                    $('#reconcileModalContent').html(html);
+                    $('#reconcilePane').modal();
+
                 } else {
                     $('#notification-message').slideUp();
                     // Something went wrong in the ajax call. Show an error and don't go anywhere.
                     displayErrorMessage(data.error,data);
                 }
             });
+        });
+    }
+
+    // Confirm Create New button
+    if($('#confirm_create_new').exists()) {
+        $('#confirm_create_new').click(function(){
+            // Send the data back by AJAX call
+            $("#constellation_form").submit();
         });
     }
 

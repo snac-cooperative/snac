@@ -258,7 +258,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "edit") {
             $executor->displayEditPage($this->input, $display, $user);
         } else if ($this->input["command"] == "new") {
-            $executor->displayNewEditPage($display);
+            $executor->displayNewPage($display);
+        } else if ($this->input["command"] == "new_edit") {
+            $executor->displayNewEditPage($this->input, $display);
         } else if ($this->input["command"] == "view") {
             $executor->displayViewPage($this->input, $display, $user);
         } else if ($this->input["command"] == "preview") {
