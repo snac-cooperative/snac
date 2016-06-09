@@ -29,6 +29,6 @@ class ElasticSeventyFive extends helpers\Elastic {
      * @return string The search string;
      */
     protected function getSearchString($search) {
-        return $search->getPreferredNameEntry();
+        return $search->getPreferredNameEntry()->getOriginal();
     }
 }

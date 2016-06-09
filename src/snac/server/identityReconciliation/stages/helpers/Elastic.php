@@ -96,6 +96,7 @@ abstract class Elastic implements Stage {
             $name->setOriginal($hit["_source"]["nameEntry"]);
             $id->addNameEntry($name);
             $id->setArkID($hit["_source"]["arkID"]);
+            $id->setID($hit["_source"]["id"]);
 
             $result = new \snac\data\ReconciliationResult();
             $result->setIdentity($id);

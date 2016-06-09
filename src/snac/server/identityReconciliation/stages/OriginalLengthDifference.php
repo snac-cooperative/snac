@@ -8,7 +8,7 @@ namespace snac\server\identityReconciliation\stages;
  * and each of the identites passed in as the list.  The score for each
  * element in the list is the negative natural log of the difference.  So,
  * all results are either negative or 0.  Larger differences result in values
- * that are more negative.  
+ * that are more negative.
  *
  * @author Robbie Hott
  */
@@ -36,7 +36,7 @@ class OriginalLengthDifference implements helpers\Stage {
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
      * @param \snac\data\Constellation[] $list A list of constellation to evaluate against.  This
-     * may be null.  
+     * may be null.
      * @return array An array of results.  On error, it must at least
      * return an empty array. It may not return null.
      *
@@ -50,7 +50,7 @@ class OriginalLengthDifference implements helpers\Stage {
 
         foreach ($list as $res) {
             // Compute the strength value
-            $diff = strlen($search->getPreferredNameEntry()) - strlen($res->getIdentity()->getPreferredNameEntry());
+            $diff = strlen($search->getPreferredNameEntry()->getOriginal()) - strlen($res->getIdentity()->getPreferredNameEntry()->getOriginal());
             $diff = abs($diff);
             $resultDiff = 0;
             if ($diff > 0)
@@ -67,4 +67,3 @@ class OriginalLengthDifference implements helpers\Stage {
     }
 
 }
-

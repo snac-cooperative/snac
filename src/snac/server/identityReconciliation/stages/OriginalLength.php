@@ -33,14 +33,14 @@ class OriginalLength implements helpers\Stage {
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
      * @param \snac\data\Constellation[] $list A list of constellations to evaluate against.  This
-     * may be null.  
-     * @return array An array of one element that has the log(length), ie 
+     * may be null.
+     * @return array An array of one element that has the log(length), ie
      * `array("id":null, "strength":float)`. On error, it must at least
      * return an empty array. It may not return null.
      *
      */
     public function run($search, $list) {
-        $string = $search->getPreferredNameEntry();
+        $string = $search->getPreferredNameEntry()->getOriginal();
         $result = new \snac\data\ReconciliationResult();
         $result->setStrength( log(strlen($string)));
 
