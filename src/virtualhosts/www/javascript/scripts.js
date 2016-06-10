@@ -168,7 +168,7 @@ function undoSCMEdit(short, i, j) {
  * @param string|int idStr The index within the edit page of the object.
  */
 function textToSelect(shortName, idStr) {
-    $("div[id^='select_"+shortName+"']").each(function() {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='select_"+shortName+"']").each(function() {
         var cont = $(this);
         if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
             // remove the short name and "select_" from the string we're parsing
@@ -204,6 +204,128 @@ function textToSelect(shortName, idStr) {
     });
 }
 
+function textToInput(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='text_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^text_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var size = 0;
+            var sizeStr = "";
+            if ($("#"+shortName+"_"+name+"_size_"+idStr).exists()) {
+                size = parseInt($("#"+shortName+"_"+name+"_size_"+idStr).val());
+                sizeStr = " size='" + size +"' ";
+            }
+            var placeholder = "";
+            if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
+                placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' type='text' value=\""+ value +"\""+sizeStr+
+                    "placeholder=\""+placeholder+"\"/>";
+            if (size != 0) {
+                    html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_size_"+idStr+"\" " +
+                        "value=\""+size+"\"/>";
+            }
+            if (placeholder != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
+                "value=\""+placeholder+"\"/>";
+            }
+
+            cont.html(html);
+        }
+    });
+
+
+}
+
+
+function inputToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='text_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^text_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var size = 0;
+            if ($("#"+shortName+"_"+name+"_size_"+idStr).exists()) {
+                size = parseInt($("#"+shortName+"_"+name+"_size_"+idStr).val());
+            }
+            var placeholder = "";
+            if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
+                placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' type='hidden' value=\""+ value +"\"/>";
+            html += "<p class='form-control-static'>" + value + "</p>";
+            if (size != 0) {
+                    html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_size_"+idStr+"\" " +
+                        "value=\""+size+"\"/>";
+            }
+            if (placeholder != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
+                "value=\""+placeholder+"\"/>";
+            }
+
+            cont.html(html);
+        }
+    });
+
+
+}
+
+
+
+function textToTextArea(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='textarea_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^textarea_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            var html = "<textarea id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' style='width: 100%;'>"+ value +"</textarea>";
+
+            cont.html(html);
+        }
+    });
+}
+
+
+function textAreaToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='textarea_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^textarea_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            //var html = "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+            //        idStr+"' value=\""+ value +"\"/>";
+            var html = "<textarea style='display:none;' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"'>"+ value +"</textarea>";
+            html += "<div class='form-control-static'>" + value + "</div>";
+
+            cont.html(html);
+        }
+    });
+}
 /**
  * Change source list input divs to selects
  *
@@ -332,19 +454,11 @@ function subMakeEditable(short, i) {
     undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
 
 
+    textToInput(short, i);
+    textToTextArea(short, i);
+
     var idstr = "_" + i;
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.removeAttr("readonly");
-        }
-    });
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.removeAttr("readonly");
-        }
-    });
+
     $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
@@ -408,12 +522,9 @@ function makeUneditable(short, i) {
 
 	// Make inputs read-only
     var idstr = "_" + i;
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.attr("readonly", "true");
-        }
-    });
+
+
+
     // Remove CodeMirror editors
     $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
@@ -435,13 +546,10 @@ function makeUneditable(short, i) {
             obj.attr("disabled", "true").addClass("snac-hidden");
         }
     });
-    // Make textareas read-only
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.attr("readonly", "true");
-        }
-    });
+
+
+    inputToText(short, i);
+    textAreaToText(short, i);
     // Check for a select box
     var sawSelect = false;
     $("#"+short+"_datapart_" + i + " select[id^='"+short+"_']").each(function() {

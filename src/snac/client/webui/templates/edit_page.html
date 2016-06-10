@@ -235,7 +235,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% else %}
                                     <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value="insert"/>
                                 {% endif %}
-                                <p><textarea id="biogHist_text_0" name="biogHist_text_0" style="height: 450px; width: 100%;"  readonly>{{ data.biogHists[0].text|e }}</textarea></p>
+                                <div id="textarea_biogHist_text_0">
+                                    <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
+                                    <div class="form-control-static">{{ data.biogHists[0].text|raw }}</div>
+                                </div>
 
 
                                 <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>

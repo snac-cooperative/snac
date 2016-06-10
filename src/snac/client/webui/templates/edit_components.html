@@ -81,8 +81,9 @@
                     <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4" data-content="{{X.preferenceScore.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.preferenceScore.display }}
                     </label>
-                    <div class="col-xs-8">
-                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="text" class="form-control" value="{{ nameEntry.preferenceScore }}" readonly/>
+                    <div class="col-xs-8" id="text_nameEntry_preferenceScore_{{i}}">
+                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.preferenceScore }}"/>
+                        <p class="form-control-static">{{ nameEntry.preferenceScore }}</p>
                     </div>
                 </div>
                 <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
@@ -111,30 +112,6 @@
                         <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
                     </div>
                 </div>
-                <!--
-                <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.contributor.tooltip}}" data-toggle="popover" data-placement="top">
-                        {{ X.contributor.display }}
-                    </label>
-                    <div class="col-xs-8 well well-sm">
-                    {% set j = 0 %}
-                    {% for contributor in nameEntry.contributors %}
-                        {{ components.displayContributor(X, contributor, i, j) }}
-                        {% set j = j + 1 %}
-                    {% endfor %}
-                    <span id='nameEntry_contributor_next_j_{{i}}' style='display:none;'>{{j}}</span>
-
-                    <div class="form-group" id="nameEntry_contributor_add_div_{{i}}">
-                        <div class="col-xs-12 text-center">
-                            <button class="btn btn-success snac-hidden" id="nameEntry_contributor_add_{{i}}"
-                                onClick="return newNameEntryContributor({{i}});" disabled>
-                                <span class="glyphicon glyphicon-plus-sign"></span> Add Type
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-                -->
             </div>
             {{ widgets.dateModal(X, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.scmModal(X, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
@@ -286,8 +263,9 @@
                         <label for="sameAs_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsText.tooltip}}" data-toggle="popover" data-placement="top">
                            {{ X.sameAsText.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="text" class="form-control" value="{{ other.text }}" readonly/>
+                        <div class="col-xs-8" id="text_sameAs_text_{{i}}">
+                            <input id="sameAs_text_{{i}}" name="sameAs_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
+                            <p class="form-control-static">{{ other.text }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -306,8 +284,9 @@
                         <label for="sameAs_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sameAsURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sameAsURI.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="text" class="form-control" value="{{ other.uri }}" readonly/>
+                        <div class="col-xs-8" id="text_sameAs_uri_{{i}}">
+                            <input id="sameAs_uri_{{i}}" name="sameAs_uri_{{i}}" type="hidden" class="form-control" value="{{ other.uri }}"/>
+                            <p class="form-control-static">{{ other.uri }}</p>
                         </div>
                     </div>
                 </div>
@@ -331,24 +310,27 @@
                         <label for="source_displayName_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceDisplayName.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceDisplayName.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="text" class="form-control" value="{{ source.displayName }}" readonly/>
+                        <div class="col-xs-8" id="text_source_displayName_{{i}}">
+                            <input id="source_displayName_{{i}}" name="source_displayName_{{i}}" type="hidden" class="form-control" value="{{ source.displayName }}"/>
+                            <p class="form-control-static">{{ source.displayName }}</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="source_uri_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceURI.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="text" class="form-control" value="{{ source.uri }}" readonly/>
+                        <div class="col-xs-8" id="text_source_uri_{{i}}">
+                            <input id="source_uri_{{i}}" name="source_uri_{{i}}" type="hidden" class="form-control" value="{{ source.uri }}"/>
+                            <p class="form-control-static">{{ source.uri }}</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="source_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.sourceText.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.sourceText.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" readonly>{{ source.text }}</textarea>
+                        <div class="col-xs-8" id="textarea_source_text_{{i}}">
+                            <textarea id="source_text_{{i}}" name="source_text_{{i}}" class="form-control" style="display:none;">{{ source.text }}</textarea>
+                            <p class="form-control-static">{{ source.text }}</p>
                         </div>
                     </div>
 
@@ -382,8 +364,9 @@
                         <label for="source_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" readonly>{{ source.note }}</textarea>
+                        <div class="col-xs-8" id="textarea_source_note_{{i}}">
+                            <textarea id="source_note_{{i}}" name="source_note_{{i}}" class="form-control" style="display:none">{{ source.note }}</textarea>
+                            <p class="form-control-static">{{ source.note }}</p>
                         </div>
                     </div>
 
@@ -409,8 +392,9 @@
                         <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceText.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceText.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="text" class="form-control" value="{{ relation.content }}" readonly/>
+                        <div class="col-xs-8" id="text_resourceRelation_content_{{i}}">
+                            <input id="resourceRelation_content_{{i}}" name="resourceRelation_content_{{i}}" type="hidden" class="form-control" value="{{ relation.content }}"/>
+                            <p class="form-control-static">{{ relation.content }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -429,8 +413,9 @@
                         <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceURI.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="text" class="form-control" value="{{ relation.link }}" readonly/>
+                        <div class="col-xs-8" id="text_resourceRelation_link_{{i}}">
+                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="hidden" class="form-control" value="{{ relation.link }}"/>
+                            <p class="form-control-static">{{ relation.link }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -449,16 +434,17 @@
                         <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
+                        <div class="col-xs-8" id="textarea_resourceRelation_note_{{i}}">
+                            <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" style="display:none;">{{ relation.note }}</textarea>
+                            <p class="form-control-static">{{ relation.note }}</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceXML.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" readonly>{{ relation.source }}</textarea>
+                        <div class="col-xs-8" id="textarea_resourceRelation_source_{{i}}">
+                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" style="display:none;">{{ relation.source }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -512,8 +498,9 @@
                         <label for="constellationRelation_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" readonly>{{ relation.note }}</textarea>
+                        <div class="col-xs-8" id="textarea_constellationRelation_note_{{i}}">
+                            <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" style="display:none;">{{ relation.note }}</textarea>
+                            <p class="form-control-static">{{ relation.note }}</p>
                         </div>
                     </div>
                 </div>
@@ -756,8 +743,9 @@
                         <label for="place_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeOriginal.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.placeOriginal.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="text" class="form-control" value="{{ place.original }}" readonly/>
+                        <div class="col-xs-8" id="text_place_original_{{i}}">
+                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="hidden" class="form-control" value="{{ place.original }}"/>
+                            <p class="form-control-static">{{ place.original }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -800,8 +788,9 @@
                         <label for="place_score_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermScore.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.placeGeoTermScore.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <input id="place_score_{{i}}" name="place_score_{{i}}" type="text" class="form-control" value="{{ place.score }}" readonly/>
+                        <div class="col-xs-8" id="text_place_score_{{i}}">
+                            <input id="place_score_{{i}}" name="place_score_{{i}}" type="hidden" class="form-control" value="{{ place.score }}"/>
+                            <p class="form-control-static">{{ place.score }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -821,8 +810,9 @@
                         <label for="place_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" readonly>{{ place.note }}</textarea>
+                        <div class="col-xs-8" id="textarea_place_note_{{i}}">
+                            <textarea id="place_note_{{i}}" name="place_note_{{i}}" class="form-control" style="display:none;">{{ place.note }}</textarea>
+                            <p class="form-control-static">{{ place.note }}</p>
                         </div>
                     </div>
                 </div>
@@ -847,8 +837,10 @@
                             <label for="conventionDeclaration_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
                                 {{ X.xml.display }}
                             </label>
-                            <div class="col-xs-10">
-                                <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" readonly>{{ conventionDeclaration.text }}</textarea>
+                            <div class="col-xs-10" id="textarea_conventionDeclaration_text_{{i}}">
+                                <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" 
+                                    style="display: none;">{{ conventionDeclaration.text }}</textarea>
+                                <p class="form-control-static">{{ conventionDeclaration.text }}</p>
                             </div>
                         </div>
                     </div>
@@ -870,8 +862,9 @@
                         <label for="generalContext_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.xml.display }}
                         </label>
-                        <div class="col-xs-10">
-                            <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" readonly>{{ generalContext.text }}</textarea>
+                        <div class="col-xs-10" id="textarea_generalContext_text_{{i}}">
+                            <textarea id="generalContext_text_{{i}}" name="generalContext_text_{{i}}" class="form-control" style="display:none;">{{ generalContext.text }}</textarea>
+                            <p class="form-control-static">{{ generalContext.text }}</p>
                         </div>
                     </div>
                 </div>
@@ -893,8 +886,9 @@
                         <label for="structureOrGenealogy_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.xml.display }}
                         </label>
-                        <div class="col-xs-10">
-                            <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" readonly>{{ structureOrGenealogy.text }}</textarea>
+                        <div class="col-xs-10" id="textarea_structureOrGenealogy_text_{{i}}">
+                            <textarea id="structureOrGenealogy_text_{{i}}" name="structureOrGenealogy_text_{{i}}" class="form-control" style="display:none;">{{ structureOrGenealogy.text }}</textarea>
+                            <p class="form-control-static">{{ structureOrGenealogy.text }}</p>
                         </div>
                     </div>
                 </div>
@@ -916,8 +910,9 @@
                             <label for="mandate_text_{{i}}" class="control-label col-xs-2" data-content="{{X.xml.tooltip}}" data-toggle="popover" data-placement="top">
                                 {{ X.xml.display }}
                             </label>
-                            <div class="col-xs-10">
-                                <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" readonly>{{ mandate.text }}</textarea>
+                            <div class="col-xs-10" id="textarea_mandate_text_{{i}}">
+                                <textarea id="mandate_text_{{i}}" name="mandate_text_{{i}}" class="form-control" style="display:none;">{{ mandate.text }}</textarea>
+                                <p class="form-control-static">{{ mandate.text }}</p>
                             </div>
                         </div>
                     </div>

@@ -26,9 +26,10 @@
     			<div class="form-group">
     				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.naturalDate.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.naturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
-    				<div class="col-xs-8">
-    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
-    						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
+    				<div class="col-xs-8" id="text_{{short}}_startoriginal_{{i}}">
+    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="hidden"
+    						class="form-control" value="{{ snacDate.fromDateOriginal }}"/>
+                        <p class="form-control-static">{{ snacDate.fromDateOriginal }}</p>
     				</div>
     			</div>
 
@@ -47,16 +48,30 @@
 			<div class="form-group">
 				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.fuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.fuzzyRange.display }} </label>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_startnotBefore_{{i}}">
 					<input id="{{short}}_startnotBefore_{{i}}"
-						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notBefore }}" placeholder="YYYY-MM-DD" readonly/>
+						name="{{short}}_startnotBefore_{{i}}" type="hidden" class="form-control"
+						value="{{ snacDate.fromRange.notBefore }}"/>
+					<input id="{{short}}_startnotBefore_placeholder_{{i}}"
+						type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_startnotBefore_size_{{i}}"
+						type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.fromRange.notBefore }}</p>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_startnotAfter_{{i}}">
 					<input id="{{short}}_startnotAfter_{{i}}"
-						name="{{short}}_startnotAfter_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notAfter }}" placeholder="YYYY-MM-DD" readonly/>
+						name="{{short}}_startnotAfter_{{i}}" type="hidden" class="form-control"
+						value="{{ snacDate.fromRange.notAfter }}"/>
+					<input id="{{short}}_startnotAfter_placeholder_{{i}}"
+						type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_startnotAfter_size_{{i}}"
+						type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.fromRange.notAfter }}</p>
 				</div>
 			</div>
 
@@ -64,8 +79,9 @@
                 <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.descriptiveNote.display }}
                 </label>
-                <div class="col-xs-8">
-                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>
+                <div class="col-xs-8" id="textarea_{{short}}_note_{{i}}">
+                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" style="display:none;">{{ snacDate.note }}</textarea>
+                    <p class="form-control-static">{{ snacDate.note }}</p>
                 </div>
             </div>
 		</div>
@@ -104,9 +120,10 @@
     			<div class="form-group">
     				<label for="{{short}}_startoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.startNaturalDate.tooltip}}" data-toggle="popover" data-placement="top">
     					{{ X.startNaturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
-    				<div class="col-xs-8">
-    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="text"
-    						class="form-control" value="{{ snacDate.fromDateOriginal }}" readonly/>
+    				<div class="col-xs-8" id="text_{{short}}_startoriginal_{{i}}">
+    					<input id="{{short}}_startoriginal_{{i}}" name="{{short}}_startoriginal_{{i}}" type="hidden"
+    						class="form-control" value="{{ snacDate.fromDateOriginal }}"/>
+                        <p class="form-control-static">{{ snacDate.fromDateOriginal }}</p>
     				</div>
     			</div>
 
@@ -125,16 +142,30 @@
 			<div class="form-group">
 				<label for="{{short}}_startnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.startFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.startFuzzyRange.display }} </label>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_startnotBefore_{{i}}">
 					<input id="{{short}}_startnotBefore_{{i}}"
-						name="{{short}}_startnotBefore_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notBefore }}" placeholder="YYYY-MM-DD" readonly/>
+						name="{{short}}_startnotBefore_{{i}}" type="hidden" class="form-control"
+						value="{{ snacDate.fromRange.notBefore }}"/>
+					<input id="{{short}}_startnotBefore_placeholder_{{i}}"
+                        type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_startnotBefore_size_{{i}}"
+						type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.fromRange.notBefore }}</p>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_startnotAfter_{{i}}">
 					<input id="{{short}}_startnotAfter_{{i}}"
-						name="{{short}}_startnotAfter_{{i}}" type="text" class="form-control"
-						value="{{ snacDate.fromRange.notAfter }}" placeholder="YYYY-MM-DD" readonly/>
+						name="{{short}}_startnotAfter_{{i}}" type="hidden" class="form-control"
+						value="{{ snacDate.fromRange.notAfter }}"/>
+					<input id="{{short}}_startnotAfter_placeholder_{{i}}"
+						type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_startnotAfter_size_{{i}}"
+						type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.fromRange.notAfter }}</p>
 				</div>
 			</div>
 			<div class="form-group">
@@ -150,9 +181,10 @@
             <div class="form-group">
                 <label for="{{short}}_endoriginal_{{i}}" class="control-label col-xs-4" data-content="{{X.endNaturalDate.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.endNaturalDate.display }} <br><span class="control-label-subtext">Natural Language</span></label>
-                <div class="col-xs-8">
-                    <input id="{{short}}_endoriginal_{{i}}" name="{{short}}_endoriginal_{{i}}" type="text"
-                        class="form-control" value="{{ snacDate.toDateOriginal }}" readonly/>
+                <div class="col-xs-8" id="text_{{short}}_endoriginal_{{i}}">
+                    <input id="{{short}}_endoriginal_{{i}}" name="{{short}}_endoriginal_{{i}}" type="hidden"
+                        class="form-control" value="{{ snacDate.toDateOriginal }}"/>
+                    <p class="form-control-static">{{ snacDate.toDateOriginal }}</p>
                 </div>
             </div>
 
@@ -171,16 +203,30 @@
 			<div class="form-group">
 				<label for="{{short}}_endnotBefore_{{i}}" class="control-label col-xs-4" data-content="{{X.endFuzzyRange.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.endFuzzyRange.display }} </label>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_endnotBefore_{{i}}">
 					<input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endnotBefore_{{i}}"
-						type="text" class="form-control"
-						value="{{ snacDate.toRange.notBefore }}" placeholder="YYYY-MM-DD" size="10" readonly/>
+						type="hidden" class="form-control"
+						value="{{ snacDate.toRange.notBefore }}" size="10"/>
+					<input id="{{short}}_endnotBefore_placeholder_{{i}}"
+						type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_endnotBefore_size_{{i}}"
+						type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.toRange.notBefore }}</p>
 				</div>
 				<div class="col-xs-2 text-center">-</div>
-				<div class="col-xs-3">
+				<div class="col-xs-3" id="text_{{short}}_endnotAfter_{{i}}">
 					<input id="{{short}}_endnotAfter_{{i}}" name="{{short}}_endnotAfter_{{i}}"
-						type="text" class="form-control"
-						value="{{ snacDate.toRange.notAfter }}" placeholder="YYYY-MM-DD" size="10" readonly/>
+						type="hidden" class="form-control"
+						value="{{ snacDate.toRange.notAfter }}" size="10"/>
+					<input id="{{short}}_endnotAfter_placeholder_{{i}}"
+						type="hidden" class="form-control"
+						value="YYYY-MM-DD"/>
+					<input id="{{short}}_endnotAfter_size_{{i}}"
+                        type="hidden" class="form-control"
+						value="10"/>
+                    <p class="form-control-static">{{ snacDate.toRange.notAfter }}</p>
 				</div>
 			</div>
 
@@ -189,8 +235,9 @@
                 <label for="{{short}}_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.descriptiveNote.display }}
                 </label>
-                <div class="col-xs-8">
-                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" class="form-control" readonly>{{ snacDate.note }}</textarea>
+                <div class="col-xs-8" id="textarea_{{short}}_note_{{i}}">
+                    <textarea id="{{short}}_note_{{i}}" name="{{short}}_note_{{i}}" style="display:none;">{{ snacDate.note }}</textarea>
+                    <p class="form-control-static">{{ snacDate.note }}</p>
                 </div>
             </div>
 		</div>
