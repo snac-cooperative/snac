@@ -225,8 +225,17 @@ function textToInput(shortName, idStr) {
                 placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
             }
 
+            var onKeyUp = "";
+            if ($("#"+shortName+"_"+name+"_onKeyUp_"+idStr).exists()) {
+                onKeyUp = $("#"+shortName+"_"+name+"_onKeyUp_"+idStr).val();
+            }
+            var onKeyUpStr = "";
+            if (onKeyUp != "") {
+                onKeyUpStr = " onKeyUp='"+onKeyUp+"' ";
+            }
+
             var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
-                    idStr+"' class='form-control' type='text' value=\""+ value +"\""+sizeStr+
+                    idStr+"' class='form-control' type='text' value=\""+ value +"\""+sizeStr + onKeyUpStr +
                     "placeholder=\""+placeholder+"\"/>";
             if (size != 0) {
                     html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_size_"+idStr+"\" " +
@@ -235,6 +244,10 @@ function textToInput(shortName, idStr) {
             if (placeholder != "") {
                 html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
                 "value=\""+placeholder+"\"/>";
+            }
+            if (onKeyUp != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_onKeyUp_"+idStr+"\" " +
+                "value=\""+onKeyUp+"\"/>";
             }
 
             cont.html(html);
@@ -263,6 +276,10 @@ function inputToText(shortName, idStr) {
             if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
                 placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
             }
+            var onKeyUp = "";
+            if ($("#"+shortName+"_"+name+"_onKeyUp_"+idStr).exists()) {
+                onKeyUp = $("#"+shortName+"_"+name+"_onKeyUp_"+idStr).val();
+            }
 
             var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
                     idStr+"' type='hidden' value=\""+ value +"\"/>";
@@ -274,6 +291,10 @@ function inputToText(shortName, idStr) {
             if (placeholder != "") {
                 html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
                 "value=\""+placeholder+"\"/>";
+            }
+            if (onKeyUp != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_onKeyUp_"+idStr+"\" " +
+                "value=\""+onKeyUp+"\"/>";
             }
 
             cont.html(html);

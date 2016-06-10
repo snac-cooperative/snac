@@ -135,7 +135,7 @@
                     value="{{component.operation}}"/>
                 <div>
                     <div class="input-group select2-bootstrap-append">
-                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 49%">
+                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 50%">
                             <input id="nameEntry_component_{{j}}_type_id_{{i}}"
                                 name="nameEntry_component_{{j}}_type_id_{{i}}"
                                 type="hidden" class="form-control"
@@ -154,9 +154,16 @@
                                 type="hidden" value="Part"/>
                             <p class="form-control-static">{{ component.type.term }}</p>
                         </div>
-                        <input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}"
+                        <div id="text_nameEntry_component_{{j}}_text_{{i}}" style="width: 50%; clear: none; float: left;">
+                        <!--<input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}"
                             class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})"
-                            value="{{ component.text  }}" readOnly>
+                            value="{{ component.text  }}" readOnly>-->
+                            <input type="hidden" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}"
+                                class="form-control" value="{{ component.text  }}">
+                            <input type="hidden" id="nameEntry_component_{{j}}_text_onKeyUp_{{i}}"
+                                class="form-control" value="updateNameEntryHeading({{i}})">
+                            <p class="form-control-static">{{ component.text }}</p>
+                        </div>
 
 
                         <span class="input-group-btn">
@@ -838,7 +845,7 @@
                                 {{ X.xml.display }}
                             </label>
                             <div class="col-xs-10" id="textarea_conventionDeclaration_text_{{i}}">
-                                <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control" 
+                                <textarea id="conventionDeclaration_text_{{i}}" name="conventionDeclaration_text_{{i}}" class="form-control"
                                     style="display: none;">{{ conventionDeclaration.text }}</textarea>
                                 <p class="form-control-static">{{ conventionDeclaration.text }}</p>
                             </div>

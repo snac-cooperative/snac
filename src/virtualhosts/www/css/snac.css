@@ -102,10 +102,10 @@ body {
 }
 
 .select2-bootstrap-append .form-control-static {
-    width: 100%; 
+    width: 100%;
     padding-right: 10px;
     display: table;
-    text-align: right;
+    text-align: left;
     table-layout: fixed;
     float:left;
 }
