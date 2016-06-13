@@ -158,7 +158,7 @@ class WebUIExecutor {
                 }
                 $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData(array_merge($constellation,
-                    array("preview"=> (isset($input["version"]) || isset($input["preview"])) ? true : false)));
+                    array("preview"=> (isset($input["preview"])) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
                 $display->setTemplate("error_page");
@@ -197,7 +197,7 @@ class WebUIExecutor {
                 }
                 $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData(array_merge($constellation,
-                    array("preview"=> (isset($input["version"]) || isset($input["preview"])) ? true : false)));
+                    array("preview"=> (isset($input["preview"])) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
                 $display->setTemplate("error_page");

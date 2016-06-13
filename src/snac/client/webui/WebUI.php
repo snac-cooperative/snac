@@ -111,7 +111,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login",
                 "login2",
                 "search",
-                "view"
+                "view",
+                "details"
         );
 
 

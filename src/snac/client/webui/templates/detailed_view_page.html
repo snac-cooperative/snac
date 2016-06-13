@@ -467,12 +467,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
-                                {% if data.status == 'editable' %}
-                                    <a class="list-group-item list-group-item-info"
-                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
-                                {% else %}
-                                    <a class="list-group-item list-group-item-danger disabled"
-                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                {% if user.email %}
+                                    {% if data.status == 'editable' %}
+                                        <a class="list-group-item list-group-item-info"
+                                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                    {% else %}
+                                        <a class="list-group-item list-group-item-danger disabled"
+                                            href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                    {% endif %}
                                 {% endif %}
                                 <a href="#" class="list-group-item list-group-item-success disabled"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
                             </div>
