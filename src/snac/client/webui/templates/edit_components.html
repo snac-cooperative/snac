@@ -169,7 +169,7 @@
                         <span class="input-group-btn">
                             <button class="btn btn-danger snac-hidden"
                                 id="nameEntry_component_{{j}}_remove_{{i}}" disabled
-                                onClick="return setRepeatedDataDeleted('nameEntry_component_{{j}}', '{{i}}');">
+                                onClick="setRepeatedDataDeleted('nameEntry_component_{{j}}', '{{i}}'); updateNameEntryHeading('{{i}}'); return false;">
                                 <span class="glyphicon glyphicon-minus-sign"></span>
                             </button>
                         </span>

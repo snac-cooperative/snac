@@ -986,9 +986,16 @@ function newNameEntryComponent(i) {
 
 function updateNameEntryHeading(i) {
     var text = "";
-    for (var j = 0; j < parseInt($('#nameEntry_component_next_j_'+i).text()); j++) {
-         text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
-    }
+
+    $("#nameEntry_panel_"+i+" div[id^='nameEntry_component_']").each(function() {
+        var obj = $(this);
+        if (!obj.hasClass("deleted-component") && obj.attr('id').endsWith("_panel_" + i)
+                && !obj.attr('id').endsWith("ZZ")) {
+            var j = obj.attr('id').replace("nameEntry_component_", "").replace("_panel_"+i, "");
+            text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
+        }
+    });
+
     $("#nameEntry_heading_"+i).text(text.trim());
     $("#nameEntry_original_"+i).val(text.trim());
 }
