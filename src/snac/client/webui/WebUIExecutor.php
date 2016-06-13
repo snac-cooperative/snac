@@ -150,7 +150,7 @@ class WebUIExecutor {
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response");
             if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("view_page");
+                $display->setTemplate("new_view_page");
                 $constellation = $serverResponse["constellation"];
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
