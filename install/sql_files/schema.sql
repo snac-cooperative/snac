@@ -104,15 +104,14 @@ CREATE SEQUENCE "version_history_id_seq";
 
 -- A record must be inserted into version_history for every change of data or change of status.
 
--- Feb 19 2016: Commenting out icstatus. Too difficult to manage for no benefits. Just use text.
--- enum type for Identity Constellation status (thus type icstatus)
--- create type icstatus as enum ('published', 'needs review', 'rejected', 'being edited', 'bulk ingest');
-
-
--- By convention, limit status to certain values: published, needs review, rejected, being edited, bulk ingest, deleted
+-- By convention, limit status to certain values: published, needs review, rejected, being edited, bulk
+-- ingest, deleted, currently editing, ingest cpf.
 --
--- This list is expected to grow over time, but we probably shouldn't remove any items without careful
--- testing.
+-- That list is expected to grow over time, and adding items is fine. However, we probably shouldn't remove
+-- any status values without careful testing.
+--
+-- Fields is_locked and is_current are not used. Their planned function has been taken over by a more
+-- comprehensive system that relies on status.
 
 create table version_history (
         id         int default nextval('id_seq'), -- constellation id, aka ic_id, use default when inserting new constellation
@@ -319,7 +318,7 @@ create unique index biog_hist_idx2 on biog_hist(id,ic_id,version);
 create table name (
     id               int default nextval('id_seq'),
     version          int not null,
-    ic_id          int not null,
+    ic_id            int not null,
     is_deleted       boolean default false,
     preference_score float, -- Preference to use this name
     original         text,  -- actual name (in <part>)
@@ -706,7 +705,7 @@ create unique index related_resource_idx1 on related_resource(id,ic_id,version);
 create table scm (
     id           int default nextval('id_seq'),
     version      int not null,
-    ic_id      int not null,
+    ic_id        int not null,
     is_deleted   boolean default false,
     citation_id  int,  -- fk to source.id
     sub_citation text, -- human readable location within the source

@@ -3246,7 +3246,16 @@ class DBUtil
     }
 
     /**
-     * Undelete a record.
+     * Undelete a constellation. (Broken)
+     *
+     * The code below fails to distinguish constellation from data, and instead does both things, which makes
+     * no sense.
+     * 
+     * This should do to separate things depending on what is being undeleted, but "what is being undeleted"
+     * is not handled properly. Constellations are undeleted via writeConstellationStatus().
+     *
+     * Data is undeleted via sqlClearDeleted() however, we must not undelete data for a constellation that is
+     * currently deleted.
      *
      * @param \snac\data\User $user The user performing the undelete
      *
