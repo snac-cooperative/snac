@@ -641,19 +641,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
         /*
          * We have Constellation->equals() which is a more accurate check of equality than line count.
+         *
+         * This compares the constellation after adding an SCM and writing, with the same constellation read
+         * back from the db.
          */ 
-        if (1)
-        {
-            $this->assertTrue($newObj->equals($origObj, false));
-        }
-        else
-        {
-            /*
-             * There is one extra line in $firstJSON for "operation": "update" which is as we expect.  Everything
-             * else is identical. This simply tests the line count, but I diff'd the files manually to confirm.
-             */ 
-            $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
-        }
+        $this->assertTrue($newObj->equals($origObj, false));
 
         $sourceList = $newObj->getSources();
 
@@ -712,8 +704,8 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * Set the operation to be insert.
      *
-     * After parsing, change the second place to be confirmed. It is only possibel to set confirmed on a place
-     * with a geoplace (aka GeoTerm), and that's why we use [1] ainstead of [0].
+     * After parsing, change the second place to be confirmed. It is only possible to set confirmed on a place
+     * with a geoplace (aka GeoTerm), and that's why we use [1] instead of [0].
      *
      * Count how many constellations are status 'locked editing'.
      *
@@ -840,14 +832,17 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * fwrite($cfile, $secondJSON);
          * fclose($cfile); 
          */
-        //HERE
 
+        /*
+         * $retObj is returned by the first wrieConstellation(). $readObj is the result of readConstellation()
+         * on the same constellation, to confirm that was was written is read back again.
+         */
         $this->assertTrue($retObj->equals($readObj, false));
         
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
                                                      'test deleting a whole constellation');
-
+        
         /* 
          * readPublishedConstellationByID() should return false when the constellation in question has been
          * deleted.
