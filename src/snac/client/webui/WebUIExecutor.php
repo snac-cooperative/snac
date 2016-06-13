@@ -150,7 +150,46 @@ class WebUIExecutor {
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response");
             if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("new_view_page");
+                $display->setTemplate("view_page");
+                $constellation = $serverResponse["constellation"];
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData(array_merge($constellation,
+                    array("preview"=> (isset($input["version"]) || isset($input["preview"])) ? true : false)));
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $display->setTemplate("error_page");
+                $this->logger->addDebug("Setting error data into the error page template");
+                $display->setData($serverResponse["error"]);
+            }
+    }
+
+
+    /**
+     * Display Detailed View Page
+     *
+     * Loads the detailed view page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function displayDetailedViewPage(&$input, &$display, &$user) {
+        $query = array();
+        $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        $query["command"] = "read";
+        if (isset($user) && $user != null)
+            $query["user"] = $user->toArray();
+            $this->logger->addDebug("Sending query to the server", $query);
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response");
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("detailed_view_page");
                 $constellation = $serverResponse["constellation"];
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
