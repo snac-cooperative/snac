@@ -1,11 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-{% if data.id %}
-    <title>SNAC Editing: {{data.nameEntries.0.original}}</title>
-{% else %}
-    <title>SNAC Editing: New Constellation</title>
-{% endif %}
+<title>SNAC Prototype: {{data.nameEntries.0.original}}</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -69,11 +65,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <div class="container snac" role="main">
 
     <form class="form-horizontal" id="constellation_form">
-        {% if data.id %}
-            <h1>Editing: {{data.nameEntries.0.original}}</h1>
-        {% else %}
-            <h1>New Constellation</h1>
-        {% endif %}
+    <h1>{{data.nameEntries.0.original}}</h1>
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
@@ -128,10 +120,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane active" id="nameEntries">
                         <h2>Basic Information</h2>
 
-                        <div class="well well-lg">
-                            <p><span style="font-weight: bold;">Instructions: </span> When saving an Identity Constellation, the <em>Entity Type</em> and at least one <em>Name Entry</em> are required.</p>
-                        </div>
-
                         <div class="panel panel-default">
                         	<div class="panel-heading">Constellation Information</div>
                             <div class="panel-body">
@@ -141,10 +129,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             {{X.entitytype.display}} <span style="color: #b40404">*</span>
                                         </label>
                                         <div class="col-xs-8">
-                                            <select id="entityType" name="entityType" class="form-control">
-                                                <option></option>
-                                                <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
-                                            </select>
+                                            <p class="form-control-static">{{data.entityType.term}}</p>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -152,26 +137,21 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             {{X.snaccontrolmetadata.display}}
                                         </label>
                                         <div class="col-xs-8">
-                                            {{ widgets.scmButton(X, true, 'constellation', '1') }}
+                                            {{ widgets.scmButton(X, false, 'constellation', '1') }}
                                         </div>
                                     </div>
                                 </div>
-                                {{ widgets.scmModal(X, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
+                                {{ widgets.scmModal(X, false, 'constellation', '1', 'Basic Info', "Constellation", data) }}
                             </div>
                         </div>
 
                         <div class="panel panel-default">
                         	<div class="panel-heading">Name Entries <span style="color: #b40404">*</span></div>
                             <div class="panel-body" id="nameEntry_pane">
-                                <div class="form-group" id="add_nameEntry_div">
-                                    <div class="col-xs-12 text-center">
-                                        <button class="btn btn-success" id="btn_add_nameEntry"><span class="glyphicon glyphicon-plus"></span> Add New Name Entry</button>
-                                    </div>
-                                </div>
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, true, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, false, nameEntry, i) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -184,17 +164,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="genders">
                         <h2>Genders</h2>
 
-                        <div class="form-group" id="add_gender_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_gender"><span class="glyphicon glyphicon-plus"></span> Add New Gender</button>
-                            </div>
-                        </div>
 
 
 
                         {% set i = 0 %}
                         {% for gender in data.genders %}
-                            {{ components.displayGender(X, true, gender, i) }}
+                            {{ components.displayGender(X, false, gender, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -206,16 +181,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="dates">
                         <h2>Exist Dates</h2>
 
-                        <div class="form-group" id="add_exist_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button>
-                                <button class="btn btn-success" id="btn_add_exist_dateRange"><span class="glyphicon glyphicon-plus"></span> Add New Date Range</button>
-                            </div>
-                        </div>
 
                         {% set i = 0 %}
                         {% for exist in data.dates %}
-                            {{ components.displayExist(X, true, exist, i) }}
+                            {{ components.displayExist(X, false, exist, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -271,8 +240,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 </div>
                             </div>
 
-                            {{ widgets.scmModal(X, true, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
-                            {{ widgets.optionsList(X, true, "biogHist", i) }}
+                            {{ widgets.scmModal(X, false, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
+                            {{ widgets.optionsList(X, false, "biogHist", i) }}
                         </div>
 
                     </div>
@@ -280,16 +249,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="sameAs">
                         <h2>Same As</h2>
 
-                        <div class="form-group" id="add_sameAs_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_sameAs"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
-                            </div>
-                        </div>
 
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, true, other, i) }}
+                            {{ components.displaySameAs(X, false, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
@@ -300,15 +264,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="sources">
                         <h2>Sources</h2>
 
-                        <div class="form-group" id="add_source_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_source"><span class="glyphicon glyphicon-plus"></span> Add New Source</button>
-                            </div>
-                        </div>
-
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                            {{ components.displaySource(X, true, source, i) }}
+                            {{ components.displaySource(X, false, source, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_source_i' style='display:none;'>{{i}}</span>
@@ -318,16 +276,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="resourceRelations">
                         <h2>Resource Relations</h2>
 
-                        <div class="form-group" id="add_resourceRelation_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_resourceRelation"><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
-                            </div>
-                        </div>
 
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, true, relation, i) }}
+                            {{ components.displayResourceRelation(X, false, relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
@@ -337,15 +290,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="constellationRelations">
                         <h2>Constellation Relations</h2>
 
-                        <div class="form-group" id="add_constellationRelation_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_constellationRelation" data-toggle="modal" data-target="#relationSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation</button>
-                            </div>
-                        </div>
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, true, relation, i) }}
+                            {{ components.displayConstellationRelation(X, false, relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
@@ -356,15 +304,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="tab-pane" id="languagesUsed">
                         <h2>Languages Used</h2>
 
-                        <div class="form-group" id="add_language_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_language"><span class="glyphicon glyphicon-plus"></span> Add New Language</button>
-                            </div>
-                        </div>
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, true, language, i) }}
+                            {{ components.displayLanguageUsed(X, false, language, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_language_i' style='display:none;'>{{i}}</span>
@@ -375,15 +318,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <h2>Subjects</h2>
 
 
-                        <div class="form-group" id="add_subject_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_subject"><span class="glyphicon glyphicon-plus"></span> Add New Subject</button>
-                            </div>
-                        </div>
-
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, true, subject, i) }}
+                            {{ components.displaySubject(X, false, subject, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_subject_i' style='display:none;'>{{i}}</span>
@@ -394,15 +331,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <h2>Nationalities</h2>
 
 
-                            <div class="form-group" id="add_nationality_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_nationality"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
-                                </div>
-                            </div>
-
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, true, nationality, i) }}
+                                {{ components.displayNationality(X, false, nationality, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_nationality_i' style='display:none;'>{{i}}</span>
@@ -411,16 +342,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="functions">
                             <h2>Functions</h2>
 
-
-                            <div class="form-group" id="add_function_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_function"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
-                                </div>
-                            </div>
-
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                                {{ components.displayFunction(X, true, function, i) }}
+                                {{ components.displayFunction(X, false, function, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_function_i' style='display:none;'>{{i}}</span>
@@ -430,15 +354,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="occupations">
                             <h2>Occupations</h2>
 
-                            <div class="form-group" id="add_occupation_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_occupation"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, true, occupation, i) }}
+                                {{ components.displayOccupation(X, false, occupation, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_occupation_i' style='display:none;'>{{i}}</span>
@@ -448,15 +367,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="legalStatuses">
                             <h2>Legal Statuses</h2>
 
-                            <div class="form-group" id="add_legalStatus_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_legalStatus"><span class="glyphicon glyphicon-plus"></span> Add New Legal Status</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, true, legalStatus, i) }}
+                                {{ components.displayLegalStatus(X, false, legalStatus, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
@@ -466,15 +380,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="places">
                             <h2>Places</h2>
 
-                            <div class="form-group" id="add_place_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_place"><span class="glyphicon glyphicon-plus"></span> Add New Place</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                                {{ components.displayPlace(X, true, place, i) }}
+                                {{ components.displayPlace(X, false, place, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_place_i' style='display:none;'>{{i}}</span>
@@ -484,15 +393,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="conventionDeclarations">
                             <h2>Convention Declarations</h2>
 
-                            <div class="form-group" id="add_conventionDeclaration_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_conventionDeclaration"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, true, conventionDeclaration, i) }}
+                                {{ components.displayConventionDeclaration(X, false, conventionDeclaration, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
@@ -501,15 +405,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="generalContexts">
                             <h2>General Contexts</h2>
 
-                            <div class="form-group" id="add_generalContext_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_generalContext"><span class="glyphicon glyphicon-plus"></span> Add New General Context</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, true, generalContext, i) }}
+                                {{ components.displayGeneralContext(X, false, generalContext, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
@@ -518,15 +417,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="structureOrGenealogies">
                             <h2>Structure or Genealogies</h2>
 
-                            <div class="form-group" id="add_structureOrGenealogy_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_structureOrGenealogy"><span class="glyphicon glyphicon-plus"></span> Add New Structure or Genealogy</button>
-                                </div>
-                            </div>
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, true, structureOrGenealogy, i) }}
+                                {{ components.displayStructureOrGenealogy(X, false, structureOrGenealogy, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
@@ -535,15 +429,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <div class="tab-pane" id="mandates">
                             <h2>Mandates</h2>
 
-                            <div class="form-group" id="add_mandate_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_mandate"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
-                                </div>
-                            </div>
-
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, true, mandate, i) }}
+                                {{ components.displayMandate(X, false, mandate, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_mandate_i' style='display:none;'>{{i}}</span>
@@ -565,7 +453,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
-
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>
@@ -578,13 +465,15 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             </div>
                             -->
                             <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-info" id="save_and_continue"><span class="glyphicon glyphicon-floppy-disk"></span> Save &amp; Continue <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the current state of the constellation and continue working." data-toggle="popover" data-placement="top"></span></a>
-                                <a href="#" class="list-group-item list-group-item-success" id="save_and_dashboard"><span class="glyphicon glyphicon-floppy-saved"></span> Save &amp; Dashboard <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and return to the dashboard.  It will not be published, but will remain in your "In Progress Edits" list.' data-toggle="popover" data-placement="top"></span></a>
-                                <a href="#" class="list-group-item list-group-item-warning" id="save_and_submit"><span class="glyphicon glyphicon-floppy-open"></span> Save &amp; Publish <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content='Save the current state of the constellation and publish it.  The changes will be globally visible and it will be removed from your "In Progress Edits" list.'  data-toggle="popover" data-placement="top"></span></a>
-                                <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel any changes.  The constellation will still be locked to you until published." data-toggle="popover" data-placement="top"></span></a>
+                                {% if data.status == 'editable' %}
+                                    <a class="list-group-item list-group-item-info"
+                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                {% else %}
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                {% endif %}
+                                <a href="#" class="list-group-item list-group-item-success disabled"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
                             </div>
-
-                            <textarea id="savemessage" name="savemessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write an optional save log message here..."></textarea>
                         </div>
                     </div>
                     <div class="panel panel-primary">
@@ -659,100 +548,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 </div>
             </div>
         </form>
-
-
-    <div id="hidden_field_options" style="display:none">
-    <div id="gender_template" style="display:none">
-    {{ components.displayGender(X, true, null, 'ZZ') }}
-    </div>
-    <div id="nameEntry_template" style="display:none">
-    {{ components.displayNameEntry(X, true, null, 'ZZ') }}
-    </div>
-    <div id="sameAs_template" style="display:none">
-    {{ components.displaySameAs(X, true, null, 'ZZ') }}
-    </div>
-    <div id="source_template" style="display:none">
-    {{ components.displaySource(X, true, null, 'ZZ') }}
-    </div>
-    <div id="resourceRelation_template" style="display:none">
-    {{ components.displayResourceRelation(X, true, null, 'ZZ') }}
-    </div>
-    <div id="constellationRelation_template" style="display:none">
-    {{ components.displayConstellationRelation(X, true, null, 'ZZ') }}
-    </div>
-    <div id="language_template" style="display:none">
-    {{ components.displayLanguageUsed(X, true, null, 'ZZ') }}
-    </div>
-    <div id="subject_template" style="display:none">
-    {{ components.displaySubject(X, true, null, 'ZZ') }}
-    </div>
-    <div id="nationality_template" style="display:none">
-    {{ components.displayNationality(X, true, null, 'ZZ') }}
-    </div>
-    <div id="function_template" style="display:none">
-    {{ components.displayFunction(X, true, null, 'ZZ') }}
-    </div>
-    <div id="occupation_template" style="display:none">
-    {{ components.displayOccupation(X, true, null, 'ZZ') }}
-    </div>
-    <div id="legalStatus_template" style="display:none">
-    {{ components.displayLegalStatus(X, true, null, 'ZZ') }}
-    </div>
-    <div id="place_template" style="display:none">
-    {{ components.displayPlace(X, true, null, 'ZZ') }}
-    </div>
-    <div id="conventionDeclaration_template" style="display:none">
-    {{ components.displayConventionDeclaration(X, true, null, 'ZZ') }}
-    </div>
-    <div id="generalContext_template" style="display:none">
-    {{ components.displayGeneralContext(X, true, null, 'ZZ') }}
-    </div>
-    <div id="structureOrGenealogy_template" style="display:none">
-    {{ components.displayStructureOrGenealogy(X, true, null, 'ZZ') }}
-    </div>
-    <div id="mandate_template" style="display:none">
-    {{ components.displayMandate(X, true, null, 'ZZ') }}
-    </div>
-    <div id="exist_date_template" style="display:none">
-    {{ dates.dateEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
-    </div>
-    <div id="exist_dateRange_template" style="display:none">
-    {{ dates.dateRangeEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
-    </div>
-    <div id="sub_date_template" style="display:none">
-    {{ dates.dateEntry(X, true, 'Date', 'SHORT_date_XX', null, 'ZZ', true) }}
-    </div>
-    <div id="sub_dateRange_template" style="display:none">
-    {{ dates.dateRangeEntry(X, true, 'Date Range', 'SHORT_date_XX', null, 'ZZ', true) }}
-    </div>
-    <div id="scm_template" style="display:none">
-    {{ components.displaySCM(X, true, 'SHORT', 'ZZ', 'YY', null) }}
-    </div>
-    <div id="component_template" style="display:none">
-    {{ components.displayComponent(X, true, null, 'ZZ', 'YY') }}
-    </div>
-    <div id="contributor_template" style="display:none">
-    {{ components.displayContributor(X, true, null, 'ZZ', 'YY') }}
-    </div>
-    </div>
-
-
-<div class="modal fade" id="previewPane" tabindex="-1" role="dialog" aria-labelledby="previewPane">
-    <div class="modal-dialog" role="document" style="width:90%;">
-        <div class="modal-content">
-            <div class="modal-header primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="previewLabel">Preview</h4>
-            </div>
-            <div class="modal-body" id="previewPaneContent">
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <div class="modal fade" id="relationSearchPane" tabindex="-1" role="dialog" aria-labelledby="relationSearchPane">
     <div class="modal-dialog" role="document">

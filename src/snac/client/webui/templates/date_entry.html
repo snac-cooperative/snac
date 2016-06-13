@@ -1,4 +1,4 @@
-{% macro dateEntry(X, name, short, snacDate, i, sub) %}
+{% macro dateEntry(X, inEdit, name, short, snacDate, i, sub) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }} - {{ X.singleDate.display }}</div>
@@ -88,16 +88,16 @@
 
         <!-- TODO: need to fix this up! -->
         {% if sub %}
-            {{ widgets.subOptionsList(X, short, i) }}
+            {{ widgets.subOptionsList(X, inEdit, short, i) }}
         {% else %}
-            {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
-            {{ widgets.optionsList(X, short, i) }}
+            {{ widgets.scmModal(X, inEdit, short, i, name, name, snacDate) }}
+            {{ widgets.optionsList(X, inEdit, short, i) }}
         {% endif %}
 	</div>
 </div>
 {% endmacro %}
 
-{% macro dateRangeEntry(X, name, short, snacDate, i, sub) %}
+{% macro dateRangeEntry(X, inEdit, name, short, snacDate, i, sub) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }} - {{ X.dateRange.display }}</div>
@@ -244,10 +244,10 @@
 
         <!-- TODO: need to fix this up! -->
         {% if sub %}
-            {{ widgets.subOptionsList(X, short, i) }}
+            {{ widgets.subOptionsList(X, inEdit, short, i) }}
         {% else %}
-            {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
-            {{ widgets.optionsList(X, short, i) }}
+            {{ widgets.scmModal(X, inEdit, short, i, name, name, snacDate) }}
+            {{ widgets.optionsList(X, inEdit, short, i) }}
         {% endif %}
 	</div>
 </div>
