@@ -711,10 +711,16 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {{ components.displayMandate(X, null, 'ZZ') }}
     </div>
     <div id="exist_date_template" style="display:none">
-    {{ dates.dateEntry(X, 'Exist Dates', 'exist', null, 'ZZ') }}
+    {{ dates.dateEntry(X, 'Exist Dates', 'exist', null, 'ZZ', false) }}
     </div>
     <div id="exist_dateRange_template" style="display:none">
-    {{ dates.dateRangeEntry(X, 'Exist Dates', 'exist', null, 'ZZ') }}
+    {{ dates.dateRangeEntry(X, 'Exist Dates', 'exist', null, 'ZZ', false) }}
+    </div>
+    <div id="sub_date_template" style="display:none">
+    {{ dates.dateEntry(X, 'Date', 'SHORT_date_XX', null, 'ZZ', true) }}
+    </div>
+    <div id="sub_dateRange_template" style="display:none">
+    {{ dates.dateRangeEntry(X, 'Date Range', 'SHORT_date_XX', null, 'ZZ', true) }}
     </div>
     <div id="scm_template" style="display:none">
     {{ components.displaySCM(X, 'SHORT', 'ZZ', 'YY', null) }}

@@ -506,6 +506,41 @@ class ConstellationPostMapper {
         
     }
 
+
+    /**
+     * Parse array to SNACDate
+     *
+     * Parses an array of date information from the web ui into a date object for adding to the Constellation's data objects
+     *
+     * @param string $short The short name of the date in the user interface, i.e. `exist` or `nameEntry_date_1`
+     * @param string $k The ui-level container ID for the object (i.e. name entry on-page id this date is for)
+     * @param string[] $data The associative array describing one date or dateRange
+     */
+    function parseDate($short, $k, $data) {
+        if ($data["id"] == "" && $data["operation"] != "insert")
+            return null;
+        $date = new \snac\data\SNACDate();
+        $date->setID($data["id"]);
+        $date->setVersion($data["version"]);
+        $date->setOperation($this->getOperation($data));
+        
+        $date->setNote($data["note"]);
+        $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
+        $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
+        
+        if ($data["isrange"] === "true")
+            $date->setRange(true);
+        else
+            $date->setRange(false);
+
+        $date->setToDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
+        $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
+
+        $date->setAllSNACControlMetadata($this->parseSCM($data, $short, $k));
+
+        return $date; 
+    }
+
     /**
      * Serialize post data to Constellation
      *
@@ -701,33 +736,13 @@ class ConstellationPostMapper {
             
             $this->constellation->addGender($gender);
         }
-        
+
         foreach ($nested["exist"] as $k => $data) {
-            // If the user added an object, but didn't actually edit it
-            if ($data["id"] == "" && $data["operation"] != "insert")
-                continue;
-            $date = new \snac\data\SNACDate();
-            $date->setID($data["id"]);
-            $date->setVersion($data["version"]);
-            $date->setOperation($this->getOperation($data));
-            
-            $date->setNote($data["note"]);
-            $date->setFromDate($data["startoriginal"], $data["start"], $this->parseTerm($data["starttype"]));
-            $date->setFromDateRange($data["startnotBefore"], $data["startnotAfter"]);
-            
-            if ($data["isrange"] === "true")
-                $date->setRange(true);
-            else
-                $date->setRange(false);
-
-            $date->setToDate($data["endoriginal"], $data["end"], $this->parseTerm($data["endtype"]));
-            $date->setToDateRange($data["endnotBefore"], $data["endnotAfter"]);
-
-            $date->setAllSNACControlMetadata($this->parseSCM($data, "exist", $k));
-
-            $this->addToMapping("exist", $k, $data, $date);
-            
-            $this->constellation->addDate($date);
+            $date = $this->parseDate("exist", $k, $data);
+            if ($date != null) {
+                $this->addToMapping("exist", $k, $data, $date);
+                $this->constellation->addDate($date);
+            } 
         }
         
         foreach ($nested["biogHist"] as $k => $data) {
@@ -959,6 +974,16 @@ class ConstellationPostMapper {
                     $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
 
                     $nameEntry->addComponent($component);
+                }
+            }
+
+            if (isset($data["date"])) {
+                foreach ($data["date"] as $l => $dData) {
+                    $date = $this->parseDate("nameEntry_date_".$l, $k, $dData);
+                    if ($date != null) {
+                        $this->addToMapping("nameEntry_date_".$l, $k, $dData, $date);
+                        $nameEntry->addDate($date);
+                    }
                 }
             }
 

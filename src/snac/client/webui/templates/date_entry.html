@@ -1,8 +1,9 @@
-{% macro dateEntry(X, name, short, snacDate, i) %}
+{% macro dateEntry(X, name, short, snacDate, i, sub) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
-	<div class="panel-heading">{{ name }} - {{ X.date.display }}</div>
-
+	<div class="panel-heading">{{ name }} - {{ X.singleDate.display }}</div>
+	<div class="panel-body">
+		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
             <input id="{{short}}_operation_{{i}}" name="{{short}}_operation_{{i}}" type="hidden" value=""/>
@@ -12,8 +13,6 @@
             <input id="{{short}}_endtype_id_{{i}}" name="{{short}}_endtype_id_{{i}}" type="hidden" value=""/>
             <input id="{{short}}_endnotBefore_{{i}}" name="{{short}}_endnotBefore_{{i}}" type="hidden" value=""/>
             <input id="{{short}}_endnotAfter_{{i}}" name="{{short}}_endnotAfter_{{i}}" type="hidden" value=""/>
-	<div class="panel-body">
-		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
 			<div class="form-group">
 				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4" data-content="{{X.machineDate.tooltip}}" data-toggle="popover" data-placement="top">
 					{{ X.machineDate.display }} <br><span class="control-label-subtext">Machine-Readable</span></label>
@@ -72,23 +71,26 @@
 		</div>
 
         <!-- TODO: need to fix this up! -->
-        {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
-        {{ widgets.optionsList(X, short, i) }}
+        {% if sub %}
+            {{ widgets.subOptionsList(X, short, i) }}
+        {% else %}
+            {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
+            {{ widgets.optionsList(X, short, i) }}
+        {% endif %}
 	</div>
 </div>
 {% endmacro %}
 
-{% macro dateRangeEntry(X, name, short, snacDate, i) %}
+{% macro dateRangeEntry(X, name, short, snacDate, i, sub) %}
     {% import 'widgets.html' as widgets %}
 <div class="panel panel-default" id="{{short}}_panel_{{i}}">
 	<div class="panel-heading">{{ name }} - {{ X.dateRange.display }}</div>
-
+	<div class="panel-body">
+		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
             <input type="hidden" id="{{short}}_id_{{i}}" name="{{short}}_id_{{i}}" value="{{snacDate.id}}"/>
             <input id="{{short}}_version_{{i}}" name="{{short}}_version_{{i}}" type="hidden" value="{{ snacDate.version }}"/>
             <input id="{{short}}_operation_{{i}}" name="{{short}}_operation_{{i}}" type="hidden" value=""/>
             <input id="{{short}}_isrange_{{i}}" name="{{short}}_isrange_{{i}}" type="hidden" value="true"/>
-	<div class="panel-body">
-		<div class="col-xs-10" id="{{short}}_datapart_{{i}}">
 			<div class="form-group">
 				<label for="{{short}}_start_{{i}}" class="control-label col-xs-4" data-content="{{X.startMachineDate.tooltip}}" data-toggle="popover" data-placement="top">
                     {{ X.startMachineDate.display }} <br><span class="control-label-subtext">Machine-Readable</span></label>
@@ -194,8 +196,12 @@
 		</div>
 
         <!-- TODO: need to fix this up! -->
-        {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
-        {{ widgets.optionsList(X, short, i) }}
+        {% if sub %}
+            {{ widgets.subOptionsList(X, short, i) }}
+        {% else %}
+            {{ widgets.scmModal(X, short, i, name, name, snacDate) }}
+            {{ widgets.optionsList(X, short, i) }}
+        {% endif %}
 	</div>
 </div>
 {% endmacro %}
