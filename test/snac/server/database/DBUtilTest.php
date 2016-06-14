@@ -82,8 +82,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     /**
      * Check that name components come back the correct order. Minimal check really only looks at the first
      * element, but that should be enough, especially since we will eventually replace all the vocabulary code.
+     *
+     * June 2015 Disabled because we're temporarily just sorting alphabetically.
      */ 
-    public function testNameComponentOrder()
+    public function disabled_testNameComponentOrder()
     {
         $entityTypeList = $this->dbu->searchVocabulary('entity_type', '');
         foreach($entityTypeList as $ent)
