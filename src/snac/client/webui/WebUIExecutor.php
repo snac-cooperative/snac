@@ -312,6 +312,37 @@ class WebUIExecutor {
     }
 
     /**
+     * Handle Administrative tasks
+     *
+     * Fills the display object with the requested admin page for the given user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function handleAdministrator(&$input, &$display, &$user) {
+
+        if (!isset($input["subcommand"])) {
+            $display->setTemplate("admin_dashboard");
+            return;
+        }
+
+        switch ($input["subcommand"]) {
+            case "add_user":
+                $display->setTemplate("admin_add_user");
+                break;
+            case "users":
+                $display->setTemplate("coming_soon");
+                break;
+            case "roles":
+                $display->setTemplate("coming_soon");
+                break;
+            default:
+                $display->setTemplate("admin_dashboard");
+
+        }
+    }
+
+    /**
      * Display Profile Page
      *
      * Fills the display with the profile page for the given user.

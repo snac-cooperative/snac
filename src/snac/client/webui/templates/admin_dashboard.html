@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Admin Dashboard</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css">
+
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+<script src="javascript/select_loaders.js"></script>
+<script src="javascript/scripts.js"></script>
+<script src="javascript/dashboard.js"></script>
+<script src="javascript/search.js"></script>
+
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user) }}
+
+
+<div class="container snac" role="main">
+
+    <h1>Administrator Dashboard</h1>
+
+    <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
+    <div class="row">
+        <div class="col-md-4">
+            <!-- Left column -->
+            <h3>Overview</h3>
+
+            <p>Welcome to the Administrator's dashboard.  The first column provides access to administrative settings and user accounts.  The second column gives quick access to reports on the system.</p>
+            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
+
+
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Middle column -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">User Management</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Use the following links to administer user accounts.</p>
+                    <div class="list-group">
+                        <a href="?command=administrator&subcommand=add_user" class="list-group-item"><i class="fa fa-user-plus" aria-hidden="true"></i> New User</a>
+                        <a href="?command=administrator&subcommand=users" class="list-group-item"><i class="fa fa-users" aria-hidden="true"></i> User Accounts</a>
+                    </div>
+                </div>
+            </div>
+            <div class="panel panel-danger">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Role Management</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Use the following links to administer roles and permissions.</p>
+                    <div class="list-group">
+                        <a href="?command=administrator&subcommand=roles" class="list-group-item"><i class="fa fa-shield" aria-hidden="true"></i> Manage Roles</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Right column -->
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Reports</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Run one of the following reports over SNAC</p>
+                    <div class="list-group">
+                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="constellation-settings" tabindex="-1"
+	role="dialog" aria-labelledby="constellation-settings">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title" id="settings-title">Constellation Settings</h4>
+			</div>
+			<div class="modal-body col-xs-12">
+				<ol class="breadcrumb">
+					<li id="settings-name"></li>
+					<li>Settings</li>
+				</ol>
+				<div class="col-xs-12">
+				    <p>You may perform the following actions on this constellation</p>
+
+                    <div class="list-group" id="settings-actions">
+
+                    </div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

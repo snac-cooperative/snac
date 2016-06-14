@@ -272,6 +272,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $executor->displayDashboardPage($display, $user);
         } else if ($this->input["command"] == "profile") {
             $executor->displayProfilePage($display, $user);
+        } else if ($this->input["command"] == "administrator") {
+            $executor->handleAdministrator($this->input, $display, $user);
 
         } else if ($this->input["command"] == "update_profile") {
             // If saving, this is just an ajax/JSON return.
