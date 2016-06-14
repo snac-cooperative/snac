@@ -136,7 +136,7 @@ create index version_history_idx1 on version_history(status);
 -- aka table user
 
 create table appuser (
-        id           int primary key default nextval('id_seq'),
+        id              int primary key default nextval('id_seq'),
         active          boolean default 't', -- true for active account
         username        text unique,         -- text-based user id, the user email address
         email           text,                -- non-unique, current default is username is also email
@@ -162,17 +162,33 @@ create table appuser_role_link (
         is_primary boolean default 'f' -- this role is the primary for the given appuser
         );
 
+-- Linking table between privileges and roles. appuser links to role which links to privilege, and thus users
+-- have privileges.
+
+create table privilege_role_link (
+        pid        int,                -- fk to privilege.id
+        rid        int,                -- fk to role.id
+        );
+
 -- Add a constraint to enforce only one is_primary per uid
 create unique index appuser_role_link_ndx2 on appuser_role_link (uid) where is_primary=true;
 
--- SNAC roles. This includes roles such as 'admin', 'editor'. Also instutional affiliation: 'duke_affiliation', 'yale_affiliation'. 
--- We will either need some name conventions, or more fields such as institution_id foreign key to an IC for an institution
+-- SNAC roles. These are groups of privileges This includes roles such as 'admin', 'editor',
+-- 'contributor'. This really is yet another vocabulary, and therefore should be in the vocabulary table. We
+-- can always move it there later.
 
 create table role (
         id          int  primary key default nextval('id_seq'),
         label       text unique, -- short name of this role
         description text         -- description of this role
         );
+
+create table privilege (
+        id          int  primary key default nextval('id_seq'),
+        label       text unique, -- short name
+        description text         -- description
+        );
+
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 

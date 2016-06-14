@@ -18,7 +18,7 @@ namespace snac\data;
 /**
  * Role class
  *
- * Storage class user role, also known as privileges. A user has a list of roles which define what functions
+ * Storage class user role. Each role has. A user has a list of roles which define what functions
  * the user is authorized to perform
  *
  * @author Tom Laudeman

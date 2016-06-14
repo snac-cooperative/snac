@@ -1150,9 +1150,7 @@ class SQL
      * with naming conventions for the other methods. Also the return values are in a flat array, and might
      * better be return in an assoc list where the keys are based on our usual conventions.
      *
-     * @param string $userid A string value of the users id which is appuser.userid. Once again, the 'id' part
-     * is misleading because this is a string identifier. We really need to go through everything and only use
-     * 'id' where numeric ids are used. This param and field would better be called username.
+     * @param string $userString A string value of the users unique username which is appuser.username.
      *
      * @return integer[] A flat list of the appuser.id and related role.id, both are numeric.
      *
@@ -1163,7 +1161,7 @@ class SQL
         $this->sdb->prepare($qq, 
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
                             where
-                            appuser.userid=$1
+                            appuser.username=$1
                             and appuser.id=appuser_role_link.uid
                             and role.id = appuser_role_link.rid
                             and appuser_role_link.is_primary=true');
