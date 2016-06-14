@@ -347,40 +347,6 @@ function textAreaToText(shortName, idStr) {
         }
     });
 }
-/**
- * Change source list input divs to selects
- *
- * Changes all div's with id "selectsource_" for a given data object (shortName, idStr) from a list of
- * inputs defining the parameters to a select (view mode) to a select box (edit mode).  It then
- * calls the select2 function to replace the select with an AJAX-compatible select.
- *
- * This function handles CONSTELLATION SOURCE OBJECT select boxes ONLY.
- *
- * Note: idStr must not have the "_" pre-appended
- *
- * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
- * @param string|int idStr The index within the edit page of the object.
- */
-function sourceTextToSelect(shortName, idStr) {
-
-    $("div[id^='selectsource_"+shortName+"']").each(function() {
-        var cont = $(this);
-        if(cont.attr('id').endsWith(idStr) && !cont.attr('id').endsWith("ZZ")) {
-            // remove the short name and "select_" from the string we're parsing
-            var divStr = cont.attr('id').replace("selectsource_", "").replace(shortName + "_", "");
-            // remove the idstr to receive the name of this element
-            var regex = new RegExp("\_"+idStr+"$", "g");
-            var name = divStr.replace(regex, "");
-            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
-            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
-            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-                    "</select>");
-            scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), idStr);
-        }
-    });
-}
 
 /**
  * Change vocabulary selects to divs of inputs
@@ -513,7 +479,6 @@ function subMakeEditable(short, i) {
 
     if (!sawSelect) {
         textToSelect(short, i);
-        sourceTextToSelect(short, i);
         textToDate(short, i);
     }
 
@@ -532,14 +497,14 @@ function subMakeEditable(short, i) {
 /**
  * Make a data object uneditable
  *
- * Make the GUI pane for a given constellation object (short, i) un-editable.  Sets up the edit and delete
- * buttons for first-order data objects.
+ * Make each object in the GUI page for the given piece uneditable by turning them back to text.  Also
+ * takes the color away from the pane and removes the operation flag.
  *
  * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
  * @param string|int i     The index within the edit page of the object.
  * @return boolean         False to play nice with the browser
  */
-function makeUneditable(short, i) {
+function subMakeUneditable(shortName, i) {
 
 	// Make inputs read-only
     var idstr = "_" + i;
@@ -547,7 +512,7 @@ function makeUneditable(short, i) {
 
 
     // Remove CodeMirror editors
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " textarea[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr)
             && !obj.attr('id').endsWith("ZZ")
@@ -561,7 +526,7 @@ function makeUneditable(short, i) {
         }
     });
     // Disable buttons
-    $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " button[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("disabled", "true").addClass("snac-hidden");
@@ -569,11 +534,11 @@ function makeUneditable(short, i) {
     });
 
 
-    inputToText(short, i);
-    textAreaToText(short, i);
+    inputToText(shortName, i);
+    textAreaToText(shortName, i);
     // Check for a select box
     var sawSelect = false;
-    $("#"+short+"_datapart_" + i + " select[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " select[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
@@ -581,33 +546,53 @@ function makeUneditable(short, i) {
     });
     // If a select box was seen, undo it
     if (sawSelect) {
-        selectToText(short, i);
-        dateToText(short,i);
+        selectToText(shortName, i);
+        dateToText(shortName,i);
     }
 
-    // restore the edit button
-    $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
-    $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
-    	makeEditable(short, i);
-    });
-
-    // restore the delete button
-    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
-    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() {
-       setDeleted(short, i);
-    });
-
     // Clear the operation flags
-    //$("#" + short + "_operation_" + i).val("");
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
+    //$("#" + shortName + "_operation_" + i).val("");
+    $("#"+shortName+"_datapart_" + i + " input[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith("_operation" + idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.val("");
         }
     });
 
-	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+	$("#" + shortName + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+
+
+
+}
+
+/**
+ * Make a data object uneditable
+ *
+ * Make the GUI pane for a given constellation object (short, i) un-editable.  Sets up the edit and delete
+ * buttons for first-order data objects, and calls the function to turn the elements back to text.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
+function makeUneditable(shortName, i) {
+	// Make inputs read-only
+    var idstr = "_" + i;
+
+    subMakeUneditable(shortName, i);
+
+    // restore the edit button
+    $("#" + shortName + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#" + shortName + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
+    $("#" + shortName + "_editbutton_" + i).off('click').on("click", function() {
+    	makeEditable(shortName, i);
+    });
+
+    // restore the delete button
+    $("#" + shortName + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
+    $("#" + shortName + "_deletebutton_" + i).off('click').on("click", function() {
+       setDeleted(shortName, i);
+    });
 
     return false;
 }
@@ -623,30 +608,30 @@ function makeUneditable(short, i) {
  * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
  * @return boolean          False to play nice with the browser
  */
-function makeSCMEditable(short, i, j) {
+function makeSCMEditable(shortName, i, j) {
 	var id = j + "_" + i;
-    var scmshort = "scm_" + short;
+    var scmShortName = "scm_" + shortName;
 
     // No editing if it's already in edit mode
-    if ($("#" + scmshort + "_operation_" + id).val() == "update")
+    if ($("#" + scmShortName + "_operation_" + id).val() == "update")
         return false;
     // If it's deleted, then you better undelete it first
-    if ($("#" + scmshort + "_operation_" + id).val() == "delete")
-        setSCMDeleted(short, i, j);
+    if ($("#" + scmShortName + "_operation_" + id).val() == "delete")
+        setSCMDeleted(shortName, i, j);
 
-    $("#" + scmshort + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
-    $("#" + scmshort + "_editbutton_" + id).html("<span class=\"fa fa-undo\"></span>");
-    $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() {
-    	undoSCMEdit(short, i, j);
+    $("#" + scmShortName + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
+    $("#" + scmShortName + "_editbutton_" + id).html("<span class=\"fa fa-undo\"></span>");
+    $("#" + scmShortName + "_editbutton_" + id).off('click').on("click", function() {
+    	undoSCMEdit(shortName, i, j);
     });
-    $("#" + scmshort + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
-    $("#" + scmshort + "_deletebutton_" + id).off('click').on("click", function() {
+    $("#" + scmShortName + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
+    $("#" + scmShortName + "_deletebutton_" + id).off('click').on("click", function() {
         return false;
     });
 
-    $("#" + scmshort + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
+    $("#" + scmShortName + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
 
-    return subMakeEditable(scmshort, id);
+    return subMakeEditable(scmShortName, id);
 }
 
 /**
@@ -660,91 +645,26 @@ function makeSCMEditable(short, i, j) {
  * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
  * @return boolean         False to play nice with the browser
  */
-function makeSCMUneditable(short, i, j) {
+function makeSCMUneditable(shortName, i, j) {
 
 	// Make inputs read-only
-    var idstr = "_" + j + "_" + i;
-    $("input[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.attr("readonly", "true");
-        }
-    });
-    // Make textareas read-only
-    $("textarea[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.attr("readonly", "true");
-        }
-    });
-    // Check for a select box
-    var sawSelect = false;
-    $("select[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            sawSelect = true;
-        }
-    });
-    // If a select box was seen, undo it
-    if (sawSelect) {
-	    $("div[id^='select_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
-	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
-	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
+    var idstr = j + "_" + i;
 
-	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" " +
-                        	"name=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" value=\""+vocabtype+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
-                        	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>" +
-                        	"<p class=\"form-control-static\">"+term+"</p>");
-
-	        }
-	    });
-	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
-
-	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
-                        	"<p class=\"form-control-static\">"+term+"</p>");
-
-	        }
-	    });
-    }
-
+    subMakeUneditable('scm_'+shortName, idstr);
+    
     // restore the edit button
-    $("#scm_" + short + "_editbutton" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
-    $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() {
-    	makeSCMEditable(short, i, j);
+    $("#scm_" + shortName + "_editbutton_" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#scm_" + shortName + "_editbutton_" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
+    $("#scm_" + shortName + "_editbutton_" + idstr).off('click').on("click", function() {
+    	makeSCMEditable(shortName, i, j);
     });
 
     // restore the delete button
-    $("#scm_" + short + "_deletebutton" + idstr).addClass("list-group-item-danger").removeClass("disabled");
-    $("#scm_" + short + "_deletebutton" + idstr).off('click').on("click", function() {
-       setSCMDeleted(short, i, j);
+    $("#scm_" + shortName + "_deletebutton_" + idstr).addClass("list-group-item-danger").removeClass("disabled");
+    $("#scm_" + shortName + "_deletebutton_" + idstr).off('click').on("click", function() {
+       setSCMDeleted(shortName, i, j);
     });
 
-
-    // Clear the operation flag
-    $("#scm_" + short + "_operation_" + j + "_" + i).val("");
-
-    $("#scm_" + short + "_panel" + idstr).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
     return false;
 }
 

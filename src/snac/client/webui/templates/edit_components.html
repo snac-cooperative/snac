@@ -954,17 +954,20 @@
                         <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSourceData.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" readonly>{{ scm.sourceData }}</textarea>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
+                            <p class="form-control-static">{{ scm.sourceData }}</p>
                         </div>
                     </div>
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmCitation.display }}
                             </label>
-                        <div class="col-xs-8" id="selectsource_scm_{{short}}_citation_{{j}}_{{i}}">
+                        <div class="col-xs-8" id="select_scm_{{short}}_citation_{{j}}_{{i}}">
                             <input id="scm_{{short}}_citation_id_{{j}}_{{i}}" name="scm_{{short}}_citation_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.citation.id }}"/>
                             <input id="scm_{{short}}_citation_term_{{j}}_{{i}}" name="scm_{{short}}_citation_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.citation.displayName}}"/>
+                            <input id="scm_{{short}}_citation_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_citation_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="ic_sources"/>
+                            <input id="scm_{{short}}_citation_minlength_{{j}}_{{i}}" name="scm_{{short}}_citation_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
                             <p class="form-control-static">{{scm.citation.displayName}}</p>
                         </div>
                     </div>
@@ -974,8 +977,9 @@
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" readonly>{{ scm.subCitation }}</textarea>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_subCitation_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.subCitation }}</textarea>
+                            <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -1021,8 +1025,9 @@
                         <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
-                        <div class="col-xs-8">
-                            <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" readonly>{{ scm.note }}</textarea>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_note_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.note }}</textarea>
+                            <p class="form-control-static">{{ scm.note }}</p>
                         </div>
                     </div>
 
