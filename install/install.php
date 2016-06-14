@@ -365,11 +365,11 @@ if ($response == "yes") {
 
 echo "Would you like to load the May 2016 sample set of records into the database?\n";
 echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): "; 
-$response = "yes";
+$response = "no";
 if (!$automate)
     $response = trim(fgets(STDIN));
 else
-    echo "yes\n";
+    echo "no\n";
 
 if ($response == "yes") {
     echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
