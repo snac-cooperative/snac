@@ -41,25 +41,25 @@
 {% endmacro %}
 
 {% macro scmOptionsList(X, inEdit, short, i, j) %}
-
-{% if inEdit %}
-<div class="col-xs-2">
-    <div class="list-group text-center">
-        <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span></a>
-        <a href="#" id="scm_{{short}}_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span></a>
+    {% if inEdit %}
+    <div class="col-xs-2">
+        <div class="list-group text-center">
+            <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span></a>
+            <a href="#" id="scm_{{short}}_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span></a>
+        </div>
     </div>
-</div>
-{% endif %}
-
+    {% endif %}
 {% endmacro %}
 
 {% macro subOptionsList(X, inEdit, short, i) %}
-<div class="col-xs-2">
-    <div class="list-group">
-        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+    {% if inEdit %}
+    <div class="col-xs-2">
+        <div class="list-group">
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        </div>
     </div>
-</div>
+    {% endif %}
 {% endmacro %}
 
 {% macro scmModal(X, inEdit, short, i, title, type, data) %}
