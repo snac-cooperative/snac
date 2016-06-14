@@ -3917,10 +3917,12 @@ class SQL
         {
             array_push($all, $row);
         }
-        if ($term == 'name_component' && count($all) > 1)
-        {
-            return $this->specialSort($all);
-        }
+        /* Disable sorting name components, for now.
+         * if ($term == 'name_component' && count($all) > 1)
+         * {
+         *     return $this->specialSort($all);
+         * }
+         */
         return $all;
     }
 
