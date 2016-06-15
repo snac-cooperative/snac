@@ -24,6 +24,7 @@ h1 {
     /*font-family: Crimson Text;*/
     font-family: Roboto;
     font-weight: 300;
+    margin-bottom: 35px;
 }
 
 .navbar-inverse .navbar-brand,
