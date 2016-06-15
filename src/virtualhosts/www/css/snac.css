@@ -1,6 +1,38 @@
+@import 'https://fonts.googleapis.com/css?family=Roboto:300,400';
+@import 'https://fonts.googleapis.com/css?family=Droid';
+@import 'https://fonts.googleapis.com/css?family=Crimson+Text:400,800';
+
+/* Note: Calibri = Roboto and Minion Pro = Crimson Text */
+
 body {
     padding-top: 70px;
     padding-bottom: 30px;
+}
+.navbar-inverse {
+    background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#1f5c7c),to(#18596F));
+    background-image: linear-gradient(to bottom,#1f5c7c 0,#18596F 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1f5c7c', endColorstr='#ff18506F', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    background-repeat: repeat-x;
+    border-radius: 4px;
+}
+
+
+h1 {
+    /*font-family: Crimson Text;*/
+    font-family: Roboto;
+    font-weight: 300;
+}
+
+.navbar-inverse .navbar-brand,
+.navbar-inverse .navbar-nav li a {
+    color: #D6E5F4;
+}
+
+.navbar-inverse .dropdown-menu li a {
+    color: #333;
 }
 
 .theme-dropdown .dropdown-menu {
@@ -109,7 +141,38 @@ body {
     table-layout: fixed;
     float:left;
 }
-/* <p style="width: 100%; padding-right: 10px;" class="control-label select2-container--bootstrap">Part</p> */
+
+.rotated-header {
+    /* Safari */
+    -webkit-transform: rotate(-90deg);
+    /* Firefox */
+    -moz-transform: rotate(-90deg);
+    /* IE */
+    -ms-transform: rotate(-90deg);
+    /* Opera */
+    -o-transform: rotate(-90deg);
+    /* Internet Explorer */
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+td.rotate {
+    /* Something you can count on */
+    height: 140px;
+    white-space: nowrap;
+}
+
+td.rotate > div {
+    transform: 
+    /* Magic Numbers */
+    translate(25px, 51px)
+    /* 45 is really 360 - 45 */
+    rotate(315deg);
+    width: 30px;
+}
+td.rotate > div > span {
+    border-bottom: 1px solid #ccc;
+    padding: 5px 10px;
+}
 
 @media (min-width: 992px) {
     .affix {
