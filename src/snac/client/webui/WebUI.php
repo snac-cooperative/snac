@@ -111,7 +111,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login",
                 "login2",
                 "search",
-                "view"
+                "view",
+                "details"
         );
 
 
@@ -258,9 +259,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "edit") {
             $executor->displayEditPage($this->input, $display, $user);
         } else if ($this->input["command"] == "new") {
-            $executor->displayNewEditPage($display);
+            $executor->displayNewPage($display);
+        } else if ($this->input["command"] == "new_edit") {
+            $executor->displayNewEditPage($this->input, $display);
         } else if ($this->input["command"] == "view") {
             $executor->displayViewPage($this->input, $display, $user);
+        } else if ($this->input["command"] == "details") {
+            $executor->displayDetailedViewPage($this->input, $display, $user);
         } else if ($this->input["command"] == "preview") {
             $executor->displayPreviewPage($this->input, $display);
         } else if ($this->input["command"] == "dashboard") {
@@ -271,6 +276,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "update_profile") {
             // If saving, this is just an ajax/JSON return.
             $response = $executor->saveProfile($this->input, $user);
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+            return;
+
+        } else if ($this->input["command"] == "new_reconcile") {
+            // If saving, this is just an ajax/JSON return.
+            $response = $executor->reconcilePieces($this->input, $user);
             $this->response = json_encode($response, JSON_PRETTY_PRINT);
             array_push($this->responseHeaders, "Content-Type: text/json");
             return;

@@ -83,12 +83,12 @@ $(document).ready(function() {
                     if (split.length == 3) {
                         var short = split[0];
                         var id = split[2];
-                        
+
                         updateDate(short, id);
                     }
                 }
             });
-        
+
             // Send the data back by AJAX call
             $.post("?command=save", $("#constellation_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then alert the
@@ -261,12 +261,12 @@ $(document).ready(function() {
                         if (split.length == 3) {
                             var short = split[0];
                             var id = split[2];
-                            
+
                             updateDate(short, id);
                         }
                     }
                 });
-        
+
 	            // Send the data back by AJAX call
 	            $.post("?command=save_unlock", $("#constellation_form").serialize(), function (data) {
 	                // Check the return value from the ajax. If success, then go to dashboard
@@ -370,7 +370,7 @@ $(document).ready(function() {
                     }
 
                 });
-            
+
                 // Go through all the panels and update any dates
                 $("div[id*='_panel_']").each(function() {
                     var cont = $(this);
@@ -382,12 +382,12 @@ $(document).ready(function() {
                         if (split.length == 3) {
                             var short = split[0];
                             var id = split[2];
-                            
+
                             updateDate(short, id);
                         }
                     }
                 });
-        
+
 
 	            // Send the data back by AJAX call
 	            $.post("?command=save_publish", $("#constellation_form").serialize(), function (data) {
@@ -491,6 +491,126 @@ $(document).ready(function() {
 
 
 
+    // Save and Dashboard button
+    if($('#continue_and_reconcile').exists()) {
+        $('#continue_and_reconcile').click(function(){
+
+            // If EntityType and NameEntry do not have values, then don't let the user save
+            var noNameEntryText = true;
+            $("input[id^='nameEntry_original_']").each(function() {
+                if ($(this).val() != "")
+                noNameEntryText = false;
+            });
+            if ($('#entityType').val() == "" || noNameEntryText) {
+                $('#error-message').html("<p>Entity Type and at least one Name Entry required for continuing.</p>");
+                setTimeout(function(){
+                    $('#error-message').slideDown();
+                }, 500);
+                setTimeout(function(){
+                    $('#error-message').slideUp();
+                }, 10000);
+                return;
+            }
+
+
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Reconciling Constellation... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+            // Save any XML editor contents back to their text areas before saving
+            $("textarea[id*='_text_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+            $("textarea[id*='_source_']").each(function() {
+                var obj = $(this);
+                if (obj.get(0).CodeMirror) {
+                    obj.get(0).CodeMirror.save();
+                }
+
+            });
+
+            // Go through all the panels and update any dates
+            $("div[id*='_panel_']").each(function() {
+                var cont = $(this);
+                // Don't look at any of the ZZ hidden panels
+                if (cont.attr('id').indexOf("ZZ") == -1) {
+                    var split = cont.attr('id').split("_");
+
+                    // Split reveals a normal panel:
+                    if (split.length == 3) {
+                        var short = split[0];
+                        var id = split[2];
+
+                        updateDate(short, id);
+                    }
+                }
+            });
+
+            // Send the data back by AJAX call
+            $.post("?command=new_reconcile", $("#constellation_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    // We got the reconciliation results from the WebUI, which we now need to display
+                    console.log(data);
+
+                    var html = "";
+                    html += "<p class='text-left'>Before continuing, please check the following Constellation matches.  If the "
+                            + " Constellation you wish to add is below, please edit it (if it is not checked out) rather than "
+                            + " creating a duplicate.</p>";
+                    html += "<div class='list-group text-left' style='margin-bottom:0px'>";
+                    if (data.results.length > 0) {
+                        for (var key in data.results) {
+                            //html += "<div class='input-group'><span class='input-group-addon'><input type='radio'></span><p class='form-static'>Blah</p><span class='input-group-button'><button class='btn btn-default' type='button'>View</button></span></div>";
+                            html += "<div class='list-group-item'><div class='row'>";
+                            html += "<div class='col-xs-8'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
+                            html += "<p class='list-group-item-text'>"+data.results[key].ark+"</p></div>";
+                            html += "<div class='col-xs-4 list-group'>";
+                            html += "<a class='list-group-item list-group-item-success' target='_blank' href='?command=view&preview&constellationid="+data.results[key].id+"'><span  class='fa fa-eye' aria-hidden='true'></span> View</a></a>";
+                            html += "<a class='list-group-item list-group-item-info' href='?command=edit&constellationid="+data.results[key].id+"'><span  class='fa fa-pencil-square-o' aria-hidden='true'></span> Edit</a></div>";
+                            html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
+                            var arkID = "";
+                            if (data.results[key].ark != null)
+                                arkID = data.results[key].ark;
+                            html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
+                            html += "</div></div>";
+                        }
+                    } else {
+                        html += "<a href='#' class='list-group-item list-group-item-danger' onClick='return false;'>No results found.</a>";
+                    }
+                    html += "</div>";
+
+                    $('#reconcileModalContent').html(html);
+                    $('#reconcilePane').modal();
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        });
+    }
+
+    // Confirm Create New button
+    if($('#confirm_create_new').exists()) {
+        $('#confirm_create_new').click(function(){
+            // Send the data back by AJAX call
+            $("#constellation_form").submit();
+        });
+    }
+
+
+
 
     /**
      * What to do on page unload (leaving the page)
@@ -499,7 +619,7 @@ $(document).ready(function() {
      *
      * @param  event e The event that happened
      */
-	function unloadPage(e) { 
+	function unloadPage(e) {
 		if(somethingHasBeenEdited){
 			var message = 'You may have unsaved changes on this Constellation.  Are you sure you want to leave the page and risk losing those edits?';
 			var e = e || window.event;

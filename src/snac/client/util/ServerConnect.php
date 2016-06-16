@@ -86,4 +86,30 @@ class ServerConnect {
         $this->logger->addDebug("Got the following server response", $return);
         return $return;
     }
+
+
+
+    /**
+     * Lookup Vocabulary Term
+     *
+     * Custom Query to lookup a vocabulary term by ID
+     *
+     * @param int The ID to look up in the database
+     * @return \snac\data\Term The term found
+     */
+    public function lookupTerm($id) {
+
+        $request = array ();
+        $request["command"] = "vocabulary";
+        $request["term_id"] = $id;
+
+        $response = $this->query($request);
+
+        if (isset($response["term"])) {
+            $term = new \snac\data\Term($response["term"]);
+            return $term;
+        }
+
+        return null;
+    }
 }

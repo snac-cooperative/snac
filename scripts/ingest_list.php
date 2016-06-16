@@ -6,7 +6,7 @@
  * Given a list of ARKs as input, this script converts them to Constellation objects, and also
  * gets the list of all their Constellation Relation links and imports them.  Then, it sets up the original set's
  * Constellation Relations appropriately inside snac.
- * 
+ *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -46,7 +46,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->build();
 }
 
-// Create new parser 
+// Create new parser
 $e = new \snac\util\EACCPFParser();
 $e->setConstellationOperation("insert");
 printf("Done creating new parser.\n");
@@ -99,21 +99,21 @@ foreach ($arks as $ark) {
     indexESearch($written);
 
     $seenArks[$written->getID()] = $written->getArk();
-    
+
     echo "   Relations: \n";
 
     foreach ($constellation->getRelations() as $rel) {
         $relArk = $rel->getTargetArkID();
         list($junk, $parts) = explode("ark:/", $relArk);
         $relArk = "http://socialarchive.iath.virginia.edu/" . "ark:/" . $parts;
-         
+
         $rels = trim(shell_exec("curl -s $relArk  | grep \"badge pull-right\" | sed 's/^.*\">//' | sed 's/<.*//' | awk '{s+=$1}END{print s}'"));
         if ($rels > $relationLimit) {
             echo "      skipping: $relArk (relations: $rels)\n";
             continue;
         }
         echo "       parsing: $relArk (relations: $rels)\n";
-        
+
         // If we haven't already seen it, it's not in the initial desired set, and it actually is an ARK
         if (!in_array($relArk, $seenArks) && !in_array($relArk, $arks) && strpos($relArk, "ark") !== false) {
             // Get filename from ARK
@@ -123,7 +123,7 @@ foreach ($arks as $ark) {
 
             // Parse the constellation
             $constellation = $e->parseFile($filename);
-            
+
             // Make sure it isn't already in the database
             $check = $dbu->readPublishedConstellationByARK($constellation->getArk(), true);
 
@@ -167,8 +167,8 @@ foreach ($seenArks as $id => $ark) {
             }
         }
     }
-    
-    // Update the constellation in the database 
+
+    // Update the constellation in the database
     try {
         // Write the constellation to the DB
         $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations");
@@ -203,6 +203,7 @@ function indexESearch($written) {
                     'entityType' => $written->getEntityType()->getID(),
                     'arkID' => $written->getArk(),
                     'id' => $written->getID(),
+                    'degree' => count($written->getRelations()),
                     'timestamp' => date("c")
                 ]
             ];

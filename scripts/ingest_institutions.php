@@ -6,7 +6,7 @@
  * Given a list of ARKs as input, this script converts them to Constellation objects, and also
  * gets the list of all their Constellation Relation links and imports them.  Then, it sets up the original set's
  * Constellation Relations appropriately inside snac.
- * 
+ *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -46,7 +46,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->build();
 }
 
-// Create new parser 
+// Create new parser
 $e = new \snac\util\EACCPFParser();
 $e->setConstellationOperation("insert");
 printf("Done creating new parser.\n");
@@ -113,6 +113,7 @@ function indexESearch($written) {
                     'entityType' => $written->getEntityType()->getID(),
                     'arkID' => $written->getArk(),
                     'id' => $written->getID(),
+                    'degree' => count($written->getRelations()),
                     'timestamp' => date("c")
                 ]
             ];

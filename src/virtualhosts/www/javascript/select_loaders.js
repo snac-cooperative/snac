@@ -18,7 +18,10 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                 selectItem.select2({
                     ajax: {
                         url: function() {
-                            return "?command=vocabulary&type="+type+"&entity_type="+$("#entityType").val();
+                            var query = "?command=vocabulary&type="+type+"&id=";
+                                query += $("#constellationid").val()+"&version="+$("#version").val();
+                                query += "&entityType="+$("#entityType").val();
+                                return query;
                         },
                         dataType: 'json',
                         delay: 250,

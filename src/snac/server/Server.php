@@ -52,7 +52,7 @@ class Server implements \snac\interfaces\ServerInterface {
      * @var int Timing information (ms)
      */
     private $timing = 0;
-    
+
     /**
      * @var \Monolog\Logger $logger the logger for this server
      */
@@ -73,8 +73,8 @@ class Server implements \snac\interfaces\ServerInterface {
         $this->response = array(
                 "request" => $this->input,
         );
-        
-        
+
+
         // create a log channel
         $this->logger = new \Monolog\Logger('Server');
         $this->logger->pushHandler($log);
@@ -89,98 +89,98 @@ class Server implements \snac\interfaces\ServerInterface {
 
         $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
         // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
-        
+
         if ($this->input == null || empty($this->input)) {
             throw new \snac\exceptions\SNACInputException("No input given");
         }
-        
-        
+
+
         $db = new \snac\server\database\DBUtil();
-        
+
         // First, authenticate the user (every time to ensure they are still valid), if user information has been supplied
-        $user = null;        
+        $user = null;
         if (isset($this->input["user"])) {
             $user = $this->input["user"];
         }
-        
+
 
         $executor = new \snac\server\ServerExecutor($user);
-        
+
         $this->logger->addDebug("Authenticating User");
-        
+
         // Authentication happens at each query
         if ($user != null)
             $user = new \snac\data\User($user);
         if (!$executor->authenticateUser($user)) {
             throw new \snac\exceptions\SNACUserException("User is not authorized");
         }
-        
+
 
         $this->logger->addDebug("Switching on command");
-        
-        if (!isset($this->input["command"])) {                
+
+        if (!isset($this->input["command"])) {
             throw new \snac\exceptions\SNACUnknownCommandException("No command given");
-            
-            
+
+
         }
 
         // Decide what to do based on the command given to the server
         switch ($this->input["command"]) {
 
-
             case "vocabulary":
                 $this->response = $executor->searchVocabulary($this->input);
                 break;
-                
+
             case "reconcile":
+                $this->response = $executor->reconcileConstellation($this->input);
                 break;
-                
+
             case "start_session":
                 $this->response = $executor->startSession();
                 break;
-            
+
             case "end_session":
                 $this->response = $executor->endSession();
-                
+
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;
-                
+
             case "update_user_information":
                 $this->response = $executor->updateUserInformation($this->input);
                 break;
-                
+
             case "insert_constellation":
                 $this->response = $executor->writeConstellation($this->input);
                 break;
             case "update_constellation":
                 $this->response = $executor->writeConstellation($this->input);
                 break;
-            
+
             case "unlock_constellation":
                 $this->response = $executor->unlockConstellation($this->input);
                 break;
-                
+
             case "publish_constellation":
                 $this->response = $executor->publishConstellation($this->input);
                 break;
-                
+
             case "delete_constellation":
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
-                
+
             case "recently_published":
                 $this->response = $executor->getRecentlyPublished();
                 break;
-                
+
             case "read":
                 $this->response = $executor->readConstellation($this->input);
                 break;
-                
+
             case "edit":
                 $this->response = $executor->editConstellation($this->input);
                 break;
-                
+
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
 

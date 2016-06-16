@@ -152,11 +152,11 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             {{X.snaccontrolmetadata.display}}
                                         </label>
                                         <div class="col-xs-8">
-                                            {{ widgets.scmButton(X, 'constellation', '1') }}
+                                            {{ widgets.scmButton(X, true, 'constellation', '1') }}
                                         </div>
                                     </div>
                                 </div>
-                                {{ widgets.scmModal(X, 'constellation', '1', 'Basic Info', "Constellation", data) }}
+                                {{ widgets.scmModal(X, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
                             </div>
                         </div>
 
@@ -171,7 +171,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, true, nameEntry, i) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -194,7 +194,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for gender in data.genders %}
-                            {{ components.displayGender(X, gender, i) }}
+                            {{ components.displayGender(X, true, gender, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -215,7 +215,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for exist in data.dates %}
-                            {{ components.displayExist(X, exist, i) }}
+                            {{ components.displayExist(X, true, exist, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -235,7 +235,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% else %}
                                     <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value="insert"/>
                                 {% endif %}
-                                <p><textarea id="biogHist_text_0" name="biogHist_text_0" style="height: 450px; width: 100%;"  readonly>{{ data.biogHists[0].text|e }}</textarea></p>
+                                <div id="textarea_biogHist_text_0">
+                                    <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
+                                    <div class="form-control-static">{{ data.biogHists[0].text|raw }}</div>
+                                </div>
 
 
                                 <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
@@ -268,8 +271,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 </div>
                             </div>
 
-                            {{ widgets.scmModal(X, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
-                            {{ widgets.optionsList(X, "biogHist", i) }}
+                            {{ widgets.scmModal(X, true, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
+                            {{ widgets.optionsList(X, true, "biogHist", i) }}
                         </div>
 
                     </div>
@@ -286,7 +289,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, other, i) }}
+                            {{ components.displaySameAs(X, true, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
@@ -305,7 +308,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                            {{ components.displaySource(X, source, i) }}
+                            {{ components.displaySource(X, true, source, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_source_i' style='display:none;'>{{i}}</span>
@@ -324,7 +327,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, relation, i) }}
+                            {{ components.displayResourceRelation(X, true, relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
@@ -342,7 +345,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, relation, i) }}
+                            {{ components.displayConstellationRelation(X, true, relation, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
@@ -361,7 +364,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, language, i) }}
+                            {{ components.displayLanguageUsed(X, true, language, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_language_i' style='display:none;'>{{i}}</span>
@@ -380,7 +383,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, subject, i) }}
+                            {{ components.displaySubject(X, true, subject, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_subject_i' style='display:none;'>{{i}}</span>
@@ -399,7 +402,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, nationality, i) }}
+                                {{ components.displayNationality(X, true, nationality, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_nationality_i' style='display:none;'>{{i}}</span>
@@ -417,7 +420,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                                {{ components.displayFunction(X, function, i) }}
+                                {{ components.displayFunction(X, true, function, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_function_i' style='display:none;'>{{i}}</span>
@@ -435,7 +438,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, occupation, i) }}
+                                {{ components.displayOccupation(X, true, occupation, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_occupation_i' style='display:none;'>{{i}}</span>
@@ -453,7 +456,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, legalStatus, i) }}
+                                {{ components.displayLegalStatus(X, true, legalStatus, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
@@ -471,7 +474,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                                {{ components.displayPlace(X, place, i) }}
+                                {{ components.displayPlace(X, true, place, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_place_i' style='display:none;'>{{i}}</span>
@@ -489,7 +492,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, conventionDeclaration, i) }}
+                                {{ components.displayConventionDeclaration(X, true, conventionDeclaration, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
@@ -506,7 +509,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, generalContext, i) }}
+                                {{ components.displayGeneralContext(X, true, generalContext, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
@@ -523,7 +526,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, structureOrGenealogy, i) }}
+                                {{ components.displayStructureOrGenealogy(X, true, structureOrGenealogy, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
@@ -540,7 +543,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, mandate, i) }}
+                                {{ components.displayMandate(X, true, mandate, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_mandate_i' style='display:none;'>{{i}}</span>
@@ -660,76 +663,76 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <div id="hidden_field_options" style="display:none">
     <div id="gender_template" style="display:none">
-    {{ components.displayGender(X, null, 'ZZ') }}
+    {{ components.displayGender(X, true, null, 'ZZ') }}
     </div>
     <div id="nameEntry_template" style="display:none">
-    {{ components.displayNameEntry(X, null, 'ZZ') }}
+    {{ components.displayNameEntry(X, true, null, 'ZZ') }}
     </div>
     <div id="sameAs_template" style="display:none">
-    {{ components.displaySameAs(X, null, 'ZZ') }}
+    {{ components.displaySameAs(X, true, null, 'ZZ') }}
     </div>
     <div id="source_template" style="display:none">
-    {{ components.displaySource(X, null, 'ZZ') }}
+    {{ components.displaySource(X, true, null, 'ZZ') }}
     </div>
     <div id="resourceRelation_template" style="display:none">
-    {{ components.displayResourceRelation(X, null, 'ZZ') }}
+    {{ components.displayResourceRelation(X, true, null, 'ZZ') }}
     </div>
     <div id="constellationRelation_template" style="display:none">
-    {{ components.displayConstellationRelation(X, null, 'ZZ') }}
+    {{ components.displayConstellationRelation(X, true, null, 'ZZ') }}
     </div>
     <div id="language_template" style="display:none">
-    {{ components.displayLanguageUsed(X, null, 'ZZ') }}
+    {{ components.displayLanguageUsed(X, true, null, 'ZZ') }}
     </div>
     <div id="subject_template" style="display:none">
-    {{ components.displaySubject(X, null, 'ZZ') }}
+    {{ components.displaySubject(X, true, null, 'ZZ') }}
     </div>
     <div id="nationality_template" style="display:none">
-    {{ components.displayNationality(X, null, 'ZZ') }}
+    {{ components.displayNationality(X, true, null, 'ZZ') }}
     </div>
     <div id="function_template" style="display:none">
-    {{ components.displayFunction(X, null, 'ZZ') }}
+    {{ components.displayFunction(X, true, null, 'ZZ') }}
     </div>
     <div id="occupation_template" style="display:none">
-    {{ components.displayOccupation(X, null, 'ZZ') }}
+    {{ components.displayOccupation(X, true, null, 'ZZ') }}
     </div>
     <div id="legalStatus_template" style="display:none">
-    {{ components.displayLegalStatus(X, null, 'ZZ') }}
+    {{ components.displayLegalStatus(X, true, null, 'ZZ') }}
     </div>
     <div id="place_template" style="display:none">
-    {{ components.displayPlace(X, null, 'ZZ') }}
+    {{ components.displayPlace(X, true, null, 'ZZ') }}
     </div>
     <div id="conventionDeclaration_template" style="display:none">
-    {{ components.displayConventionDeclaration(X, null, 'ZZ') }}
+    {{ components.displayConventionDeclaration(X, true, null, 'ZZ') }}
     </div>
     <div id="generalContext_template" style="display:none">
-    {{ components.displayGeneralContext(X, null, 'ZZ') }}
+    {{ components.displayGeneralContext(X, true, null, 'ZZ') }}
     </div>
     <div id="structureOrGenealogy_template" style="display:none">
-    {{ components.displayStructureOrGenealogy(X, null, 'ZZ') }}
+    {{ components.displayStructureOrGenealogy(X, true, null, 'ZZ') }}
     </div>
     <div id="mandate_template" style="display:none">
-    {{ components.displayMandate(X, null, 'ZZ') }}
+    {{ components.displayMandate(X, true, null, 'ZZ') }}
     </div>
     <div id="exist_date_template" style="display:none">
-    {{ dates.dateEntry(X, 'Exist Dates', 'exist', null, 'ZZ', false) }}
+    {{ dates.dateEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
     </div>
     <div id="exist_dateRange_template" style="display:none">
-    {{ dates.dateRangeEntry(X, 'Exist Dates', 'exist', null, 'ZZ', false) }}
+    {{ dates.dateRangeEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
     </div>
     <div id="sub_date_template" style="display:none">
-    {{ dates.dateEntry(X, 'Date', 'SHORT_date_XX', null, 'ZZ', true) }}
+    {{ dates.dateEntry(X, true, 'Date', 'SHORT_date_XX', null, 'ZZ', true) }}
     </div>
     <div id="sub_dateRange_template" style="display:none">
-    {{ dates.dateRangeEntry(X, 'Date Range', 'SHORT_date_XX', null, 'ZZ', true) }}
+    {{ dates.dateRangeEntry(X, true, 'Date Range', 'SHORT_date_XX', null, 'ZZ', true) }}
     </div>
     <div id="scm_template" style="display:none">
-    {{ components.displaySCM(X, 'SHORT', 'ZZ', 'YY', null) }}
+    {{ components.displaySCM(X, true, 'SHORT', 'ZZ', 'YY', null) }}
     </div>
     <div id="component_template" style="display:none">
-    {{ components.displayComponent(X, null, 'ZZ', 'YY') }}
+    {{ components.displayComponent(X, true, null, 'ZZ', 'YY') }}
     </div>
     <div id="contributor_template" style="display:none">
-    {{ components.displayContributor(X, null, 'ZZ', 'YY') }}
+    {{ components.displayContributor(X, true, null, 'ZZ', 'YY') }}
     </div>
     </div>
 

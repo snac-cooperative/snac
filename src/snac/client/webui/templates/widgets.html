@@ -1,25 +1,29 @@
-{% macro optionsListWithDate(X, short, i) %}
+{% macro optionsListWithDate(X, inEdit, short, i) %}
 <div class="col-xs-2">
     <div class="list-group">
         <a href="#" id="{{short}}_datebutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_date_modal_{{i}}" onClick="event.preventDefault();"><span class="fa fa-calendar" aria-hidden="true"></span> {{ X.date.display }}</a>
         <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
-        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        {% if inEdit %}
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}
 
-{% macro optionsList(X, short, i) %}
+{% macro optionsList(X, inEdit, short, i) %}
 <div class="col-xs-2">
     <div class="list-group">
         <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
-        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        {% if inEdit %}
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        {% endif %}
     </div>
 </div>
 {% endmacro %}
 
-{% macro displayURI(X, uri) %}
+{% macro displayURI(X, inEdit, uri) %}
     {% if uri %}
         <p class="form-control-static">uri</p>
     {% else %}
@@ -27,7 +31,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro scmButton(X, short, i) %}
+{% macro scmButton(X, inEdit, short, i) %}
 <!--<div class="col-xs-2">-->
     <button type="button" class="btn btn-default" data-toggle="modal"
     data-target="#{{short}}_scm_modal_{{i}}">
@@ -36,33 +40,37 @@
 <!--</div>-->
 {% endmacro %}
 
-{% macro scmOptionsList(X, short, i, j) %}
-<div class="col-xs-2">
-    <div class="list-group text-center">
-        <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span></a>
-        <a href="#" id="scm_{{short}}_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span></a>
+{% macro scmOptionsList(X, inEdit, short, i, j) %}
+    {% if inEdit %}
+    <div class="col-xs-2">
+        <div class="list-group text-center">
+            <a href="#" id="scm_{{short}}_editbutton_{{j}}_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span class="glyphicon glyphicon-pencil"></span></a>
+            <a href="#" id="scm_{{short}}_deletebutton_{{j}}_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="glyphicon glyphicon-trash"></span></a>
+        </div>
     </div>
-</div>
+    {% endif %}
 {% endmacro %}
 
-{% macro subOptionsList(X, short, i) %}
-<div class="col-xs-2">
-    <div class="list-group">
-        <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-        <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+{% macro subOptionsList(X, inEdit, short, i) %}
+    {% if inEdit %}
+    <div class="col-xs-2">
+        <div class="list-group">
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        </div>
     </div>
-</div>
+    {% endif %}
 {% endmacro %}
 
-{% macro scmModal(X, short, i, title, type, data) %}
-    {% import _self as widgets %}   
+{% macro scmModal(X, inEdit, short, i, title, type, data) %}
+    {% import _self as widgets %}
     {% import 'edit_components.html' as components %}
 <div class="modal fade scm-modal" id="{{short}}_scm_modal_{{i}}" tabindex="-1"
 	role="dialog" aria-labelledby="{{short}}_scm_modal_label_{{i}}">
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="pull-right btn btn-primary" 
+				<button type="button" class="pull-right btn btn-primary"
                     data-dismiss="modal" aria-label-"Close">Done</button>
 				<h4 class="modal-title" id="scm_{{short}}_modal_label_{{i}}">SNAC Control Metadata</h4>
 			</div>
@@ -72,20 +80,22 @@
 					<li>{{title}}</li>
 				</ol>
 				<div class="col-xs-12">
+                    {% if inEdit %}
 				    <div class="text-center form-group" id="add_scm_{{short}}_{{i}}_div">
 					   <button class="btn btn-success" onClick="return addSCMEntry('{{short}}', {{i}});">
 						  <span class="glyphicon glyphicon-plus"></span> Add New SNAC Control Metadata
 					   </button>
 				    </div>
+                    {% endif %}
 
                     {% set j = 0 %}
                     {% for scm in data.snacControlMetadata %}
-                    
-                        {{ components.displaySCM(X, short, i, j, scm) }}
- 
+
+                        {{ components.displaySCM(X, inEdit, short, i, j, scm) }}
+
                     {% set j = j + 1 %}
                     {% endfor %}
-                    
+
                     <span id='next_scm_{{short}}_{{i}}_j' style='display:none;'>{{j}}</span>
 
 
@@ -101,7 +111,7 @@
 </div>
 {% endmacro %}
 
-{% macro dateModal(X, short, i, title, type, data) %}
+{% macro dateModal(X, inEdit, short, i, title, type, data) %}
     {% import _self as widgets %}
     {% import 'date_entry.html' as dates %}
     {% import 'edit_components.html' as components %}
@@ -110,7 +120,7 @@
 	<div class="modal-dialog" role="document">
 		<div class="modal-content">
 			<div class="modal-header">
-				<button type="button" class="pull-right btn btn-primary" 
+				<button type="button" class="pull-right btn btn-primary"
                     data-dismiss="modal" aria-label-"Close">Done</button>
 				<h4 class="modal-title" id="date_{{short}}_modal_label_{{i}}">Dates</h4>
 			</div>
@@ -120,6 +130,7 @@
 					<li>{{title}}</li>
 				</ol>
 				<div class="col-xs-12">
+                    {% if inEdit %}
                     <div class="form-group" id="add_date_{{short}}_{{i}}_div">
                         <div class="col-xs-12 text-center">
                             <button class="btn btn-success" onClick="return addDateEntry('{{short}}', {{i}});">
@@ -130,19 +141,20 @@
                             </button>
                         </div>
                     </div>
+                    {% endif %}
 
                     {% set j = 0 %}
                     {% for date in data.dates %}
-                    
+
                         {% if date.isRange %}
-                            {{ dates.dateRangeEntry(X, 'Date', (short ~ '_date_' ~ j), date, i, true) }}
+                            {{ dates.dateRangeEntry(X, inEdit, 'Date', (short ~ '_date_' ~ j), date, i, true) }}
                         {% else %}
-                            {{ dates.dateEntry(X, 'Date Range', (short ~ '_date_' ~ j), date, i, true) }}
+                            {{ dates.dateEntry(X, inEdit, 'Date Range', (short ~ '_date_' ~ j), date, i, true) }}
                         {% endif %}
- 
+
                     {% set j = j + 1 %}
                     {% endfor %}
-                    
+
                     <span id='next_date_{{short}}_{{i}}_j' style='display:none;'>{{j}}</span>
 
 

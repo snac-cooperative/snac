@@ -15,7 +15,7 @@ var undoSet = new Array();
  */
 function displayErrorMessage(err, data) {
     var errorMsg = "";
-    if (typeof err === 'undefined') 
+    if (typeof err === 'undefined')
         errorMsg = "an unknown problem occurred";
     else if ((typeof err) == "string")
         errorMsg = err;
@@ -168,7 +168,7 @@ function undoSCMEdit(short, i, j) {
  * @param string|int idStr The index within the edit page of the object.
  */
 function textToSelect(shortName, idStr) {
-    $("div[id^='select_"+shortName+"']").each(function() {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='select_"+shortName+"']").each(function() {
         var cont = $(this);
         if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
             // remove the short name and "select_" from the string we're parsing
@@ -204,37 +204,146 @@ function textToSelect(shortName, idStr) {
     });
 }
 
-/**
- * Change source list input divs to selects
- *
- * Changes all div's with id "selectsource_" for a given data object (shortName, idStr) from a list of
- * inputs defining the parameters to a select (view mode) to a select box (edit mode).  It then
- * calls the select2 function to replace the select with an AJAX-compatible select.
- *
- * This function handles CONSTELLATION SOURCE OBJECT select boxes ONLY.
- *
- * Note: idStr must not have the "_" pre-appended
- *
- * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
- * @param string|int idStr The index within the edit page of the object.
- */
-function sourceTextToSelect(shortName, idStr) {
-
-    $("div[id^='selectsource_"+shortName+"']").each(function() {
+function textToInput(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='text_"+shortName+"']").each(function() {
         var cont = $(this);
-        if(cont.attr('id').endsWith(idStr) && !cont.attr('id').endsWith("ZZ")) {
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
             // remove the short name and "select_" from the string we're parsing
-            var divStr = cont.attr('id').replace("selectsource_", "").replace(shortName + "_", "");
+            var divStr = cont.attr('id').replace(/^text_/, "").replace(shortName + "_", "");
             // remove the idstr to receive the name of this element
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
-            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
-            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
-            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
-                    "</select>");
-            scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), idStr);
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var size = 0;
+            var sizeStr = "";
+            if ($("#"+shortName+"_"+name+"_size_"+idStr).exists()) {
+                size = parseInt($("#"+shortName+"_"+name+"_size_"+idStr).val());
+                sizeStr = " size='" + size +"' ";
+            }
+            var placeholder = "";
+            if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
+                placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
+            }
+
+            var onKeyUp = "";
+            if ($("#"+shortName+"_"+name+"_onKeyUp_"+idStr).exists()) {
+                onKeyUp = $("#"+shortName+"_"+name+"_onKeyUp_"+idStr).val();
+            }
+            var onKeyUpStr = "";
+            if (onKeyUp != "") {
+                onKeyUpStr = " onKeyUp='"+onKeyUp+"' ";
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' type='text' value=\""+ value +"\""+sizeStr + onKeyUpStr +
+                    "placeholder=\""+placeholder+"\"/>";
+            if (size != 0) {
+                    html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_size_"+idStr+"\" " +
+                        "value=\""+size+"\"/>";
+            }
+            if (placeholder != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
+                "value=\""+placeholder+"\"/>";
+            }
+            if (onKeyUp != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_onKeyUp_"+idStr+"\" " +
+                "value=\""+onKeyUp+"\"/>";
+            }
+
+            cont.html(html);
+        }
+    });
+
+
+}
+
+
+function inputToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='text_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^text_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var size = 0;
+            if ($("#"+shortName+"_"+name+"_size_"+idStr).exists()) {
+                size = parseInt($("#"+shortName+"_"+name+"_size_"+idStr).val());
+            }
+            var placeholder = "";
+            if ($("#"+shortName+"_"+name+"_placeholder_"+idStr).exists()) {
+                placeholder = $("#"+shortName+"_"+name+"_placeholder_"+idStr).val();
+            }
+            var onKeyUp = "";
+            if ($("#"+shortName+"_"+name+"_onKeyUp_"+idStr).exists()) {
+                onKeyUp = $("#"+shortName+"_"+name+"_onKeyUp_"+idStr).val();
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' type='hidden' value=\""+ value +"\"/>";
+            html += "<p class='form-control-static'>" + value + "</p>";
+            if (size != 0) {
+                    html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_size_"+idStr+"\" " +
+                        "value=\""+size+"\"/>";
+            }
+            if (placeholder != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholder_"+idStr+"\" " +
+                "value=\""+placeholder+"\"/>";
+            }
+            if (onKeyUp != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_onKeyUp_"+idStr+"\" " +
+                "value=\""+onKeyUp+"\"/>";
+            }
+
+            cont.html(html);
+        }
+    });
+
+
+}
+
+
+
+function textToTextArea(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='textarea_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^textarea_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            var html = "<textarea id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' style='width: 100%;'>"+ value +"</textarea>";
+
+            cont.html(html);
+        }
+    });
+}
+
+
+function textAreaToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='textarea_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^textarea_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+
+            //var html = "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+            //        idStr+"' value=\""+ value +"\"/>";
+            var html = "<textarea style='display:none;' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"'>"+ value +"</textarea>";
+            html += "<div class='form-control-static'>" + value + "</div>";
+
+            cont.html(html);
         }
     });
 }
@@ -332,19 +441,11 @@ function subMakeEditable(short, i) {
     undoSet[short + "-" + i] = $("#"+short+"_datapart_" + i).clone();
 
 
+    textToInput(short, i);
+    textToTextArea(short, i);
+
     var idstr = "_" + i;
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.removeAttr("readonly");
-        }
-    });
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.removeAttr("readonly");
-        }
-    });
+
     $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
@@ -378,7 +479,6 @@ function subMakeEditable(short, i) {
 
     if (!sawSelect) {
         textToSelect(short, i);
-        sourceTextToSelect(short, i);
         textToDate(short, i);
     }
 
@@ -397,25 +497,22 @@ function subMakeEditable(short, i) {
 /**
  * Make a data object uneditable
  *
- * Make the GUI pane for a given constellation object (short, i) un-editable.  Sets up the edit and delete
- * buttons for first-order data objects.
+ * Make each object in the GUI page for the given piece uneditable by turning them back to text.  Also
+ * takes the color away from the pane and removes the operation flag.
  *
  * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
  * @param string|int i     The index within the edit page of the object.
  * @return boolean         False to play nice with the browser
  */
-function makeUneditable(short, i) {
+function subMakeUneditable(shortName, i) {
 
 	// Make inputs read-only
     var idstr = "_" + i;
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.attr("readonly", "true");
-        }
-    });
+
+
+
     // Remove CodeMirror editors
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " textarea[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr)
             && !obj.attr('id').endsWith("ZZ")
@@ -429,22 +526,19 @@ function makeUneditable(short, i) {
         }
     });
     // Disable buttons
-    $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " button[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("disabled", "true").addClass("snac-hidden");
         }
     });
-    // Make textareas read-only
-    $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
-            obj.attr("readonly", "true");
-        }
-    });
+
+
+    inputToText(shortName, i);
+    textAreaToText(shortName, i);
     // Check for a select box
     var sawSelect = false;
-    $("#"+short+"_datapart_" + i + " select[id^='"+short+"_']").each(function() {
+    $("#"+shortName+"_datapart_" + i + " select[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             sawSelect = true;
@@ -452,33 +546,53 @@ function makeUneditable(short, i) {
     });
     // If a select box was seen, undo it
     if (sawSelect) {
-        selectToText(short, i);
-        dateToText(short,i);
+        selectToText(shortName, i);
+        dateToText(shortName,i);
     }
 
-    // restore the edit button
-    $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
-    $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
-    	makeEditable(short, i);
-    });
-
-    // restore the delete button
-    $("#" + short + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
-    $("#" + short + "_deletebutton_" + i).off('click').on("click", function() {
-       setDeleted(short, i);
-    });
-
     // Clear the operation flags
-    //$("#" + short + "_operation_" + i).val("");
-    $("#"+short+"_datapart_" + i + " input[id^='"+short+"_']").each(function() {
+    //$("#" + shortName + "_operation_" + i).val("");
+    $("#"+shortName+"_datapart_" + i + " input[id^='"+shortName+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith("_operation" + idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.val("");
         }
     });
 
-	$("#" + short + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+	$("#" + shortName + "_panel_" + i).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
+
+
+
+}
+
+/**
+ * Make a data object uneditable
+ *
+ * Make the GUI pane for a given constellation object (short, i) un-editable.  Sets up the edit and delete
+ * buttons for first-order data objects, and calls the function to turn the elements back to text.
+ *
+ * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
+ * @param string|int i     The index within the edit page of the object.
+ * @return boolean         False to play nice with the browser
+ */
+function makeUneditable(shortName, i) {
+	// Make inputs read-only
+    var idstr = "_" + i;
+
+    subMakeUneditable(shortName, i);
+
+    // restore the edit button
+    $("#" + shortName + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#" + shortName + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
+    $("#" + shortName + "_editbutton_" + i).off('click').on("click", function() {
+    	makeEditable(shortName, i);
+    });
+
+    // restore the delete button
+    $("#" + shortName + "_deletebutton_" + i).addClass("list-group-item-danger").removeClass("disabled");
+    $("#" + shortName + "_deletebutton_" + i).off('click').on("click", function() {
+       setDeleted(shortName, i);
+    });
 
     return false;
 }
@@ -494,30 +608,30 @@ function makeUneditable(short, i) {
  * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
  * @return boolean          False to play nice with the browser
  */
-function makeSCMEditable(short, i, j) {
+function makeSCMEditable(shortName, i, j) {
 	var id = j + "_" + i;
-    var scmshort = "scm_" + short;
+    var scmShortName = "scm_" + shortName;
 
     // No editing if it's already in edit mode
-    if ($("#" + scmshort + "_operation_" + id).val() == "update")
+    if ($("#" + scmShortName + "_operation_" + id).val() == "update")
         return false;
     // If it's deleted, then you better undelete it first
-    if ($("#" + scmshort + "_operation_" + id).val() == "delete")
-        setSCMDeleted(short, i, j);
+    if ($("#" + scmShortName + "_operation_" + id).val() == "delete")
+        setSCMDeleted(shortName, i, j);
 
-    $("#" + scmshort + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
-    $("#" + scmshort + "_editbutton_" + id).html("<span class=\"fa fa-undo\"></span>");
-    $("#" + scmshort + "_editbutton_" + id).off('click').on("click", function() {
-    	undoSCMEdit(short, i, j);
+    $("#" + scmShortName + "_editbutton_" + id).removeClass("list-group-item-info").addClass("list-group-item-warning");
+    $("#" + scmShortName + "_editbutton_" + id).html("<span class=\"fa fa-undo\"></span>");
+    $("#" + scmShortName + "_editbutton_" + id).off('click').on("click", function() {
+    	undoSCMEdit(shortName, i, j);
     });
-    $("#" + scmshort + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
-    $("#" + scmshort + "_deletebutton_" + id).off('click').on("click", function() {
+    $("#" + scmShortName + "_deletebutton_" + id).removeClass("list-group-item-danger").addClass("disabled");
+    $("#" + scmShortName + "_deletebutton_" + id).off('click').on("click", function() {
         return false;
     });
 
-    $("#" + scmshort + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
+    $("#" + scmShortName + "_panel_" + id).removeClass("panel-default").addClass("alert-info").addClass("edited-component");
 
-    return subMakeEditable(scmshort, id);
+    return subMakeEditable(scmShortName, id);
 }
 
 /**
@@ -531,91 +645,26 @@ function makeSCMEditable(short, i, j) {
  * @param string|int j      The index within the data object SCM list on the edit page of the SCM object.
  * @return boolean         False to play nice with the browser
  */
-function makeSCMUneditable(short, i, j) {
+function makeSCMUneditable(shortName, i, j) {
 
 	// Make inputs read-only
-    var idstr = "_" + j + "_" + i;
-    $("input[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.attr("readonly", "true");
-        }
-    });
-    // Make textareas read-only
-    $("textarea[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            obj.attr("readonly", "true");
-        }
-    });
-    // Check for a select box
-    var sawSelect = false;
-    $("select[id^='scm_"+short+"_']").each(function() {
-        var obj = $(this);
-        if(obj.attr('id').indexOf(idstr) != -1 && obj.attr('id').indexOf("ZZ") == -1) {
-            sawSelect = true;
-        }
-    });
-    // If a select box was seen, undo it
-    if (sawSelect) {
-	    $("div[id^='select_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
-	            var vocabtype = $("#scm_"+short+"_"+name+"_vocabtype"+idstr).val();
-	            var minlength = $("#scm_"+short+"_"+name+"_minlength"+idstr).val();
+    var idstr = j + "_" + i;
 
-	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" " +
-                        	"name=\"scm_"+short+"_"+name+"_vocabtype"+idstr+"\" value=\""+vocabtype+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" " +
-                        	"name=\"scm_"+short+"_"+name+"_minlength"+idstr+"\" value=\""+minlength+"\"/>" +
-                        	"<p class=\"form-control-static\">"+term+"</p>");
-
-	        }
-	    });
-	    $("div[id^='selectsource_scm_"+short+"']").each(function() {
-	        var cont = $(this);
-	        if(cont.attr('id').indexOf(idstr) != -1 && cont.attr('id').indexOf("ZZ") == -1) {
-	            var split = cont.attr('id').split("_");
-	            var name = split[3];
-	            var id = $("#scm_"+short+"_"+name+"_id"+idstr).val();
-	            var term = $("#scm_"+short+"_"+name+"_id"+idstr+ " option:selected").text();
-
-	            cont.html("<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_id"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_id"+idstr+"\" value=\""+id+"\"/>" +
-                        "<input type=\"hidden\" id=\"scm_"+short+"_"+name+"_term"+idstr+"\" " +
-                    	"name=\"scm_"+short+"_"+name+"_term"+idstr+"\" value=\""+term+"\"/>" +
-                        	"<p class=\"form-control-static\">"+term+"</p>");
-
-	        }
-	    });
-    }
-
+    subMakeUneditable('scm_'+shortName, idstr);
+    
     // restore the edit button
-    $("#scm_" + short + "_editbutton" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#scm_" + short + "_editbutton" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
-    $("#scm_" + short + "_editbutton" + idstr).off('click').on("click", function() {
-    	makeSCMEditable(short, i, j);
+    $("#scm_" + shortName + "_editbutton_" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
+    $("#scm_" + shortName + "_editbutton_" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
+    $("#scm_" + shortName + "_editbutton_" + idstr).off('click').on("click", function() {
+    	makeSCMEditable(shortName, i, j);
     });
 
     // restore the delete button
-    $("#scm_" + short + "_deletebutton" + idstr).addClass("list-group-item-danger").removeClass("disabled");
-    $("#scm_" + short + "_deletebutton" + idstr).off('click').on("click", function() {
-       setSCMDeleted(short, i, j);
+    $("#scm_" + shortName + "_deletebutton_" + idstr).addClass("list-group-item-danger").removeClass("disabled");
+    $("#scm_" + shortName + "_deletebutton_" + idstr).off('click').on("click", function() {
+       setSCMDeleted(shortName, i, j);
     });
 
-
-    // Clear the operation flag
-    $("#scm_" + short + "_operation_" + j + "_" + i).val("");
-
-    $("#scm_" + short + "_panel" + idstr).addClass("panel-default").removeClass("alert-info").removeClass("edited-component");
     return false;
 }
 
@@ -793,7 +842,7 @@ function turnOnTooltips(shortName, i) {
     $(function () {
           $('#'+shortName+'_panel_'+ i +' [data-toggle="tooltip"]').tooltip()
     })
-    
+
     // Load popovers
     $(function () {
           $('#'+shortName+'_panel_'+ i +' [data-toggle="popover"]').popover({
@@ -857,9 +906,16 @@ function newNameEntryComponent(i) {
 
 function updateNameEntryHeading(i) {
     var text = "";
-    for (var j = 0; j < parseInt($('#nameEntry_component_next_j_'+i).text()); j++) {
-         text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
-    }
+
+    $("#nameEntry_panel_"+i+" div[id^='nameEntry_component_']").each(function() {
+        var obj = $(this);
+        if (!obj.hasClass("deleted-component") && obj.attr('id').endsWith("_panel_" + i)
+                && !obj.attr('id').endsWith("ZZ")) {
+            var j = obj.attr('id').replace("nameEntry_component_", "").replace("_panel_"+i, "");
+            text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
+        }
+    });
+
     $("#nameEntry_heading_"+i).text(text.trim());
     $("#nameEntry_original_"+i).val(text.trim());
 }
@@ -903,19 +959,19 @@ function parseDate(dateString) {
           year : parseInt(pieces[0]),
           month : parseInt(pieces[1]),
           day : parseInt(pieces[2])
-      }; 
+      };
    else if (pieces.length == 2)
       return {
           year : parseInt(pieces[0]),
           month : parseInt(pieces[1]),
           day : ''
-      }; 
+      };
    else if (pieces.length == 1 && pieces[0] != '')
       return {
           year : parseInt(pieces[0]),
           month : '',
           day : ''
-      }; 
+      };
    else return {
        year : '', month : '', day : ''
    }
@@ -946,7 +1002,7 @@ function textToDate(shortName, idStr) {
 
             var dateParts = parseDate(dateStr);
 
-            var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>"; 
+            var html = "<input type='text' size='4' style='width:20%;display:inline;' placeholder='YYYY' id='"+shortName+"_"+name+"_year_"+idStr+"' class='form-control' value='"+dateParts.year+"'>";
             html += "<span class='form-control-static'> - </span>";
             html += "<select id='"+shortName+"_"+name+"_month_"+idStr+"' class='form-control' data-placeholder='Month' style='width: 57%; margin-bottom: 5px; display: inline-block;'>"+
                     "<option></option>";
@@ -963,8 +1019,8 @@ function textToDate(shortName, idStr) {
             });
             html += "<select> ";
             html += "<span class='form-control-static'> - </span>";
-            html += "<input type='text' style='width:14%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> "; 
-            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            html += "<input type='text' style='width:14%;display:inline;' size='2' placeholder='DD' id='"+shortName+"_"+name+"_day_"+idStr+"' class='form-control' value='"+dateParts.day+"'> ";
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>";
             cont.html(html);
 
             $("#"+shortName+"_"+name+"_month_"+idStr).select2({
@@ -995,7 +1051,7 @@ function pad(num, size) {
 }
 
 /**
- * Updates the standard date input field 
+ * Updates the standard date input field
  *
  * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
  * area, then this function will update the hidden standard date (YYYY-MM-DD) field with the
@@ -1015,11 +1071,11 @@ function updateDate(shortName, idStr) {
             // remove the idstr to receive the name of this element
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
-           
-            if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) { 
-                var year = $("#"+shortName+"_"+name+"_year_"+idStr).val(); 
-                var day = $("#"+shortName+"_"+name+"_day_"+idStr).val(); 
-                var month = $("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val(); 
+
+            if ($("#"+shortName+"_"+name+"_year_"+idStr).exists()) {
+                var year = $("#"+shortName+"_"+name+"_year_"+idStr).val();
+                var day = $("#"+shortName+"_"+name+"_day_"+idStr).val();
+                var month = $("#"+shortName+"_"+name+"_month_"+idStr+ " option:selected").val();
 
                 var dateStr = "";
                 if (year != "") {
@@ -1040,12 +1096,12 @@ function updateDate(shortName, idStr) {
 }
 
 /**
- * Return editable date area back to text 
+ * Return editable date area back to text
  *
  * If the date for the data object (shortName, idStr) has been turned into a 3-field edit
  * area, then this function will return the editable area back to the view mode text, replacing
  * the edit boxes with a paragraph containing the computed standard date string (YYYY-MM-DD).
- *  
+ *
  * Note: idStr must not have the "_" pre-appended
  *
  * @param string shortName The short name of the data object, such as "nameEntry" or "occupation"
@@ -1060,14 +1116,14 @@ function dateToText(shortName, idStr) {
             // remove the idstr to receive the name of this element
             var regex = new RegExp("\_"+idStr+"$", "g");
             var name = divStr.replace(regex, "");
-           
+
             updateDate(shortName, idStr);
 
-            
+
             var dateStr = $("#"+shortName+"_"+name+"_"+idStr).val();
 
             var html = "<p class='form-control-static'>"+dateStr+"</p>";
-            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>"; 
+            html += "<input type='hidden' id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+idStr+"' value='"+dateStr+"'>";
             cont.html(html);
 
         }
@@ -1081,6 +1137,11 @@ function dateToText(shortName, idStr) {
  */
 $(document).ready(function() {
 
+
+    // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
+    // to be true...
+    if ($('#operation').val() == 'insert')
+        somethingHasBeenEdited = true;
 
     // Turn on the edit buttons
     $("a[id*='editbutton']").each(function() {
@@ -1540,7 +1601,7 @@ $(document).ready(function() {
     $(function () {
           $('[data-toggle="tooltip"]').tooltip()
     })
-    
+
     // Load popovers
     $(function () {
           $('[data-toggle="popover"]').popover({

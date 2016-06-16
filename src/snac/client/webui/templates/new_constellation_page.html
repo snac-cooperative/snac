@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Editing: New Constellation</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<!--
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+-->
+
+<!-- Tiny MCE text editor
+<script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+<script>
+//tinymce.init(X, {selector:'#biogHist', plugins:'code', min_height: 300});
+</script>
+-->
+
+<!-- CodeMirror XML editor -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+<script src="javascript/select_loaders.js"></script>
+<script src="javascript/scripts.js"></script>
+<script src="javascript/relation_search.js"></script>
+
+<script>
+$.fn.modal.Constructor.prototype.enforceFocus = $.noop;
+
+/**
+ * Only load this script once the document is fully loaded
+ */
+$(document).ready(function() {
+
+    // make the first name entry editable
+    makeEditable("nameEntry", 0);
+});
+</script>
+<link rel="stylesheet" href="css/snac.css">
+
+</head>
+<body role="document">
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user) }}
+
+
+<div class="container snac" role="main">
+
+    <form class="form-horizontal" id="constellation_form" action="?command=new_edit" method="post">
+        <h1>New Constellation</h1>
+
+        <!-- Constellation Data -->
+        <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+        <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+        <input id="operation" name="operation" type="hidden" value="{{ data.operation }}"/>
+
+
+        <div class="row">
+            <div class="col-md-8">
+
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="active"><a href="#nameEntries" role="tab" data-toggle="tab">Basic Info</a></li>
+
+
+                </ul>
+
+                <div class="tab-content">
+
+                    <div class="tab-pane active" id="nameEntries">
+                        <h2>Basic Information</h2>
+
+                        <div class="well well-lg">
+                            <p><span style="font-weight: bold;">Instructions: </span> To create a new constellation, first
+                                enter the <em>Entity Type</em> and one <em>Name Entry</em> (required).  After that, we'll check
+                                to make sure that the constellation doesn't already exist in SNAC.  If you are sure at that point,
+                                we'll copy over your work here into the new constellation.</p>
+                        </div>
+
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Constellation Information</div>
+                            <div class="panel-body">
+                                <div class="col-xs-10">
+                                    <div class="form-group">
+                                        <label for="entityType" class="control-label col-xs-4" data-content="{{X.entitytype.tooltip}}" data-toggle="popover" data-placement="top">
+                                            {{X.entitytype.display}} <span style="color: #b40404">*</span>
+                                        </label>
+                                        <div class="col-xs-8">
+                                            <select id="entityType" name="entityType" class="form-control">
+                                                <option></option>
+                                                <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="panel panel-default">
+                        	<div class="panel-heading">Name Entries <span style="color: #b40404">*</span></div>
+                            <div class="panel-body" id="nameEntry_pane">
+
+                                {% set i = 0 %}
+                                {% for nameEntry in data.nameEntries %}
+                                    {{ components.displayNameEntry(X, true, nameEntry, i) }}
+                                {% set i = i + 1 %}
+                                {% endfor %}
+                                <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                    <!-- Right Column -->
+
+                    <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+                        <p>Saving Constellation...</p>
+                    </div><!-- end alert -->
+                    <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+                        <p>Successfully saved!</p>
+                    </div><!-- end alert -->
+                    <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+                        <p>An error occured while saving</p>
+                    </div><!-- end alert -->
+
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">User Actions</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>You may perform any of the following actions on this constellation.</p>
+                            <!--
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
+                            </div>
+                            -->
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-info" id="continue_and_reconcile"><span class="glyphicon glyphicon-floppy-disk"></span> Continue <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Attempt to create a constellation with this information" data-toggle="popover" data-placement="top"></span></a>
+                                <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not continue working on this constellation." data-toggle="popover" data-placement="top"></span></a>
+                            </div>
+
+                            <textarea id="savemessage" name="savemessage" class='panel panel-default panel-body' style='width: 100%' placeholder="You may write an optional save log message here..."></textarea>
+                        </div>
+                    </div>
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Identity Constellation Identifier(s)</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label for="ark" class="control-label col-xs-3" data-content="{{X.ark.tooltip}}" data-toggle="popover" data-placement="top">
+                                    {{ X.ark.display }}
+                                </label>
+                                <div class="col-xs-9">
+                                    <p class="form-control-static">New Constellation</p>
+                                </div>
+                                <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if debug %}
+                    <div class="panel panel-danger">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Debugging</h3>
+                        </div>
+                        <div class="panel-body">
+                            <p>The following are debugging options.</p>
+                            <div class="list-group">
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
+                                <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.constellationSource}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+                        <div class="modal-dialog" role="document" style="width:90%;">
+                            <div class="modal-content">
+                                <div class="modal-header primary">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <pre>{{debug.serverResponse}}
+                                    </pre>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </form>
+
+
+    <div id="hidden_field_options" style="display:none">
+    <div id="gender_template" style="display:none">
+    {{ components.displayGender(X, true, null, 'ZZ') }}
+    </div>
+    <div id="nameEntry_template" style="display:none">
+    {{ components.displayNameEntry(X, true, null, 'ZZ') }}
+    </div>
+    <div id="sameAs_template" style="display:none">
+    {{ components.displaySameAs(X, true, null, 'ZZ') }}
+    </div>
+    <div id="source_template" style="display:none">
+    {{ components.displaySource(X, true, null, 'ZZ') }}
+    </div>
+    <div id="resourceRelation_template" style="display:none">
+    {{ components.displayResourceRelation(X, true, null, 'ZZ') }}
+    </div>
+    <div id="constellationRelation_template" style="display:none">
+    {{ components.displayConstellationRelation(X, true, null, 'ZZ') }}
+    </div>
+    <div id="language_template" style="display:none">
+    {{ components.displayLanguageUsed(X, true, null, 'ZZ') }}
+    </div>
+    <div id="subject_template" style="display:none">
+    {{ components.displaySubject(X, true, null, 'ZZ') }}
+    </div>
+    <div id="nationality_template" style="display:none">
+    {{ components.displayNationality(X, true, null, 'ZZ') }}
+    </div>
+    <div id="function_template" style="display:none">
+    {{ components.displayFunction(X, true, null, 'ZZ') }}
+    </div>
+    <div id="occupation_template" style="display:none">
+    {{ components.displayOccupation(X, true, null, 'ZZ') }}
+    </div>
+    <div id="legalStatus_template" style="display:none">
+    {{ components.displayLegalStatus(X, true, null, 'ZZ') }}
+    </div>
+    <div id="place_template" style="display:none">
+    {{ components.displayPlace(X, true, null, 'ZZ') }}
+    </div>
+    <div id="conventionDeclaration_template" style="display:none">
+    {{ components.displayConventionDeclaration(X, true, null, 'ZZ') }}
+    </div>
+    <div id="generalContext_template" style="display:none">
+    {{ components.displayGeneralContext(X, true, null, 'ZZ') }}
+    </div>
+    <div id="structureOrGenealogy_template" style="display:none">
+    {{ components.displayStructureOrGenealogy(X, true, null, 'ZZ') }}
+    </div>
+    <div id="mandate_template" style="display:none">
+    {{ components.displayMandate(X, true, null, 'ZZ') }}
+    </div>
+    <div id="exist_date_template" style="display:none">
+    {{ dates.dateEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
+    </div>
+    <div id="exist_dateRange_template" style="display:none">
+    {{ dates.dateRangeEntry(X, true, 'Exist Dates', 'exist', null, 'ZZ', false) }}
+    </div>
+    <div id="sub_date_template" style="display:none">
+    {{ dates.dateEntry(X, true, 'Date', 'SHORT_date_XX', null, 'ZZ', true) }}
+    </div>
+    <div id="sub_dateRange_template" style="display:none">
+    {{ dates.dateRangeEntry(X, true, 'Date Range', 'SHORT_date_XX', null, 'ZZ', true) }}
+    </div>
+    <div id="scm_template" style="display:none">
+    {{ components.displaySCM(X, true, 'SHORT', 'ZZ', 'YY', null) }}
+    </div>
+    <div id="component_template" style="display:none">
+    {{ components.displayComponent(X, true, null, 'ZZ', 'YY') }}
+    </div>
+    <div id="contributor_template" style="display:none">
+    {{ components.displayContributor(X, true, null, 'ZZ', 'YY') }}
+    </div>
+    </div>
+
+
+<div class="modal fade" id="reconcilePane" tabindex="-1" role="dialog" aria-labelledby="reconcilePane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="reconcileLabel">Reconciliation Results</h4>
+            </div>
+            <div class="modal-body" id="reconcileModalContent">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-info" id="confirm_create_new">Create New Constellation</button> &nbsp;
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    </div>
+    </body>
+    </html>

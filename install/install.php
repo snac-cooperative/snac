@@ -27,8 +27,14 @@ use \Monolog\Handler\StreamHandler;
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 $automate = false;
+$ingest_all = false;
 if ($argc == 2 && $argv[1] == "automate")
     $automate = true;
+if ($argc == 3 && $argv[1] == "automate")
+    $automate = true;
+if ($argc == 3 && $argv[2] == "full")
+    $ingest_all = true;
+
 
 // Read the configuration file
 echo "Reading the configuration file in src/snac/Config.php.\n";
@@ -365,12 +371,17 @@ if ($response == "yes") {
 
 echo "Would you like to load the May 2016 sample set of records into the database?\n";
 echo "This will take a SIGNIFICANT amount of time!\n ('yes' or 'no'): "; 
-$response = "yes";
+$response = "no";
 if (!$automate)
     $response = trim(fgets(STDIN));
-else
-    echo "yes\n";
-
+else {
+    if ($ingest_all) {
+        $response = "yes";
+        echo "yes\n";
+    } else {
+        echo "no\n";
+    }
+}
 if ($response == "yes") {
     echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
     $dir = null;
