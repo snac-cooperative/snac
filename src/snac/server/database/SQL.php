@@ -634,20 +634,38 @@ class SQL
      *
      * @param string $description Role description
      *
-     * @return integer Role id
+     * @return integer The inserted row id.
      */
     public function insertRole($label, $description)
     {
-        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id, label, description",
+        $result = $this->sdb->query("insert into role (label, description) values ($1, $2) returning id",
                           array($label, $description));
         $row = $this->sdb->fetchrow($result);
-        return $row;
+        return $row['id'];
     }
+
+    /**
+     * Update a role.
+     *
+     * @param integer $rid Role row id
+     *
+     * @param string $label Role label
+     *
+     * @param string $description Role description
+     */
+    public function updateRole($rid, $label, $description)
+    {
+        $result = $this->sdb->query("update role set label=$2, description=$3 where id=$1",
+                                    array($rid, $label, $description));
+        $row = $this->sdb->fetchrow($result);
+    }
+
+
 
     /**
      * Select a privilege record
      *
-     * Get a single privilege record matching id $pid.
+     * Get all fields of a single privilege record matching id $pid.
      *
      * @param integer $pid Privilege ID value.
      *
@@ -655,7 +673,8 @@ class SQL
      */
     public function selectPrivilege($pid)
     {
-        $result = $this->sdb->query("select * from privilege where pid=$1", array($pid));
+        $result = $this->sdb->query("select * from privilege where pid=$1",
+                                    array($pid));
         $row = $this->sdb->fetchrow($result);
         return $row;
     }
@@ -686,7 +705,7 @@ class SQL
      * @return integer[] List of strings for each privileges. We expect the calling code in DBUser.php to send
      * each element of the list to populatePrivilege().
      */
-    public function selectAllPrivilege()
+    public function selectAllPrivileges()
     {
         $result = $this->sdb->query("select id from privilege order by label", array());
         $all = array();
@@ -712,11 +731,30 @@ class SQL
      */
     public function insertPrivilege($label, $description)
     {
-        $result = $this->sdb->query("insert into privilege (label, description) values ($1, $2) returning id, label, description",
+        $result = $this->sdb->query("insert into privilege (label, description) values ($1, $2) returning id",
                           array($label, $description));
         $row = $this->sdb->fetchrow($result);
-        return $row;
+        return $row['id'];
     }
+
+
+    /**
+     * Update a privilege.
+     *
+     * @param integer $pid Privilege record id
+     *
+     * @param string $label Privilege label
+     *
+     * @param string $description Privilege description
+     */
+    public function updatePrivilege($pid, $label, $description)
+    {
+        $result = $this->sdb->query("update privilege set label=%2, description=%3 where id=$1",
+                          array($pid, $label, $description));
+        $row = $this->sdb->fetchrow($result);
+    }
+
+
 
     /**
      * Delete a role from a user
@@ -762,7 +800,7 @@ class SQL
      * @return integer[] Return list of ID values. The higher level calling code is expected to send each ID
      * to populateRole().
      */ 
-    public function selectAllRole()
+    public function selectAllRoleIDs()
     {
         $result = $this->sdb->query("select id from role order by label asc", array());
         $all = array();
@@ -784,7 +822,7 @@ class SQL
      * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
      * populateRole().
      */ 
-    public function selectUserRole($appUserID)
+    public function selectUserRoleIDs($appUserID)
     {
         $result = $this->sdb->query("select role.id from role,appuser_role_link
                                     where appuser_role_link.uid=$1 and role.id=rid order by label asc",

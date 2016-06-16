@@ -59,8 +59,23 @@ class Role {
      */
     private $privilegeList = null;
 
-    public function __construct()
+    /**
+     * Constructor
+     *
+     * @param string $label optional Label string
+     *
+     * @param string $description optional Description string
+     */ 
+    public function __construct($label=null, $description=null)
     {
+        if ($label)
+        {
+            $this->setLabel($label);
+        }
+        if ($description)
+        {
+            $this->setDescription($description);
+        }
         $this->privilegeList = array();
     }
 

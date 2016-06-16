@@ -335,7 +335,7 @@ class DBUser
         $user->setAvatarSmall($record['avatar_small']);
         $user->setAvatarLarge($record['avatar_large']);
         $user->setEmail($record['email']);
-        $user->setRoleList($this->listUserRole($user));
+        $user->setRoleList($this->listUserRoles($user));
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
 
@@ -394,7 +394,7 @@ class DBUser
      */
     public function privilegeList()
     {
-        $pidList = $this->sql->selectAllPrivilege();
+        $pidList = $this->sql->selectAllPrivilegeIDs();
         $privilegeObjList = array();
         foreach($pidList as $pid)
         {
@@ -416,7 +416,7 @@ class DBUser
      */
     public function roleList()
     {
-        $roleIDList = $this->sql->selectAllRole();
+        $roleIDList = $this->sql->selectAllRoleIDs();
         $roleObjList = array();
         foreach($roleIDList as $rid)
         {
@@ -480,7 +480,7 @@ class DBUser
     public function addUserRole($user, $newRole)
     {
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
-        $user->setRoleList($this->listUserRole($user));
+        $user->setRoleList($this->listUserRoles($user));
         return true;
     }
 
@@ -560,7 +560,7 @@ class DBUser
         return true;
         /* 
          * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
-         * $user->setRoleList($this->listUserRole($user));
+         * $user->setRoleList($this->listUserRoles($user));
          * return $result;
          */
     }
@@ -575,9 +575,9 @@ class DBUser
      *
      * @return \snac\data\Role[] A list of Role objects.
      */
-    public function listUserRole($user)
+    public function listUserRoles($user)
     {
-        $ridList = $this->sql->selectUserRole($user->getUserID());
+        $ridList = $this->sql->selectUserRoleIDs($user->getUserID());
         $roleObjList = array();
         foreach($ridList as $rid)
             {
@@ -641,7 +641,7 @@ class DBUser
     public function removeUserRole($user, $role)
     {
         $this->sql->deleteRoleLink($user->getUserID(), $role->getID());
-        $user->setRoleList($this->listUserRole($user));
+        $user->setRoleList($this->listUserRoles($user));
         return true;
     }
 
@@ -659,42 +659,63 @@ class DBUser
 
 
     /**
-     * Create a new role with $label and $description. Return true on success.
+     * Write or update a new role to the database
      *
-     * @param string $label The label of a role, aka short name
+     * Linked privileges have to exist before the role, logically. A privilege must have an ID in order to be
+     * linked to a role, and a privilege doesn't have an ID until that privilege has been written to the
+     * database.
      *
-     * @param string $description The description of the role, a phrase or sentence.
+     * @param \snac\data\Role $role The role objectc.
      *
      * @return \snac\data\Role Role object.
      */
-    public function createRole($label, $description)
+    public function writeRole($role)
     {
-        $roleHash = $this->sql->insertRole($label, $description);
-        $roleObj = new \snac\data\Role();
-        $roleObj->setID($roleHash['id']);
-        $roleObj->setLabel($roleHash['label']);
-        $roleObj->setDescription($roleHash['description']);
-        return $roleObj;
+        if ($role->getID())
+        {
+            $this->sql->updateRole($role->getID(),
+                                   $role->getLabel(), 
+                                   $role->getDescription());
+        }
+        else
+        {
+            $rid = $this->sql->insertRole($role->getLabel(), 
+                                          $role->getDescription());
+            $role->setID($rid);
+        }
+        foreach($role->getPrivilegeList as $priv) 
+        {
+            $this->sql->insertPrivilegeRoleLink($role->getID(), $priv->getID());
+        }
+        return $role;
     }
 
+
+    
     /**
-     * Create a new privilege
+     * Insert or update a privilege into the database
      *
-     * New privilege with $label and $description. Return true on success.
+     * Insert update a privilege. If insert, call setID() with the returned ID. Return the privilege, which if
+     * inserted, will have an ID.
      *
-     * @param string $label The label of a privilege, aka short name
+     * @param \snac\data\Privilege $privilege, the privilege object
      *
-     * @param string $description The description of the privilege, a phrase or sentence.
-     *
-     * @return \snac\data\Privilege Privilege object. Roles and privileges are identical objects.
+     * @return \snac\data\Privilege Privilege object, with an ID.
      */
-    public function createPrivilege($label, $description)
+    public function writePrivilege($privilege)
     {
-        $privilegeHash = $this->sql->insertPrivilege($label, $description);
-        $privilegeObj = new \snac\data\Privilege();
-        $privilegeObj->setID($privilegeHash['id']);
-        $privilegeObj->setLabel($privilegeHash['label']);
-        $privilegeObj->setDescription($privilegeHash['description']);
+        if ($privilege->getID())
+        {
+            $this->sql->updatePrivilege($privilege->getID(),
+                                        $privilege->getLabel(), 
+                                        $privilege->getDescription());
+        }
+        else
+        {
+            $pid = $this->sql->insertPrivilege($privilege->getLabel(), 
+                                               $privilege->getDescription());
+            $privilege->setID($pid);
+        }
         return $privilegeObj;
     }
 
