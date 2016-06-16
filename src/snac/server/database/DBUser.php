@@ -648,12 +648,15 @@ class DBUser
     /**
      * Remove a privilege from a role
      *
+     * Remvoe the privilege role link from the db, also remove the privilege from the role object as well.
+     * 
      * @param \snac\data\Role $role A role
      * @param \snac\data\Privilege $privilege Privilege is a Role object
      */
     public function removePrivilegeFromRole($role, $privilege)
     {
         $this->sql->deletePrivilegeRoleLink($role->getID(), $privilege->getID());
+        $role->removePrivilege($privilege);
         return true;
     }
 

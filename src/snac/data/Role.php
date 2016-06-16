@@ -90,6 +90,27 @@ class Role {
     }
 
     /**
+     * Remove a privilege
+     *
+     * Might be able to use a list slice or something, but this simple algo gets the job done.
+     * 
+     * @param \snac\data\Privilege $privilege Remove this privilege. 
+     */ 
+    public function removePrivilege($privilege)
+    {
+        $removeID = $privilege->getID();
+        $oldList = $this->privilegeList;
+        $this->privilegeList = array();
+        foreach($oldList as $priv)
+        {
+            if ($priv->getID() != $removeID)
+            {
+                addPrivilege($priv);
+            }
+        }
+    }
+
+    /**
      * Return the privilege list
      * 
      * @return \snac\data\Role[] The list of privilege objects, which are Role objects. We could expand
