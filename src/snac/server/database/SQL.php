@@ -187,6 +187,21 @@ class SQL
             array($roleID));
     }
 
+    /**
+     * Really delete a privilege
+     *
+     * Used for testing only, maybe. In any case, deleting a privilege should be rare. To make this a little safer
+     * it only deletes if the privilege is not in use.
+     *
+     * @param integer $privilegeID An privilege id
+     */
+    public function deletePrivilege($privilegeID)
+    {
+        $result = $this->sdb->query(
+            'delete from privilege where id=$1 and id not in (select distinct(pid) from privilege_role_link)',
+            array($privilegeID));
+    }
+
 
     /**
      * Update password for an existing user.
@@ -484,6 +499,37 @@ class SQL
         }
         return false;
     }
+    
+    /**
+     * Select all user row id values from database
+     *
+     * If we have a non-null, non-empty $affiliationID then constrain the query to only return users
+     * associated with that institution.
+     *
+     * @param integer $affiliationID optional Affiliation ID 
+     *
+     * @return integer[] Array of row id integer values.
+     */ 
+    public function selectAllUserIDList($affiliationID)
+    {
+        if ($affiliationID)
+        {
+            $query = "select id from appuser where active and affiliation=$1";
+            $result = $this->sdb->query($query, array($affiliationID));
+        }
+        else
+        {
+            $query = "select id from appuser where active";
+            $result = $this->sdb->query($query, array());
+        }
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+
 
     /**
      * Disable/enable user account
@@ -515,6 +561,36 @@ class SQL
         $this->sdb->query("insert into appuser_role_link (uid, rid) values ($1, $2)",
                           array($uid, $newRoleID));
     }
+
+
+    /**
+     * Add a privilege to a role
+     *
+     * Link a privilege to a role. 
+     *
+     * @param integer $rID Role id, aka role.id aka row id.
+     * @param integer $pID A privilege id.
+     */ 
+    public function insertPrivilegeRoleLink($rID, $pID)
+    {
+        $this->sdb->query("insert into privilege_role_link (pid, rid) values ($1, $2)",
+                          array($rID, $pID));
+    }
+
+    
+
+    /**
+     * Delete a privilege from a role
+     *
+     * @param integer $rID Role id, aka role.id aka row id.
+     * @param integer $pID A privilege id.
+     */ 
+    public function deletePrivilegeRoleLink($rID, $pID)
+    {
+        $this->sdb->query("delete from privilege_role_link where rid=$1 and pid=$2",
+                          array($rID, $pID));
+    }
+
 
     /**
      * Add a role by label
@@ -569,6 +645,80 @@ class SQL
     }
 
     /**
+     * Select a privilege record
+     *
+     * Get a single privilege record matching id $pid.
+     *
+     * @param integer $pid Privilege ID value.
+     *
+     * @return string[] All fields of a single privilege record.
+     */
+    public function selectPrivilege($pid)
+    {
+        $result = $this->sdb->query("select * from privilege where pid=$1", array($pid));
+        $row = $this->sdb->fetchrow($result);
+        return $row;
+    }
+
+    /**
+     * Return a list of privilege id values for a role
+     *
+     * @param integer $rid A role id value
+     *
+     * @return integer[] List of related privilege ID values.
+     */ 
+    public function selectRolePrivilegeList($rid)
+    {
+        $result = $this->sdb->query("select pid from privilege_role_link where rid=$1", array($rid));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['pid']);
+        }
+        return $all;
+    }
+
+    /**
+     * Select IDs of all privilege records
+     *
+     * Return a list privilege IDs
+     *
+     * @return integer[] List of strings for each privileges. We expect the calling code in DBUser.php to send
+     * each element of the list to populatePrivilege().
+     */
+    public function selectAllPrivilege()
+    {
+        $result = $this->sdb->query("select id from privilege order by label", array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+
+
+
+    /**
+     * Insert a new privilege.
+     *
+     * Insert a new privilege and return the privilege's id.
+     *
+     * @param string $label Privilege label
+     *
+     * @param string $description Privilege description
+     *
+     * @return integer Privilege id
+     */
+    public function insertPrivilege($label, $description)
+    {
+        $result = $this->sdb->query("insert into privilege (label, description) values ($1, $2) returning id, label, description",
+                          array($label, $description));
+        $row = $this->sdb->fetchrow($result);
+        return $row;
+    }
+
+    /**
      * Delete a role from a user
      *
      * Deleted a link role.
@@ -583,37 +733,66 @@ class SQL
     }
 
     /**
-     * Select all role records
+     * Select one role record
      *
-     * @return string[][] Return list of list with keys: id, label, description.
+     * Get all fields of a single role. Also, get a list of related pids, returning it as a simple array.
+     *
+     * This is probably called from DBUser populateRole() and nowhere else.
+     *
+     * If we really always (and only?) call selectRolePrivilegeList() from here, and nowhere else, could we do
+     * a join and gain some efficiency? Calling code would have to be modified.
+     *
+     * @return string[] Return list with keys same as field names. Also includes key 'pid_list' which is a
+     * list of related privilege ids.
      */ 
-    public function selectRole()
+    public function selectRole($rid)
     {
-        $result = $this->sdb->query("select * from role order by label asc",
-                                    array());
+        $result = $this->sdb->query("select * from role where id=$1",
+                                    array($rid));
+        $row = $this->sdb->fetchrow($result);
+        $row['pid_list'] = $this->selectRolePrivilegeList($row['id']);
+        return $row;
+    }
+
+    /**
+     * Select all role record IDs
+     *
+     * Get all the IDs of all roles. 
+     *
+     * @return integer[] Return list of ID values. The higher level calling code is expected to send each ID
+     * to populateRole().
+     */ 
+    public function selectAllRole()
+    {
+        $result = $this->sdb->query("select id from role order by label asc", array());
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            array_push($all, $row['id']);
         }
         return $all;
     }
 
     /**
-     * Select user role records
+     * Select user role record IDs
      *
-     * @param int $appUserID The numeric ID for the user for whom to list roles
-     * @return string[][] Return list of list with keys: id, label, description.
+     * Select all the IDs of roles for a single user. Higher level code will use each id to call
+     * populateRole().
+     *
+     * @param int $appUserID The numeric ID for the user for whom to list roles.
+     * 
+     * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
+     * populateRole().
      */ 
     public function selectUserRole($appUserID)
     {
-        $result = $this->sdb->query("select role.* from role,appuser_role_link
+        $result = $this->sdb->query("select role.id from role,appuser_role_link
                                     where appuser_role_link.uid=$1 and role.id=rid order by label asc",
                                     array($appUserID));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            array_push($all, $row);
+            array_push($all, $row['id']);
         }
         return $all;
     }

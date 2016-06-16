@@ -52,6 +52,40 @@ class Role {
     private $description;
 
     /**
+     * List of all privileges in this role
+     *
+     * @var \snac\data\Role[] List of Role objects which have mostly the same fields as Privileges would have.
+     *
+     */
+    private $privilegeList = null;
+
+    public function __construct()
+    {
+        $this->privilegeList = array();
+    }
+
+    /**
+     * Add a new privilege
+     *
+     * @param \snac\data\Role A privilege which uses the same class as Role.
+     */
+    public function addPrivilege($privilege)
+    {
+        array_push($this->privilegeList, $privilege);
+    }
+
+    /**
+     * Return the privilege list
+     * 
+     * @return \snac\data\Role[] The list of privilege objects, which are Role objects. We could expand
+     * AbstractTermData to include Role and Privilege.
+     */
+    public function getPrivilegeList()
+    {
+        return $this->privilegeList;
+    }
+
+    /**
      * Get role id
      * @return integer Role id
      */ 

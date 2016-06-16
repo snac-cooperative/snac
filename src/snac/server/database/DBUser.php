@@ -84,10 +84,11 @@ class DBUser
     }
 
     /**
-     * Really delete a role
+     * Really delete a role from the db
      *
-     * Used for testing only. In any case, deleting a role should be rare. To make this a little safer
-     * deleteRole() only deletes if the role is not in use.
+     * Deleting a role should be rare. To make this a little safer deleteRole() only deletes if the role is
+     * not in use. If the role exists and is not linked to any appuser, it will be deleted. Otherwise, it is
+     * not deleted.
      *
      * @param integer $roleID An role id
      */
@@ -95,6 +96,36 @@ class DBUser
     {
         $this->sql->deleteRole($roleID);
     }
+
+    /**
+     * Really delete a role from the db
+     *
+     * Deleting a role should be rare. To make this a little safer deleteRole() only deletes if the role is
+     * not in use. If the role exists and is not linked to any appuser, it will be deleted. Otherwise, it is
+     * not deleted.
+     *
+     * @param \snac\data\Role A Role object
+     */
+    public function eraseRole($roleObj)
+    {
+        $this->sql->deleteRole($roleObj->getID());
+    }
+
+
+    /**
+     * Really delete a privilege from the db
+     *
+     * Deleting a privilege should be rare. To make this a little safer deletePrivilege() only deletes if the
+     * privilege is not in use. If the privilege exists and is not linked to any appuser, it will be
+     * deleted. Otherwise, it is not deleted.
+     *
+     * @param \snac\data\Privilege A Privilege object
+     */
+    public function erasePrivilege($privilegeObj)
+    {
+        $this->sql->deletePrivilege($privilegeObj->getID());
+    }
+
         
 
     /**
@@ -353,26 +384,88 @@ class DBUser
         return true;
     }
 
+
     /**
-     * List all system roles. The simpliest form would be an associative list with keys: id, label, description.
+     * List all system privileges.
      *
-     * @return \snac\data\Role[] Return list of Role object
+     * Create a list of Privilege objects of all privileges.
+     *
+     * @return \snac\data\Privilege[] Return list of Privilege objects
+     */
+    public function privilegeList()
+    {
+        $pidList = $this->sql->selectAllPrivilege();
+        $privilegeObjList = array();
+        foreach($pidList as $pid)
+        {
+            $privilegeObj = $this->populatePrivilege($pid);
+            array_push($privilegeObjList, $privilegeObj);
+        }
+        return $privilegeObjList;
+    }
+
+
+
+    /**
+     * List all system roles.
+     *
+     * Create a list of Role objects of all roles.
+     *
+     * @return \snac\data\Role[] Return list of Role object, each of which contains a list of Privilege
+     * objects.
      */
     public function roleList()
     {
-        $roleArray = $this->sql->selectRole();
+        $roleIDList = $this->sql->selectAllRole();
         $roleObjList = array();
-        foreach($roleArray as $roleHash)
+        foreach($roleIDList as $rid)
         {
-            $roleObj = new \snac\data\Role();
-            $roleObj->setID($roleHash['id']);
-            $roleObj->setLabel($roleHash['label']);
-            $roleObj->setDescription($roleHash['description']);
+            $roleObj = $this->populateRole($rid);
             array_push($roleObjList, $roleObj);
         }
         return $roleObjList;
     }
 
+    /**
+     * Populate a role object
+     *
+     * Select role data from the database, and populate a role object.
+     *
+     * @param integer $rid Role ID value.
+     *
+     * @return \snac\data\Role A Role object.
+     *
+     */
+    public function populateRole($rid)
+    {
+        $rid = $this->sql->selectRole($rid);
+        $roleObj = new \snac\data\Role();
+        $roleObj->setID($row['id']);
+        $roleObj->setLabel($row['label']);
+        $roleObj->setDescription($row['description']);
+        foreach($row['pid_list'] as $pid)
+        {
+            $roleObj->addPrivilege(populatePrivilege($pid));
+        }
+        return $roleObj;
+    }
+
+    /**
+     * Populate a privilege object
+     *
+     * Return a privilege object based on the $pid ID value
+     *
+     * @return \snac\data\Privilege A privilege object.
+     */ 
+    public function populatePrivilege($pid)
+    {
+        $row = $this->sql->selectPrivilege($pid);
+        $privilegeObj = new \snac\data\Privilege();
+        $privilegeObj->setID($row['id']);
+        $privilegeObj->setLabel($row['label']);
+        $privilegeObj->setDescription($row['description']);
+        return $privilegeObj;
+    }
 
     /**
      * Add a role to the User via table appuser_role_link. Return true on success.
@@ -390,6 +483,64 @@ class DBUser
         $user->setRoleList($this->listUserRole($user));
         return true;
     }
+
+    /**
+     * Add a privilege to a role
+     *
+     * The privilege must exist before calling this. Use createPrivilege(). You might be searching for
+     * addprivilege, add privilege adding a privilege adding privilege.
+     *
+     * @param \snac\data\Role $role The role.
+     * @param \snac\data\Privilege $privilege is a Role object. Role object has identical fields to privilege.
+     */
+    public function addPrivilegeToRole($role, $privilege)
+    {
+        $this->sql->insertPrivilegeRoleLink($role->getID(), $privilege->getID());
+        return true;
+    }
+
+    /**
+     * Does use have a privilege
+     *
+     * Returns true if the privilege exists. Build a list of all the privs, then test the list for key
+     * existence.
+     * 
+     * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
+     */ 
+    public function hasPrivilege($user, $privilege)
+    {
+        $allPrivs = array(); // assoc list
+        foreach($user->getRoleList as $userRole)
+        {
+            foreach($userRole->getPrivilegeList() as $priv)
+            {
+                $allPrivs[$priv->getID()] = 1;
+            }
+        }
+        return isset($allPrivs[$privilege->getID()]);
+    }
+
+    /**
+     * Does user have a privilege, by label
+     *
+     * Returns true if the privilege with $label exists. Build a list of all the privilege labels, then test
+     * the list for key existence.
+     * 
+     * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
+     */ 
+    public function hasPrivilegeByLabel($user, $label)
+    {
+        $allPrivs = array(); // assoc list
+        foreach($user->getRoleList as $userRole)
+        {
+            foreach($userRole->getPrivilegeList() as $priv)
+            {
+                $allPrivs[$priv->getLabel()] = 1;
+            }
+        }
+        return isset($allPrivs[$label]);
+    }
+
 
     /**
      * Add default role(s)
@@ -418,7 +569,7 @@ class DBUser
     /**
      * List roles for a user.
      *
-     * List all the roles a user currently has as an array of Role objects.
+     * List all the roles for a user, as an array of Role objects.
      *
      * @param \snac\data\User $user The user
      *
@@ -426,14 +577,11 @@ class DBUser
      */
     public function listUserRole($user)
     {
-        $roleList = $this->sql->selectUserRole($user->getUserID());
+        $ridList = $this->sql->selectUserRole($user->getUserID());
         $roleObjList = array();
-        foreach($roleList as $roleHash)
+        foreach($ridList as $rid)
             {
-                $roleObj = new \snac\data\Role();
-                $roleObj->setID($roleHash['id']);
-                $roleObj->setLabel($roleHash['label']);
-                $roleObj->setDescription($roleHash['description']);
+                $roleObj = $this->populateRole($rid);
                 array_push($roleObjList, $roleObj);
             }
         return $roleObjList;
@@ -498,6 +646,19 @@ class DBUser
     }
 
     /**
+     * Remove a privilege from a role
+     *
+     * @param \snac\data\Role $role A role
+     * @param \snac\data\Privilege $privilege Privilege is a Role object
+     */
+    public function removePrivilegeFromRole($role, $privilege)
+    {
+        $this->sql->deletePrivilegeRoleLink($role->getID(), $privilege->getID());
+        return true;
+    }
+
+
+    /**
      * Create a new role with $label and $description. Return true on success.
      *
      * @param string $label The label of a role, aka short name
@@ -515,6 +676,28 @@ class DBUser
         $roleObj->setDescription($roleHash['description']);
         return $roleObj;
     }
+
+    /**
+     * Create a new privilege
+     *
+     * New privilege with $label and $description. Return true on success.
+     *
+     * @param string $label The label of a privilege, aka short name
+     *
+     * @param string $description The description of the privilege, a phrase or sentence.
+     *
+     * @return \snac\data\Privilege Privilege object. Roles and privileges are identical objects.
+     */
+    public function createPrivilege($label, $description)
+    {
+        $privilegeHash = $this->sql->insertPrivilege($label, $description);
+        $privilegeObj = new \snac\data\Privilege();
+        $privilegeObj->setID($privilegeHash['id']);
+        $privilegeObj->setLabel($privilegeHash['label']);
+        $privilegeObj->setDescription($privilegeHash['description']);
+        return $privilegeObj;
+    }
+
 
     /**
      * Check $passwd matches the password stored for \snac\data\User. Return true on success.
@@ -726,5 +909,27 @@ class DBUser
     {
         $this->sql->deleteAllSession($user->getUserID());
         return true;
+    }
+
+    /**
+     * List all users
+     *
+     * Return a list of all users as user objects. You might be searching for selectallusers selectusers select all users.
+     *
+     * @param \snac\data\Constellation $affiliation optional
+     * 
+     * @return \snac\data\User[] $allUserList
+     */ 
+    public function listAllUsers($affiliation=null)
+    {
+        $idList = $this->sql->selectAllUserIDList($affiliation==null?null:$affiliation->getID());
+        $allUserList = array();
+        foreach($idList as $userID)
+        {
+            $newUserRec = $this->sql->selectUserByID($userID);
+            $newUser = $this->populateUser($newUserRec);
+            array_push($allUserList, $newUser);
+        }
+        return $allUserList;
     }
 }

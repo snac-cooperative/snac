@@ -91,6 +91,16 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    public function testRolePrivilege()
+    {
+        $role = $this->dbu->createRole('demo role', 'This is a demo test role');
+
+        $priv = createPrivilege('demo role', 'This is a demo test privilege');
+
+        $allRole = $this->dbu->roleList();
+
+    }
+
     public function testBasic()
     {
         /*
