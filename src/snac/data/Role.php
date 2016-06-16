@@ -105,7 +105,7 @@ class Role {
         {
             if ($priv->getID() != $removeID)
             {
-                addPrivilege($priv);
+                $this->addPrivilege($priv);
             }
         }
     }

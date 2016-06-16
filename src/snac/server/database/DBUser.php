@@ -445,7 +445,7 @@ class DBUser
         $roleObj->setDescription($row['description']);
         foreach($row['pid_list'] as $pid)
         {
-            $roleObj->addPrivilege(populatePrivilege($pid));
+            $roleObj->addPrivilege($this->populatePrivilege($pid));
         }
         return $roleObj;
     }
@@ -510,7 +510,7 @@ class DBUser
     public function hasPrivilege($user, $privilege)
     {
         $allPrivs = array(); // assoc list
-        foreach($user->getRoleList as $userRole)
+        foreach($user->getRoleList() as $userRole)
         {
             foreach($userRole->getPrivilegeList() as $priv)
             {
@@ -531,7 +531,7 @@ class DBUser
     public function hasPrivilegeByLabel($user, $label)
     {
         $allPrivs = array(); // assoc list
-        foreach($user->getRoleList as $userRole)
+        foreach($user->getRoleList() as $userRole)
         {
             foreach($userRole->getPrivilegeList() as $priv)
             {

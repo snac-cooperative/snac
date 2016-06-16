@@ -98,13 +98,16 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * $priv has the id added, in place.
          */ 
         $this->dbu->writePrivilege($priv);
-
+        
         $role = new \snac\data\Role('demo role' . time(), 'This is a demo test role');
         $role->addPrivilege($priv);
 
         $this->dbu->writeRole($role);
 
         $allRole = $this->dbu->roleList();
+
+        $this->dbu->erasePrivilege($priv);
+        $this->dbu->eraseRole($role);
 
     }
 
@@ -152,14 +155,34 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * 'contributor' role.
          */ 
         $roleObjList = $this->dbu->roleList();
+        $testUserRole = null;
         foreach($roleObjList as $roleObj)
         {
             if ($roleObj->getLabel() == 'system')
             {
                 $this->dbu->addUserRole($newUser, $roleObj);
+                $testUserRole = $roleObj;
                 break;
             }
         }
+
+        /*
+         * Add a a privilege to our test role so we can be sure it has at least one privilege.
+         */ 
+        $pList = $this->dbu->privilegeList();
+        $testUserRole->addPrivilege($pList[0]);
+        $this->dbu->writeRole($testUserRole);
+        $this->dbu->addPrivilegeToRole($testUserRole,$pList[1]); // just to exercise the code
+        $userList = $this->dbu->listAllUsers();
+        $roleList = $this->dbu->listUserRoles($newUser);
+        $roleCopy = $this->dbu->populateRole($testUserRole->getID());
+        $privList = $this->dbu->privilegeList();
+        $this->dbu->removePrivilegeFromRole($testUserRole, $pList[1]);
+
+        $this->assertTrue($this->dbu->hasRole($newUser, $testUserRole));
+        $this->assertTrue($this->dbu->hasPrivilege($newUser, $pList[0]));
+        $this->assertTrue($this->dbu->hasPrivilegeByLabel($newUser, $pList[0]->getLabel()));
+
         /*
          * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume
          * that role[0] is 'system'.

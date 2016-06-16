@@ -573,7 +573,7 @@ class SQL
      */ 
     public function insertPrivilegeRoleLink($rID, $pID)
     {
-        $this->sdb->query("insert into privilege_role_link (pid, rid) values ($1, $2)",
+        $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
     }
 
@@ -673,7 +673,7 @@ class SQL
      */
     public function selectPrivilege($pid)
     {
-        $result = $this->sdb->query("select * from privilege where pid=$1",
+        $result = $this->sdb->query("select * from privilege where id=$1",
                                     array($pid));
         $row = $this->sdb->fetchrow($result);
         return $row;
@@ -705,7 +705,7 @@ class SQL
      * @return integer[] List of strings for each privileges. We expect the calling code in DBUser.php to send
      * each element of the list to populatePrivilege().
      */
-    public function selectAllPrivileges()
+    public function selectAllPrivilegeIDs()
     {
         $result = $this->sdb->query("select id from privilege order by label", array());
         $all = array();
