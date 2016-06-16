@@ -93,9 +93,16 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
     public function testRolePrivilege()
     {
-        $role = $this->dbu->createRole('demo role', 'This is a demo test role');
+        $priv = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        /*
+         * $priv has the id added, in place.
+         */ 
+        $this->dbu->writePrivilege($priv);
 
-        $priv = createPrivilege('demo role', 'This is a demo test privilege');
+        $role = new \snac\data\Role('demo role' . time(), 'This is a demo test role');
+        $role->addPrivilege($priv);
+
+        $this->dbu->writeRole($role);
 
         $allRole = $this->dbu->roleList();
 
@@ -157,7 +164,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume
          * that role[0] is 'system'.
          */ 
-        $roleList = $this->dbu->listUserRole($newUser);
+        $roleList = $this->dbu->listUserRoles($newUser);
         /* 
          * $foundSystem = false;
          * $systemRole = null;
@@ -192,20 +199,22 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */ 
         // $this->dbu->removeUserRole($newUser, $roleList[0]);
         $this->dbu->removeUserRole($newUser, $systemRole);
-        $roleList = $this->dbu->listUserRole($newUser);
+        $roleList = $this->dbu->listUserRoles($newUser);
         $this->assertEquals(count($roleList), 0);
 
         /*
-         * Create a new role, add it, check that our user has the role. Normally, roles probably aren't deleted, but we want to
-         * delete the temp role as part of cleaning up.
+         * Create a new role, add it, check that our user has the role. Normally, roles probably aren't
+         * deleted, but we want to delete the temp role as part of cleaning up.
          */ 
-        $demoRole = $this->dbu->createRole('demo', 'Demo role created during testing');
+        $roleLabel = 'demo' . time();
+        $demoRole = new \snac\data\Role($roleLabel, 'Demo role created during testing');
+        $this->dbu->writeRole($demoRole);
         $this->dbu->addUserRole($newUser, $demoRole);
-        $roleList = $this->dbu->listUserRole($newUser);
+        $roleList = $this->dbu->listUserRoles($newUser);
         $preCleaningRoleList = $this->dbu->roleList();
 
         // false == null so we only check for != null
-        $this->assertTrue($this->dbu->checkRoleByLabel($newUser, 'demo') != null);
+        $this->assertTrue($this->dbu->checkRoleByLabel($newUser, $roleLabel) != null);
 
         /* 
          * Clean up, some. Remove the role from our user, delete the role. The make sure our user is back to

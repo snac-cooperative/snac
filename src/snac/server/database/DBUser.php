@@ -438,7 +438,7 @@ class DBUser
      */
     public function populateRole($rid)
     {
-        $rid = $this->sql->selectRole($rid);
+        $row = $this->sql->selectRole($rid);
         $roleObj = new \snac\data\Role();
         $roleObj->setID($row['id']);
         $roleObj->setLabel($row['label']);
@@ -683,10 +683,11 @@ class DBUser
                                           $role->getDescription());
             $role->setID($rid);
         }
-        foreach($role->getPrivilegeList as $priv) 
+        foreach($role->getPrivilegeList() as $priv) 
         {
             $this->sql->insertPrivilegeRoleLink($role->getID(), $priv->getID());
         }
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
         return $role;
     }
 
@@ -716,7 +717,8 @@ class DBUser
                                                $privilege->getDescription());
             $privilege->setID($pid);
         }
-        return $privilegeObj;
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        return $privilege;
     }
 
 

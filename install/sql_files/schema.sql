@@ -42,6 +42,8 @@ drop table if exists otherid;
 drop table if exists place_link;
 drop table if exists related_identity;
 drop table if exists related_resource;
+drop table if exists privilege_role_link;
+drop table if exists privilege;
 drop table if exists role;
 drop table if exists session;
 drop table if exists scm;
@@ -167,7 +169,7 @@ create table appuser_role_link (
 
 create table privilege_role_link (
         pid        int,                -- fk to privilege.id
-        rid        int,                -- fk to role.id
+        rid        int                -- fk to role.id
         );
 
 -- Add a constraint to enforce only one is_primary per uid
