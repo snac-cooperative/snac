@@ -74,12 +74,19 @@ class DBUser
      *
      * Used for testing only. Normally, users are inactivated.
      *
+     * Remove user role links as well.
+     *
      * Delete the user, and delete user role links.
      *
      * @param \snac\data\User $user
      */
     public function eraseUser($user)
     {
+        $roleList = $this->listUserRoles($user);
+        foreach($roleList as $role)
+        {
+            
+        }
         $this->sql->deleteUser($user->getUserID());
     }
 
@@ -573,7 +580,8 @@ class DBUser
     /**
      * List roles for a user.
      *
-     * List all the roles for a user, as an array of Role objects.
+     * List all the roles for a user, as an array of Role objects. You might be searching or listalluserroles
+     * listallrolesuser userallroles userroles.
      *
      * @param \snac\data\User $user The user
      *
@@ -660,6 +668,7 @@ class DBUser
     public function removePrivilegeFromRole($role, $privilege)
     {
         $this->sql->deletePrivilegeRoleLink($role->getID(), $privilege->getID());
+        // $role is changed in place.
         $role->removePrivilege($privilege);
         return true;
     }

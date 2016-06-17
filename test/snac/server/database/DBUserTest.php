@@ -67,24 +67,31 @@ class DBUserTest extends PHPUnit_Framework_TestCase
     public function setUp() 
     {
         /*
-         * Start by deleting the test account, if it exists. We leave the old user after a test for debugging purposes.
+         * In retrospect, leaving old users in the db after testing is a bad idea. If you need to do
+         * diagnostics on the db, comment out some user cleaning code elsewhere. That is: after writing the
+         * user cleanup code.
+         *
+         * Start by deleting the test account, if it exists. We leave the old user after a test for debugging
+         * purposes.
          *
          * We do not want to leave the 'demo' role, but failures errors can cause that. So also delete the demo role, if it exists.
          */ 
-        $testUser = new \snac\data\User();
-        $testUser->setUserName("mst3k@example.com");
-        $this->user = $this->dbu->readUser($testUser);
-        
-        if ($oldUser = $this->dbu->readUser($testUser))
+        $userList = $this->dbu->listAllUsers();
+        foreach($userList as $oldUser)
         {
-            $appUserID = $oldUser->getUserID();
-            $oldDemoRole = $this->dbu->checkRoleByLabel($oldUser, 'demo');
-            if ($oldDemoRole)
+            if ($oldUser->getUserName() == "mst3k@example.com")
             {
-                $this->dbu->eraseRoleByID($oldDemoRole->getID());
-            }
-            if ($appUserID)
-            {
+                /* 
+                 * $testUser = new \snac\data\User();
+                 * $testUser->setUserName("mst3k@example.com");
+                 * $this->user = $this->dbu->readUser($testUser);
+                 */
+                $appUserID = $oldUser->getUserID();
+                $oldRoleList = $this->dbu->listUserRoles($oldUser);
+                foreach($oldRoleList as $role)
+                {
+                    $this->dbu->removeUserRole($oldUser, $role);
+                }
                 $this->dbu->clearAllSessions($oldUser);
                 $this->dbu->eraseUser($oldUser);
             }
@@ -97,7 +104,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
      */
     public function testRolePrivilege()
     {
-        $priv = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        $priv = new \snac\data\Privilege('demo1 priv' . time(), 'This is a demo test privilege');
         /*
          * $priv has the id added, in place.
          */ 
@@ -121,7 +128,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create a new role, add a priv to it before writing to the db, then write to the db.
          * An alternate way of adding a priv to a role would is to call addPrivilegeToRole()
          */ 
-        $role = new \snac\data\Role('demo role' . time(), 'This is a demo test role');
+        $role = new \snac\data\Role('demo2 role' . time(), 'This is a demo test role');
         $role->addPrivilege($priv);
         $this->dbu->writeRole($role);
 
@@ -161,8 +168,9 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Save the priv count, erase the demo priv, check the count afterwards.
          */ 
         $preDeletePrivilegeCount = count($privList);
+        printf("\ndbusertest id: %s\n", $priv->getID());
         $this->dbu->erasePrivilege($priv);
-        $postDeletePrivilegeCount = count($privList = $this->dbu->privilegeList());
+        $postDeletePrivilegeCount = count($this->dbu->privilegeList());
         $this->assertEquals($preDeletePrivilegeCount, ($postDeletePrivilegeCount+1));
     }
 
@@ -225,13 +233,13 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create two demo privs, write to db, add the first demo privilege to our test role so we can be sure it has
          * at least one privilege. Later all the second priv via the alternative method.
          */ 
-        $privZero = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        $privZero = new \snac\data\Privilege('demo3 priv' . time(), 'This is a demo test privilege');
         $this->dbu->writePrivilege($privZero);
         /*
          * Sleep a couple of seconds so that the time is different.
          */ 
         sleep(2);
-        $privOne = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        $privOne = new \snac\data\Privilege('demo4 priv' . time(), 'This is a demo test privilege');
         $this->dbu->writePrivilege($privOne);
         $pList = $this->dbu->privilegeList();
         $testUserRole->addPrivilege($privZero);
@@ -253,7 +261,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->dbu->hasPrivilege($newUser, $privZero));
         
         /*
-         * Remove the demo privs. Don't mess with the test role which is an existing role 'system'.
+         * Remove the demo privs. Don't delete the test role which is an existing role 'system'.
          */  
         $this->dbu->removePrivilegeFromRole($testUserRole, $privZero);
         $this->dbu->removePrivilegeFromRole($testUserRole, $privOne);
@@ -306,7 +314,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create a new role, add it, check that our user has the role. Normally, roles probably aren't
          * deleted, but we want to delete the temp role as part of cleaning up.
          */ 
-        $roleLabel = 'demo' . time();
+        $roleLabel = 'demo5' . time();
         $demoRole = new \snac\data\Role($roleLabel, 'Demo role created during testing');
         $this->dbu->writeRole($demoRole);
         $this->dbu->addUserRole($newUser, $demoRole);

@@ -188,12 +188,27 @@ class SQL
      */
     public function deleteRole($roleID)
     {
-        $this->sdb->query(
-            'delete from privilege_role_link where rid=$1',
+        $result = $this->sdb->query(
+            'select appuser.username from appuser,appuser_role_link as arl where  arl.rid=$1 and arl.uid=appuser.id',
             array($roleID));
-        $this->sdb->query(
-            'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
-            array($roleID));
+        $usernames = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $usernames .= $row['username'] . " ";
+        }
+        if ($usernames)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete role still used by users: $usernames");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from privilege_role_link where rid=$1',
+                array($roleID));
+            $this->sdb->query(
+                'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
+                array($roleID));
+        }
     }
 
     /**
