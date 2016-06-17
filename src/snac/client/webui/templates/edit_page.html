@@ -119,7 +119,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <li><a href="#structureOrGenealogies" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
                     </ul>
                     </li>
-                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
+                    <li><a href="#sources" role="tab" data-toggle="tab" id="sources-tab">Sources</a></li>
 
                 </ul>
 
@@ -152,7 +152,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             {{X.snaccontrolmetadata.display}}
                                         </label>
                                         <div class="col-xs-8">
-                                            {{ widgets.scmButton(X, true, 'constellation', '1') }}
+                                            <button type="button" class="btn btn-default" onClick="$('#sources-tab').click();">
+                                                Sources
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
