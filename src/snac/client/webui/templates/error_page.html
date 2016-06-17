@@ -23,42 +23,8 @@
 $('.selectpicker').selectpicker();
 </script>
 
-<!-- Tiny MCE text editor -->
-<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
-<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
-<style>
-body {
-    padding-top: 70px;
-    padding-bottom: 30px;
-}
-
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
-
-.snac > p > .btn {
-    margin: 5px 0;
-}
-
-.snac .navbar .container {
-    width: auto;
-}
-
-/* centered columns styles */
-.row-centered {
-    text-align:center;
-}
-.col-centered {
-    display:inline-block;
-    float:none;
-    /* reset the text-align */
-    text-align:left;
-    /* inline-block space fix */
-    margin-right:-4px;
-}
-</style>
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css">
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}

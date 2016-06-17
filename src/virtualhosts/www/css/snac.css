@@ -27,6 +27,12 @@ h1 {
     margin-bottom: 35px;
 }
 
+.snac-name-header {
+    font-family: "Crimson Text";
+    font-weight: 800;
+    font-size: 35px;
+    line-height: .5em;
+}
 .navbar-inverse .navbar-brand,
 .navbar-inverse .navbar-nav li a {
     color: #D6E5F4;
@@ -174,6 +180,21 @@ td.rotate > div > span {
     border-bottom: 1px solid #ccc;
     padding: 5px 10px;
 }
+
+/* centered columns styles */
+.row-centered {
+    text-align:center;
+}
+.col-centered {
+    display:inline-block;
+    float:none;
+    /* reset the text-align */
+    text-align:left;
+    /* inline-block space fix */
+    margin-right:-4px;
+}
+
+
 
 @media (min-width: 992px) {
     .affix {
