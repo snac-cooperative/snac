@@ -425,24 +425,26 @@ $(document).ready(function() {
     if($('#cancel').exists()) {
         $('#cancel').click(function(){
 
-        	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		// Go to dashboard
-                window.location.href = "?command=dashboard";
-        		return;
-        	}
-
             if(somethingHasBeenEdited){
                 if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
                     // Don't want to cancel, so exit!
                     return;
                 }
             }
+
+        	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
+        	var noNameEntryText = true;
+        	$("input[id^='nameEntry_original_']").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#constellationid').val() == "" || $('#entityType').val() == "" || noNameEntryText) {
+        		// Go to dashboard
+                window.location.href = "?command=dashboard";
+        		return;
+        	}
+
+
 
         	// Unlock
 	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
