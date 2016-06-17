@@ -432,6 +432,9 @@ $(document).ready(function() {
                 }
             }
 
+            // By setting this to false, the page will not prompt on exit
+            somethingHasBeenEdited = false;
+
         	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
         	var noNameEntryText = true;
         	$("input[id^='nameEntry_original_']").each(function() {
