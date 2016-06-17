@@ -1,4 +1,4 @@
-{% macro displayGender(X, inEdit, gender, i) %}
+{% macro displayGender(X, inEdit, showSubElements, gender, i) %}
     {% import 'widgets.html' as widgets %}
 
         <div class="panel panel-default" id="gender_panel_{{i}}">
@@ -24,18 +24,18 @@
                                 {{ X.uri.display }}
                             </label>
                             <div class="col-xs-8">
-                                {{ widgets.displayURI(X, inEdit, gender.term.uri) }}
+                                {{ widgets.displayURI(X, inEdit, showSubElements, gender.term.uri) }}
                             </div>
                         </div>
                     </div>
-                    {{ widgets.scmModal(X, inEdit, "gender", i, gender.term.term, "Gender", gender) }}
-                    {{ widgets.optionsList(X, inEdit, "gender", i) }}
+                    {{ widgets.scmModal(X, inEdit, showSubElements, "gender", i, gender.term.term, "Gender", gender) }}
+                    {{ widgets.optionsList(X, inEdit, showSubElements, "gender", i) }}
                 </div>
             </div>
 
 {% endmacro %}
 
-{% macro displayNameEntry(X, inEdit, nameEntry, i) %}
+{% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
         <div class="panel panel-default" id="nameEntry_panel_{{i}}">
@@ -60,7 +60,7 @@
                     <div class="col-xs-8 well well-sm">
                         {% set j = 0 %}
                         {% for component in nameEntry.components %}
-                            {{ components.displayComponent(X, inEdit, component, i, j) }}
+                            {{ components.displayComponent(X, inEdit, showSubElements, component, i, j) }}
                             {% set j = j + 1 %}
                         {% endfor %}
 
@@ -113,15 +113,15 @@
                     </div>
                 </div>
             </div>
-            {{ widgets.dateModal(X, inEdit, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
-            {{ widgets.scmModal(X, inEdit, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
-            {{ widgets.optionsListWithDate(X, inEdit, "nameEntry", i) }}
+            {{ widgets.dateModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
+            {{ widgets.scmModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
+            {{ widgets.optionsListWithDate(X, inEdit, showSubElements, "nameEntry", i) }}
         </div>
     </div>
 
 {% endmacro %}
 
-{% macro displayComponent(X, inEdit, component, i, j) %}
+{% macro displayComponent(X, inEdit, showSubElements, component, i, j) %}
         <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
             <div id="nameEntry_component_{{j}}_datapart_{{i}}">
                 <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}"
@@ -181,7 +181,7 @@
 {% endmacro %}
 
 
-{% macro displayContributor(X, inEdit, contributor, i, j) %}
+{% macro displayContributor(X, inEdit, showSubElements, contributor, i, j) %}
         <div class="panel panel-body" id="nameEntry_contributor_{{j}}_panel_{{i}}">
             <input type="hidden" id="nameEntry_contributor_{{j}}_id_{{i}}"
                 name="nameEntry_contributor_{{j}}_id_{{i}}"
@@ -258,7 +258,7 @@
 
 {% endmacro %}
 
-{% macro displaySameAs(X, inEdit, other, i) %}
+{% macro displaySameAs(X, inEdit, showSubElements, other, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="sameAs_panel_{{i}}">
             <div class="panel-body">
@@ -298,14 +298,14 @@
                     </div>
                 </div>
 
-                {{ widgets.scmModal(X, inEdit, "sameAs", i, other.uri, "Same-As Relation", other) }}
-                {{ widgets.optionsList(X, inEdit, "sameAs", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "sameAs", i, other.uri, "Same-As Relation", other) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "sameAs", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displaySource(X, inEdit, source, i) %}
+{% macro displaySource(X, inEdit, showSubElements, source, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default"  id="source_panel_{{i}}">
             <div class="panel-body">
@@ -379,15 +379,15 @@
 
 
                 </div>
-                {{ widgets.scmModal(X, inEdit, "source", i, source.uri, "Source", source) }}
-                {{ widgets.optionsList(X, inEdit, "source", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "source", i, source.uri, "Source", source) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "source", i) }}
 
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayResourceRelation(X, inEdit, relation, i) %}
+{% macro displayResourceRelation(X, inEdit, showSubElements, relation, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
             <div class="panel-body">
@@ -456,14 +456,14 @@
                     </div>
                 </div>
 
-                {{ widgets.scmModal(X, inEdit, "resourceRelation", i, relation.content, "Resource Relation", relation) }}
-                {{ widgets.optionsList(X, inEdit, "resourceRelation", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "resourceRelation", i, relation.content, "Resource Relation", relation) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "resourceRelation", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayConstellationRelation(X, inEdit, relation, i) %}
+{% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
             <div class="panel-body">
@@ -512,14 +512,14 @@
                     </div>
                 </div>
 
-                {{ widgets.scmModal(X, inEdit, "constellationRelation", i, relation.content, "Constellation Relation", relation) }}
-                {{ widgets.optionsList(X, inEdit, "constellationRelation", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "constellationRelation", i, relation.content, "Constellation Relation", relation) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "constellationRelation", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayLanguageUsed(X, inEdit, language, i) %}
+{% macro displayLanguageUsed(X, inEdit, showSubElements, language, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="language_panel_{{i}}">
             <div class="panel-body">
@@ -555,14 +555,14 @@
                     </div>
                 </div>
 
-                {{ widgets.scmModal(X, inEdit, "language", i, language.language.term, "Language", language) }}
-                {{ widgets.optionsList(X, inEdit, "language", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "language", i, language.language.term, "Language", language) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "language", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displaySubject(X, inEdit, subject, i) %}
+{% macro displaySubject(X, inEdit, showSubElements, subject, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="subject_panel_{{i}}">
             <div class="panel-body">
@@ -586,18 +586,18 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, subject.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, subject.term.uri) }}
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "subject", i, subject.term.term, "Subject", subject) }}
-                {{ widgets.optionsList(X, inEdit, "subject", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "subject", i, subject.term.term, "Subject", subject) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "subject", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayNationality(X, inEdit, nationality, i) %}
+{% macro displayNationality(X, inEdit, showSubElements, nationality, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="nationality_panel_{{i}}">
             <div class="panel-body">
@@ -622,18 +622,18 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, nationality.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, nationality.term.uri) }}
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "nationality", i, nationality.term.term, "Nationality", nationality) }}
-                {{ widgets.optionsList(X, inEdit, "nationality", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "nationality", i, nationality.term.term, "Nationality", nationality) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "nationality", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayFunction(X, inEdit, function, i) %}
+{% macro displayFunction(X, inEdit, showSubElements, function, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="function_panel_{{i}}">
             <div class="panel-body">
@@ -657,18 +657,18 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, function.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, function.term.uri) }}
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "function", i, function.term.term, "Function", function) }}
-                {{ widgets.optionsList(X, inEdit, "function", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "function", i, function.term.term, "Function", function) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "function", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayOccupation(X, inEdit, occupation, i) %}
+{% macro displayOccupation(X, inEdit, showSubElements, occupation, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="occupation_panel_{{i}}">
             <div class="panel-body">
@@ -692,18 +692,18 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, occupation.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, occupation.term.uri) }}
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "occupation", i, occupation.term.term, "Occupation", occupation) }}
-                {{ widgets.optionsList(X, inEdit, "occupation", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "occupation", i, occupation.term.term, "Occupation", occupation) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "occupation", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayLegalStatus(X, inEdit, legalStatus, i) %}
+{% macro displayLegalStatus(X, inEdit, showSubElements, legalStatus, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="legalStatus_panel_{{i}}">
             <div class="panel-body">
@@ -727,18 +727,18 @@
                             {{ X.uri.display }}
                         </label>
                         <div class="col-xs-10">
-                            {{ widgets.displayURI(X, inEdit, legalStatus.term.uri) }}
+                            {{ widgets.displayURI(X, inEdit, showSubElements, legalStatus.term.uri) }}
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
-                {{ widgets.optionsList(X, inEdit, "legalStatus", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "legalStatus", i, legalStatus.term.term, "Legal Status", legalStatus) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "legalStatus", i) }}
             </div>
         </div>
 
 {% endmacro %}
 
-{% macro displayPlace(X, inEdit, place, i) %}
+{% macro displayPlace(X, inEdit, showSubElements, place, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="place_panel_{{i}}">
             <div class="panel-body">
@@ -823,8 +823,8 @@
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "place", i, place.original, "Place", place) }}
-                {{ widgets.optionsList(X, inEdit, "place", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "place", i, place.original, "Place", place) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "place", i) }}
 
             </div>
         </div>
@@ -832,7 +832,7 @@
 {% endmacro %}
 
 
-{% macro displayConventionDeclaration(X, inEdit, conventionDeclaration, i) %}
+{% macro displayConventionDeclaration(X, inEdit, showSubElements, conventionDeclaration, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="conventionDeclaration_panel_{{i}}">
             <div class="panel-body">
@@ -851,13 +851,13 @@
                             </div>
                         </div>
                     </div>
-                    {{ widgets.scmModal(X, inEdit, "conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
-                    {{ widgets.optionsList(X, inEdit, "conventionDeclaration", i) }}
+                    {{ widgets.scmModal(X, inEdit, showSubElements, "conventionDeclaration", i, "Convention Declaration " ~ i, "Convention Declaration", conventionDeclaration) }}
+                    {{ widgets.optionsList(X, inEdit, showSubElements, "conventionDeclaration", i) }}
             </div>
         </div>
 {% endmacro %}
 
-{% macro displayGeneralContext(X, inEdit, generalContext, i) %}
+{% macro displayGeneralContext(X, inEdit, showSubElements, generalContext, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="generalContext_panel_{{i}}">
             <div class="panel-body">
@@ -875,13 +875,13 @@
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
-                {{ widgets.optionsList(X, inEdit, "generalContext", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "generalContext", i, "General Context " ~ i, "General Context", generalContext) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "generalContext", i) }}
             </div>
         </div>
 {% endmacro %}
 
-{% macro displayStructureOrGenealogy(X, inEdit, structureOrGenealogy, i) %}
+{% macro displayStructureOrGenealogy(X, inEdit, showSubElements, structureOrGenealogy, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="structureOrGenealogy_panel_{{i}}">
             <div class="panel-body">
@@ -899,13 +899,13 @@
                         </div>
                     </div>
                 </div>
-                {{ widgets.scmModal(X, inEdit, "structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
-                {{ widgets.optionsList(X, inEdit, "structureOrGenealogy", i) }}
+                {{ widgets.scmModal(X, inEdit, showSubElements, "structureOrGenealogy", i, "Structure or Genealogy " ~ i, "Structure or Genealogy", structureOrGenealogy) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "structureOrGenealogy", i) }}
             </div>
         </div>
 {% endmacro %}
 
-{% macro displayMandate(X, inEdit, mandate, i) %}
+{% macro displayMandate(X, inEdit, showSubElements, mandate, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="mandate_panel_{{i}}">
             <div class="panel-body">
@@ -923,26 +923,26 @@
                             </div>
                         </div>
                     </div>
-                    {{ widgets.scmModal(X, inEdit, "mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
-                    {{ widgets.optionsList(X, inEdit, "mandate", i) }}
+                    {{ widgets.scmModal(X, inEdit, showSubElements, "mandate", i, "Mandate " ~ i, "Mandate", mandate) }}
+                    {{ widgets.optionsList(X, inEdit, showSubElements, "mandate", i) }}
             </div>
         </div>
 {% endmacro %}
 
-{% macro displayExist(X, inEdit, exist, i) %}
+{% macro displayExist(X, inEdit, showSubElements, exist, i) %}
     {% import 'widgets.html' as widgets %}
     {% import 'date_entry.html' as dates %}
 
 
     {% if exist.isRange %}
-        {{ dates.dateRangeEntry(X, inEdit, 'Exist Dates', 'exist', exist, i) }}
+        {{ dates.dateRangeEntry(X, inEdit, showSubElements, 'Exist Dates', 'exist', exist, i) }}
     {% else %}
-        {{ dates.dateEntry(X, inEdit, 'Exist Dates', 'exist', exist, i) }}
+        {{ dates.dateEntry(X, inEdit, showSubElements, 'Exist Dates', 'exist', exist, i) }}
     {% endif %}
 
 {% endmacro %}
 
-{% macro displaySCM(X, inEdit, short, i, j, scm) %}
+{% macro displaySCM(X, inEdit, showSubElements, short, i, j, scm) %}
     {% import 'widgets.html' as widgets %}
        <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
             <div class="panel-body">
@@ -1033,7 +1033,7 @@
 
 
                 </div>
-                {{ widgets.scmOptionsList(X, inEdit, short, i, j) }}
+                {{ widgets.scmOptionsList(X, inEdit, showSubElements, short, i, j) }}
 
             </div>
         </div>

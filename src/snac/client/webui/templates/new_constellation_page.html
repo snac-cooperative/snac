@@ -129,7 +129,7 @@ $(document).ready(function() {
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, true, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, true, false, nameEntry, i) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
