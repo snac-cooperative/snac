@@ -247,24 +247,12 @@ $(document).ready(function() {
             </div>
         </form>
 
-
-<div class="modal fade" id="reconcilePane" tabindex="-1" role="dialog" aria-labelledby="reconcilePane">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header primary">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="reconcileLabel">Reconciliation Results</h4>
-            </div>
-            <div class="modal-body" id="reconcileModalContent">
-
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-info" id="confirm_create_new">Create New Constellation</button> &nbsp;
-                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
-            </div>
-        </div>
+    <div id="hidden_field_options" style="display:none">
+    <div id="component_template" style="display:none">
+    {{ components.displayComponent(X, true, true, null, 'ZZ', 'YY') }}
     </div>
-</div>
+    </div>
+
 
     </div>
     </body>
