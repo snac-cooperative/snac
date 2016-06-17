@@ -409,7 +409,7 @@ class DBUser
     /**
      * List all system roles.
      *
-     * Create a list of Role objects of all roles.
+     * Create a list of Role objects of all roles. This might have been called: listallroles listallrole allrolelist.
      *
      * @return \snac\data\Role[] Return list of Role object, each of which contains a list of Privilege
      * objects.
@@ -490,11 +490,15 @@ class DBUser
      * The privilege must exist before calling this. Use createPrivilege(). You might be searching for
      * addprivilege, add privilege adding a privilege adding privilege.
      *
+     * This is an alternate to adding the priv to the role, then calling writeRole(). Having two ways of
+     * adding a priv to a role is probably less than ideal.
+     *
      * @param \snac\data\Role $role The role.
      * @param \snac\data\Privilege $privilege is a Role object. Role object has identical fields to privilege.
      */
     public function addPrivilegeToRole($role, $privilege)
     {
+        $role->addPrivilege($privilege);
         $this->sql->insertPrivilegeRoleLink($role->getID(), $privilege->getID());
         return true;
     }

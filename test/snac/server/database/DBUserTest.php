@@ -91,6 +91,10 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * Test fundamentals of Roles and Privileges
+     *
+     */
     public function testRolePrivilege()
     {
         $priv = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
@@ -98,17 +102,68 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * $priv has the id added, in place.
          */ 
         $this->dbu->writePrivilege($priv);
-        
+
+        /*
+         * Check that the priv we just wrote really made it to the database.
+         */ 
+        $privList = $this->dbu->privilegeList();
+        $foundPriv = false;
+        foreach($privList as $tPriv)
+        {
+            if ($tPriv->getID() == $priv->getID())
+            {
+                $foundPriv = true;
+            }
+        }
+        $this->assertTrue($foundPriv);
+
+        /*
+         * Create a new role, add a priv to it before writing to the db, then write to the db.
+         * An alternate way of adding a priv to a role would is to call addPrivilegeToRole()
+         */ 
         $role = new \snac\data\Role('demo role' . time(), 'This is a demo test role');
         $role->addPrivilege($priv);
-
         $this->dbu->writeRole($role);
 
+        /*
+         * Check that the priv we added to the role is still there. Read all the roles from the db, and check
+         * that our role exists then check that is has the expected priv.
+         */ 
         $allRole = $this->dbu->roleList();
+        $roleHasPriv = false;
+        foreach($allRole as $tRole)
+        {
+            if ($tRole->getID() == $role->getID())
+            {
+                foreach($tRole->getPrivilegeList() as $tPriv)
+                {
+                    if ($tPriv->getID() == $priv->getID())
+                    {
+                        $roleHasPriv = true;
+                    }
+                }
+            }
+        }
+        $this->assertTrue($roleHasPriv);
 
-        $this->dbu->erasePrivilege($priv);
+        
+        /*
+         * Save the role count, erase the demo role, check the post erase count.  Must delete the role before
+         * deleting any privileges used by it. The low level SQL code checks that a privilege is not used by
+         * any role before deleting the privilege.
+         */  
+        $preDeleteRoleCount = count($allRole);
         $this->dbu->eraseRole($role);
+        $postDeleteRoleCount = count($allRole = $this->dbu->roleList());
+        $this->assertEquals($preDeleteRoleCount, ($postDeleteRoleCount+1));
 
+        /*
+         * Save the priv count, erase the demo priv, check the count afterwards.
+         */ 
+        $preDeletePrivilegeCount = count($privList);
+        $this->dbu->erasePrivilege($priv);
+        $postDeletePrivilegeCount = count($privList = $this->dbu->privilegeList());
+        $this->assertEquals($preDeletePrivilegeCount, ($postDeletePrivilegeCount+1));
     }
 
     public function testBasic()
@@ -151,7 +206,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->dbu->checkPassword($newUser, 'foobarbaz'));
 
         /*
-         * Add a role to our new user. Really, the db should be initialized with a 'researcher' or
+         * Add an existing role to our new user. Really, the db should be initialized with a 'researcher' or
          * 'contributor' role.
          */ 
         $roleObjList = $this->dbu->roleList();
@@ -167,21 +222,43 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         }
 
         /*
-         * Add a a privilege to our test role so we can be sure it has at least one privilege.
+         * Create two demo privs, write to db, add the first demo privilege to our test role so we can be sure it has
+         * at least one privilege. Later all the second priv via the alternative method.
          */ 
+        $privZero = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        $this->dbu->writePrivilege($privZero);
+        /*
+         * Sleep a couple of seconds so that the time is different.
+         */ 
+        sleep(2);
+        $privOne = new \snac\data\Privilege('demo priv' . time(), 'This is a demo test privilege');
+        $this->dbu->writePrivilege($privOne);
         $pList = $this->dbu->privilegeList();
-        $testUserRole->addPrivilege($pList[0]);
+        $testUserRole->addPrivilege($privZero);
         $this->dbu->writeRole($testUserRole);
-        $this->dbu->addPrivilegeToRole($testUserRole,$pList[1]); // just to exercise the code
+        /*
+         * Change the role. Unfortunatly, the user object we have is now stale, so read it back from the db.
+         */  
+        $this->dbu->addPrivilegeToRole($testUserRole,$privOne); // just to exercise the code
+        $newUser = $this->dbu->readUser($newUser);
+
         $userList = $this->dbu->listAllUsers();
         $roleList = $this->dbu->listUserRoles($newUser);
         $roleCopy = $this->dbu->populateRole($testUserRole->getID());
         $privList = $this->dbu->privilegeList();
-        $this->dbu->removePrivilegeFromRole($testUserRole, $pList[1]);
+        $this->dbu->removePrivilegeFromRole($testUserRole, $privOne);
 
         $this->assertTrue($this->dbu->hasRole($newUser, $testUserRole));
-        $this->assertTrue($this->dbu->hasPrivilege($newUser, $pList[0]));
-        $this->assertTrue($this->dbu->hasPrivilegeByLabel($newUser, $pList[0]->getLabel()));
+        $this->assertTrue($this->dbu->hasPrivilegeByLabel($newUser, $privZero->getLabel()));
+        $this->assertTrue($this->dbu->hasPrivilege($newUser, $privZero));
+        
+        /*
+         * Remove the demo privs. Don't mess with the test role which is an existing role 'system'.
+         */  
+        $this->dbu->removePrivilegeFromRole($testUserRole, $privZero);
+        $this->dbu->removePrivilegeFromRole($testUserRole, $privOne);
+        $this->dbu->erasePrivilege($privZero);
+        $this->dbu->erasePrivilege($privOne);
 
         /*
          * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume

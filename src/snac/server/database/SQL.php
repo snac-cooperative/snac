@@ -178,11 +178,20 @@ class SQL
      * Used for testing only, maybe. In any case, deleting a role should be rare. To make this a little safer
      * it only deletes if the role is not in use.
      *
+     * Before deleting a role, remove all privilege links for it. Otherwise it appears to the privilege code
+     * that the privileges are still in use.
+     *
+     * What about either deleting the role from all users? Or not allowing the role to be deleted if still
+     * used by some user?
+     *
      * @param integer $roleID An role id
      */
     public function deleteRole($roleID)
     {
-        $result = $this->sdb->query(
+        $this->sdb->query(
+            'delete from privilege_role_link where rid=$1',
+            array($roleID));
+        $this->sdb->query(
             'delete from role where id=$1 and id not in (select distinct(rid) from appuser_role_link)',
             array($roleID));
     }
@@ -198,8 +207,23 @@ class SQL
     public function deletePrivilege($privilegeID)
     {
         $result = $this->sdb->query(
-            'delete from privilege where id=$1 and id not in (select distinct(pid) from privilege_role_link)',
+            'select role.label from role,privilege_role_link as prl where prl.pid=$1 and prl.rid=role.id',
             array($privilegeID));
+        $labels = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $labels .= $row['label'] . " ";
+        }
+        if ($labels)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete privilege still used by roles: $labels");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from privilege where id=$1 and id not in (select distinct(pid) from privilege_role_link)',
+                array($privilegeID));
+        }
     }
 
 
