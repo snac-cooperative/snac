@@ -207,12 +207,12 @@ class DBUtil
     /**
      * Enable logging
      *
-     * For various reasons, logging is not enabled by default. Call this to enabled it for objects of this class.
+     * Call this to enabled loggin for objects of this class. For various reasons, logging is not enabled by default.
      *
      * Check that we don't have a logger before creating a new one. This can be called as often as one wants
      * with no problems.
      */
-    public function enableLogging()
+    private function enableLogging()
     {
         global $log;
         if (! $this->logger)
@@ -591,7 +591,7 @@ class DBUtil
      * Get the SQL object
      *
      * Utility function to return the SQL object for this DBUtil instance. Currently only used for testing,
-     * and that may be the only valid use.
+     * and that may be the only valid use. This might have been called getSQL().
      *
      * @return \snac\server\database\SQL Return the SQL object of this DBUtil instance.
      */
@@ -1526,7 +1526,7 @@ class DBUtil
                 $msg = sprintf("Cannot add Source to class: %s\n", $class);
                 $this->enableLogging();
                 $this->logDebug($msg);
-                die($msg);
+                throw new \snac\exceptions\SNACDatabaseException($msg);
             }
         }
     }
@@ -1871,7 +1871,9 @@ class DBUtil
      */
     private function saveConstellationSource($vhInfo, $cObj)
     {
-        die("DBUtil saveConstellationSource() no longer used. See saveSource()\n");
+        
+        throw new \snac\exceptions\SNACDatabaseException("DBUtil saveConstellationSource() no longer used. See saveSource()");
+        return;
         foreach ($cObj->getSources() as $fdata)
         {
             $this->saveSource($vhInfo, $fdata);
@@ -2213,14 +2215,11 @@ class DBUtil
      * Populate occupation object(s), add to Constellation object passed by
      * reference.
      *
-     * Need to add date range
-     * Need to add vocabulary source
-     *
      * | php                 | sql               |
      * |---------------------+-------------------|
      * | setDBInfo           | id                |
      * | setDBInfo           | version           |
-     * | setDBInfo           | ic_id           |
+     * | setDBInfo           | ic_id             |
      * | setTerm             | occupation_id     |
      * | setNote             | note              |
      * | setVocabularySource | vocabulary_source |
@@ -2621,8 +2620,9 @@ class DBUtil
         {
             $json = $cObj->toJSON();
             $this->enableLogging();
-            $this->logDebug(sprintf("Error: Bad operation: $op\n%s", $json));
-            die();
+            $opErrorMsg = sprintf("Error: Bad operation: $op\n%s", $json);
+            $this->logDebug($opErrorMsg);
+            throw new \snac\exceptions\SNACException($opErrorMsg);
         }
 
         /*
@@ -3247,7 +3247,16 @@ class DBUtil
     }
 
     /**
-     * Undelete a record.
+     * Undelete a constellation. (Broken)
+     *
+     * The code below fails to distinguish constellation from data, and instead does both things, which makes
+     * no sense.
+     * 
+     * This should do to separate things depending on what is being undeleted, but "what is being undeleted"
+     * is not handled properly. Constellations are undeleted via writeConstellationStatus().
+     *
+     * Data is undeleted via sqlClearDeleted() however, we must not undelete data for a constellation that is
+     * currently deleted.
      *
      * @param \snac\data\User $user The user performing the undelete
      *

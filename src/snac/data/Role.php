@@ -18,7 +18,7 @@ namespace snac\data;
 /**
  * Role class
  *
- * Storage class user role, also known as privileges. A user has a list of roles which define what functions
+ * Storage class user role. Each role has. A user has a list of roles which define what functions
  * the user is authorized to perform
  *
  * @author Tom Laudeman
@@ -50,6 +50,76 @@ class Role {
      * @var string Description of this role.
      */
     private $description;
+
+    /**
+     * List of all privileges in this role
+     *
+     * @var \snac\data\Role[] List of Role objects which have mostly the same fields as Privileges would have.
+     *
+     */
+    private $privilegeList = null;
+
+    /**
+     * Constructor
+     *
+     * @param string $label optional Label string
+     *
+     * @param string $description optional Description string
+     */ 
+    public function __construct($label=null, $description=null)
+    {
+        if ($label)
+        {
+            $this->setLabel($label);
+        }
+        if ($description)
+        {
+            $this->setDescription($description);
+        }
+        $this->privilegeList = array();
+    }
+
+    /**
+     * Add a new privilege
+     *
+     * @param \snac\data\Role A privilege which uses the same class as Role.
+     */
+    public function addPrivilege($privilege)
+    {
+        array_push($this->privilegeList, $privilege);
+    }
+
+    /**
+     * Remove a privilege
+     *
+     * Might be able to use a list slice or something, but this simple algo gets the job done.
+     * 
+     * @param \snac\data\Privilege $privilege Remove this privilege. 
+     */ 
+    public function removePrivilege($privilege)
+    {
+        $removeID = $privilege->getID();
+        $oldList = $this->privilegeList;
+        $this->privilegeList = array();
+        foreach($oldList as $priv)
+        {
+            if ($priv->getID() != $removeID)
+            {
+                $this->addPrivilege($priv);
+            }
+        }
+    }
+
+    /**
+     * Return the privilege list
+     * 
+     * @return \snac\data\Role[] The list of privilege objects, which are Role objects. We could expand
+     * AbstractTermData to include Role and Privilege.
+     */
+    public function getPrivilegeList()
+    {
+        return $this->privilegeList;
+    }
 
     /**
      * Get role id

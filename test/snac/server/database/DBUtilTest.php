@@ -28,6 +28,13 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     private $user = null;
 
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     *
+     * See enableLogging() in this file.
+     */
+    private $logger = null;
+
+    /**
      * Constructor
      *
      * Note about how things are different here in testing world vs normal execution:
@@ -39,6 +46,9 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
      *
      * In cases where tests need to happen in order, all the ordered tests are most easily done inside one
      * test, with multiple assertions.
+     *
+     * Notice that nowhere do we set up the logger. I'm guessing this is due to this test class extending
+     * PHPUnit_Framework_TestCase.
      */ 
     public function __construct() 
     {
@@ -67,6 +77,42 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     {
         // Consider creating a single parser instance here, and reusing it throughout.
     }
+
+
+    /**
+     * Check that name components come back the correct order. Minimal check really only looks at the first
+     * element, but that should be enough, especially since we will eventually replace all the vocabulary code.
+     *
+     * June 2015 Disabled because we're temporarily just sorting alphabetically.
+     */ 
+    public function disabled_testNameComponentOrder()
+    {
+        $entityTypeList = $this->dbu->searchVocabulary('entity_type', '');
+        foreach($entityTypeList as $ent)
+        {
+            /* 
+             * printf("\ndbutiltest eid: %s ev: %s list: %s\n",
+             *        $ent['id'],
+             *        $ent['value'],
+             *        var_export($this->dbu->searchVocabulary('name_component','', $ent['id']),1));
+             */
+            $vocabList = $this->dbu->searchVocabulary('name_component','', $ent['id']);
+            if ($ent['value'] == 'person')
+            {
+                $this->assertEquals('Surname', $vocabList[0]['value']);
+            }
+            else if ($ent['value'] == 'corporateBody')
+            {
+                $this->assertEquals('Name', $vocabList[0]['value']);
+            }
+            else
+            {
+                $this->assertEquals('FamilyName', $vocabList[0]['value']);
+            }
+        }
+    }        
+
+
 
     /**
      * Check multiple related
@@ -597,19 +643,11 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
         /*
          * We have Constellation->equals() which is a more accurate check of equality than line count.
+         *
+         * This compares the constellation after adding an SCM and writing, with the same constellation read
+         * back from the db.
          */ 
-        if (1)
-        {
-            $this->assertTrue($newObj->equals($origObj, false));
-        }
-        else
-        {
-            /*
-             * There is one extra line in $firstJSON for "operation": "update" which is as we expect.  Everything
-             * else is identical. This simply tests the line count, but I diff'd the files manually to confirm.
-             */ 
-            $this->assertEquals(substr_count( $firstJSON, "\n" ), substr_count($secondJSON, "\n")+1);
-        }
+        $this->assertTrue($newObj->equals($origObj, false));
 
         $sourceList = $newObj->getSources();
 
@@ -631,12 +669,45 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
+     * Test delete by changing status
+     *
+     * Change constellation status to deleted in order to delete the whole constellation.
+     */
+    public function testDeleteViaWriteConstellationStatus()
+    {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cObj->getPlaces()[1]->setConfirmed(true);
+        $firstJSON = $cObj->toJSON();
+
+        $startingARK = $cObj->getArk();
+        $startingEntity = $cObj->getEntityType()->getTerm();
+
+        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
+                                                 'ingest in order to delete via status');
+
+        $delVersion = $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'deleted');
+
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('DBUtil');
+            $this->logger->pushHandler($log);
+        }
+        $this->logger->addDebug(sprintf("delete via status version: %s ic_id: %s", $delVersion, $retObj->getID()));
+
+        $this->assertNotFalse($delVersion);
+    }
+
+    /**
      * Read in the full test record
      *
      * Set the operation to be insert.
      *
-     * After parsing, change the second place to be confirmed. It is only possibel to set confirmed on a place
-     * with a geoplace (aka GeoTerm), and that's why we use [1] ainstead of [0].
+     * After parsing, change the second place to be confirmed. It is only possible to set confirmed on a place
+     * with a geoplace (aka GeoTerm), and that's why we use [1] instead of [0].
      *
      * Count how many constellations are status 'locked editing'.
      *
@@ -763,14 +834,17 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * fwrite($cfile, $secondJSON);
          * fclose($cfile); 
          */
-        //HERE
 
+        /*
+         * $retObj is returned by the first wrieConstellation(). $readObj is the result of readConstellation()
+         * on the same constellation, to confirm that was was written is read back again.
+         */
         $this->assertTrue($retObj->equals($readObj, false));
         
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
                                                      'test deleting a whole constellation');
-
+        
         /* 
          * readPublishedConstellationByID() should return false when the constellation in question has been
          * deleted.
