@@ -18,6 +18,10 @@ jQuery.fn.exists = function(){return this.length>0;}
  */
 $(document).ready(function() {
 
+    /**
+     * The following are Edit Page save actions
+     */
+
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
@@ -495,8 +499,12 @@ $(document).ready(function() {
     }
 
 
+    /**
+     * The following are New Constellation Edit Page save actions
+     */
 
-    // Save and Dashboard button
+
+    // Reconcile and then continue to create new button
     if($('#continue_and_reconcile').exists()) {
         $('#continue_and_reconcile').click(function(){
 
@@ -613,6 +621,73 @@ $(document).ready(function() {
             $("#constellation_form").submit();
         });
     }
+
+
+    /**
+     * The following are New User Admin Page save actions
+     */
+
+
+    // Save and Dashboard button
+    if($('#save_new_user').exists()) {
+        $('#save_new_user').click(function(){
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving User... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+
+            // Send the data back by AJAX call
+            $.post("?command=administrator&subcommand=add_user_post", $("#new_user_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    console.log(data);
+	                
+                    $('#success-message').html("<p>New user successfully created. Going to administrator dashboard.</p>");
+	                setTimeout(function(){
+	                    $('#success-message').slideDown();
+	                }, 500);
+	                setTimeout(function(){
+
+	                    // Go to dashboard
+	                    window.location.href = "?command=administrator";
+
+	                }, 1000);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

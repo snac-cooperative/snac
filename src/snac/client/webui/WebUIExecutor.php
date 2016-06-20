@@ -330,6 +330,9 @@ class WebUIExecutor {
             case "add_user":
                 $display->setTemplate("admin_add_user");
                 break;
+            case "add_user_post":
+                return $this->saveProfile($input, $user);
+                break;
             case "users":
                 $display->setTemplate("coming_soon");
                 break;
@@ -338,8 +341,9 @@ class WebUIExecutor {
                 break;
             default:
                 $display->setTemplate("admin_dashboard");
-
         }
+
+        return false;
     }
 
     /**
@@ -404,21 +408,31 @@ class WebUIExecutor {
      */
     public function saveProfile(&$input, &$user) {
 
+        $tmpUser = new \snac\data\User();
+        if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+            $tmpUser->setUserName($input["userName"]);
+            $tmpUser->setEmail($input["userName"]);
+            $tmpAffil = new \snac\data\Constellation();
+            $tmpAffil->setID($input["affiliationid"]);
+            $tmpUser->setAffiliation($tmpAffil);
+        } else {
+            $tmpUser = new \snac\data\User($user->toArray());
+        }
 
+        $tmpUser->setFirstName($input["firstName"]);
+        $tmpUser->setLastName($input["lastName"]);
+        $tmpUser->setWorkPhone($input["workPhone"]);
+        $tmpUser->setWorkEmail($input["workEmail"]);
+        $tmpUser->setFullName($input["fullName"]);
 
-        $user->setFirstName($input["firstName"]);
-        $user->setLastName($input["lastName"]);
-        $user->setWorkPhone($input["workPhone"]);
-        $user->setWorkEmail($input["workEmail"]);
-        $user->setFullName($input["fullName"]);
-
-        $this->logger->addDebug("Updated the User Object", $user->toArray());
+        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
 
         // Build a data structure to send to the server
-        $request = array("command"=>"update_user_information");
+        $request = array("command"=>"update_user");
 
         // Send the query to the server
         $request["user"] = $user->toArray();
+        $request["user_update"] = $tmpUser->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array();
@@ -432,13 +446,17 @@ class WebUIExecutor {
             if (isset($serverResponse["error"])) {
                 $response["error"] = $serverResponse["error"];
             }
-            if (isset($serverResponse["user"])) {
-                $response["user"] = $serverResponse["user"];
+            if (isset($serverResponse["user_update"])) {
+                $response["user_update"] = $serverResponse["user_update"];
             }
         }
 
-        if ($response["result"] == "success")
+        // If success AND we were updating the current user, then update the session tokens
+        if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
+            $user = $tmpUser;
             $_SESSION["snac_user"] = serialize($user);
+            $response["user"] = $serverResponse["user_update"];
+        }
 
         return $response;
     }

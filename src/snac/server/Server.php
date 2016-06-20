@@ -146,7 +146,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->userInformation();
                 break;
 
-            case "update_user_information":
+            case "update_user":
                 $this->response = $executor->updateUserInformation($this->input);
                 break;
 

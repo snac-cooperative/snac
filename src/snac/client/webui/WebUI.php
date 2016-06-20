@@ -255,6 +255,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Go to the homepage
             header('Location: index.php');
 
+        
         // Editing, Preview, View, and Other Commands
         } else if ($this->input["command"] == "edit") {
             $executor->displayEditPage($this->input, $display, $user);
@@ -273,7 +274,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
         } else if ($this->input["command"] == "profile") {
             $executor->displayProfilePage($display, $user);
         } else if ($this->input["command"] == "administrator") {
-            $executor->handleAdministrator($this->input, $display, $user);
+            $response = $executor->handleAdministrator($this->input, $display, $user);
 
         } else if ($this->input["command"] == "update_profile") {
             // If saving, this is just an ajax/JSON return.
@@ -366,11 +367,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
             $executor->displayLandingPage($display);
 
         }
-        $this->logger->addDebug("Creating response page from template with data");
-        array_push($this->responseHeaders, "Content-Type: text/html");
-        $this->response = $display->getDisplay();
-        $this->logger->addDebug("Response page created, sending back to user");
 
+        // If the display has been given a template, then use it.  Else, print out JSON.
+        if ($display->hasTemplate()) {
+            $this->logger->addDebug("Creating response page from template with data");
+            array_push($this->responseHeaders, "Content-Type: text/html");
+            $this->response = $display->getDisplay();
+            $this->logger->addDebug("Response page created, sending back to user");
+        } else {
+            $this->response = json_encode($response, JSON_PRETTY_PRINT);
+            array_push($this->responseHeaders, "Content-Type: text/json");
+        }
         return;
     }
 

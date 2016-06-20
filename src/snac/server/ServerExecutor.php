@@ -247,20 +247,33 @@ class ServerExecutor {
     public function updateUserInformation(&$input) {
         $response = array();
 
-        $updated = new \snac\data\User($input["user"]);
+        $updated = new \snac\data\User($input["user_update"]);
 
-        $this->user->setFirstName($updated->getFirstName());
-        $this->user->setLastName($updated->getLastName());
-        $this->user->setFullName($updated->getFullName());
-        $this->user->setEmail($updated->getEmail());
-        $this->user->setWorkEmail($updated->getWorkEmail());
-        $this->user->setWorkPhone($updated->getWorkPhone());
+        $success = false;
+        if ($this->user->getUserName() == $updated->getUserName()) {
+            $this->user->setFirstName($updated->getFirstName());
+            $this->user->setLastName($updated->getLastName());
+            $this->user->setFullName($updated->getFullName());
+            $this->user->setEmail($updated->getEmail());
+            $this->user->setWorkEmail($updated->getWorkEmail());
+            $this->user->setWorkPhone($updated->getWorkPhone());
+            $success = $this->uStore->saveUser($this->user);
+            if ($success === true) 
+                $response["user_update"] = $this->user->toArray();
+        } else {
+            if ($this->uStore->readUser($updated) !== false) {
+                $success = $this->uStore->saveUser($updated);
+            } else {
+                $updated = $this->uStore->createUser($updated);
+                if ($updated !== false)
+                    $success = true;
+            }
 
-
-        $success = $this->uStore->saveUser($this->user);
+            if ($success === true) 
+                $response["user_update"] = $updated->toArray();
+        }
 
         if ($success === true) {
-            $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
