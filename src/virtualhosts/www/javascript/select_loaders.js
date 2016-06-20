@@ -97,6 +97,14 @@ function select_replace(selectItem, idMatch) {
             }
 }
 
+function select_replace_simple(selectItem) {
+    selectItem.select2({
+        width: '100%',
+        allowClear: true,
+        theme: 'bootstrap'
+    });
+}
+
 /**
  * Replace all the selects that exist on the page when the page has finished loading
  */
@@ -105,23 +113,24 @@ $(document).ready(function() {
     // Use select2 to display the select dropdowns
     // rather than the HTML default
     $("select").each(function() {
+        if (typeof $(this).attr('id') !== typeof undefined && $(this).attr('id') !== false) {
+            // Replace the subject selects
+            vocab_select_replace($(this), "language_language_", "language_code", 1);
 
-        // Replace the subject selects
-        vocab_select_replace($(this), "language_language_", "language_code", 1);
+            // Replace the subject selects
+            vocab_select_replace($(this), "language_script_", "script_code", 1);
 
-        // Replace the subject selects
-        vocab_select_replace($(this), "language_script_", "script_code", 1);
+            // Replace the subject selects
+            vocab_select_replace($(this), "subject_", "subject", 4);
 
-        // Replace the subject selects
-        vocab_select_replace($(this), "subject_", "subject", 4);
+            // Replace the function selects
+            vocab_select_replace($(this), "function_", "function", 4);
 
-        // Replace the function selects
-        vocab_select_replace($(this), "function_", "function", 4);
+            // Replace the occupation selects
+            vocab_select_replace($(this), "occupation_", "occupation", 4);
 
-        // Replace the occupation selects
-        vocab_select_replace($(this), "occupation_", "occupation", 4);
-
-        // Replace the entityType select
-        vocab_select_replace($(this), "entityType", "entity_type", 0);
+            // Replace the entityType select
+            vocab_select_replace($(this), "entityType", "entity_type", 0);
+        }
     });
 });

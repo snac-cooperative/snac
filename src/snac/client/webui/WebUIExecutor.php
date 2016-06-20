@@ -334,7 +334,7 @@ class WebUIExecutor {
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
-                $display->setTemplate("coming_soon");
+                $display->setTemplate("admin_users");
                 break;
             case "roles":
                 $display->setTemplate("coming_soon");
