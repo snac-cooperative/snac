@@ -17,16 +17,229 @@ namespace snac\data;
 /**
  * Privilege class
  *
- * The same fields as Role, except that $privilegeList is ignored. 
- * 
+ * Fundamental class for privilege, group, role. Role has a list of privileges. Except for that properties and
+ * methods are the same.
  *
  * @author Tom Laudeman
  *        
  */
-class Privilege extends Role {
-    /*
-     * Nothing here. Just like Role, but used for Privileges.
+class Privilege implements \Serializable {
+
+    /**
+     * @var string $dataType The data type of this object.
+     * 
+     * This should be overwritten by any inheriting/child class
+     */
+    protected $dataType;
+
+    /**
+     * Role id
      *
-     * Being a Privilege, it doesn't use the $privilegeList.
+     * @var integer Role id from sql role.id record id
+     */
+    private $id;
+
+    /**
+     * Role label
+     *
+     * Short label that identifies this role
+     *
+     * @var string Role label 
+     */
+    private $label;
+
+    /**
+     * Role description
+     *
+     * Description of what this role authorizes, and the purpose. One sentence or phrase.
+     *
+     * @var string Description of this role.
+     */
+    private $description;
+    
+    /**
+     * Constructor
+     *
+     * @param string $label optional Label string
+     *
+     * @param string $description optional Description string
      */ 
+    public function __construct($data=null)
+    {
+        $this->dataType = 'privilege';
+
+        if ($data != null && is_array($data))
+            $this->fromArray($data);
+
+        /* 
+         * if ($label)
+         * {
+         *     $this->setLabel($label);
+         * }
+         * if ($description)
+         * {
+         *     $this->setDescription($description);
+         * }
+         */
+    }
+
+    /**
+     * Get id
+     * @return integer id
+     */ 
+    public function getID()
+    {
+        return $this->id;
+    }
+
+    /**
+     * Set id
+     * @param integer $id
+     */ 
+    public function setID($id)
+    {
+        $this->id = $id;
+    }
+
+    /**
+     * Get label
+     * @return string label
+     */ 
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * Set label
+     * @param string $label
+     */ 
+    public function setLabel($label)
+    {
+        $this->label = $label;
+    }
+
+    /**
+     * Get description
+     * @return string description
+     */ 
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * Set description
+     * @param string $description
+     */ 
+    public function setDescription($description)
+    {
+        $this->description = $description;
+    }
+
+    /**
+     * Required method to convert this term structure to an array
+     *
+     * @param boolean $shorten optional Whether or not to include null/empty components
+     * @return string[][] This object as an associative array
+     */
+    public function toArray($shorten = true) {
+        $return = array(
+            'dataType' => $this->dataType,
+            'id' => $this->getID(),
+            'label' => $this->getLabel(),
+            'description' => $this->getDescription()
+        );
+        
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
+        return $return; 
+    }
+
+    /**
+     * Required method to import an array into this data object
+     *
+     * @param string[][] $data The data for this object in an associative array
+     */
+    public function fromArray($data) {
+        
+        unset($this->id);
+        if (isset($data["id"]))
+            $this->id = $data["id"];
+        else
+            $this->id = null;
+        
+        unset($this->label);
+        if (isset($data["label"]))
+            $this->label = $data["label"];
+        else
+            $this->label = null;
+        
+        unset($this->description);
+        if (isset($data["description"]))
+            $this->description = $data["description"];
+        else
+            $this->description = null;
+        
+        // Note: inheriting classes should set the maxDateCount appropriately
+        // based on the definition of that class.
+    }
+
+    /**
+     * Convert this object to JSON
+     *
+     * @param boolean $shorten optional Whether or not to include null/empty components
+     * @return string JSON encoding of this object
+     */
+    public function toJSON($shorten = true) {
+        return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
+    } 
+
+    /**
+     * Prepopulate this object from the given JSON
+     *
+     * @param string $json JSON encoding of this object
+     * @return boolean true on success, false on failure
+     */
+    public function fromJSON($json) {
+        $data = json_decode($json, true);
+        $return = $this->fromArray($data);
+        unset($data);
+        return $return;
+    } 
+
+    /**
+     * Serialization Method
+     *
+     * Allows PHP's serialize() method to correctly serialize the object.
+     *
+     * {@inheritDoc}
+     * 
+     * @return string Serialized form of this object
+     */ 
+    public function serialize() {
+        return $this->toJSON();
+    }
+
+    /**
+     * Un-Serialization Method
+     *
+     * Allows PHP's unserialize() method to correctly unserialize the object.
+     *
+     * {@inheritDoc}
+     * 
+     * @param string $data Serialized version of this object
+     */ 
+    public function unserialize($data) {
+        $this->fromJSON($data);
+    }    
+
 }

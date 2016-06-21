@@ -342,9 +342,17 @@ class DBUser
         $user->setAvatarSmall($record['avatar_small']);
         $user->setAvatarLarge($record['avatar_large']);
         $user->setEmail($record['email']);
-        $user->setRoleList($this->listUserRoles($user));
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
+        /*
+         * We may need the functions listUserRoles() and listUserGroups() for uses outside of simply building
+         * user objects.  Once we have those two functions there is no point in a function populateRoles() or
+         * populateGroups() because those functions would each have a single line.
+         *
+         * This is different from how things are done in DBUtil, for good reason. This code may be more legible.
+         */ 
+        $user->setRoleList($this->listUserRoles($user));
+        $user->setGroupList($this->listUserGroups($user));
 
         /* 
          * readConstellation($mainID, $version=null, $summary=false)
@@ -971,4 +979,143 @@ class DBUser
         }
         return $allUserList;
     }
+    
+    /**
+     * Write or update a group to the database
+     *
+     * @param \snac\data\Group $group The group object
+     *
+     * @return \snac\data\Group The group object
+     */
+    public function writeGroup($group)
+    {
+        if ($group->getID())
+        {
+            $this->sql->updateGroup($group->getID(),
+                                    $group->getLabel(), 
+                                    $group->getDescription());
+        }
+        else
+        {
+            $rid = $this->sql->insertGroup($group->getLabel(), 
+                                           $group->getDescription());
+            $group->setID($rid);
+        }
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        return $group;
+    }
+
+    /**
+     * Populate a group object
+     *
+     * Return a group object based on the $pid ID value
+     *
+     * @return \snac\data\Group A group object.
+     */ 
+    public function populateGroup($pid)
+    {
+        $row = $this->sql->selectGroup($pid);
+        $groupObj = new \snac\data\Group();
+        $groupObj->setID($row['id']);
+        $groupObj->setLabel($row['label']);
+        $groupObj->setDescription($row['description']);
+        return $groupObj;
+    }
+
+    /**
+     * Really delete a group from the db
+     *
+     * Deleting a group should be rare. To make this a little safer deleteGroup() only deletes if the
+     * group is not in use. If the group exists and is not linked to any appuser, it will be
+     * deleted. Otherwise, it is not deleted.
+     *
+     * This function's name might be confused with removeGroup, although we have removeUserFromGroup
+     * (non-existant: removeGroupFromUser) specifically for users. The method deleteGroup is in SQL.php since
+     * we reserve the word "delete" for SQL functions.
+     *
+     * @param \snac\data\Group A Group object
+     */
+    public function eraseGroup($groupObj)
+    {
+        $this->sql->deleteGroup($groupObj->getID());
+    }
+
+    /**
+     * List all system groups.
+     *
+     * Create a list of Group objects of all groups.
+     *
+     * @return \snac\data\Group[] Return list of Group objects
+     */
+    public function groupList()
+    {
+        $pidList = $this->sql->selectAllGroupIDs();
+        $groupObjList = array();
+        foreach($pidList as $pid)
+        {
+            $groupObj = $this->populateGroup($pid);
+            array_push($groupObjList, $groupObj);
+        }
+        return $groupObjList;
+    }
+
+    /**
+     * List groups for a user
+     *
+     * Read the groups from the database.
+     * 
+     * @param \snac\data\User The user we want to list groups for.
+     * @return \snac\data\Group[] List of group objects.
+     */ 
+    private function listUserGroups($user)
+    {
+        $gids = $this->sql->selectUserGroupIDs($user->getUserID());
+        $groupList = array();
+        foreach($gids as $gid)
+        {
+            $row = $this->sql->selectGroup($gid);
+            $grp = new \snac\data\Group();
+            $grp->setID($row['id']);
+            $grp->setLabel($row['label']);
+            $grp->setDescription($row['description']);
+            array_push($groupList, $grp);
+        }
+        return $groupList;
+    }
+
+    /**
+     * Add a group to the User
+     *
+     * The group must exist in the database. That is: the group must have a valid id.
+     *
+     * Due to naming confusiong, you might be searching for nonexistant functions: addgroup, add group adding
+     * a group adding group.
+     *
+     * After adding the group, set the users's group list by getting the list from the db.
+     * 
+     * @param \snac\data\User $user A user
+     * @param \snac\data\Group $newGroup is associative list with keys id, label, description. We really only care about id.
+     */
+    public function addUserToGroup($user, $newGroup)
+    {
+        $this->sql->insertGroupLink($user->getUserID(), $newGroup->getID());
+        $user->setGroupList($this->listUserGroups($user));
+    }
+    
+    /**
+     * Remove a group from the User via table appuser_group_link.
+     *
+     * After removing the group, refresh the User group list by reading it back from the database.
+     *
+     * @param \snac\data\User $user A user
+     * @param \snac\data\Group $group Group object
+     */
+    public function removeUserFromGroup($user, $group)
+    {
+        $this->sql->deleteGroupLink($user->getUserID(), $group->getID());
+        $user->setGroupList($this->listUserGroups($user));
+        return true;
+    }
+
+
 }

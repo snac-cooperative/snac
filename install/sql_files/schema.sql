@@ -22,6 +22,7 @@
 
 drop table if exists appuser; 
 drop table if exists appuser_role_link;
+drop table if exists appuser_group_link;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
 drop table if exists date_range;
@@ -804,9 +805,8 @@ create table otherid (
 --
 -- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
 
-        -- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
-        -- confidence       int,  -- confidence of this link, from snac place entry
-
+-- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
+-- confidence       int,  -- confidence of this link, from snac place entry
 
 create table place_link (
         id           int default nextval('id_seq'),
@@ -826,3 +826,27 @@ create table place_link (
     );
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
+
+create table snac_institutions (
+    id                  int default nextval('id_seq'),
+    related_id          int,  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
+    descriptive_note    text  -- ignore if you wish, but might be useful
+);
+
+-- Groups of appusers. Use case is a group of reviewers, or a group of editors.  Postgres group is a reserved
+-- word, so if we name the table "group" we have to put "group" in double quotes all over the place and that's
+-- not happening.
+
+create table appuser_group (
+        id          int  primary key default nextval('id_seq'),
+        label       text unique, -- short name of this
+        description text         -- description of this
+        );
+
+-- Linking table for appuser and groups.
+
+create table appuser_group_link (
+        uid        int,                -- fk to appuser.id
+        gid        int,                -- fk to group.id
+        is_default boolean default 'f' -- this groups is a default for the given user
+);

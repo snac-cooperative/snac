@@ -593,7 +593,7 @@ class SQL
      * Link a role to a user. 
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param integer $newRoleID A rold id
+     * @param integer $newRoleID A role id
      */ 
     public function insertRoleLink($uid, $newRoleID)
     {
@@ -801,7 +801,7 @@ class SQL
      * Deleted a link role.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param integer $roleID A rold id
+     * @param integer $roleID A role id
      */ 
     public function deleteRoleLink($uid, $roleID)
     {
@@ -4291,6 +4291,159 @@ class SQL
             array_push($all, $row['ic_id']);
         }
         return $all;
+    }
+
+    /**
+     * Insert a new group.
+     *
+     * Insert a new group and return the group's id.
+     *
+     * @param string $label Group label
+     *
+     * @param string $description Group description
+     *
+     * @return integer The inserted row id.
+     */
+    public function insertGroup($label, $description)
+    {
+        $result = $this->sdb->query("insert into group (label, description) values ($1, $2) returning id",
+                          array($label, $description));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Update a group.
+     *
+     * @param integer $rid Group row id
+     *
+     * @param string $label Group label
+     *
+     * @param string $description Group description
+     */
+    public function updateGroup($rid, $label, $description)
+    {
+        $result = $this->sdb->query("update group set label=$2, description=$3 where id=$1",
+                                    array($rid, $label, $description));
+        $row = $this->sdb->fetchrow($result);
+    }
+
+    /**
+     * Select a group record
+     *
+     * Get all fields of a single group record matching id $pid.
+     *
+     * @param integer $pid Group ID value.
+     *
+     * @return string[] All fields of a single group record.
+     */
+    public function selectGroup($pid)
+    {
+        $result = $this->sdb->query("select * from appuser_group where id=$1",
+                                    array($pid));
+        $row = $this->sdb->fetchrow($result);
+        return $row;
+    }
+
+    /**
+     * Really delete a group
+     *
+     * Used for testing only, maybe. In any case, deleting a group should be rare. To make this a little safer
+     * it only deletes if the group is not in use.
+     *
+     * @param integer $groupID An group id
+     */
+    public function deleteGroup($groupID)
+    {
+        $result = $this->sdb->query(
+            'select email from appuser, appuser_group_link as agl where agl.gid=$1 and agl.uid=appuser.id',
+            array($groupID));
+        $email = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $email .= $row['email'] . " ";
+        }
+        if ($email)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete group still used by user(s): $email");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from appuser_group where id=$1 and id not in (select distinct(gid) from appuser_group_link)',
+                array($groupID));
+        }
+    }
+    
+    /**
+     * Select IDs of all group records
+     *
+     * Return a list group IDs
+     *
+     * @return integer[] List of strings for each groups. We expect the calling code in DBUser.php to send
+     * each element of the list to populateGroup().
+     */
+    public function selectAllGroupIDs()
+    {
+        $result = $this->sdb->query("select id from appuser_group order by label", array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+
+    /**
+     * Select user group record IDs
+     *
+     * Select all the IDs of groups for a single user. Higher level code will use each id to build a group
+     * object (and usually a list of group objects).
+     *
+     * @param int $appUserID The numeric ID for the user for whom to list groups.
+     * 
+     * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
+     * populateGroup().
+     */ 
+    public function selectUserGroupIDs($appUserID)
+    {
+        $result = $this->sdb->query("select gg.id from appuser_group as gg,appuser_group_link
+                                    where appuser_group_link.uid=$1 and gg.id=gid order by label asc",
+                                    array($appUserID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+    
+    /**
+     * Add a group to a user
+     *
+     * Link a group to a user. 
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $newGroupID A group id
+     */ 
+    public function insertGroupLink($uid, $newGroupID)
+    {
+        $this->sdb->query("insert into appuser_group_link (uid, gid) values ($1, $2)",
+                          array($uid, $newGroupID));
+    }
+
+    /**
+     * Delete a user from a group
+     *
+     * Deleted an appuser to group link.
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $groupID A group id
+     */ 
+    public function deleteGroupLink($uid, $groupID)
+    {
+        $this->sdb->query("delete from appuser_group_link where uid=$1 and gid=$2",
+                          array($uid, $groupID));
     }
 
 }

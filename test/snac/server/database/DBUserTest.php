@@ -20,6 +20,51 @@
 class DBUserTest extends PHPUnit_Framework_TestCase 
 {
     /**
+     * @var \Monolog\Logger $logger the logger for this server
+     *
+     * See enableLogging() in this file.
+     */
+    private $logger = null;
+
+    /**
+     * Enable logging
+     *
+     * Call this to enabled loggin for objects of this class. For various reasons, logging is not enabled by default.
+     *
+     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
+     * with no problems.
+     */
+    private function enableLogging()
+    {
+        global $log;
+        if (! $this->logger)
+        {
+            // create a log channel
+            $this->logger = new \Monolog\Logger('DBUtil');
+            $this->logger->pushHandler($log);
+        }
+    }
+
+    /**
+     * Wrap logging
+     *
+     * When logging is disabled, we don't want to call the logger because we don't want to generate errors. We
+     * also don't want logs to just magically start up. Doing logging should be very intentional, especially
+     * in a low level class like SQL. Call enableLogging() before calling logDebug().
+     *
+     * @param string $msg The logging messages
+     *
+     * @param string[] $debugArray An associative list of keys and values to send to the logger.
+     */
+    private function logDebug($msg, $debugArray=array())
+    {
+        if ($this->logger)
+        {
+            $this->logger->addDebug($msg, $debugArray);
+        }
+    }
+
+    /**
      * DBUser object for this class
      * @var $dbu \snac\server\database\DBUser object
      */ 
@@ -128,7 +173,9 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create a new role, add a priv to it before writing to the db, then write to the db.
          * An alternate way of adding a priv to a role would is to call addPrivilegeToRole()
          */ 
-        $role = new \snac\data\Role('demo2 role' . time(), 'This is a demo test role');
+        $role = new \snac\data\Role();
+        $role->setLabel('demo2 role' . time());
+        $role->setDescription('This is a demo test role');
         $role->addPrivilege($priv);
         $this->dbu->writeRole($role);
 
@@ -233,13 +280,17 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Create two demo privs, write to db, add the first demo privilege to our test role so we can be sure it has
          * at least one privilege. Later all the second priv via the alternative method.
          */ 
-        $privZero = new \snac\data\Privilege('demo3 priv' . time(), 'This is a demo test privilege');
+        $privZero = new \snac\data\Privilege();
+        $privZero->setLabel('demo3 priv' . time());
+        $privZero->setDescription('This is a demo test privilege');
         $this->dbu->writePrivilege($privZero);
         /*
          * Sleep a couple of seconds so that the time is different.
          */ 
         sleep(2);
-        $privOne = new \snac\data\Privilege('demo4 priv' . time(), 'This is a demo test privilege');
+        $privOne = new \snac\data\Privilege();
+        $privOne->setLabel('demo4 priv' . time());
+        $privOne->setDescription('This is a demo test privilege');
         $this->dbu->writePrivilege($privOne);
         $pList = $this->dbu->privilegeList();
         $testUserRole->addPrivilege($privZero);
@@ -249,6 +300,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */  
         $this->dbu->addPrivilegeToRole($testUserRole,$privOne); // just to exercise the code
         $newUser = $this->dbu->readUser($newUser);
+
+        $userAsJson = $newUser->toJSON();
+        $cfile = fopen('user_object_json.txt', 'w');
+        fwrite($cfile, $userAsJson);
+        fclose($cfile);
+
+        $this->enableLogging();
+        $this->logDebug(sprintf("user as json\n%s", $userAsJson));
 
         $userList = $this->dbu->listAllUsers();
         $roleList = $this->dbu->listUserRoles($newUser);
@@ -315,7 +374,9 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * deleted, but we want to delete the temp role as part of cleaning up.
          */ 
         $roleLabel = 'demo5' . time();
-        $demoRole = new \snac\data\Role($roleLabel, 'Demo role created during testing');
+        $demoRole = new \snac\data\Role();
+        $demoRole->setLabel($roleLabel);
+        $demoRole->setDescription('Demo role created during testing');
         $this->dbu->writeRole($demoRole);
         $this->dbu->addUserRole($newUser, $demoRole);
         $roleList = $this->dbu->listUserRoles($newUser);

@@ -18,38 +18,13 @@ namespace snac\data;
 /**
  * Role class
  *
- * Storage class user role. Each role has. A user has a list of roles which define what functions
- * the user is authorized to perform
+ * Storage class user role. In addition to label and description, each role has a list of privileges. A user
+ * has a list of roles which in turn define what functions the user is authorized to perform
  *
  * @author Tom Laudeman
  *        
  */
-class Role {
-
-    /**
-     * Role id
-     *
-     * @var integer Role id from sql role.id record id
-     */
-    private $id;
-
-    /**
-     * Role label
-     *
-     * Short label that identifies this role
-     *
-     * @var string Role label 
-     */
-    private $label;
-
-    /**
-     * Role description
-     *
-     * Description of what this role authorizes, and the purpose. One sentence or phrase.
-     *
-     * @var string Description of this role.
-     */
-    private $description;
+class Role extends Privilege {
 
     /**
      * List of all privileges in this role
@@ -62,20 +37,14 @@ class Role {
     /**
      * Constructor
      *
-     * @param string $label optional Label string
-     *
-     * @param string $description optional Description string
+     * @param string[][] $data The data for this object in an associative array
      */ 
-    public function __construct($label=null, $description=null)
+    public function __construct($data=null)
     {
-        if ($label)
-        {
-            $this->setLabel($label);
-        }
-        if ($description)
-        {
-            $this->setDescription($description);
-        }
+        parent::__construct($data);
+        if ($data != null && is_array($data))
+            $this->fromArray($data);
+        $this->dataType = 'role';
         $this->privilegeList = array();
     }
 
@@ -121,59 +90,63 @@ class Role {
         return $this->privilegeList;
     }
 
+
+
     /**
-     * Get role id
-     * @return integer Role id
-     */ 
-    public function getID()
-    {
-        return $this->id;
+     * Required method to convert this term structure to an array
+     *
+     * @param boolean $shorten optional Whether or not to include null/empty components
+     * @return string[][] This object as an associative array
+     */
+    public function toArray($shorten = true) {
+
+        $return['privilegeList'] = array();
+        if (isset($this->privilegeList) && $this->privilegeList != null) {
+            foreach ($this->privilegeList as $i => $v)
+            {
+                $return["privilegeList"][$i] = $v->toArray($shorten);
+            }
+        }
+
+        $return = array_merge($return, parent::toArray($shorten));
+        
+        // Shorten if necessary
+        if ($shorten) {
+            $return2 = array();
+            foreach ($return as $i => $v)
+                if ($v != null && !empty($v))
+                    $return2[$i] = $v;
+            unset($return);
+            $return = $return2;
+        }
+
+        return $return; 
     }
 
     /**
-     * Set role id
-     * @param integer $id
-     */ 
-    public function setID($id)
-    {
-        $this->id = $id;
-    }
+     * Required method to import an array into this data object
+     *
+     * @param string[][] $data The data for this object in an associative array
+     */
+    public function fromArray($data) {
+            
+        if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
+            return false;
 
-    /**
-     * Get role label
-     * @return string Role label
-     */ 
-    public function getLabel()
-    {
-        return $this->label;
-    }
+            
+        parent::fromArray($data);
 
-    /**
-     * Set role label
-     * @param string $label
-     */ 
-    public function setLabel($label)
-    {
-        $this->label = $label;
-    }
+        unset($this->privilegeList);
+        $this->privilegeList = array();
+        if (isset($data["privilegeList"])) {
+            foreach ($data["privilegeList"] as $i => $entry)
+                if ($entry != null)
+                    $this->privilegeList[$i] = new Privilege($entry);
 
-    /**
-     * Get role description
-     * @return string Role description
-     */ 
-    public function getDescription()
-    {
-        return $this->description;
-    }
 
-    /**
-     * Set role description
-     * @param string $description
-     */ 
-    public function setDescription($description)
-    {
-        $this->description = $description;
+        }
+        // Note: inheriting classes should set the maxDateCount appropriately
+        // based on the definition of that class.
     }
-
 
 }
