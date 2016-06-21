@@ -22,6 +22,7 @@
 
 drop table if exists appuser; 
 drop table if exists appuser_role_link;
+drop table if exists appuser_group;
 drop table if exists appuser_group_link;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
@@ -48,6 +49,7 @@ drop table if exists privilege;
 drop table if exists role;
 drop table if exists session;
 drop table if exists scm;
+drop table if exists snac_institutions;
 drop table if exists structure_genealogy;
 drop table if exists source;
 -- drop table if exists split_merge_history;
