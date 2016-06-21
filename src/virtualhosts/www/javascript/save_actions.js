@@ -638,7 +638,7 @@ $(document).ready(function() {
 
 
             // Send the data back by AJAX call
-            $.post("?command=administrator&subcommand=add_user_post", $("#new_user_form").serialize(), function (data) {
+            $.post("?command=administrator&subcommand=edit_user_post", $("#new_user_form").serialize(), function (data) {
                 // Check the return value from the ajax. If success, then go to dashboard
                 if (data.result == "success") {
                     // No longer in editing, save succeeded
@@ -647,8 +647,8 @@ $(document).ready(function() {
                     $('#notification-message').slideUp();
 
                     console.log(data);
-	                
-                    $('#success-message').html("<p>New user successfully created. Going to user management.</p>");
+
+                    $('#success-message').html("<p>User successfully saved. Going to user management.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
 	                }, 500);

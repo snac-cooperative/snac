@@ -67,58 +67,60 @@ body {
 <div class="container snac" role="main">
 <form id="new_user_form">
     <h1>Administrator: {{ data.title }}</h1>
-    
+
     <ol class="breadcrumb">
         <li><a href="?command=administrator&subcommand=dashboard">Administrator</a></li>
         <li><a href="?command=administrator&subcommand=users">User Management</a></li>
         <li>{{ data.title }}</li>
     </ol>
-    
+
     <div class="row">
         <div class="col-md-8">
             <div class="well well-lg">
                 <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit the user information.  You must provide a working Gmail account (email address) and their institutional affiliation.</p>
             </div>
-                
+
+            <input type="hidden" id="userid" name="userid" value="{{data.user.userid}}"/>
+
             <div class="form-horizontal">
-                
+
                 <h3>Account Information</h3>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Username</label>
                     <div class="col-xs-10" id="userNameDiv">
                         <input type="text" id="userName" name="userName" class="form-control" placeholder="Google Account Email" value="{{data.user.userName}}"/>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Password</label>
                     <div class="col-xs-10" id="passwordDiv">
                         <p class="form-control-static"><em>Google Authentication</em></p>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Affiliation</label>
                     <div class="col-xs-10" id="affiliationDiv">
                         <input type="text" id="affiliationid" name="affiliationid" class="form-control" value="Dropdown Soon"/>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Roles</label>
                     <div class="col-xs-10" id="rolesDiv">
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" value="">
-                                Contributor 
+                                Contributor
                             </label>
                             <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
                         </div>
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" value="">
-                                Editor in Training 
+                                Editor in Training
                             </label>
                             <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
                         </div>
@@ -132,59 +134,72 @@ body {
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" value="">
-                                Reviewer 
+                                Reviewer
                             </label>
                             <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
                         </div>
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" value="">
-                                Administrator 
+                                Administrator
                             </label>
                             <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
                         </div>
                     </div>
                 </div>
-                
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Active</label>
+                    <div class="col-xs-10" id="activeDiv">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" value="active" name="active" id="active" {{ data.user.active ? 'checked' : '' }}>
+                                Active
+                            </label>
+                            <p style="margin-left: 22px; font-size: 11px;">This user is able to log in.</p>
+                        </div>
+                    </div>
+                </div>
+
                 <h3>Personal Information</h3>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">First Name</label>
                     <div class="col-xs-10 editable" id="firstNameDiv">
                         <input type="text" id="firstName" name="firstName" class="form-control" value="{{data.user.firstName}}"/>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Last Name</label>
                     <div class="col-xs-10 editable" id="lastNameDiv">
                         <input type="text" id="lastName" name="lastName" class="form-control" value="{{data.user.lastName}}"/>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Full Name</label>
                     <div class="col-xs-10 editable" id="fullNameDiv">
                         <input type="text" id="fullName" name="fullName" class="form-control" value="{{data.user.fullName}}"/>
                     </div>
                 </div>
-                
+
                 <h3>Contact Information</h3>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Work Email</label>
                     <div class="col-xs-10 editable" id="workEmailDiv">
                         <input type="text" id="workEmail" name="workEmail" class="form-control" value="{{data.user.workEmail}}"/>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="control-label col-xs-2">Work Phone</label>
                     <div class="col-xs-10 editable" id="workPhoneDiv">
                         <input type="text" id="workPhone" name="workPhone" class="form-control" value="{{data.user.workPhone}}"/>
                     </div>
                 </div>
-            </div>  
+            </div>
         </div>
         <div class="col-md-4">
             <!-- Right Column -->

@@ -258,18 +258,23 @@ class ServerExecutor {
             $this->user->setWorkEmail($updated->getWorkEmail());
             $this->user->setWorkPhone($updated->getWorkPhone());
             $success = $this->uStore->saveUser($this->user);
-            if ($success === true) 
+            if ($success === true)
                 $response["user_update"] = $this->user->toArray();
         } else {
             if ($this->uStore->readUser($updated) !== false) {
                 $success = $this->uStore->saveUser($updated);
+                if ($success === false) {
+                    $response["error"] = "Could not save the user";
+                }
             } else {
                 $updated = $this->uStore->createUser($updated);
                 if ($updated !== false)
                     $success = true;
+                else
+                    $response["error"] = "Could not create the user";
             }
 
-            if ($success === true) 
+            if ($success === true)
                 $response["user_update"] = $updated->toArray();
         }
 
@@ -279,6 +284,30 @@ class ServerExecutor {
             $response["result"] = "failure";
         }
 
+        return $response;
+    }
+
+    /**
+     * List Users
+     *
+     * Calls through to DBUser to ask for the list of users
+     *
+     * @param  string[] $input Input array from the client
+     * @return string[]        Response to send to the client including the list of Users
+     */
+    public function listUsers(&$input) {
+
+        $allUsers = $this->uStore->listAllUsers();
+        $response = array();
+        if (count($allUsers) > 0) {
+            $response["users"] = array();
+            foreach ($allUsers as $user) {
+                array_push($response["users"], $user->toArray());
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
         return $response;
     }
 
@@ -339,23 +368,34 @@ class ServerExecutor {
      * as the list of constellations they have in each stage of editing/review.  Creates and returns
      * an array of the user information to return to the client.
      *
+     * @param string[]|null $input The input from the client
      * @return string[] The response to send to the client
      */
-    public function userInformation() {
+    public function userInformation($input = null) {
         $response = array();
 
-        if ($this->user == null) {
+        $user = null;
+        if ($input == null) {
+            $user = $this->user;
+        } else {
+            if (isset($input["user_edit"])) {
+                $user = $this->uStore->readUser(new \snac\data\User($input["user_edit"]));
+            }
+        }
+
+        if ($user == null) {
             $response["result"] = "failure";
+            $response["error"] = "The user did not exist.";
             return $response;
         }
         $response["result"] = "success";
 
-        $response["user"] = $this->user->toArray();
+        $response["user"] = $user->toArray();
 
         $this->logger->addDebug("Getting list of locked constellations to user");
 
         // First look for constellations editable
-        $editList = $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing");
+        $editList = $this->cStore->listConstellationsWithStatusForUser($user, "locked editing");
 
         $response["editing"] = array ();
         if ($editList !== false) {
@@ -377,7 +417,7 @@ class ServerExecutor {
                 });
 
         // Next look for currently editing constellations
-        $editList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
+        $editList = $this->cStore->listConstellationsWithStatusForUser($user, "currently editing");
 
         $response["editing_lock"] = array ();
         if ($editList !== false) {

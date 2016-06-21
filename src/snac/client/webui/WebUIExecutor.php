@@ -332,14 +332,35 @@ class WebUIExecutor {
                 $display->setTemplate("admin_edit_user");
                 break;
             case "edit_user":
-                $response = array("edituser" => array());
-                $display->setData(array("title"=> "Edit User", "user"=>$response["edituser"]));
+                $response = array();
+                if (isset($input["userid"])) {
+                    $userEdit = new \snac\data\User();
+                    $userEdit->setUserID($input["userid"]);
+                    $ask = array("command"=>"edit_user",
+                        "user" => $user->toArray(),
+                        "user_edit" => $userEdit->toArray()
+                    );
+                    $serverResponse = $this->connect->query($ask);
+                    if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                        return $this->drawErrorPage($serverResponse, $display);
+
+                    $response = array("user_edit" => $serverResponse["user"]);
+                }
+                $display->setData(array("title"=> "Edit User", "user"=>$response["user_edit"]));
                 $display->setTemplate("admin_edit_user");
                 break;
             case "edit_user_post":
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
+                $ask = array("command"=>"admin_users",
+                    "user" => $user->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $display->setData(array("users" => $serverResponse["users"]));
                 $display->setTemplate("admin_users");
                 break;
             case "add_group":
@@ -361,6 +382,21 @@ class WebUIExecutor {
                 $display->setTemplate("admin_dashboard");
         }
 
+        return false;
+    }
+
+    /**
+     * Draw the Error Page
+     *
+     * Helper function to draw the error page when something goes wrong with the Server query.
+     *
+     * @param  string[] $serverResponse The response from the server
+     * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+     * @return boolean False, since an error occurred to get here
+     */
+    public function drawErrorPage(&$serverResponse, &$display) {
+        $display->setTemplate("error_page");
+        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true)));
         return false;
     }
 
@@ -428,11 +464,18 @@ class WebUIExecutor {
 
         $tmpUser = new \snac\data\User();
         if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+            if (isset($input["userid"]) && $input["userid"] != "")
+                $tmpUser->setUserID($input["userid"]);
+
             $tmpUser->setUserName($input["userName"]);
             $tmpUser->setEmail($input["userName"]);
-            $tmpAffil = new \snac\data\Constellation();
-            $tmpAffil->setID($input["affiliationid"]);
-            $tmpUser->setAffiliation($tmpAffil);
+            if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
+                $tmpAffil = new \snac\data\Constellation();
+                $tmpAffil->setID($input["affiliationid"]);
+                $tmpUser->setAffiliation($tmpAffil);
+            }
+            if (isset($input["active"]) && $input["active"] == "active")
+                $tmpUser->setUserActive(true);
         } else {
             $tmpUser = new \snac\data\User($user->toArray());
         }

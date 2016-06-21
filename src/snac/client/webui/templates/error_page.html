@@ -39,18 +39,18 @@ $('.selectpicker').selectpicker();
             </div>
 			<div class="col-md-4 col-centered">
                 <h2>We're Sorry</h2>
-                
+
                 <p>Something has gone awry in your previous response.  We got the following message from the server.  Please use
                                 your browser's back button or the menu at the top to return to what you had been doing.   Thanks!</p>
-                
+
 			</div>
         </div>
         <div class="row row-centered">
             <div class="col-md-6 col-centered">
-                <p><strong>{{data.type}}</strong>: {{data.message}}</p>
+                <p><strong>{{data.type}}</strong>{{ data.type ? ':' : ''}} {{data.message}}</p>
 			</div>
         </div>
- 
+
 </div>
 </body>
 </html>
