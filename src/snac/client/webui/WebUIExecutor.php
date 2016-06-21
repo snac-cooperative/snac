@@ -328,13 +328,31 @@ class WebUIExecutor {
 
         switch ($input["subcommand"]) {
             case "add_user":
-                $display->setTemplate("admin_add_user");
+                $display->setData(array("title"=> "Add New User"));
+                $display->setTemplate("admin_edit_user");
                 break;
-            case "add_user_post":
+            case "edit_user":
+                $response = array("edituser" => array());
+                $display->setData(array("title"=> "Edit User", "user"=>$response["edituser"]));
+                $display->setTemplate("admin_edit_user");
+                break;
+            case "edit_user_post":
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
                 $display->setTemplate("admin_users");
+                break;
+            case "add_group":
+                $display->setTemplate("coming_soon");
+                break;
+            case "edit_group":
+                $display->setTemplate("coming_soon");
+                break;
+            case "edit_group_post":
+                $display->setTemplate("coming_soon");
+                break;
+            case "groups":
+                $display->setTemplate("coming_soon");
                 break;
             case "roles":
                 $display->setTemplate("coming_soon");

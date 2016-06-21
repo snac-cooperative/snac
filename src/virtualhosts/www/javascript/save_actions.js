@@ -648,16 +648,16 @@ $(document).ready(function() {
 
                     console.log(data);
 	                
-                    $('#success-message').html("<p>New user successfully created. Going to administrator dashboard.</p>");
+                    $('#success-message').html("<p>New user successfully created. Going to user management.</p>");
 	                setTimeout(function(){
 	                    $('#success-message').slideDown();
 	                }, 500);
 	                setTimeout(function(){
 
 	                    // Go to dashboard
-	                    window.location.href = "?command=administrator";
+	                    window.location.href = "?command=administrator&subcommand=users";
 
-	                }, 1000);
+	                }, 1500);
 
                 } else {
                     $('#notification-message').slideUp();
@@ -665,12 +665,57 @@ $(document).ready(function() {
                     displayErrorMessage(data.error,data);
                 }
             });
+
+            return false;
         });
     }
 
 
 
+    // Admin cancel to dashboard
+    if($('#admin_dashboard_cancel').exists()) {
+        $('#admin_dashboard_cancel').click(function(){
 
+            if (!confirm('Are you sure you want to cancel?')) {
+                // Don't want to cancel, so exit!
+                return;
+            }
+
+            $('#notification-message').html("<p>Cancelling...</p>");
+            $('#notification-message').slideDown();
+            setTimeout(function(){
+
+                // Go to dashboard
+                window.location.href = "?command=administrator";
+
+            }, 1500);
+
+            return false;
+        });
+    }
+
+
+    // Admin cancel to dashboard
+    if($('#cancel_back').exists()) {
+        $('#cancel_back').click(function(){
+
+            if (!confirm('Are you sure you want to cancel?')) {
+                // Don't want to cancel, so exit!
+                return;
+            }
+
+            $('#notification-message').html("<p>Cancelling...</p>");
+            $('#notification-message').slideDown();
+            setTimeout(function(){
+
+                // Go to back to the previous page
+                window.history.back()
+
+            }, 1500);
+
+            return false;
+        });
+    }
 
 
 

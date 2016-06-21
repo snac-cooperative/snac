@@ -50,26 +50,6 @@ $(document).ready(function() {
     });
 });
 </script>
-<style>
-body {
-    padding-top: 70px;
-    padding-bottom: 30px;
-}
-
-.theme-dropdown .dropdown-menu {
-    position: static;
-    display: block;
-    margin-bottom: 20px;
-}
-
-.snac > p > .btn {
-    margin: 5px 0;
-}
-
-.snac .navbar .container {
-    width: auto;
-}
-</style>
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
@@ -86,9 +66,9 @@ body {
     </ol>
     
     <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-12">
             <div class="well well-lg">
-                <p><span style="font-weight: bold;">Instructions: </span>Manage and update users using the form below.</p>
+                <p><span style="font-weight: bold;">Instructions: </span>The following list of users are those you can manage.  Please use the "Edit" button next to a user to edit their information.</p>
             </div>
                 
             <div class="form-horizontal">
@@ -99,71 +79,46 @@ body {
                             <th>Name</th>
                             <th>User Name</th>
                             <th>Work Email</th>
-                            <th>Role</th>
+                            <th>Roles</th>
                             <th>Affiliation</th>
                             <th>Active</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><p class="form-control-static">Robbie Hott</p></td>
-                            <td><p class="form-control-static">jh2jf@virginia.edu</p></td>
-                            <td><input type="text" class="form-control" value="jh2jf@virginia.edu"/></td>
-                            <td><select class="form-control"><option>Administrator</option></select></td>
-                            <td><select class="form-control"><option>University of Virginia</option></select></td>
-                            <td><input type="checkbox" class="form-control" checked/></td>
+                            <td>Robbie Hott</td>
+                            <td>jh2jf@virginia.edu</p></td>
+                            <td>jh2jf@virginia.edu</td>
+                            <td>Administrator</td>
+                            <td>University of Virginia</select></td>
+                            <td><i class="fa fa-check-square-o" aria-hidden="true"></i>
+                            </td>
+                            <td><a href="?command=administrator&subcommand=edit_user&userid=12345" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
                         </tr>
                         <tr>
-                            <td><p class="form-control-static">Tom Laudeman</p></td>
-                            <td><p class="form-control-static">twl8n@virginia.edu</p></td>
-                            <td><input type="text" class="form-control" value="twl8n@virginia.edu"/></td>
-                            <td><select class="form-control"><option>Administrator</option></select></td>
-                            <td><select class="form-control"><option>University of Virginia</option></select></td>
-                            <td><input type="checkbox" class="form-control" checked/></td>
+                            <td>Tom Laudeman</td>
+                            <td>twl8n@virginia.edu</p></td>
+                            <td>twl8n@virginia.edu</td>
+                            <td>Reviewer, Administrator</td>
+                            <td>University of Virginia</select></td>
+                            <td><i class="fa fa-square-o" aria-hidden="true"></i>
+                            </td>
+                            <td><a href="?command=administrator&subcommand=edit_user&userid=12345" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
                         </tr>
                         <tr>
-                            <td><p class="form-control-static">Worthy Martin</p></td>
-                            <td><p class="form-control-static">martin@virginia.edu</p></td>
-                            <td><input type="text" class="form-control" value="martin@virginia.edu"/></td>
-                            <td><select class="form-control"><option>Administrator</option></select></td>
-                            <td><select class="form-control"><option>University of Virginia</option></select></td>
-                            <td><input type="checkbox" class="form-control" checked/></td>
+                            <td>Worthy Martin</td>
+                            <td>martin@virginia.edu</p></td>
+                            <td>martin@virginia.edu</td>
+                            <td>Editor, Reviewer</td>
+                            <td>University of Virginia</select></td>
+                            <td><i class="fa fa-check-square-o" aria-hidden="true"></i>
+                            </td>
+                            <td><a href="?command=administrator&subcommand=edit_user&userid=12345" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
                         </tr>
                     </tbody>
                 </table>
             </div> 
-            <div class="text-center">
-                <button class="btn btn-success">Add New User</button>
-                <button class="btn btn-info">Save Changes</button>
-                <button class="btn btn-danger">Cancel</button>
-            </div> 
-        </div>
-        <div class="col-md-2" >
-            <!-- Right Column -->
-
-            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
-                <p>Saving User...</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
-                <p>Successfully saved!</p>
-            </div><!-- end alert -->
-            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
-                <p>An error occured while saving</p>
-            </div><!-- end alert -->
-
-            <div class="panel panel-primary">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Actions</h3>
-                </div>
-                <div class="panel-body">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-success" id="save"><span class="glyphicon glyphicon-plus-sign"></span> New User <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Leave this page and create a new user." data-toggle="popover" data-placement="top"></span></a>
-                        <a href="#" class="list-group-item list-group-item-info" id="save"><span class="glyphicon glyphicon-floppy-disk"></span> Save <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the user information." data-toggle="popover" data-placement="top"></span></a>
-                        <a href="#" class="list-group-item list-group-item-danger" id="cancel"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not create this user." data-toggle="popover" data-placement="top"></span></a>
-                    </div>
-
-                </div>
-            </div>
         </div>
     </div>
 </form>
