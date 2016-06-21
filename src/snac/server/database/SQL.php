@@ -152,7 +152,7 @@ class SQL
             'insert into appuser 
             (username, first, last, fullname, avatar, avatar_small, avatar_large,
             email, work_email, work_phone, affiliation, preferred_rules, active)
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 13)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             returning id',
             array($userName,
                   $firstName,
@@ -464,7 +464,7 @@ class SQL
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
             avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, 
-            preferred_rules=$13, $active=14
+            preferred_rules=$13, active=$14
             where appuser.id=$1 returning id',
             array($uid, 
                   $firstName,

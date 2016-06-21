@@ -160,8 +160,8 @@ class User implements \Serializable {
      *
      * @param boolean $active Whether or not the user is active
      */
-    public function getUserActive($active = false) {
-        $this->active = $active;
+    public function getUserActive() {
+        return $this->active;
     }
 
     /**
