@@ -1,8 +1,10 @@
-{% macro optionsListWithDate(X, inEdit, short, i) %}
+{% macro optionsListWithDate(X, inEdit, showSubElements, short, i) %}
 <div class="col-xs-2">
     <div class="list-group">
+        {% if showSubElements %}
         <a href="#" id="{{short}}_datebutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_date_modal_{{i}}" onClick="event.preventDefault();"><span class="fa fa-calendar" aria-hidden="true"></span> {{ X.date.display }}</a>
         <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
+        {% endif %}
         {% if inEdit %}
             <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
             <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
@@ -11,19 +13,23 @@
 </div>
 {% endmacro %}
 
-{% macro optionsList(X, inEdit, short, i) %}
-<div class="col-xs-2">
-    <div class="list-group">
-        <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
-        {% if inEdit %}
-            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
-        {% endif %}
-    </div>
-</div>
+{% macro optionsList(X, inEdit, showSubElements, short, i) %}
+    {% if showSubElements or inEdit %}
+        <div class="col-xs-2">
+            <div class="list-group">
+                {% if showSubElements %}
+                <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
+                {% endif %}
+                {% if inEdit %}
+                    <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
+                    <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endmacro %}
 
-{% macro displayURI(X, inEdit, uri) %}
+{% macro displayURI(X, inEdit, showSubElements, uri) %}
     {% if uri %}
         <p class="form-control-static">uri</p>
     {% else %}
@@ -31,7 +37,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro scmButton(X, inEdit, short, i) %}
+{% macro scmButton(X, inEdit, showSubElements, short, i) %}
 <!--<div class="col-xs-2">-->
     <button type="button" class="btn btn-default" data-toggle="modal"
     data-target="#{{short}}_scm_modal_{{i}}">
@@ -40,7 +46,7 @@
 <!--</div>-->
 {% endmacro %}
 
-{% macro scmOptionsList(X, inEdit, short, i, j) %}
+{% macro scmOptionsList(X, inEdit, showSubElements, short, i, j) %}
     {% if inEdit %}
     <div class="col-xs-2">
         <div class="list-group text-center">
@@ -51,7 +57,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro subOptionsList(X, inEdit, short, i) %}
+{% macro subOptionsList(X, inEdit, showSubElements, short, i) %}
     {% if inEdit %}
     <div class="col-xs-2">
         <div class="list-group">
@@ -62,7 +68,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro scmModal(X, inEdit, short, i, title, type, data) %}
+{% macro scmModal(X, inEdit, showSubElements, short, i, title, type, data) %}
     {% import _self as widgets %}
     {% import 'edit_components.html' as components %}
 <div class="modal fade scm-modal" id="{{short}}_scm_modal_{{i}}" tabindex="-1"
@@ -91,7 +97,7 @@
                     {% set j = 0 %}
                     {% for scm in data.snacControlMetadata %}
 
-                        {{ components.displaySCM(X, inEdit, short, i, j, scm) }}
+                        {{ components.displaySCM(X, inEdit, showSubElements, short, i, j, scm) }}
 
                     {% set j = j + 1 %}
                     {% endfor %}
@@ -111,7 +117,7 @@
 </div>
 {% endmacro %}
 
-{% macro dateModal(X, inEdit, short, i, title, type, data) %}
+{% macro dateModal(X, inEdit, showSubElements, short, i, title, type, data) %}
     {% import _self as widgets %}
     {% import 'date_entry.html' as dates %}
     {% import 'edit_components.html' as components %}
@@ -147,9 +153,9 @@
                     {% for date in data.dates %}
 
                         {% if date.isRange %}
-                            {{ dates.dateRangeEntry(X, inEdit, 'Date', (short ~ '_date_' ~ j), date, i, true) }}
+                            {{ dates.dateRangeEntry(X, inEdit, showSubElements, 'Date', (short ~ '_date_' ~ j), date, i, true) }}
                         {% else %}
-                            {{ dates.dateEntry(X, inEdit, 'Date Range', (short ~ '_date_' ~ j), date, i, true) }}
+                            {{ dates.dateEntry(X, inEdit, showSubElements, 'Date Range', (short ~ '_date_' ~ j), date, i, true) }}
                         {% endif %}
 
                     {% set j = j + 1 %}

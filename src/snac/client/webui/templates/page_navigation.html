@@ -8,14 +8,14 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand active" href="?"><span class="glyphicon glyphicon-home"></span> SNAC</a>
+            <a class="navbar-brand active" href="?"><span class="snac-name-header">snac</span></a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
             <ul class="nav navbar-nav">
             <!-- {% if user.userName %} -->
-                <li><a href="?command=dashboard">Dashboard</a></li>
+                <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
             <!-- {% endif %} -->
-                <li><a href="http://snac-community.iath.virginia.edu/">Discussion</a></li>
+                <li><a href="http://snac-community.iath.virginia.edu/"><i class="fa fa-comments-o" aria-hidden="true"></i> Discussion</a></li>
             </ul>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
@@ -34,11 +34,12 @@
                         <img src="{{user.avatar}}" style="width:20px; height:20px; margin-right: 10px;"> {{ user.fullName }} <span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
-                        <li class="disabled"><a href="#">{{ user.userName }}</a></li>
-                        <li><a href="?command=profile">User Profile</a></li>
+                        <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
+                        <li><a href="?command=administrator"><i class="fa fa-cogs" aria-hidden="true"></i> Administration</a></li>
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
-                        <li><a href="?command=logout">Logout</a></li>
+                        <li><a href="?command=profile"><i class="fa fa-user" aria-hidden="true"></i> User Profile</a></li>
+                        <li><a href="?command=logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
                     </li>
             <!-- {% else %} -->

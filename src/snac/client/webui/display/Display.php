@@ -108,6 +108,20 @@ class Display {
     }
 
     /**
+     * Has a template set
+     *
+     * Determines if this Display object has a template set or not.  If not, that
+     * means the display won't work properly.
+     *
+     * @return boolean true if template set, false otherwise.
+     */
+    public function hasTemplate() {
+        if ($this->templateFileName == null)
+            return false;
+        return true;
+    }
+
+    /**
     * Set the template language
     *
     * Sets the language for this display object.

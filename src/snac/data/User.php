@@ -21,7 +21,7 @@ namespace snac\data;
  * Storage class for information about a user of the system and their login information.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class User implements \Serializable {
 
@@ -54,12 +54,12 @@ class User implements \Serializable {
      * @var string A URL to the user's avatar image (default size)
      */
     private $avatar;
-    
+
     /**
      * @var string A URL to the user's avatar image (small size)
      */
     private $avatarSmall;
-    
+
     /**
      * @var string A URL to the user's avatar image (large size)
      */
@@ -83,7 +83,7 @@ class User implements \Serializable {
      * @var snac\data\Role[] List of Role objects
      */
     private $roleList = null;
-    
+
     /**
      * List of groups
      *
@@ -96,14 +96,14 @@ class User implements \Serializable {
     /**
      * Work email
      *
-     * @var string Work email 
+     * @var string Work email
      */
     private $workEmail = null;
 
     /**
      * Work phone
      *
-     * @var string Work phone 
+     * @var string Work phone
      */
     private $workPhone = null;
 
@@ -121,10 +121,17 @@ class User implements \Serializable {
      */
     private $preferredRules = null;
 
+    /**
+     * Whether the user is active
+     *
+     * @var boolean User is active
+     */
+    private $active = false;
+
 
     /**
-     * Constructor 
-     * 
+     * Constructor
+     *
      * @param string[] $data Array object of User information
      */
     public function __construct($data = null) {
@@ -132,7 +139,29 @@ class User implements \Serializable {
         $this->groupList = array();
         if ($data != null)
             $this->fromArray($data);
-        
+
+    }
+
+    /**
+     * Set the User active
+     *
+     * Sets the user as active or not.
+     *
+     * @param boolean $active Whether or not the user is active
+     */
+    public function setUserActive($active = false) {
+        $this->active = $active;
+    }
+
+    /**
+     * Get the User active
+     *
+     * Gets the user as active or not.
+     *
+     * @param boolean $active Whether or not the user is active
+     */
+    public function getUserActive($active = false) {
+        $this->active = $active;
     }
 
     /**
@@ -188,32 +217,33 @@ class User implements \Serializable {
      * Return the role list
      *
      * @return snac\data\Role[] a list of Role objects
-     */ 
+     */
     public function getRoleList()
     {
         return $this->roleList;
     }
-    
+
     /**
      * Set role list
      *
      * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
      *
-     * Interesting that we set the whole list at once, and don't use addRole() (which doesn't exist) or
-     * something like that. That is probably due to writing user role links to the db, then getting back the
-     * whole role list from the db.
-     *
      * @param \snac\data\Role[] $roleList A list of roles. 
      */ 
     public function setRoleList($roleList)
     {
+        /*
+         * Interesting that we set the whole list at once, and don't use addRole() (which doesn't exist) or
+         * something like that. That is probably due to writing user role links to the db, then getting back the
+         * whole role list from the db.
+         */
         $this->roleList = $roleList;
     }
 
 
     /**
      * Set the UserID
-     * 
+     *
      * @param int $id The User's numeric id
      */
     public function setUserID($id) {
@@ -223,7 +253,7 @@ class User implements \Serializable {
 
     /**
      * Set the first name
-     * 
+     *
      * @param string $first The User's first name
      */
     public function setFirstName($first) {
@@ -233,7 +263,7 @@ class User implements \Serializable {
 
     /**
      * Set the last name
-     * 
+     *
      * @param string $last The user's last name
      */
     public function setLastName($last) {
@@ -243,7 +273,7 @@ class User implements \Serializable {
 
     /**
      * Set the full name
-     * 
+     *
      * @param string $full The user's full name
      */
     public function setFullName($full) {
@@ -253,9 +283,9 @@ class User implements \Serializable {
 
     /**
      * Set the avatar
-     * 
+     *
      * Sets the default-sized avatar link
-     * 
+     *
      * @param string $avatar URL to the default-size avatar image
      */
     public function setAvatar($avatar) {
@@ -271,7 +301,7 @@ class User implements \Serializable {
      * @param string $avatar URL to the small-size avatar image
      */
     public function setAvatarSmall($avatar) {
-    
+
         $this->avatarSmall = $avatar;
     }
 
@@ -283,13 +313,13 @@ class User implements \Serializable {
      * @param string $avatar URL to the large-size avatar image
      */
     public function setAvatarLarge($avatar) {
-    
+
         $this->avatarLarge = $avatar;
     }
 
     /**
      * Set the email address
-     * 
+     *
      * @param string $email The user's email address
      */
     public function setEmail($email) {
@@ -299,10 +329,10 @@ class User implements \Serializable {
 
     /**
      * Set the access token
-     * 
+     *
      * This sets the token for the user.  The token is an associative array that contain the "access_token" and
      * a "expires" that states when the token expires in terms of the linux epoch.
-     * 
+     *
      * @param string[] $token Associative array for the token, with "access_token" and "expires" keys
      */
     public function setToken($token) {
@@ -312,7 +342,7 @@ class User implements \Serializable {
 
     /**
      * Get user id
-     * 
+     *
      * @return int the user's numeric ID
      */
     public function getUserID() {
@@ -322,7 +352,7 @@ class User implements \Serializable {
 
     /**
      * Get the first name
-     * 
+     *
      * @return string The user's first name
      */
     public function getFirstName() {
@@ -332,7 +362,7 @@ class User implements \Serializable {
 
     /**
      * Get the last name
-     * 
+     *
      * @return string The user's last name
      */
     public function getLastName() {
@@ -342,7 +372,7 @@ class User implements \Serializable {
 
     /**
      * Get the full name
-     * 
+     *
      * @return string The user's full name
      */
     public function getFullName() {
@@ -352,17 +382,17 @@ class User implements \Serializable {
 
     /**
      * Get the default-size avatar
-     * 
+     *
      * @return string The URL to the default-size avatar
      */
     public function getAvatar() {
 
         return $this->avatar;
     }
-    
+
     /**
      * Get the small-size avatar
-     * 
+     *
      * @return string The URL to the small-size avatar
      */
     public function getAvatarSmall() {
@@ -382,7 +412,7 @@ class User implements \Serializable {
 
     /**
      * Get the email address
-     * 
+     *
      * @return string The user's email address
      */
     public function getEmail() {
@@ -392,22 +422,22 @@ class User implements \Serializable {
 
     /**
      * Get the token
-     * 
+     *
      * Get's the full token array, including the "access_token" and "expires" fields.
-     * 
+     *
      * @return \string[] The associative array containing the user's "access_token" and "expires" keys.
      */
     public function getToken() {
 
         return $this->token;
     }
-    
+
     /**
      * Generate a temporary session
-     * 
+     *
      * Generates a temporary session, using the timestamp as an access token and the expiration to be
      * the number of hours specified by the parameter from now.
-     * 
+     *
      * @param int $hours optional number of valid hours for the token (default 2)
      */
     public function generateTemporarySession($hours = 2) {
@@ -422,7 +452,7 @@ class User implements \Serializable {
     /**
      * Get work email
      *
-     * @return string Work email 
+     * @return string Work email
      */
     public function getWorkEmail()
     {
@@ -432,7 +462,7 @@ class User implements \Serializable {
     /**
      * Get work phone
      *
-     * @return string Work phone 
+     * @return string Work phone
      */
     public function getWorkPhone()
     {
@@ -462,7 +492,7 @@ class User implements \Serializable {
     /**
      * Set work email
      *
-     * @param  string $workEmail Work email 
+     * @param  string $workEmail Work email
      */
     public function setWorkEmail($workEmail)
     {
@@ -472,7 +502,7 @@ class User implements \Serializable {
     /**
      * Set work phone
      *
-     * @param string $workPhone Work phone 
+     * @param string $workPhone Work phone
      */
     public function setWorkPhone($workPhone)
     {
@@ -519,6 +549,7 @@ class User implements \Serializable {
                 "email" => $this->email,
                 "workEmail" => $this->workEmail,
                 "workPhone" => $this->workPhone,
+                "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
         );
@@ -529,6 +560,7 @@ class User implements \Serializable {
         foreach ($this->groupList as $i => $v)
             $return["groupList"][$i] = $v->toArray($shorten);
 
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array ();
@@ -538,7 +570,7 @@ class User implements \Serializable {
             unset($return);
             $return = $return2;
         }
-        
+
         return $return;
     }
 
@@ -554,66 +586,71 @@ class User implements \Serializable {
             $this->userid = $data["userid"];
         else
             $this->userid = null;
-        
+
         if (isset($data["userName"]))
             $this->userName = $data["userName"];
         else
             $this->userName = null;
-        
+
         if (isset($data["firstName"]))
             $this->firstName = $data["firstName"];
         else
             $this->firstName = null;
-        
+
         if (isset($data["lastName"]))
             $this->lastName = $data["lastName"];
         else
             $this->lastName = null;
-        
+
         if (isset($data["fullName"]))
             $this->fullName = $data["fullName"];
         else
             $this->fullName = null;
-        
+
         if (isset($data["avatar"]))
             $this->avatar = $data["avatar"];
         else
             $this->avatar = null;
-        
+
         if (isset($data["avatarSmall"]))
             $this->avatarSmall = $data["avatarSmall"];
         else
             $this->avatarSmall = null;
-        
+
         if (isset($data["avatarLarge"]))
             $this->avatarLarge = $data["avatarLarge"];
         else
             $this->avatarLarge = null;
-        
+
         if (isset($data["email"]))
             $this->email = $data["email"];
         else
             $this->email = null;
-        
+
         if (isset($data["workEmail"]))
             $this->workEmail = $data["workEmail"];
         else
             $this->workEmail = null;
-        
+
         if (isset($data["workPhone"]))
             $this->workPhone = $data["workPhone"];
         else
             $this->workPhone = null;
-        
+
         if (isset($data["affiliation"]) && $data['affiliation'] != null)
             $this->affiliation = new \snac\data\Constellation($data["affiliation"]);
         else
             $this->affiliation = null;
-        
+
         if (isset($data["token"]))
             $this->token = $data["token"];
         else
             $this->token = null;
+
+        if (isset($data["active"]))
+            $this->active = $data["active"];
+        else
+            $this->active = false;
 
         unset($this->roleList);
         $this->roleList = array();
@@ -631,7 +668,7 @@ class User implements \Serializable {
         
         return true;
     }
-    
+
     /**
      * Convert this object to JSON
      *
@@ -641,7 +678,7 @@ class User implements \Serializable {
     public function toJSON($shorten = true) {
         return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
     }
-    
+
     /**
      * Prepopulate this object from the given JSON
      *
@@ -661,9 +698,9 @@ class User implements \Serializable {
      * Allows PHP's serialize() method to correctly serialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @return string The serialized form of this object
-     */ 
+     */
     public function serialize() {
         return $this->toJSON();
     }
@@ -674,11 +711,11 @@ class User implements \Serializable {
      * Allows PHP's unserialize() method to correctly unserialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @param string $data the serialized object
-     */ 
+     */
     public function unserialize($data) {
         $this->fromJSON($data);
-    }    
+    }
 
 }

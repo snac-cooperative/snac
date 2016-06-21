@@ -1,4 +1,18 @@
 <?php
+
+/**
+ * Shell Stage Class File
+ *
+ * Abstract class file for IR Stages needing to run shell commands
+ *
+ * License:
+ *
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
 namespace snac\server\identityReconciliation\stages\helpers;
 
 
@@ -55,7 +69,7 @@ abstract class Shell implements Stage {
      * @param \identity $identity The identity to parse.  
      * @return string The combined string that will be sent to the shell script.
      */
-    protected function combineString($identity);
+    protected abstract function combineString($identity);
 
     /**
      * Run function

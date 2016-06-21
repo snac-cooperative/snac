@@ -198,7 +198,8 @@ class DBUser
                                                 $user->getWorkEmail(),
                                                 $user->getWorkPhone(),
                                                 $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
-                                                $user->getPreferredRules());
+                                                $user->getPreferredRules(),
+                                                $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
             $this->addDefaultRole($newUser);
@@ -252,7 +253,8 @@ class DBUser
                                       $user->getWorkEmail(),
                                       $user->getWorkPhone(),
                                       $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
-                                      $user->getPreferredRules());
+                                      $user->getPreferredRules(),
+                                      $user->getUserActive());
     }
     
 
@@ -344,6 +346,7 @@ class DBUser
         $user->setEmail($record['email']);
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
+        $user->setUserActive($record['active']);
         /*
          * We may need the functions listUserRoles() and listUserGroups() for uses outside of simply building
          * user objects.  Once we have those two functions there is no point in a function populateRoles() or

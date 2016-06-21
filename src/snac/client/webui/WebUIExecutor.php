@@ -312,6 +312,95 @@ class WebUIExecutor {
     }
 
     /**
+     * Handle Administrative tasks
+     *
+     * Fills the display object with the requested admin page for the given user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function handleAdministrator(&$input, &$display, &$user) {
+
+        if (!isset($input["subcommand"])) {
+            $display->setTemplate("admin_dashboard");
+            return;
+        }
+
+        switch ($input["subcommand"]) {
+            case "add_user":
+                $display->setData(array("title"=> "Add New User"));
+                $display->setTemplate("admin_edit_user");
+                break;
+            case "edit_user":
+                $response = array();
+                if (isset($input["userid"])) {
+                    $userEdit = new \snac\data\User();
+                    $userEdit->setUserID($input["userid"]);
+                    $ask = array("command"=>"edit_user",
+                        "user" => $user->toArray(),
+                        "user_edit" => $userEdit->toArray()
+                    );
+                    $serverResponse = $this->connect->query($ask);
+                    if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                        return $this->drawErrorPage($serverResponse, $display);
+
+                    $response = array("user_edit" => $serverResponse["user"]);
+                }
+                $display->setData(array("title"=> "Edit User", "user"=>$response["user_edit"]));
+                $display->setTemplate("admin_edit_user");
+                break;
+            case "edit_user_post":
+                return $this->saveProfile($input, $user);
+                break;
+            case "users":
+                $ask = array("command"=>"admin_users",
+                    "user" => $user->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $display->setData(array("users" => $serverResponse["users"]));
+                $display->setTemplate("admin_users");
+                break;
+            case "add_group":
+                $display->setTemplate("coming_soon");
+                break;
+            case "edit_group":
+                $display->setTemplate("coming_soon");
+                break;
+            case "edit_group_post":
+                $display->setTemplate("coming_soon");
+                break;
+            case "groups":
+                $display->setTemplate("coming_soon");
+                break;
+            case "roles":
+                $display->setTemplate("coming_soon");
+                break;
+            default:
+                $display->setTemplate("admin_dashboard");
+        }
+
+        return false;
+    }
+
+    /**
+     * Draw the Error Page
+     *
+     * Helper function to draw the error page when something goes wrong with the Server query.
+     *
+     * @param  string[] $serverResponse The response from the server
+     * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+     * @return boolean False, since an error occurred to get here
+     */
+    public function drawErrorPage(&$serverResponse, &$display) {
+        $display->setTemplate("error_page");
+        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true)));
+        return false;
+    }
+
+    /**
      * Display Profile Page
      *
      * Fills the display with the profile page for the given user.
@@ -373,21 +462,38 @@ class WebUIExecutor {
      */
     public function saveProfile(&$input, &$user) {
 
+        $tmpUser = new \snac\data\User();
+        if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+            if (isset($input["userid"]) && $input["userid"] != "")
+                $tmpUser->setUserID($input["userid"]);
 
+            $tmpUser->setUserName($input["userName"]);
+            $tmpUser->setEmail($input["userName"]);
+            if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
+                $tmpAffil = new \snac\data\Constellation();
+                $tmpAffil->setID($input["affiliationid"]);
+                $tmpUser->setAffiliation($tmpAffil);
+            }
+            if (isset($input["active"]) && $input["active"] == "active")
+                $tmpUser->setUserActive(true);
+        } else {
+            $tmpUser = new \snac\data\User($user->toArray());
+        }
 
-        $user->setFirstName($input["firstName"]);
-        $user->setLastName($input["lastName"]);
-        $user->setWorkPhone($input["workPhone"]);
-        $user->setWorkEmail($input["workEmail"]);
-        $user->setFullName($input["fullName"]);
+        $tmpUser->setFirstName($input["firstName"]);
+        $tmpUser->setLastName($input["lastName"]);
+        $tmpUser->setWorkPhone($input["workPhone"]);
+        $tmpUser->setWorkEmail($input["workEmail"]);
+        $tmpUser->setFullName($input["fullName"]);
 
-        $this->logger->addDebug("Updated the User Object", $user->toArray());
+        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
 
         // Build a data structure to send to the server
-        $request = array("command"=>"update_user_information");
+        $request = array("command"=>"update_user");
 
         // Send the query to the server
         $request["user"] = $user->toArray();
+        $request["user_update"] = $tmpUser->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array();
@@ -401,13 +507,17 @@ class WebUIExecutor {
             if (isset($serverResponse["error"])) {
                 $response["error"] = $serverResponse["error"];
             }
-            if (isset($serverResponse["user"])) {
-                $response["user"] = $serverResponse["user"];
+            if (isset($serverResponse["user_update"])) {
+                $response["user_update"] = $serverResponse["user_update"];
             }
         }
 
-        if ($response["result"] == "success")
+        // If success AND we were updating the current user, then update the session tokens
+        if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
+            $user = $tmpUser;
             $_SESSION["snac_user"] = serialize($user);
+            $response["user"] = $serverResponse["user_update"];
+        }
 
         return $response;
     }

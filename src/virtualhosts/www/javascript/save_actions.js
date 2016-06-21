@@ -18,6 +18,10 @@ jQuery.fn.exists = function(){return this.length>0;}
  */
 $(document).ready(function() {
 
+    /**
+     * The following are Edit Page save actions
+     */
+
     // Save and Continue button
     if($('#save_and_continue').exists()) {
         $('#save_and_continue').click(function(){
@@ -425,24 +429,29 @@ $(document).ready(function() {
     if($('#cancel').exists()) {
         $('#cancel').click(function(){
 
-        	// If EntityType and NameEntry do not have values, don't update state and go to dashboard
-        	var noNameEntryText = true;
-        	$("input[id^='nameEntry_original_']").each(function() {
-        		if ($(this).val() != "")
-        			noNameEntryText = false;
-        	});
-        	if ($('#entityType').val() == "" || noNameEntryText) {
-        		// Go to dashboard
-                window.location.href = "?command=dashboard";
-        		return;
-        	}
-
             if(somethingHasBeenEdited){
                 if (!confirm('You may have unsaved changes on this Constellation.  Are you sure you want to cancel and lose those edits?')) {
                     // Don't want to cancel, so exit!
                     return;
                 }
             }
+
+            // By setting this to false, the page will not prompt on exit
+            somethingHasBeenEdited = false;
+
+        	// If Constellation ID or EntityType or NameEntry do not have values, don't update state and go to dashboard
+        	var noNameEntryText = true;
+        	$("input[id^='nameEntry_original_']").each(function() {
+        		if ($(this).val() != "")
+        			noNameEntryText = false;
+        	});
+        	if ($('#constellationid').val() == "" || $('#entityType').val() == "" || noNameEntryText) {
+        		// Go to dashboard
+                window.location.href = "?command=dashboard";
+        		return;
+        	}
+
+
 
         	// Unlock
 	        $.post("?command=unlock", $("#constellation_form").serialize(), function (data) {
@@ -490,8 +499,12 @@ $(document).ready(function() {
     }
 
 
+    /**
+     * The following are New Constellation Edit Page save actions
+     */
 
-    // Save and Dashboard button
+
+    // Reconcile and then continue to create new button
     if($('#continue_and_reconcile').exists()) {
         $('#continue_and_reconcile').click(function(){
 
@@ -608,6 +621,118 @@ $(document).ready(function() {
             $("#constellation_form").submit();
         });
     }
+
+
+    /**
+     * The following are New User Admin Page save actions
+     */
+
+
+    // Save and Dashboard button
+    if($('#save_new_user').exists()) {
+        $('#save_new_user').click(function(){
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving User... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+
+            // Send the data back by AJAX call
+            $.post("?command=administrator&subcommand=edit_user_post", $("#new_user_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    console.log(data);
+
+                    $('#success-message').html("<p>User successfully saved. Going to user management.</p>");
+	                setTimeout(function(){
+	                    $('#success-message').slideDown();
+	                }, 500);
+	                setTimeout(function(){
+
+	                    // Go to dashboard
+	                    window.location.href = "?command=administrator&subcommand=users";
+
+	                }, 1500);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+
+            return false;
+        });
+    }
+
+
+
+    // Admin cancel to dashboard
+    if($('#admin_dashboard_cancel').exists()) {
+        $('#admin_dashboard_cancel').click(function(){
+
+            if (!confirm('Are you sure you want to cancel?')) {
+                // Don't want to cancel, so exit!
+                return;
+            }
+
+            $('#notification-message').html("<p>Cancelling...</p>");
+            $('#notification-message').slideDown();
+            setTimeout(function(){
+
+                // Go to dashboard
+                window.location.href = "?command=administrator";
+
+            }, 1500);
+
+            return false;
+        });
+    }
+
+
+    // Admin cancel to dashboard
+    if($('#cancel_back').exists()) {
+        $('#cancel_back').click(function(){
+
+            if (!confirm('Are you sure you want to cancel?')) {
+                // Don't want to cancel, so exit!
+                return;
+            }
+
+            $('#notification-message').html("<p>Cancelling...</p>");
+            $('#notification-message').slideDown();
+            setTimeout(function(){
+
+                // Go to back to the previous page
+                window.history.back()
+
+            }, 1500);
+
+            return false;
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -131,6 +131,7 @@ class SQL
      * @param string $workPhone Work phone number
      * @param integer $affiliationID Foreign key to ic_id of the SNAC constellation for affiliated institution
      * @param string $preferredRules Preferred descriptive name rules
+     * @param boolean $active Is the user active
      * @return integer Record row id, unique, from sequence id_seq.
      */ 
     public function insertUser($userName, 
@@ -144,15 +145,28 @@ class SQL
                                $workEmail,
                                $workPhone,
                                $affiliationID,
-                               $preferredRules)
+                               $preferredRules,
+                               $active)
     {
         $result = $this->sdb->query(
             'insert into appuser 
-            (username, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email, work_phone, affiliation, preferred_rules)
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            (username, first, last, fullname, avatar, avatar_small, avatar_large,
+            email, work_email, work_phone, affiliation, preferred_rules, active)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 13)
             returning id',
-            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email,
-                  $workEmail, $workPhone, $affiliationID, $preferredRules));
+            array($userName,
+                  $firstName,
+                  $lastName,
+                  $fullName,
+                  $avatar,
+                  $avatarSmall,
+                  $avatarLarge,
+                  $email,
+                  $workEmail,
+                  $workPhone,
+                  $affiliationID,
+                  $preferredRules,
+                  $this->sdb->boolToPg($active)));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
@@ -442,16 +456,30 @@ class SQL
      * @param string $workPhone Work phone
      * @param integer $affiliationID Constellation ID aka ic_id integer version_history.id
      * @param string $preferredRules Preferred name descriptive rules.
+     * @param boolean $active Is the user active
      */ 
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
-                               $workEmail, $workPhone, $affiliationID, $preferredRules)
+                               $workEmail, $workPhone, $affiliationID, $preferredRules, $active)
     {
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, preferred_rules=$13
+            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, 
+            preferred_rules=$13, $active=14
             where appuser.id=$1 returning id',
-            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
-                  $workEmail, $workPhone, $affiliationID, $preferredRules));
+            array($uid, 
+                  $firstName,
+                  $lastName,
+                  $fullName,
+                  $avatar,
+                  $avatarSmall,
+                  $avatarLarge,
+                  $email,
+                  $userName,
+                  $workEmail,
+                  $workPhone,
+                  $affiliationID,
+                  $preferredRules,
+                  $this->sdb->boolToPg($active)));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
         {
