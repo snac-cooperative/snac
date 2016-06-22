@@ -198,6 +198,8 @@ class SQL
      * What about either deleting the role from all users? Or not allowing the role to be deleted if still
      * used by some user?
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param integer $roleID An role id
      */
     public function deleteRole($roleID)
@@ -230,6 +232,8 @@ class SQL
      *
      * Used for testing only, maybe. In any case, deleting a privilege should be rare. To make this a little safer
      * it only deletes if the privilege is not in use.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
      *
      * @param integer $privilegeID An privilege id
      */
@@ -2163,6 +2167,8 @@ class SQL
      * Related to name where component.name_id=name.id. This is a one-sided fk relationship also used for
      * date and language.
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param integer $id Record id if this component. If null one will be minted. The id (existing or new) is always returned.
@@ -2607,6 +2613,8 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
@@ -2631,7 +2639,7 @@ class SQL
             /*
              * Trying something not approved is fatal.  Add an exception for this.
              */
-            die("Tried to insert on non-approved table: $table\n");
+            throw new \snac\exceptions\SNACDatabaseException("Tried to insert on non-approved table: $table\n");
         }
         if (! $id)
         {
@@ -4379,6 +4387,8 @@ class SQL
      * Used for testing only, maybe. In any case, deleting a group should be rare. To make this a little safer
      * it only deletes if the group is not in use.
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param integer $groupID An group id
      */
     public function deleteGroup($groupID)
@@ -4472,6 +4482,87 @@ class SQL
     {
         $this->sdb->query("delete from appuser_group_link where uid=$1 and gid=$2",
                           array($uid, $groupID));
+    }
+
+    /**
+     * Select all snac_institution records
+     *
+     * This returns records in a 2D array, with inner list keys: id, ic_id
+     *
+     * @return string[][] List of accciative list 
+     */
+    public function selectAllInstitution() 
+    {
+        $selectSQL = "select * from snac_institution";
+        $result = $this->sdb->query($selectSQL, array());
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) 
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Insert a new institution.
+     *
+     * Insert a new institution and return the institution's id.
+     *
+     * @param string $ic_id Institution ic_id
+     *
+     * @return integer The inserted row id.
+     */
+    public function insertInstitution($ic_id)
+    {
+        $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1) returning id",
+                                    array($ic_id));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Update a institution.
+     *
+     * @param integer $rid Institution row id
+     *
+     * @param string $ic_id Institution ic_id
+     *
+     */
+    public function updateInstitution($iid, $ic_id)
+    {
+        $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
+                                    array($ic_id, $iid));
+    }
+
+    /**
+     * Delete a SNAC institution
+     *
+     * This will throw an exception if asked to delete an institution has affiliated users.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param integer $institutionID An institution id
+     */
+    public function deleteInstitution($institutionID)
+    {
+        $result = $this->sdb->query(
+            'select appuser.username from appuser where affiliation in (select ic_id from snac_institution where id=$1)',
+            array($institutionID));
+        $usernames = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $usernames .= $row['username'] . " ";
+        }
+        if ($usernames)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete institution still used by users: $usernames");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from snac_institution where id=$1',
+                array($institutionID));
+        }
     }
 
 }

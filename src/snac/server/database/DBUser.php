@@ -1120,5 +1120,75 @@ class DBUser
         return true;
     }
 
+    /**
+     * List all system institutions.
+     *
+     * Create a list of Institution objects of all institutions. This might have been called:
+     * listallinstitutions listallinstitution allinstitutionlist.
+     *
+     * @return \snac\data\Institution[] Return list of Institution object, each of which contains a list of Privilege
+     * objects.
+     */
+    public function institutionList()
+    {
+        /*
+         * Select all the institution data, returned as a list of associative lists. We don't have any use for
+         * a list of ids, unlike Role and some other data. So, there is no populateInstitution(). It all happens here.
+         */ 
+        $rowList = $this->sql->selectAllInstitution();
+        $institutionObjList = array();
+        foreach($rowList as $row)
+        {
+            $institutionObj = new \snac\data\SNACInstitution();
+            $institutionObj->setID($row['id']);
+            $institutionObj->setConstellationID($row['ic_id']);
+            array_push($institutionObjList, $institutionObj);
+        }
+        return $institutionObjList;
+    }
+
+    /**
+     * Write or update a new institution to the database
+     *
+     * If the institution has an id, it must have previously have been written to the db, so update.
+     *
+     * The update use case is unclear. Insert and delete (erase) seem reasonable, but update will probably never happen.
+     *
+     * @param \snac\data\SNACInstitution $institution The institution objectc.
+     *
+     * @return \snac\data\SNACInstitution SNACInstitution object.
+     */
+    public function writeInstitution($institution)
+    {
+        if ($institution->getID())
+        {
+            $this->sql->updateInstitution($institution->getID(),
+                                          $institution->getConstellationID());
+        }
+        else
+        {
+            $iid = $this->sql->insertInstitution($institution->getConstellationID());
+            $institution->setID($iid);
+        }
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        return $institution;
+    }
+
+    /**
+     * Really delete a SNAC institution from the db
+     *
+     * Remember that SNAC Institution records are simply the ic_id of an existing SNAC record. This only
+     * deletes from the snac_institution table, and nothing else is effected.
+     *
+     * deleteInstitution() will throw an exception if asked to delete an institution which has any affiliated
+     * users.
+     *
+     * @param \snac\data\Institution A Institution object
+     */
+    public function eraseInstitution($institutionObj)
+    {
+        $this->sql->deleteInstitution($institutionObj->getID());
+    }
+    
 
 }

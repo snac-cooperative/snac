@@ -29,7 +29,7 @@ class Role extends Privilege {
     /**
      * List of all privileges in this role
      *
-     * @var \snac\data\Role[] List of Role objects which have mostly the same fields as Privileges would have.
+     * @var \snac\data\Role[] $privilegeList List of Role objects which have mostly the same fields as Privileges would have.
      *
      */
     private $privilegeList = null;

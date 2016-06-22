@@ -813,7 +813,7 @@ create table otherid (
 create table place_link (
         id           int default nextval('id_seq'),
         version      int not null,
-        ic_id      int not null,
+        ic_id        int not null,
         is_deleted   boolean default false,
         fk_id        int,                   -- fk to related table.id
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
@@ -829,10 +829,12 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
-create table snac_institutions (
-    id                  int default nextval('id_seq'),
-    related_id          int,  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
-    descriptive_note    text  -- ignore if you wish, but might be useful
+-- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
+-- appuser.affiliation. snac_institution.ic_id=appuser.affiliation.
+
+create table snac_institution (
+    id    int default nextval('id_seq'),
+    ic_id int  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
 );
 
 -- Groups of appusers. Use case is a group of reviewers, or a group of editors.  Postgres group is a reserved

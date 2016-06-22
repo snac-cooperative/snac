@@ -215,7 +215,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Save the priv count, erase the demo priv, check the count afterwards.
          */ 
         $preDeletePrivilegeCount = count($privList);
-        printf("\ndbusertest id: %s\n", $priv->getID());
         $this->dbu->erasePrivilege($priv);
         $postDeletePrivilegeCount = count($this->dbu->privilegeList());
         $this->assertEquals($preDeletePrivilegeCount, ($postDeletePrivilegeCount+1));
@@ -488,5 +487,34 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
     }
 
+    public function testInstitution()
+    {
+        $testObj = new \snac\data\SNACInstitution();
+        /*
+         * Yes, it is a ficticious ic_id, but in the testing world, the ic_id isn't related to anything.
+         * The first write tests insert, and the second tests update.
+         */
+        $initialList = $this->dbu->institutionList();
+
+        $testObj->setConstellationID(1234); 
+        $firstObj = $this->dbu->writeInstitution($testObj);
+
+        $firstICID = $firstObj->getConstellationID();
+        $firstObj->setConstellationID(4567);
+        $secondObj = $this->dbu->writeInstitution($firstObj);
+
+        $iList = $this->dbu->institutionList();
+        $this->dbu->eraseInstitution($secondObj);
+        $postList = $this->dbu->institutionList();
+        /*
+         * Do all the assertions at the end. Failed assertions halt execution, so any error prevents the test
+         * from cleaning up. Of course, some kinds of frank bugs will prevent cleaning up as well.
+         */ 
+        $this->assertNotNull($firstObj->getID());
+        $this->assertEquals($firstICID, 1234);
+        $this->assertEquals($secondObj->getConstellationID(), 4567);
+        $this->assertEquals(count($initialList), count($iList)-1);
+        $this->assertEquals(count($initialList), count($postList));
+    }
     
 }
