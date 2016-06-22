@@ -1150,6 +1150,8 @@ class DBUser
     /**
      * Write or update a new institution to the database
      *
+     * The part of the constellation we most care about is the ic_id. getConstellationID() is the ic_id.
+     * 
      * If the institution has an id, it must have previously have been written to the db, so update.
      *
      * The update use case is unclear. Insert and delete (erase) seem reasonable, but update will probably never happen.
