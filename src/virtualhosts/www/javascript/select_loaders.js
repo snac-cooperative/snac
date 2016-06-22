@@ -20,7 +20,7 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                         url: function() {
                             var query = "?command=vocabulary&type="+type+"&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
-                                query += "&entityType="+$("#entityType").val();
+                                query += "&entity_type="+$("#entityType").val();
                                 return query;
                         },
                         dataType: 'json',
@@ -58,10 +58,10 @@ function scm_source_select_replace(selectItem, idMatch) {
             && !selectItem.attr('id').endsWith("ZZ")) {
                 selectItem.select2({
                     ajax: {
-                        url: function() { 
+                        url: function() {
                             var query = "?command=vocabulary&type=ic_sources&id=";
                                 query += $("#constellationid").val()+"&version="+$("#version").val();
-                                query += "&entityType="+$("#entityType").val();
+                                query += "&entity_type="+$("#entityType").val();
                                 return query;
                         },
                         dataType: 'json',

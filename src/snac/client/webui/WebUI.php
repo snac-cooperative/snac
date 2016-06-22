@@ -181,191 +181,169 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // *************************************************
 
 
-        // Session-Level Commands
-        if ($this->input["command"] == "login") {
-
-            // Destroy the old session
-            session_destroy();
-            // Restart the session
-            session_name("SNACWebUI");
-            session_start();
-
-            // if the user wants to log in, then send them to the login server
-            $authUrl = $provider->getAuthorizationUrl();
-            header('Location: ' . $authUrl);
-
-        } else if ($this->input["command"] == "login2") {
-
-            // OAuth Stuff //
-            // Try to get an access token (using the authorization code grant)
-            $token = $provider->getAccessToken('authorization_code',
-                    array('code' => $_GET['code']));
-
-
-
-            // Set the token in session variable
-            $_SESSION['token'] = serialize($token);
-
-            // We got an access token, let's now get the owner details
-            $ownerDetails = $provider->getResourceOwner($token);
-
-
-            // Set the user details in the session
-            $_SESSION['user_details'] = serialize($ownerDetails);
-
-
-
-            $tokenUnserialized = unserialize($_SESSION['token']);
-            $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
-            // Create the PHP User object
-            $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
-
-            $tmpUser = $executor->startSNACSession($user);
-
-            if ($tmpUser === false) {
+        switch($this->input["command"]) {
+            
+            // Session-Level Commands
+            case "login":
+                // Destroy the old session
                 session_destroy();
-                $display->setTemplate("error_page");
-                $display->setData(array(
-                    "type" => "Invalid User",
-                    "message" => "The Google account does not exist in our system. Please log-in again with a different account."
-                ));
-                array_push($this->responseHeaders, "Content-Type: text/html");
-                $this->response = $display->getDisplay();
+                // Restart the session
+                session_name("SNACWebUI");
+                session_start();
+
+                // if the user wants to log in, then send them to the login server
+                $authUrl = $provider->getAuthorizationUrl();
+                header('Location: ' . $authUrl);
                 return;
 
-            }
-            $user = $tmpUser;
+            case "login2":
+                // OAuth Stuff //
+                // Try to get an access token (using the authorization code grant)
+                $token = $provider->getAccessToken('authorization_code',
+                        array('code' => $_GET['code']));
 
-            $_SESSION['snac_user'] = serialize($user);
+                // Set the token in session variable
+                $_SESSION['token'] = serialize($token);
 
-            // Go directly to the Dashboard, do not pass Go, do not collect $200
-            header('Location: index.php?command=dashboard');
+                // We got an access token, let's now get the owner details
+                $ownerDetails = $provider->getResourceOwner($token);
 
-        } else if ($this->input["command"] == "logout") {
+                // Set the user details in the session
+                $_SESSION['user_details'] = serialize($ownerDetails);
 
-            $executor->endSNACSession($user);
+                $tokenUnserialized = unserialize($_SESSION['token']);
+                $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
+                // Create the PHP User object
+                $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
 
-            // Destroy the old session
-            session_destroy();
-            // Restart the session
-            session_name("SNACWebUI");
-            session_start();
-            $_SESSION = array();
+                $tmpUser = $executor->startSNACSession($user);
 
-            // Go to the homepage
-            header('Location: index.php');
+                if ($tmpUser === false) {
+                    session_destroy();
+                    $display->setTemplate("error_page");
+                    $display->setData(array(
+                        "type" => "Invalid User",
+                        "message" => "The Google account does not exist in our system. Please log-in again with a different account."
+                    ));
+                    array_push($this->responseHeaders, "Content-Type: text/html");
+                    $this->response = $display->getDisplay();
+                    return;
 
+                }
+                $user = $tmpUser;
+
+                $_SESSION['snac_user'] = serialize($user);
+
+                // Go directly to the Dashboard, do not pass Go, do not collect $200
+                header('Location: index.php?command=dashboard');
+                return;
+
+            case "logout": 
+                $executor->endSNACSession($user);
+
+                // Destroy the old session
+                session_destroy();
+                // Restart the session
+                session_name("SNACWebUI");
+                session_start();
+                $_SESSION = array();
+
+                // Go to the homepage
+                header('Location: index.php');
+                return;
         
-        // Editing, Preview, View, and Other Commands
-        } else if ($this->input["command"] == "edit") {
-            $executor->displayEditPage($this->input, $display, $user);
-        } else if ($this->input["command"] == "new") {
-            $executor->displayNewPage($display);
-        } else if ($this->input["command"] == "new_edit") {
-            $executor->displayNewEditPage($this->input, $display);
-        } else if ($this->input["command"] == "view") {
-            $executor->displayViewPage($this->input, $display, $user);
-        } else if ($this->input["command"] == "details") {
-            $executor->displayDetailedViewPage($this->input, $display, $user);
-        } else if ($this->input["command"] == "preview") {
-            $executor->displayPreviewPage($this->input, $display);
-        } else if ($this->input["command"] == "dashboard") {
-            $executor->displayDashboardPage($display, $user);
-        } else if ($this->input["command"] == "profile") {
-            $executor->displayProfilePage($display, $user);
-        } else if ($this->input["command"] == "administrator") {
-            $response = $executor->handleAdministrator($this->input, $display, $user);
+            // Editing, Preview, View, and Other Commands
+            case "edit":
+                $executor->displayEditPage($this->input, $display, $user);
+                break;
+            case "new":
+                $executor->displayNewPage($display);
+                break;
+            case "new_edit":
+                $executor->displayNewEditPage($this->input, $display);
+                break;
+            case "view":
+                $executor->displayViewPage($this->input, $display, $user);
+                break;
+            case "details":
+                $executor->displayDetailedViewPage($this->input, $display, $user);
+                break;
+            case "preview":
+                $executor->displayPreviewPage($this->input, $display);
+                break;
+            case "dashboard":
+                $executor->displayDashboardPage($display, $user);
+                break;
+            case "profile":
+                $executor->displayProfilePage($display, $user);
+                break;
 
-        } else if ($this->input["command"] == "update_profile") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->saveProfile($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            // Administrator command (the sub method handles admin commands)
+            case "administrator":
+                $response = $executor->handleAdministrator($this->input, $display, $user);
+                break;
 
-        } else if ($this->input["command"] == "new_reconcile") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->reconcilePieces($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            // Modification commands that return JSON
+            case "update_profile":
+                $response = $executor->saveProfile($this->input, $user);
+                break;
 
-        } else if ($this->input["command"] == "save") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->saveConstellation($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            case "new_reconcile":
+                $response = $executor->reconcilePieces($this->input, $user);
+                break;
 
-        } else if ($this->input["command"] == "save_unlock") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->saveAndUnlockConstellation($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            case "save":
+                $response = $executor->saveConstellation($this->input, $user);
+                break;
 
-        } else if ($this->input["command"] == "unlock") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->unlockConstellation($this->input, $user);
-            // if unlocked by constellationid parameter, then send them to the dashboard.
-            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
-                return;
-            } else {
-                $this->response = json_encode($response, JSON_PRETTY_PRINT);
-                array_push($this->responseHeaders, "Content-Type: text/json");
-            }
-            return;
+            case "save_unlock":
+                $response = $executor->saveAndUnlockConstellation($this->input, $user);
+                break;
 
-        } else if ($this->input["command"] == "save_publish") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->saveAndPublishConstellation($this->input, $user);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            case "unlock":
+                $response = $executor->unlockConstellation($this->input, $user);
+                // if unlocked by constellationid parameter, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
+                    return;
+                }
+                break;
 
-        } else if ($this->input["command"] == "publish") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->publishConstellation($this->input, $user);
-            // if published by constellationid parameter, then send them to the dashboard.
-            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                header("Location: index.php?command=dashboard&message=Constellation successfully published");
-                return;
-            } else {
-                $this->response = json_encode($response, JSON_PRETTY_PRINT);
-                array_push($this->responseHeaders, "Content-Type: text/json");
-            }
-            return;
+            case "save_publish":
+                $response = $executor->saveAndPublishConstellation($this->input, $user);
+                break;
 
-        } else if ($this->input["command"] == "delete") {
-            // If saving, this is just an ajax/JSON return.
-            $response = $executor->deleteConstellation($this->input, $user);
-            // if deleted by constellationid parameter, then send them to the dashboard.
-            if (!isset($response["error"]) && !isset($this->input["entityType"])) {
-                header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
-                return;
-            } else {
-                $this->response = json_encode($response, JSON_PRETTY_PRINT);
-                array_push($this->responseHeaders, "Content-Type: text/json");
-            }
-            return;
+            case "publish":
+                $response = $executor->publishConstellation($this->input, $user);
+                // if published by constellationid parameter, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: index.php?command=dashboard&message=Constellation successfully published");
+                    return;
+                }
+                break;
 
-        } else if ($this->input["command"] == "vocabulary") {
-            $response = $executor->performVocabularySearch($this->input);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            case "delete":
+                $response = $executor->deleteConstellation($this->input, $user);
+                // if deleted by constellationid parameter, then send them to the dashboard.
+                if (!isset($response["error"]) && !isset($this->input["entityType"])) {
+                    header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
+                    return;
+                } 
+                break;
 
-        } else if ($this->input["command"] == "search") {
-            $response = $executor->performNameSearch($this->input);
-            $this->response = json_encode($response, JSON_PRETTY_PRINT);
-            array_push($this->responseHeaders, "Content-Type: text/json");
-            return;
+            case "vocabulary":
+                $response = $executor->performVocabularySearch($this->input);
+                break;
 
-        } else {
-            // The WebUI is displaying the landing page only
-            $executor->displayLandingPage($display);
+            case "search":
+                $response = $executor->performNameSearch($this->input);
+                break;
 
+            // If dropping through, then show the landing page
+            default:
+                // The WebUI is displaying the landing page only
+                $executor->displayLandingPage($display);
+                break;
         }
 
         // If the display has been given a template, then use it.  Else, print out JSON.
