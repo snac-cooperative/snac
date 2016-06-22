@@ -49,7 +49,7 @@ drop table if exists privilege;
 drop table if exists role;
 drop table if exists session;
 drop table if exists scm;
-drop table if exists snac_institutions;
+drop table if exists snac_institution;
 drop table if exists structure_genealogy;
 drop table if exists source;
 -- drop table if exists split_merge_history;
