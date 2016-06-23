@@ -472,6 +472,7 @@ class EACCPFParser {
                                         $component = new \snac\data\NameComponent();
                                         $component->setText((string) $npart);
                                         $component->setType($this->getTerm("Name", "name_component"));
+                                        $component->setOperation($this->operation);
                                         $nameEntry->addComponent($component);
                                         break;
                                     case "alternativeForm":
