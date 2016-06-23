@@ -1,3 +1,4 @@
+
 -- SNAC web application Postgres schema
 
 -- Notes
@@ -209,14 +210,40 @@ insert into privilege (label, description) values ('Inactivate Users', 'Able to 
 insert into privilege (label,description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
 insert into privilege (label, description) values ('Manage My Group', 'Administer the membership of groups I belong to');
 
-insert into role (label, description) values ('Editor, Full', 'Create, Edit and Publish');
 
-insert into privilege_role_link (pid, rid) values
-    ((select id from privilege where label='Edit'), (select id from role where label='Editor, Full'));
-insert into privilege_role_link (pid, rid) values
-    ((select id from privilege where label='Create'), (select id from role where label='Editor, Full'));
-insert into privilege_role_link (pid, rid) values
-    ((select id from privilege where label='Publish'), (select id from role where label='Editor, Full'));
+insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
+insert into role (label, description) values ('Editor, Training', 'Editor in training');
+insert into role (label, description) values ('Editor, Full', 'Full editor');
+insert into role (label, description) values ('Reviewer', 'Editor and moderator');
+insert into role (label, description) values ('Administrator', 'Manage users, roles, groups');
+insert into role (label, description) values ('System Administrator', 'SNAC developers, super users');
+
+-- Build privilege role links, that is: add privileges to each role.
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Contributor'), id from privilege where 
+    label in ('Simplified Create', 'Suggest Edits');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Editor, Training'), id from privilege where 
+    label in ('Create', 'Edit');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Editor, Full'), id from privilege where 
+    label in ('Create', 'Edit', 'Publish');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Reviewer'), id from privilege where 
+    label in ('Create', 'Edit', 'Publish', 'Change Locks', 'Unlock Currently Editing');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Administrator'), id from privilege where 
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users');
+
+insert into privilege_role_link 
+    (pid, rid) 
+    select id as pid, (select id from role where label='System Administrator') as rid from privilege;
+
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 
