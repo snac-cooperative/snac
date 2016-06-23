@@ -168,7 +168,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Save the priv count, erase the demo priv, check the count afterwards.
          */ 
         $preDeletePrivilegeCount = count($privList);
-        printf("\ndbusertest id: %s\n", $priv->getID());
         $this->dbu->erasePrivilege($priv);
         $postDeletePrivilegeCount = count($this->dbu->privilegeList());
         $this->assertEquals($preDeletePrivilegeCount, ($postDeletePrivilegeCount+1));
