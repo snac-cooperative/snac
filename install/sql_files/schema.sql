@@ -167,14 +167,6 @@ create table appuser_role_link (
         is_primary boolean default 'f' -- this role is the primary for the given appuser
         );
 
--- Linking table between privileges and roles. appuser links to role which links to privilege, and thus users
--- have privileges.
-
-create table privilege_role_link (
-        pid        int,                -- fk to privilege.id
-        rid        int                -- fk to role.id
-        );
-
 -- Add a constraint to enforce only one is_primary per uid
 create unique index appuser_role_link_ndx2 on appuser_role_link (uid) where is_primary=true;
 
@@ -194,6 +186,37 @@ create table privilege (
         description text         -- description
         );
 
+-- Linking table between privileges and roles. appuser links to role which links to privilege, and thus users
+-- have privileges.
+
+create table privilege_role_link (
+        pid        int,                -- fk to privilege.id
+        rid        int                -- fk to role.id
+        );
+
+insert into privilege (label, description) values ('Edit', 'Edit constellations');
+insert into privilege (label, description) values ('Create', 'Create new constellations');
+insert into privilege (label, description) values ('Publish', 'Publish or commit a constellation after reviewing');
+insert into privilege (label, description) values ('Send for Review', 'Send a constellation to reviewer(s)');
+insert into privilege (label, description) values ('Simplified Create', 'Create basic, simplified, constellations');
+insert into privilege (label, description) values ('Suggest Edits', 'Suggest constellation edits');
+insert into privilege (label, description) values ('Change Locks', 'Change which user has a constellation locked');
+insert into privilege (label, description) values ('Unlock Currently Editing', 'Unlock constellations stuck in status Currently Editing');
+insert into privilege (label, description) values ('Add Users', 'Enrole new SNAC participants (new users), edit new user info');
+insert into privilege (label, description) values ('Assign Roles', 'Assign, modify user roles');
+insert into privilege (label, description) values ('Modify Users', 'Modify user email, phone numbers, affiliation, etc.');
+insert into privilege (label, description) values ('Inactivate Users', 'Able to inactivate user accounts');
+insert into privilege (label,description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
+insert into privilege (label, description) values ('Manage My Group', 'Administer the membership of groups I belong to');
+
+insert into role (label, description) values ('Editor, Full', 'Create, Edit and Publish');
+
+insert into privilege_role_link (pid, rid) values
+    ((select id from privilege where label='Edit'), (select id from role where label='Editor, Full'));
+insert into privilege_role_link (pid, rid) values
+    ((select id from privilege where label='Create'), (select id from role where label='Editor, Full'));
+insert into privilege_role_link (pid, rid) values
+    ((select id from privilege where label='Publish'), (select id from role where label='Editor, Full'));
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
 

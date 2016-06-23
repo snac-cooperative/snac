@@ -24,13 +24,12 @@ namespace snac\data;
  * @author Tom Laudeman
  *        
  */
-class Role extends Privilege {
+class Role extends AbstractGrouping {
 
     /**
      * List of all privileges in this role
      *
-     * @var \snac\data\Role[] $privilegeList List of Role objects which have mostly the same fields as Privileges would have.
-     *
+     * @var \snac\data\Privilege[] $privilegeList List of objects
      */
     private $privilegeList = null;
 
@@ -51,7 +50,7 @@ class Role extends Privilege {
     /**
      * Add a new privilege
      *
-     * @param \snac\data\Role A privilege which uses the same class as Role.
+     * @param \snac\data\Privilege A privilege
      */
     public function addPrivilege($privilege)
     {
@@ -82,8 +81,7 @@ class Role extends Privilege {
     /**
      * Return the privilege list
      * 
-     * @return \snac\data\Role[] The list of privilege objects, which are Role objects. We could expand
-     * AbstractTermData to include Role and Privilege.
+     * @return \snac\data\Privilege[] The list of privilege objects
      */
     public function getPrivilegeList()
     {
@@ -143,10 +141,7 @@ class Role extends Privilege {
                 if ($entry != null)
                     $this->privilegeList[$i] = new Privilege($entry);
 
-
         }
-        // Note: inheriting classes should set the maxDateCount appropriately
-        // based on the definition of that class.
     }
 
 }

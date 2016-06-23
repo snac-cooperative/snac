@@ -18,12 +18,13 @@ namespace snac\data;
 /**
  * Group class
  *
- * Users are in groups. This is a group object. Properties and methods are identical to class Privilege.
+ * Users are in groups, for example "all reviewers" might form a group, and we might want to send a
+ * notification to all members of the group.
  *
  * @author Tom Laudeman
  *        
  */
-class Group extends Privilege {
+class Group extends AbstractGrouping {
 
     /**
      * Constructor
