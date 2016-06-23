@@ -259,7 +259,7 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $response = json_decode($response, true);
         $this->assertArrayHasKey("constellation", $response);
         $read = new \snac\data\Constellation($response["constellation"]);
-        
+
         $this->assertTrue($read->equals($c, false), "Read copy is not equal to original");
         
         return $read;

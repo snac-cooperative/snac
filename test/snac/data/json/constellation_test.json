@@ -3,7 +3,7 @@
     "status": null,
     "ark": "FRAN_NP_050744",
     "entityType": {
-        "id": "10",
+        "id": "698",
         "term": "corporateBody",
         "uri": null,
         "description": null
@@ -11,44 +11,54 @@
     "otherRecordIDs": [
         {
             "dataType": "SameAs",
-            "type": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "type": null,
             "text": null,
             "uri": "Un seul identifiant",
             "id": null,
             "version": null,
             "operation": null,
             "dates": []
+        },
+        {
+            "dataType": "SameAs",
+            "type": {
+                "id": "28222",
+                "term": "sameAs",
+                "uri": null,
+                "description": null
+            },
+            "text": "Notice Test Collectivit\u00e9",
+            "uri": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/producteur\/consultationProducteur.action?notProdId=FRAN_NP_050744",
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "SameAs",
+            "type": {
+                "id": "28222",
+                "term": "sameAs",
+                "uri": null,
+                "description": null
+            },
+            "text": "Notice Test Collectivit\u00e9",
+            "uri": "http:\/\/isni.org\/isni\/Unseulidentifiant",
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
         }
     ],
-    "maintenanceStatus": {
-        "id": null,
-        "term": null,
-        "uri": null,
-        "description": null
-    },
+    "maintenanceStatus": null,
     "maintenanceAgency": "Archives nationales de France",
     "maintenanceEvents": [
         {
             "dataType": "MaintenanceEvent",
-            "eventType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "eventType": null,
             "eventDateTime": "2014-03-20",
             "standardDateTime": null,
-            "agentType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "agentType": null,
             "agent": "Florence CLAVAUD",
             "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation",
             "id": null,
@@ -59,7 +69,7 @@
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
-                "id": "13",
+                "id": "701",
                 "term": "revised",
                 "uri": null,
                 "description": null
@@ -67,7 +77,7 @@
             "eventDateTime": "2015-10-05",
             "standardDateTime": null,
             "agentType": {
-                "id": "1",
+                "id": "687",
                 "term": "machine",
                 "uri": null,
                 "description": null
@@ -85,7 +95,7 @@
             "dataType": "Source",
             "language": null,
             "type": null,
-            "displayName": null,
+            "displayName": "Source 1: ",
             "text": null,
             "note": "<descriptiveNote>\n               <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n               <p>Nota : champ ancien identifiant pas accessible<\/p>\n               <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n            <\/descriptiveNote>",
             "uri": null,
@@ -99,7 +109,7 @@
         {
             "dataType": "legalStatus",
             "term": {
-                "id": null,
+                "id": "400203",
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
                 "uri": null,
                 "description": null
@@ -130,7 +140,7 @@
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7655",
                         "term": "authorizedForm",
                         "uri": null,
                         "description": null
@@ -143,20 +153,36 @@
                     "dates": []
                 }
             ],
-            "components": [],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Notice Test Collectivit\u00e9",
+                    "order": 0,
+                    "type": {
+                        "id": "400225",
+                        "term": "Name",
+                        "uri": null,
+                        "description": null
+                    },
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ],
             "language": {
                 "dataType": "Language",
                 "language": {
-                    "id": "8916",
+                    "id": "144",
                     "term": "fre",
                     "uri": null,
                     "description": "French"
                 },
                 "script": {
-                    "id": "35491",
+                    "id": "586",
                     "term": "Latn",
                     "uri": null,
-                    "description": null
+                    "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
@@ -175,7 +201,23 @@
             "original": "Test Collectivit\u00e9",
             "preferenceScore": null,
             "contributors": [],
-            "components": [],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Test Collectivit\u00e9",
+                    "order": 0,
+                    "type": {
+                        "id": "400225",
+                        "term": "Name",
+                        "uri": null,
+                        "description": null
+                    },
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ],
             "language": null,
             "id": null,
             "version": null,
@@ -213,7 +255,23 @@
             "original": "Collectivit\u00e9 test",
             "preferenceScore": null,
             "contributors": [],
-            "components": [],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Collectivit\u00e9 test",
+                    "order": 0,
+                    "type": {
+                        "id": "400225",
+                        "term": "Name",
+                        "uri": null,
+                        "description": null
+                    },
+                    "id": null,
+                    "version": null,
+                    "operation": null,
+                    "dates": []
+                }
+            ],
             "language": null,
             "id": null,
             "version": null,
@@ -247,11 +305,12 @@
             ]
         }
     ],
+    "preferredNameEntry": null,
     "occupations": [
         {
             "dataType": "Occupation",
             "term": {
-                "id": "16666",
+                "id": "9479",
                 "term": "archiviste",
                 "uri": null,
                 "description": null
@@ -270,16 +329,16 @@
             "language": {
                 "dataType": "Language",
                 "language": {
-                    "id": "8916",
+                    "id": "144",
                     "term": "fre",
                     "uri": null,
                     "description": "French"
                 },
                 "script": {
-                    "id": "35491",
+                    "id": "586",
                     "term": "Latn",
                     "uri": null,
-                    "description": null
+                    "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
@@ -300,29 +359,14 @@
             "dataType": "ConstellationRelation",
             "sourceConstellation": null,
             "targetConstellation": null,
-            "sourceArkID": null,
+            "sourceArkID": "FRAN_NP_050744",
             "targetArkID": null,
-            "targetEntityType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "type": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "altType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "targetEntityType": null,
+            "type": null,
+            "altType": null,
             "cpfRelationType": {
-                "id": null,
-                "term": null,
+                "id": "28261",
+                "term": "hierarchical-parent",
                 "uri": null,
                 "description": null
             },
@@ -363,29 +407,19 @@
             "dataType": "ConstellationRelation",
             "sourceConstellation": null,
             "targetConstellation": null,
-            "sourceArkID": null,
+            "sourceArkID": "FRAN_NP_050744",
             "targetArkID": null,
-            "targetEntityType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "targetEntityType": null,
             "type": {
-                "id": "35410",
+                "id": "28231",
                 "term": "associatedWith",
                 "uri": null,
                 "description": null
             },
-            "altType": {
-                "id": "35410",
-                "term": "associatedWith",
-                "uri": null,
-                "description": null
-            },
+            "altType": null,
             "cpfRelationType": {
-                "id": "35410",
-                "term": "associatedWith",
+                "id": "28232",
+                "term": "associative",
                 "uri": null,
                 "description": null
             },
@@ -421,96 +455,22 @@
                     "dates": []
                 }
             ]
-        },
-        {
-            "dataType": "ConstellationRelation",
-            "sourceConstellation": null,
-            "targetConstellation": null,
-            "sourceArkID": null,
-            "targetArkID": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/producteur\/consultationProducteur.action?notProdId=FRAN_NP_050744",
-            "targetEntityType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "type": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "altType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "cpfRelationType": null,
-            "content": "Notice Test Collectivit\u00e9",
-            "note": null,
-            "id": null,
-            "version": null,
-            "operation": null,
-            "dates": []
-        },
-        {
-            "dataType": "ConstellationRelation",
-            "sourceConstellation": null,
-            "targetConstellation": null,
-            "sourceArkID": null,
-            "targetArkID": "http:\/\/isni.org\/isni\/Unseulidentifiant",
-            "targetEntityType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "type": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "altType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "cpfRelationType": null,
-            "content": "Notice Test Collectivit\u00e9",
-            "note": null,
-            "id": null,
-            "version": null,
-            "operation": null,
-            "dates": []
         }
     ],
     "resourceRelations": [
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "8",
+                "id": "696",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
-            "linkType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "entryType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "linkType": null,
+            "entryType": null,
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
             "role": {
-                "id": "6",
+                "id": "692",
                 "term": "creatorOf",
                 "uri": null,
                 "description": null
@@ -526,26 +486,16 @@
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "8",
+                "id": "696",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
-            "linkType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "entryType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "linkType": null,
+            "entryType": null,
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
             "role": {
-                "id": "7",
+                "id": "693",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -561,26 +511,16 @@
         {
             "dataType": "ResourceRelation",
             "documentType": {
-                "id": "8",
+                "id": "696",
                 "term": "ArchivalResource",
                 "uri": null,
                 "description": null
             },
-            "linkType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
-            "entryType": {
-                "id": null,
-                "term": null,
-                "uri": null,
-                "description": null
-            },
+            "linkType": null,
+            "entryType": null,
             "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
             "role": {
-                "id": "7",
+                "id": "693",
                 "term": "referencedIn",
                 "uri": null,
                 "description": null
@@ -598,7 +538,7 @@
         {
             "dataType": "SNACFunction",
             "term": {
-                "id": "1971",
+                "id": "2662",
                 "term": "culture",
                 "uri": null,
                 "description": null
@@ -618,8 +558,8 @@
             "original": "Pierrefitte-sur-Seine",
             "type": null,
             "role": {
-                "id": null,
-                "term": null,
+                "id": "704",
+                "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
                 "description": null
             },
@@ -678,8 +618,8 @@
             "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
             "type": null,
             "role": {
-                "id": null,
-                "term": null,
+                "id": "704",
+                "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
                 "description": null
             },
@@ -746,8 +686,8 @@
             "original": "Paris, Archives nationales",
             "type": null,
             "role": {
-                "id": null,
-                "term": null,
+                "id": "703",
+                "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },
@@ -806,8 +746,8 @@
             "original": "03e arrondissement",
             "type": null,
             "role": {
-                "id": null,
-                "term": null,
+                "id": "703",
+                "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },
@@ -874,8 +814,8 @@
             "original": "Francs-Bourgeois (rue des)",
             "type": null,
             "role": {
-                "id": null,
-                "term": null,
+                "id": "703",
+                "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },

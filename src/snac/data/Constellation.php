@@ -156,6 +156,13 @@ class Constellation extends AbstractData {
     private $nameEntries = null;
 
     /**
+     * Preferred Name Entry 
+     *
+     * @var \snac\data\NameEntry|null The preferred name entry on view (based on the viewing user) 
+     */
+    private $preferredNameEntry = null;
+
+    /**
      * Occupation List
      *
      * From EAC-CPF tag(s):
@@ -476,7 +483,9 @@ class Constellation extends AbstractData {
     /**
      * Get the preferred name
      *
-     * Gets the nameEntry in this constellation with the highest score, or the
+     * Gets the preferred name entry for this constellation.  If the preferred 
+     * name entry has been set by the server, that one is returned.  If not, it
+     * gets the nameEntry in this constellation with the highest score, or the
      * first one if the scores are equal, or null if there is no name entry
      *
      * @return \snac\data\NameEntry Preferred name entry for this constellation
@@ -486,6 +495,9 @@ class Constellation extends AbstractData {
     {
         if (count($this->nameEntries) < 1)
             return null;
+
+        if ($this->preferredNameEntry != null)
+            return $this->preferredNameEntry; 
 
         $max = 0;
         $id = 0;
@@ -747,6 +759,7 @@ class Constellation extends AbstractData {
             "conventionDeclarations" => array(),
             "languagesUsed" => array(),
             "nameEntries" => array(),
+            "preferredNameEntry" => $this->preferredNameEntry == null ? null : $this->preferredNameEntry->toArray($shorten),
             "occupations" => array(),
             "biogHists" => array(),
             "relations" => array(),
@@ -980,6 +993,12 @@ class Constellation extends AbstractData {
                     $this->nameEntries[$i] = new NameEntry($entry);
         }
 
+        unset($this->preferredNameEntry);
+        if (isset($data["preferredNameEntry"]) && $data["preferredNameEntry"] != null)
+            $this->preferredNameEntry = new \snac\data\NameEntry($data["preferredNameEntry"]);
+        else
+            $this->preferredNameEntry = null;
+
         unset($this->occupations);
         $this->occupations = array();
         if (isset($data["occupations"])) {
@@ -1132,6 +1151,33 @@ class Constellation extends AbstractData {
     public function addNameEntry($nameEntry) {
 
         array_push($this->nameEntries, $nameEntry);
+    }
+
+    /**
+     * Set the preferred name entry
+     *
+     * Sets the preferred name entry for this constellation.  The name entry to prefer
+     * MUST already be in the list of name entries.  If it does not appear, this method
+     * will fail.
+     *
+     * @param \snac\data\NameEntry $nameEntry Name entry in the list of name entries to prefer
+     * @return boolean True on success, false on failure
+     */
+    public function setPreferredNameEntry($nameEntry) {
+        $inArray = false;
+        foreach ($this->nameEntries as $nE) {
+            if ($nE->equals($nameEntry)) {
+                $inArray = true;
+                break;
+            }
+        }
+
+        if ($inArray) {
+            $this->preferredNameEntry = $nameEntry;
+            return true;
+        }
+
+        return false;
     }
 
     /**

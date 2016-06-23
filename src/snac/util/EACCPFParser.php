@@ -468,6 +468,12 @@ class EACCPFParser {
                                     switch ($npart->getName()) {
                                     case "part":
                                         $nameEntry->setOriginal((string) $npart);
+                                        // Add the part as a Component as well
+                                        $component = new \snac\data\NameComponent();
+                                        $component->setText((string) $npart);
+                                        $component->setType($this->getTerm("Name", "name_component"));
+                                        $component->setOperation($this->operation);
+                                        $nameEntry->addComponent($component);
                                         break;
                                     case "alternativeForm":
                                     case "authorizedForm":
