@@ -198,7 +198,8 @@ class DBUser
                                                 $user->getWorkEmail(),
                                                 $user->getWorkPhone(),
                                                 $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
-                                                $user->getPreferredRules());
+                                                $user->getPreferredRules(),
+                                                $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
             $this->addDefaultRole($newUser);
@@ -252,7 +253,8 @@ class DBUser
                                       $user->getWorkEmail(),
                                       $user->getWorkPhone(),
                                       $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
-                                      $user->getPreferredRules());
+                                      $user->getPreferredRules(),
+                                      $user->getUserActive());
     }
     
 
@@ -342,9 +344,18 @@ class DBUser
         $user->setAvatarSmall($record['avatar_small']);
         $user->setAvatarLarge($record['avatar_large']);
         $user->setEmail($record['email']);
-        $user->setRoleList($this->listUserRoles($user));
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
+        $user->setUserActive($record['active']);
+        /*
+         * We may need the functions listUserRoles() and listUserGroups() for uses outside of simply building
+         * user objects.  Once we have those two functions there is no point in a function populateRoles() or
+         * populateGroups() because those functions would each have a single line.
+         *
+         * This is different from how things are done in DBUtil, for good reason. This code may be more legible.
+         */ 
+        $user->setRoleList($this->listUserRoles($user));
+        $user->setGroupList($this->listUserGroups($user));
 
         /* 
          * readConstellation($mainID, $version=null, $summary=false)
@@ -971,4 +982,215 @@ class DBUser
         }
         return $allUserList;
     }
+    
+    /**
+     * Write or update a group to the database
+     *
+     * @param \snac\data\Group $group The group object
+     *
+     * @return \snac\data\Group The group object
+     */
+    public function writeGroup($group)
+    {
+        if ($group->getID())
+        {
+            $this->sql->updateGroup($group->getID(),
+                                    $group->getLabel(), 
+                                    $group->getDescription());
+        }
+        else
+        {
+            $rid = $this->sql->insertGroup($group->getLabel(), 
+                                           $group->getDescription());
+            $group->setID($rid);
+        }
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        return $group;
+    }
+
+    /**
+     * Populate a group object
+     *
+     * Return a group object based on the $pid ID value
+     *
+     * @return \snac\data\Group A group object.
+     */ 
+    public function populateGroup($pid)
+    {
+        $row = $this->sql->selectGroup($pid);
+        $groupObj = new \snac\data\Group();
+        $groupObj->setID($row['id']);
+        $groupObj->setLabel($row['label']);
+        $groupObj->setDescription($row['description']);
+        return $groupObj;
+    }
+
+    /**
+     * Really delete a group from the db
+     *
+     * Deleting a group should be rare. To make this a little safer deleteGroup() only deletes if the
+     * group is not in use. If the group exists and is not linked to any appuser, it will be
+     * deleted. Otherwise, it is not deleted.
+     *
+     * This function's name might be confused with removeGroup, although we have removeUserFromGroup
+     * (non-existant: removeGroupFromUser) specifically for users. The method deleteGroup is in SQL.php since
+     * we reserve the word "delete" for SQL functions.
+     *
+     * @param \snac\data\Group A Group object
+     */
+    public function eraseGroup($groupObj)
+    {
+        $this->sql->deleteGroup($groupObj->getID());
+    }
+
+    /**
+     * List all system groups.
+     *
+     * Create a list of Group objects of all groups.
+     *
+     * @return \snac\data\Group[] Return list of Group objects
+     */
+    public function groupList()
+    {
+        $pidList = $this->sql->selectAllGroupIDs();
+        $groupObjList = array();
+        foreach($pidList as $pid)
+        {
+            $groupObj = $this->populateGroup($pid);
+            array_push($groupObjList, $groupObj);
+        }
+        return $groupObjList;
+    }
+
+    /**
+     * List groups for a user
+     *
+     * Read the groups from the database.
+     * 
+     * @param \snac\data\User The user we want to list groups for.
+     * @return \snac\data\Group[] List of group objects.
+     */ 
+    private function listUserGroups($user)
+    {
+        $gids = $this->sql->selectUserGroupIDs($user->getUserID());
+        $groupList = array();
+        foreach($gids as $gid)
+        {
+            $row = $this->sql->selectGroup($gid);
+            $grp = new \snac\data\Group();
+            $grp->setID($row['id']);
+            $grp->setLabel($row['label']);
+            $grp->setDescription($row['description']);
+            array_push($groupList, $grp);
+        }
+        return $groupList;
+    }
+
+    /**
+     * Add a group to the User
+     *
+     * The group must exist in the database. That is: the group must have a valid id.
+     *
+     * Due to naming confusiong, you might be searching for nonexistant functions: addgroup, add group adding
+     * a group adding group.
+     *
+     * After adding the group, set the users's group list by getting the list from the db.
+     * 
+     * @param \snac\data\User $user A user
+     * @param \snac\data\Group $newGroup is associative list with keys id, label, description. We really only care about id.
+     */
+    public function addUserToGroup($user, $newGroup)
+    {
+        $this->sql->insertGroupLink($user->getUserID(), $newGroup->getID());
+        $user->setGroupList($this->listUserGroups($user));
+    }
+    
+    /**
+     * Remove a group from the User via table appuser_group_link.
+     *
+     * After removing the group, refresh the User group list by reading it back from the database.
+     *
+     * @param \snac\data\User $user A user
+     * @param \snac\data\Group $group Group object
+     */
+    public function removeUserFromGroup($user, $group)
+    {
+        $this->sql->deleteGroupLink($user->getUserID(), $group->getID());
+        $user->setGroupList($this->listUserGroups($user));
+        return true;
+    }
+
+    /**
+     * List all system institutions.
+     *
+     * Create a list of Institution objects of all institutions. This might have been called:
+     * listallinstitutions listallinstitution allinstitutionlist.
+     *
+     * @return \snac\data\Institution[] Return list of Institution object, each of which contains a list of Privilege
+     * objects.
+     */
+    public function institutionList()
+    {
+        /*
+         * Select all the institution data, returned as a list of associative lists. We don't have any use for
+         * a list of ids, unlike Role and some other data. So, there is no populateInstitution(). It all happens here.
+         */ 
+        $rowList = $this->sql->selectAllInstitution();
+        $institutionObjList = array();
+        foreach($rowList as $row)
+        {
+            $institutionObj = new \snac\data\SNACInstitution();
+            $institutionObj->setID($row['id']);
+            $institutionObj->setConstellationID($row['ic_id']);
+            array_push($institutionObjList, $institutionObj);
+        }
+        return $institutionObjList;
+    }
+
+    /**
+     * Write or update a new institution to the database
+     *
+     * The part of the constellation we most care about is the ic_id. getConstellationID() is the ic_id.
+     * 
+     * If the institution has an id, it must have previously have been written to the db, so update.
+     *
+     * The update use case is unclear. Insert and delete (erase) seem reasonable, but update will probably never happen.
+     *
+     * @param \snac\data\SNACInstitution $institution The institution objectc.
+     *
+     * @return \snac\data\SNACInstitution SNACInstitution object.
+     */
+    public function writeInstitution($institution)
+    {
+        if ($institution->getID())
+        {
+            $this->sql->updateInstitution($institution->getID(),
+                                          $institution->getConstellationID());
+        }
+        else
+        {
+            $iid = $this->sql->insertInstitution($institution->getConstellationID());
+            $institution->setID($iid);
+        }
+        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        return $institution;
+    }
+
+    /**
+     * Really delete a SNAC institution from the db
+     *
+     * Remember that SNAC Institution records are simply the ic_id of an existing SNAC record. This only
+     * deletes from the snac_institution table, and nothing else is effected.
+     *
+     * deleteInstitution() will throw an exception if asked to delete an institution which has any affiliated
+     * users.
+     *
+     * @param \snac\data\Institution A Institution object
+     */
+    public function eraseInstitution($institutionObj)
+    {
+        $this->sql->deleteInstitution($institutionObj->getID());
+    }
+    
+
 }

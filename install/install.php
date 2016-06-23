@@ -357,8 +357,13 @@ if ($response == "yes") {
         $dir = "/data/merge/";
     $retval = 0;
     echo "  Attempting to ingest sample records from $dir.\n";
-    // Run a system shell command, that sudos bash, then su's to postgres user,
-    // then creates the user and database from the Config class.
+    /* 
+     * Run a system shell command, that sudos bash, then su's to postgres user,
+     * then creates the user and database from the Config class.
+     *
+     * If you are looking for the string Parsing: that shows up in the output, you want ingest_sample.php,
+     * which is the shell command being run below.
+     */
     system("cd ../scripts && ./ingest_sample.php $dir\n", $retval);
     
     if ($retval != 0) {

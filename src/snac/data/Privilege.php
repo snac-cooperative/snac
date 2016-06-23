@@ -17,16 +17,24 @@ namespace snac\data;
 /**
  * Privilege class
  *
- * The same fields as Role, except that $privilegeList is ignored. 
- * 
+ * These are the fundamental Privileges. A list of these is in class Role.
  *
  * @author Tom Laudeman
  *        
  */
-class Privilege extends Role {
-    /*
-     * Nothing here. Just like Role, but used for Privileges.
+class Privilege extends AbstractGrouping {
+
+    /**
+     * Constructor
      *
-     * Being a Privilege, it doesn't use the $privilegeList.
+     * @param string $label optional Label string
+     *
+     * @param string $description optional Description string
      */ 
+    public function __construct($data=null)
+    {
+        parent::__construct($data);
+        $this->dataType = 'privilege';
+    }
+
 }

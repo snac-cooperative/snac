@@ -1,3 +1,4 @@
+
 -- SNAC web application Postgres schema
 
 -- Notes
@@ -22,6 +23,8 @@
 
 drop table if exists appuser; 
 drop table if exists appuser_role_link;
+drop table if exists appuser_group;
+drop table if exists appuser_group_link;
 drop table if exists biog_hist;
 drop table if exists convention_declaration;
 drop table if exists date_range;
@@ -47,6 +50,7 @@ drop table if exists privilege;
 drop table if exists role;
 drop table if exists session;
 drop table if exists scm;
+drop table if exists snac_institution;
 drop table if exists structure_genealogy;
 drop table if exists source;
 -- drop table if exists split_merge_history;
@@ -164,14 +168,6 @@ create table appuser_role_link (
         is_primary boolean default 'f' -- this role is the primary for the given appuser
         );
 
--- Linking table between privileges and roles. appuser links to role which links to privilege, and thus users
--- have privileges.
-
-create table privilege_role_link (
-        pid        int,                -- fk to privilege.id
-        rid        int                -- fk to role.id
-        );
-
 -- Add a constraint to enforce only one is_primary per uid
 create unique index appuser_role_link_ndx2 on appuser_role_link (uid) where is_primary=true;
 
@@ -190,6 +186,63 @@ create table privilege (
         label       text unique, -- short name
         description text         -- description
         );
+
+-- Linking table between privileges and roles. appuser links to role which links to privilege, and thus users
+-- have privileges.
+
+create table privilege_role_link (
+        pid        int,                -- fk to privilege.id
+        rid        int                -- fk to role.id
+        );
+
+insert into privilege (label, description) values ('Edit', 'Edit constellations');
+insert into privilege (label, description) values ('Create', 'Create new constellations');
+insert into privilege (label, description) values ('Publish', 'Publish or commit a constellation after reviewing');
+insert into privilege (label, description) values ('Send for Review', 'Send a constellation to reviewer(s)');
+insert into privilege (label, description) values ('Simplified Create', 'Create basic, simplified, constellations');
+insert into privilege (label, description) values ('Suggest Edits', 'Suggest constellation edits');
+insert into privilege (label, description) values ('Change Locks', 'Change which user has a constellation locked');
+insert into privilege (label, description) values ('Unlock Currently Editing', 'Unlock constellations stuck in status Currently Editing');
+insert into privilege (label, description) values ('Add Users', 'Enrole new SNAC participants (new users), edit new user info');
+insert into privilege (label, description) values ('Assign Roles', 'Assign, modify user roles');
+insert into privilege (label, description) values ('Modify Users', 'Modify user email, phone numbers, affiliation, etc.');
+insert into privilege (label, description) values ('Inactivate Users', 'Able to inactivate user accounts');
+insert into privilege (label,description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
+insert into privilege (label, description) values ('Manage My Group', 'Administer the membership of groups I belong to');
+
+
+insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
+insert into role (label, description) values ('Editor, Training', 'Editor in training');
+insert into role (label, description) values ('Editor, Full', 'Full editor');
+insert into role (label, description) values ('Reviewer', 'Editor and moderator');
+insert into role (label, description) values ('Administrator', 'Manage users, roles, groups');
+insert into role (label, description) values ('System Administrator', 'SNAC developers, super users');
+
+-- Build privilege role links, that is: add privileges to each role.
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Contributor'), id from privilege where 
+    label in ('Simplified Create', 'Suggest Edits');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Editor, Training'), id from privilege where 
+    label in ('Create', 'Edit');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Editor, Full'), id from privilege where 
+    label in ('Create', 'Edit', 'Publish');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Reviewer'), id from privilege where 
+    label in ('Create', 'Edit', 'Publish', 'Change Locks', 'Unlock Currently Editing');
+
+insert into privilege_role_link (rid, pid)
+select (select id from role where label='Administrator'), id from privilege where 
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users');
+
+insert into privilege_role_link 
+    (pid, rid) 
+    select id as pid, (select id from role where label='System Administrator') as rid from privilege;
 
 
 -- There may be multiple active sessions per user, so we need a separate table for sessions.
@@ -804,14 +857,13 @@ create table otherid (
 --
 -- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
 
-        -- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
-        -- confidence       int,  -- confidence of this link, from snac place entry
-
+-- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
+-- confidence       int,  -- confidence of this link, from snac place entry
 
 create table place_link (
         id           int default nextval('id_seq'),
         version      int not null,
-        ic_id      int not null,
+        ic_id        int not null,
         is_deleted   boolean default false,
         fk_id        int,                   -- fk to related table.id
         fk_table     text,                  -- table name of the related foreign table. Exists only as a backup
@@ -826,3 +878,29 @@ create table place_link (
     );
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
+
+-- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
+-- appuser.affiliation. snac_institution.ic_id=appuser.affiliation.
+
+create table snac_institution (
+    id    int default nextval('id_seq'),
+    ic_id int  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
+);
+
+-- Groups of appusers. Use case is a group of reviewers, or a group of editors.  Postgres group is a reserved
+-- word, so if we name the table "group" we have to put "group" in double quotes all over the place and that's
+-- not happening.
+
+create table appuser_group (
+        id          int  primary key default nextval('id_seq'),
+        label       text unique, -- short name of this
+        description text         -- description of this
+        );
+
+-- Linking table for appuser and groups.
+
+create table appuser_group_link (
+        uid        int,                -- fk to appuser.id
+        gid        int,                -- fk to group.id
+        is_default boolean default 'f' -- this groups is a default for the given user
+);

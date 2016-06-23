@@ -131,6 +131,7 @@ class SQL
      * @param string $workPhone Work phone number
      * @param integer $affiliationID Foreign key to ic_id of the SNAC constellation for affiliated institution
      * @param string $preferredRules Preferred descriptive name rules
+     * @param boolean $active Is the user active
      * @return integer Record row id, unique, from sequence id_seq.
      */ 
     public function insertUser($userName, 
@@ -144,15 +145,28 @@ class SQL
                                $workEmail,
                                $workPhone,
                                $affiliationID,
-                               $preferredRules)
+                               $preferredRules,
+                               $active)
     {
         $result = $this->sdb->query(
             'insert into appuser 
-            (username, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email, work_phone, affiliation, preferred_rules)
-            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+            (username, first, last, fullname, avatar, avatar_small, avatar_large,
+            email, work_email, work_phone, affiliation, preferred_rules, active)
+            values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             returning id',
-            array($userName, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email,
-                  $workEmail, $workPhone, $affiliationID, $preferredRules));
+            array($userName,
+                  $firstName,
+                  $lastName,
+                  $fullName,
+                  $avatar,
+                  $avatarSmall,
+                  $avatarLarge,
+                  $email,
+                  $workEmail,
+                  $workPhone,
+                  $affiliationID,
+                  $preferredRules,
+                  $this->sdb->boolToPg($active)));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
     }
@@ -183,6 +197,8 @@ class SQL
      *
      * What about either deleting the role from all users? Or not allowing the role to be deleted if still
      * used by some user?
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
      *
      * @param integer $roleID An role id
      */
@@ -216,6 +232,8 @@ class SQL
      *
      * Used for testing only, maybe. In any case, deleting a privilege should be rare. To make this a little safer
      * it only deletes if the privilege is not in use.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
      *
      * @param integer $privilegeID An privilege id
      */
@@ -442,16 +460,30 @@ class SQL
      * @param string $workPhone Work phone
      * @param integer $affiliationID Constellation ID aka ic_id integer version_history.id
      * @param string $preferredRules Preferred name descriptive rules.
+     * @param boolean $active Is the user active
      */ 
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
-                               $workEmail, $workPhone, $affiliationID, $preferredRules)
+                               $workEmail, $workPhone, $affiliationID, $preferredRules, $active)
     {
         $result = $this->sdb->query(
             'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, preferred_rules=$13
+            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, 
+            preferred_rules=$13, active=$14
             where appuser.id=$1 returning id',
-            array($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
-                  $workEmail, $workPhone, $affiliationID, $preferredRules));
+            array($uid, 
+                  $firstName,
+                  $lastName,
+                  $fullName,
+                  $avatar,
+                  $avatarSmall,
+                  $avatarLarge,
+                  $email,
+                  $userName,
+                  $workEmail,
+                  $workPhone,
+                  $affiliationID,
+                  $preferredRules,
+                  $this->sdb->boolToPg($active)));
         $row = $this->sdb->fetchrow($result);
         if ($row && array_key_exists('id', $row))
         {
@@ -593,7 +625,7 @@ class SQL
      * Link a role to a user. 
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param integer $newRoleID A rold id
+     * @param integer $newRoleID A role id
      */ 
     public function insertRoleLink($uid, $newRoleID)
     {
@@ -801,7 +833,7 @@ class SQL
      * Deleted a link role.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param integer $roleID A rold id
+     * @param integer $roleID A role id
      */ 
     public function deleteRoleLink($uid, $roleID)
     {
@@ -2135,6 +2167,8 @@ class SQL
      * Related to name where component.name_id=name.id. This is a one-sided fk relationship also used for
      * date and language.
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param string[] $vhInfo associative list with keys: version, main_id
      *
      * @param integer $id Record id if this component. If null one will be minted. The id (existing or new) is always returned.
@@ -2579,6 +2613,8 @@ class SQL
      *
      * Solve the multi-version problem by joining to a subquery.
      *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $id Record id
@@ -2603,7 +2639,7 @@ class SQL
             /*
              * Trying something not approved is fatal.  Add an exception for this.
              */
-            die("Tried to insert on non-approved table: $table\n");
+            throw new \snac\exceptions\SNACDatabaseException("Tried to insert on non-approved table: $table\n");
         }
         if (! $id)
         {
@@ -4291,6 +4327,242 @@ class SQL
             array_push($all, $row['ic_id']);
         }
         return $all;
+    }
+
+    /**
+     * Insert a new group.
+     *
+     * Insert a new group and return the group's id.
+     *
+     * @param string $label Group label
+     *
+     * @param string $description Group description
+     *
+     * @return integer The inserted row id.
+     */
+    public function insertGroup($label, $description)
+    {
+        $result = $this->sdb->query("insert into group (label, description) values ($1, $2) returning id",
+                          array($label, $description));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Update a group.
+     *
+     * @param integer $rid Group row id
+     *
+     * @param string $label Group label
+     *
+     * @param string $description Group description
+     */
+    public function updateGroup($rid, $label, $description)
+    {
+        $result = $this->sdb->query("update group set label=$2, description=$3 where id=$1",
+                                    array($rid, $label, $description));
+        $row = $this->sdb->fetchrow($result);
+    }
+
+    /**
+     * Select a group record
+     *
+     * Get all fields of a single group record matching id $pid.
+     *
+     * @param integer $pid Group ID value.
+     *
+     * @return string[] All fields of a single group record.
+     */
+    public function selectGroup($pid)
+    {
+        $result = $this->sdb->query("select * from appuser_group where id=$1",
+                                    array($pid));
+        $row = $this->sdb->fetchrow($result);
+        return $row;
+    }
+
+    /**
+     * Really delete a group
+     *
+     * Used for testing only, maybe. In any case, deleting a group should be rare. To make this a little safer
+     * it only deletes if the group is not in use.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param integer $groupID An group id
+     */
+    public function deleteGroup($groupID)
+    {
+        $result = $this->sdb->query(
+            'select email from appuser, appuser_group_link as agl where agl.gid=$1 and agl.uid=appuser.id',
+            array($groupID));
+        $email = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $email .= $row['email'] . " ";
+        }
+        if ($email)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete group still used by user(s): $email");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from appuser_group where id=$1 and id not in (select distinct(gid) from appuser_group_link)',
+                array($groupID));
+        }
+    }
+    
+    /**
+     * Select IDs of all group records
+     *
+     * Return a list group IDs
+     *
+     * @return integer[] List of strings for each groups. We expect the calling code in DBUser.php to send
+     * each element of the list to populateGroup().
+     */
+    public function selectAllGroupIDs()
+    {
+        $result = $this->sdb->query("select id from appuser_group order by label", array());
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+
+    /**
+     * Select user group record IDs
+     *
+     * Select all the IDs of groups for a single user. Higher level code will use each id to build a group
+     * object (and usually a list of group objects).
+     *
+     * @param int $appUserID The numeric ID for the user for whom to list groups.
+     * 
+     * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
+     * populateGroup().
+     */ 
+    public function selectUserGroupIDs($appUserID)
+    {
+        $result = $this->sdb->query("select gg.id from appuser_group as gg,appuser_group_link
+                                    where appuser_group_link.uid=$1 and gg.id=gid order by label asc",
+                                    array($appUserID));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row['id']);
+        }
+        return $all;
+    }
+    
+    /**
+     * Add a group to a user
+     *
+     * Link a group to a user. 
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $newGroupID A group id
+     */ 
+    public function insertGroupLink($uid, $newGroupID)
+    {
+        $this->sdb->query("insert into appuser_group_link (uid, gid) values ($1, $2)",
+                          array($uid, $newGroupID));
+    }
+
+    /**
+     * Delete a user from a group
+     *
+     * Deleted an appuser to group link.
+     *
+     * @param integer $uid User id, aka appuser.id aka row id.
+     * @param integer $groupID A group id
+     */ 
+    public function deleteGroupLink($uid, $groupID)
+    {
+        $this->sdb->query("delete from appuser_group_link where uid=$1 and gid=$2",
+                          array($uid, $groupID));
+    }
+
+    /**
+     * Select all snac_institution records
+     *
+     * This returns records in a 2D array, with inner list keys: id, ic_id
+     *
+     * @return string[][] List of accciative list 
+     */
+    public function selectAllInstitution() 
+    {
+        $selectSQL = "select * from snac_institution";
+        $result = $this->sdb->query($selectSQL, array());
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) 
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Insert a new institution.
+     *
+     * Insert a new institution and return the institution's id.
+     *
+     * @param string $ic_id Institution ic_id
+     *
+     * @return integer The inserted row id.
+     */
+    public function insertInstitution($ic_id)
+    {
+        $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1) returning id",
+                                    array($ic_id));
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Update a institution.
+     *
+     * @param integer $rid Institution row id
+     *
+     * @param string $ic_id Institution ic_id
+     *
+     */
+    public function updateInstitution($iid, $ic_id)
+    {
+        $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
+                                    array($ic_id, $iid));
+    }
+
+    /**
+     * Delete a SNAC institution
+     *
+     * This will throw an exception if asked to delete an institution has affiliated users.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param integer $institutionID An institution id
+     */
+    public function deleteInstitution($institutionID)
+    {
+        $result = $this->sdb->query(
+            'select appuser.username from appuser where affiliation in (select ic_id from snac_institution where id=$1)',
+            array($institutionID));
+        $usernames = "";
+        while($row = $this->sdb->fetchrow($result))
+        {
+            $usernames .= $row['username'] . " ";
+        }
+        if ($usernames)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to delete institution still used by users: $usernames");
+        }
+        else
+        {
+            $this->sdb->query(
+                'delete from snac_institution where id=$1',
+                array($institutionID));
+        }
     }
 
 }

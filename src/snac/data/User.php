@@ -85,6 +85,15 @@ class User implements \Serializable {
     private $roleList = null;
 
     /**
+     * List of groups
+     *
+     * Groups I'm a member of
+     *
+     * @var \snac\data\Group[] List of objects 
+     */ 
+    private $groupList = null;
+
+    /**
      * Work email
      *
      * @var string Work email
@@ -127,6 +136,7 @@ class User implements \Serializable {
      */
     public function __construct($data = null) {
         $this->roleList = array();
+        $this->groupList = array();
         if ($data != null)
             $this->fromArray($data);
 
@@ -142,6 +152,46 @@ class User implements \Serializable {
     public function setUserActive($active = false) {
         $this->active = $active;
     }
+
+    /**
+     * Get the User active
+     *
+     * Gets the user as active or not.
+     *
+     * @param boolean $active Whether or not the user is active
+     */
+    public function getUserActive() {
+        return $this->active;
+    }
+
+    /**
+     * Replace the group list
+     *
+     * It is easier and more reliable to simply replace the whole group list when a group changed (especially
+     * when a group is deleted) than to remove an object from a list of objects. Call this with the entire
+     * list of objects instead of removeGroup(). We do the same for roles.
+     *
+     * Hopefully that isn't a problem in the web browser.
+     *
+     * See DBUser->listUserGroups() and calls in DBUser to setGroupList().
+     *
+     * @param \snac\data\Group[] $group
+     */ 
+    public function setGroupList($groupList)
+    {
+        $this->groupList = $groupList;
+    }
+
+    /**
+     * Add a group
+     *
+     * @param \snac\data\Group $group
+     */ 
+    public function addGroup($group)
+    {
+        array_push($this->groupList,$group);
+    }
+
 
     /**
      * Set the user name
@@ -178,10 +228,15 @@ class User implements \Serializable {
      *
      * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
      *
-     * @param \snac\data\Role[] $roleList A list of roles.
-     */
+     * @param \snac\data\Role[] $roleList A list of roles. 
+     */ 
     public function setRoleList($roleList)
     {
+        /*
+         * Interesting that we set the whole list at once, and don't use addRole() (which doesn't exist) or
+         * something like that. That is probably due to writing user role links to the db, then getting back the
+         * whole role list from the db.
+         */
         $this->roleList = $roleList;
     }
 
@@ -496,8 +551,15 @@ class User implements \Serializable {
                 "workPhone" => $this->workPhone,
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
-                "token" => $this->token
+                "token" => $this->token,
         );
+        
+        foreach ($this->roleList as $i => $v)
+            $return["roleList"][$i] = $v->toArray($shorten);
+        
+        foreach ($this->groupList as $i => $v)
+            $return["groupList"][$i] = $v->toArray($shorten);
+
 
         // Shorten if necessary
         if ($shorten) {
@@ -590,6 +652,20 @@ class User implements \Serializable {
         else
             $this->active = false;
 
+        unset($this->roleList);
+        $this->roleList = array();
+        if (isset($data["roleList"]))
+            foreach ($data["roleList"] as $i => $entry)
+                if ($entry != null)
+                    $this->roleList[$i] = new Role($entry);
+
+        unset($this->groupList);
+        $this->groupList = array();
+        if (isset($data["groupList"]))
+            foreach ($data["groupList"] as $i => $entry)
+                if ($entry != null)
+                    $this->groupList[$i] = new Group($entry);
+        
         return true;
     }
 
