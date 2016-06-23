@@ -4506,32 +4506,21 @@ class SQL
     /**
      * Insert a new institution.
      *
-     * Insert a new institution and return the institution's id.
+     * Insert a new institution and return the institution's id. We aren't using snac_institution.id so we
+     * need to check for a record before inserting, just in calse.
      *
-     * @param string $ic_id Institution ic_id
-     *
-     * @return integer The inserted row id.
+     * @param string $ic_id Institution ic_id, aka a constellation ic_id.
      */
     public function insertInstitution($ic_id)
     {
-        $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1) returning id",
+        $result = $this->sdb->query("select * from snac_institution where ic_id=$1",
                                     array($ic_id));
-        $row = $this->sdb->fetchrow($result);
-        return $row['id'];
-    }
-
-    /**
-     * Update a institution.
-     *
-     * @param integer $rid Institution row id
-     *
-     * @param string $ic_id Institution ic_id
-     *
-     */
-    public function updateInstitution($iid, $ic_id)
-    {
-        $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
-                                    array($ic_id, $iid));
+        
+        if (! $this->sdb->fetchrow($result))
+        {
+            $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1)",
+                                        array($ic_id));
+        }
     }
 
     /**
@@ -4541,13 +4530,13 @@ class SQL
      *
      * @throws \snac\exceptions\SNACDatabaseException
      *
-     * @param integer $institutionID An institution id
+     * @param integer $ic_id An institution ic_id, aka constellation ID.
      */
-    public function deleteInstitution($institutionID)
+    public function deleteInstitution($ic_id)
     {
         $result = $this->sdb->query(
-            'select appuser.username from appuser where affiliation in (select ic_id from snac_institution where id=$1)',
-            array($institutionID));
+            'select appuser.username from appuser where affiliation=$1',
+            array($ic_id));
         $usernames = "";
         while($row = $this->sdb->fetchrow($result))
         {
@@ -4560,9 +4549,27 @@ class SQL
         else
         {
             $this->sdb->query(
-                'delete from snac_institution where id=$1',
-                array($institutionID));
+                'delete from snac_institution where ic_id=$1',
+                array($ic_id));
         }
     }
+
+    /* Not used. See insertInstitution() above */
+    /*
+     * Update a institution.
+     *
+     * @param integer $rid Institution row id
+     *
+     * @param string $ic_id Institution ic_id
+     *
+     */
+    /* 
+     * public function updateInstitution($iid, $ic_id)
+     * {
+     *     $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
+     *                                 array($ic_id, $iid));
+     * }
+     */
+
 
 }

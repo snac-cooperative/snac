@@ -301,9 +301,12 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $newUser = $this->dbu->readUser($newUser);
 
         $userAsJson = $newUser->toJSON();
-        $cfile = fopen('user_object_json.txt', 'w');
-        fwrite($cfile, $userAsJson);
-        fclose($cfile);
+
+        /* 
+         * $cfile = fopen('user_object_json.txt', 'w');
+         * fwrite($cfile, $userAsJson);
+         * fclose($cfile);
+         */
 
         $this->enableLogging();
         $this->logDebug(sprintf("user as json\n%s", $userAsJson));
@@ -489,21 +492,29 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
     public function testInstitution()
     {
-        $testObj = new \snac\data\SNACInstitution();
+        $firstObj = new \snac\data\Constellation();
         /*
          * Yes, it is a ficticious ic_id, but in the testing world, the ic_id isn't related to anything.
          * The first write tests insert, and the second tests update.
+         *
+         * Since we are using ic_id in table snac_institution, is it theoretically possible that 1234 and 4567
+         * are valid ic_id values. Not likely, but possible. We could use 1 and 2 which are so small that they
+         * will never be constellation IDs in the real world.
+         *
+         * The field typt is int, so we can use negative numbers for testing.
          */
         $initialList = $this->dbu->institutionList();
 
-        $testObj->setConstellationID(1234); 
-        $firstObj = $this->dbu->writeInstitution($testObj);
+        $firstObj->setID(1234); 
+        $this->dbu->writeInstitution($firstObj);
 
-        $firstICID = $firstObj->getConstellationID();
-        $firstObj->setConstellationID(4567);
-        $secondObj = $this->dbu->writeInstitution($firstObj);
+        $firstICID = $firstObj->getID();
+        $secondObj = new \snac\data\Constellation();
+        $secondObj->setID(4567);
+        $this->dbu->writeInstitution($secondObj);
 
         $iList = $this->dbu->institutionList();
+        $this->dbu->eraseInstitution($firstObj);
         $this->dbu->eraseInstitution($secondObj);
         $postList = $this->dbu->institutionList();
         /*
@@ -512,8 +523,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */ 
         $this->assertNotNull($firstObj->getID());
         $this->assertEquals($firstICID, 1234);
-        $this->assertEquals($secondObj->getConstellationID(), 4567);
-        $this->assertEquals(count($initialList), count($iList)-1);
+        $this->assertEquals($secondObj->getID(), 4567);
+        $this->assertEquals(count($initialList), count($iList)-2);
         $this->assertEquals(count($initialList), count($postList));
     }
     

@@ -1123,28 +1123,28 @@ class DBUser
     /**
      * List all system institutions.
      *
-     * Create a list of Institution objects of all institutions. This might have been called:
-     * listallinstitutions listallinstitution allinstitutionlist.
-     *
-     * @return \snac\data\Institution[] Return list of Institution object, each of which contains a list of Privilege
-     * objects.
+     * Create a list of summary constellation objects for each SNAC institution.
+     * 
+     * @return \snac\data\Constellation[] Return list of constellations (summary) for the SNAC institutions.
      */
     public function institutionList()
     {
         /*
          * Select all the institution data, returned as a list of associative lists. We don't have any use for
          * a list of ids, unlike Role and some other data. So, there is no populateInstitution(). It all happens here.
+         *
+         * This function might have been called: listallinstitution listallinstitution allinstitutionlist,
+         * selectinstitution selectallinstitution
+         *
          */ 
         $rowList = $this->sql->selectAllInstitution();
-        $institutionObjList = array();
+        $instList = array();
         foreach($rowList as $row)
         {
-            $institutionObj = new \snac\data\SNACInstitution();
-            $institutionObj->setID($row['id']);
-            $institutionObj->setConstellationID($row['ic_id']);
-            array_push($institutionObjList, $institutionObj);
+            $cObj = $this->dbutil->readConstellation($row['ic_id'], true);
+            array_push($instList, $cObj);
         }
-        return $institutionObjList;
+        return $instList;
     }
 
     /**
@@ -1156,36 +1156,25 @@ class DBUser
      *
      * The update use case is unclear. Insert and delete (erase) seem reasonable, but update will probably never happen.
      *
-     * @param \snac\data\SNACInstitution $institution The institution objectc.
+     * @param \snac\data\Constellation $institution The SNAC institution in a constellation.
      *
-     * @return \snac\data\SNACInstitution SNACInstitution object.
+     * @return \snac\data\Constellation object, summary, holding a SNAC institution
      */
     public function writeInstitution($institution)
     {
-        if ($institution->getID())
-        {
-            $this->sql->updateInstitution($institution->getID(),
-                                          $institution->getConstellationID());
-        }
-        else
-        {
-            $iid = $this->sql->insertInstitution($institution->getConstellationID());
-            $institution->setID($iid);
-        }
-        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
-        return $institution;
+        $this->sql->insertInstitution($institution->getID());
     }
 
     /**
      * Really delete a SNAC institution from the db
      *
-     * Remember that SNAC Institution records are simply the ic_id of an existing SNAC record. This only
+     * Remember that SNAC Institution records are simply the ic_id of an existing SNAC constellation. This only
      * deletes from the snac_institution table, and nothing else is effected.
      *
      * deleteInstitution() will throw an exception if asked to delete an institution which has any affiliated
      * users.
      *
-     * @param \snac\data\Institution A Institution object
+     * @param \snac\data\Constellation  A SNAC Institution in a summary constellation object.
      */
     public function eraseInstitution($institutionObj)
     {

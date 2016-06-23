@@ -883,9 +883,8 @@ create unique index place_link_idx1 on place_link(id,ic_id,version);
 -- appuser.affiliation. snac_institution.ic_id=appuser.affiliation.
 
 create table snac_institution (
-    id    int default nextval('id_seq'),
-    ic_id int  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
-);
+        ic_id int  -- fk to version_history.id, aka ic_id of the institution SNAC constellation
+        );
 
 -- Groups of appusers. Use case is a group of reviewers, or a group of editors.  Postgres group is a reserved
 -- word, so if we name the table "group" we have to put "group" in double quotes all over the place and that's
