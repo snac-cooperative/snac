@@ -28,6 +28,12 @@ $parsedFile = false;
 $cStore = new \snac\server\database\DBUtil();
 $uStore = new \snac\server\database\DBUser();
 
+$unRoles = $uStore->roleList();
+
+$roles = array();
+foreach($unRoles as $role) {
+    $roles[$role->getLabel()] = $role;
+}
 
 $institutions = array(); 
 
@@ -54,6 +60,8 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
             $tempUser->setEmail($data[2]);
             $tempUser->setFullName($data[0]);
             $tempUser->setAffiliation($inst);
+            $tempUser->setUserActive(true);
+            $tempUser->setRoleList(array($roles[$data[3]]));
             $uStore->createUser($tempUser);
         }
     }
