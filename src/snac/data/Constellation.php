@@ -1154,6 +1154,19 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Set the list of name entries
+     *
+     * Sets the list of name entries to the list provided.  This will overwrite any other
+     * name entries currently set for this constellation. 
+     *
+     * @param \snac\data\NameEntry[] $nameEntries Name entry list to set
+     */
+    public function setNameEntries($nameEntries) {
+
+        $this->nameEntries = $nameEntries;
+    }
+
+    /**
      * Set the preferred name entry
      *
      * Sets the preferred name entry for this constellation.  The name entry to prefer

@@ -1086,4 +1086,23 @@ class WebUIExecutor {
         return $user;
     }
 
+
+    /**
+     * Simplify a Constellation 
+     *
+     * Takes the given constellation and modifies it to make a simpler constellation to send the
+     * templating engine.  This includes things like setting the preferred name, etc.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to modify
+     * @return boolean True if anything was changed, false otherwise
+     */
+    protected function simplifyConstellation(&$constellation) {
+        // Set the preferred name entry from the list (if applicable)
+        $constellation->setPreferredNameEntry($constellation->getPreferredNameEntry());
+        // Remove all name entries but the preferred one
+        $constellation->setNameEntries(array($constellation->getPreferredNameEntry()));
+
+
+        return true;
+    }
 }
