@@ -374,6 +374,11 @@ class ServerExecutor {
     public function userInformation($input = null) {
         $response = array();
 
+
+        /*
+         * Get the User object, if it exists
+         */
+
         $user = null;
         if ($input == null) {
             $user = $this->user;
@@ -391,6 +396,22 @@ class ServerExecutor {
         $response["result"] = "success";
 
         $response["user"] = $user->toArray();
+
+
+        /*
+         * Get the list of Groups the User is a member of
+         */
+
+        //TODO
+        $response["groups"] = array();
+
+
+        /*
+         * Get the list of Constellations locked or checked out to the user
+         * 
+         * "editing"      = checked out to the user for edit
+         * "editing_lock" = currently locked from the user because they are editing
+         */
 
         $this->logger->addDebug("Getting list of locked constellations to user");
 
@@ -437,6 +458,29 @@ class ServerExecutor {
                 function ($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
+        return $response;
+    }
+    
+    /**
+     * Get Group Information
+     *
+     * Gets the group information, including the group information from the database as well
+     * as the list of users in this group 
+     *
+     * @param string[]|null $input The input from the client
+     * @return string[] The response to send to the client
+     */
+    public function groupInformation($input = null) {
+        $response = array();
+
+        //TODO Try to get the group from DBUser
+        $response["group"] = null; // $group->toArray();
+
+        //TODO Try to get the list of users for the group from DBUser
+        $response["users"] = array();
+
+
+        $response["result"] = "success";
         return $response;
     }
 
