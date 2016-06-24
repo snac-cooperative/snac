@@ -239,7 +239,7 @@ class DBUser
      * @param \snac\data\User $user A user object.
      * @return boolean True on success, else false.
      */
-    public function saveUser($user)
+    public function saveUser($user, $saveGroup=false, $saveRole=false)
     {
         return $this->sql->updateUser($user->getUserID(),
                                       $user->getFirstName(),
@@ -255,6 +255,30 @@ class DBUser
                                       $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
                                       $user->getPreferredRules(),
                                       $user->getUserActive());
+        /*
+         * Admins can run this on behalf of another user. It requires authorization to save roles and save
+         * groups.
+         */ 
+        if ($saveRole) {
+            /*
+             * - remove all old roles, removeUserRole()?
+             * - add back all current roles
+             */ 
+            foreach($this->listUserRoles($user) as $role) {
+                $this->removeUserRole($user, $role);
+            }
+            foreach($user->getRoleList() as $role) {
+                $this->addUserRole($user, $role);
+            }
+        }
+        if ($saveGroup) {
+            foreach($this->listUserGroups($user) as $group) {
+                $this->removeUserFromGroup($user, $group);
+            }
+            foreach($user->getGroupList() as $group) {
+                $this->addUserToGroup($user, $group);
+            }
+        }
     }
     
 
@@ -349,8 +373,8 @@ class DBUser
         $user->setUserActive($record['active']);
         /*
          * We may need the functions listUserRoles() and listUserGroups() for uses outside of simply building
-         * user objects.  Once we have those two functions there is no point in a function populateRoles() or
-         * populateGroups() because those functions would each have a single line.
+         * user objects, although no other uses are possible as long as these functions take $user as an
+         * argument.
          *
          * This is different from how things are done in DBUtil, for good reason. This code may be more legible.
          */ 
@@ -438,14 +462,14 @@ class DBUser
         $roleObjList = array();
         foreach($roleIDList as $rid)
         {
-            $roleObj = $this->populateRole($rid);
+            $roleObj = $this->readRole($rid);
             array_push($roleObjList, $roleObj);
         }
         return $roleObjList;
     }
 
     /**
-     * Populate a role object
+     * Read a role object from the database
      *
      * Select role data from the database, and populate a role object.
      *
@@ -454,7 +478,7 @@ class DBUser
      * @return \snac\data\Role A Role object.
      *
      */
-    public function populateRole($rid)
+    public function readRole($rid)
     {
         $row = $this->sql->selectRole($rid);
         $roleObj = new \snac\data\Role();
@@ -475,7 +499,7 @@ class DBUser
      *
      * @return \snac\data\Privilege A privilege object.
      */ 
-    public function populatePrivilege($pid)
+    private function populatePrivilege($pid)
     {
         $row = $this->sql->selectPrivilege($pid);
         $privilegeObj = new \snac\data\Privilege();
@@ -486,9 +510,12 @@ class DBUser
     }
 
     /**
-     * Add a role to the User via table appuser_role_link. Return true on success.
+     * Add a role to the User
      *
-     * You might be searching for addrole, add role adding a role adding role.
+     * Add role via table appuser_role_link. Return true on success.
+     *
+     * Use this when adding a role. You might have thought this function would be called: addrole, or
+     * addroletouser.
      *
      * After adding the role, set the users's role list by getting the list from the db.
      * 
@@ -505,9 +532,8 @@ class DBUser
     /**
      * Add a privilege to a role
      *
-     * The privilege must exist before calling this. Use createPrivilege(). You might be searching for
-     * addprivilege, add privilege adding a privilege adding privilege.
-     *
+     * The privilege must exist before calling this. Use createPrivilege().
+     * 
      * This is an alternate to adding the priv to the role, then calling writeRole(). Having two ways of
      * adding a priv to a role is probably less than ideal.
      *
@@ -522,7 +548,7 @@ class DBUser
     }
 
     /**
-     * Does use have a privilege
+     * Does user have a privilege
      *
      * Returns true if the privilege exists. Build a list of all the privs, then test the list for key
      * existence.
@@ -591,8 +617,10 @@ class DBUser
     /**
      * List roles for a user.
      *
-     * List all the roles for a user, as an array of Role objects. You might be searching or listalluserroles
-     * listallrolesuser userallroles userroles.
+     * List all the roles for a user by reading from the database. Return an array of Role objects.
+     *
+     * You might be have expected this function to be called: listalluserroles, listallrolesuser,
+     * userallroles, or userroles.
      *
      * @param \snac\data\User $user The user
      *
@@ -604,7 +632,7 @@ class DBUser
         $roleObjList = array();
         foreach($ridList as $rid)
             {
-                $roleObj = $this->populateRole($rid);
+                $roleObj = $this->readRole($rid);
                 array_push($roleObjList, $roleObj);
             }
         return $roleObjList;
@@ -656,6 +684,9 @@ class DBUser
     /**
      * Remove a role from the User via table appuser_role_link.
      *
+     * Remove the role from the user is how we say it, but the relation is bi-directional. In retrospect, this
+     * function should have been called removeUserFromRole.
+     * 
      * After removing the role, refresh the User role list by reading it back from the database.
      *
      * @param \snac\data\User $user A user
@@ -953,7 +984,8 @@ class DBUser
      *
      * @param \snac\data\User $user A user object
      *
-     * @return boolean true Returns true or an exception will be thrown by low level db code if something fails.
+     * @return boolean true Always returns true, although an exception will be thrown by low level db code if
+     * something fails.
      */
     public function clearAllSessions($user)
     {
@@ -966,13 +998,35 @@ class DBUser
      *
      * Return a list of all users as user objects. You might be searching for selectallusers selectusers select all users.
      *
-     * @param \snac\data\Constellation $affiliation optional
+     * If you want to pass an affiliation, then you must also pass $active. 
+     *
+     * @throws \snac\exceptions\SNACException Will throw an exception if the optional first parameter is not a
+     * bool. This may prevent someone skipping the first arg, and passing an affiliation, forgetting that if
+     * an affiliation is passed, then the first arg is required.
+     *
+     * @param boolean $active optional Pass true to get active users.
+     *
+     * @param \snac\data\Constellation $affiliation optional Optional affiliation.
      * 
      * @return \snac\data\User[] $allUserList
      */ 
-    public function listAllUsers($affiliation=null)
+    public function listAllUsers($active=null, $affiliation=null)
     {
-        $idList = $this->sql->selectAllUserIDList($affiliation==null?null:$affiliation->getID());
+        if ($active==null && $affiliation==null)
+        {
+            $active = true;
+        }
+        /*
+         * If something besides a boolean was passed in $active, then we have a problem. Having two optional
+         * params means that when the second param is passed, the first param becomes required.
+         *
+         * Defaulting $active to true or false would prevent us from doing this sanity check.
+         */ 
+        if (! is_bool($active))
+        {
+            throw new \snac\exceptions\SNACException("Error: Optional first parameter of listAllUsers() must be boolean");
+        }
+        $idList = $this->sql->selectAllUserIDList($active, $affiliation==null?null:$affiliation->getID());
         $allUserList = array();
         foreach($idList as $userID)
         {
@@ -1015,7 +1069,7 @@ class DBUser
      *
      * @return \snac\data\Group A group object.
      */ 
-    public function populateGroup($pid)
+    private function populateGroup($pid)
     {
         $row = $this->sql->selectGroup($pid);
         $groupObj = new \snac\data\Group();
@@ -1063,9 +1117,26 @@ class DBUser
     }
 
     /**
+     * List users in a group
+     *
+     * @param \snac\data\Group $group The group
+     * @return \snac\data\User[] List of users
+     */
+    public function listAllUsersInGroup($group)
+    {
+        $idList = selectUserIDsFromGroup($group->getID());
+        $userList = array();
+        foreach($idList as $uid)
+        {
+            array_push($userList, populateUser($this->sql->selectUserByID($uid)));
+        }
+        return $userList;
+    }
+
+    /**
      * List groups for a user
      *
-     * Read the groups from the database.
+     * Read the groups from the database. List the groups this user is in.
      * 
      * @param \snac\data\User The user we want to list groups for.
      * @return \snac\data\Group[] List of group objects.
@@ -1106,9 +1177,13 @@ class DBUser
     }
     
     /**
-     * Remove a group from the User via table appuser_group_link.
+     * Remove user from group
      *
-     * After removing the group, refresh the User group list by reading it back from the database.
+     * Remove a group-user link by deleting a record from table appuser_group_link. The user will no longer be
+     * in the group. The semantics are confusing because it is a bi-directional link. The user is in this
+     * group (has this group), and the group has this user (is related to this user).
+     *
+     * After removing the user, refresh the User group list by reading it back from the database.
      *
      * @param \snac\data\User $user A user
      * @param \snac\data\Group $group Group object
@@ -1180,6 +1255,4 @@ class DBUser
     {
         $this->sql->deleteInstitution($institutionObj->getID());
     }
-    
-
 }

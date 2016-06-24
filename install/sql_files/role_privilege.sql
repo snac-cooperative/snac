@@ -13,6 +13,7 @@ insert into privilege (label, description) values ('Modify Users', 'Modify user 
 insert into privilege (label, description) values ('Inactivate Users', 'Able to inactivate user accounts');
 insert into privilege (label,description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
 insert into privilege (label, description) values ('Manage My Group', 'Administer the membership of groups I belong to');
+insert into privilege (label, description) values ('Manage Institutions', 'Manage the list of SNAC member institutions');
 
 
 insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
