@@ -122,7 +122,7 @@ if ($response == "yes") {
 }
 
 
-echo "Would you like to load the schema (tables, indicies) into the database?\n  ('yes' or 'no'): ";
+echo "Would you like to load the schema (tables, indicies, roles, privileges) into the database?\n  ('yes' or 'no'): ";
 $response = "yes";
 if (!$automate)
     $response = trim(fgets(STDIN));
@@ -139,9 +139,18 @@ if ($response == "yes") {
         echo $error."\n";
         die();
     }
-    echo "  Successfully loaded the schema.\n\n";
+    echo "  Successfully loaded the schema.\n";
+
+    $res = pg_query($dbHandle, file_get_contents("sql_files/role_privilege.sql"));
+    if (!$res) {
+        $error = pg_last_error($dbHandle);
+        echo "  ERR: Unable to run script due to the following error:\n";
+        echo $error."\n";
+        die();
+    }
+    echo "  Successfully loaded roles and privileges\n\n";
 } else {
-    echo "  Not loading the schema. The schema can be found in sql_files/schema.sql.\n\n";
+    echo "  Not loading the schema, roles, or privileges. The schema can be found in sql_files/schema.sql.\n\n";
 } 
 
 echo "Would you like to load the vocabulary schema (and drop the existing tables)?\n  ('yes' or 'no'): ";

@@ -86,14 +86,10 @@ foreach ($line as $data) {
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
 
     /* 
-     * Add to the snac_institution table.  undef $institutionObj because objects are passed by reference which
-     * makes them update in place, and php scoping rules mean that vars inside loops are persistent across
-     * loop iterations.
+     * Add to the snac_institution table. An institution is a constellation, usually in summary form. The
+     * institution code only cares about the constellation ID aka ic_id, from getID().
      */
-    unset($institutionObj);
-    $institutionObj = new \snac\data\SNACInstitution();
-    $institutionObj->setConstellationID($written->getID());
-    $dbuser->writeInstitution($institutionObj);
+    $dbuser->writeInstitution($written);
     printf("Added to table snac_institutions: %s (ARK: %s)\n", $written->getID(), $written->getArk());
 
     // index ES
