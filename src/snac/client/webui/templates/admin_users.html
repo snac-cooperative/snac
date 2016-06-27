@@ -91,7 +91,11 @@ $(document).ready(function() {
                             <td>{{ editUser.fullName }}</td>
                             <td>{{ editUser.userName }}</td>
                             <td>{{ editUser.email }}</td>
-                            <td></td>
+                            <td>
+                                {% for role in editUser.roleList %}
+                                    {{ role.label }}
+                                {% endfor %}
+                            </td>
                             <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
                             <td>
                                 {% if editUser.active %}

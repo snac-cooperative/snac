@@ -86,6 +86,42 @@ function scm_source_select_replace(selectItem, idMatch) {
             }
 }
 
+/**
+ * Replace a select that is linked to an affiliation search
+ *
+ * Replaces the select with a select2 object capable of making AJAX queries
+ *
+ * @param  JQuery selectItem The JQuery item to replace
+ */
+function affiliation_select_replace(selectItem) {
+        if(selectItem != null) {
+                selectItem.select2({
+                    ajax: {
+                        url: function() {
+                            var query = "?command=vocabulary&type=affiliation";
+                                return query;
+                        },
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (data, page) {
+                            return { results: data.results };
+                        },
+                        cache: true
+                    },
+                    width: '100%',
+                    minimumInputLength: 0,
+                    allowClear: false,
+                    theme: 'bootstrap',
+                    placeholder: 'Select Affiliation'
+                });
+            }
+}
 
 function select_replace(selectItem, idMatch) {
         if(selectItem.attr('id').endsWith(idMatch)
@@ -133,4 +169,8 @@ $(document).ready(function() {
             vocab_select_replace($(this), "entityType", "entity_type", 0);
         }
     });
+
+    // Replace the Affiliation dropdowns, if one exists
+    if ($("#affiliationid").exists())
+        affiliation_select_replace($("#affiliationid"));
 });

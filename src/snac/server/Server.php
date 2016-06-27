@@ -164,8 +164,27 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // Group Management
             case "group_information":
-                $this->response = $executor->groupInformation();
+                $this->response = $executor->groupInformation($this->input);
                 break;
+
+            case "admin_groups":
+                $this->response = $executor->listGroups($this->input);
+                break;
+
+            case "edit_group":
+                $this->response = $executor->groupInformation($this->input);
+                break;
+
+            case "update_group":
+                $this->response = $executor->updateGroupInformation($this->input);
+                break;
+
+            // institutions
+            case "admin_institutions":
+                $this->response = $executor->listInstitutions();
+                break;
+
+
 
             // Constellation Management
             case "insert_constellation":
