@@ -313,7 +313,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
         $userList = $this->dbu->listAllUsers();
         $roleList = $this->dbu->listUserRoles($newUser);
-        $roleCopy = $this->dbu->populateRole($testUserRole->getID());
+        $roleCopy = $this->dbu->readRole($testUserRole->getID());
         $privList = $this->dbu->privilegeList();
         $this->dbu->removePrivilegeFromRole($testUserRole, $privOne);
 
