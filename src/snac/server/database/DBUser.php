@@ -43,11 +43,11 @@ class DBUser
      *
      * We need to be able to read a constellation, so we need a DBUtil object.
      *
-     * @var snac\server\database\DBUtil object.
+     * @var \snac\server\database\DBUtil object.
      */
     private $dbutil;
 
-    /** 
+    /**
      * Constructor
      *
      * The constructor for the class. Set up a database connector, and SQL object. All database layers
@@ -64,7 +64,7 @@ class DBUser
          * value. In reality, I think it only makes matters more complex. If the value changed (very unlikely)
          * the "fix" cwould be a simple search and replace.
          */
-        
+
         $this->sql = new SQL($this->db, 'deleted');
     }
 
@@ -85,7 +85,7 @@ class DBUser
         $roleList = $this->listUserRoles($user);
         foreach($roleList as $role)
         {
-            
+
         }
         $this->sql->deleteUser($user->getUserID());
     }
@@ -133,7 +133,7 @@ class DBUser
         $this->sql->deletePrivilege($privilegeObj->getID());
     }
 
-        
+
 
     /**
      * Write the password
@@ -173,7 +173,7 @@ class DBUser
      *
      * Affiliation is a Constellation, but only has the minimal summary fields. We save the Constellation ID
      * aka ic_id aka getID() to the database.
-     * 
+     *
      * Return the new user object on success.
      *
      * Calling code had better do some sanity checking. This does not set the password. The password is not
@@ -214,7 +214,7 @@ class DBUser
      * Find out if a user exists. True for success, else false.
      *
      * @param \snac\data\User $user A User object, must have user ID or username set.
-     * 
+     *
      * @return boolean True for exists, else false.
      */
     public function userExists($user)
@@ -258,12 +258,12 @@ class DBUser
         /*
          * Admins can run this on behalf of another user. It requires authorization to save roles and save
          * groups.
-         */ 
+         */
         if ($saveRole) {
             /*
              * - remove all old roles, removeUserRole()?
              * - add back all current roles
-             */ 
+             */
             foreach($this->listUserRoles($user) as $role) {
                 $this->removeUserRole($user, $role);
             }
@@ -280,14 +280,14 @@ class DBUser
             }
         }
     }
-    
+
 
     /**
      * Get the user id if you only know the email address. We must be assuming the email addresses are unique.
      *
      * Might be called readUserIDByEmail. "Find" is not a word we use anywhere else in function names
      * here. There is an attempt to follow some predictable convention for function names.
-     * 
+     *
      * @param string $email
      *
      * @return integer $uid Return an integer user id or false.
@@ -301,7 +301,7 @@ class DBUser
         }
         return false;
     }
-    
+
     /**
      * Return a User object
      *
@@ -377,13 +377,13 @@ class DBUser
          * argument.
          *
          * This is different from how things are done in DBUtil, for good reason. This code may be more legible.
-         */ 
+         */
         $user->setRoleList($this->listUserRoles($user));
         $user->setGroupList($this->listUserGroups($user));
 
-        /* 
+        /*
          * readConstellation($mainID, $version=null, $summary=false)
-         * 
+         *
          * The ic_id aka $mainID is the affiliation field from the db. We pass null for version in order to
          * get the most recent. We pass true for $summary so that we get a summary constellation which only
          * has ic_id, entityType, ARK, Name entry.
@@ -396,7 +396,7 @@ class DBUser
 
     /*
      * This function removed.
-     * 
+     *
      * Return a user object for the email.
      *
      * Wrapper for readUser() getting a user by email address instead of user id.
@@ -404,7 +404,7 @@ class DBUser
      * @param string $email User email address.
      * @return \snac\data\User Returns a user object or false.
      */
-    /* 
+    /*
      * public function readUserByEmail($email)
      * {
      *     $uid = $this->sql->selectUserByEmail($email);
@@ -498,7 +498,7 @@ class DBUser
      * Return a privilege object based on the $pid ID value
      *
      * @return \snac\data\Privilege A privilege object.
-     */ 
+     */
     private function populatePrivilege($pid)
     {
         $row = $this->sql->selectPrivilege($pid);
@@ -518,7 +518,7 @@ class DBUser
      * addroletouser.
      *
      * After adding the role, set the users's role list by getting the list from the db.
-     * 
+     *
      * @param \snac\data\User $user A user
      * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only care about id.
      */
@@ -533,7 +533,7 @@ class DBUser
      * Add a privilege to a role
      *
      * The privilege must exist before calling this. Use createPrivilege().
-     * 
+     *
      * This is an alternate to adding the priv to the role, then calling writeRole(). Having two ways of
      * adding a priv to a role is probably less than ideal.
      *
@@ -552,9 +552,9 @@ class DBUser
      *
      * Returns true if the privilege exists. Build a list of all the privs, then test the list for key
      * existence.
-     * 
+     *
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
-     */ 
+     */
     public function hasPrivilege($user, $privilege)
     {
         $allPrivs = array(); // assoc list
@@ -573,9 +573,9 @@ class DBUser
      *
      * Returns true if the privilege with $label exists. Build a list of all the privilege labels, then test
      * the list for key existence.
-     * 
+     *
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
-     */ 
+     */
     public function hasPrivilegeByLabel($user, $label)
     {
         $allPrivs = array(); // assoc list
@@ -599,14 +599,14 @@ class DBUser
      * After adding the role, set the users's role list by getting the list from the db.
      *
      * When we have more default roles, just add additional insertRoleByLabel() calls.
-     * 
+     *
      * @param \snac\data\User $user A user
      * @return boolean Return true on success, else false.
      */
     public function addDefaultRole($user)
     {
         return true;
-        /* 
+        /*
          * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
          * $user->setRoleList($this->listUserRoles($user));
          * return $result;
@@ -642,7 +642,7 @@ class DBUser
      * Check if a user has a role
      *
      * The role may be partial, but must have and id that is getID() must return a value.
-     * 
+     *
      * @param \snac\data\User $user A user
      *
      * @param \snac\data\Role $role A role, may be incomplete, but must at least have an id.
@@ -661,10 +661,10 @@ class DBUser
         return false;
     }
 
-       
+
     /**
      * Check for role by label
-     * 
+     *
      * @param \snac\data\User User object
      * @param string $label A label for a role
      * @return \snac\data\Role A role or null. Or false?
@@ -686,7 +686,7 @@ class DBUser
      *
      * Remove the role from the user is how we say it, but the relation is bi-directional. In retrospect, this
      * function should have been called removeUserFromRole.
-     * 
+     *
      * After removing the role, refresh the User role list by reading it back from the database.
      *
      * @param \snac\data\User $user A user
@@ -703,7 +703,7 @@ class DBUser
      * Remove a privilege from a role
      *
      * Remvoe the privilege role link from the db, also remove the privilege from the role object as well.
-     * 
+     *
      * @param \snac\data\Role $role A role
      * @param \snac\data\Privilege $privilege Privilege is a Role object
      */
@@ -732,16 +732,16 @@ class DBUser
         if ($role->getID())
         {
             $this->sql->updateRole($role->getID(),
-                                   $role->getLabel(), 
+                                   $role->getLabel(),
                                    $role->getDescription());
         }
         else
         {
-            $rid = $this->sql->insertRole($role->getLabel(), 
+            $rid = $this->sql->insertRole($role->getLabel(),
                                           $role->getDescription());
             $role->setID($rid);
         }
-        foreach($role->getPrivilegeList() as $priv) 
+        foreach($role->getPrivilegeList() as $priv)
         {
             $this->sql->insertPrivilegeRoleLink($role->getID(), $priv->getID());
         }
@@ -750,7 +750,7 @@ class DBUser
     }
 
 
-    
+
     /**
      * Insert or update a privilege into the database
      *
@@ -766,12 +766,12 @@ class DBUser
         if ($privilege->getID())
         {
             $this->sql->updatePrivilege($privilege->getID(),
-                                        $privilege->getLabel(), 
+                                        $privilege->getLabel(),
                                         $privilege->getDescription());
         }
         else
         {
-            $pid = $this->sql->insertPrivilege($privilege->getLabel(), 
+            $pid = $this->sql->insertPrivilege($privilege->getLabel(),
                                                $privilege->getDescription());
             $privilege->setID($pid);
         }
@@ -810,7 +810,7 @@ class DBUser
      * 3600.
      *
      * @return boolean True on success, else false.
-     */ 
+     */
     public function sessionExtend(&$user, $extend=3600)
     {
         $success = $this->sql->updateByExtendingSession($user->getUserID(),
@@ -879,7 +879,7 @@ class DBUser
      * @param \snac\data\User $user
      *
      * @return boolean True for active, not expired, for this user. False otherwise.
-     */ 
+     */
     public function sessionActive($user)
     {
         if ($this->sessionExists($user))
@@ -908,7 +908,7 @@ class DBUser
      * It is important to read or create a user at the top of the function. Everything after depends on a
      * valid User from the SNAC appuser database table.
      *
-     * Features: auto-create unknown user, auto-create unknown session, delete expired session. 
+     * Features: auto-create unknown user, auto-create unknown session, delete expired session.
      *
      * @param \snac\data\User $user User object
      *
@@ -918,20 +918,20 @@ class DBUser
     {
         $currentToken = $user->getToken();
         $accessToken = $currentToken['access_token'];
-        
+
         // Try to get this user from the database
         $newUser = $this->readUser($user);
-        
+
         if ($newUser === false) {
             // If the user doesn't exist, then create them
             $newUser = $this->createUser($user);
-            
+
         }
         $newUser->setToken($user->getToken());
-        
+
         // Now we have a good $newUser with the original $user token. Either the user was created or read from
         // the db.
-        
+
         // Create the session if it doesn't exist, and then return (no need to check that the session is active
         if (! $this->sessionExists($newUser))
         {
@@ -944,19 +944,19 @@ class DBUser
          *
          * If the session exists, but doesn't belong to this user, selectActive() will fail.
          * If the sesion has expired, selectActive() will fail.
-         */ 
+         */
         if (! $this->sql->selectActive($newUser->getUserID(), $accessToken))
         {
             /*
              * Shouldn't this call removeSession() instead of a low-level SQL function.
-             */  
+             */
             $this->sql->deleteSession($newUser->getToken()['access_token']);
             $newUser->setToken(array('access_token' => '', 'expires' => 0));
-            
+
             // The user isn't logged in, so we should not let validate their session
             return false;
         }
-        
+
         // The user is set, their session is active
         return $newUser;
     }
@@ -998,7 +998,7 @@ class DBUser
      *
      * Return a list of all users as user objects. You might be searching for selectallusers selectusers select all users.
      *
-     * If you want to pass an affiliation, then you must also pass $active. 
+     * If you want to pass an affiliation, then you must also pass $active.
      *
      * @throws \snac\exceptions\SNACException Will throw an exception if the optional first parameter is not a
      * bool. This may prevent someone skipping the first arg, and passing an affiliation, forgetting that if
@@ -1007,9 +1007,9 @@ class DBUser
      * @param boolean $active optional Pass true to get active users.
      *
      * @param \snac\data\Constellation $affiliation optional Optional affiliation.
-     * 
+     *
      * @return \snac\data\User[] $allUserList
-     */ 
+     */
     public function listAllUsers($active=null, $affiliation=null)
     {
         if ($active==null && $affiliation==null)
@@ -1021,7 +1021,7 @@ class DBUser
          * params means that when the second param is passed, the first param becomes required.
          *
          * Defaulting $active to true or false would prevent us from doing this sanity check.
-         */ 
+         */
         if (! is_bool($active))
         {
             throw new \snac\exceptions\SNACException("Error: Optional first parameter of listAllUsers() must be boolean");
@@ -1036,7 +1036,7 @@ class DBUser
         }
         return $allUserList;
     }
-    
+
     /**
      * Write or update a group to the database
      *
@@ -1049,12 +1049,12 @@ class DBUser
         if ($group->getID())
         {
             $this->sql->updateGroup($group->getID(),
-                                    $group->getLabel(), 
+                                    $group->getLabel(),
                                     $group->getDescription());
         }
         else
         {
-            $rid = $this->sql->insertGroup($group->getLabel(), 
+            $rid = $this->sql->insertGroup($group->getLabel(),
                                            $group->getDescription());
             $group->setID($rid);
         }
@@ -1068,7 +1068,7 @@ class DBUser
      * Return a group object based on the $pid ID value
      *
      * @return \snac\data\Group A group object.
-     */ 
+     */
     private function populateGroup($pid)
     {
         $row = $this->sql->selectGroup($pid);
@@ -1137,10 +1137,10 @@ class DBUser
      * List groups for a user
      *
      * Read the groups from the database. List the groups this user is in.
-     * 
+     *
      * @param \snac\data\User The user we want to list groups for.
      * @return \snac\data\Group[] List of group objects.
-     */ 
+     */
     private function listUserGroups($user)
     {
         $gids = $this->sql->selectUserGroupIDs($user->getUserID());
@@ -1166,7 +1166,7 @@ class DBUser
      * a group adding group.
      *
      * After adding the group, set the users's group list by getting the list from the db.
-     * 
+     *
      * @param \snac\data\User $user A user
      * @param \snac\data\Group $newGroup is associative list with keys id, label, description. We really only care about id.
      */
@@ -1175,7 +1175,7 @@ class DBUser
         $this->sql->insertGroupLink($user->getUserID(), $newGroup->getID());
         $user->setGroupList($this->listUserGroups($user));
     }
-    
+
     /**
      * Remove user from group
      *
@@ -1199,7 +1199,7 @@ class DBUser
      * List all system institutions.
      *
      * Create a list of summary constellation objects for each SNAC institution.
-     * 
+     *
      * @return \snac\data\Constellation[] Return list of constellations (summary) for the SNAC institutions.
      */
     public function institutionList()
@@ -1211,12 +1211,12 @@ class DBUser
          * This function might have been called: listallinstitution listallinstitution allinstitutionlist,
          * selectinstitution selectallinstitution
          *
-         */ 
+         */
         $rowList = $this->sql->selectAllInstitution();
         $instList = array();
         foreach($rowList as $row)
         {
-            $cObj = $this->dbutil->readConstellation($row['ic_id'], true);
+            $cObj = $this->dbutil->readPublishedConstellationByID($row['ic_id'], true);
             array_push($instList, $cObj);
         }
         return $instList;
@@ -1226,7 +1226,7 @@ class DBUser
      * Write or update a new institution to the database
      *
      * The part of the constellation we most care about is the ic_id. getConstellationID() is the ic_id.
-     * 
+     *
      * If the institution has an id, it must have previously have been written to the db, so update.
      *
      * The update use case is unclear. Insert and delete (erase) seem reasonable, but update will probably never happen.
