@@ -373,6 +373,14 @@ class WebUIExecutor {
                 $display->setTemplate("coming_soon");
                 break;
             case "groups":
+                $ask = array("command"=>"admin_groups",
+                    "user" => $user->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $display->setData(array("groups" => $serverResponse["groups"]));
                 $display->setTemplate("coming_soon");
                 break;
             case "roles":
@@ -1027,6 +1035,34 @@ class WebUIExecutor {
                         return $response;
                     }
                 }
+            } else if ($request["type"] == "affiliation") {
+                // get the snac affiliations
+                $serverResponse = $this->connect->query(
+                    array(
+                        "command" => "admin_institutions"
+                    )
+                );
+
+                $response = array();
+                $response["results"] = array();
+
+                foreach ($serverResponse["constellation"] as $cData) {
+                    $constellation = new \snac\data\Constellation($cData);
+                    array_push($response["results"],
+                        array (
+                            "id" => $constellation->getID(),
+                            "text" => $constellation->getPreferredNameEntry()->getOriginal()
+                        )
+                    );
+                }
+
+                // Give the editing list back in alphabetical order
+                usort($response["results"],
+                        function ($a, $b) {
+                            return $a['text'] <=> $b['text'];
+                        });
+
+                return $response;
             } else {
                 $this->logger->addDebug("Requesting Controlled Vocabulary List");
                 // This is a strict query for a controlled vocabulary term
@@ -1086,4 +1122,23 @@ class WebUIExecutor {
         return $user;
     }
 
+
+    /**
+     * Simplify a Constellation
+     *
+     * Takes the given constellation and modifies it to make a simpler constellation to send the
+     * templating engine.  This includes things like setting the preferred name, etc.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to modify
+     * @return boolean True if anything was changed, false otherwise
+     */
+    protected function simplifyConstellation(&$constellation) {
+        // Set the preferred name entry from the list (if applicable)
+        $constellation->setPreferredNameEntry($constellation->getPreferredNameEntry());
+        // Remove all name entries but the preferred one
+        $constellation->setNameEntries(array($constellation->getPreferredNameEntry()));
+
+
+        return true;
+    }
 }

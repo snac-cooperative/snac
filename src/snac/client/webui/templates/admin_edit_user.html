@@ -103,7 +103,11 @@ body {
                 <div class="form-group">
                     <label class="control-label col-xs-2">Affiliation</label>
                     <div class="col-xs-10" id="affiliationDiv">
-                        <input type="text" id="affiliationid" name="affiliationid" class="form-control" value="Dropdown Soon"/>
+                        <select id="affiliationid" name="affiliationid" class="form-control">
+                            {% if data.user.affiliation %}
+                                <option value="{{data.user.affiliation.id}}" selected="true">{{ data.user.affiliation.nameEntries.0.original }}</option>
+                            {% endif %}
+                        </select>
                     </div>
                 </div>
 

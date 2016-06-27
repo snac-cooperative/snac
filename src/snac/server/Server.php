@@ -127,14 +127,17 @@ class Server implements \snac\interfaces\ServerInterface {
         // Decide what to do based on the command given to the server
         switch ($this->input["command"]) {
 
+            // Vocabulary Searching
             case "vocabulary":
                 $this->response = $executor->searchVocabulary($this->input);
                 break;
 
+            // Reconciliation Engine tasks
             case "reconcile":
                 $this->response = $executor->reconcileConstellation($this->input);
                 break;
 
+            // Session Management
             case "start_session":
                 $this->response = $executor->startSession();
                 break;
@@ -142,6 +145,7 @@ class Server implements \snac\interfaces\ServerInterface {
             case "end_session":
                 $this->response = $executor->endSession();
 
+            // User Management
             case "user_information":
                 $this->response = $executor->userInformation();
                 break;
@@ -158,6 +162,31 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->updateUserInformation($this->input);
                 break;
 
+            // Group Management
+            case "group_information":
+                $this->response = $executor->groupInformation($this->input);
+                break;
+
+            case "admin_groups":
+                $this->response = $executor->listGroups($this->input);
+                break;
+
+            case "edit_group":
+                $this->response = $executor->groupInformation($this->input);
+                break;
+
+            case "update_group":
+                $this->response = $executor->updateGroupInformation($this->input);
+                break;
+
+            // institutions
+            case "admin_institutions":
+                $this->response = $executor->listInstitutions();
+                break;
+
+
+
+            // Constellation Management
             case "insert_constellation":
                 $this->response = $executor->writeConstellation($this->input);
                 break;

@@ -297,12 +297,38 @@ class ServerExecutor {
      */
     public function listUsers(&$input) {
 
-        $allUsers = $this->uStore->listAllUsers();
+        //TODO True will eventually mean all users, and Tom is also changing the signature
+        $allUsers = $this->uStore->listAllUsers(true);
         $response = array();
         if (count($allUsers) > 0) {
             $response["users"] = array();
             foreach ($allUsers as $user) {
                 array_push($response["users"], $user->toArray());
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * List Groups
+     *
+     * Calls through to DBUser to ask for the list of groups
+     *
+     * @param  string[] $input Input array from the client
+     * @return string[]        Response to send to the client including the list of Users
+     */
+    public function listGroups(&$input) {
+
+        //TODO True will eventually mean all users, and Tom is also changing the signature
+        $allGroups = array(new \snac\data\Group()); //$this->uStore->listAllGroups(true);
+        $response = array();
+        if (count($allGroups) > 0) {
+            $response["groups"] = array();
+            foreach ($allGroups as $group) {
+                array_push($response["groups"], $group->toArray());
             }
             $response["result"] = "success";
         } else {
@@ -352,12 +378,34 @@ class ServerExecutor {
                 $response["term"] = null;
             }
         } else {
-            $response["results"] = $this->cStore->searchVocabulary(
-                $input["type"],
-                $input["query_string"],
-                $input["entity_type"]);
+            switch ($input["type"]) {
+                default:
+                    $response["results"] = $this->cStore->searchVocabulary(
+                        $input["type"],
+                        $input["query_string"],
+                        $input["entity_type"]);
+                    break;
+            }
         }
 
+        return $response;
+    }
+
+    /**
+     * List the SNAC institutions
+     *
+     * @return \snac\data\Constellation[] List of Institutional Constellations
+     */
+    public function listInstitutions() {
+
+        $constellationList = array();
+        foreach ($this->uStore->institutionList() as $constellation) {
+            array_push($constellationList, $constellation->toArray());
+        }
+        $response = array (
+            "result" => "success",
+            "constellation" =>  $constellationList
+        );
         return $response;
     }
 
@@ -373,6 +421,11 @@ class ServerExecutor {
      */
     public function userInformation($input = null) {
         $response = array();
+
+
+        /*
+         * Get the User object, if it exists
+         */
 
         $user = null;
         if ($input == null) {
@@ -391,6 +444,21 @@ class ServerExecutor {
         $response["result"] = "success";
 
         $response["user"] = $user->toArray();
+
+        /*
+         * Get the list of Groups the User is a member of
+         */
+
+        //TODO
+        $response["groups"] = array();
+
+
+        /*
+         * Get the list of Constellations locked or checked out to the user
+         *
+         * "editing"      = checked out to the user for edit
+         * "editing_lock" = currently locked from the user because they are editing
+         */
 
         $this->logger->addDebug("Getting list of locked constellations to user");
 
@@ -437,6 +505,38 @@ class ServerExecutor {
                 function ($a, $b) {
                     return $a['nameEntry'] <=> $b['nameEntry'];
                 });
+        return $response;
+    }
+
+    /**
+     * Get Group Information
+     *
+     * Gets the group information, including the group information from the database as well
+     * as the list of users in this group
+     *
+     * @param string[]|null $input The input from the client
+     * @return string[] The response to send to the client
+     */
+    public function groupInformation($input = null) {
+        $response = array();
+
+        //TODO Try to get the group from DBUser
+
+        $group = null;
+        if (isset($input["group"])) {
+            $group = new \snac\data\Group($input["group"]);
+            $group = $this->uStore->readGroup($group);
+        } else {
+            return array (
+                "result" => "failure"
+            );
+        }
+        $response["group"] = $group->toArray();
+
+        //TODO Try to get the list of users for the group from DBUser
+        $response["users"] = $this->uStore->listAllUsersInGroup($group);
+
+        $response["result"] = "success";
         return $response;
     }
 

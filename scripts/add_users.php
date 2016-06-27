@@ -28,6 +28,12 @@ $parsedFile = false;
 $cStore = new \snac\server\database\DBUtil();
 $uStore = new \snac\server\database\DBUser();
 
+$unRoles = $uStore->roleList();
+
+$roles = array();
+foreach($unRoles as $role) {
+    $roles[$role->getLabel()] = $role;
+}
 
 $institutions = array(); 
 
@@ -44,17 +50,17 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
         if ($row++ > 0 && $data[2] != "") {
             $parsedFile = true;
             echo $data[0] . ", " . $data[1] . ":: " . $institutions[$data[1]] . "\n";
-            /*
-             * Note readPublishedConstellationByArk() second arg $summary is true. $inst will be a summary
-             * constellation, and setAffiliation() take a constellation as its param.
-             */ 
             $inst = $cStore->readPublishedConstellationByArk($institutions[$data[1]], true);
             $tempUser = new \snac\data\User();
             $tempUser->setUserName($data[2]);
             $tempUser->setEmail($data[2]);
             $tempUser->setFullName($data[0]);
             $tempUser->setAffiliation($inst);
-            $uStore->createUser($tempUser);
+            $tempUser->setUserActive(true);
+            $tempUser->setRoleList(array($roles[$data[3]]));
+            $tempUser = $uStore->createUser($tempUser);
+
+            $uStore->addUserRole($tempUser, $roles[$data[3]]);
         }
     }
     fclose($handle);
