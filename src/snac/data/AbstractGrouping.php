@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Role, Privilege, Group
+ * Parent class of Role, Privilege, and Group
  *
  * User's are authorized for system functions based on having privileges. Privileges are grouped inside Roles.
  *
@@ -38,7 +38,7 @@ class AbstractGrouping implements \Serializable {
      *
      * @var integer Object id from sql object.id record id
      */
-    private $id;
+    private $id = null;
 
     /**
      * Object label

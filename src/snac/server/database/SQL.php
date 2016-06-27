@@ -580,20 +580,15 @@ class SQL
      * Paremeters are not optional. The calling code needs to pass both params, and must use some logic to
      * determine what param values need to be passed.
      *
-     * @param boolean $active True if we want only active users, false otherwise.
+     * @param boolean $everyone True to return all users active and inactive. False to return active only.
      * 
      * @param integer $affiliationID If non-null (true in any php sense of true), constrain on this
      * affiliation ID. 
      *
      * @return integer[] Array of row id integer values.
      */ 
-    public function selectAllUserIDList($active, $affiliationID)
+    public function selectAllUserIDList($everyone, $affiliationID)
     {
-        $activeClause = "active";
-        if (! $active)
-        {
-            $activeClause = "not active";
-        }
         /*
          * $vars are interpolated in "" strings. $1 is not interpolated.
          *
@@ -603,14 +598,23 @@ class SQL
          * $affiliation really needs to be a greater than zero integer, so we could test for is_int() && >
          * zero which might be better (more specific).
          */ 
+        $activeClause = "";
         if ($affiliationID)
         {
-            $query = "select id from appuser where $activeClause and affiliation=$1";
+            if (! $everyone)
+            {
+                $activeClause = " active and ";
+            }
+            $query = "select id from appuser where $activeClause affiliation=$1";
             $result = $this->sdb->query($query, array($affiliationID));
         }
         else
         {
-            $query = "select id from appuser where $activeClause";
+            if (! $everyone)
+            {
+                $activeClause = " where active";
+            }
+            $query = "select id from appuser $activeClause";
             $result = $this->sdb->query($query, array());
         }
         $all = array();
@@ -4362,7 +4366,7 @@ class SQL
      */
     public function insertGroup($label, $description)
     {
-        $result = $this->sdb->query("insert into group (label, description) values ($1, $2) returning id",
+        $result = $this->sdb->query("insert into appuser_group (label, description) values ($1, $2) returning id",
                           array($label, $description));
         $row = $this->sdb->fetchrow($result);
         return $row['id'];
@@ -4379,7 +4383,7 @@ class SQL
      */
     public function updateGroup($rid, $label, $description)
     {
-        $result = $this->sdb->query("update group set label=$2, description=$3 where id=$1",
+        $result = $this->sdb->query("update appuser_group set label=$2, description=$3 where id=$1",
                                     array($rid, $label, $description));
         $row = $this->sdb->fetchrow($result);
     }

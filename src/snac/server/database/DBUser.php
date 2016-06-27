@@ -20,6 +20,26 @@ namespace snac\server\database;
  * appuser_role_link relates roles to users. Table session has session data, and joined where
  * appuser.id=session.appuser_fk.
  *
+ * Functions that return lists: listUsers, listRoles, listGroups, insitutionList, listPrivileges
+ *
+ * Functions that return constrained lists: listUserRoles, listUsersInGroup, listGroupsForUser
+ *
+ * Functions that add/remove: eraseRoleByID, addUserRole (better name: addRoleToUser?), addPrivilegeToRole,
+ * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
+ * removeRoleFromUser?), removePrivilegeFromRole
+ *
+ * Functions that read: readUser, readRole
+ *
+ * Functions that create/update/write: writePassword, createUser, saveUser, writeRole, writePrivilege,
+ * writeGroup, writeInstitution
+ *
+ * Functions that delete: eraseRole, erasePrivilege, eraseGroup, eraseInstitution
+ *
+ * Functions that check/has: userExists, hasPrivilege, hasPrivilegeByLabel, hasRole, checkRoleByLabel,
+ * sessionExists, sessionActive, checkSessionActive, checkPassword
+ * 
+ * Other functions: findUserID, private populateUser, disableUser, private populatePrivilege, sessionExtend,
+ * private populateGroup, clearAllSessions
  */
 
 class DBUser
@@ -43,7 +63,7 @@ class DBUser
      *
      * We need to be able to read a constellation, so we need a DBUtil object.
      *
-     * @var snac\server\database\DBUtil object.
+     * @var \snac\server\database\DBUtil object.
      */
     private $dbutil;
 
@@ -202,7 +222,7 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
-            $this->addDefaultRole($newUser);
+            // $this->addDefaultRole($newUser);
             return $newUser;
         }
         return false;
@@ -237,24 +257,26 @@ class DBUser
      * inside updateUser() we at least know a record was updated in the database.
      *
      * @param \snac\data\User $user A user object.
+     * @param boolean $saveGroup optional If true, save the groups of this user
+     * @param boolean $saveRole optionsl If true, save the roles of this user
      * @return boolean True on success, else false.
      */
     public function saveUser($user, $saveGroup=false, $saveRole=false)
     {
-        return $this->sql->updateUser($user->getUserID(),
-                                      $user->getFirstName(),
-                                      $user->getLastName(),
-                                      $user->getFullName(),
-                                      $user->getAvatar(),
-                                      $user->getAvatarSmall(),
-                                      $user->getAvatarLarge(),
-                                      $user->getEmail(),
-                                      $user->getUserName(),
-                                      $user->getWorkEmail(),
-                                      $user->getWorkPhone(),
-                                      $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
-                                      $user->getPreferredRules(),
-                                      $user->getUserActive());
+        $retVal = $this->sql->updateUser($user->getUserID(),
+                                         $user->getFirstName(),
+                                         $user->getLastName(),
+                                         $user->getFullName(),
+                                         $user->getAvatar(),
+                                         $user->getAvatarSmall(),
+                                         $user->getAvatarLarge(),
+                                         $user->getEmail(),
+                                         $user->getUserName(),
+                                         $user->getWorkEmail(),
+                                         $user->getWorkPhone(),
+                                         $user->getAffiliation()==null?null:$user->getAffiliation()->getID(),
+                                         $user->getPreferredRules(),
+                                         $user->getUserActive());
         /*
          * Admins can run this on behalf of another user. It requires authorization to save roles and save
          * groups.
@@ -272,13 +294,14 @@ class DBUser
             }
         }
         if ($saveGroup) {
-            foreach($this->listUserGroups($user) as $group) {
+            foreach($this->listGroupsForUser($user) as $group) {
                 $this->removeUserFromGroup($user, $group);
             }
             foreach($user->getGroupList() as $group) {
                 $this->addUserToGroup($user, $group);
             }
         }
+        return $retVal;
     }
     
 
@@ -372,14 +395,13 @@ class DBUser
         $user->setWorkPhone($record['work_phone']);
         $user->setUserActive($record['active']);
         /*
-         * We may need the functions listUserRoles() and listUserGroups() for uses outside of simply building
+         * We may need the functions listUserRoles() and listGroupsForUser() for uses outside of simply building
          * user objects, although no other uses are possible as long as these functions take $user as an
          * argument.
          *
          * This is different from how things are done in DBUtil, for good reason. This code may be more legible.
          */ 
         $user->setRoleList($this->listUserRoles($user));
-        $user->setGroupList($this->listUserGroups($user));
 
         /* 
          * readConstellation($mainID, $version=null, $summary=false)
@@ -434,7 +456,7 @@ class DBUser
      *
      * @return \snac\data\Privilege[] Return list of Privilege objects
      */
-    public function privilegeList()
+    public function listPrivileges()
     {
         $pidList = $this->sql->selectAllPrivilegeIDs();
         $privilegeObjList = array();
@@ -451,13 +473,16 @@ class DBUser
     /**
      * List all system roles.
      *
-     * Create a list of Role objects of all roles. This might have been called: listallroles listallrole allrolelist.
+     * Create a list of Role objects of all roles.
      *
      * @return \snac\data\Role[] Return list of Role object, each of which contains a list of Privilege
      * objects.
      */
-    public function roleList()
+    public function listRoles()
     {
+        /*
+         * This might have been called: listallroles listallrole allrolelist.
+         */ 
         $roleIDList = $this->sql->selectAllRoleIDs();
         $roleObjList = array();
         foreach($roleIDList as $rid)
@@ -514,16 +539,21 @@ class DBUser
      *
      * Add role via table appuser_role_link. Return true on success.
      *
-     * Use this when adding a role. You might have thought this function would be called: addrole, or
-     * addroletouser.
+     * Use this when adding a role.
      *
      * After adding the role, set the users's role list by getting the list from the db.
      * 
      * @param \snac\data\User $user A user
-     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only care about id.
+     *
+     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only
+     * care about id, which is important because the web UI might pass up a role object with only the id
+     * property set.
      */
     public function addUserRole($user, $newRole)
     {
+        /*
+         * You might have thought this function would be called: addrole, or addroletouser.
+         */
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
         $user->setRoleList($this->listUserRoles($user));
         return true;
@@ -590,7 +620,8 @@ class DBUser
     }
 
 
-    /**
+    // Never used. Commented out jun 27 2016)
+    /*
      * Add default role(s)
      *
      * Current there are no default roles. If we ever have default role(s) add them here. You might be
@@ -603,15 +634,17 @@ class DBUser
      * @param \snac\data\User $user A user
      * @return boolean Return true on success, else false.
      */
-    public function addDefaultRole($user)
-    {
-        return true;
-        /* 
-         * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
-         * $user->setRoleList($this->listUserRoles($user));
-         * return $result;
-         */
-    }
+    /* 
+     * public function addDefaultRole($user)
+     * {
+     *     return true;
+     *     /\* 
+     *      * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
+     *      * $user->setRoleList($this->listUserRoles($user));
+     *      * return $result;
+     *      *\/
+     * }
+     */
 
 
     /**
@@ -996,37 +1029,20 @@ class DBUser
     /**
      * List all users
      *
-     * Return a list of all users as user objects. You might be searching for selectallusers selectusers select all users.
+     * Return a list of all users as user objects. 
      *
-     * If you want to pass an affiliation, then you must also pass $active. 
+     * If you want to pass an affiliation, then you must also pass $everyOne. 
      *
-     * @throws \snac\exceptions\SNACException Will throw an exception if the optional first parameter is not a
-     * bool. This may prevent someone skipping the first arg, and passing an affiliation, forgetting that if
-     * an affiliation is passed, then the first arg is required.
-     *
-     * @param boolean $active optional Pass true to get active users.
+     * @param boolean $everyone optional Defaults to false. Pass true to get both active and inactive. 
+     * Everyone false is only active users.
      *
      * @param \snac\data\Constellation $affiliation optional Optional affiliation.
      * 
      * @return \snac\data\User[] $allUserList
      */ 
-    public function listAllUsers($active=null, $affiliation=null)
+    public function listUsers($everyone=false, $affiliation=null)
     {
-        if ($active==null && $affiliation==null)
-        {
-            $active = true;
-        }
-        /*
-         * If something besides a boolean was passed in $active, then we have a problem. Having two optional
-         * params means that when the second param is passed, the first param becomes required.
-         *
-         * Defaulting $active to true or false would prevent us from doing this sanity check.
-         */ 
-        if (! is_bool($active))
-        {
-            throw new \snac\exceptions\SNACException("Error: Optional first parameter of listAllUsers() must be boolean");
-        }
-        $idList = $this->sql->selectAllUserIDList($active, $affiliation==null?null:$affiliation->getID());
+        $idList = $this->sql->selectAllUserIDList($everyone, $affiliation==null?null:$affiliation->getID());
         $allUserList = array();
         foreach($idList as $userID)
         {
@@ -1058,7 +1074,8 @@ class DBUser
                                            $group->getDescription());
             $group->setID($rid);
         }
-        // Objects are passed by referece. How does it make sense to return an arg passed by reference?
+        // Objects are passed by referece. It is something of a duplication to pass-by-reference, then return
+        // the reference. 
         return $group;
     }
 
@@ -1104,7 +1121,7 @@ class DBUser
      *
      * @return \snac\data\Group[] Return list of Group objects
      */
-    public function groupList()
+    public function listGroups()
     {
         $pidList = $this->sql->selectAllGroupIDs();
         $groupObjList = array();
@@ -1122,7 +1139,7 @@ class DBUser
      * @param \snac\data\Group $group The group
      * @return \snac\data\User[] List of users
      */
-    public function listAllUsersInGroup($group)
+    public function listUsersInGroup($group)
     {
         $idList = selectUserIDsFromGroup($group->getID());
         $userList = array();
@@ -1141,7 +1158,7 @@ class DBUser
      * @param \snac\data\User The user we want to list groups for.
      * @return \snac\data\Group[] List of group objects.
      */ 
-    private function listUserGroups($user)
+    public function listGroupsForUser($user)
     {
         $gids = $this->sql->selectUserGroupIDs($user->getUserID());
         $groupList = array();
@@ -1173,7 +1190,6 @@ class DBUser
     public function addUserToGroup($user, $newGroup)
     {
         $this->sql->insertGroupLink($user->getUserID(), $newGroup->getID());
-        $user->setGroupList($this->listUserGroups($user));
     }
     
     /**
@@ -1191,7 +1207,6 @@ class DBUser
     public function removeUserFromGroup($user, $group)
     {
         $this->sql->deleteGroupLink($user->getUserID(), $group->getID());
-        $user->setGroupList($this->listUserGroups($user));
         return true;
     }
 
@@ -1202,7 +1217,7 @@ class DBUser
      * 
      * @return \snac\data\Constellation[] Return list of constellations (summary) for the SNAC institutions.
      */
-    public function institutionList()
+    public function listInstitutions()
     {
         /*
          * Select all the institution data, returned as a list of associative lists. We don't have any use for
