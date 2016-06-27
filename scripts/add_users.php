@@ -50,10 +50,6 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
         if ($row++ > 0 && $data[2] != "") {
             $parsedFile = true;
             echo $data[0] . ", " . $data[1] . ":: " . $institutions[$data[1]] . "\n";
-            /*
-             * Note readPublishedConstellationByArk() second arg $summary is true. $inst will be a summary
-             * constellation, and setAffiliation() take a constellation as its param.
-             */ 
             $inst = $cStore->readPublishedConstellationByArk($institutions[$data[1]], true);
             $tempUser = new \snac\data\User();
             $tempUser->setUserName($data[2]);
@@ -62,7 +58,9 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
             $tempUser->setAffiliation($inst);
             $tempUser->setUserActive(true);
             $tempUser->setRoleList(array($roles[$data[3]]));
-            $uStore->createUser($tempUser);
+            $tempUser = $uStore->createUser($tempUser);
+
+            $uStore->addUserRole($tempUser, $roles[$data[3]]);
         }
     }
     fclose($handle);
