@@ -1084,19 +1084,6 @@ class DBUser
         return $group;
     }
     
-    /**
-     * Read a group from the database
-     *
-     * @param \snac\data\Group $group The original, incomplete group object. We only use getID()
-     *
-     * @return \snac\data\Group The new group object
-     */
-    public function readGroup($group)
-    {
-        $groupObj = populateGroup($group->getID());
-        return $groupObj;
-    }
-
 
     /**
     * Read a group from the database
