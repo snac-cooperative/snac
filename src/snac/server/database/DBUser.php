@@ -296,7 +296,7 @@ class DBUser
             }
             foreach($rolesToAdd as $role) {
                 // This method will munge the list of roles attached to the user (Side-effect-full)
-                $this->addUserRole($user, $role);
+                $this->addRoleToUser($user, $role);
             }
         }
         return $retVal;
@@ -547,16 +547,6 @@ class DBUser
      * care about id, which is important because the web UI might pass up a role object with only the id
      * property set.
      */
-    public function addUserRole($user, $newRole)
-    {
-        /*
-         * You might have thought this function would be called: addrole, or addroletouser.
-         *
-         * Created addRoleToUser(), so just call that. Migrate old code over as the chance arises.
-         */
-        return $this->addRoleToUser($user, $newRole);
-    }
-
     public function addRoleToUser($user, $newRole) {
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
         $user->setRoleList($this->listUserRoles($user));
@@ -1081,7 +1071,7 @@ class DBUser
         // the reference.
         return $group;
     }
-    
+
 
     /**
     * Read a group from the database
