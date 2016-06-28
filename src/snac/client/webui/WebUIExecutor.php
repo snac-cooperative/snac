@@ -391,24 +391,23 @@ class WebUIExecutor {
                 $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group":
-                $response = array();
-                if (isset($input["groupid"])) {
-                    $groupEdit = new \snac\data\Group();
-                    $groupEdit->setID($input["groupid"]);
-                    $ask = array("command"=>"edit_group",
-                        "user" => $user->toArray(),
-                        "group" => $groupEdit->toArray()
-                    );
-                    $serverResponse = $this->connect->query($ask);
-                    if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
-                        return $this->drawErrorPage($serverResponse, $display);
-
-                    $response = array("group_edit" => $serverResponse["group"]);
+                if (!isset($input["groupid"])) {
+                    return $this->drawErrorPage("Missing GroupID", $display);
                 }
+                $groupEdit = new \snac\data\Group();
+                $groupEdit->setID($input["groupid"]);
+                $ask = array("command"=>"edit_group",
+                    "user" => $user->toArray(),
+                    "group" => $groupEdit->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
                 $display->setData(array(
                     "title"=> "Edit Group",
-                    "group"=>$response["group_edit"],
-                    "users"=>$response["users"]));
+                    "group"=>$serverResponse["group"],
+                    "users"=>$serverResponse["users"]));
                 $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group_post":
@@ -585,7 +584,7 @@ class WebUIExecutor {
 
         $group = new \snac\data\Group();
         if (isset($input["groupid"]) && $input["groupid"] != "")
-            $group->setID($input[]);
+            $group->setID($input["groupid"]);
         $group->setLabel($input["groupName"]);
         $group->setDescription($input["groupDescription"]);
 
