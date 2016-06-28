@@ -18,8 +18,8 @@ use \Monolog\Handler\StreamHandler;
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
-// Set STDIN to not block, so that we can give an error message if needed
-stream_set_blocking(STDIN, 0);
+// Set STDOUT to not block, so that we can give an error message if needed
+stream_set_blocking(STDOUT, 0);
 
 // Did we parse a file?
 $parsedFile = false;
@@ -28,7 +28,7 @@ $parsedFile = false;
 $cStore = new \snac\server\database\DBUtil();
 $uStore = new \snac\server\database\DBUser();
 
-$unRoles = $uStore->roleList();
+$unRoles = $uStore->listRoles();
 
 $roles = array();
 foreach($unRoles as $role) {
@@ -37,6 +37,9 @@ foreach($unRoles as $role) {
 
 $institutions = array(); 
 
+/*
+ * fgetcsv field enclosure is "" not ''. If you use '' the single quotes will be retained as part of the data.
+ */ 
 if (($handle = fopen($argv[1], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $institutions[$data[1]] = $data[0];
@@ -47,6 +50,13 @@ if (($handle = fopen($argv[1], "r")) !== FALSE) {
 $row = 0;
 if (($handle = fopen($argv[2], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+        if (count($data) != 4)
+        {
+            throw new \snac\exceptions\SNACException(
+                sprintf("Expecting 4 columns in user csv file. Found %s columns in file %s",
+                        count($data),
+                        $argv[2]));
+        }
         if ($row++ > 0 && $data[2] != "") {
             $parsedFile = true;
             echo $data[0] . ", " . $data[1] . ":: " . $institutions[$data[1]] . "\n";
@@ -57,10 +67,13 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
             $tempUser->setFullName($data[0]);
             $tempUser->setAffiliation($inst);
             $tempUser->setUserActive(true);
+
+            // Don't need to call both setRoleList() and addRoleToUser()
             $tempUser->setRoleList(array($roles[$data[3]]));
             $tempUser = $uStore->createUser($tempUser);
 
-            $uStore->addUserRole($tempUser, $roles[$data[3]]);
+            // Don't need to call both setRoleList() and addRoleToUser()
+            // $uStore->addRoleToUser($tempUser, $roles[$data[3]]);
         }
     }
     fclose($handle);

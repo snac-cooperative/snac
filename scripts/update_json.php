@@ -20,8 +20,7 @@ use \Monolog\Handler\StreamHandler;
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 
-/* unbuffer stdin, stdout? Or something. */
-stream_set_blocking(STDIN, 0);
+// Disable blocking stdout. Not quite the same as unbuffering.
 stream_set_blocking(STDOUT, 0);
 
 

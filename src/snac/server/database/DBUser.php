@@ -28,7 +28,7 @@ namespace snac\server\database;
  * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
  * removeRoleFromUser?), removePrivilegeFromRole
  *
- * Functions that read: readUser, readRole
+ * Functions that read: readUser, readRole, readGroup
  *
  * Functions that create/update/write: writePassword, createUser, saveUser, writeRole, writePrivilege,
  * writeGroup, writeInstitution
@@ -553,10 +553,15 @@ class DBUser
     {
         /*
          * You might have thought this function would be called: addrole, or addroletouser.
+         *
+         * Created addRoleToUser(), so just call that. Migrate old code over as the chance arises.
          */
+        return $this->addRoleToUser($user, $newRole);
+    }
+
+    public function addRoleToUser($user, $newRole) {
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
         $user->setRoleList($this->listUserRoles($user));
-        return true;
     }
 
     /**
@@ -1078,6 +1083,20 @@ class DBUser
         // the reference. 
         return $group;
     }
+    
+    /**
+     * Read a group from the database
+     *
+     * @param \snac\data\Group $group The original, incomplete group object. We only use getID()
+     *
+     * @return \snac\data\Group The new group object
+     */
+    public function readGroup($group)
+    {
+        $groupObj = populateGroup($group->getID());
+        return $groupObj;
+    }
+
 
     /**
      * Populate a group object
@@ -1123,11 +1142,11 @@ class DBUser
      */
     public function listGroups()
     {
-        $pidList = $this->sql->selectAllGroupIDs();
+        $gidList = $this->sql->selectAllGroupIDs();
         $groupObjList = array();
-        foreach($pidList as $pid)
+        foreach($gidList as $gid)
         {
-            $groupObj = $this->populateGroup($pid);
+            $groupObj = $this->populateGroup($gid);
             array_push($groupObjList, $groupObj);
         }
         return $groupObjList;
