@@ -561,6 +561,14 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Update Group Information
+     *
+     * Updates the group information passed in to the server
+     *
+     * @param  string[] $input Input from the client
+     * @return string[] Response to the client
+     */
     public function updateGroupInformation($input = null) {
         $response = array();
 
