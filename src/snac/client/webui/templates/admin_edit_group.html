@@ -65,7 +65,7 @@ body {
 
 
 <div class="container snac" role="main">
-<form id="new_user_form">
+<form id="new_group_form">
     <h1>Administrator: {{ data.title }}</h1>
 
     <ol class="breadcrumb">
@@ -80,7 +80,7 @@ body {
                 <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit the group information.</p>
             </div>
 
-            <input type="hidden" id="userid" name="userid" value="{{data.user.userid}}"/>
+            <input type="hidden" id="groupid" name="groupid" value="{{data.group.id}}"/>
 
             <div class="form-horizontal">
 
@@ -157,7 +157,7 @@ body {
                 </div>
                 <div class="panel-body">
                     <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-info" id="save_new_group"><span class="glyphicon glyphicon-floppy-disk"></span> Save User <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the user information." data-toggle="popover" data-placement="top"></span></a>
+                        <a href="#" class="list-group-item list-group-item-info" id="save_new_group"><span class="glyphicon glyphicon-floppy-disk"></span> Save Group <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the user information." data-toggle="popover" data-placement="top"></span></a>
                         <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not create this user." data-toggle="popover" data-placement="top"></span></a>
                     </div>
 

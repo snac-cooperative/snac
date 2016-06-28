@@ -542,6 +542,24 @@ class ServerExecutor {
         return $response;
     }
 
+    public function updateGroupInformation($input = null) {
+        $response = array();
+
+        $updated = new \snac\data\Group($input["group_update"]);
+
+        $updated = $this->uStore->writeGroup($updated);
+
+        if ($updated === false) {
+            $response["result"] = "failure";
+            $response["error"] = "Could not save the group";
+        } else {
+            $response["result"] = "success";
+            $response["group_update"] = $updated->toArray();
+        }
+        return $response;
+
+    }
+
     /**
      * Write Constellation
      *

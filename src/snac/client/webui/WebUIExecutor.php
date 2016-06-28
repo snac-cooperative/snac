@@ -370,11 +370,11 @@ class WebUIExecutor {
             case "edit_group":
                 $response = array();
                 if (isset($input["groupid"])) {
-                    $userEdit = new \snac\data\Group();
-                    $userEdit->setUserID($input["groupid"]);
+                    $groupEdit = new \snac\data\Group();
+                    $groupEdit->setID($input["groupid"]);
                     $ask = array("command"=>"edit_group",
                         "user" => $user->toArray(),
-                        "group_edit" => $userEdit->toArray()
+                        "group" => $groupEdit->toArray()
                     );
                     $serverResponse = $this->connect->query($ask);
                     if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -389,7 +389,7 @@ class WebUIExecutor {
                 $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group_post":
-                $display->setTemplate("coming_soon");
+                return $this->saveGroup($input, $user);
                 break;
             case "groups":
                 $ask = array("command"=>"admin_groups",
@@ -400,7 +400,7 @@ class WebUIExecutor {
                     return $this->drawErrorPage($serverResponse, $display);
 
                 $display->setData(array("groups" => $serverResponse["groups"]));
-                $display->setTemplate("coming_soon");
+                $display->setTemplate("admin_groups");
                 break;
             case "roles":
                 $display->setTemplate("coming_soon");
@@ -478,49 +478,102 @@ class WebUIExecutor {
         $display->setTemplate("landing_page");
     }
 
+        /**
+         * Save User Profile
+         *
+         * Asks the server to update the profile of the user.
+         *
+         * @param string[] $input Post/Get inputs from the webui
+         * @param \snac\data\User $user The current user object
+         * @return string[] The web ui's response to the client (array ready for json_encode)
+         */
+        public function saveProfile(&$input, &$user) {
+
+            $tmpUser = new \snac\data\User();
+            if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+                if (isset($input["userid"]) && $input["userid"] != "")
+                    $tmpUser->setUserID($input["userid"]);
+
+                $tmpUser->setUserName($input["userName"]);
+                $tmpUser->setEmail($input["userName"]);
+                if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
+                    $tmpAffil = new \snac\data\Constellation();
+                    $tmpAffil->setID($input["affiliationid"]);
+                    $tmpUser->setAffiliation($tmpAffil);
+                }
+                if (isset($input["active"]) && $input["active"] == "active")
+                    $tmpUser->setUserActive(true);
+            } else {
+                $tmpUser = new \snac\data\User($user->toArray());
+            }
+
+            $tmpUser->setFirstName($input["firstName"]);
+            $tmpUser->setLastName($input["lastName"]);
+            $tmpUser->setWorkPhone($input["workPhone"]);
+            $tmpUser->setWorkEmail($input["workEmail"]);
+            $tmpUser->setFullName($input["fullName"]);
+
+            $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
+
+            // Build a data structure to send to the server
+            $request = array("command"=>"update_user");
+
+            // Send the query to the server
+            $request["user"] = $user->toArray();
+            $request["user_update"] = $tmpUser->toArray();
+            $serverResponse = $this->connect->query($request);
+
+            $response = array();
+            $response["server_debug"] = $serverResponse;
+
+            if (!is_array($serverResponse)) {
+                $this->logger->addDebug("server's response: $serverResponse");
+            } else {
+                if (isset($serverResponse["result"]))
+                    $response["result"] = $serverResponse["result"];
+                if (isset($serverResponse["error"])) {
+                    $response["error"] = $serverResponse["error"];
+                }
+                if (isset($serverResponse["user_update"])) {
+                    $response["user_update"] = $serverResponse["user_update"];
+                }
+            }
+
+            // If success AND we were updating the current user, then update the session tokens
+            if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
+                $user = $tmpUser;
+                $_SESSION["snac_user"] = serialize($user);
+                $response["user"] = $serverResponse["user_update"];
+            }
+
+            return $response;
+        }
+
     /**
-     * Save User Profile
+     * Save Group Information
      *
-     * Asks the server to update the profile of the user.
+     * Asks the server to update a group's information.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function saveProfile(&$input, &$user) {
+    public function saveGroup(&$input, &$user) {
 
-        $tmpUser = new \snac\data\User();
-        if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
-            if (isset($input["userid"]) && $input["userid"] != "")
-                $tmpUser->setUserID($input["userid"]);
+        $group = new \snac\data\Group();
+        if (isset($input["groupid"]) && $input["groupid"] != "")
+            $group->setID($input[]);
+        $group->setLabel($input["groupName"]);
+        $group->setDescription($input["groupDescription"]);
 
-            $tmpUser->setUserName($input["userName"]);
-            $tmpUser->setEmail($input["userName"]);
-            if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
-                $tmpAffil = new \snac\data\Constellation();
-                $tmpAffil->setID($input["affiliationid"]);
-                $tmpUser->setAffiliation($tmpAffil);
-            }
-            if (isset($input["active"]) && $input["active"] == "active")
-                $tmpUser->setUserActive(true);
-        } else {
-            $tmpUser = new \snac\data\User($user->toArray());
-        }
-
-        $tmpUser->setFirstName($input["firstName"]);
-        $tmpUser->setLastName($input["lastName"]);
-        $tmpUser->setWorkPhone($input["workPhone"]);
-        $tmpUser->setWorkEmail($input["workEmail"]);
-        $tmpUser->setFullName($input["fullName"]);
-
-        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
+        $this->logger->addDebug("Updated the Group Object", $group->toArray());
 
         // Build a data structure to send to the server
-        $request = array("command"=>"update_user");
+        $request = array("command"=>"update_group");
 
         // Send the query to the server
         $request["user"] = $user->toArray();
-        $request["user_update"] = $tmpUser->toArray();
+        $request["group_update"] = $group->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array();
@@ -534,16 +587,9 @@ class WebUIExecutor {
             if (isset($serverResponse["error"])) {
                 $response["error"] = $serverResponse["error"];
             }
-            if (isset($serverResponse["user_update"])) {
-                $response["user_update"] = $serverResponse["user_update"];
+            if (isset($serverResponse["group_update"])) {
+                $response["group_update"] = $serverResponse["group_update"];
             }
-        }
-
-        // If success AND we were updating the current user, then update the session tokens
-        if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
-            $user = $tmpUser;
-            $_SESSION["snac_user"] = serialize($user);
-            $response["user"] = $serverResponse["user_update"];
         }
 
         return $response;

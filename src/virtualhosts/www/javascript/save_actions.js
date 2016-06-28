@@ -671,6 +671,56 @@ $(document).ready(function() {
     }
 
 
+    /**
+     * The following are New Group Admin Page save actions
+     */
+
+
+    // Save and Dashboard button
+    if($('#save_new_group').exists()) {
+        $('#save_new_group').click(function(){
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving Group... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+
+            // Send the data back by AJAX call
+            $.post("?command=administrator&subcommand=edit_group_post", $("#new_group_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    console.log(data);
+
+                    $('#success-message').html("<p>Group successfully saved. Going to group management.</p>");
+	                setTimeout(function(){
+	                    $('#success-message').slideDown();
+	                }, 500);
+	                setTimeout(function(){
+
+	                    // Go to dashboard
+	                    window.location.href = "?command=administrator&subcommand=groups";
+
+	                }, 1500);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+
+            return false;
+        });
+    }
+
+
+
+
 
     // Admin cancel to dashboard
     if($('#admin_dashboard_cancel').exists()) {

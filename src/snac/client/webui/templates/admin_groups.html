@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Admin: User Management</title>
+<title>SNAC Admin: Group Management</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -58,22 +58,22 @@ $(document).ready(function() {
 
 <div class="container snac" role="main">
 <form id="new_user_form">
-    <h1>Administrator: User Management</h1>
+    <h1>Administrator: Group Management</h1>
 
     <ol class="breadcrumb">
         <li><a href="?command=administrator&subcommand=dashboard">Administrator</a></li>
-        <li>User Management</li>
+        <li>Group Management</li>
     </ol>
 
     <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <p><span style="font-weight: bold;">Instructions: </span>The following list of users are those you can manage.  Please use the "Edit" button next to a user to edit their information.</p>
+                <p><span style="font-weight: bold;">Instructions: </span>The following list of groups are those you can manage.  Please use the "Edit" button next to a group to edit their information.</p>
             </div>
 
             <div class="text-center">
-                <a href="?command=administrator&subcommand=add_user" class="btn btn-success">
-                    <span class="glyphicon glyphicon-plus"></span> Add New User
+                <a href="?command=administrator&subcommand=add_group" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span> Add New Group
                 </a>
             </div>
             <div class="form-horizontal">
@@ -82,34 +82,16 @@ $(document).ready(function() {
                     <thead>
                         <tr>
                             <th>Name</th>
-                            <th>User Name</th>
-                            <th>Work Email</th>
-                            <th>Roles</th>
-                            <th>Affiliation</th>
-                            <th>Active</th>
+                            <th>Description</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for editUser in data.users %}
+                        {% for editGroup in data.groups %}
                         <tr>
-                            <td>{{ editUser.fullName }}</td>
-                            <td>{{ editUser.userName }}</td>
-                            <td>{{ editUser.email }}</td>
-                            <td>
-                                {% for role in editUser.roleList %}
-                                    {{ role.label }}
-                                {% endfor %}
-                            </td>
-                            <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
-                            <td>
-                                {% if editUser.active %}
-                                <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                                {% else %}
-                                <i class="fa fa-square-o" aria-hidden="true"></i>
-                                {% endif %}
-                            </td>
-                            <td><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
+                            <td>{{ editGroup.label }}</td>
+                            <td>{{ editGroup.description }}</td>
+                            <td><a href="?command=administrator&subcommand=edit_group&groupid={{editGroup.id}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
