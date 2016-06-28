@@ -341,7 +341,7 @@ class DBUser
      *
      * @param \snac\data\User A user object with a good value for getUserID() or getUserName().
      *
-     * @return \snac\data\User Returns a user object or false.
+     * @return \snac\data\User|boolean Returns a user object or false.
      */
     public function readUser($user)
     {

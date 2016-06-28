@@ -189,8 +189,8 @@ class User implements \Serializable {
      *
      * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
      *
-     * @param \snac\data\Role[] $roleList A list of roles. 
-     */ 
+     * @param \snac\data\Role[] $roleList A list of roles.
+     */
     public function setRoleList($roleList)
     {
         /*
@@ -199,6 +199,17 @@ class User implements \Serializable {
          * whole role list from the db.
          */
         $this->roleList = $roleList;
+    }
+
+    /**
+     * Add a role
+     *
+     * Adds a Role to this User.
+     *
+     * @param \snac\data\Role $role The role to add to this user
+     */
+    public function addRole($role) {
+        array_push($this->roleList, $role);
     }
 
 
@@ -514,10 +525,10 @@ class User implements \Serializable {
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
         );
-        
+
         foreach ($this->roleList as $i => $v)
             $return["roleList"][$i] = $v->toArray($shorten);
-        
+
 
         // Shorten if necessary
         if ($shorten) {
@@ -616,7 +627,7 @@ class User implements \Serializable {
             foreach ($data["roleList"] as $i => $entry)
                 if ($entry != null)
                     $this->roleList[$i] = new Role($entry);
-        
+
         return true;
     }
 
