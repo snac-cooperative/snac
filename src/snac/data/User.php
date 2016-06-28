@@ -119,17 +119,16 @@ class User implements \Serializable {
      */
     private $active = false;
 
-
     /**
      * Constructor
      *
      * @param string[] $data Array object of User information
      */
     public function __construct($data = null) {
+
         $this->roleList = array();
         if ($data != null)
             $this->fromArray($data);
-
     }
 
     /**
@@ -524,6 +523,7 @@ class User implements \Serializable {
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
+                "roleList" => array()
         );
 
         foreach ($this->roleList as $i => $v)
@@ -623,10 +623,12 @@ class User implements \Serializable {
 
         unset($this->roleList);
         $this->roleList = array();
-        if (isset($data["roleList"]))
-            foreach ($data["roleList"] as $i => $entry)
+        if (isset($data["roleList"])) {
+            foreach ($data["roleList"] as $i => $entry) {
                 if ($entry != null)
-                    $this->roleList[$i] = new Role($entry);
+                    $this->roleList[$i] = new \snac\data\Role($entry);
+            }
+        }
 
         return true;
     }
