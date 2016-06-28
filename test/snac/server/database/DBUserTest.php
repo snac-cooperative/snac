@@ -412,6 +412,15 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $demoRole->setLabel($roleLabel);
         $demoRole->setDescription('Demo role created during testing');
         $this->dbu->writeRole($demoRole);
+
+        $dArray = $demoRole->toArray();
+        $checkRole = new \snac\data\Role($dArray);
+        // $checkRole->fromJSON($json);
+        printf("\nid: %s\n", $checkRole->getID());
+        $this->assertEquals($checkRole->getID(), $demoRole->getID());
+        $this->assertEquals($checkRole->getLabel(), $demoRole->getLabel());
+        $this->assertEquals($checkRole->getDescription(), $demoRole->getDescription());
+        
         $this->dbu->addUserRole($newUser, $demoRole);
         $newUser->setRoleList(array()); // zero the role list
 
@@ -446,6 +455,10 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $newUserGroupList = $this->dbu->listGroupsForUser($newUser);
         $this->assertEquals($newUserGroupList[0]->getDescription(), "Demo test $gLabel group for testing, updated");
         $this->assertEquals(1, count($newUserGroupList));
+
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup);
+        $this->assertEquals(1,count($usersInDemoGroup));
+
         $this->dbu->removeUserFromGroup($newUser, $demoGroup);
         $newUserGroupList = $this->dbu->listGroupsForUser($newUser);
         $this->assertEquals(0, count($newUserGroupList));

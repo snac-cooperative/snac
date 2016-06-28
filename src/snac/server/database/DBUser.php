@@ -20,11 +20,11 @@ namespace snac\server\database;
  * appuser_role_link relates roles to users. Table session has session data, and joined where
  * appuser.id=session.appuser_fk.
  *
- * Functions that return lists: listUsers, listRoles, listGroups, insitutionList, listPrivileges
+ * Functions that return lists: listUsers, listRoles, listGroups, insitutionList, listPrivileges, listInstitutions
  *
  * Functions that return constrained lists: listUserRoles, listUsersInGroup, listGroupsForUser
  *
- * Functions that add/remove: eraseRoleByID, addUserRole (better name: addRoleToUser?), addPrivilegeToRole,
+ * Functions that add/remove relations: addUserRole same as addRoleToUser, addPrivilegeToRole,
  * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
  * removeRoleFromUser?), removePrivilegeFromRole
  *
@@ -33,7 +33,7 @@ namespace snac\server\database;
  * Functions that create/update/write: writePassword, createUser, saveUser, writeRole, writePrivilege,
  * writeGroup, writeInstitution
  *
- * Functions that delete: eraseRole, erasePrivilege, eraseGroup, eraseInstitution
+ * Functions that delete: eraseRole, eraseRoleByID, erasePrivilege, eraseGroup, eraseInstitution
  *
  * Functions that check/has: userExists, hasPrivilege, hasPrivilegeByLabel, hasRole, checkRoleByLabel,
  * sessionExists, sessionActive, checkSessionActive, checkPassword
@@ -410,23 +410,6 @@ class DBUser
         return $user;
     }
 
-    /*
-     * This function removed.
-     *
-     * Return a user object for the email.
-     *
-     * Wrapper for readUser() getting a user by email address instead of user id.
-     *
-     * @param string $email User email address.
-     * @return \snac\data\User Returns a user object or false.
-     */
-    /*
-     * public function readUserByEmail($email)
-     * {
-     *     $uid = $this->sql->selectUserByEmail($email);
-     *     return $this->readUser($uid);
-     * }
-     */
 
     /**
      * Disable log in to this account. Update table appuser.active to false. Return true on success.
@@ -531,6 +514,8 @@ class DBUser
     /**
      * Add a role to the User
      *
+     * This is not the preferred function. Use addRoleToUser().
+     *
      * Add role via table appuser_role_link. Return true on success.
      *
      * Use this when adding a role.
@@ -553,6 +538,21 @@ class DBUser
         return $this->addRoleToUser($user, $newRole);
     }
 
+    /**
+     * Add a role to the User
+     *
+     * This is the preferred function to add a role to a user via table appuser_role_link. Return true on success.
+     *
+     * Use this when adding a role.
+     *
+     * After adding the role, set the users's role list by getting the list from the db.
+     *
+     * @param \snac\data\User $user A user
+     *
+     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only
+     * care about id, which is important because the web UI might pass up a role object with only the id
+     * property set.
+     */
     public function addRoleToUser($user, $newRole) {
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
         $user->setRoleList($this->listUserRoles($user));
@@ -617,33 +617,6 @@ class DBUser
         }
         return isset($allPrivs[$label]);
     }
-
-
-    // Never used. Commented out jun 27 2016)
-    /*
-     * Add default role(s)
-     *
-     * Current there are no default roles. If we ever have default role(s) add them here. You might be
-     * searching for addrole, add role adding a role adding role, addUserRole
-     *
-     * After adding the role, set the users's role list by getting the list from the db.
-     *
-     * When we have more default roles, just add additional insertRoleByLabel() calls.
-     *
-     * @param \snac\data\User $user A user
-     * @return boolean Return true on success, else false.
-     */
-    /*
-     * public function addDefaultRole($user)
-     * {
-     *     return true;
-     *     /\*
-     *      * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
-     *      * $user->setRoleList($this->listUserRoles($user));
-     *      * return $result;
-     *      *\/
-     * }
-     */
 
 
     /**
@@ -717,7 +690,7 @@ class DBUser
      * Remove a role from the User via table appuser_role_link.
      *
      * Remove the role from the user is how we say it, but the relation is bi-directional. In retrospect, this
-     * function should have been called removeUserFromRole.
+     * function should have been called removeRoleFromUser.
      *
      * After removing the role, refresh the User role list by reading it back from the database.
      *
@@ -1236,9 +1209,6 @@ class DBUser
         /*
          * Select all the institution data, returned as a list of associative lists. We don't have any use for
          * a list of ids, unlike Role and some other data. So, there is no populateInstitution(). It all happens here.
-         *
-         * This function might have been called: listallinstitution listallinstitution allinstitutionlist,
-         * selectinstitution selectallinstitution
          *
          */
         $rowList = $this->sql->selectAllInstitution();
