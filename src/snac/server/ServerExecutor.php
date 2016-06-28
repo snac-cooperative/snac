@@ -297,8 +297,7 @@ class ServerExecutor {
      */
     public function listUsers(&$input) {
 
-        //TODO True will eventually mean all users, and Tom is also changing the signature
-        $allUsers = $this->uStore->listAllUsers(true);
+        $allUsers = $this->uStore->listUsers(true);
         $response = array();
         if (count($allUsers) > 0) {
             $response["users"] = array();
@@ -322,10 +321,9 @@ class ServerExecutor {
      */
     public function listGroups(&$input) {
 
-        //TODO True will eventually mean all users, and Tom is also changing the signature
-        $allGroups = array(new \snac\data\Group()); //$this->uStore->listAllGroups(true);
+        $allGroups = $this->uStore->listGroups();
         $response = array();
-        if (count($allGroups) > 0) {
+        if ($allGroups !== false) {
             $response["groups"] = array();
             foreach ($allGroups as $group) {
                 array_push($response["groups"], $group->toArray());
@@ -399,7 +397,7 @@ class ServerExecutor {
     public function listInstitutions() {
 
         $constellationList = array();
-        foreach ($this->uStore->institutionList() as $constellation) {
+        foreach ($this->uStore->listInstitutions() as $constellation) {
             array_push($constellationList, $constellation->toArray());
         }
         $response = array (
@@ -534,7 +532,11 @@ class ServerExecutor {
         $response["group"] = $group->toArray();
 
         //TODO Try to get the list of users for the group from DBUser
-        $response["users"] = $this->uStore->listAllUsersInGroup($group);
+        $users = $this->uStore->listUsersInGroup($group);
+        $response["users"] = array();
+        foreach ($users as $user) {
+            array_push($response["users"], $user->toArray());
+        }
 
         $response["result"] = "success";
         return $response;

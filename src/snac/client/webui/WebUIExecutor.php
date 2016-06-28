@@ -364,10 +364,29 @@ class WebUIExecutor {
                 $display->setTemplate("admin_users");
                 break;
             case "add_group":
-                $display->setTemplate("coming_soon");
+                $display->setData(array("title"=> "Add New Group"));
+                $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group":
-                $display->setTemplate("coming_soon");
+                $response = array();
+                if (isset($input["groupid"])) {
+                    $userEdit = new \snac\data\Group();
+                    $userEdit->setUserID($input["groupid"]);
+                    $ask = array("command"=>"edit_group",
+                        "user" => $user->toArray(),
+                        "group_edit" => $userEdit->toArray()
+                    );
+                    $serverResponse = $this->connect->query($ask);
+                    if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                        return $this->drawErrorPage($serverResponse, $display);
+
+                    $response = array("group_edit" => $serverResponse["group"]);
+                }
+                $display->setData(array(
+                    "title"=> "Edit Group",
+                    "group"=>$response["group_edit"],
+                    "users"=>$response["users"]));
+                $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group_post":
                 $display->setTemplate("coming_soon");
