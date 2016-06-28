@@ -37,7 +37,7 @@ namespace snac\server\database;
  *
  * Functions that check/has: userExists, hasPrivilege, hasPrivilegeByLabel, hasRole, checkRoleByLabel,
  * sessionExists, sessionActive, checkSessionActive, checkPassword
- * 
+ *
  * Other functions: findUserID, private populateUser, disableUser, private populatePrivilege, sessionExtend,
  * private populateGroup, clearAllSessions
  */
@@ -482,7 +482,7 @@ class DBUser
     {
         /*
          * This might have been called: listallroles listallrole allrolelist.
-         */ 
+         */
         $roleIDList = $this->sql->selectAllRoleIDs();
         $roleObjList = array();
         foreach($roleIDList as $rid)
@@ -639,11 +639,11 @@ class DBUser
      * @param \snac\data\User $user A user
      * @return boolean Return true on success, else false.
      */
-    /* 
+    /*
      * public function addDefaultRole($user)
      * {
      *     return true;
-     *     /\* 
+     *     /\*
      *      * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
      *      * $user->setRoleList($this->listUserRoles($user));
      *      * return $result;
@@ -1034,17 +1034,17 @@ class DBUser
     /**
      * List all users
      *
-     * Return a list of all users as user objects. 
+     * Return a list of all users as user objects.
      *
-     * If you want to pass an affiliation, then you must also pass $everyOne. 
+     * If you want to pass an affiliation, then you must also pass $everyOne.
      *
-     * @param boolean $everyone optional Defaults to false. Pass true to get both active and inactive. 
+     * @param boolean $everyone optional Defaults to false. Pass true to get both active and inactive.
      * Everyone false is only active users.
      *
      * @param \snac\data\Constellation $affiliation optional Optional affiliation.
      *
      * @return \snac\data\User[] $allUserList
-     */ 
+     */
     public function listUsers($everyone=false, $affiliation=null)
     {
         $idList = $this->sql->selectAllUserIDList($everyone, $affiliation==null?null:$affiliation->getID());
@@ -1080,7 +1080,7 @@ class DBUser
             $group->setID($rid);
         }
         // Objects are passed by referece. It is something of a duplication to pass-by-reference, then return
-        // the reference. 
+        // the reference.
         return $group;
     }
     
@@ -1094,6 +1094,20 @@ class DBUser
     public function readGroup($group)
     {
         $groupObj = populateGroup($group->getID());
+        return $groupObj;
+    }
+
+
+    /**
+    * Read a group from the database
+    *
+    * @param \snac\data\Group $group The original, incomplete group object. We only use getID()
+    *
+    * @return \snac\data\Group The new group object
+    */
+    public function readGroup($group)
+    {
+        $groupObj = $this->populateGroup($group->getID());
         return $groupObj;
     }
 
@@ -1160,11 +1174,11 @@ class DBUser
      */
     public function listUsersInGroup($group)
     {
-        $idList = selectUserIDsFromGroup($group->getID());
+        $idList = $this->sql->selectUserIDsFromGroup($group->getID());
         $userList = array();
         foreach($idList as $uid)
         {
-            array_push($userList, populateUser($this->sql->selectUserByID($uid)));
+            array_push($userList, $this->populateUser($this->sql->selectUserByID($uid)));
         }
         return $userList;
     }
@@ -1176,7 +1190,7 @@ class DBUser
      *
      * @param \snac\data\User The user we want to list groups for.
      * @return \snac\data\Group[] List of group objects.
-     */ 
+     */
     public function listGroupsForUser($user)
     {
         $gids = $this->sql->selectUserGroupIDs($user->getUserID());

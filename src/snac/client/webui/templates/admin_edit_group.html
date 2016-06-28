@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SNAC Admin: {{ data.title }}</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css">
+
+<!-- SNAC Javascript -->
+<script src="javascript/save_actions.js"></script>
+<script src="javascript/select_loaders.js"></script>
+<script src="javascript/scripts.js"></script>
+<script src="javascript/relation_search.js"></script>
+
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+</style>
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user) }}
+
+
+<div class="container snac" role="main">
+<form id="new_group_form">
+    <h1>Administrator: {{ data.title }}</h1>
+
+    <ol class="breadcrumb">
+        <li><a href="?command=administrator&subcommand=dashboard">Administrator</a></li>
+        <li><a href="?command=administrator&subcommand=groups">Group Management</a></li>
+        <li>{{ data.title }}</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit the group information.</p>
+            </div>
+
+            <input type="hidden" id="groupid" name="groupid" value="{{data.group.id}}"/>
+
+            <div class="form-horizontal">
+
+                <h3>General Information</h3>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Name</label>
+                    <div class="col-xs-10" id="groupNameDiv">
+                        <input type="text" id="groupName" name="groupName" class="form-control" value="{{data.group.label}}"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Description</label>
+                    <div class="col-xs-10" id="groupDescriptionDiv">
+                        <textarea id="groupDescription" name="groupDescription" class="form-control">{{data.group.description}}</textarea>
+                    </div>
+                </div>
+
+                <h3>Users In Group</h3>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Users</label>
+                    <div class="well well-lg col-xs-10">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Affiliation</th>
+                                    <th>Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for editUser in data.users %}
+                                <tr>
+                                    <td>{{ editUser.fullName }}</td>
+                                    <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
+                                    <td>
+                                        {% if editUser.active %}
+                                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
+                                        {% else %}
+                                        <i class="fa fa-square-o" aria-hidden="true"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td><a href="#" class="btn btn-danger"><span class="fa fa-minus" aria-hidden="true"></span></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-center">
+                            <a href="#" class="btn btn-success"><span class="fa fa-plus" aria-hidden="true"></span> Add user to group</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <!-- Right Column -->
+
+            <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
+                <p>Saving Group...</p>
+            </div><!-- end alert -->
+            <div class="alert alert-01 alert-success" id="success-message" style="display: none">
+                <p>Successfully saved!</p>
+            </div><!-- end alert -->
+            <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
+                <p>An error occured while saving</p>
+            </div><!-- end alert -->
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Actions</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-info" id="save_new_group"><span class="glyphicon glyphicon-floppy-disk"></span> Save Group <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Save the user information." data-toggle="popover" data-placement="top"></span></a>
+                        <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not create this user." data-toggle="popover" data-placement="top"></span></a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+</div>
+</body>
+</html>
