@@ -289,7 +289,9 @@ class DBUser
             foreach($this->listUserRoles($user) as $role) {
                 $this->removeUserRole($user, $role);
             }
-            foreach($user->getRoleList() as $role) {
+            $rolesToAdd = $user->getRoleList();
+            foreach($rolesToAdd as $role) {
+                // This method will munge the list of roles attached to the user (Side-effect-full)
                 $this->addUserRole($user, $role);
             }
         }
