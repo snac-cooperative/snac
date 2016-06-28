@@ -414,7 +414,10 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->dbu->writeRole($demoRole);
         $this->dbu->addUserRole($newUser, $demoRole);
         $newUser->setRoleList(array()); // zero the role list
-        $this->dbu->saveUser($newUser, false, true); // saving with zero role list removes all roles
+
+        // public function saveUser($user, $saveRole=false)
+        $this->dbu->saveUser($newUser, true); // saving with zero role list removes all roles
+
         $roleList = $this->dbu->listUserRoles($newUser);        
         $this->assertEquals(0, count($roleList));
         $this->dbu->eraseRoleByID($demoRole->getID());
@@ -424,11 +427,18 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         /*
          * Create group, exercise the group functions.
          */ 
+        $startGroups = $this->dbu->listGroups();
         $gLabel = sprintf("demo7 %s", time()+4);
         $demoGroup = new \snac\data\Group();
         $demoGroup->setLabel($gLabel);
         $demoGroup->setDescription("Demo test $gLabel group for testing");
         $this->dbu->writeGroup($demoGroup); // test insert
+
+        $groupFromDB = $this->dbu->readGroup($demoGroup);
+        $this->assertEquals($groupFromDB->getID(), $demoGroup->getID());
+
+        $afterAddGroups = $this->dbu->listGroups();
+        $this->assertEquals(count($startGroups)+1, count($afterAddGroups));
 
         $demoGroup->setDescription("Demo test $gLabel group for testing, updated");
         $this->dbu->writeGroup($demoGroup); // test update
@@ -441,6 +451,10 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(0, count($newUserGroupList));
         $this->dbu->eraseGroup($demoGroup);
 
+        $afterEraseGroups = $this->dbu->listGroups();
+        $this->assertEquals(count($startGroups), count($afterEraseGroups));
+
+        
         /*
          * Uncomment the lines below to check the user-does-not-exist case. Later, make this a real test.
          */ 

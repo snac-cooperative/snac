@@ -256,12 +256,14 @@ class DBUser
      * Write the User fields to the database where appuser.id=$user->getUserID(). By checking the returned id
      * inside updateUser() we at least know a record was updated in the database.
      *
+     * Users do not have a groupList. They did, and it was removed, so you won't find any reference to it,
+     * except this comment.
+     *
      * @param \snac\data\User $user A user object.
-     * @param boolean $saveGroup optional If true, save the groups of this user
      * @param boolean $saveRole optionsl If true, save the roles of this user
      * @return boolean True on success, else false.
      */
-    public function saveUser($user, $saveGroup=false, $saveRole=false)
+    public function saveUser($user, $saveRole=false)
     {
         $retVal = $this->sql->updateUser($user->getUserID(),
                                          $user->getFirstName(),
@@ -291,14 +293,6 @@ class DBUser
             }
             foreach($user->getRoleList() as $role) {
                 $this->addUserRole($user, $role);
-            }
-        }
-        if ($saveGroup) {
-            foreach($this->listGroupsForUser($user) as $group) {
-                $this->removeUserFromGroup($user, $group);
-            }
-            foreach($user->getGroupList() as $group) {
-                $this->addUserToGroup($user, $group);
             }
         }
         return $retVal;
