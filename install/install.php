@@ -442,8 +442,9 @@ if ($response == "yes") {
 
 echo "Would you like to load a set of users into the database?\n See setup_files/users_dist.csv for the file format\n ('yes' or 'no'): "; 
 $response = "yes";
-if (!$automate)
+if (!$automate) {
     $response = trim(fgets(STDIN));
+}
 else
     echo "yes\n";
 

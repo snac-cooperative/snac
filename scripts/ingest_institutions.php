@@ -21,8 +21,9 @@ use \Monolog\Handler\StreamHandler;
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
-// Set STDIN to not block, so that we can give an error message if needed
-stream_set_blocking(STDIN, 0);
+// Set STDOUT to not block, so that we can give an error message if needed
+// Don't set STDIN to no block or fgets(STDIN) won't work like you expect.
+stream_set_blocking(STDOUT, 0);
 
 // Did we parse a file?
 $parsedFile = false;

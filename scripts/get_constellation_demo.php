@@ -50,8 +50,7 @@ global $argc, $argv;
 // the config but the db connection info.
 $config = new snac\Config();
 
-/* unbuffer stdin, stdout? Or something. */
-stream_set_blocking(STDIN, 0);
+// Disable blocking stdout. Not quite the same as unbuffering.
 stream_set_blocking(STDOUT, 0);
 
 foo_main();

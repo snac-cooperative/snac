@@ -28,7 +28,7 @@ namespace snac\server\database;
  * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
  * removeRoleFromUser?), removePrivilegeFromRole
  *
- * Functions that read: readUser, readRole
+ * Functions that read: readUser, readRole, readGroup
  *
  * Functions that create/update/write: writePassword, createUser, saveUser, writeRole, writePrivilege,
  * writeGroup, writeInstitution
@@ -255,6 +255,9 @@ class DBUser
      *
      * Write the User fields to the database where appuser.id=$user->getUserID(). By checking the returned id
      * inside updateUser() we at least know a record was updated in the database.
+     *
+     * Users do not have a groupList. They did, and it was removed, so you won't find any reference to it,
+     * except this comment.
      *
      * @param \snac\data\User $user A user object.
      * @param boolean $saveRole optionsl If true, save the roles of this user
@@ -548,10 +551,15 @@ class DBUser
     {
         /*
          * You might have thought this function would be called: addrole, or addroletouser.
+         *
+         * Created addRoleToUser(), so just call that. Migrate old code over as the chance arises.
          */
+        return $this->addRoleToUser($user, $newRole);
+    }
+
+    public function addRoleToUser($user, $newRole) {
         $this->sql->insertRoleLink($user->getUserID(), $newRole->getID());
         $user->setRoleList($this->listUserRoles($user));
-        return true;
     }
 
     /**
@@ -1073,6 +1081,7 @@ class DBUser
         // the reference.
         return $group;
     }
+    
 
     /**
     * Read a group from the database
@@ -1132,11 +1141,11 @@ class DBUser
      */
     public function listGroups()
     {
-        $pidList = $this->sql->selectAllGroupIDs();
+        $gidList = $this->sql->selectAllGroupIDs();
         $groupObjList = array();
-        foreach($pidList as $pid)
+        foreach($gidList as $gid)
         {
-            $groupObj = $this->populateGroup($pid);
+            $groupObj = $this->populateGroup($gid);
             array_push($groupObjList, $groupObj);
         }
         return $groupObjList;
