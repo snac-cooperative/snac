@@ -257,11 +257,10 @@ class DBUser
      * inside updateUser() we at least know a record was updated in the database.
      *
      * @param \snac\data\User $user A user object.
-     * @param boolean $saveGroup optional If true, save the groups of this user
      * @param boolean $saveRole optionsl If true, save the roles of this user
      * @return boolean True on success, else false.
      */
-    public function saveUser($user, $saveGroup=false, $saveRole=false)
+    public function saveUser($user, $saveRole=false)
     {
         $retVal = $this->sql->updateUser($user->getUserID(),
                                          $user->getFirstName(),
@@ -286,21 +285,15 @@ class DBUser
              * - remove all old roles, removeUserRole()?
              * - add back all current roles
              */
-            foreach($this->listUserRoles($user) as $role) {
+            $rolesToDelete = $this->listUserRoles($user);
+            $rolesToAdd = $user->getRoleList();
+            foreach($rolesToDelete as $role) {
+                // This method will munge the list of roles attached to the user (Side-effect-full)
                 $this->removeUserRole($user, $role);
             }
-            $rolesToAdd = $user->getRoleList();
             foreach($rolesToAdd as $role) {
                 // This method will munge the list of roles attached to the user (Side-effect-full)
                 $this->addUserRole($user, $role);
-            }
-        }
-        if ($saveGroup) {
-            foreach($this->listGroupsForUser($user) as $group) {
-                $this->removeUserFromGroup($user, $group);
-            }
-            foreach($user->getGroupList() as $group) {
-                $this->addUserToGroup($user, $group);
             }
         }
         return $retVal;

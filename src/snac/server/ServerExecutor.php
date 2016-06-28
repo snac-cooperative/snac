@@ -262,7 +262,7 @@ class ServerExecutor {
                 $response["user_update"] = $this->user->toArray();
         } else {
             if ($this->uStore->readUser($updated) !== false) {
-                $success = $this->uStore->saveUser($updated, true, true);
+                $success = $this->uStore->saveUser($updated, true);
                 if ($success === false) {
                     $response["error"] = "Could not save the user";
                 }
@@ -274,8 +274,9 @@ class ServerExecutor {
                     $response["error"] = "Could not create the user";
             }
 
-            if ($success === true)
-                $response["user_update"] = $this->uStore->readUser($updated)->toArray();//$updated->toArray();
+            if ($success === true) {
+                $response["user_update"] = $this->uStore->readUser($updated)->toArray();
+            }
         }
 
         if ($success === true) {
