@@ -43,7 +43,7 @@ class SQL
      * Value of the string for deleted records. This is passed to the constructor because it seems likely to
      * change.
      *
-     */  
+     */
     private $deleted = null;
 
     /**
@@ -82,7 +82,7 @@ class SQL
      *
      * Check that we don't have a logger before creating a new one. This can be called as often as one wants
      * with no problems.
-     */ 
+     */
     public function enableLogging()
     {
         global $log;
@@ -112,7 +112,7 @@ class SQL
             $this->logger->addDebug($msg, $debugArray);
         }
     }
-      
+
 
     /**
      * Insert a new user aka appuser
@@ -133,14 +133,14 @@ class SQL
      * @param string $preferredRules Preferred descriptive name rules
      * @param boolean $active Is the user active
      * @return integer Record row id, unique, from sequence id_seq.
-     */ 
-    public function insertUser($userName, 
-                               $firstName, 
-                               $lastName, 
-                               $fullName, 
-                               $avatar, 
-                               $avatarSmall, 
-                               $avatarLarge, 
+     */
+    public function insertUser($userName,
+                               $firstName,
+                               $lastName,
+                               $fullName,
+                               $avatar,
+                               $avatarSmall,
+                               $avatarLarge,
                                $email,
                                $workEmail,
                                $workPhone,
@@ -149,7 +149,7 @@ class SQL
                                $active)
     {
         $result = $this->sdb->query(
-            'insert into appuser 
+            'insert into appuser
             (username, first, last, fullname, avatar, avatar_small, avatar_large,
             email, work_email, work_phone, affiliation, preferred_rules, active)
             values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
@@ -277,7 +277,7 @@ class SQL
             'update appuser set password=$1 where id=$2',
             array($passwd, $appUserID));
     }
-    
+
     /**
      * Check if a password matches
      *
@@ -305,7 +305,7 @@ class SQL
      * If the session exists for this user, return the record.
      *
      * @param integer $userID A user id
-     * 
+     *
      * @param string $accessToken A session token
      *
      * @return string[] The session record as a list with keys appuser_fk, access_token, expires.
@@ -364,7 +364,7 @@ class SQL
      * Create a new session for a user.
      *
      * @param integer $appUserID The user id
-     * 
+     *
      * @param string $accessToken A session token
      *
      * @param string $expires A session expiration timestamp
@@ -383,16 +383,16 @@ class SQL
         return false;
     }
 
-    
+
     /**
      * Check that a session is active
      *
      * I'm sure there are Postgres docs for extract(), epoch from, at time zone 'utc', but this is a nice example.
-     * 
+     *
      * http://stackoverflow.com/questions/16609724/using-current-time-in-utc-as-default-value-in-postgresql
      *
      * @param integer $appUserID The user id
-     * 
+     *
      * @param string $accessToken A session token
      *
      * @return boolean true for active, false for inactive or not found.
@@ -426,7 +426,7 @@ class SQL
      * Clear all user sessions
      *
      * @param integer $appUserID The user id
-     * 
+     *
      * @param string $accessToken A session token
      *
      * @return boolean true for active, false for inactive or not found.
@@ -461,16 +461,17 @@ class SQL
      * @param integer $affiliationID Constellation ID aka ic_id integer version_history.id
      * @param string $preferredRules Preferred name descriptive rules.
      * @param boolean $active Is the user active
-     */ 
+     * @return boolean Whether the SQL statement succeeded
+     */
     public function updateUser($uid, $firstName, $lastName, $fullName, $avatar, $avatarSmall, $avatarLarge, $email, $userName,
                                $workEmail, $workPhone, $affiliationID, $preferredRules, $active)
     {
         $result = $this->sdb->query(
-            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6, 
-            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12, 
+            'update appuser set first=$2, last=$3, fullname=$4, avatar=$5, avatar_small=$6,
+            avatar_large=$7, email=$8, userName=$9, work_email=$10, work_phone=$11, affiliation=$12,
             preferred_rules=$13, active=$14
             where appuser.id=$1 returning id',
-            array($uid, 
+            array($uid,
                   $firstName,
                   $lastName,
                   $fullName,
@@ -500,11 +501,11 @@ class SQL
      * function readUser() in DBUser.php
      *
      * Field password is not returned.
-     * 
+     *
      * @param string $userName User name, a unique string, probably the user email
-     * 
+     *
      * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
-     */ 
+     */
     public function selectUserByEmail($email)
     {
         $result = $this->sdb->query("select id from appuser where email=$1 limit 1",
@@ -513,8 +514,8 @@ class SQL
         if ($row && array_key_exists('id', $row))
         {
             /*
-             * Call selectUserByID() to avoid all copy/paste code. 
-             */ 
+             * Call selectUserByID() to avoid all copy/paste code.
+             */
             $rec = $this->selectUserByID($row['id']);
             return $rec;
         }
@@ -526,11 +527,11 @@ class SQL
      * Get user id from user name
      *
      * Return user record based on username aka user name aka userName. Field password is not returned
-     * 
+     *
      * @param string $userName User name, a unique string, probably the user email
-     * 
+     *
      * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
-     */ 
+     */
     public function selectUserByUserName($userName)
     {
         $result = $this->sdb->query("select id from appuser where username=$1",
@@ -539,8 +540,8 @@ class SQL
         if ($row && array_key_exists('id', $row))
         {
             /*
-             * Call selectUserByID() to avoid all copy/paste code. 
-             */ 
+             * Call selectUserByID() to avoid all copy/paste code.
+             */
             $rec = $this->selectUserByID($row['id']);
             return $rec;
         }
@@ -551,10 +552,10 @@ class SQL
      * Select user record from database
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * 
+     *
      * @return string[] Array with keys: id, first, last, fullname, avatar, avatar_small, avatar_large, email, work_email,
      * work_phone, affiliation, preferred_rules
-     */ 
+     */
     public function selectUserByID($uid)
     {
         $result = $this->sdb->query(
@@ -570,7 +571,7 @@ class SQL
         }
         return false;
     }
-    
+
     /**
      * Select all user row id values from database
      *
@@ -581,12 +582,12 @@ class SQL
      * determine what param values need to be passed.
      *
      * @param boolean $everyone True to return all users active and inactive. False to return active only.
-     * 
+     *
      * @param integer $affiliationID If non-null (true in any php sense of true), constrain on this
-     * affiliation ID. 
+     * affiliation ID.
      *
      * @return integer[] Array of row id integer values.
-     */ 
+     */
     public function selectAllUserIDList($everyone, $affiliationID)
     {
         /*
@@ -597,7 +598,7 @@ class SQL
          *
          * $affiliation really needs to be a greater than zero integer, so we could test for is_int() && >
          * zero which might be better (more specific).
-         */ 
+         */
         $activeClause = "";
         if ($affiliationID)
         {
@@ -635,8 +636,8 @@ class SQL
      *
      * @param string $value A Postgres compatible value, 't' or 'f'. Get this value by calling boolToPg() with
      * true or false in the calling code.
-     * 
-     */ 
+     *
+     */
     public function updateActive($uid, $value)
     {
         $this->sdb->query("update appuser set active=$2 where appuser.id=$1",
@@ -646,11 +647,11 @@ class SQL
     /**
      * Add a role to a user
      *
-     * Link a role to a user. 
+     * Link a role to a user.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param integer $newRoleID A role id
-     */ 
+     */
     public function insertRoleLink($uid, $newRoleID)
     {
         $this->sdb->query("insert into appuser_role_link (uid, rid) values ($1, $2)",
@@ -661,25 +662,25 @@ class SQL
     /**
      * Add a privilege to a role
      *
-     * Link a privilege to a role. 
+     * Link a privilege to a role.
      *
      * @param integer $rID Role id, aka role.id aka row id.
      * @param integer $pID A privilege id.
-     */ 
+     */
     public function insertPrivilegeRoleLink($rID, $pID)
     {
         $this->sdb->query("insert into privilege_role_link (rid, pid) values ($1, $2)",
                           array($rID, $pID));
     }
 
-    
+
 
     /**
      * Delete a privilege from a role
      *
      * @param integer $rID Role id, aka role.id aka row id.
      * @param integer $pID A privilege id.
-     */ 
+     */
     public function deletePrivilegeRoleLink($rID, $pID)
     {
         $this->sdb->query("delete from privilege_role_link where rid=$1 and pid=$2",
@@ -698,15 +699,15 @@ class SQL
      * inserted.
      *
      * The "id not in..." prevents adding the same role twice.
-     * 
+     *
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param string $roleLable A role label
-     */ 
+     */
     public function insertRoleByLabel($uid, $roleLabel)
     {
         $qq =
-            "insert into appuser_role_link (uid, rid) select $1, (select id from role where label=$2) 
-            where 
+            "insert into appuser_role_link (uid, rid) select $1, (select id from role where label=$2)
+            where
             (select id from role where label=$2 and id not in (select rid from appuser_role_link)) is not null
             returning rid";
 
@@ -780,7 +781,7 @@ class SQL
      * @param integer $rid A role id value
      *
      * @return integer[] List of related privilege ID values.
-     */ 
+     */
     public function selectRolePrivilegeList($rid)
     {
         $result = $this->sdb->query("select pid from privilege_role_link where rid=$1", array($rid));
@@ -858,7 +859,7 @@ class SQL
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param integer $roleID A role id
-     */ 
+     */
     public function deleteRoleLink($uid, $roleID)
     {
         $this->sdb->query("delete from appuser_role_link where uid=$1 and rid=$2",
@@ -877,7 +878,7 @@ class SQL
      *
      * @return string[] Return list with keys same as field names. Also includes key 'pid_list' which is a
      * list of related privilege ids.
-     */ 
+     */
     public function selectRole($rid)
     {
         $result = $this->sdb->query("select * from role where id=$1",
@@ -890,11 +891,11 @@ class SQL
     /**
      * Select all role record IDs
      *
-     * Get all the IDs of all roles. 
+     * Get all the IDs of all roles.
      *
      * @return integer[] Return list of ID values. The higher level calling code is expected to send each ID
      * to populateRole().
-     */ 
+     */
     public function selectAllRoleIDs()
     {
         $result = $this->sdb->query("select id from role order by label asc", array());
@@ -913,10 +914,10 @@ class SQL
      * populateRole().
      *
      * @param int $appUserID The numeric ID for the user for whom to list roles.
-     * 
+     *
      * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
      * populateRole().
-     */ 
+     */
     public function selectUserRoleIDs($appUserID)
     {
         $result = $this->sdb->query("select role.id from role,appuser_role_link
@@ -944,14 +945,14 @@ class SQL
      * aka selectMaxVersion selectMostRecentVersion selectCurrentVersion
      *
      * @param integer $mainID The constellation ID
-     * 
-     * @return integer Version number from version_history.version 
+     *
+     * @return integer Version number from version_history.version
      *
      */
     public function selectCurrentVersion($mainID)
     {
         $result = $this->sdb->query(
-                                    'select max(version) as version 
+                                    'select max(version) as version
                                     from version_history
                                     where version_history.id=$1',
                                     array($mainID));
@@ -970,7 +971,7 @@ class SQL
      * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
      *
      * @return string The status string of that version for the given mainID.
-     */ 
+     */
     public function selectStatus($mainID, $version)
     {
         $result = $this->sdb->query(
@@ -1004,7 +1005,7 @@ class SQL
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
-     */ 
+     */
     public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
     {
         if ($status != 'locked editing' &&
@@ -1036,7 +1037,7 @@ class SQL
             /*
              * I think the query above works, returning the max() only when that version also has the required
              * status. However, the check below will confirm that the returned version really is the max.
-             */ 
+             */
             $maxVersion = $this->selectCurrentVersion($mainID);
             if ($maxVersion == $version)
             {
@@ -1064,8 +1065,8 @@ class SQL
      * @param integer $value An integer or -1. We accept null, but only as an error which results in using the
      * constants.
      *
-     * @return string An empty string, or a limit or offset SQL string. 
-     */ 
+     * @return string An empty string, or a limit or offset SQL string.
+     */
     private function doLOValue($str, $value)
     {
         if ($value < 0 || ($str != 'limit' && $str != 'offset'))
@@ -1080,7 +1081,7 @@ class SQL
             /*
              * Null or weird stuff use the default. This seems the safe option.  This should never happen, but
              * if it does, we have backstopped the user doing something non-sensical.
-             */ 
+             */
             if ($str == 'limit')
             {
                 return " $str " . \snac\Config::$SQL_LIMIT . " ";
@@ -1095,7 +1096,7 @@ class SQL
                  * If the $str is unknown, there's no limit or offset string we can create, so just return an
                  * empty string. The $str is checked in the first if statement, so we should never get down
                  * here, which makes this a belt and suspenders situation.
-                 */ 
+                 */
                 return '';
             }
         }
@@ -1103,7 +1104,7 @@ class SQL
         {
             /*
              * Else we have a nice integer, so we use that.
-             */ 
+             */
             return " $str $value ";
         }
     }
@@ -1125,7 +1126,7 @@ class SQL
      * also seems fine to escape with \ when using double quotes.
      *
      * @param string $status optional Status defaults to 'published'.
-     * 
+     *
      * @param integer $limit Limit to the number of records. Not optional here. Must be -1 for all, or a
      * number. The higher level calling code has a default from the config.
      *
@@ -1133,7 +1134,7 @@ class SQL
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
-     */ 
+     */
     public function selectListByStatus($status = 'published', $limit, $offset)
     {
         $limitStr = '';
@@ -1149,7 +1150,7 @@ class SQL
             aa.version=cc.version and
             aa.status = $1
             order by aa.version desc %s %s', $limitStr, $offsetStr);
-        
+
         $result = $this->sdb->query($queryString,
                                     array($status));
         $all = array();
@@ -1160,7 +1161,7 @@ class SQL
             /*
              * I think the query above works, returning the max() only when that version also has the required
              * status. However, the check below will confirm that the returned version really is the max.
-             */ 
+             */
             $maxVersion = $this->selectCurrentVersion($mainID);
             if ($maxVersion == $version)
             {
@@ -1169,7 +1170,7 @@ class SQL
         }
         return $all;
     }
-        
+
 
     /**
      * Mint a new record id.
@@ -1333,12 +1334,12 @@ class SQL
      * Insert a record into table source.
      *
      * Write a source objec to the database. These are per-constellation so they have ic_id and no foreign
-     * keys. These are linked to other tables by putting a source.id foreign key in that related table. 
+     * keys. These are linked to other tables by putting a source.id foreign key in that related table.
      * Language related is a Language object, and is saved in table language. It is related where
      * source.id=language.fk_id. There is no language_id in table source, and there should not be. However, a
      * lanugage may link to this source record via source.id. See DBUtil writeSource().
      * The "type" field was always "simple" and is no longer used.
-     * 
+     *
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
@@ -1466,11 +1467,11 @@ class SQL
      *
      * @return integer[] A flat list of the appuser.id and related role.id, both are numeric.
      *
-     */ 
+     */
     public function selectAppUserInfo($userString)
     {
         $qq = 'get_app_user_info';
-        $this->sdb->prepare($qq, 
+        $this->sdb->prepare($qq,
                             'select appuser.id as id,role.id as role from appuser, appuser_role_link, role
                             where
                             appuser.username=$1
@@ -1521,8 +1522,8 @@ class SQL
         }
         $qq = 'insert_version_history';
         // We need version_history.id and version_history.id returned.
-        $this->sdb->prepare($qq, 
-                            'insert into version_history 
+        $this->sdb->prepare($qq,
+                            'insert into version_history
                             (id, user_id, role_id, status, is_current, note)
                             values
                             ($1, $2, $3, $4, $5, $6)
@@ -1561,10 +1562,10 @@ class SQL
     public function insertIntoVH($vhInfo, $appUserID, $roleID, $status, $note)
     {
         $qq = 'insert_into_version_history';
-        $this->sdb->prepare($qq, 
-                            'insert into version_history 
+        $this->sdb->prepare($qq,
+                            'insert into version_history
                             (version, id, user_id, role_id, status, is_current, note)
-                            values 
+                            values
                             ($1, $2, $3, $4, $5, $6, $7)
                             returning version, id as ic_id;');
 
@@ -1594,7 +1595,7 @@ class SQL
      *
      * @param integer $ic_id Constellation id
      *
-     * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'. 
+     * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'.
      */
     public function updateVersionHistory($appUserID, $roleID, $status, $note, $ic_id)
     {
@@ -1671,14 +1672,14 @@ class SQL
         $qq = 'insert_date';
         $this->sdb->prepare($qq,
                             'insert into date_range
-                            (version, ic_id, id, is_range, 
+                            (version, ic_id, id, is_range,
                             from_date, from_type, from_bc, from_not_before, from_not_after, from_original,
                             to_date, to_type, to_bc, to_not_before, to_not_after, to_original, descriptive_note, fk_table, fk_id)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)');
-        
+
         $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version'], 
+                                      array($vhInfo['version'],
                                             $vhInfo['ic_id'],
                                             $id,
                                             $isRange,
@@ -1691,7 +1692,7 @@ class SQL
                                             $toDate,
                                             $toType,
                                             $toBC,
-                                            $toNotBefore, 
+                                            $toNotBefore,
                                             $toNotAfter,
                                             $toOriginal,
                                             $descriptiveNote,
@@ -1738,7 +1739,7 @@ class SQL
     {
         $qq = 'select_date';
 
-        $query = 'select 
+        $query = 'select
         aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
         aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
         aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
@@ -1782,7 +1783,7 @@ class SQL
      * @param integer $version The constellation version. For edits this is max version of the
      * constellation. For published, this is the published constellation version.
      *
-     * @param string $fkTable Name of the related table, matches $tid aka fk_id aka fkID. 
+     * @param string $fkTable Name of the related table, matches $tid aka fk_id aka fkID.
      *
      * @return string[] A list of fields/value as list keys matching the database field names: id,
      * version, ic_id, confirmed, geo_place_id, fk_table, fk_id, from_type, to_type
@@ -1790,9 +1791,9 @@ class SQL
     public function selectPlace($tid, $version, $fkTable)
     {
         $qq = 'select_place';
-        $this->sdb->prepare($qq, 
-                         'select 
-                         aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original, 
+        $this->sdb->prepare($qq,
+                         'select
+                         aa.id, aa.version, aa.ic_id, aa.confirmed, aa.original,
                          aa.geo_place_id, aa.type, aa.role, aa.note, aa.score, aa.fk_table, aa.fk_id
                          from place_link as aa,
                          (select id,max(version) as version from place_link where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
@@ -1813,7 +1814,7 @@ class SQL
      * Insert into place_link.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     * 
+     *
      * @param integer $id The id
      *
      * @param string $confirmed Boolean confirmed by human
@@ -1837,7 +1838,7 @@ class SQL
      * @return integer $id The id of what we (might) have inserted.
      *
      */
-    public function insertPlace($vhInfo, 
+    public function insertPlace($vhInfo,
                                 $id,
                                 $confirmed,
                                 $original,
@@ -1857,7 +1858,7 @@ class SQL
         $this->sdb->prepare($qq,
                             'insert into place_link
                             (version, ic_id, id, confirmed, original, geo_place_id, type, role, note, score,  fk_id, fk_table)
-                            values 
+                            values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)');
 
         $result = $this->sdb->execute($qq,
@@ -1906,7 +1907,7 @@ class SQL
      * constellation. For published, this is the published constellation version.
      *
      * @param string $fkTable Related table name.
-     * 
+     *
      * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
      * version, ic_id, citation_id, sub_citation, source_data, rule_id, language_id, note. I don't think
      * calling code has any use for fk_id, so we don't return it.
@@ -1914,9 +1915,9 @@ class SQL
     public function selectMeta($tid, $version, $fkTable)
     {
         $qq = 'select_meta';
-        $this->sdb->prepare($qq, 
-                            'select 
-                            aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data, 
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data,
                             aa.rule_id, aa.note
                             from scm as aa,
                             (select id,max(version) as version from scm where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
@@ -2018,7 +2019,7 @@ class SQL
      * Insert geo_place
      *
      * Also known as GeoTerm
-     * 
+     *
      * @param integer $id The id. If null, the system will assign a new id.
      *
      * @param string $version The version.
@@ -2031,11 +2032,11 @@ class SQL
      *
      * @param string $longitude  The longitude maybe a string in php, but really a number(10,7)
      *
-     * @param string $admin_code  The admin_code 
+     * @param string $admin_code  The admin_code
      *
-     * @param string $country_code  The country_code 
+     * @param string $country_code  The country_code
      *
-     * @return integer $id Existing or new record id 
+     * @return integer $id Existing or new record id
      */
     public function insertGeo($id, $version, $uri, $name, $latitude, $longitude, $admin_code, $country_code)
     {
@@ -2083,7 +2084,7 @@ class SQL
      * @param integer $entity_type A foreign key into table vocabulary, handled by Term related functions here and in
      * DBUtils.
      *
-     * @param integer $tableID Value for nrd.id. 
+     * @param integer $tableID Value for nrd.id.
      *
      */
     public function insertNrd($vhInfo, $ark_id, $entity_type, $tableID)
@@ -2203,8 +2204,8 @@ class SQL
      *
      * @param integer $typeID Vocabulary fk id of the type of this component.
      * @param integer $order The ordering of this component in the name entry
-     * 
-     * @return integer $id Return the existing id, or the newly minted id. 
+     *
+     * @return integer $id Return the existing id, or the newly minted id.
      */
     public function insertComponent($vhInfo, $id, $nameID, $text, $typeID, $order)
     {
@@ -2250,7 +2251,7 @@ class SQL
     {
         $qq_2 = 'select_component';
         $this->sdb->prepare($qq_2,
-                            'select 
+                            'select
                             aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
                             from name_component as aa,
                             (select name_id,max(version) as version from name_component where name_id=$1 and version<=$2 group by name_id) as bb
@@ -2286,8 +2287,8 @@ class SQL
      *
      * @param integer $typeID Vocabulary fk id of the type of this contributor.
      * @param integer $ruleID Vocabulary fk id of the rule of this contributor.
-     * 
-     * @return integer $id Return the existing id, or the newly minted id. 
+     *
+     * @return integer $id Return the existing id, or the newly minted id.
      */
     public function insertContributor($vhInfo, $id, $nameID, $name, $typeID, $ruleID)
     {
@@ -2296,7 +2297,7 @@ class SQL
             /*
              * This did happen, but once we have good tests it should never happen again. Perhaps better to
              * add a "not null" to the db schema.
-             */ 
+             */
             printf("SQL.php Fatal: \$nameID must not be null\n");
             exit();
         }
@@ -2341,7 +2342,7 @@ class SQL
      * @param string $note Note for this function
      *
      * @param integer $term Function term controlled vocab id
-     * 
+     *
      * @return integer id of this function
      *
      */
@@ -2454,7 +2455,7 @@ class SQL
         from language as aa,
         (select id,max(version) as version from language where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
         where not is_deleted and aa.id=bb.id and aa.version=bb.version';
-        
+
         $this->sdb->prepare($qq, $query);
         $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
         $all = array();
@@ -2588,7 +2589,7 @@ class SQL
      *
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
-     * 
+     *
      */
     protected function selectTextCore($vhInfo, $table)
     {
@@ -2775,7 +2776,7 @@ class SQL
      *
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
-     * 
+     *
      */
     public function selectStructureOrGenealogy($vhInfo)
     {
@@ -2790,7 +2791,7 @@ class SQL
      *
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
-     * 
+     *
      */
     public function selectMandate($vhInfo)
     {
@@ -2807,7 +2808,7 @@ class SQL
      *
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
-     * 
+     *
      */
     public function selectGeneralContext($vhInfo)
     {
@@ -2824,7 +2825,7 @@ class SQL
      *
      * @return string[][] Return list of an associative list with keys: id, version, ic_id,
      * text. There may be multiple rows returned.
-     * 
+     *
      */
     public function selectConventionDeclaration($vhInfo)
     {
@@ -2899,7 +2900,7 @@ class SQL
         $row = $this->sdb->fetchrow($result);
 
         $this->sdb->deallocate($qq);
-        
+
         return $id;
     }
 
@@ -3123,14 +3124,14 @@ class SQL
      *
      * I just noticed that otherid doesn't have is_deleted. There is a historical reason for that, but I
      * suspect history needs to be updated. Unless there is some really good reason otherid will never be
-     * deleted. Or even edited? 
-     * 
+     * deleted. Or even edited?
+     *
      * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
      * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
      * was all fairly odd, but worked. This code now follows our idiom for ic_id and version constraint via
      * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
      * database versions, and the otherRecordID JSON looks correct.
-     * 
+     *
      * select
      * id, version, ic_id, text, uri, type
      * from otherid
@@ -3154,7 +3155,7 @@ class SQL
                             from otherid as aa,
                             (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
                             where
-                            aa.id = bb.id and 
+                            aa.id = bb.id and
                             aa.version = bb.version order by id asc');
 
         $all = array();
@@ -3397,7 +3398,7 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            /* 
+            /*
              * $rid = $row['id'];
              * $dateList = $this->selectDate($rid, $vhInfo['version']);
              * $row['date'] = array();
@@ -3427,7 +3428,7 @@ class SQL
      *
      * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
      * version, ic_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
-     * arcrole, date. 
+     * arcrole, date.
      *
      */
 
@@ -3452,7 +3453,7 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /* 
+            /*
              * $relationId = $row['id'];
              * $dateList = $this->selectDate($relationId, $vhInfo['version']);
              * $row['date'] = array();
@@ -3518,7 +3519,7 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @return string[][] Return a list of list. The inner list has keys: id, version, ic_id, function_type,
-     * note, date. 
+     * note, date.
      *
      */
     public function selectFunction($vhInfo)
@@ -3540,7 +3541,7 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /* 
+            /*
              * $dateList = $this->selectDate($row['id'], $vhInfo['version']);
              * $row['date'] = array();
              * if (count($dateList)>=1)
@@ -3588,16 +3589,16 @@ class SQL
                             from name as aa,
                             (select id,max(version) as version from name where version<=$1 and ic_id=$2 group by id) as bb
                             where
-                            aa.id = bb.id and not aa.is_deleted and 
+                            aa.id = bb.id and not aa.is_deleted and
                             aa.version = bb.version order by preference_score desc,id asc');
-        
+
         $name_result = $this->sdb->execute($qq_1,
                                            array($vhInfo['version'],
                                                  $vhInfo['ic_id']));
         $all = array();
         while($name_row = $this->sdb->fetchrow($name_result))
         {
-            /* 
+            /*
              * printf("\nsn: id: %s version: %s ic_id: %s original: %s is_deleted: %s\n",
              *        $name_row['id'],
              *        $name_row['version'],
@@ -3673,7 +3674,7 @@ class SQL
      * May 6 2016: In fact, even using table nrd here is questionable. "the constellation" is
      * version_history. It works to use nrd.ic_id because this is the same value as version_history.id,
      * but intellectually this is inaccurate.
-     * 
+     *
      * @return string[] Return a flat array. This seems like a function that should return an associative
      * list. Currently, is only called in one place.
      */
@@ -3686,7 +3687,7 @@ class SQL
                             where
                             nrd.ic_id=date_range.fk_id and
                             nrd.ic_id=version_history.id
-                            and not date_range.is_deleted 
+                            and not date_range.is_deleted
                             and version_history.status <> $1
                             group by version_history.id
                             order by version_history.id
@@ -3711,7 +3712,7 @@ class SQL
      *
      * v1:published
      * v2:deleted
-     * v3:undelete 
+     * v3:undelete
      * v4:locked editing
      *
      * @param integer $mainID id value matching version_history.id.
@@ -3743,13 +3744,13 @@ class SQL
              * table. We have to check for more recent deleted (and eventually embargo) because there are
              * multiple copies of the records. While copying data to edit and publish tables seems clumsy, it
              * may be a simpler and more efficient implementation than we are current using.
-             */ 
+             */
             $deletedVersion = $this->selectCurrentVersionByStatus($mainID, $this->deleted);
         }
         $result = $this->sdb->query(
             'select max(version) as version
             from version_history
-            where 
+            where
             version_history.id=$1 and status=$2',
             array($mainID, $status));
 
@@ -3795,7 +3796,7 @@ class SQL
                             where aa.id not in (select id from name where is_deleted) group by ic_id order by ic_id) as zz
                             where
                             vh.id=zz.ic_id and
-                            vh.status <> $1 and 
+                            vh.status <> $1 and
                             zz.count>1 group by vh.id limit 1');
 
         $result = $this->sdb->execute($qq, array($this->deleted));
@@ -3979,10 +3980,10 @@ class SQL
         if ($secondRow = $this->sdb->fetchrow($result))
         {
             /* This is a crude way to test for multiple rows.
-             * 
+             *
              * This happened when some inserts during testing went wrong. Might be something to test for,
              * and/or add a primary key constraint. There can be only one ic_id for a given id.
-             */  
+             */
             printf("Error: sqlSetDeleted() selects multiple rows: %s for table: $table id: $id newVersion: $newVersion \n",
                    count($row));
             return;
@@ -4048,7 +4049,7 @@ class SQL
     {
         /*
          * Get the ic_id for $recID
-         */ 
+         */
         $result = $this->sdb->query(
             "select aa.ic_id from name as aa,
             (select id, ic_id, max(version) as version from name group by id,ic_id) as bb
@@ -4060,7 +4061,7 @@ class SQL
 
         /*
          * Use the ic_id to find not is_deleted sibling names.
-         */ 
+         */
         $result = $this->sdb->query(
             "select count(*) as count from name as aa,
             (select id, max(version) as version from name where ic_id=$1 group by id) as bb
@@ -4078,7 +4079,7 @@ class SQL
         }
     }
 
-    
+
     /**
      * Count names, current version, not deleted, for a single constellation.
      *
@@ -4120,7 +4121,7 @@ class SQL
      * @param string $term The "type" term for what type of vocabulary to search
      * @param string $query The string to search through the vocabulary
      */
-    public function getPlaceByURI($uri) 
+    public function getPlaceByURI($uri)
     {
         $result = $this->sdb->query('select *
                                     from geo_place
@@ -4154,9 +4155,9 @@ class SQL
             array_push($all, $row);
         }
         return $all;
-    
+
     }
-    
+
     /**
      * Search Vocabulary
      *
@@ -4189,7 +4190,7 @@ class SQL
             $likeStr = "$query%";
         }
 
-        /* 
+        /*
          * $this->enableLogging();
          * $this->logDebug("sql.php term: $term likeStr: $likeStr", array());
          */
@@ -4200,7 +4201,7 @@ class SQL
                       from vocabulary
                       where type=$1 and value ilike $2 order by value asc limit 100';
             $result = $this->sdb->query($queryStr, array($term, $likeStr));
-        } 
+        }
         else
         {
             /*
@@ -4219,7 +4220,7 @@ class SQL
              *
              * It might be better to return these ordered by id instead of value. The UI may have expectations
              * about the order.
-             */ 
+             */
             $queryStr =
                       'select id,value
                       from vocabulary
@@ -4253,12 +4254,12 @@ class SQL
      * @param string[][] $orig A list of list with keys 'id','value'.
      *
      * @return string[][] Sorted copy of the $orig list.
-     */ 
+     */
     private function specialSort($orig)
     {
         /*
          * List of keys and the order in which they should appear.
-         */  
+         */
         $personList = array('Surname' => 0,
                             'Forename' => 1,
                             'NameAddition' => 2,
@@ -4297,7 +4298,7 @@ class SQL
         $dest = array();
         foreach($orig as $record)
         {
-            /* 
+            /*
              * Throw out anything with a negative index because that was never supposed to be in the list.
              * Specifically 'NameAddition' for family.
              */
@@ -4309,7 +4310,7 @@ class SQL
         /*
          * PHP gets the integer keys right, but treats the list as an associative list with numeric keys out
          * of order. ksort() fixes that.
-         */ 
+         */
         ksort($dest);
         return $dest;
     }
@@ -4341,7 +4342,7 @@ class SQL
      * Used for a one time export of all records. Seems like it might be useful later.
      *
      * @return string[] List of constellation id values.
-     */ 
+     */
     public function selectAllConstellationID()
     {
         $selectSQL = "select distinct(ic_id) from nrd";
@@ -4436,7 +4437,7 @@ class SQL
                 array($groupID));
         }
     }
-    
+
     /**
      * Select IDs of all group records
      *
@@ -4463,10 +4464,10 @@ class SQL
      * object (and usually a list of group objects).
      *
      * @param int $appUserID The numeric ID for the user for whom to list groups.
-     * 
+     *
      * @return integer[] Return list of ID values. We expect the higher level calling code to pass each ID to
      * populateGroup().
-     */ 
+     */
     public function selectUserGroupIDs($appUserID)
     {
         $result = $this->sdb->query("select gg.id from appuser_group as gg,appuser_group_link
@@ -4479,15 +4480,15 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
      * Add a group to a user
      *
-     * Link a group to a user. 
+     * Link a group to a user.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param integer $newGroupID A group id
-     */ 
+     */
     public function insertGroupLink($uid, $newGroupID)
     {
         $this->sdb->query("insert into appuser_group_link (uid, gid) values ($1, $2)",
@@ -4501,7 +4502,7 @@ class SQL
      *
      * @param integer $uid User id, aka appuser.id aka row id.
      * @param integer $groupID A group id
-     */ 
+     */
     public function deleteGroupLink($uid, $groupID)
     {
         $this->sdb->query("delete from appuser_group_link where uid=$1 and gid=$2",
@@ -4512,14 +4513,14 @@ class SQL
      * Select all user IDs in group
      *
      * @param integer $groupID A group id
-     * @return integer[] List of group ID values. 
-     */ 
+     * @return integer[] List of group ID values.
+     */
     public function selectUserIDsFromGroup($groupID)
     {
         $result = $this->sdb->query("select uid from appuser_group_link where gid=$1",
                           array($groupID));
         $all = array();
-        while ($row = $this->sdb->fetchrow($result)) 
+        while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row['uid']);
         }
@@ -4532,14 +4533,14 @@ class SQL
      *
      * This returns records in a 2D array, with inner list keys: id, ic_id
      *
-     * @return string[][] List of accciative list 
+     * @return string[][] List of accciative list
      */
-    public function selectAllInstitution() 
+    public function selectAllInstitution()
     {
         $selectSQL = "select * from snac_institution";
         $result = $this->sdb->query($selectSQL, array());
         $all = array();
-        while ($row = $this->sdb->fetchrow($result)) 
+        while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
@@ -4558,7 +4559,7 @@ class SQL
     {
         $result = $this->sdb->query("select * from snac_institution where ic_id=$1",
                                     array($ic_id));
-        
+
         if (! $this->sdb->fetchrow($result))
         {
             $result = $this->sdb->query("insert into snac_institution (ic_id) values ($1)",
@@ -4606,7 +4607,7 @@ class SQL
      * @param string $ic_id Institution ic_id
      *
      */
-    /* 
+    /*
      * public function updateInstitution($iid, $ic_id)
      * {
      *     $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",

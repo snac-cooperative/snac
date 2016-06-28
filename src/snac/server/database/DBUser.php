@@ -24,7 +24,7 @@ namespace snac\server\database;
  *
  * Functions that return constrained lists: listUserRoles, listUsersInGroup, listGroupsForUser
  *
- * Functions that add/remove relations: addUserRole same as addRoleToUser, addPrivilegeToRole,
+ * Functions that add/remove relations: addRoleToUser, addPrivilegeToRole,
  * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
  * removeRoleFromUser?), removePrivilegeFromRole
  *
@@ -288,11 +288,15 @@ class DBUser
              * - remove all old roles, removeUserRole()?
              * - add back all current roles
              */
-            foreach($this->listUserRoles($user) as $role) {
+            $rolesToDelete = $this->listUserRoles($user);
+            $rolesToAdd = $user->getRoleList();
+            foreach($rolesToDelete as $role) {
+                // This method will munge the list of roles attached to the user (Side-effect-full)
                 $this->removeUserRole($user, $role);
             }
-            foreach($user->getRoleList() as $role) {
-                $this->addUserRole($user, $role);
+            foreach($rolesToAdd as $role) {
+                // This method will munge the list of roles attached to the user (Side-effect-full)
+                $this->addRoleToUser($user, $role);
             }
         }
         return $retVal;
@@ -335,7 +339,7 @@ class DBUser
      *
      * @param \snac\data\User A user object with a good value for getUserID() or getUserName().
      *
-     * @return \snac\data\User Returns a user object or false.
+     * @return \snac\data\User|boolean Returns a user object or false.
      */
     public function readUser($user)
     {
@@ -517,31 +521,6 @@ class DBUser
      * This is not the preferred function. Use addRoleToUser().
      *
      * Add role via table appuser_role_link. Return true on success.
-     *
-     * Use this when adding a role.
-     *
-     * After adding the role, set the users's role list by getting the list from the db.
-     *
-     * @param \snac\data\User $user A user
-     *
-     * @param \snac\data\Role $newRole is associative list with keys id, label, description. We really only
-     * care about id, which is important because the web UI might pass up a role object with only the id
-     * property set.
-     */
-    public function addUserRole($user, $newRole)
-    {
-        /*
-         * You might have thought this function would be called: addrole, or addroletouser.
-         *
-         * Created addRoleToUser(), so just call that. Migrate old code over as the chance arises.
-         */
-        return $this->addRoleToUser($user, $newRole);
-    }
-
-    /**
-     * Add a role to the User
-     *
-     * This is the preferred function to add a role to a user via table appuser_role_link. Return true on success.
      *
      * Use this when adding a role.
      *
@@ -1050,7 +1029,7 @@ class DBUser
         // the reference.
         return $group;
     }
-    
+
 
     /**
     * Read a group from the database

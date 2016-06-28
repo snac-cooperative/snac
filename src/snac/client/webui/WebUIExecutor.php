@@ -535,6 +535,14 @@ class WebUIExecutor {
             $tmpUser->setWorkEmail($input["workEmail"]);
             $tmpUser->setFullName($input["fullName"]);
 
+            foreach ($input as $key => $value) {
+                if (substr($key, 0, 5) == "role_") {
+                    $role = new \snac\data\Role();
+                    $role->setID($value);
+                    $tmpUser->addRole($role);
+                }
+            }
+
             $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
 
             // Build a data structure to send to the server

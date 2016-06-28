@@ -22,13 +22,13 @@ namespace snac\data;
  * Fundamental class for privilege, group, role. Role has a list of privileges.
  *
  * @author Tom Laudeman
- *        
+ *
  */
 class AbstractGrouping implements \Serializable {
 
     /**
      * @var string $dataType The data type of this object.
-     * 
+     *
      * This should be overwritten by any inheriting/child class
      */
     protected $dataType;
@@ -38,16 +38,16 @@ class AbstractGrouping implements \Serializable {
      *
      * @var integer Object id from sql object.id record id
      */
-    private $id = null;
+    protected $id = null;
 
     /**
      * Object label
      *
      * Short label that identifies this object
      *
-     * @var string Object label 
+     * @var string Object label
      */
-    private $label;
+    protected $label;
 
     /**
      * Object description
@@ -56,15 +56,15 @@ class AbstractGrouping implements \Serializable {
      *
      * @var string Description of this object.
      */
-    private $description;
-    
+    protected $description;
+
     /**
      * Constructor
      *
      * @param string $label optional Label string
      *
      * @param string $description optional Description string
-     */ 
+     */
     public function __construct($data=null)
     {
         if ($data != null && is_array($data))
@@ -74,7 +74,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Get id
      * @return integer id
-     */ 
+     */
     public function getID()
     {
         return $this->id;
@@ -83,7 +83,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Set id
      * @param integer $id
-     */ 
+     */
     public function setID($id)
     {
         $this->id = $id;
@@ -92,7 +92,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Get label
      * @return string label
-     */ 
+     */
     public function getLabel()
     {
         return $this->label;
@@ -101,7 +101,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Set label
      * @param string $label
-     */ 
+     */
     public function setLabel($label)
     {
         $this->label = $label;
@@ -110,7 +110,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Get description
      * @return string description
-     */ 
+     */
     public function getDescription()
     {
         return $this->description;
@@ -119,7 +119,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Set description
      * @param string $description
-     */ 
+     */
     public function setDescription($description)
     {
         $this->description = $description;
@@ -138,7 +138,7 @@ class AbstractGrouping implements \Serializable {
             'label' => $this->getLabel(),
             'description' => $this->getDescription()
         );
-        
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -149,7 +149,7 @@ class AbstractGrouping implements \Serializable {
             $return = $return2;
         }
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -158,25 +158,25 @@ class AbstractGrouping implements \Serializable {
      * @param string[][] $data The data for this object in an associative array
      */
     public function fromArray($data) {
-        
+
         unset($this->id);
         if (isset($data["id"]))
             $this->id = $data["id"];
         else
             $this->id = null;
-        
+
         unset($this->label);
         if (isset($data["label"]))
             $this->label = $data["label"];
         else
             $this->label = null;
-        
+
         unset($this->description);
         if (isset($data["description"]))
             $this->description = $data["description"];
         else
             $this->description = null;
-        
+
         // Note: inheriting classes should set the maxDateCount appropriately
         // based on the definition of that class.
     }
@@ -189,7 +189,7 @@ class AbstractGrouping implements \Serializable {
      */
     public function toJSON($shorten = true) {
         return json_encode($this->toArray($shorten), JSON_PRETTY_PRINT);
-    } 
+    }
 
     /**
      * Prepopulate this object from the given JSON
@@ -202,7 +202,7 @@ class AbstractGrouping implements \Serializable {
         $return = $this->fromArray($data);
         unset($data);
         return $return;
-    } 
+    }
 
     /**
      * Serialization Method
@@ -210,9 +210,9 @@ class AbstractGrouping implements \Serializable {
      * Allows PHP's serialize() method to correctly serialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @return string Serialized form of this object
-     */ 
+     */
     public function serialize() {
         return $this->toJSON();
     }
@@ -223,11 +223,11 @@ class AbstractGrouping implements \Serializable {
      * Allows PHP's unserialize() method to correctly unserialize the object.
      *
      * {@inheritDoc}
-     * 
+     *
      * @param string $data Serialized version of this object
-     */ 
+     */
     public function unserialize($data) {
         $this->fromJSON($data);
-    }    
+    }
 
 }

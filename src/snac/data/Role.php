@@ -22,7 +22,7 @@ namespace snac\data;
  * has a list of roles which in turn define what functions the user is authorized to perform
  *
  * @author Tom Laudeman
- *        
+ *
  */
 class Role extends AbstractGrouping {
 
@@ -37,14 +37,15 @@ class Role extends AbstractGrouping {
      * Constructor
      *
      * @param string[][] $data The data for this object in an associative array
-     */ 
+     */
     public function __construct($data=null)
     {
-        parent::__construct($data);
+        // Calling parent's constructor doesn't affect the execution
+        //parent::__construct($data);
+        $this->dataType = 'Role';
+        $this->privilegeList = array();
         if ($data != null && is_array($data))
             $this->fromArray($data);
-        $this->dataType = 'role';
-        $this->privilegeList = array();
     }
 
     /**
@@ -61,9 +62,9 @@ class Role extends AbstractGrouping {
      * Remove a privilege
      *
      * Might be able to use a list slice or something, but this simple algo gets the job done.
-     * 
-     * @param \snac\data\Privilege $privilege Remove this privilege. 
-     */ 
+     *
+     * @param \snac\data\Privilege $privilege Remove this privilege.
+     */
     public function removePrivilege($privilege)
     {
         $removeID = $privilege->getID();
@@ -80,7 +81,7 @@ class Role extends AbstractGrouping {
 
     /**
      * Return the privilege list
-     * 
+     *
      * @return \snac\data\Privilege[] The list of privilege objects
      */
     public function getPrivilegeList()
@@ -107,7 +108,7 @@ class Role extends AbstractGrouping {
         }
 
         $return = array_merge($return, parent::toArray($shorten));
-        
+
         // Shorten if necessary
         if ($shorten) {
             $return2 = array();
@@ -118,7 +119,7 @@ class Role extends AbstractGrouping {
             $return = $return2;
         }
 
-        return $return; 
+        return $return;
     }
 
     /**
@@ -127,11 +128,10 @@ class Role extends AbstractGrouping {
      * @param string[][] $data The data for this object in an associative array
      */
     public function fromArray($data) {
-            
+
         if (!isset($data["dataType"]) || $data["dataType"] != $this->dataType)
             return false;
 
-            
         parent::fromArray($data);
 
         unset($this->privilegeList);
@@ -139,7 +139,7 @@ class Role extends AbstractGrouping {
         if (isset($data["privilegeList"])) {
             foreach ($data["privilegeList"] as $i => $entry)
                 if ($entry != null)
-                    $this->privilegeList[$i] = new Privilege($entry);
+                    $this->privilegeList[$i] = new \snac\data\Privilege($entry);
 
         }
     }

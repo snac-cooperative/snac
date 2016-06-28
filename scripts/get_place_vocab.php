@@ -49,8 +49,9 @@ class TestVocabulary implements \snac\util\Vocabulary {
     }
 }
 
-// Disable blocking stdout. Not quite the same as unbuffering.
-stream_set_blocking(STDOUT, 0);
+
+// Set STDIN to not block, so that we can give an error message if needed
+stream_set_blocking(STDIN, 0);
 
 // Did we parse a file?
 $parsedFile = false;

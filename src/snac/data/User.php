@@ -119,17 +119,16 @@ class User implements \Serializable {
      */
     private $active = false;
 
-
     /**
      * Constructor
      *
      * @param string[] $data Array object of User information
      */
     public function __construct($data = null) {
+
         $this->roleList = array();
         if ($data != null)
             $this->fromArray($data);
-
     }
 
     /**
@@ -189,8 +188,8 @@ class User implements \Serializable {
      *
      * Set the user role list to a list of roles. The list probably comes from from DBUser->listUserRole().
      *
-     * @param \snac\data\Role[] $roleList A list of roles. 
-     */ 
+     * @param \snac\data\Role[] $roleList A list of roles.
+     */
     public function setRoleList($roleList)
     {
         /*
@@ -199,6 +198,17 @@ class User implements \Serializable {
          * whole role list from the db.
          */
         $this->roleList = $roleList;
+    }
+
+    /**
+     * Add a role
+     *
+     * Adds a Role to this User.
+     *
+     * @param \snac\data\Role $role The role to add to this user
+     */
+    public function addRole($role) {
+        array_push($this->roleList, $role);
     }
 
 
@@ -513,11 +523,12 @@ class User implements \Serializable {
                 "active" => $this->active,
                 "affiliation" => $this->affiliation==null?null:$this->affiliation->toArray($shorten),
                 "token" => $this->token,
+                "roleList" => array()
         );
-        
+
         foreach ($this->roleList as $i => $v)
             $return["roleList"][$i] = $v->toArray($shorten);
-        
+
 
         // Shorten if necessary
         if ($shorten) {
@@ -612,11 +623,13 @@ class User implements \Serializable {
 
         unset($this->roleList);
         $this->roleList = array();
-        if (isset($data["roleList"]))
-            foreach ($data["roleList"] as $i => $entry)
+        if (isset($data["roleList"])) {
+            foreach ($data["roleList"] as $i => $entry) {
                 if ($entry != null)
-                    $this->roleList[$i] = new Role($entry);
-        
+                    $this->roleList[$i] = new \snac\data\Role($entry);
+            }
+        }
+
         return true;
     }
 
