@@ -184,6 +184,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listInstitutions();
                 break;
 
+            // roles
+            case "admin_roles":
+                $this->response = $executor->listRoles();
+                break;
 
 
             // Constellation Management

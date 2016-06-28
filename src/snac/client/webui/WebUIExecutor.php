@@ -328,25 +328,48 @@ class WebUIExecutor {
 
         switch ($input["subcommand"]) {
             case "add_user":
-                $display->setData(array("title"=> "Add New User"));
+                // Ask the server for all the Roles
+                $ask = array("command"=>"admin_roles",
+                    "user" => $user->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $display->setData(array(
+                    "title"=> "Add New User",
+                    "roles"=> $serverResponse["roles"]
+                ));
                 $display->setTemplate("admin_edit_user");
                 break;
             case "edit_user":
-                $response = array();
-                if (isset($input["userid"])) {
-                    $userEdit = new \snac\data\User();
-                    $userEdit->setUserID($input["userid"]);
-                    $ask = array("command"=>"edit_user",
-                        "user" => $user->toArray(),
-                        "user_edit" => $userEdit->toArray()
-                    );
-                    $serverResponse = $this->connect->query($ask);
-                    if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
-                        return $this->drawErrorPage($serverResponse, $display);
-
-                    $response = array("user_edit" => $serverResponse["user"]);
+                if (!isset($input["userid"])) {
+                    return $this->drawErrorPage("Missing UserID", $display);
                 }
-                $display->setData(array("title"=> "Edit User", "user"=>$response["user_edit"]));
+                $userEdit = new \snac\data\User();
+                $userEdit->setUserID($input["userid"]);
+                $ask = array("command"=>"edit_user",
+                    "user" => $user->toArray(),
+                    "user_edit" => $userEdit->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $userEdit = $serverResponse["user"];
+
+                // Ask the server for all the Roles
+                $ask = array("command"=>"admin_roles",
+                    "user" => $user->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+
+                $display->setData(array(
+                    "title"=> "Edit User",
+                    "user"=>$userEdit,
+                    "roles" => $serverResponse["roles"]
+                ));
                 $display->setTemplate("admin_edit_user");
                 break;
             case "edit_user_post":

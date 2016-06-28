@@ -390,6 +390,24 @@ class ServerExecutor {
     }
 
     /**
+    * List the SNAC roles
+    *
+    * @return \snac\data\Role[] List of Roles
+    */
+    public function listRoles() {
+
+        $roleList = array();
+        foreach ($this->uStore->listRoles() as $role) {
+            array_push($roleList, $role->toArray());
+        }
+        $response = array (
+        "result" => "success",
+        "roles" =>  $roleList
+    );
+    return $response;
+}
+
+    /**
      * List the SNAC institutions
      *
      * @return \snac\data\Constellation[] List of Institutional Constellations

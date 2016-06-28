@@ -114,41 +114,21 @@ body {
                 <div class="form-group">
                     <label class="control-label col-xs-2">Roles</label>
                     <div class="col-xs-10" id="rolesDiv">
+                        {% for role in data.roles %}
+                            {% set checked = '' %}
+                            {% for userRole in data.user.roleList %}
+                                {% if userRole.id == role.id %}
+                                    {% set checked = ' checked'%}
+                                {% endif %}
+                            {% endfor %}
                         <div class="checkbox">
                             <label>
-                                <input type="checkbox" value="">
-                                Contributor
+                                <input type="checkbox" value="{{role.id}}" {{checked}}>
+                                {{role.label}}
                             </label>
-                            <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
+                            <p style="margin-left: 22px; font-size: 11px;">{{role.description}}</p>
                         </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="">
-                                Editor in Training
-                            </label>
-                            <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
-                        </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="">
-                                Editor
-                            </label>
-                            <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
-                        </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="">
-                                Reviewer
-                            </label>
-                            <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
-                        </div>
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="">
-                                Administrator
-                            </label>
-                            <p style="margin-left: 22px; font-size: 11px;"> This is the description of what the role means.  It should be filled in with the full text from the description in the database.  It may be long and wrap across multiple lines.</p>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
 
