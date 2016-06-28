@@ -28,7 +28,7 @@ $parsedFile = false;
 $cStore = new \snac\server\database\DBUtil();
 $uStore = new \snac\server\database\DBUser();
 
-$unRoles = $uStore->roleList();
+$unRoles = $uStore->listRoles();
 
 $roles = array();
 foreach($unRoles as $role) {
