@@ -386,6 +386,12 @@ class WebUIExecutor {
                 $display->setData(array("users" => $serverResponse["users"]));
                 $display->setTemplate("admin_users");
                 break;
+            case "user_list":
+                $ask = array("command"=>"admin_users",
+                    "user" => $user->toArray()
+                );
+                return $this->connect->query($ask);
+                break;
             case "add_group":
                 $display->setData(array("title"=> "Add New Group"));
                 $display->setTemplate("admin_edit_group");
