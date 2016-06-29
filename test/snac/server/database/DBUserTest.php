@@ -531,7 +531,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setToken(array('access_token' => 'foo',
                                  'expires' => time() + (60*60)));
         $csaReturn = $this->dbu->createUser($userObj);
+
+        printf("\nactive: %s\n", $csaReturn->getActive());
+
         $cleanUpUser = clone($csaReturn);
+
+        $foundUserID = $this->dbu->findUserID("mst3k@example.com");
+        $this->assertEquals($foundUserID, $csaReturn->getUserID());
+
         $this->dbu->removeSession($csaReturn);
          if (! $this->dbu->sessionExists($csaReturn))
          {
@@ -556,6 +563,20 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $csaReturn->setUserID('123456');
         $this->assertFalse($this->dbu->userExists($csaReturn));
 
+        /*
+         * Check that listUsers for everyone includes the disabled (inactive) user. And that disableUser makes
+         * the user inactive.
+         */ 
+        $firstUserList = $this->dbu->listUsers();
+        $this->dbu->disableUser($cleanUpUser);
+        $secondUserList = $this->dbu->listUsers();
+        $thirdUserList = $this->dbu->listUsers(true);
+
+        printf("\nfirst: %s second: %s third %s\n", count($firstUserList), count($secondUserList), count($thirdUserList));
+
+        $this->assertEquals(count($firstUserList), count($thirdUserList));
+        $this->assertEquals(count($firstUserList), count($secondUserList)+1);
+        
         /*
          * When things are normally successful, we might want to clean up.
          */

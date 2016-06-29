@@ -504,7 +504,8 @@ class SQL
      *
      * @param string $userName User name, a unique string, probably the user email
      *
-     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar,
+     * avatar_small, avatar_large, affiliation. Or false is returned.
      */
     public function selectUserByEmail($email)
     {

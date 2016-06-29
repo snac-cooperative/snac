@@ -20,7 +20,7 @@ namespace snac\server\database;
  * appuser_role_link relates roles to users. Table session has session data, and joined where
  * appuser.id=session.appuser_fk.
  *
- * Functions that return lists: listUsers, listRoles, listGroups, insitutionList, listPrivileges, listInstitutions
+ * Functions that return lists: listUsers, listRoles, listGroups, listPrivileges, listInstitutions
  *
  * Functions that return constrained lists: listUserRoles, listUsersInGroup, listGroupsForUser
  *
@@ -315,10 +315,14 @@ class DBUser
      */
     public function findUserID($email)
     {
+        /*
+         * In fact, selectUserByEmail() returns an entire user record from the database as an associative
+         * list.
+         */ 
         $appUserID = $this->sql->selectUserByEmail($email);
-        if ($appUserID)
+        if (isset($appUserID['id']))
         {
-            return $appUserID;
+            return $appUserID['id'];
         }
         return false;
     }
