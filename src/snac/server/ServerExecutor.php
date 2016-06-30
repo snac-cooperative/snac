@@ -308,7 +308,7 @@ class ServerExecutor {
             }
             usort($response["users"], function($a, $b) {
                 if (!isset($a["fullname"]) || !isset($b["fullname"]))
-                    return 0;
+                    return 1;
                 return $a["fullName"] <=> $b["fullName"];
             });
             $response["result"] = "success";
