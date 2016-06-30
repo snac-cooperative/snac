@@ -299,12 +299,16 @@ class ServerExecutor {
     public function listUsers(&$input) {
 
         $allUsers = $this->uStore->listUsers(true);
+
         $response = array();
         if (count($allUsers) > 0) {
             $response["users"] = array();
             foreach ($allUsers as $user) {
                 array_push($response["users"], $user->toArray());
             }
+            usort($response["users"], function($a, $b) {
+                return $a["fullName"] <=> $b["fullName"];
+            });
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
@@ -465,9 +469,11 @@ class ServerExecutor {
         /*
          * Get the list of Groups the User is a member of
          */
-
-        //TODO
         $response["groups"] = array();
+        $groups = $this->uStore->listGroupsForUser($user);
+        foreach ($groups as $group) {
+            array_push($response["groups"], $group->toArray());
+        }
 
 
         /*
