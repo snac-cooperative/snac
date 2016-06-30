@@ -298,7 +298,13 @@ class ServerExecutor {
      */
     public function listUsers(&$input) {
 
-        $allUsers = $this->uStore->listUsers(true);
+        $getAll = true;
+        if (isset($input["filter"])) {
+            if ($input["filter"] == "active")
+                $getAll = false;
+        }
+
+        $allUsers = $this->uStore->listUsers($getAll);
 
         $response = array();
         if (count($allUsers) > 0) {

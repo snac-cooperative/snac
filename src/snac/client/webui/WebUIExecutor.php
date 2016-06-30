@@ -388,6 +388,7 @@ class WebUIExecutor {
                 break;
             case "user_list":
                 $ask = array("command"=>"admin_users",
+                    "filter" => "active",
                     "user" => $user->toArray()
                 );
                 return $this->connect->query($ask);
