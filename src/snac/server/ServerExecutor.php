@@ -307,6 +307,8 @@ class ServerExecutor {
                 array_push($response["users"], $user->toArray());
             }
             usort($response["users"], function($a, $b) {
+                if (!isset($a["fullname"]) || !isset($b["fullname"]))
+                    return 0;
                 return $a["fullName"] <=> $b["fullName"];
             });
             $response["result"] = "success";
