@@ -169,7 +169,7 @@ td.rotate {
 }
 
 td.rotate > div {
-    transform: 
+    transform:
     /* Magic Numbers */
     translate(25px, 51px)
     /* 45 is really 360 - 45 */
@@ -192,6 +192,11 @@ td.rotate > div > span {
     text-align:left;
     /* inline-block space fix */
     margin-right:-4px;
+}
+
+.subtext {
+    margin-left: 22px;
+    font-size: 11px;
 }
 
 

@@ -128,7 +128,7 @@ body {
                                 <input type="checkbox" value="{{role.id}}" name="role_{{i}}" id="role_{{i}}" {{checked}}>
                                 {{role.label}}
                             </label>
-                            <p style="margin-left: 22px; font-size: 11px;">{{role.description}}</p>
+                            <p class="subtext">{{role.description}}</p>
                         </div>
                             {% set i = i + 1 %}
                         {% endfor %}
@@ -143,7 +143,7 @@ body {
                                 <input type="checkbox" value="active" name="active" id="active" {{ data.user.active ? 'checked' : '' }}>
                                 Active
                             </label>
-                            <p style="margin-left: 22px; font-size: 11px;">This user is able to log in.</p>
+                            <p class="subtext">This user is able to log in.</p>
                         </div>
                     </div>
                 </div>
