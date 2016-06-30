@@ -20,6 +20,11 @@ function checkAllUserAdd(element, event) {
     }
 }
 
+function removeUserFromGroup(id) {
+    $("#userrow_" + id).remove();
+    return false;
+}
+
 /**
  * Only load this script once the document is fully loaded
  */
@@ -123,9 +128,21 @@ $(document).ready(function() {
         $('#addSelectedUsersButton').click(function(){
             $("input[id^='useradd_']").each(function() {
                 if ($(this).is(":checked")) {
-                    console.log("Adding user " + $(this).val());
+                    var id = $(this).val();
+                    var html = "<tr id='userrow_"+id+"'>"
+                        + "<td>" + $("#useraddname_"+id).val()
+                            + " <input type=\"hidden\" name=\"userid_"+id+"\" id=\"userid_"+id+"\" value=\""+id+"\">"
+                        + "</td>"
+                        + "<td>"+$("#useraddaff_"+id).val()+"</select></td>"
+                        + "<td></td>"
+                        + "<td><a href=\"#\" class=\"btn btn-danger\" id=\"removeUser_"+id+"\"><span class=\"fa fa-minus\" aria-hidden=\"true\"></span></a></td>"
+                       + "</tr>";
+                    $("#users-tablebody").append(html);
+                    $("#removeUser_"+id).click(function(event) {removeUserFromGroup(id)});
                 }
             });
+
+            $("#addUsersPaneContent").html("<p class='text-center'>Loading...</p>");
 
         });
     }

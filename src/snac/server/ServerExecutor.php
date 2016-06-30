@@ -576,6 +576,16 @@ class ServerExecutor {
 
         $updated = $this->uStore->writeGroup($updated);
 
+        $currentUsers = $this->uStore->listUsersInGroup($updated);
+
+        foreach ($currentUsers as $current) {
+            $this->uStore->removeUserFromGroup($current, $updated);
+        }
+
+        foreach ($input["users_update"] as $newUser) {
+            $this->uStore->addUserToGroup(new \snac\data\User($newUser), $updated);
+        }
+
         if ($updated === false) {
             $response["result"] = "failure";
             $response["error"] = "Could not save the group";

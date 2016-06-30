@@ -602,6 +602,16 @@ class WebUIExecutor {
         $group->setLabel($input["groupName"]);
         $group->setDescription($input["groupDescription"]);
 
+        // Create a list of shadow user objects to put in this group
+        $users = array();
+        foreach ($input as $key => $value) {
+            if (strstr($key, "userid_")) {
+                $userAdd = new \snac\data\User();
+                $userAdd->setUserID($value);
+                array_push($users, $userAdd->toArray());
+            }
+        }
+
         $this->logger->addDebug("Updated the Group Object", $group->toArray());
 
         // Build a data structure to send to the server
@@ -610,6 +620,7 @@ class WebUIExecutor {
         // Send the query to the server
         $request["user"] = $user->toArray();
         $request["group_update"] = $group->toArray();
+        $request["users_update"] = $users;
         $serverResponse = $this->connect->query($request);
 
         $response = array();
