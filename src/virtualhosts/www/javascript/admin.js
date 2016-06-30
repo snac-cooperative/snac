@@ -133,8 +133,8 @@ $(document).ready(function() {
                         + "<td>" + $("#useraddname_"+id).val()
                             + " <input type=\"hidden\" name=\"userid_"+id+"\" id=\"userid_"+id+"\" value=\""+id+"\">"
                         + "</td>"
-                        + "<td>"+$("#useraddaff_"+id).val()+"</select></td>"
-                        + "<td></td>"
+                        + "<td>"+$("#useraddusername_"+id).val()+"</td>"
+                        + "<td>"+$("#useraddaff_"+id).val()+"</td>"
                         + "<td><a href=\"#\" class=\"btn btn-danger\" id=\"removeUser_"+id+"\"><span class=\"fa fa-minus\" aria-hidden=\"true\"></span></a></td>"
                        + "</tr>";
                     $("#users-tablebody").append(html);
@@ -163,6 +163,7 @@ $(document).ready(function() {
                             + '<tr>'
                                 + '<th><input type="checkbox" id="checkall"></th>'
                                 + '<th>Name</th>'
+                                + '<th>User Name</th>'
                                 + '<th>Affiliation</th>'
                             + '</tr>'
                         + '</thead>'
@@ -177,9 +178,11 @@ $(document).ready(function() {
                             html += '<tr>'
                                 + '<td><input type="checkbox" name="useradd_'+data.users[key].userid+'" id="useradd_'+data.users[key].userid+'" value="'+data.users[key].userid+'"></td>'
                                 + '<td>' + data.users[key].fullName
+                                    + '<input type="hidden" name="useraddusername_'+data.users[key].userid+'" id="useraddusername_'+data.users[key].userid+'" value="'+data.users[key].userName+'">'
                                     + '<input type="hidden" name="useraddname_'+data.users[key].userid+'" id="useraddname_'+data.users[key].userid+'" value="'+data.users[key].fullName+'">'
                                     + '<input type="hidden" name="useraddaff_'+data.users[key].userid+'" id="useraddaff_'+data.users[key].userid+'" value="'+affil+'">'
                                 + '</td>';
+                            html += "<td>"+data.users[key].userName+"</td>";
                             html += "<td>"+affil+"</td>";
                             html += '</tr>';
                         }

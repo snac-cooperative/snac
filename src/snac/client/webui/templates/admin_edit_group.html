@@ -110,8 +110,8 @@ body {
                             <thead>
                                 <tr>
                                     <th>Name</th>
+                                    <th>User Name</th>
                                     <th>Affiliation</th>
-                                    <th>Active</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -121,14 +121,8 @@ body {
                                     <td>{{ editUser.fullName }}
                                         <input type="hidden" name="userid_{{editUser.userid}}" id="userid_{{editUser.userid}}" value="{{editUser.userid}}">
                                     </td>
+                                    <td>{{ editUser.userName }}</td>
                                     <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
-                                    <td>
-                                        {% if editUser.active %}
-                                        <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                                        {% else %}
-                                        <i class="fa fa-square-o" aria-hidden="true"></i>
-                                        {% endif %}
-                                    </td>
                                     <td><a href="#" class="btn btn-danger" onClick="removeUserFromGroup({{editUser.userid}});"><span class="fa fa-minus" aria-hidden="true"></span></a></td>
                                 </tr>
                                 {% endfor %}
@@ -170,14 +164,19 @@ body {
         </div>
 
         <div class="modal fade" id="addUsersPane" tabindex="-1" role="dialog" aria-labelledby="addUsersPaneLabel">
-            <div class="modal-dialog" role="document">
+            <div class="modal-dialog" role="document" style="width: 60%;">
                 <div class="modal-content">
                     <div class="modal-header primary">
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <h4 class="modal-title" id="addUsersPaneLabel">Add Users</h4>
                     </div>
-                    <div class="modal-body" id="addUsersPaneContent">
-                        <p class='text-center'>Loading...</p>
+                    <div class="modal-body">
+                        <div class="well well-lg">
+                            <p><span style="font-weight: bold;">Instructions: </span> Select the users to add from the following list.  When you have made your selection, click "Add Selected Users" to add them to the group.  You must save the group before these users are added permanently.</p>
+                        </div>
+                        <div id="addUsersPaneContent">
+                            <p class='text-center'>Loading...</p>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-primary" data-dismiss="modal" id="addSelectedUsersButton">Add Selected Users</button>
