@@ -307,8 +307,14 @@ class ServerExecutor {
                 array_push($response["users"], $user->toArray());
             }
             usort($response["users"], function($a, $b) {
-                if (!isset($a["fullname"]) || !isset($b["fullname"]))
+
+                if (!isset($a["fullName"]) && isset($b["fullName"]))
                     return 1;
+                else if (isset($a["fullName"]) && !isset($b["fullName"]))
+                    return -1;
+                else if (!isset($a["fullName"]) && !isset($b["fullName"]))
+                    return 0;
+                // default sort by name
                 return $a["fullName"] <=> $b["fullName"];
             });
             $response["result"] = "success";
