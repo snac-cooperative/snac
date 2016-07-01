@@ -66,7 +66,6 @@ body {
 
 
 <div class="container snac" role="main">
-<form id="new_user_form">
     <h1>Administrator: {{ data.title }}</h1>
 
     <ol class="breadcrumb">
@@ -77,6 +76,7 @@ body {
 
     <div class="row">
         <div class="col-md-8">
+        <form id="new_user_form">
             <div class="well well-lg">
                 <p><span style="font-weight: bold;">Instructions: </span> Use the form below to edit the user information.  You must provide a working Gmail account (email address) and their institutional affiliation.</p>
             </div>
@@ -98,53 +98,6 @@ body {
                     <label class="control-label col-xs-2">Password</label>
                     <div class="col-xs-10" id="passwordDiv">
                         <p class="form-control-static"><em>Google Authentication</em></p>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="control-label col-xs-2">Affiliation</label>
-                    <div class="col-xs-10" id="affiliationDiv">
-                        <select id="affiliationid" name="affiliationid" class="form-control">
-                            {% if data.user.affiliation %}
-                                <option value="{{data.user.affiliation.id}}" selected="true">{{ data.user.affiliation.nameEntries.0.original }}</option>
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="control-label col-xs-2">Roles</label>
-                    <div class="col-xs-10" id="rolesDiv">
-                        {% set i = 0 %}
-                        {% for role in data.roles %}
-                            {% set checked = '' %}
-                            {% for userRole in data.user.roleList %}
-                                {% if userRole.id == role.id %}
-                                    {% set checked = ' checked'%}
-                                {% endif %}
-                            {% endfor %}
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="{{role.id}}" name="role_{{i}}" id="role_{{i}}" {{checked}}>
-                                {{role.label}}
-                            </label>
-                            <p class="subtext">{{role.description}}</p>
-                        </div>
-                            {% set i = i + 1 %}
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="control-label col-xs-2">Active</label>
-                    <div class="col-xs-10" id="activeDiv">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" value="active" name="active" id="active" {{ data.user.active ? 'checked' : '' }}>
-                                Active
-                            </label>
-                            <p class="subtext">This user is able to log in.</p>
-                        </div>
                     </div>
                 </div>
 
@@ -186,7 +139,92 @@ body {
                         <input type="text" id="workPhone" name="workPhone" class="form-control" value="{{data.user.workPhone}}"/>
                     </div>
                 </div>
+
+                <h3>SNAC Information</h3>
+
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Affiliation</label>
+                    <div class="col-xs-10" id="affiliationDiv">
+                        <select id="affiliationid" name="affiliationid" class="form-control">
+                            {% if data.user.affiliation %}
+                            <option value="{{data.user.affiliation.id}}" selected="true">{{ data.user.affiliation.nameEntries.0.original }}</option>
+                            {% endif %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Roles</label>
+                    <div class="col-xs-10" id="rolesDiv">
+                        {% set i = 0 %}
+                        {% for role in data.roles %}
+                            {% set checked = '' %}
+                            {% for userRole in data.user.roleList %}
+                                {% if userRole.id == role.id %}
+                                    {% set checked = ' checked'%}
+                                {% endif %}
+                            {% endfor %}
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" value="{{role.id}}" name="role_{{i}}" id="role_{{i}}" {{checked}}>
+                                    {{role.label}}
+                                </label>
+                                <p class="subtext">{{role.description}}</p>
+                            </div>
+                            {% set i = i + 1 %}
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Active</label>
+                    <div class="col-xs-10" id="activeDiv">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" value="active" name="active" id="active" {{ data.user.active ? 'checked' : '' }}>
+                                Active
+                            </label>
+                            <p class="subtext">This user is able to log in.</p>
+                        </div>
+                    </div>
+                </div>
+
+
+                <h3>Groups</h3>
+
+                <div class="form-group">
+                    <label class="control-label col-xs-2">Groups</label>
+                    <div class="well well-lg col-xs-10">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Description</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="groups-tablebody">
+                                {% for editGroup in data.groups %}
+                                <tr id="grouprow_{{editGroup.id}}">
+                                    <td>{{ editGroup.label }}
+                                        <input type="hidden" name="groupid_{{editGroup.id}}" id="groupid_{{editGroup.id}}" value="{{editGroup.id}}">
+                                    </td>
+                                    <td>{{ editGroup.description }}</select></td>
+                                    <td><a href="#" class="btn btn-danger" onClick="removeGroupFromUser({{editGroup.id}});"><span class="fa fa-minus" aria-hidden="true"></span></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-center">
+                            <a href="#" class="btn btn-success" id="add_groups_to_user" data-toggle="modal" data-target="#addGroupsPane"><span class="fa fa-plus" aria-hidden="true"></span> Add User to Groups</a>
+                        </p>
+                    </div>
+                </div>
+
             </div>
+
+        </form>
         </div>
         <div class="col-md-4">
             <!-- Right Column -->
@@ -214,8 +252,29 @@ body {
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="addGroupsPane" tabindex="-1" role="dialog" aria-labelledby="addGroupsPaneLabel">
+            <div class="modal-dialog" role="document" style="width: 60%;">
+                <div class="modal-content">
+                    <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="addGroupsPaneLabel">Add User to Groups</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="well well-lg">
+                            <p><span style="font-weight: bold;">Instructions: </span> Select the groups to put this user in.  When you have made your selection, click "Add Selected Groups."  You must save the user before the user is added to the groups permanently.</p>
+                        </div>
+                        <div id="addGroupsPaneContent">
+                            <p class='text-center'>Loading...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id="addSelectedGroupsButton">Add Selected Groups</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-</form>
 </div>
 </body>
 </html>

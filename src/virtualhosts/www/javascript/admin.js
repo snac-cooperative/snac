@@ -25,6 +25,20 @@ function removeUserFromGroup(id) {
     return false;
 }
 
+
+function checkAllGroupAdd(element, event) {
+    if (element.checked){ //checked) {
+        $("input[id^='groupadd_']").each(function() {this.checked = true;});
+    } else {
+        $("input[id^='groupadd_']").each(function() {this.checked = false;});
+    }
+}
+
+function removeGroupFromUser(id) {
+    $("#grouprow_" + id).remove();
+    return false;
+}
+
 /**
  * Only load this script once the document is fully loaded
  */
@@ -74,6 +88,84 @@ $(document).ready(function() {
             return false;
         });
     }
+
+
+
+    if($('#add_groups_to_user').exists()) {
+        $('#add_groups_to_user').click(function(){
+
+            var groups = [];
+            $("input[id^='groupid_']").each(function() {
+                groups.push($(this).val());
+            });
+            $.post("?command=administrator&subcommand=group_list", null, function (data) {
+                if (data.groups.length > 0) {
+                    var html = "";
+                    var heading = '<table class="table">'
+                    + '<thead>'
+                    + '<tr>'
+                    + '<th><input type="checkbox" id="checkall"></th>'
+                    + '<th>Name</th>'
+                    + '<th>Description</th>'
+                    + '</tr>'
+                    + '</thead>'
+                    + '<tbody>';
+                    for (var key in data.groups) {
+                        if (jQuery.inArray(data.groups[key].id, groups) == -1) {
+                            console.log(data.groups[key]);
+
+                            html += '<tr>'
+                            + '<td><input type="checkbox" name="groupadd_'+data.groups[key].id+'" id="groupadd_'+data.groups[key].id+'" value="'+data.groups[key].id+'"></td>'
+                            + '<td>' + data.groups[key].label
+                            + '<input type="hidden" name="groupaddlabel_'+data.groups[key].id+'" id="groupaddlabel_'+data.groups[key].id+'" value="'+data.groups[key].label+'">'
+                            + '<input type="hidden" name="groupadddesc_'+data.groups[key].id+'" id="groupadddesc_'+data.groups[key].id+'" value="'+data.groups[key].description+'">'
+                            + '</td>';
+                            html += "<td>"+data.groups[key].description+"</td>";
+                            html += '</tr>';
+                        }
+                    }
+                    var footing = '</tbody></table>';
+
+                    if (html == "") {
+                        $("#addGroupsPaneContent").html("<p class='text-center'>There are no groups to add</p>");
+                    } else {
+                        $("#addGroupsPaneContent").html(heading + html + footing);
+                        $("#checkall").click(function(event) {checkAllGroupAdd(this, event);});
+                    }
+
+                } else {
+                    $("#addGroupsPaneContent").html("<p class='text-center'>There are no groups to add</p>");
+                }
+            });
+
+            // don't reload the page
+            //return false;
+        });
+    }
+
+
+    if($('#addSelectedGroupsButton').exists()) {
+        $('#addSelectedGroupsButton').click(function(){
+            $("input[id^='groupadd_']").each(function() {
+                if ($(this).is(":checked")) {
+                    var id = $(this).val();
+                    var html = "<tr id='grouprow_"+id+"'>"
+                    + "<td>" + $("#groupaddlabel_"+id).val()
+                    + " <input type=\"hidden\" name=\"groupid_"+id+"\" id=\"groupid_"+id+"\" value=\""+id+"\">"
+                    + "</td>"
+                    + "<td>"+$("#groupadddesc_"+id).val()+"</td>"
+                    + "<td><a href=\"#\" class=\"btn btn-danger\" id=\"removeGroup_"+id+"\"><span class=\"fa fa-minus\" aria-hidden=\"true\"></span></a></td>"
+                    + "</tr>";
+                    $("#users-tablebody").append(html);
+                    $("#removeGroup_"+id).click(function(event) {removeGroupFromUser(id)});
+                }
+            });
+
+            $("#addGroupsPaneContent").html("<p class='text-center'>Loading...</p>");
+
+        });
+    }
+
 
 
     /**
@@ -158,7 +250,7 @@ $(document).ready(function() {
             $.post("?command=administrator&subcommand=user_list", null, function (data) {
                 if (data.users.length > 0) {
                     var html = "";
-                    html += '<table class="table">'
+                    var heading = '<table class="table">'
                                 + '<thead>'
                             + '<tr>'
                                 + '<th><input type="checkbox" id="checkall"></th>'
@@ -187,12 +279,16 @@ $(document).ready(function() {
                             html += '</tr>';
                         }
                     }
-                    html += '</tbody></table>';
+                    var footing = '</tbody></table>';
 
-                    $("#addUsersPaneContent").html(html);
-                    $("#checkall").click(function(event) {checkAllUserAdd(this, event);});
+                    if (html == "") {
+                        $("#addUsersPaneContent").html("<p class='text-center'>There are no users to add</p>");
+                    } else {
+                        $("#addUsersPaneContent").html(heading + html + footing);
+                        $("#checkall").click(function(event) {checkAllUserAdd(this, event);});
+                    }
                 } else {
-                    console.log("An error occurred");
+                    $("#addUsersPaneContent").html("<p class='text-center'>There are no users to add</p>");
                 }
             });
 

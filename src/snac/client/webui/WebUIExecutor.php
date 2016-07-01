@@ -356,6 +356,7 @@ class WebUIExecutor {
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
                     return $this->drawErrorPage($serverResponse, $display);
                 $userEdit = $serverResponse["user"];
+                $userGroups = $serverResponse["groups"];
 
                 // Ask the server for all the Roles
                 $ask = array("command"=>"admin_roles",
@@ -368,7 +369,8 @@ class WebUIExecutor {
                 $display->setData(array(
                     "title"=> "Edit User",
                     "user"=>$userEdit,
-                    "roles" => $serverResponse["roles"]
+                    "roles" => $serverResponse["roles"],
+                    "groups" => $userGroups
                 ));
                 $display->setTemplate("admin_edit_user");
                 break;
@@ -419,6 +421,12 @@ class WebUIExecutor {
                 break;
             case "edit_group_post":
                 return $this->saveGroup($input, $user);
+                break;
+            case "group_list":
+                $ask = array("command"=>"admin_groups",
+                    "user" => $user->toArray()
+                );
+                return $this->connect->query($ask);
                 break;
             case "groups":
                 $ask = array("command"=>"admin_groups",
