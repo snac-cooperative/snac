@@ -543,8 +543,6 @@ class DBUser
     /**
      * Add a role to the User
      *
-     * This is not the preferred function. Use addRoleToUser().
-     *
      * Add role via table appuser_role_link. Return true on success.
      *
      * Use this when adding a role.
