@@ -33,6 +33,7 @@ $('.selectpicker').selectpicker();
 <link rel="stylesheet" href="css/snac.css">
 
 <!-- SNAC Javascript -->
+<script src="javascript/admin.js"></script>
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
 <script src="javascript/scripts.js"></script>
@@ -89,9 +90,9 @@ $(document).ready(function() {
                     <tbody>
                         {% for editGroup in data.groups %}
                         <tr>
-                            <td>{{ editGroup.label }}</td>
-                            <td>{{ editGroup.description }}</td>
-                            <td><a href="?command=administrator&subcommand=edit_group&groupid={{editGroup.id}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
+                            <td><p>{{ editGroup.label }}</p></td>
+                            <td><p>{{ editGroup.description }}</p></td>
+                            <td><p><a href="?command=administrator&subcommand=edit_group&groupid={{editGroup.id}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></p></td>
                         </tr>
                         {% endfor %}
                     </tbody>

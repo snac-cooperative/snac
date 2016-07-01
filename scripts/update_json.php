@@ -4,7 +4,7 @@
  * Create up to date versions of two files critical to testing. You must manually overwrite the old file with
  * the new after running this script.
  *
- * @author Robbie Hott 
+ * @author Robbie Hott
  * @author Tom Laudeman
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -20,12 +20,7 @@ use \Monolog\Handler\StreamHandler;
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
 
-/* unbuffer stdin, stdout? Or something. */
-stream_set_blocking(STDIN, 0);
-stream_set_blocking(STDOUT, 0);
-
-
-/* 
+/*
  * We cannot build the new from the old if the data structures change!
  * $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
  * $identity->fromJSON($jsonIn);

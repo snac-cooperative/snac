@@ -21,9 +21,6 @@ use \Monolog\Handler\StreamHandler;
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
 
-// Set STDIN to not block, so that we can give an error message if needed
-stream_set_blocking(STDIN, 0);
-
 // Did we parse a file?
 $parsedFile = false;
 
@@ -85,7 +82,7 @@ foreach ($line as $data) {
     // Update it to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
 
-    /* 
+    /*
      * Add to the snac_institution table. An institution is a constellation, usually in summary form. The
      * institution code only cares about the constellation ID aka ic_id, from getID().
      */

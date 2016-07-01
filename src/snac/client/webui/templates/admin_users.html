@@ -33,6 +33,7 @@ $('.selectpicker').selectpicker();
 <link rel="stylesheet" href="css/snac.css">
 
 <!-- SNAC Javascript -->
+<script src="javascript/admin.js"></script>
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
 <script src="javascript/scripts.js"></script>
@@ -93,23 +94,23 @@ $(document).ready(function() {
                     <tbody>
                         {% for editUser in data.users %}
                         <tr>
-                            <td>{{ editUser.fullName }}</td>
-                            <td>{{ editUser.userName }}</td>
-                            <td>{{ editUser.email }}</td>
+                            <td><p>{{ editUser.fullName }}</p></td>
+                            <td><p>{{ editUser.userName }}</p></td>
+                            <td><p>{{ editUser.email }}</p></td>
                             <td>
                                 {% for role in editUser.roleList %}
-                                    {{ role.label }}
+                                    <p>{{ role.label }}</p>
                                 {% endfor %}
                             </td>
-                            <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
-                            <td>
+                            <td><p>{{ editUser.affiliation.nameEntries.0.original }}</p></td>
+                            <td><p>
                                 {% if editUser.active %}
                                 <i class="fa fa-check-square-o" aria-hidden="true"></i>
                                 {% else %}
                                 <i class="fa fa-square-o" aria-hidden="true"></i>
                                 {% endif %}
-                            </td>
-                            <td><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></td>
+                            </p></td>
+                            <td><p><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></p></td>
                         </tr>
                         {% endfor %}
                     </tbody>

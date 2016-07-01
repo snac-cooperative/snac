@@ -522,6 +522,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setAvatarSmall("http://example.com/avatar_small");
         $userObj->setAvatarLarge("http://example.com/avatar_large");
         $userObj->setEmail("mst3k@example.com");
+        $userObj->setUserActive(true);
 
         /*
          * User does not exist in db.
@@ -531,8 +532,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setToken(array('access_token' => 'foo',
                                  'expires' => time() + (60*60)));
         $csaReturn = $this->dbu->createUser($userObj);
-
-        printf("\nactive: %s\n", $csaReturn->getActive());
 
         $cleanUpUser = clone($csaReturn);
 
@@ -571,9 +570,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->dbu->disableUser($cleanUpUser);
         $secondUserList = $this->dbu->listUsers();
         $thirdUserList = $this->dbu->listUsers(true);
-
-        printf("\nfirst: %s second: %s third %s\n", count($firstUserList), count($secondUserList), count($thirdUserList));
-
         $this->assertEquals(count($firstUserList), count($thirdUserList));
         $this->assertEquals(count($firstUserList), count($secondUserList)+1);
         

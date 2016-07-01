@@ -33,6 +33,7 @@ $('.selectpicker').selectpicker();
 <link rel="stylesheet" href="css/snac.css">
 
 <!-- SNAC Javascript -->
+<script src="javascript/admin.js"></script>
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
 <script src="javascript/scripts.js"></script>
@@ -117,7 +118,9 @@ body {
                             <tbody>
                                 {% for editUser in data.users %}
                                 <tr>
-                                    <td>{{ editUser.fullName }}</td>
+                                    <td>{{ editUser.fullName }}
+                                        <input type="hidden" name="userid_{{editUser.userid}}" id="userid_{{editUser.userid}}" value="{{ediUser.userid}}">
+                                    </td>
                                     <td>{{ editUser.affiliation.nameEntries.0.original }}</select></td>
                                     <td>
                                         {% if editUser.active %}
@@ -132,7 +135,7 @@ body {
                             </tbody>
                         </table>
                         <p class="text-center">
-                            <a href="#" class="btn btn-success"><span class="fa fa-plus" aria-hidden="true"></span> Add user to group</a>
+                            <a href="#" class="btn btn-success" id="add_users_to_group" data-toggle="modal" data-target="#addUsersPane"><span class="fa fa-plus" aria-hidden="true"></span> Add user to group</a>
                         </p>
                     </div>
                 </div>
@@ -161,6 +164,23 @@ body {
                         <a href="#" class="list-group-item list-group-item-danger" id="cancel_back"><span class="glyphicon glyphicon-floppy-remove"></span> Cancel <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Cancel and do not create this user." data-toggle="popover" data-placement="top"></span></a>
                     </div>
 
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="addUsersPane" tabindex="-1" role="dialog" aria-labelledby="addUsersPaneLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="addUsersPaneLabel">Add Users</h4>
+                    </div>
+                    <div class="modal-body" id="addUsersPaneContent">
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary"  data-dismiss="modal">Add Selected Users</button>
+                    </div>
                 </div>
             </div>
         </div>

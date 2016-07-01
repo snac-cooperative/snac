@@ -1,9 +1,9 @@
 #!/usr/bin/env php
 <?php
 /**
- * Bulk ingest of users from a csv file 
+ * Bulk ingest of users from a csv file
  *
- * 
+ *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -17,7 +17,6 @@ use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
-
 
 // Did we parse a file?
 $parsedFile = false;
@@ -33,11 +32,11 @@ foreach($unRoles as $role) {
     $roles[$role->getLabel()] = $role;
 }
 
-$institutions = array(); 
+$institutions = array();
 
 /*
  * fgetcsv field enclosure is "" not ''. If you use '' the single quotes will be retained as part of the data.
- */ 
+ */
 if (($handle = fopen($argv[1], "r")) !== FALSE) {
     while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
         $institutions[$data[1]] = $data[0];
@@ -83,4 +82,3 @@ if ($parsedFile == false) {
     echo "No args given\n\n"
         . "Sample usage: ./add_users.php institutions.csv users.csv\n\n";
 }
-

@@ -2,7 +2,7 @@
 <?php
 /**
  * Bulk ingest of files given on standard input
- * 
+ *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -16,9 +16,6 @@ use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
-
-// Set STDIN to not block, so that we can give an error message if needed
-stream_set_blocking(STDIN, 0);
 
 // Did we parse a file?
 $parsedFile = false;
@@ -42,17 +39,17 @@ if (is_dir($argv[1])) {
     printf("Opening dir: $argv[1]\n");
     $dh = opendir($argv[1]);
     printf("Done.\n");
-    
-    // Create new parser 
+
+    // Create new parser
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
-    
+
     while (($short_file = readdir($dh))) {
-        
+
         if ($short_file == '.' or $short_file == '..') {
             continue;
         }
-        
+
         // Create a full path file name
         $filename = $argv[1]."/$short_file";
 
@@ -62,20 +59,20 @@ if (is_dir($argv[1])) {
         echo "Parsing: $filename\n";
 
         $constellation = $e->parseFile($filename);
-        
+
         // Write the constellations to the DB
         $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
-        
+
         // Update them to be published
         $dbu->writeConstellationStatus($written->getID(), "published");
-        
+
         indexESearch($written);
 
         // try to help memory by freeing up the constellation
         unset($written);
     }
 
-    echo "\nCompleted input of sample data.\n\n"; 
+    echo "\nCompleted input of sample data.\n\n";
 }
 
 // If no file was parsed, then print the output that something went wrong
@@ -101,7 +98,7 @@ function indexESearch($written) {
                         'timestamp' => date("c")
                 ]
         ];
-    
+
         $eSearch->index($params);
     }
 }

@@ -188,6 +188,10 @@ class DBUser
      * Minimal requirements are username which must be unique. We plan to use email as username, but calling
      * code creates the User object, so this code will just use what getUserName() returns.
      *
+     * user->active does not default to true. In retrospect this seems like a dubious feature that should be
+     * discussed. Currently, if you want your new user to be active then $user->setUserActive(true) before
+     * calling createUser().
+     *
      * Param $user is not modified, although it is cloned and the clone has the userID added, and the clone is
      * returned on success.
      *

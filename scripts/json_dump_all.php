@@ -21,7 +21,7 @@
  * ./scripts/json_dump_all.php > snac.json 2> json.log &
  *
  * Two files are generated. The scripts takes a while to run.
- * 
+ *
  * @author Tom Laudeman
  */
 
@@ -33,9 +33,6 @@ use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
 $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE, Logger::DEBUG);
-
-// Set STDIN to not block, so that we can give an error message if needed
-stream_set_blocking(STDIN, 0);
 
 $dbu = new snac\server\database\DBUtil();
 $dbuser = new snac\server\database\DBUser();
@@ -62,7 +59,7 @@ foreach($icIDList as $icID)
     error_log(sprintf("Working on $icID"));
     $cObj = $dbu->readConstellation($icID);
     array_push($allCons, $cObj->toArray(true));
-    /* 
+    /*
      * $xx++;
      * if ($xx > 1)
      * {
