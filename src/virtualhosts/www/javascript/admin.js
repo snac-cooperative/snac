@@ -156,7 +156,7 @@ $(document).ready(function() {
                     + "<td>"+$("#groupadddesc_"+id).val()+"</td>"
                     + "<td><a href=\"#\" class=\"btn btn-danger\" id=\"removeGroup_"+id+"\"><span class=\"fa fa-minus\" aria-hidden=\"true\"></span></a></td>"
                     + "</tr>";
-                    $("#users-tablebody").append(html);
+                    $("#groups-tablebody").append(html);
                     $("#removeGroup_"+id).click(function(event) {removeGroupFromUser(id)});
                 }
             });

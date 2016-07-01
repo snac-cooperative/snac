@@ -527,6 +527,8 @@ class WebUIExecutor {
         public function saveProfile(&$input, &$user) {
 
             $tmpUser = new \snac\data\User();
+            $groups = null;
+            // Not editing the current user
             if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
                 if (isset($input["userid"]) && $input["userid"] != "")
                     $tmpUser->setUserID($input["userid"]);
@@ -540,6 +542,18 @@ class WebUIExecutor {
                 }
                 if (isset($input["active"]) && $input["active"] == "active")
                     $tmpUser->setUserActive(true);
+
+                // If not editing the current user, then we can update their groups
+                $groups = array();
+                foreach ($input as $key => $value) {
+                    if (strstr($key, "groupid_")) {
+                        $groupAdd = new \snac\data\Group();
+                        $groupAdd->setID($value);
+                        array_push($groups, $groupAdd->toArray());
+                    }
+                }
+
+
             } else {
                 $tmpUser = new \snac\data\User($user->toArray());
             }
@@ -566,6 +580,11 @@ class WebUIExecutor {
             // Send the query to the server
             $request["user"] = $user->toArray();
             $request["user_update"] = $tmpUser->toArray();
+
+            // Send the groups if we're doing an update
+            if ($groups != null)
+                $request["groups_update"] = $groups;
+
             $serverResponse = $this->connect->query($request);
 
             $response = array();

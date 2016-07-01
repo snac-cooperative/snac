@@ -274,8 +274,25 @@ class ServerExecutor {
                     $response["error"] = "Could not create the user";
             }
 
+            // If the user was successfully created or saved, then modify their groups and return the full user object
             if ($success === true) {
-                $response["user_update"] = $this->uStore->readUser($updated)->toArray();
+                $retUser = $this->uStore->readUser($updated);
+
+                // If we have groups to modify, then update them appropriately.   To remove all groups, the parameter
+                // must be sent as an empty array
+                if (isset($input["groups_update"]) && is_array($input["groups_update"])) {
+                    $currentGroups = $this->uStore->listGroupsForUser($retUser);
+
+                    foreach ($currentGroups as $current) {
+                        $this->uStore->removeUserFromGroup($retUser, $current);
+                    }
+
+                    foreach ($input["groups_update"] as $newGroup) {
+                        $this->uStore->addUserToGroup($retUser, new \snac\data\Group($newGroup));
+                    }
+                }
+                $response["user_update"] = $retUser->toArray();
+
             }
         }
 
