@@ -412,7 +412,18 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $demoRole->setLabel($roleLabel);
         $demoRole->setDescription('Demo role created during testing');
         $this->dbu->writeRole($demoRole);
+
+        /*
+         * Using toJSON() did not reveal the bug. Must use toArray() and the constructor.
+         */ 
+        $dArray = $demoRole->toArray();
+        $checkRole = new \snac\data\Role($dArray);
+        $this->assertEquals($checkRole->getID(), $demoRole->getID());
+        $this->assertEquals($checkRole->getLabel(), $demoRole->getLabel());
+        $this->assertEquals($checkRole->getDescription(), $demoRole->getDescription());
+        
         $this->dbu->addRoleToUser($newUser, $demoRole);
+
         $newUser->setRoleList(array()); // zero the role list
 
         // public function saveUser($user, $saveRole=false)
@@ -446,6 +457,23 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $newUserGroupList = $this->dbu->listGroupsForUser($newUser);
         $this->assertEquals($newUserGroupList[0]->getDescription(), "Demo test $gLabel group for testing, updated");
         $this->assertEquals(1, count($newUserGroupList));
+
+        // $everyone=true
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, true);
+        $this->assertEquals(1,count($usersInDemoGroup));
+
+        /*
+         * Disable $newUser and confirm that the group has zero active users. $everyone=false, list only
+         * active users. Then enable the user and confirm that active users is 1.
+         */
+        $this->dbu->disableUser($newUser);
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, false);
+        $this->assertEquals(0,count($usersInDemoGroup));
+
+        $this->dbu->enableUser($newUser);
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, false);
+        $this->assertEquals(1,count($usersInDemoGroup));
+
         $this->dbu->removeUserFromGroup($newUser, $demoGroup);
         $newUserGroupList = $this->dbu->listGroupsForUser($newUser);
         $this->assertEquals(0, count($newUserGroupList));
@@ -507,6 +535,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setAvatarSmall("http://example.com/avatar_small");
         $userObj->setAvatarLarge("http://example.com/avatar_large");
         $userObj->setEmail("mst3k@example.com");
+        $userObj->setUserActive(true);
 
         /*
          * User does not exist in db.
@@ -516,7 +545,12 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $userObj->setToken(array('access_token' => 'foo',
                                  'expires' => time() + (60*60)));
         $csaReturn = $this->dbu->createUser($userObj);
+
         $cleanUpUser = clone($csaReturn);
+
+        $foundUserID = $this->dbu->findUserID("mst3k@example.com");
+        $this->assertEquals($foundUserID, $csaReturn->getUserID());
+
         $this->dbu->removeSession($csaReturn);
          if (! $this->dbu->sessionExists($csaReturn))
          {
@@ -541,6 +575,17 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $csaReturn->setUserID('123456');
         $this->assertFalse($this->dbu->userExists($csaReturn));
 
+        /*
+         * Check that listUsers for everyone includes the disabled (inactive) user. And that disableUser makes
+         * the user inactive.
+         */ 
+        $firstUserList = $this->dbu->listUsers();
+        $this->dbu->disableUser($cleanUpUser);
+        $secondUserList = $this->dbu->listUsers();
+        $thirdUserList = $this->dbu->listUsers(true);
+        $this->assertEquals(count($firstUserList), count($thirdUserList));
+        $this->assertEquals(count($firstUserList), count($secondUserList)+1);
+        
         /*
          * When things are normally successful, we might want to clean up.
          */

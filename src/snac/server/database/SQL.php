@@ -504,7 +504,8 @@ class SQL
      *
      * @param string $userName User name, a unique string, probably the user email
      *
-     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar,
+     * avatar_small, avatar_large, affiliation. Or false is returned.
      */
     public function selectUserByEmail($email)
     {
@@ -4513,12 +4514,25 @@ class SQL
      * Select all user IDs in group
      *
      * @param integer $groupID A group id
+     *
+     * @param boolean $everyone. If true include inactive users, else only list active.
+     * 
      * @return integer[] List of group ID values.
      */
-    public function selectUserIDsFromGroup($groupID)
+    public function selectUserIDsFromGroup($groupID, $everyone)
     {
-        $result = $this->sdb->query("select uid from appuser_group_link where gid=$1",
-                          array($groupID));
+        $query = "select uid from appuser_group_link where gid=$1";
+        if (! $everyone) {
+            /*
+             * Must join with appuser to get only active users.
+             * 
+             * Table names are not necessary in the select or where clause. The field names are
+             * unique. However, explicitly using table names (or the alias agl) makes the intent clear.
+             */ 
+            $query = "select agl.uid from appuser_group_link as agl, appuser where gid=$1 and agl.uid=appuser.id and appuser.active";
+        }
+        $result = $this->sdb->query($query,
+                                    array($groupID));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {

@@ -20,11 +20,11 @@ namespace snac\server\database;
  * appuser_role_link relates roles to users. Table session has session data, and joined where
  * appuser.id=session.appuser_fk.
  *
- * Functions that return lists: listUsers, listRoles, listGroups, insitutionList, listPrivileges
+ * Functions that return lists: listUsers, listRoles, listGroups, listPrivileges, listInstitutions
  *
  * Functions that return constrained lists: listUserRoles, listUsersInGroup, listGroupsForUser
  *
- * Functions that add/remove: eraseRoleByID, addUserRole (better name: addRoleToUser?), addPrivilegeToRole,
+ * Functions that add/remove relations: addRoleToUser, addPrivilegeToRole,
  * addSession, removeSession, addUserToGroup, removeUserFromGroup, removeUserRole (better name:
  * removeRoleFromUser?), removePrivilegeFromRole
  *
@@ -33,13 +33,13 @@ namespace snac\server\database;
  * Functions that create/update/write: writePassword, createUser, saveUser, writeRole, writePrivilege,
  * writeGroup, writeInstitution
  *
- * Functions that delete: eraseRole, erasePrivilege, eraseGroup, eraseInstitution
+ * Functions that delete: eraseRole, eraseRoleByID, erasePrivilege, eraseGroup, eraseInstitution
  *
  * Functions that check/has: userExists, hasPrivilege, hasPrivilegeByLabel, hasRole, checkRoleByLabel,
  * sessionExists, sessionActive, checkSessionActive, checkPassword
  *
- * Other functions: findUserID, private populateUser, disableUser, private populatePrivilege, sessionExtend,
- * private populateGroup, clearAllSessions
+ * Other functions: findUserID, private populateUser, disableUser, enableUser, private populatePrivilege,
+ * sessionExtend, private populateGroup, clearAllSessions
  */
 
 class DBUser
@@ -188,6 +188,10 @@ class DBUser
      * Minimal requirements are username which must be unique. We plan to use email as username, but calling
      * code creates the User object, so this code will just use what getUserName() returns.
      *
+     * user->active does not default to true. In retrospect this seems like a dubious feature that should be
+     * discussed. Currently, if you want your new user to be active then $user->setUserActive(true) before
+     * calling createUser().
+     *
      * Param $user is not modified, although it is cloned and the clone has the userID added, and the clone is
      * returned on success.
      *
@@ -315,10 +319,14 @@ class DBUser
      */
     public function findUserID($email)
     {
+        /*
+         * In fact, selectUserByEmail() returns an entire user record from the database as an associative
+         * list.
+         */ 
         $appUserID = $this->sql->selectUserByEmail($email);
-        if ($appUserID)
+        if (isset($appUserID['id']))
         {
-            return $appUserID;
+            return $appUserID['id'];
         }
         return false;
     }
@@ -414,35 +422,35 @@ class DBUser
         return $user;
     }
 
-    /*
-     * This function removed.
-     *
-     * Return a user object for the email.
-     *
-     * Wrapper for readUser() getting a user by email address instead of user id.
-     *
-     * @param string $email User email address.
-     * @return \snac\data\User Returns a user object or false.
-     */
-    /*
-     * public function readUserByEmail($email)
-     * {
-     *     $uid = $this->sql->selectUserByEmail($email);
-     *     return $this->readUser($uid);
-     * }
-     */
 
     /**
-     * Disable log in to this account. Update table appuser.active to false. Return true on success.
+     * Disable log in to this account.
+     *
+     * Update table appuser.active to false. Return true on success.
      *
      * Should we also munge their password so login becomes impossible? Perhaps not.
      *
      * @param \snac\data\User $user The user to disable
-     * @return boolean Return true on success
+     * @return boolean Return true.
      */
     public function disableUser($user)
     {
         $this->sql->updateActive($user->getUserID(), $this->db->boolToPg(false));
+        return true;
+    }
+
+    /**
+     * Enable log in to this account.
+     *
+     * Update table appuser.active to true. Return true on success.
+     *
+
+     * @param \snac\data\User $user The user to disable
+     * @return boolean Return true.
+     */
+    public function enableUser($user)
+    {
+        $this->sql->updateActive($user->getUserID(), $this->db->boolToPg(true));
         return true;
     }
 
@@ -535,6 +543,8 @@ class DBUser
     /**
      * Add a role to the User
      *
+     * This is not the preferred function. Use addRoleToUser().
+     *
      * Add role via table appuser_role_link. Return true on success.
      *
      * Use this when adding a role.
@@ -613,33 +623,6 @@ class DBUser
     }
 
 
-    // Never used. Commented out jun 27 2016)
-    /*
-     * Add default role(s)
-     *
-     * Current there are no default roles. If we ever have default role(s) add them here. You might be
-     * searching for addrole, add role adding a role adding role, addUserRole
-     *
-     * After adding the role, set the users's role list by getting the list from the db.
-     *
-     * When we have more default roles, just add additional insertRoleByLabel() calls.
-     *
-     * @param \snac\data\User $user A user
-     * @return boolean Return true on success, else false.
-     */
-    /*
-     * public function addDefaultRole($user)
-     * {
-     *     return true;
-     *     /\*
-     *      * $result = $this->sql->insertRoleByLabel($user->getUserID(), 'Public HRT');
-     *      * $user->setRoleList($this->listUserRoles($user));
-     *      * return $result;
-     *      *\/
-     * }
-     */
-
-
     /**
      * List roles for a user.
      *
@@ -711,7 +694,7 @@ class DBUser
      * Remove a role from the User via table appuser_role_link.
      *
      * Remove the role from the user is how we say it, but the relation is bi-directional. In retrospect, this
-     * function should have been called removeUserFromRole.
+     * function should have been called removeRoleFromUser.
      *
      * After removing the role, refresh the User role list by reading it back from the database.
      *
@@ -1145,11 +1128,15 @@ class DBUser
      * List users in a group
      *
      * @param \snac\data\Group $group The group
+     * 
+     * @param boolean $everyone optional If true list both inactive and active users. If false, only list
+     * active users.
+     * 
      * @return \snac\data\User[] List of users
      */
-    public function listUsersInGroup($group)
+    public function listUsersInGroup($group, $everyone=false)
     {
-        $idList = $this->sql->selectUserIDsFromGroup($group->getID());
+        $idList = $this->sql->selectUserIDsFromGroup($group->getID(), $everyone);
         $userList = array();
         foreach($idList as $uid)
         {
@@ -1230,9 +1217,6 @@ class DBUser
         /*
          * Select all the institution data, returned as a list of associative lists. We don't have any use for
          * a list of ids, unlike Role and some other data. So, there is no populateInstitution(). It all happens here.
-         *
-         * This function might have been called: listallinstitution listallinstitution allinstitutionlist,
-         * selectinstitution selectallinstitution
          *
          */
         $rowList = $this->sql->selectAllInstitution();

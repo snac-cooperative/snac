@@ -846,10 +846,10 @@ create table appuser_group (
         description text         -- description of this
         );
 
--- Linking table for appuser and groups.
+-- Linking table for appuser and groups. Field is_default no currently used, but reserved for future use.
 
 create table appuser_group_link (
         uid        int,                -- fk to appuser.id
-        gid        int,                -- fk to group.id
-        is_default boolean default 'f' -- this groups is a default for the given user
+        gid        int,                -- fk to appuser_group.id
+        is_default boolean default 'f' -- this group is a default for the given user
 );
