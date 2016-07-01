@@ -462,6 +462,18 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, true);
         $this->assertEquals(1,count($usersInDemoGroup));
 
+        /*
+         * Disable $newUser and confirm that the group has zero active users. $everyone=false, list only
+         * active users. Then enable the user and confirm that active users is 1.
+         */
+        $this->dbu->disableUser($newUser);
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, false);
+        $this->assertEquals(0,count($usersInDemoGroup));
+
+        $this->dbu->enableUser($newUser);
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, false);
+        $this->assertEquals(1,count($usersInDemoGroup));
+
         $this->dbu->removeUserFromGroup($newUser, $demoGroup);
         $newUserGroupList = $this->dbu->listGroupsForUser($newUser);
         $this->assertEquals(0, count($newUserGroupList));

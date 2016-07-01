@@ -424,16 +424,33 @@ class DBUser
 
 
     /**
-     * Disable log in to this account. Update table appuser.active to false. Return true on success.
+     * Disable log in to this account.
+     *
+     * Update table appuser.active to false. Return true on success.
      *
      * Should we also munge their password so login becomes impossible? Perhaps not.
      *
      * @param \snac\data\User $user The user to disable
-     * @return boolean Return true on success
+     * @return boolean Return true.
      */
     public function disableUser($user)
     {
         $this->sql->updateActive($user->getUserID(), $this->db->boolToPg(false));
+        return true;
+    }
+
+    /**
+     * Enable log in to this account.
+     *
+     * Update table appuser.active to true. Return true on success.
+     *
+
+     * @param \snac\data\User $user The user to disable
+     * @return boolean Return true.
+     */
+    public function enableUser($user)
+    {
+        $this->sql->updateActive($user->getUserID(), $this->db->boolToPg(true));
         return true;
     }
 
