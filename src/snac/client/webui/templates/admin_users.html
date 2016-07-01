@@ -96,7 +96,7 @@ $(document).ready(function() {
                         <tr>
                             <td><p>{{ editUser.fullName }}</p></td>
                             <td><p>{{ editUser.userName }}</p></td>
-                            <td><p>{{ editUser.email }}</p></td>
+                            <td><p>{{ editUser.workEmail }}</p></td>
                             <td>
                                 {% for role in editUser.roleList %}
                                     <p>{{ role.label }}</p>
@@ -105,9 +105,7 @@ $(document).ready(function() {
                             <td><p>{{ editUser.affiliation.nameEntries.0.original }}</p></td>
                             <td><p>
                                 {% if editUser.active %}
-                                <i class="fa fa-check-square-o" aria-hidden="true"></i>
-                                {% else %}
-                                <i class="fa fa-square-o" aria-hidden="true"></i>
+                                <i class="fa fa-check" aria-hidden="true"></i>
                                 {% endif %}
                             </p></td>
                             <td><p><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></p></td>

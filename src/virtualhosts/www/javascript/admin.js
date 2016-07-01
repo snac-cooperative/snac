@@ -12,6 +12,19 @@
 
 jQuery.fn.exists = function(){return this.length>0;}
 
+function checkAllUserAdd(element, event) {
+    if (element.checked){ //checked) {
+        $("input[id^='useradd_']").each(function() {this.checked = true;});
+    } else {
+        $("input[id^='useradd_']").each(function() {this.checked = false;});
+    }
+}
+
+function removeUserFromGroup(id) {
+    $("#userrow_" + id).remove();
+    return false;
+}
+
 /**
  * Only load this script once the document is fully loaded
  */
@@ -111,12 +124,35 @@ $(document).ready(function() {
     }
 
 
+    if($('#addSelectedUsersButton').exists()) {
+        $('#addSelectedUsersButton').click(function(){
+            $("input[id^='useradd_']").each(function() {
+                if ($(this).is(":checked")) {
+                    var id = $(this).val();
+                    var html = "<tr id='userrow_"+id+"'>"
+                        + "<td>" + $("#useraddname_"+id).val()
+                            + " <input type=\"hidden\" name=\"userid_"+id+"\" id=\"userid_"+id+"\" value=\""+id+"\">"
+                        + "</td>"
+                        + "<td>"+$("#useraddusername_"+id).val()+"</td>"
+                        + "<td>"+$("#useraddaff_"+id).val()+"</td>"
+                        + "<td><a href=\"#\" class=\"btn btn-danger\" id=\"removeUser_"+id+"\"><span class=\"fa fa-minus\" aria-hidden=\"true\"></span></a></td>"
+                       + "</tr>";
+                    $("#users-tablebody").append(html);
+                    $("#removeUser_"+id).click(function(event) {removeUserFromGroup(id)});
+                }
+            });
+
+            $("#addUsersPaneContent").html("<p class='text-center'>Loading...</p>");
+
+        });
+    }
+
 
     if($('#add_users_to_group').exists()) {
         $('#add_users_to_group').click(function(){
 
             var users = [];
-            $("input[id^='userid_").each(function() {
+            $("input[id^='userid_']").each(function() {
                 users.push($(this).val());
             });
             $.post("?command=administrator&subcommand=user_list", null, function (data) {
@@ -125,8 +161,9 @@ $(document).ready(function() {
                     html += '<table class="table">'
                                 + '<thead>'
                             + '<tr>'
-                                + '<th></th>'
+                                + '<th><input type="checkbox" id="checkall"></th>'
                                 + '<th>Name</th>'
+                                + '<th>User Name</th>'
                                 + '<th>Affiliation</th>'
                             + '</tr>'
                         + '</thead>'
@@ -134,22 +171,26 @@ $(document).ready(function() {
                     for (var key in data.users) {
                         if (jQuery.inArray(data.users[key].userid, users) == -1 && data.users[key].active) {
                             console.log(data.users[key]);
-                            html += '<tr>'
-                                + '<td><input type="checkbox" name="useraddcheck_'+data.users[key].userid+'" id="useraddcheck_'+data.users[key].userid+'"></td>'
-                                + '<td>' + data.users[key].fullName
-                                    + '<input type="hidden" name="useradd_'+data.users[key].userid+'" id="useradd_'+data.users[key].userid+'" value="'+data.users[key].userid+'">'
-                                + '</td>';
+                            var affil = "";
                             if ( typeof data.users[key].affiliation != 'undefined')
-                                html += '<td>'+ data.users[key].affiliation.nameEntries[0].original + '</td>'
-                            else
-                                html += "<td></td>";
+                                affil = data.users[key].affiliation.nameEntries[0].original;
+
+                            html += '<tr>'
+                                + '<td><input type="checkbox" name="useradd_'+data.users[key].userid+'" id="useradd_'+data.users[key].userid+'" value="'+data.users[key].userid+'"></td>'
+                                + '<td>' + data.users[key].fullName
+                                    + '<input type="hidden" name="useraddusername_'+data.users[key].userid+'" id="useraddusername_'+data.users[key].userid+'" value="'+data.users[key].userName+'">'
+                                    + '<input type="hidden" name="useraddname_'+data.users[key].userid+'" id="useraddname_'+data.users[key].userid+'" value="'+data.users[key].fullName+'">'
+                                    + '<input type="hidden" name="useraddaff_'+data.users[key].userid+'" id="useraddaff_'+data.users[key].userid+'" value="'+affil+'">'
+                                + '</td>';
+                            html += "<td>"+data.users[key].userName+"</td>";
+                            html += "<td>"+affil+"</td>";
                             html += '</tr>';
                         }
                     }
                     html += '</tbody></table>';
 
                     $("#addUsersPaneContent").html(html);
-
+                    $("#checkall").click(function(event) {checkAllUserAdd(this, event);});
                 } else {
                     console.log("An error occurred");
                 }
@@ -159,6 +200,7 @@ $(document).ready(function() {
             //return false;
         });
     }
+
 
 
 

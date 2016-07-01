@@ -298,13 +298,31 @@ class ServerExecutor {
      */
     public function listUsers(&$input) {
 
-        $allUsers = $this->uStore->listUsers(true);
+        $getAll = true;
+        if (isset($input["filter"])) {
+            if ($input["filter"] == "active")
+                $getAll = false;
+        }
+
+        $allUsers = $this->uStore->listUsers($getAll);
+
         $response = array();
         if (count($allUsers) > 0) {
             $response["users"] = array();
             foreach ($allUsers as $user) {
                 array_push($response["users"], $user->toArray());
             }
+            usort($response["users"], function($a, $b) {
+
+                if (!isset($a["fullName"]) && isset($b["fullName"]))
+                    return 1;
+                else if (isset($a["fullName"]) && !isset($b["fullName"]))
+                    return -1;
+                else if (!isset($a["fullName"]) && !isset($b["fullName"]))
+                    return 0;
+                // default sort by name
+                return $a["fullName"] <=> $b["fullName"];
+            });
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
@@ -465,9 +483,11 @@ class ServerExecutor {
         /*
          * Get the list of Groups the User is a member of
          */
-
-        //TODO
         $response["groups"] = array();
+        $groups = $this->uStore->listGroupsForUser($user);
+        foreach ($groups as $group) {
+            array_push($response["groups"], $group->toArray());
+        }
 
 
         /*
@@ -575,6 +595,16 @@ class ServerExecutor {
         $updated = new \snac\data\Group($input["group_update"]);
 
         $updated = $this->uStore->writeGroup($updated);
+
+        $currentUsers = $this->uStore->listUsersInGroup($updated);
+
+        foreach ($currentUsers as $current) {
+            $this->uStore->removeUserFromGroup($current, $updated);
+        }
+
+        foreach ($input["users_update"] as $newUser) {
+            $this->uStore->addUserToGroup(new \snac\data\User($newUser), $updated);
+        }
 
         if ($updated === false) {
             $response["result"] = "failure";
