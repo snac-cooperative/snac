@@ -1111,11 +1111,15 @@ class DBUser
      * List users in a group
      *
      * @param \snac\data\Group $group The group
+     * 
+     * @param boolean $everyone optional If true list both inactive and active users. If false, only list
+     * active users.
+     * 
      * @return \snac\data\User[] List of users
      */
-    public function listUsersInGroup($group)
+    public function listUsersInGroup($group, $everyone=false)
     {
-        $idList = $this->sql->selectUserIDsFromGroup($group->getID());
+        $idList = $this->sql->selectUserIDsFromGroup($group->getID(), $everyone);
         $userList = array();
         foreach($idList as $uid)
         {

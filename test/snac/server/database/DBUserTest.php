@@ -458,7 +458,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($newUserGroupList[0]->getDescription(), "Demo test $gLabel group for testing, updated");
         $this->assertEquals(1, count($newUserGroupList));
 
-        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup);
+        // $everyone=true
+        $usersInDemoGroup = $this->dbu->listUsersInGroup($demoGroup, true);
         $this->assertEquals(1,count($usersInDemoGroup));
 
         $this->dbu->removeUserFromGroup($newUser, $demoGroup);
