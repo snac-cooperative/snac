@@ -38,8 +38,8 @@ namespace snac\server\database;
  * Functions that check/has: userExists, hasPrivilege, hasPrivilegeByLabel, hasRole, checkRoleByLabel,
  * sessionExists, sessionActive, checkSessionActive, checkPassword
  *
- * Other functions: findUserID, private populateUser, disableUser, private populatePrivilege, sessionExtend,
- * private populateGroup, clearAllSessions
+ * Other functions: findUserID, private populateUser, disableUser, enableUser, private populatePrivilege,
+ * sessionExtend, private populateGroup, clearAllSessions
  */
 
 class DBUser
