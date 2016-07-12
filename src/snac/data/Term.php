@@ -178,7 +178,7 @@ class Term {
     /**
      * Set the URI of this vocab term
      *
-     * @param string $term URI for this vocab term
+     * @param string $uri URI for this vocab term
      */
     public function setURI($uri) {
         $this->uri = $uri;
@@ -187,7 +187,7 @@ class Term {
     /**
      * Get the description of this vocab term
      *
-     *  @return string description of this vocab term
+     *  @return string Description of this vocab term
      */
     public function getDescription() {
         return $this->description;
@@ -196,7 +196,7 @@ class Term {
     /**
      * Set the description of this vocab term
      *
-     * @param string $term Description for this vocab term
+     * @param string $description Description for this vocab term
      */
     public function setDescription($description) {
         $this->description = $description;

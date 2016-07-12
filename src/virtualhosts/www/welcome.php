@@ -12,6 +12,9 @@
  *            the Regents of the University of California
  */
 
+/**
+ * Actual script below
+ */
 ?><!DOCTYPE html>
 <html>
 <title>SNAC Prototype</title>

@@ -242,6 +242,7 @@ class ServerExecutor {
      *
      * Calls saveUser to save the user information to the database.  Then returns the user object.
      *
+     * @param string[]|null $input The input from the client
      * @return string[] The response to send to the client
      */
     public function updateUserInformation(&$input) {

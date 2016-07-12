@@ -21,8 +21,8 @@ interface Vocabulary {
     /**
      * Get a Term by string value/term
      *
-     * @param string $type The type of controlled vocab
      * @param string $value The value of the term to search for
+     * @param string $type The type of controlled vocab
      * @return \snac\data\Term The Term object for the value
      */
     public function getTermByValue($value, $type);
@@ -30,8 +30,8 @@ interface Vocabulary {
     /**
      * Get a Term by integer id 
      *
-     * @param string $type The type of controlled vocab
      * @param string $id The persistent ID (int) for the term
+     * @param string $type The type of controlled vocab
      * @return \snac\data\Term The Term object for the id
      */
     public function getTermByID($id, $type);
