@@ -250,6 +250,14 @@ class ReconciliationEngine {
     
     /**
      * Reverse sort of results
+     *
+     * This method returns the sort result of the two parameters.  It can be used
+     * in usort to sort a list of results in descending order based on strength of
+     * result (score).
+     *
+     * @param \snac\data\ReconciliationResult $a The left-hand operation in a comparison
+     * @param \snac\data\ReconciliationResult $b The right-hand operation in a comparison
+     * @return int Zero if equal, negative if a's score is greater than b, otherwise positive
      */
     public static function resultsRsort($a, $b) {
          if ($a->getStrength() == $b->getStrength())

@@ -5,11 +5,22 @@
  * This script will read from the $_GET variable for URL arguments.
  * It requires a "q" argument with the name to parse and match. It will print out
  * as JSON the results from the reconciliation engine.
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
  */
 
-// Dependencies
+
+/**
+ * Load dependencies
+ */
 include ("../../../vendor/autoload.php");
 
+/**
+ * Print the header as JSON
+ */
 header("Content-Type: application/json");
 if (isset($_GET['q'])) {
 

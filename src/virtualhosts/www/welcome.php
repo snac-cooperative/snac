@@ -59,6 +59,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </script>
 </head>
 <?php
+
+/**
+ * Session management operations
+ */
     // Destroy the old session
     session_destroy();
     // Restart the session

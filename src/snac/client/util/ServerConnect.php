@@ -23,11 +23,13 @@ namespace snac\client\util;
 class ServerConnect {
 
     /**
-     *
      * @var string The URL for the backend server
      */
     private $serverURL;
 
+    /**
+     * @var \Monolog\Logger $logger Logger for this server connection
+     */
     private $logger = null;
 
     /**

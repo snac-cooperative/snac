@@ -71,11 +71,24 @@ class ConstellationPostMapper {
         $this->logger->pushHandler($log);
     }
 
+    /**
+     * Allow Term Lookups
+     *
+     * Calling this method allows the PostMapper to connect to the server and
+     * use the vocabulary search mechanism to look up terms.
+     */
     public function allowTermLookup() {
         $this->lookupTerms = true;
         $this->lookupTermsConnector = new \snac\client\util\ServerConnect();
     }
 
+    /**
+     * Disallow Term Lookups
+     *
+     * By default, the PostMapper is not allowed to query the server and look
+     * up any terms using the vocabulary search mechanism. Calling this method
+     * returns the PostMapper to that default behavior.
+     */
     public function disallowTermLookup() {
         $this->lookupTerms = false;
         $this->lookupTermsConnector = null;
@@ -87,6 +100,8 @@ class ConstellationPostMapper {
      *
      * Parses a boolean string or variable into an actual boolean.
      *
+     * @param string|boolean $boolean The boolean value to parse
+     * @return boolean The boolean value of the parameter
      */
     private function parseBoolean($boolean) {
         $type = gettype($boolean);

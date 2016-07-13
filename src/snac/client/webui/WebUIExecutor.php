@@ -111,7 +111,6 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
      public function displayNewEditPage(&$input, &$display) {
          $mapper = new \snac\client\webui\util\ConstellationPostMapper();
@@ -316,6 +315,7 @@ class WebUIExecutor {
      *
      * Fills the display object with the requested admin page for the given user.
      *
+     * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
      * @param \snac\data\User $user The current user object
      */
