@@ -6,11 +6,14 @@ before_script:
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
     - ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
+    - mkdir -p coverage/ 
+
 
 stages:
   - database
   - test
   - documentation
+  - coverage
 
 update_database:
   script:
@@ -27,6 +30,14 @@ run_test:
   only:
     - development
     - master
+
+run_test_coverage:
+  script:
+    - vendor/bin/phpunit -v --coverage-html coverage/
+    - rsync -av coverage /projects/snac_server/doc/
+  stage: coverage
+  only:
+    - development
 
 generate_docs:
   script:
