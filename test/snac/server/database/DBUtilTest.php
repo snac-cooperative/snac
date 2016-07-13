@@ -1004,7 +1004,7 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation("insert");
-        $constellationObj = $eParser->parseFile("/data/merge/99166-w6f2061g.xml");
+        $constellationObj = $eParser->parseFile("test/snac/server/database/99166-w6f2061g.xml");
         $retObj = $this->dbu->writeConstellation($this->user, $constellationObj,
                                                  'machine ingest of hand-crafted, full CPF test record');
         // printf("\nAfter first write version: %s\n", $retObj->getVersion());
