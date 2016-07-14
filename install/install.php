@@ -28,13 +28,16 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 
 $automate = false;
 $ingest_all = false;
+$datamerge = "/data/merge/";
+
 if ($argc == 2 && $argv[1] == "automate")
     $automate = true;
 if ($argc == 3 && $argv[1] == "automate")
     $automate = true;
 if ($argc == 3 && $argv[2] == "full")
     $ingest_all = true;
-
+else if ($argc == 3)
+    $datamerge = $argv[2];
 
 // Read the configuration file
 echo "Reading the configuration file in src/snac/Config.php.\n";
@@ -358,12 +361,12 @@ else
     echo "yes\n";
 
 if ($response == "yes") {
-    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    echo "  What is the full path to the SNAC merged CPF? [default: $datamerge]\n  :";
     $dir = null;
     if (!$automate)
         $dir = trim(fgets(STDIN));
     if ($dir == null || $dir == "")
-        $dir = "/data/merge/";
+        $dir = $datamerge;
     $retval = 0;
     echo "  Attempting to ingest sample records from $dir.\n";
     /* 
@@ -397,12 +400,12 @@ else {
     }
 }
 if ($response == "yes") {
-    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    echo "  What is the full path to the SNAC merged CPF? [default: $datamerge]\n  :";
     $dir = null;
     if (!$automate)
         $dir = trim(fgets(STDIN));
     if ($dir == null || $dir == "")
-        $dir = "/data/merge/";
+        $dir = $datamerge;
     $retval = 0;
     echo "  Attempting to ingest May 2016 sample records from $dir.\n";
     system("cd ../scripts && ./ingest_list.php $dir ../install/setup_files/may2016-list.txt\n", $retval);
@@ -423,12 +426,12 @@ else
     echo "yes\n";
 
 if ($response == "yes") {
-    echo "  What is the full path to the SNAC merged CPF? [default: /data/merge/]\n  :";
+    echo "  What is the full path to the SNAC merged CPF? [default: $datamerge]\n  :";
     $dir = null;
     if (!$automate)
         $dir = trim(fgets(STDIN));
     if ($dir == null || $dir == "")
-        $dir = "/data/merge/";
+        $dir = $datamerge;
     $retval = 0;
     echo "  Attempting to ingest institution records from $dir.\n";
     system("cd ../scripts && ./ingest_institutions.php $dir ../install/setup_files/institutions.csv\n", $retval);
