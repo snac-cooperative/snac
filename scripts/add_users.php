@@ -65,12 +65,10 @@ if (($handle = fopen($argv[2], "r")) !== FALSE) {
             $tempUser->setAffiliation($inst);
             $tempUser->setUserActive(true);
 
-            // Don't need to call both setRoleList() and addRoleToUser()
-            $tempUser->setRoleList(array($roles[$data[3]]));
             $tempUser = $uStore->createUser($tempUser);
 
-            // Don't need to call both setRoleList() and addRoleToUser()
-            // $uStore->addRoleToUser($tempUser, $roles[$data[3]]);
+            // createUser() doesn't actually handle roles, so we must add them directly
+            $uStore->addRoleToUser($tempUser, $roles[$data[3]]);
         }
     }
     fclose($handle);
