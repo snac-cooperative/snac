@@ -28,6 +28,11 @@ class ServerConnect {
     private $serverURL;
 
     /**
+     * @var \snac\data\User User to connect to the server as
+     */
+    private $user = null;
+
+    /**
      * @var \Monolog\Logger $logger Logger for this server connection
      */
     private $logger = null;
@@ -35,15 +40,30 @@ class ServerConnect {
     /**
      * Default constructor
      */
-    public function __construct() {
+    public function __construct($user = null) {
         global $log;
 
         $this->serverURL = \snac\Config::$INTERNAL_SERVERURL;
+
+        if ($user != null)
+            $this->user = $user;
 
         // create a log channel
         $this->logger = new \Monolog\Logger('ServerConnect');
         $this->logger->pushHandler($log);
 
+    }
+
+    /**
+     * Set User
+     *
+     * Set the user to make server connections.
+     *
+     * @param \snac\data\User|null $user User object
+     */
+    public function setUser(&$user = null) {
+        if ($user != null)
+            $this->user = $user;
     }
 
     /**
@@ -58,10 +78,14 @@ class ServerConnect {
      * @return string[] The response from the server
      */
     public function query($query) {
+        $userQuery = array();
+        if ($this->user != null)
+            $userQuery["user"] = $this->user->toArray();
+        $realQuery = array_merge($query, $userQuery);
 
-        $this->logger->addDebug("Sending the following server query", $query);
+        $this->logger->addDebug("Sending the following server query", $realQuery);
         // Encode the query as json
-        $data = json_encode($query);
+        $data = json_encode($realQuery);
 
         // Use CURL to send request to the internal server
         $ch = curl_init();

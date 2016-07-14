@@ -173,6 +173,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Set the user information into the display object
             $display->setUserData($user->toArray());
+
+            // Set the user information into the executor and server connection object
+            $executor->setUser($user);
         }
 
 
@@ -182,7 +185,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
 
         switch($this->input["command"]) {
-            
+
             // Session-Level Commands
             case "login":
                 // Destroy the old session
@@ -215,8 +218,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
                 // Create the PHP User object
                 $user = $executor->createUser($ownerDetailsUnserialized, $tokenUnserialized);
-
-                $tmpUser = $executor->startSNACSession($user);
+                $executor->setUser($user);
+                $tmpUser = $executor->startSNACSession();
 
                 if ($tmpUser === false) {
                     session_destroy();
@@ -238,8 +241,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 header('Location: index.php?command=dashboard');
                 return;
 
-            case "logout": 
-                $executor->endSNACSession($user);
+            case "logout":
+                $executor->endSNACSession();
 
                 // Destroy the old session
                 session_destroy();
@@ -251,10 +254,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 // Go to the homepage
                 header('Location: index.php');
                 return;
-        
+
             // Editing, Preview, View, and Other Commands
             case "edit":
-                $executor->displayEditPage($this->input, $display, $user);
+                $executor->displayEditPage($this->input, $display);
                 break;
             case "new":
                 $executor->displayNewPage($display);
@@ -263,19 +266,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayNewEditPage($this->input, $display);
                 break;
             case "view":
-                $executor->displayViewPage($this->input, $display, $user);
+                $executor->displayViewPage($this->input, $display);
                 break;
             case "details":
-                $executor->displayDetailedViewPage($this->input, $display, $user);
+                $executor->displayDetailedViewPage($this->input, $display);
                 break;
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);
                 break;
             case "dashboard":
-                $executor->displayDashboardPage($display, $user);
+                $executor->displayDashboardPage($display);
                 break;
             case "profile":
-                $executor->displayProfilePage($display, $user);
+                $executor->displayProfilePage($display);
                 break;
 
             // Administrator command (the sub method handles admin commands)
@@ -289,19 +292,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "new_reconcile":
-                $response = $executor->reconcilePieces($this->input, $user);
+                $response = $executor->reconcilePieces($this->input);
                 break;
 
             case "save":
-                $response = $executor->saveConstellation($this->input, $user);
+                $response = $executor->saveConstellation($this->input);
                 break;
 
             case "save_unlock":
-                $response = $executor->saveAndUnlockConstellation($this->input, $user);
+                $response = $executor->saveAndUnlockConstellation($this->input);
                 break;
 
             case "unlock":
-                $response = $executor->unlockConstellation($this->input, $user);
+                $response = $executor->unlockConstellation($this->input);
                 // if unlocked by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
@@ -310,11 +313,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "save_publish":
-                $response = $executor->saveAndPublishConstellation($this->input, $user);
+                $response = $executor->saveAndPublishConstellation($this->input);
                 break;
 
             case "publish":
-                $response = $executor->publishConstellation($this->input, $user);
+                $response = $executor->publishConstellation($this->input);
                 // if published by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully published");
@@ -323,12 +326,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "delete":
-                $response = $executor->deleteConstellation($this->input, $user);
+                $response = $executor->deleteConstellation($this->input);
                 // if deleted by constellationid parameter, then send them to the dashboard.
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
                     return;
-                } 
+                }
                 break;
 
             case "vocabulary":

@@ -35,18 +35,30 @@ class WebUIExecutor {
     /**
      * Constructor
      *
+     * @param \snac\data\User|null $user The current user object
      */
-    public function __construct() {
+    public function __construct(&$user = null) {
         global $log;
 
         // set up server connection
-        $this->connect = new ServerConnect();
+        $this->connect = new ServerConnect($user);
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
         $this->logger->pushHandler($log);
 
         return;
+    }
+
+    /**
+     * Set User
+     *
+     * Set the user object to use when connecting with the Server
+     *
+     * @param \snac\data\User|null $user User object
+     */
+    public function setUser(&$user = null) {
+        $this->connect->setUser($user);
     }
 
 
@@ -58,12 +70,10 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
-    public function displayEditPage(&$input, &$display, &$user) {
+    public function displayEditPage(&$input, &$display) {
 
         $query = $input;
-        $query["user"] = $user->toArray();
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
@@ -135,16 +145,14 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
-    public function displayViewPage(&$input, &$display, &$user) {
+    public function displayViewPage(&$input, &$display) {
         $query = array();
         $query["constellationid"] = $input["constellationid"];
         if (isset($input["version"]))
             $query["version"] = $input["version"];
-        $query["command"] = "read";
-        if (isset($user) && $user != null)
-            $query["user"] = $user->toArray();
+            $query["command"] = "read";
+
             $this->logger->addDebug("Sending query to the server", $query);
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response");
@@ -157,7 +165,7 @@ class WebUIExecutor {
                 }
                 $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData(array_merge($constellation,
-                    array("preview"=> (isset($input["preview"])) ? true : false)));
+                array("preview"=> (isset($input["preview"])) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
                 $display->setTemplate("error_page");
@@ -174,35 +182,33 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
-    public function displayDetailedViewPage(&$input, &$display, &$user) {
+    public function displayDetailedViewPage(&$input, &$display) {
         $query = array();
         $query["constellationid"] = $input["constellationid"];
         if (isset($input["version"]))
             $query["version"] = $input["version"];
         $query["command"] = "read";
-        if (isset($user) && $user != null)
-            $query["user"] = $user->toArray();
-            $this->logger->addDebug("Sending query to the server", $query);
-            $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response");
-            if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("detailed_view_page");
-                $constellation = $serverResponse["constellation"];
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData(array_merge($constellation,
-                    array("preview"=> (isset($input["preview"])) ? true : false)));
-            } else {
-                $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("detailed_view_page");
+            $constellation = $serverResponse["constellation"];
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData(array_merge($constellation,
+            array("preview"=> (isset($input["preview"])) ? true : false)));
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $display->setTemplate("error_page");
+            $this->logger->addDebug("Setting error data into the error page template");
+            $display->setData($serverResponse["error"]);
+        }
     }
 
     /**
@@ -210,13 +216,11 @@ class WebUIExecutor {
      *
      * Calls to the server to start a new user's session
      *
-     * @param \snac\data\User $user The current user object
      * @return boolean true on success, false otherwise
      */
-    public function startSNACSession(&$user) {
+    public function startSNACSession() {
         $query = array(
-                "command" => "start_session",
-                "user" => $user->toArray()
+                "command" => "start_session"
                 );
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Server Responded to starting session", array($serverResponse));
@@ -233,13 +237,11 @@ class WebUIExecutor {
      *
      * Ends the current user's session with the server by calling down with "end_session"
      *
-     * @param \snac\data\User $user The current user object
      * @return boolean true on success, false otherwise
      */
-    public function endSNACSession(&$user) {
+    public function endSNACSession() {
         $query = array(
-                "command" => "end_session",
-                "user" => $user->toArray()
+                "command" => "end_session"
         );
         $serverResponse = $this->connect->query($query);
 
@@ -281,13 +283,11 @@ class WebUIExecutor {
      * Fills the display object with the dashboard for the given user.
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
-    public function displayDashboardPage(&$display, &$user) {
+    public function displayDashboardPage(&$display) {
         $display->setTemplate("dashboard");
         // Ask the server for a list of records to edit
-        $ask = array("command"=>"user_information",
-                "user" => $user->toArray()
+        $ask = array("command"=>"user_information"
         );
         $this->logger->addDebug("Sending query to the server", $ask);
         $serverResponse = $this->connect->query($ask);
@@ -329,8 +329,7 @@ class WebUIExecutor {
         switch ($input["subcommand"]) {
             case "add_user":
                 // Ask the server for all the Roles
-                $ask = array("command"=>"admin_roles",
-                    "user" => $user->toArray()
+                $ask = array("command"=>"admin_roles"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -349,7 +348,6 @@ class WebUIExecutor {
                 $userEdit = new \snac\data\User();
                 $userEdit->setUserID($input["userid"]);
                 $ask = array("command"=>"edit_user",
-                    "user" => $user->toArray(),
                     "user_edit" => $userEdit->toArray()
                 );
                 $serverResponse = $this->connect->query($ask);
@@ -359,8 +357,7 @@ class WebUIExecutor {
                 $userGroups = $serverResponse["groups"];
 
                 // Ask the server for all the Roles
-                $ask = array("command"=>"admin_roles",
-                    "user" => $user->toArray()
+                $ask = array("command"=>"admin_roles"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -378,8 +375,7 @@ class WebUIExecutor {
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
-                $ask = array("command"=>"admin_users",
-                    "user" => $user->toArray()
+                $ask = array("command"=>"admin_users"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -390,8 +386,7 @@ class WebUIExecutor {
                 break;
             case "user_list":
                 $ask = array("command"=>"admin_users",
-                    "filter" => "active",
-                    "user" => $user->toArray()
+                    "filter" => "active"
                 );
                 return $this->connect->query($ask);
                 break;
@@ -406,7 +401,6 @@ class WebUIExecutor {
                 $groupEdit = new \snac\data\Group();
                 $groupEdit->setID($input["groupid"]);
                 $ask = array("command"=>"edit_group",
-                    "user" => $user->toArray(),
                     "group" => $groupEdit->toArray()
                 );
                 $serverResponse = $this->connect->query($ask);
@@ -420,17 +414,15 @@ class WebUIExecutor {
                 $display->setTemplate("admin_edit_group");
                 break;
             case "edit_group_post":
-                return $this->saveGroup($input, $user);
+                return $this->saveGroup($input);
                 break;
             case "group_list":
-                $ask = array("command"=>"admin_groups",
-                    "user" => $user->toArray()
+                $ask = array("command"=>"admin_groups"
                 );
                 return $this->connect->query($ask);
                 break;
             case "groups":
-                $ask = array("command"=>"admin_groups",
-                    "user" => $user->toArray()
+                $ask = array("command"=>"admin_groups"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -470,13 +462,11 @@ class WebUIExecutor {
      * Fills the display with the profile page for the given user.
      *
      * @param \snac\client\webui\display\Display $display The display object for page creation
-     * @param \snac\data\User $user The current user object
      */
-    public function displayProfilePage(&$display, &$user) {
+    public function displayProfilePage(&$display) {
         $display->setTemplate("profile_page");
         // Ask the server for a list of records to edit
-        $ask = array("command"=>"user_information",
-                "user" => $user->toArray()
+        $ask = array("command"=>"user_information"
         );
         $this->logger->addDebug("Sending query to the server", $ask);
         $serverResponse = $this->connect->query($ask);
@@ -578,7 +568,6 @@ class WebUIExecutor {
             $request = array("command"=>"update_user");
 
             // Send the query to the server
-            $request["user"] = $user->toArray();
             $request["user_update"] = $tmpUser->toArray();
 
             // Send the groups if we're doing an update
@@ -619,10 +608,9 @@ class WebUIExecutor {
      * Asks the server to update a group's information.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function saveGroup(&$input, &$user) {
+    public function saveGroup(&$input) {
 
         $group = new \snac\data\Group();
         if (isset($input["groupid"]) && $input["groupid"] != "")
@@ -646,7 +634,6 @@ class WebUIExecutor {
         $request = array("command"=>"update_group");
 
         // Send the query to the server
-        $request["user"] = $user->toArray();
         $request["group_update"] = $group->toArray();
         $request["users_update"] = $users;
         $serverResponse = $this->connect->query($request);
@@ -678,10 +665,9 @@ class WebUIExecutor {
     * within SNAC on this constellation.  The results are returned to the client.
     *
     * @param string[] $input Post/Get inputs from the webui
-    * @param \snac\data\User $user The current user object
     * @return string[] The web ui's response to the client (array ready for json_encode)
     */
-    public function reconcilePieces(&$input, &$user) {
+    public function reconcilePieces(&$input) {
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
 
         // Get the constellation object
@@ -694,7 +680,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array("results" => array());
@@ -723,10 +708,9 @@ class WebUIExecutor {
      * updates that must be made to the web ui GUI).
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function saveConstellation(&$input, &$user) {
+    public function saveConstellation(&$input) {
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
 
         // Get the constellation object
@@ -739,7 +723,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         if (isset($input['savemessage'])) {
             $request["message"] = $input["savemessage"];
         }
@@ -781,10 +764,9 @@ class WebUIExecutor {
      *
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function saveAndPublishConstellation(&$input, &$user) {
+    public function saveAndPublishConstellation(&$input) {
 
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
 
@@ -800,7 +782,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         if (isset($input['savemessage'])) {
             $request["message"] = $input["savemessage"];
         }
@@ -851,10 +832,9 @@ class WebUIExecutor {
      * to "locked editing," if the write was successful.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function saveAndUnlockConstellation(&$input, &$user) {
+    public function saveAndUnlockConstellation(&$input) {
 
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
 
@@ -870,7 +850,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         if (isset($input['savemessage'])) {
             $request["message"] = $input["savemessage"];
         }
@@ -916,10 +895,9 @@ class WebUIExecutor {
      * "locked editing."
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function unlockConstellation(&$input, &$user) {
+    public function unlockConstellation(&$input) {
 
         $constellation = null;
         if (isset($input["constellationid"]) && isset($input["version"])) {
@@ -944,7 +922,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array ();
@@ -964,10 +941,9 @@ class WebUIExecutor {
      * Requests the server to publish the given constellation.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function publishConstellation(&$input, &$user) {
+    public function publishConstellation(&$input) {
         $constellation = null;
         if (isset($input["constellationid"]) && isset($input["version"])) {
             $constellation = new \snac\data\Constellation();
@@ -991,7 +967,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array ();
@@ -1011,10 +986,9 @@ class WebUIExecutor {
      * Requests the server to delete the given constellation.
      *
      * @param string[] $input Post/Get inputs from the webui
-     * @param \snac\data\User $user The current user object
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function deleteConstellation(&$input, &$user) {
+    public function deleteConstellation(&$input) {
         $constellation = null;
         if (isset($input["constellationid"]) && isset($input["version"])) {
             $constellation = new \snac\data\Constellation();
@@ -1038,7 +1012,6 @@ class WebUIExecutor {
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
-        $request["user"] = $user->toArray();
         $serverResponse = $this->connect->query($request);
 
         $response = array ();
