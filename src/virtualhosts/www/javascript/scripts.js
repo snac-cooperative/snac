@@ -1131,6 +1131,54 @@ function dateToText(shortName, idStr) {
 }
 
 
+// TODO: If we want to show a DIV of edited and deleted components, we should use the following two functions
+// to get copies of the edited/deleted components from the page.  We can then insert those copies onto a modal
+// dialog box with a "Save" or "Continue" button at the top and bottom.
+//
+// All the pieces shown in the dialog should be disabled.  One way to do this would be using the following
+// method to place a semi-transparent div on top of the editable pieces, making them appear to be grayed out
+// and with the not permitted cursor.
+//
+// .append('<div style="position:absolute; top:0; left:0; width:100%; height:100%; background:#f3f3f3; z-index:500; cursor:not-allowed;opacity:0.4;filter: alpha(opacity = 50)"></div>');
+//
+// Note: this modal should NOT be inside the constellation form so that we don't submit the values twice.
+
+/**
+ * Get all the edited components
+ */
+function getEdited() {
+    var html = "";
+
+    $("#constellation_form div.edited-component").each(function() {
+        var cont = $(this);
+        console.log(cont.attr('id'));
+        var pieces = cont.attr('id').split("_panel_");
+        if (pieces.length == 2) {
+            html += "<div class='panel panel-body edited-component'>" + $("#"+pieces[0] + "_datapart_" + pieces[1]).html() + "</div>";
+        }
+    });
+
+    return html;
+}
+
+/**
+ * Get all the deleted components
+ */
+function getDeleted() {
+    var html = "";
+
+    $("#constellation_form div.deleted-component").each(function() {
+        var cont = $(this);
+        console.log(cont.attr('id'));
+        var pieces = cont.attr('id').split("_panel_");
+        if (pieces.length == 2) {
+            html += "<div class='panel panel-body deleted-component'>" + $("#"+pieces[0] + "_datapart_" + pieces[1]).html() + "</div>";
+        }
+    });
+
+    return html;
+}
+
 
 /**
  * Things to do when the page finishes loading
