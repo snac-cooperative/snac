@@ -432,7 +432,22 @@ class WebUIExecutor {
                 $display->setTemplate("admin_groups");
                 break;
             case "roles":
-                $display->setTemplate("coming_soon");
+                $ask = array("command"=>"admin_roles"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $roles = array();
+                foreach ($serverResponse["roles"] as $role) {
+                    if (isset($role["privilegeList"]))
+                        array_push($roles, $role);
+                }
+                usort($roles, function($a, $b) {
+                    return count($a["privilegeList"]) <=> count($b["privilegeList"]);
+                });
+
+                $display->setData(array("roles" => $roles));
+                $display->setTemplate("admin_roles");
                 break;
             default:
                 $display->setTemplate("admin_dashboard");
