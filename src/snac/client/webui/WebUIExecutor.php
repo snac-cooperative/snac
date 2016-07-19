@@ -115,9 +115,7 @@ class WebUIExecutor {
             $display->setData($constellation);
         } else {
                 $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
+                $this->drawErrorPage($serverResponse, $display);
         }
     }
 
@@ -195,9 +193,7 @@ class WebUIExecutor {
                 array("preview"=> (isset($input["preview"])) ? true : false)));
             } else {
                 $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
+                $this->drawErrorPage($serverResponse, $display);
             }
     }
 
@@ -232,9 +228,7 @@ class WebUIExecutor {
             array("preview"=> (isset($input["preview"])) ? true : false)));
         } else {
             $this->logger->addDebug("Error page being drawn");
-            $display->setTemplate("error_page");
-            $this->logger->addDebug("Setting error data into the error page template");
-            $display->setData($serverResponse["error"]);
+            $this->drawErrorPage($serverResponse, $display);
         }
     }
 
@@ -509,6 +503,14 @@ class WebUIExecutor {
      * @return boolean False, since an error occurred to get here
      */
     public function drawErrorPage(&$serverResponse, &$display) {
+        if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
+            if ($serverResponse["error"]["type"] == "Permission Error") {
+                return $this->displayPermissionDeniedPage("RestAPI Call", $display);
+            }
+            $display->setTemplate("error_page");
+            $display->setData($serverResponse["error"]);
+            return false;
+        }
         $display->setTemplate("error_page");
         $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true)));
         return false;

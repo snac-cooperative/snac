@@ -115,6 +115,8 @@ class Server implements \snac\interfaces\ServerInterface {
             throw new \snac\exceptions\SNACUserException("User is not authorized");
         }
 
+        $permissions = $executor->getUserPermissions();
+
 
         $this->logger->addDebug("Switching on command");
 
@@ -151,6 +153,8 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "admin_users":
+                if (!isset($permissions["Modify Users"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify users.");
                 $this->response = $executor->listUsers($this->input);
                 break;
 
@@ -168,14 +172,20 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "admin_groups":
+                if (!isset($permissions["Manage Groups"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
                 $this->response = $executor->listGroups($this->input);
                 break;
 
             case "edit_group":
+                if (!isset($permissions["Manage Groups"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
                 $this->response = $executor->groupInformation($this->input);
                 break;
 
             case "update_group":
+                if (!isset($permissions["Manage Groups"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to manage groups.");
                 $this->response = $executor->updateGroupInformation($this->input);
                 break;
 
@@ -192,21 +202,31 @@ class Server implements \snac\interfaces\ServerInterface {
 
             // Constellation Management
             case "insert_constellation":
+                if (!isset($permissions["Edit"]) || !isset($permissions["Create"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert constellations.");
                 $this->response = $executor->writeConstellation($this->input);
                 break;
             case "update_constellation":
+                if (!isset($permissions["Edit"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to update constellations.");
                 $this->response = $executor->writeConstellation($this->input);
                 break;
 
             case "unlock_constellation":
+                if (!isset($permissions["Edit"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to unlock constellations.");
                 $this->response = $executor->unlockConstellation($this->input);
                 break;
 
             case "publish_constellation":
+                if (!isset($permissions["Publish"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to publish constellations.");
                 $this->response = $executor->publishConstellation($this->input);
                 break;
 
             case "delete_constellation":
+                if (!isset($permissions["Delete"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.");
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
 
@@ -219,6 +239,8 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit":
+                if (!isset($permissions["Edit"]))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.");
                 $this->response = $executor->editConstellation($this->input);
                 break;
 

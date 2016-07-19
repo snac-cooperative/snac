@@ -336,6 +336,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 
@@ -349,6 +351,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully published");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 
@@ -358,6 +362,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 

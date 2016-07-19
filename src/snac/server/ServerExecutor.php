@@ -119,6 +119,19 @@ class ServerExecutor {
         return true;
     }
 
+    function getUserPermissions() {
+        $permissions = array();
+        if ($this->user != null) {
+            $user = $this->uStore->readUser($this->user);
+            foreach ($user->getRoleList() as $role) {
+                foreach ($role->getPrivilegeList() as $privilege) {
+                    $permissions[$privilege->getLabel()] = true;
+                }
+            }
+        }
+        return $permissions;
+    }
+
     /**
      * Authenticate User
      *
