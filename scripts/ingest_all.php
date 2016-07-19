@@ -22,6 +22,7 @@ $parsedFile = false;
 
 // SNAC Postgres DB Handler
 $dbu = new snac\server\database\DBUtil();
+$dbuser = new snac\server\database\DBUser();
 
 // ElasticSearch Handler
 $eSearch = null;
@@ -35,11 +36,15 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 list($appUserID, $role) = $dbu->getAppUserInfo('system');
 printf("appUserID: %s role: %s\n", $appUserID, $role);
 
+$user = new \snac\data\User();
+$user->setUserName('system@localhost');
+$user = $this->dbuser->readUser($user);
+
 if (is_dir($argv[1])) {
     printf("Opening dir: $argv[1]\n");
     $dh = opendir($argv[1]);
     printf("Done.\n");
-
+    
     // Create new parser
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
@@ -61,7 +66,7 @@ if (is_dir($argv[1])) {
         $constellation = $e->parseFile($filename);
 
         // Write the constellations to the DB
-        $written = $dbu->writeConstellation($constellation, "bulk ingest of merged");
+        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
 
         // Update them to be published
         $dbu->writeConstellationStatus($written->getID(), "published");
