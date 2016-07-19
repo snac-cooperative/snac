@@ -112,19 +112,18 @@ class DBUserTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         /*
-         * In retrospect, leaving old users in the db after testing is a bad idea. If you need to do
-         * diagnostics on the db, comment out some user cleaning code elsewhere. That is: after writing the
-         * user cleanup code.
+         * In retrospect, leaving old users in the db after testing was a bad idea. If you need to do
+         * diagnostics on the db, comment out some user cleaning code elsewhere. 
          *
-         * Start by deleting the test account, if it exists. We leave the old user after a test for debugging
-         * purposes.
+         * Start by deleting the test account, if it exists. It should only be hanging around if an assertion
+         * failed, causing the script to exit.
          *
          * We do not want to leave the 'demo' role, but failures errors can cause that. So also delete the demo role, if it exists.
          */
         $userList = $this->dbu->listUsers();
         foreach($userList as $oldUser)
         {
-            if ($oldUser->getUserName() == "mst3k@example.com")
+            if ($oldUser->getUserName() == "mst3k@example.com" || $oldUser->getEmail() == 'mst3k@example.com')
             {
                 /*
                  * $testUser = new \snac\data\User();
@@ -266,14 +265,15 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->dbu->checkPassword($newUser, 'foobarbaz'));
 
         /*
-         * Add an existing role to our new user. Really, the db should be initialized with a 'researcher' or
-         * 'contributor' role.
+         * Add an existing role to our new user. The database is initialized with roles: Contributor, "Editor,
+         * Training", "Editor, Full", Reviewer, Administrator, System Administrator
+         *
          */
         $roleObjList = $this->dbu->listRoles();
         $testUserRole = null;
         foreach($roleObjList as $roleObj)
         {
-            if ($roleObj->getLabel() == 'system')
+            if ($roleObj->getLabel() == 'System Administrator')
             {
                 $this->dbu->addRoleToUser($newUser, $roleObj);
                 $testUserRole = $roleObj;
@@ -281,7 +281,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
             }
         }
         $roleList = $this->dbu->listUserRoles($newUser);
-        $this->assertEquals($roleList[0]->getLabel(), 'system');
+        $this->assertEquals($roleList[0]->getLabel(), 'System Administrator');
 
         /*
          * Create two demo privs, write to db, add the first demo privilege to our test role so we can be sure it has
@@ -327,7 +327,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertTrue($this->dbu->hasPrivilege($newUser, $privZero));
 
         /*
-         * Remove the demo privs. Don't delete the test role which is an existing role 'system'.
+         * Remove the demo privs. Don't delete the test role which is an existing role 'System Administrator'.
          */
         $this->dbu->removePrivilegeFromRole($testUserRole, $privZero);
         $this->dbu->removePrivilegeFromRole($testUserRole, $privOne);
@@ -336,7 +336,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
         /*
          * We might add a default role (not necessarily 'Public HRT'), so even during testing we cannot assume
-         * that role[0] is 'system'.
+         * that role[0] is 'System Administrator'.
          */
         $roleList = $this->dbu->listUserRoles($newUser);
         /*
@@ -344,14 +344,14 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * $systemRole = null;
          * foreach($roleList as $role)
          * {
-         *     if ($role->getLabel() == 'system')
+         *     if ($role->getLabel() == 'System Administrator')
          *     {
          *         $foundSystem = true;
          *         $systemRole = $role;
          *     }
          * }
          */
-        $systemRole = $this->dbu->checkRoleByLabel($newUser, 'system');
+        $systemRole = $this->dbu->checkRoleByLabel($newUser, 'System Administrator');
         // false == null, so we only need to check for != null.
         $this->assertTrue($systemRole != null);
 
@@ -365,8 +365,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          */
 
         /*
-         * Remove the role 'system' from our user, and count. User might always have a default role which we
-         * should not remove.
+         * Remove the role 'System Administrator' from our user, and count. User might always have a default
+         * role which we should not remove.
          *
          * Rather than rely on an index, the code above saves the system role in a variable, and we use that
          * variable here.

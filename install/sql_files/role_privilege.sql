@@ -11,9 +11,10 @@ insert into privilege (label, description) values ('Add Users', 'Enrole new SNAC
 insert into privilege (label, description) values ('Assign Roles', 'Assign, modify user roles');
 insert into privilege (label, description) values ('Modify Users', 'Modify user email, phone numbers, affiliation, etc.');
 insert into privilege (label, description) values ('Inactivate Users', 'Able to inactivate user accounts');
-insert into privilege (label,description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
+insert into privilege (label, description) values ('Manage Groups','Add users to groups, remove users from groups, create and delete groups');
 insert into privilege (label, description) values ('Manage My Group', 'Administer the membership of groups I belong to');
 insert into privilege (label, description) values ('Manage Institutions', 'Manage the list of SNAC member institutions');
+insert into privilege (label, description) values ('View Admin Dashboard', 'Use the Administration dashboard to manage users and groups');
 
 
 insert into role (label, description) values ('Contributor', 'Create simplified constellations, suggest edits');
@@ -43,7 +44,7 @@ select (select id from role where label='Reviewer'), id from privilege where
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Administrator'), id from privilege where 
-    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users');
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'System Administrator');
 
 insert into privilege_role_link 
     (pid, rid) 

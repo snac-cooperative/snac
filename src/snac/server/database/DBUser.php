@@ -605,6 +605,7 @@ class DBUser
      * Returns true if the privilege with $label exists. Build a list of all the privilege labels, then test
      * the list for key existence.
      *
+     * @param string $label Symbolic label of a privilege.
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
      */
     public function hasPrivilegeByLabel($user, $label)
