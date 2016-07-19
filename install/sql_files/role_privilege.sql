@@ -44,7 +44,7 @@ select (select id from role where label='Reviewer'), id from privilege where
 
 insert into privilege_role_link (rid, pid)
 select (select id from role where label='Administrator'), id from privilege where 
-    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users');
+    label in ('Add Users', 'Assign Roles', 'Modify Users', 'Manage Groups', 'Inactivate Users', 'System Administrator');
 
 insert into privilege_role_link 
     (pid, rid) 
