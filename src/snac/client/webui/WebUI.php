@@ -105,6 +105,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
 
+        // Create an empty list of permissions.
+        $permissions = array();
+
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
@@ -187,6 +190,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Set the user information into the executor and server connection object
             $executor->setUser($user);
+            $executor->setPermissionData($permissions);
         }
 
 
@@ -268,13 +272,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Editing, Preview, View, and Other Commands
             case "edit":
-                $executor->displayEditPage($this->input, $display);
+                if (isset($permissions["Edit"]) && $permissions["Edit"]) {
+                    $executor->displayEditPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Edit Constellation", $display);
+                }
                 break;
             case "new":
-                $executor->displayNewPage($display);
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displayNewPage($display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Create Constellation", $display);
+                }
                 break;
             case "new_edit":
-                $executor->displayNewEditPage($this->input, $display);
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displayNewEditPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Create Constellation", $display);
+                }
                 break;
             case "view":
                 $executor->displayViewPage($this->input, $display);

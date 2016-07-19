@@ -28,6 +28,16 @@ class WebUIExecutor {
     private $connect = null;
 
     /**
+     * @var \snac\data\User $user The user in the current session
+     */
+    private $user = null;
+
+    /**
+     * @var boolean[] $permissions Associative array of permissions for this user
+     */
+    private $permissions = null;
+
+    /**
      * @var \Monolog\Logger $logger Logger for this server
      */
     private $logger = null;
@@ -40,8 +50,11 @@ class WebUIExecutor {
     public function __construct(&$user = null) {
         global $log;
 
+        $this->permissions = array();
+
         // set up server connection
         $this->connect = new ServerConnect($user);
+        $this->user = $user;
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
@@ -59,6 +72,20 @@ class WebUIExecutor {
      */
     public function setUser(&$user = null) {
         $this->connect->setUser($user);
+        $this->user = $user;
+    }
+
+    /**
+     * Set User Permissions Data
+     *
+     * Sets the permissions bitfield (as an associative array) for the user connected
+     * to this session.  To maintain compatibility with Twig and other client-side scripts,
+     * permission/privilege labels must have spaces and special characters removed.
+     *
+     * @param boolean[] $data Associative array of Permission to boolean flag
+     */
+    public function setPermissionData($data) {
+        $this->permissions = $data;
     }
 
 
@@ -453,6 +480,22 @@ class WebUIExecutor {
                 $display->setTemplate("admin_dashboard");
         }
 
+        return false;
+    }
+
+
+    /**
+    * Display the Permission Denied Page
+    *
+    * Helper function to draw the permission denied page.
+    *
+    * @param  string $command The resource that the user was trying to access
+    * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+    * @return boolean False, since an error occurred to get here
+    */
+    public function displayPermissionDeniedPage($command, &$display) {
+        $display->setTemplate("permission_denied");
+        $display->setData(array("command" => $command));
         return false;
     }
 
