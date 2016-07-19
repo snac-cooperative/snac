@@ -100,7 +100,7 @@ body {
 <body role="document">
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
       <div class="main_content">
@@ -488,7 +488,7 @@ body {
                   <div class="list-group">
                         <a class="list-group-item list-group-item-success"
                            href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
-                      {% if user.email %}
+                      {% if user.email and permissions.Edit %}
                         {% if data.status == 'editable' %}
                         <a class="list-group-item list-group-item-info"
                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>

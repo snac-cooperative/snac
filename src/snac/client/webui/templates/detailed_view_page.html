@@ -61,7 +61,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -461,7 +461,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
-                                {% if user.email %}
+                                {% if user.email and permissions.Edit %}
                                     {% if data.status == 'editable' %}
                                         <a class="list-group-item list-group-item-info"
                                             href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>

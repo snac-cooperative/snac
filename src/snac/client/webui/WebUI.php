@@ -174,6 +174,17 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Set the user information into the display object
             $display->setUserData($user->toArray());
 
+            // Pull out permissions from the $user object and make them available to the template. This could
+            // be done faster by storing them in the session variables along with the user object
+            $permissions = array();
+            foreach ($user->getRoleList() as $role) {
+                foreach ($role->getPrivilegeList() as $privilege) {
+                    $permissions[str_replace(" ", "", $privilege->getLabel())] = true;
+                }
+            }
+            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
+            $display->setPermissionData($permissions);
+
             // Set the user information into the executor and server connection object
             $executor->setUser($user);
         }
