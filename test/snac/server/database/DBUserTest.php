@@ -112,19 +112,18 @@ class DBUserTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         /*
-         * In retrospect, leaving old users in the db after testing is a bad idea. If you need to do
-         * diagnostics on the db, comment out some user cleaning code elsewhere. That is: after writing the
-         * user cleanup code.
+         * In retrospect, leaving old users in the db after testing was a bad idea. If you need to do
+         * diagnostics on the db, comment out some user cleaning code elsewhere. 
          *
-         * Start by deleting the test account, if it exists. We leave the old user after a test for debugging
-         * purposes.
+         * Start by deleting the test account, if it exists. It should only be hanging around if an assertion
+         * failed, causing the script to exit.
          *
          * We do not want to leave the 'demo' role, but failures errors can cause that. So also delete the demo role, if it exists.
          */
         $userList = $this->dbu->listUsers();
         foreach($userList as $oldUser)
         {
-            if ($oldUser->getUserName() == "mst3k@example.com")
+            if ($oldUser->getUserName() == "mst3k@example.com" || $oldUser->getEmail() == 'mst3k@example.com')
             {
                 /*
                  * $testUser = new \snac\data\User();
