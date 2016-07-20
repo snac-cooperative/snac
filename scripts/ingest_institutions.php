@@ -76,7 +76,10 @@ foreach ($line as $data) {
         $written = $dbu->readConstellation($check->getID());
     } else {
         // Write the constellation to the DB
-        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+        $written = $dbu->writeConstellation($user,
+                                            $constellation,
+                                            "bulk ingest of merged",
+                                            'ingest cpf');
     }
 
     // Update it to be published

@@ -65,9 +65,6 @@ class DBUtil
      */
     private $canDelete = null;
 
-    // private $ourVersion = null;
-    // private $haveVersion = false;
-
     /**
      * Database connector object
      *
@@ -2488,42 +2485,33 @@ class DBUtil
     /**
      * Write a constellation to the database.
      *
-     * Both insert and update are "write". Insert is "do not yet have a version number." Update is "have
-     * version number."
+     * Both insert and update are "write". Insert is "do not yet have a version number." I'm pretty sure we
+     * mint a new constellation ID for the logical insert. Update is "have version number". We always get a
+     * new version number for every write.
      *
-     * We get a new version number for every write.
+     * The returned constellation is what was passed in, but with any null id and and null version values
+     * filled with valid values. If an existing constellation (with all database fields) is modified only with
+     * an additional, new inserted name is written to the db, that is what is returned: an empty constellation
+     * with nothing but a name. This was decided on Mar 3 2016 after much discussion.  The web UI will send a
+     * partial constellation with appropriate operation set. Only the modified parts of the constellation are
+     * send from the web UI to the server.
      *
-     * The returned constellation is what was passed in, but with any null id and version filled. So, if a
-     * constellation with only a new inserted name is written to the db, that is what is returned: an empty
-     * constellation with nothing but a name. This was decided on Mar 3 2016 after much discussion.
-     *
-     * The web UI will send a partial constellation with appropriate operation set. Only the modified parts of
-     * the constellation are send from the web UI to the server.
-     *
-     * There is only one instance where we mint a new constellation id: Constellation insert.
-     *
-     * When doing component insert for an existing constellation, all new components use the constellation
-     * ID, thus no new ID is minted.
+     * There is only one instance where we mint a new constellation id: Constellation insert. When doing
+     * component insert for an existing constellation, all new components use the constellation ID, thus no
+     * new ID is minted.
      *
      * We assume that something will happen so we always mint a new version number, as well as writing
      * $status and $note to the version_history.
      *
-     * As of php 5 objects are passed by reference. It is therefore redundant for a function prototype to say
-     * foo($cObj). It is necessary to clone() the object if you want to mess with it and not have it changed
-     * in place.
-     *
-     * Mar 9 2016 There is no $status arg. When creating the new version, keep the existing status. If the
-     * status needs to change, do that with writeConstellationStatus().
-     *
-     * Version, status, and note are used only for this write. If at some future time you create private
-     * vars for version, ic_id, status, and note here in DBUtil, then you must clear the ic_id, version,
-     * status, and note before returning. Always set all version info explicitly.
+     * As of php 5 objects are passed by reference. In the case of objects, it is redundant for a function
+     * prototype to say foo(&$cObj). It is necessary to clone() the object if you want to change it locally
+     * and not have it changed everywhere.
      *
      * What won't happen here is two records edited simultaneously being saved. We assume that is
      * impossible. And if it were possible, both updates would (logically?) have the same status, and share
-     * the same note.
+     * the same note. (Why is that logical that both status and note values would be the same?)
      *
-     * Even on bulk ingest version numbers are not reused for constellations ingested in the same
+     * Even on bulk ingest, version numbers are not reused for constellations ingested in the same
      * "transaction". A new version_history record is created for each write. It is (sort of) a
      * coincidence that status and note are the same in one or more version_history records.
      *
@@ -2532,21 +2520,20 @@ class DBUtil
      *
      * If $mainID is null, insertVersionHistory() is smart enough to mint a new one.
      *
-     * A reminder: the structure of $vhInfo is array('version' => 123, 'ic_id' => 456);
-     *
      * @param \snac\data\User $user The User to perform the write
      *
      * @param \snac\data\Constellation $argObj A constellation object
      *
-     * @param string $note Human written note from the person who edit this data. This is a version commit
-     * message.
+     * @param string $note Note from the person who edit this data. This is a version commit message. When
+     * status is 'ingest cpf' the note is composed from <control> elements maintenanceStatus,
+     * maintenanceAgency, and maintenanceEvents.
      *
      * @param string $statusArg optional Status value, most likely "ingest cpf" that means we are creating a
      * new record and need to capture maintenance info. The default is 'locked editing' which makes sense
-     * since we can't write unless we are editing. Or maybe 'currently editing'.
+     * since we can't write unless we are editing. A possible alternate default would be 'currently editing'.
      *
-     * @return \snac\data\Constellation|boolean the original constellation object modified to include id and version, or
-     * false if the user could not perform the action
+     * @return \snac\data\Constellation|boolean If successful return the original constellation object
+     * modified to include id and version, or false if not successful.
      *
      */
     public function writeConstellation($user, $argObj, $note, $statusArg='locked editing')
@@ -2923,39 +2910,6 @@ class DBUtil
         }
     }
 
-    /**
-     * Save a Source link. Not used.
-     *
-     * Source objects exist in their own table, so when any part of a constellation needs a source, it links
-     * to it. This writes those links. These links have version control. There may be SCM for these links.
-     *
-     * @param integer[] $vhInfo Array with keys 'version', 'ic_id' for this constellation.
-     *
-     * @param \snac\data\Source $gObj The Source object
-     *
-     * @param string $fkTable The name of the containing object's table. This will be 'version_history' for
-     * constellation source. Table 'nrd' is a data table, not the root of the constellation.
-     *
-     * @param integer $fkID The record id of the containing table.
-     *
-     */
-    /*
-     * private function saveSourceLink($vhInfo, $gObj, $fkTable, $fkID)
-     * {
-     *     die("DBUtil saveSourceLink Not used. Source links are single-sided relations foreign key relations to table source.\n");
-     *     $genericRecordID = $gObj->getID();
-     *     if ($this->prepOperation($vhInfo, $gObj))
-     *     {
-     *         $genericRecordID = $this->sql->insertSourceLink($vhInfo,
-     *                                                         $gObj->getID(),
-     *                                                         $fkTable,
-     *                                                         $fkID);
-     *         $gObj->setID($genericRecordID);
-     *         $gObj->setVersion($vhInfo['version']);
-     *     }
-     *     $this->saveMeta($vhInfo, $gObj, 'source_link', $genericRecordID);
-     * }
-     */
 
     /**
      * Write constellation sources to the database

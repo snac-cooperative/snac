@@ -129,8 +129,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
 
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'testing multi exist date');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'testing multi exist date',
+                                                 'ingest cpf');
         $newRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
         $firstSourceCount = count($newRetObj->getSources());
@@ -196,8 +198,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $newRetObj->addLanguageUsed($newLang);
 
         // Yes, we are re-using $retObj.
-        $retObj = $this->dbu->writeConstellation($this->user, $newRetObj,
-                                                 'testing adding date to multi exist date');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $newRetObj,
+                                                 'testing adding date to multi exist date',
+                                                 'ingest cpf');
         $thirdRetObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
 
         $this->assertEquals(count($thirdRetObj->getSources()), $firstSourceCount+1);
@@ -256,7 +260,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         for ($i = 1; $i <= 6; $i++)
-            $this->dbu->writeConstellation($this->user, $cObj, "TestWithStatus Database Test".$i);
+            $this->dbu->writeConstellation($this->user,
+                                           $cObj,
+                                           "TestWithStatus Database Test".$i,
+                                           'ingest cpf');
         
         $objList = $this->dbu->listConstellationsWithStatusForUser($this->user, 'locked editing');
         $this->assertEquals(6, count($objList), "Should have 6 in locked editing for this user");
@@ -292,8 +299,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $firstJSON = $cObj->toJSON();
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'bulk ingest of merged');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'bulk ingest of merged',
+                                                 'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'published', 'change status to published');
 
         if (0)
@@ -327,8 +336,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
 
         // printf("\nDBUtilTest Writing cons with changed contributor name\n");
-        $postWriteObj = $this->dbu->writeConstellation($this->user, $newRetObj,
-                                                     'change contributor name');
+        $postWriteObj = $this->dbu->writeConstellation($this->user,
+                                                       $newRetObj,
+                                                       'change contributor name',
+                                                       'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user, $postWriteObj->getID(), 'published', 'probably already published, but setting again');
 
         // printf("\nReading constellation version: %s\n", $postWriteObj->getVersion());
@@ -537,8 +548,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'ingest from file');
+        $retObj = $this->dbu->writeConstellation($this->user, 
+                                                 $cObj,
+                                                 'ingest from file',
+                                                 'ingest cpf');
 
         $this->assertNotNull($retObj);
         
@@ -591,8 +604,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $readObj->getEntityType()->setID($vocabList[0]['id']);
         $readObj->getEntityType()->setTerm('family');
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
-        $xObj = $this->dbu->writeConstellation($this->user, $readObj,
-                                                 'change nrd term operation update');
+        $xObj = $this->dbu->writeConstellation($this->user,
+                                               $readObj,
+                                               'change nrd term operation update',
+                                               'ingest cpf');
 
         $finalObj = $this->dbu->readConstellation($xObj->getID(), $xObj->getVersion());
         $this->assertEquals($finalObj->getEntityType()->getTerm(), 'family');
@@ -608,8 +623,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         $cObj->getPlaces()[1]->setConfirmed(true);
 
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'ingest full CPF prior to checking adding source to scm');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'ingest full CPF prior to checking adding source to scm', 
+                                                 'ingest cpf');
 
         $readObj = $this->dbu->readConstellation($retObj->getID());
 
@@ -622,8 +639,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */
         $firstJSON = $readObj->toJSON();
 
-        $origObj = $this->dbu->writeConstellation($this->user, $readObj,
-                                                 'adding source to scm');
+        $origObj = $this->dbu->writeConstellation($this->user,
+                                                  $readObj,
+                                                  'adding source to scm',
+                                                  'ingest cpf');
         
         $newObj = $this->dbu->readConstellation($readObj->getID());
 
@@ -660,7 +679,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
 
         $newObj->addSource($newSource);
 
-        $this->dbu->writeConstellation($this->user, $newObj, 'Added another source for foo.com');
+        $this->dbu->writeConstellation($this->user,
+                                       $newObj,
+                                       'Added another source for foo.com',
+                                       'ingest cpf');
         
         $postAddObj = $this->dbu->readConstellation($newObj->getID());
 
@@ -684,8 +706,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'ingest in order to delete via status');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'ingest in order to delete via status',
+                                                 'ingest cpf');
 
         $delVersion = $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'deleted');
 
@@ -732,8 +756,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $startingARK = $cObj->getArk();
         $startingEntity = $cObj->getEntityType()->getTerm();
 
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                 'testing ingest of a full CPF record');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'testing ingest of a full CPF record',
+                                                 'ingest cpf');
         $this->assertTrue($cObj->equals($retObj, false), "Initial parsed constellation doesn't equal written one");
         
         $readObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
@@ -842,8 +868,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue($retObj->equals($readObj, false));
         
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
-        $deletedObj = $this->dbu->writeConstellation($this->user, $readObj,
-                                                     'test deleting a whole constellation');
+        $deletedObj = $this->dbu->writeConstellation($this->user,
+                                                     $readObj,
+                                                     'test deleting a whole constellation',
+                                                     'ingest cpf');
         
         /* 
          * readPublishedConstellationByID() should return false when the constellation in question has been
@@ -916,8 +944,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
         
 
-        $tmp = $this->dbu->writeConstellation($this->user, $cObj,
-                'test demo constellation');
+        $tmp = $this->dbu->writeConstellation($this->user,
+                                              $cObj,
+                                              'test demo constellation',
+                                              'ingest cpf');
         
         
         $cObj = $this->dbu->readConstellation($tmp->getID(), $tmp->getVersion());
@@ -939,8 +969,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          */  
         $cObj->getNameEntries()[0]->setOperation(\snac\data\AbstractData::$OPERATION_DELETE);
         $cObj->setOperation(null);
-        $returnedDeleteObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                            'delete a name, that is: set is_deleted to true');
+        $returnedDeleteObj = $this->dbu->writeConstellation($this->user,
+                                                            $cObj,
+                                                            'delete a name, that is: set is_deleted to true',
+                                                            'ingest cpf');
 
         /* 
          * Post delete. The delete operation mints a new version number which is returned in the object
@@ -974,8 +1006,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $modName = preg_replace('/(^.*) /', '$1xx ', $name);
         $neNameListRef[0]->setOriginal($modName);
         $neNameListRef[0]->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
-        $retObj = $this->dbu->writeConstellation($this->user, $postDObj,
-                                                 'modified first alt name');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $postDObj,
+                                                 'modified first alt name',
+                                                 'ingest cpf');
         /*
          * This may be fine during testing, and simulates a record going off for review after a change.
          */ 
@@ -1005,8 +1039,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation("insert");
         $constellationObj = $eParser->parseFile("test/snac/server/database/99166-w6f2061g.xml");
-        $retObj = $this->dbu->writeConstellation($this->user, $constellationObj,
-                                                 'machine ingest of hand-crafted, full CPF test record');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $constellationObj,
+                                                 'machine ingest of hand-crafted, full CPF test record',
+                                                 'ingest cpf');
         // printf("\nAfter first write version: %s\n", $retObj->getVersion());
         $this->assertNotNull($retObj);
 
@@ -1056,8 +1092,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
          * look at parts of the newly updated constellation records in the various tables.
          */ 
         $cObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
-        $updatedObj = $this->dbu->writeConstellation($this->user, $cObj,
-                                                     'updating constellation for test');
+        $updatedObj = $this->dbu->writeConstellation($this->user,
+                                                     $cObj,
+                                                     'updating constellation for test',
+                                                     'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user, $updatedObj->getID(), 'needs review');
         /* 
          * printf("\nret: %s cons: %s upd: %s\n", 
@@ -1080,8 +1118,10 @@ class DBUtilTest extends PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/util/eac-cpf/99166-w65k3tsm.xml");
     
-        $retObj = $this->dbu->writeConstellation($this->user, $cObj,
-                'testing ingest of a full CPF record');
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'testing ingest of a full CPF record',
+                                                 'ingest cpf');
 
         // Assert that it was written
         $this->assertNotNull($retObj, "Something went wrong when trying to write the constellation");

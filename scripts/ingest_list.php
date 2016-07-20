@@ -86,7 +86,7 @@ foreach ($arks as $ark) {
         $written = $dbu->readConstellation($check->getID());
     } else {
         // Write the constellation to the DB
-        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     }
 
     // Update it to be published
@@ -130,7 +130,7 @@ foreach ($arks as $ark) {
             } else {
                 try {
                     // Write the constellation to the DB
-                    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged");
+                    $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
                 } catch (\Exception $e) {
                     echo "         - silently ignoring error...\n";
                 }
@@ -168,7 +168,7 @@ foreach ($seenArks as $id => $ark) {
     // Update the constellation in the database
     try {
         // Write the constellation to the DB
-        $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations");
+        $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations", 'ingest cpf');
         $dbu->writeConstellationStatus($user, $written->getID(), "published");
         indexESearch($written);
         file_put_contents("log", $written->toJSON(), FILE_APPEND);
