@@ -40,6 +40,11 @@ class ServerExecutor {
      */
     private $user = null;
 
+    /**
+     * @var boolean[] List of permission for the current user, as associative array keys
+     */
+    private $permissions = null;
+
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -126,8 +131,37 @@ class ServerExecutor {
         return true;
     }
 
+    /**
+     * Check if the current user has permission
+     *
+     * Checks whether the current user has the permission requested.  If the permissions have not been set up
+     * in this server executor instance yet, it will automatically create it from the user object.
+     *
+     * @param  string  $permission The permission/privilege name
+     * @return boolean             True if the user has that permission, false otherwise
+     */
+    function hasPermission($permission) {
+        if ($this->permissions == null) {
+            $this->getUserPermissions();
+        }
+
+        if (isset($this->permissions[$permission]) && $this->permissions[$permission] === true)
+            return true;
+
+        return false;
+    }
+
+    /**
+     * Get User Permissions
+     *
+     * Gets the associative array of permissions for the current user. If the user is not set, then there are
+     * available permissions and it will return an empty array.  The permission list is also set in the private
+     * field of this class.
+     *
+     * @return boolean[] Associative array of permissions
+     */
     function getUserPermissions() {
-        $permissions = array();
+        $this->permissions = array();
         if ($this->user != null) {
             $user = $this->uStore->readUser($this->user);
             foreach ($user->getRoleList() as $role) {
@@ -136,7 +170,7 @@ class ServerExecutor {
                 }
             }
         }
-        return $permissions;
+        return $this->permissions;
     }
 
     /**
