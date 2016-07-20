@@ -53,10 +53,15 @@ class ServerExecutor {
      */
     public function __construct($user = null) {
         global $log;
+        // create a log channel
+        $this->logger = new \Monolog\Logger('ServerExec');
+        $this->logger->pushHandler($log);
 
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
+        $this->logger->addDebug("Starting ServerExecutor");
 
+        $this->permissions = array();
         /*
          * Create the user and fill in their userID from the database We assume that a non-null $user at least
          * has a valid email. If the getUserName() is null, then user the email as userName.
@@ -68,16 +73,18 @@ class ServerExecutor {
          * also the expectation that the case of missing both userID and userName is very rare.
          */
         if ($user != null) {
-            $this->user = new \snac\data\User($user);
-            $tmpUser = $this->uStore->readUser($this->user);
-            if ($tmpUser !== false) {
-                $this->user->setUserID($tmpUser->getUserID());
+            // authenticate user here!
+            $this->logger->addDebug("Authenticating User");
+            $userObj = new \snac\data\User($user);
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized");
             }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
         }
 
-        // create a log channel
-        $this->logger = new \Monolog\Logger('ServerExec');
-        $this->logger->pushHandler($log);
     }
 
     /**
