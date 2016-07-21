@@ -163,6 +163,19 @@ class WebUIExecutor {
          $display->setData($constellation);
     }
 
+    protected function getConstellation(&$input, &$display) {
+        $query = array();
+        $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        $query["command"] = "read";
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        return $serverResponse;
+    }
+
     /**
      * Display View Page
      *
@@ -172,29 +185,21 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayViewPage(&$input, &$display) {
-        $query = array();
-        $query["constellationid"] = $input["constellationid"];
-        if (isset($input["version"]))
-            $query["version"] = $input["version"];
-            $query["command"] = "read";
-
-            $this->logger->addDebug("Sending query to the server", $query);
-            $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response");
-            if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("view_page");
-                $constellation = $serverResponse["constellation"];
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData(array_merge($constellation,
-                array("preview"=> (isset($input["preview"])) ? true : false)));
-            } else {
-                $this->logger->addDebug("Error page being drawn");
-                $this->drawErrorPage($serverResponse, $display);
+        $serverResponse = $this->getConstellation($input, $display);
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("view_page");
+            $constellation = $serverResponse["constellation"];
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData(array_merge($constellation,
+            array("preview"=> (isset($input["preview"])) ? true : false)));
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
     }
 
 
@@ -207,15 +212,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayDetailedViewPage(&$input, &$display) {
-        $query = array();
-        $query["constellationid"] = $input["constellationid"];
-        if (isset($input["version"]))
-            $query["version"] = $input["version"];
-        $query["command"] = "read";
-
-        $this->logger->addDebug("Sending query to the server", $query);
-        $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
+        $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("detailed_view_page");
             $constellation = $serverResponse["constellation"];
@@ -329,6 +326,51 @@ class WebUIExecutor {
         $serverResponse["recents"] = $recents;
 
         $display->setData($serverResponse);
+    }
+
+    /**
+     * Handle download tasks
+     *
+     * This method handles the downloading of content in any type.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
+     * @return string The response to the client (The content of the file)
+     */
+    public function handleDownload(&$input, &$display, &$headers) {
+        if (!isset($input["type"])) {
+            return $this->drawErrorPage("Content Type not specified", $display);
+        }
+
+        $response = null;
+        switch($input["type"]) {
+            case "constellation_json":
+                $serverResponse = $this->getConstellation($input, $display);
+                if (!isset($serverResponse["constellation"])) {
+                    return $this->drawErrorPage("Error getting constellation", $display);
+                }
+                array_push($headers, "Content-Type: text/json");
+                array_push($headers, 'Content-Disposition: attachment; filename="constellation.json"');
+                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                break;
+            case "eac-cpf":
+                $serverResponse = $this->getConstellation($input, $display);
+                if (!isset($serverResponse["constellation"])) {
+                    return $this->drawErrorPage("Error getting constellation", $display);
+                }
+                array_push($headers, "Content-Type: text/xml");
+                array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
+                // Call EAC-CPF serializer instead here
+                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                break;
+        }
+
+        if ($response == null)  {
+            $this->drawErrorPage("Download error occurred", $display);
+        }
+
+        return $response;
     }
 
     /**

@@ -58,6 +58,7 @@ class ServerExecutor {
      */
     public function __construct($user = null) {
         global $log;
+
         // create a log channel
         $this->logger = new \Monolog\Logger('ServerExec');
         $this->logger->pushHandler($log);

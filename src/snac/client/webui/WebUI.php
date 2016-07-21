@@ -115,7 +115,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login2",
                 "search",
                 "view",
-                "details"
+                "details",
+                "download"
         );
 
 
@@ -307,6 +308,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "profile":
                 $executor->displayProfilePage($display);
                 break;
+            case "download":
+                $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
+                return;
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":
