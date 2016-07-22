@@ -231,6 +231,27 @@ button.list-group-item-download.active:focus {
 }
 
 
+/* Use the following to define new panel styles */
+.panel-review {
+    border-color: #FBDECE;
+}
+.panel-review > .panel-heading {
+    color: #EE6E1E;
+    background-color: #FCE0CD;
+    border-color: #FBDECE;
+}
+.panel-review > .panel-heading + .panel-collapse > .panel-body {
+    border-top-color: #FBDECE;
+}
+.panel-review > .panel-heading .badge {
+    color: #FCE0CD;
+    background-color: #EE6E1E;
+}
+.panel-review > .panel-footer + .panel-collapse > .panel-body {
+    border-bottom-color: #FBDECE;
+}
+
+
 @media (min-width: 992px) {
     .affix {
         position: fixed;
