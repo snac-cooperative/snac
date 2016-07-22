@@ -167,7 +167,7 @@ class ServerExecutor {
             $user = $this->uStore->readUser($this->user);
             foreach ($user->getRoleList() as $role) {
                 foreach ($role->getPrivilegeList() as $privilege) {
-                    $permissions[$privilege->getLabel()] = true;
+                    $this->permissions[$privilege->getLabel()] = true;
                 }
             }
         }

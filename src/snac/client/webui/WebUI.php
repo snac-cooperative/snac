@@ -315,13 +315,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":
-
-                if (isset($permissions["ViewAdminDashboard"]) && $permissions["ViewAdminDashboard"]) {
-                    $response = $executor->handleAdministrator($this->input, $display, $user);
-                } else {
-                    $executor->displayPermissionDeniedPage(null, $display);
-                }
-
+                $response = $executor->handleAdministrator($this->input, $display, $user);
                 break;
 
             // Modification commands that return JSON
