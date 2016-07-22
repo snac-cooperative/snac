@@ -547,14 +547,14 @@ class WebUIExecutor {
     public function drawErrorPage(&$serverResponse, &$display) {
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
-                return $this->displayPermissionDeniedPage("RestAPI Call", $display);
+                return $this->displayPermissionDeniedPage(null, $display);
             }
             $display->setTemplate("error_page");
             $display->setData($serverResponse["error"]);
             return false;
         }
         $display->setTemplate("error_page");
-        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true)));
+        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
         return false;
     }
 
@@ -593,6 +593,9 @@ class WebUIExecutor {
         $request["command"] = "recently_published";
         $response = $this->connect->query($request);
         $this->logger->addDebug("Got the following response from the server for recently published", array($response));
+        if (!isset($response["constellation"])) {
+            return $this->drawErrorPage($response, $display);
+        }
         $recentConstellations = $response["constellation"];
 
         $recents = array();

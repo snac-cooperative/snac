@@ -46,9 +46,15 @@ $('.selectpicker').selectpicker();
 			</div>
         </div>
         <div class="row row-centered">
+            {% if data.display == 'pre' %}
+            <div class="col-md-12 col-centered">
+                <pre><strong>{{data.type}}</strong>{{ data.type ? ':' : ''}} <br>{{data.message}}</pre>
+			</div>
+            {% else %}
             <div class="col-md-6 col-centered">
                 <p><strong>{{data.type}}</strong>{{ data.type ? ':' : ''}} {{data.message}}</p>
 			</div>
+            {% endif %}
         </div>
 
 </div>

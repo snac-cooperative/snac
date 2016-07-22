@@ -39,9 +39,13 @@ $('.selectpicker').selectpicker();
             </div>
 			<div class="col-md-4 col-centered">
                 <h2>Permission Denied</h2>
-
-                <p>We're sorry, but you do not have permissions to access <strong>{{ data.command }}</strong>.  Please contact your Administrator
-                to gain access.</p>
+                {% if data.command %}
+                <p>We're sorry, but you do not have permissions to access <strong>{{ data.command }}</strong>.  If you think you should have access, try logging
+                out and back in to refresh your permissions.  If that does not work, please contact your Administrator to gain access.</p>
+                {% else %}
+                <p>We're sorry, but you do not have permissions to access this resource.  If you think you should have access, try logging
+                out and back in to refresh your permissions.  If that does not work, please contact your Administrator to gain access.</p>
+                {% endif %}
 
 			</div>
         </div>
