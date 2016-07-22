@@ -28,6 +28,16 @@ class WebUIExecutor {
     private $connect = null;
 
     /**
+     * @var \snac\data\User $user The user in the current session
+     */
+    private $user = null;
+
+    /**
+     * @var boolean[] $permissions Associative array of permissions for this user
+     */
+    private $permissions = null;
+
+    /**
      * @var \Monolog\Logger $logger Logger for this server
      */
     private $logger = null;
@@ -40,8 +50,11 @@ class WebUIExecutor {
     public function __construct(&$user = null) {
         global $log;
 
+        $this->permissions = array();
+
         // set up server connection
         $this->connect = new ServerConnect($user);
+        $this->user = $user;
 
         // create a log channel
         $this->logger = new \Monolog\Logger('WebUIExec');
@@ -59,6 +72,20 @@ class WebUIExecutor {
      */
     public function setUser(&$user = null) {
         $this->connect->setUser($user);
+        $this->user = $user;
+    }
+
+    /**
+     * Set User Permissions Data
+     *
+     * Sets the permissions bitfield (as an associative array) for the user connected
+     * to this session.  To maintain compatibility with Twig and other client-side scripts,
+     * permission/privilege labels must have spaces and special characters removed.
+     *
+     * @param boolean[] $data Associative array of Permission to boolean flag
+     */
+    public function setPermissionData($data) {
+        $this->permissions = $data;
     }
 
 
@@ -88,9 +115,7 @@ class WebUIExecutor {
             $display->setData($constellation);
         } else {
                 $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
+                $this->drawErrorPage($serverResponse, $display);
         }
     }
 
@@ -138,6 +163,19 @@ class WebUIExecutor {
          $display->setData($constellation);
     }
 
+    protected function getConstellation(&$input, &$display) {
+        $query = array();
+        $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        $query["command"] = "read";
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        return $serverResponse;
+    }
+
     /**
      * Display View Page
      *
@@ -147,31 +185,21 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayViewPage(&$input, &$display) {
-        $query = array();
-        $query["constellationid"] = $input["constellationid"];
-        if (isset($input["version"]))
-            $query["version"] = $input["version"];
-            $query["command"] = "read";
-
-            $this->logger->addDebug("Sending query to the server", $query);
-            $serverResponse = $this->connect->query($query);
-            $this->logger->addDebug("Received server response");
-            if (isset($serverResponse["constellation"])) {
-                $display->setTemplate("view_page");
-                $constellation = $serverResponse["constellation"];
-                if (\snac\Config::$DEBUG_MODE == true) {
-                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-                }
-                $this->logger->addDebug("Setting constellation data into the page template");
-                $display->setData(array_merge($constellation,
-                array("preview"=> (isset($input["preview"])) ? true : false)));
-            } else {
-                $this->logger->addDebug("Error page being drawn");
-                $display->setTemplate("error_page");
-                $this->logger->addDebug("Setting error data into the error page template");
-                $display->setData($serverResponse["error"]);
+        $serverResponse = $this->getConstellation($input, $display);
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("view_page");
+            $constellation = $serverResponse["constellation"];
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData(array_merge($constellation,
+            array("preview"=> (isset($input["preview"])) ? true : false)));
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
     }
 
 
@@ -184,15 +212,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayDetailedViewPage(&$input, &$display) {
-        $query = array();
-        $query["constellationid"] = $input["constellationid"];
-        if (isset($input["version"]))
-            $query["version"] = $input["version"];
-        $query["command"] = "read";
-
-        $this->logger->addDebug("Sending query to the server", $query);
-        $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response");
+        $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("detailed_view_page");
             $constellation = $serverResponse["constellation"];
@@ -205,9 +225,7 @@ class WebUIExecutor {
             array("preview"=> (isset($input["preview"])) ? true : false)));
         } else {
             $this->logger->addDebug("Error page being drawn");
-            $display->setTemplate("error_page");
-            $this->logger->addDebug("Setting error data into the error page template");
-            $display->setData($serverResponse["error"]);
+            $this->drawErrorPage($serverResponse, $display);
         }
     }
 
@@ -308,6 +326,51 @@ class WebUIExecutor {
         $serverResponse["recents"] = $recents;
 
         $display->setData($serverResponse);
+    }
+
+    /**
+     * Handle download tasks
+     *
+     * This method handles the downloading of content in any type.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param string[] $headers Response headers for the return
+     * @return string The response to the client (The content of the file)
+     */
+    public function handleDownload(&$input, &$display, &$headers) {
+        if (!isset($input["type"])) {
+            return $this->drawErrorPage("Content Type not specified", $display);
+        }
+
+        $response = null;
+        switch($input["type"]) {
+            case "constellation_json":
+                $serverResponse = $this->getConstellation($input, $display);
+                if (!isset($serverResponse["constellation"])) {
+                    return $this->drawErrorPage("Error getting constellation", $display);
+                }
+                array_push($headers, "Content-Type: text/json");
+                array_push($headers, 'Content-Disposition: attachment; filename="constellation.json"');
+                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                break;
+            case "eac-cpf":
+                $serverResponse = $this->getConstellation($input, $display);
+                if (!isset($serverResponse["constellation"])) {
+                    return $this->drawErrorPage("Error getting constellation", $display);
+                }
+                array_push($headers, "Content-Type: text/xml");
+                array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
+                // Call EAC-CPF serializer instead here
+                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                break;
+        }
+
+        if ($response == null)  {
+            $this->drawErrorPage("Download error occurred", $display);
+        }
+
+        return $response;
     }
 
     /**
@@ -432,12 +495,43 @@ class WebUIExecutor {
                 $display->setTemplate("admin_groups");
                 break;
             case "roles":
-                $display->setTemplate("coming_soon");
+                $ask = array("command"=>"admin_roles"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $roles = array();
+                foreach ($serverResponse["roles"] as $role) {
+                    if (isset($role["privilegeList"]))
+                        array_push($roles, $role);
+                }
+                usort($roles, function($a, $b) {
+                    return count($a["privilegeList"]) <=> count($b["privilegeList"]);
+                });
+
+                $display->setData(array("roles" => $roles));
+                $display->setTemplate("admin_roles");
                 break;
             default:
                 $display->setTemplate("admin_dashboard");
         }
 
+        return false;
+    }
+
+
+    /**
+    * Display the Permission Denied Page
+    *
+    * Helper function to draw the permission denied page.
+    *
+    * @param  string $command The resource that the user was trying to access
+    * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+    * @return boolean False, since an error occurred to get here
+    */
+    public function displayPermissionDeniedPage($command, &$display) {
+        $display->setTemplate("permission_denied");
+        $display->setData(array("command" => $command));
         return false;
     }
 
@@ -451,8 +545,16 @@ class WebUIExecutor {
      * @return boolean False, since an error occurred to get here
      */
     public function drawErrorPage(&$serverResponse, &$display) {
+        if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
+            if ($serverResponse["error"]["type"] == "Permission Error") {
+                return $this->displayPermissionDeniedPage(null, $display);
+            }
+            $display->setTemplate("error_page");
+            $display->setData($serverResponse["error"]);
+            return false;
+        }
         $display->setTemplate("error_page");
-        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true)));
+        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
         return false;
     }
 
@@ -491,6 +593,9 @@ class WebUIExecutor {
         $request["command"] = "recently_published";
         $response = $this->connect->query($request);
         $this->logger->addDebug("Got the following response from the server for recently published", array($response));
+        if (!isset($response["constellation"])) {
+            return $this->drawErrorPage($response, $display);
+        }
         $recentConstellations = $response["constellation"];
 
         $recents = array();

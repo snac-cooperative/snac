@@ -29,7 +29,7 @@ $('.selectpicker').selectpicker();
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -41,13 +41,12 @@ $('.selectpicker').selectpicker();
             </div>
 			<div class="col-md-4 col-centered">
                 <h2>Site Maintenance</h2>
-                
+
                 <p>We apologize for the inconvenience, but the prototype is currently down for maintenance.  We're adjusting the bits in the database and will be back up soon.</p>
-                
+
 			</div>
         </div>
- 
+
 </div>
 </body>
 </html>
-

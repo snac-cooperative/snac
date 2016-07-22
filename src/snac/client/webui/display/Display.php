@@ -35,7 +35,7 @@ class Display {
      * @var string[] Language tags for the display object
      */
     private $language = null;
-    
+
     /**
      * @var \Monolog\Logger $logger Logger for this class
      */
@@ -53,7 +53,7 @@ class Display {
         global $log;
 
         $this->templateFileName = $template;
-        
+
         // create a log channel
         $this->logger = new \Monolog\Logger('Display');
         $this->logger->pushHandler($log);
@@ -80,6 +80,18 @@ class Display {
      */
     public function setUserData($data) {
         $this->data["user"] = $data;
+    }
+
+    /**
+     * Set User Permissions Data
+     *
+     * Sets the permissions fields for use in the template.  Permission names/labels
+     * MUST NOT have any special characters or spaces, so they can work with Twig
+     *
+     * @param boolean[] $data Associative array of Permission to boolean flag
+     */
+    public function setPermissionData($data) {
+        $this->data["permissions"] = $data;
     }
 
     /**

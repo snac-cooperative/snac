@@ -36,7 +36,7 @@ $('.selectpicker').selectpicker();
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -69,8 +69,10 @@ $('.selectpicker').selectpicker();
                 </div>
             </div>
         </div>
+        {% if permissions.Edit or permissions.Create %}
         <div class="col-md-4">
             <!-- Middle column -->
+            {% if permissions.Create %}
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title">Create New Constellation</h3>
@@ -82,6 +84,10 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
+            {% endif %}
+
+
+            {% if permissions.Edit %}
             <div class="panel panel-warning">
                 <div class="panel-heading">
                     <h3 class="panel-title">In Progress Edits</h3>
@@ -123,6 +129,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Panels that don't mean anything right now
             <div class="panel panel-warning">
@@ -166,6 +173,7 @@ $('.selectpicker').selectpicker();
             </div>
             -->
         </div>
+        {% endif %}
         <div class="col-md-4">
             <!-- Right column -->
 

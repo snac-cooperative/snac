@@ -105,6 +105,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
 
+        // Create an empty list of permissions.
+        $permissions = array();
+
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
@@ -112,7 +115,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "login2",
                 "search",
                 "view",
-                "details"
+                "details",
+                "download",
+                "error"
         );
 
 
@@ -174,8 +179,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // Set the user information into the display object
             $display->setUserData($user->toArray());
 
+            // Pull out permissions from the $user object and make them available to the template. This could
+            // be done faster by storing them in the session variables along with the user object
+            $permissions = array();
+            foreach ($user->getRoleList() as $role) {
+                foreach ($role->getPrivilegeList() as $privilege) {
+                    $permissions[str_replace(" ", "", $privilege->getLabel())] = true;
+                }
+            }
+            // NOTE: For use in Twig, the spaces HAVE BEEN REMOVED from the permission labels
+            $display->setPermissionData($permissions);
+
             // Set the user information into the executor and server connection object
             $executor->setUser($user);
+            $executor->setPermissionData($permissions);
         }
 
 
@@ -257,13 +274,25 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Editing, Preview, View, and Other Commands
             case "edit":
-                $executor->displayEditPage($this->input, $display);
+                if (isset($permissions["Edit"]) && $permissions["Edit"]) {
+                    $executor->displayEditPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Edit Constellation", $display);
+                }
                 break;
             case "new":
-                $executor->displayNewPage($display);
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displayNewPage($display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Create Constellation", $display);
+                }
                 break;
             case "new_edit":
-                $executor->displayNewEditPage($this->input, $display);
+                if (isset($permissions["Create"]) && $permissions["Create"]) {
+                    $executor->displayNewEditPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Create Constellation", $display);
+                }
                 break;
             case "view":
                 $executor->displayViewPage($this->input, $display);
@@ -280,10 +309,19 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "profile":
                 $executor->displayProfilePage($display);
                 break;
+            case "download":
+                $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
+                return;
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":
-                $response = $executor->handleAdministrator($this->input, $display, $user);
+
+                if (isset($permissions["ViewAdminDashboard"]) && $permissions["ViewAdminDashboard"]) {
+                    $response = $executor->handleAdministrator($this->input, $display, $user);
+                } else {
+                    $executor->displayPermissionDeniedPage(null, $display);
+                }
+
                 break;
 
             // Modification commands that return JSON
@@ -309,6 +347,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully unlocked");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 
@@ -322,6 +362,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully published");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 
@@ -331,6 +373,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 if (!isset($response["error"]) && !isset($this->input["entityType"])) {
                     header("Location: index.php?command=dashboard&message=Constellation successfully deleted");
                     return;
+                } else if (!isset($this->input["entityType"])) {
+                    $executor->drawErrorPage($response, $display);
                 }
                 break;
 
@@ -341,6 +385,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "search":
                 $response = $executor->performNameSearch($this->input);
                 break;
+
+            case "error":
+                $error = array("error" => array(
+                    "type" => "Not Found",
+                    "message" => "The resource you were looking for does not exist."
+                ));
+                $response = $executor->drawErrorPage($error, $display);
+                break;
+
 
             // If dropping through, then show the landing page
             default:

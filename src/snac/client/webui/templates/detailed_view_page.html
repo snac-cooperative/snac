@@ -61,7 +61,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -461,7 +461,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
-                                {% if user.email %}
+                                {% if user.email and permissions.Edit %}
                                     {% if data.status == 'editable' %}
                                         <a class="list-group-item list-group-item-info"
                                             href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
@@ -470,7 +470,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
                                     {% endif %}
                                 {% endif %}
-                                <a href="#" class="list-group-item list-group-item-success disabled"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
+                                <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as JSON <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span></a>
+                                <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
                             </div>
                         </div>
                     </div>

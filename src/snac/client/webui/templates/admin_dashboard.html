@@ -37,7 +37,7 @@ $('.selectpicker').selectpicker();
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -77,16 +77,31 @@ $('.selectpicker').selectpicker();
         </div>
         <div class="col-md-4">
             <!-- Middle column -->
+            {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">User/Group Management</h3>
+                    <h3 class="panel-title">User Management</h3>
                 </div>
                 <div class="panel-body">
                     <p>Use the following links to administer user accounts.</p>
                     <div class="list-group">
+                        {% if permissions.AddUsers %}
                         <a href="?command=administrator&subcommand=add_user" class="list-group-item"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> New User</a>
+                        {% endif %}
+
+                        {% if permissions.ModifyUsers or permissions.AssignRoles %}
                         <a href="?command=administrator&subcommand=users" class="list-group-item"><i class="fa fa-user fa-fw" aria-hidden="true"></i> User Accounts</a>
+                        {% endif %}
                     </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if permissions.ManageGroups %}
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Group Management</h3>
+                </div>
+                <div class="panel-body">
                     <p>Use the following links to administer group accounts.</p>
                     <div class="list-group">
                         <a href="?command=administrator&subcommand=add_group" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Group</a>
@@ -94,6 +109,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
+            {% endif %}
             <div class="panel panel-danger">
                 <div class="panel-heading">
                     <h3 class="panel-title">Role Management</h3>

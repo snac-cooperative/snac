@@ -29,7 +29,7 @@ $('.selectpicker').selectpicker();
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -40,11 +40,11 @@ $('.selectpicker').selectpicker();
             </div>
 			<div class="col-md-4 col-centered">
                 <h2>Coming Soon!</h2>
-                
-                <p>This is an up and coming feature!  Be sure to check back soon.</p> 
+
+                <p>This is an up and coming feature!  Be sure to check back soon.</p>
 			</div>
         </div>
- 
+
 </div>
 </body>
 </html>

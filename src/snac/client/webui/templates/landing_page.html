@@ -38,7 +38,7 @@ $('.selectpicker').selectpicker();
 <body role="document">
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user) }}
+{{ topNavigation(X, user, permissions) }}
 
 
 <div class="container snac" role="main">
@@ -51,42 +51,42 @@ $('.selectpicker').selectpicker();
                     <input type="hidden" id="start" name="start" value="0">
 					<div class="input-group">
 						<input type="text" class="form-control"
-							placeholder="Search for..." id="searchbox" name="term"> 
+							placeholder="Search for..." id="searchbox" name="term">
 							<span class="input-group-btn">
 							     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
 						    </span>
 					</div>
-					
+
 					<div id="search-results-box">
 					</div>
 			</div>
 		</form>
 
-		{% if not user.email %}  
+		{% if not user.email %}
             <p class="text-center">
     <a href="?command=login" class="btn btn-lg btn-warning"><span class="glyphicon glyphicon-user"></span> Login</a>
     </p>
             {% endif %}
-            
-            
+
+
     <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
             <h3>Getting Started</h3>
-            
-            <p>Welcome to the SNAC Prototypical Prototype Interface.  This interface allows you to search, view, edit, create, and 
+
+            <p>Welcome to the SNAC Prototypical Prototype Interface.  This interface allows you to search, view, edit, create, and
             publish identity constellations in a prototype interface.  You may search and view constellations without logging in,
-            but to make any changes to a constellation, you need an authorized Google account.  Click the "Login" link above to 
+            but to make any changes to a constellation, you need an authorized Google account.  Click the "Login" link above to
             log in with Google and authorize the SNAC Prototype.</p>
-            
+
             <p>Use the search box above to find a record within SNAC to view.  Search results will appear right on this page below
             the search bar.  Selecting one will take you to the view page.  That page is modeled after the <a href="http://socialarchive.iath.virginia.edu/">SNAC HRT</a>,
             so it should feel familiar.  If you are logged in and have permissions, you will also see on that page a button to begin
             editing the constellation.</p>
-            
+
             <p>The box on the right, entitled "Recently Updated" will show you the most recently published constellations from
             across the system.</p>
-            
+
             <p>Once logged in, you'll have access to your Dashboard.  The dashboard shows which constellations are currently
             checked out to you for editing, which ones you currently have open in an editor, and other information.  You may return
             to this page at any time by clicking the "SNAC" link on the menu above.</p>

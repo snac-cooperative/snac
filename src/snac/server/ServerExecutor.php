@@ -40,6 +40,11 @@ class ServerExecutor {
      */
     private $user = null;
 
+    /**
+     * @var boolean[] List of permission for the current user, as associative array keys
+     */
+    private $permissions = null;
+
 
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -54,9 +59,15 @@ class ServerExecutor {
     public function __construct($user = null) {
         global $log;
 
+        // create a log channel
+        $this->logger = new \Monolog\Logger('ServerExec');
+        $this->logger->pushHandler($log);
+
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
+        $this->logger->addDebug("Starting ServerExecutor");
 
+        $this->permissions = array();
         /*
          * Create the user and fill in their userID from the database We assume that a non-null $user at least
          * has a valid email. If the getUserName() is null, then user the email as userName.
@@ -68,16 +79,18 @@ class ServerExecutor {
          * also the expectation that the case of missing both userID and userName is very rare.
          */
         if ($user != null) {
-            $this->user = new \snac\data\User($user);
-            $tmpUser = $this->uStore->readUser($this->user);
-            if ($tmpUser !== false) {
-                $this->user->setUserID($tmpUser->getUserID());
+            // authenticate user here!
+            $this->logger->addDebug("Authenticating User");
+            $userObj = new \snac\data\User($user);
+            // authenticateUser sets $this->user
+            if (!$this->authenticateUser($userObj)) {
+                throw new \snac\exceptions\SNACUserException("User is not authorized");
             }
+            $this->logger->addDebug("User authenticated successfully");
+
+            $this->getUserPermissions();
         }
 
-        // create a log channel
-        $this->logger = new \Monolog\Logger('ServerExec');
-        $this->logger->pushHandler($log);
     }
 
     /**
@@ -117,6 +130,48 @@ class ServerExecutor {
 
         // Could connect using the token, emails matched, so all's good
         return true;
+    }
+
+    /**
+     * Check if the current user has permission
+     *
+     * Checks whether the current user has the permission requested.  If the permissions have not been set up
+     * in this server executor instance yet, it will automatically create it from the user object.
+     *
+     * @param  string  $permission The permission/privilege name
+     * @return boolean             True if the user has that permission, false otherwise
+     */
+    function hasPermission($permission) {
+        if ($this->permissions == null) {
+            $this->getUserPermissions();
+        }
+
+        if (isset($this->permissions[$permission]) && $this->permissions[$permission] === true)
+            return true;
+
+        return false;
+    }
+
+    /**
+     * Get User Permissions
+     *
+     * Gets the associative array of permissions for the current user. If the user is not set, then there are
+     * available permissions and it will return an empty array.  The permission list is also set in the private
+     * field of this class.
+     *
+     * @return boolean[] Associative array of permissions
+     */
+    function getUserPermissions() {
+        $this->permissions = array();
+        if ($this->user != null) {
+            $user = $this->uStore->readUser($this->user);
+            foreach ($user->getRoleList() as $role) {
+                foreach ($role->getPrivilegeList() as $privilege) {
+                    $permissions[$privilege->getLabel()] = true;
+                }
+            }
+        }
+        return $this->permissions;
     }
 
     /**

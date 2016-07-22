@@ -199,6 +199,36 @@ td.rotate > div > span {
     font-size: 11px;
 }
 
+/* Use the following to make other colors of list items */
+.list-group-item-download {
+    color: #7a3583;
+    background-color: #ecdef2;
+}
+a.list-group-item-download,
+button.list-group-item-download {
+    color: #7a3583;
+}
+a.list-group-item-download .list-group-item-heading,
+button.list-group-item-download .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-download:hover,
+button.list-group-item-download:hover,
+a.list-group-item-download:focus,
+button.list-group-item-download:focus {
+    color: #7a3583;
+    background-color: #e1cceb;
+}
+a.list-group-item-download.active,
+button.list-group-item-download.active,
+a.list-group-item-download.active:hover,
+button.list-group-item-download.active:hover,
+a.list-group-item-download.active:focus,
+button.list-group-item-download.active:focus {
+    color: #fff;
+    background-color: #7a3583;
+    border-color: #7a3583;
+}
 
 
 @media (min-width: 992px) {
