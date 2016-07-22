@@ -10,6 +10,7 @@
             <agencyName>SNAC: Social Networks and Archival Context Project</agencyName>
         </maintenanceAgency>
         <languageDeclaration>
+            <!-- Do we have a constellation field or database field for language declaration? -->
             <language languageCode="eng">English</language>
             <script scriptCode="Latn">Latin Alphabet</script>
         </languageDeclaration>

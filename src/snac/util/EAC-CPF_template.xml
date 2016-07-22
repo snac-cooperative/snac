@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" 
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:snac="http://socialarchive.iath.virginia.edu/">
+    <!-- 
+         Author: Tom Laudeman
+         The Institute for Advanced Technology in the Humanities
+    -->
+    <control>
+        <recordId>{{ data.ark }}</recordId>
+        {#
+        How is the template, or even the PHP supposd to know these URLs?
+        
+        http://socialarchive.iath.virginia.edu/control/term#MergedRecord
+        http://viaf.org/viaf/terms#viafID
+        #}
+        {% for other in data.otherRecordIDs %}
+        {% if other.type.term == 'MergedRecord' %}
+        <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">{{ other.uri}}</otherRecordId>
+        {% endif %}
+        {% if other.type.term == 'viafID' %}
+        <otherRecordId localType="http://viaf.org/viaf/terms#viafID">{{ other.uri}}</otherRecordId>
+        {% endif %}
+        {% endfor %}
+        <maintenanceStatus>revised</maintenanceStatus>
+        <maintenanceAgency>
+            SNAC Social Networks in Archival Context
+        </maintenanceAgency>
+        {#
+        Yes, languageDecaration is piggy backed on biogHist. It doesn't have its own storage in PHP or the database.
+        If we have languageDeclaration, it will be the language of the biogHist.
+        #}
+        {% if data.biogHists.0.language.term or data.biogHists.0.script.term %}
+        <languageDeclaration>
+            <language languageCode="{{data.biogHists.0.language.term}}">{{ data.biogHists.0.language.description }}</language>
+            <script scriptCode="{{data.biogHists.0.script.term}}">{{ data.biogHists.0..script.description}}</script>
+        </languageDeclaration>
+        {% endif %}
+        <maintenanceHistory>
+            <maintenanceEvent>
+                <eventType>created</eventType>
+                <eventDateTime standardDateTime="{{ currentDate }}">
+                    {{ currentDate }}
+                </eventDateTime>
+                <agentType>machine</agentType>
+                <agent>
+                    EACCPFSerializer.php
+                </agent>
+                <eventDescription>{{ data.ev_desc }}</eventDescription>
+            </maintenanceEvent>
+        </maintenanceHistory>
+        {% for cdecl in data.conventionDeclarations %}
+        {{ cdecl.text|raw }}
+        {% endfor %}
+        <sources>
+            {% for src in data.sources %}
+            <source xlink:href="{{ src.uri }}" xlink:type="simple">
+                {{ src.text|raw }}
+            </source>
+            {% endfor %}
+        </sources>
+    </control>
+    <cpfDescription>
+        <identity>
+            <entityType>{{ data.entityType.term }}</entityType>
+            {# 
+            We appear not to use the language element.
+
+            Twig can't do optional XML attributes and still maintain an XML compliant template.
+            I use if-else for both opening and closing nameEntry as the best compromise.
+            It is also invalid XML to have the if-else on the opening tag due to mismatched
+            closing element.
+            #}
+            {% for nameEntry in data.nameEntries %}
+            {% if nameEntry.lang %}            
+            <nameEntry xml:lang="{{ nameEntry.lang }}">
+                {% else %}
+                <nameEntry>
+                    {% endif %}
+                <part>{{ nameEntry.original }}</part>
+                {% for contrib in nameEntry.contributors %}
+                {% if contrib.type.term == 'authorizedForm' %}
+                <authorizedForm>{{ contrib.name }}</authorizedForm>
+                {% else %}
+                <alternateForm>{{ contrib.name }}</alternateForm>
+                {% endif %}
+                {% endfor %}
+                {% if nameEntry.lang %}            
+                </nameEntry>
+                {% else %}
+            </nameEntry>
+            {% endif %}
+            {% endfor %}
+            {{ data.descriptiveNote }}
+        </identity>
+        <description>
+            {#
+            There is no way to have a Twig template can be valid XML with optional attributes. Here
+            the opening and closing fromDate are done with Twig literals, and an custom filter decode_entities.
+            This compromise is slighly more MVC than moving the XML into a literal PHP string.
+
+            Interestingly a lone > seems to be valid XML. 
+            #}
+            {% if data.dates %}
+            <existDates>
+                {% for date in data.dates %}
+                <dateRange>
+                    {{'&lt;fromDate'|decode_entities|raw}}
+                    {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}{% endif %}
+                    {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}{% endif %}
+                    localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                    standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                    {{'&lt;toDate'|decode_entities|raw}}
+                    {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}{% endif %}
+                    {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}{% endif %}
+                    localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                    standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                </dateRange>
+                {% endfor %}
+            </existDates>
+            {% endif %}
+            {% for occupation in data.occupations %}
+            <occupation>{{ occupation.term.term }}</occupation>
+            {% endfor %}
+            {% for function in data.functions %}
+            <function>{{ function.term.term }}</function>
+            {% endfor %}
+            {% for localAffiliation in data.localAffiliation %}
+            <localAffiliation>
+                {{ localAffiliation }}
+            </localAffiliation>
+            {% endfor %}
+            {% for subject in data.subjects %}
+            <subject>{{ subject.term.term }}</subject>
+            {% endfor %}
+            {% for place in data.places %}
+            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+                <snac:placeEntry>
+                    <placeEntry>{{ place.original }}</placeEntry>
+                    <snac:placeEntryLikelySame type="{{place.type.term}}" 
+                                               vocabularySource="place.geoplace.uri" 
+                                               latitude="place.geoplace.latitude" 
+                                               longitude="place.geoplace.longitude" 
+                                               administrationCode="place.geoplace.administrationCode" 
+                                               countryCode="place.geoplace.countryCode">{{place.geoplace.name }}</snac:placeEntryLikelySame>
+                </snac:placeEntry>
+            </place>
+            {% endfor %}
+            {% for lang in data.languagesUsed %}
+            <languageUsed>
+                <language languageCode="{{lang.language.term}}">{{ lang.language.description }}</language>
+                <script scriptCode="{{lang.script.term}}">{{ lang.script.description}}</script>
+            </languageUsed>
+            {% endfor %}
+            {{ data.biogHists.0.text|raw }}
+        </description>
+        <relations>
+            {% for cpfRel in data.relations %}
+            {# 
+            xlink:role  http://socialarchive.iath.virginia.edu/control/term#Person, etc.
+            xlink:arcrole  http://socialarchive.iath.virginia.edu/control/term#associatedWith
+            #}
+            <cpfRelation xlink:type="simple"
+                         xlink:role="http://socialarchive.iath.virginia.edu/control/term#{{ cpfRel.targetEntityType }}" 
+                         xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#{{ cpfRel.type.term }}"
+                         xlink:href="{{ cpfRel.targetArkID }}">
+                <relationEntry>{{cpfRel.content}}</relationEntry>
+            </cpfRelation>
+            {% endfor %} 
+            {# 
+            xlink:role  
+            xlink:arcrole 
+            #}
+            {% for resRel in data.resourceRelations %}
+            {% if cpfRel.documentType.term == 'foo' %}
+            {% set xlink_role = cpfRel.documentType.term %}
+            {% set xlink_arcrole = cpfRel.role.term %}
+            {% endif %}
+            <resourceRelation xlink:type="simple"
+                              xlink:role="{{ resRel.xlinkRole }}"
+                              xlink:arcrole="{{ resRel.arcRole }}"
+                              xlink:href="{{ resRel.href }}">
+                <relationEntry>{{ resRel.relEntry }}</relationEntry>
+                <mods>{{ resRel.mods }} </mods>
+                {% if resRel.objectXML %}
+                <objectXMLWrap>
+                    <descriptiveNote>
+			<p>
+			    <span localType="{{ resRel.av_Leader06 }}">{{ resRel.leader06 }}</span>
+			    <span localType="{{ resRel.av_Leader07 }}">{{ resRel.leader07 }}</span>
+			    <span localType="{{ resRel.av_Leader08 }}">{{ resRel.leader08 }}</span>
+			</p>
+		    </descriptiveNote>
+                </objectXMLWrap>
+                {% endif %}
+            </resourceRelation>
+        {% endfor %}
+        </relations>
+    </cpfDescription>
+</eac-cpf>
