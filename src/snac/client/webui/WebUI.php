@@ -116,7 +116,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "view",
                 "details",
-                "download"
+                "download",
+                "error"
         );
 
 
@@ -314,7 +315,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":
-                $response = $executor->handleAdministrator($this->input, $display, $user);
+
+                if (isset($permissions["ViewAdminDashboard"]) && $permissions["ViewAdminDashboard"]) {
+                    $response = $executor->handleAdministrator($this->input, $display, $user);
+                } else {
+                    $executor->displayPermissionDeniedPage(null, $display);
+                }
+
                 break;
 
             // Modification commands that return JSON
@@ -378,6 +385,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "search":
                 $response = $executor->performNameSearch($this->input);
                 break;
+
+            case "error":
+                $error = array("error" => array(
+                    "type" => "Not Found",
+                    "message" => "The resource you were looking for does not exist."
+                ));
+                $response = $executor->drawErrorPage($error, $display);
+                break;
+
 
             // If dropping through, then show the landing page
             default:
