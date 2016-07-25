@@ -9,17 +9,18 @@
     <control>
         <recordId>{{ data.ark }}</recordId>
         {#
-        How is the template, or even the PHP supposd to know these URLs?
-        
+        Some vocabulary that has a uri is saved in the db and PHP objects with both the term and full uri that
+        includes the term.  We prefer the uri, and we use the term as a fall back.
+
+        Two examples:
         http://socialarchive.iath.virginia.edu/control/term#MergedRecord
         http://viaf.org/viaf/terms#viafID
         #}
         {% for other in data.otherRecordIDs %}
-        {% if other.type.term == 'MergedRecord' %}
-        <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">{{ other.uri}}</otherRecordId>
-        {% endif %}
-        {% if other.type.term == 'viafID' %}
-        <otherRecordId localType="http://viaf.org/viaf/terms#viafID">{{ other.uri}}</otherRecordId>
+        {% if other.type.uri %}
+        <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
+        {% else %}
+        <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
         {% endif %}
         {% endfor %}
         <maintenanceStatus>revised</maintenanceStatus>
