@@ -385,8 +385,7 @@ class WebUIExecutor {
     public function handleAdministrator(&$input, &$display, &$user) {
 
         if (!isset($input["subcommand"])) {
-            $display->setTemplate("admin_dashboard");
-            return;
+            $input["subcommand"] = "dashboard";
         }
 
         switch ($input["subcommand"]) {
@@ -512,8 +511,15 @@ class WebUIExecutor {
                 $display->setData(array("roles" => $roles));
                 $display->setTemplate("admin_roles");
                 break;
+            case "dashboard":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("admin_dashboard");
+                } else {
+                    $this->displayPermissionDeniedPage("Admin Dashboard", $display);
+                }
+                break;
             default:
-                $display->setTemplate("admin_dashboard");
+                $this->displayPermissionDeniedPage("Administrator", $display);
         }
 
         return false;
