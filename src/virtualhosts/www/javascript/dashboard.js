@@ -17,6 +17,12 @@ function updateSettingsBox(id, version, nameEntry) {
     html += "</a>";
 
     // Publish
+    html += "<a href='?command=review&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
+    html += "   <span class='glyphicon glyphicon-send'></span> Send this Constellation for Review";
+    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right"></span>';
+    html += "</a>";
+
+    // Publish
     html += "<a href='?command=publish&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
     html += "   <span class='glyphicon glyphicon-upload'></span> Publish this Constellation";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';

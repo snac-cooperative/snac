@@ -311,11 +311,19 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         $this->logger->addDebug("Received server response", array($serverResponse));
         $this->logger->addDebug("Setting dashboard data into the page template");
+        
+        $needsReview = $this->connect->query(array(
+            "command"=>"list_constellations",
+            "status"=>"needs review"
+        ));
+        if (isset($needsReview["results"]))
+            $serverResponse["needs_review"] = $needsReview["results"];
+
 
         $recentConstellations = $this->connect->query(array(
                 "command"=>"recently_published"
         ))["constellation"];
-
+        
         $recents = array();
         foreach ($recentConstellations as $constellationArray) {
             $constellation = new \snac\data\Constellation($constellationArray);
@@ -932,6 +940,74 @@ class WebUIExecutor {
 
 
     /**
+     * Save and Send Constellation For Review
+     *
+     * Maps the constellation given on input to a Constellation object, passes that to the server with an
+     * update_constellation call.  If successful, it then maps any updates (new ids or version numbers) to the
+     * Constellation object and web components from input, and returns the web ui's response (the list of
+     * updates that must be made to the web ui GUI).
+     *
+     * After saving, it also calls to the server to have the constellation sent for review, if the write was successful.
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveAndSendForReviewConstellation(&$input) {
+
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+        // Get the constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        $this->logger->addDebug("writing constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "update_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["update"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        if (! is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+
+            if (isset($serverResponse["constellation"])) {
+                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+            }
+
+            if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
+                     isset($serverResponse["constellation"])) {
+                $request["command"] = "review_constellation";
+                $request["constellation"] = $serverResponse["constellation"];
+                $serverResponse = $this->connect->query($request);
+                $response["server_debug"]["review"] = $serverResponse;
+                if (isset($serverResponse["result"]))
+                    $response["result"] = $serverResponse["result"];
+                if (isset($serverResponse["error"]))
+                    $response["error"] = $serverResponse["error"];
+            }
+        }
+
+        return $response;
+    }
+
+
+    /**
      * Save and Unlock Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an
@@ -1083,6 +1159,52 @@ class WebUIExecutor {
         $response = array ();
         $response["server_debug"] = array ();
         $response["server_debug"]["publish"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
+
+
+    /**
+     * Send Constellation for Review
+     *
+     * Requests the server to send the given constellation for review.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function sendForReviewConstellation(&$input) {
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $this->logger->addDebug("sending constellation for review", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "review_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["review"] = $serverResponse;
         if (isset($serverResponse["result"]))
             $response["result"] = $serverResponse["result"];
         if (isset($serverResponse["error"]))

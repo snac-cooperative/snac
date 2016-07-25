@@ -236,7 +236,7 @@ button.list-group-item-download.active:focus {
     border-color: #FBDECE;
 }
 .panel-review > .panel-heading {
-    color: #EE6E1E;
+    color: #B84905;
     background-color: #FCE0CD;
     border-color: #FBDECE;
 }
@@ -245,7 +245,7 @@ button.list-group-item-download.active:focus {
 }
 .panel-review > .panel-heading .badge {
     color: #FCE0CD;
-    background-color: #EE6E1E;
+    background-color: #B84905;
 }
 .panel-review > .panel-footer + .panel-collapse > .panel-body {
     border-bottom-color: #FBDECE;
