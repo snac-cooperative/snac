@@ -228,8 +228,9 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit":
-                if (!$executor->hasPermission("Edit"))
+                if (!$executor->hasPermission("Edit")) { 
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.");
+                }
                 $this->response = $executor->editConstellation($this->input);
                 break;
 
