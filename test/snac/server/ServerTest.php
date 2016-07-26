@@ -72,16 +72,6 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         }
     }
 
-    /**
-     * Tests to ensure that the server outputs JSON when given correct input 
-     */
-    public function testJSONOutGood() {
-
-        $server = new Server(array("command" => "edit"));
-        $server->run();
-        $this->assertNotNull(json_decode($server->getResponse()));
-    }
-    
     public function testVocabulary() {
         $server = new Server( array(
            "command" => "vocabulary",
@@ -116,7 +106,6 @@ class ServerTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals("failure", $response["result"]);
         
 
-        /**
         $server = new Server( array(
                 "command" => "start_session",
                 "user" => $this->user->toArray()
@@ -127,7 +116,6 @@ class ServerTest extends PHPUnit_Framework_TestCase {
 
         $response = json_decode($response, true);
         $this->assertEquals("success", $response["result"]);
-        **/
 
     
     }
