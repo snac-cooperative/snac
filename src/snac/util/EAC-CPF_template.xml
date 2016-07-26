@@ -7,7 +7,7 @@
          The Institute for Advanced Technology in the Humanities
     -->
     <control>
-        <recordId>{{ data.ark }}</recordId>
+        <recordId >{{ data.ark }}</recordId>
         {#
         Some vocabulary that has a uri is saved in the db and PHP objects with both the term and full uri that
         includes the term.  We prefer the uri, and we use the term as a fall back.
@@ -25,7 +25,9 @@
         {% endfor %}
         <maintenanceStatus>revised</maintenanceStatus>
         <maintenanceAgency>
-            SNAC Social Networks in Archival Context
+            <agencyName>
+                SNAC Social Networks in Archival Context
+            </agencyName>
         </maintenanceAgency>
         {#
         Yes, languageDecaration is piggy backed on biogHist. It doesn't have its own storage in PHP or the database.
@@ -37,6 +39,9 @@
             <script scriptCode="{{data.biogHists.0.script.term}}">{{ data.biogHists.0..script.description}}</script>
         </languageDeclaration>
         {% endif %}
+        {% for cdecl in data.conventionDeclarations %}
+        {{ cdecl.text|raw }}
+        {% endfor %}
         <maintenanceHistory>
             <maintenanceEvent>
                 <eventType>created</eventType>
@@ -50,9 +55,6 @@
                 <eventDescription>{{ data.ev_desc }}</eventDescription>
             </maintenanceEvent>
         </maintenanceHistory>
-        {% for cdecl in data.conventionDeclarations %}
-        {{ cdecl.text|raw }}
-        {% endfor %}
         <sources>
             {% for src in data.sources %}
             <source xlink:href="{{ src.uri }}" xlink:type="simple">
@@ -83,7 +85,7 @@
                 {% if contrib.type.term == 'authorizedForm' %}
                 <authorizedForm>{{ contrib.name }}</authorizedForm>
                 {% else %}
-                <alternateForm>{{ contrib.name }}</alternateForm>
+                <alternativeForm>{{ contrib.name }}</alternativeForm>
                 {% endif %}
                 {% endfor %}
                 {% if nameEntry.lang %}            
@@ -104,6 +106,28 @@
             #}
             {% if data.dates %}
             <existDates>
+                {% if data.dates %}
+                {#
+
+                Single dateRange is ok by itself, but single or multiple is ok inside dateSet. Make life easy
+                for ourselves and always use dateSet. We could count and make dateSet conditional on multiple
+                dateRange elements, although the ideal is for the CPF standard to simply drop dateSet, and
+                date and allow 0..n of dateRange, just as we do in the SNAC application.
+
+                Use Twig trickery with &lt; for the illegal XML less than sign, in order to allow optional XML
+                attributes which Twig cannot do in a valid XML template.
+
+                Create the fromDate and toDate elements as Twig strings. Attributes notBefore and notAfter are
+                optional.
+
+                Other options are: 
+
+                1) create the fromDate and toDate in PHP as strings and pass them in.
+
+                2) put Twig inside the elements, making the template invalid XML even thought the output will be valid.
+
+                #}
+                <dateSet>
                 {% for date in data.dates %}
                 <dateRange>
                     {{'&lt;fromDate'|decode_entities|raw}}
@@ -118,13 +142,15 @@
                     standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
                 </dateRange>
                 {% endfor %}
+                </dateSet>
+                {% endif %}
             </existDates>
             {% endif %}
             {% for occupation in data.occupations %}
-            <occupation>{{ occupation.term.term }}</occupation>
+            <occupation><term>{{ occupation.term.term }}</term></occupation>
             {% endfor %}
             {% for function in data.functions %}
-            <function>{{ function.term.term }}</function>
+            <function><term>{{ function.term.term }}</term></function>
             {% endfor %}
             {% for localAffiliation in data.localAffiliation %}
             <localAffiliation>
@@ -132,18 +158,23 @@
             </localAffiliation>
             {% endfor %}
             {% for subject in data.subjects %}
-            <subject>{{ subject.term.term }}</subject>
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>{{ subject.term.term }}</term>
+            </localDescription>
             {% endfor %}
             {% for place in data.places %}
-            <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
+            <place localType="{{place.type.uri}}">
                 <snac:placeEntry>
                     <placeEntry>{{ place.original }}</placeEntry>
-                    <snac:placeEntryLikelySame type="{{place.type.term}}" 
-                                               vocabularySource="place.geoplace.uri" 
-                                               latitude="place.geoplace.latitude" 
-                                               longitude="place.geoplace.longitude" 
-                                               administrationCode="place.geoplace.administrationCode" 
-                                               countryCode="place.geoplace.countryCode">{{place.geoplace.name }}</snac:placeEntryLikelySame>
+                    {% if place.geoplace %}
+                    <snac:placeEntryLikelySame localType="{{place.type.uri}}"
+                                               certaintyScore="{{ place.score }}"
+                                               vocabularySource="{{place.geoplace.uri}}" 
+                                               latitude="{{place.geoplace.latitude}}" 
+                                               longitude="{{place.geoplace.longitude}}" 
+                                               administrationCode="{{place.geoplace.administrationCode}}" 
+                                               countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}</snac:placeEntryLikelySame>
+                    {% endif %}
                 </snac:placeEntry>
             </place>
             {% endfor %}
@@ -158,42 +189,46 @@
         <relations>
             {% for cpfRel in data.relations %}
             {# 
-            xlink:role  http://socialarchive.iath.virginia.edu/control/term#Person, etc.
-            xlink:arcrole  http://socialarchive.iath.virginia.edu/control/term#associatedWith
+            Use the uri when available. The uri is the full namespace#term.
             #}
+            {% if cpfRel.targetEntityType.uri %}
+            {% set xlink_role = cpfRel.targetEntityType.uri %}
+            {% else %}
+            {% set xlink_role = cpfRel.targetEntityType.term %}
+            {% endif %}
+            {% if cpfRel.type.uri %}
+            {% set xlink_arcrole = cpfRel.type.uri %}
+            {% else %}
+            {% set xlink_arcrole = cpfRel.type.term %}
+            {% endif %}
             <cpfRelation xlink:type="simple"
-                         xlink:role="http://socialarchive.iath.virginia.edu/control/term#{{ cpfRel.targetEntityType }}" 
-                         xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#{{ cpfRel.type.term }}"
+                         xlink:role="{{ xlink_role }}" 
+                         xlink:arcrole="{{ xlink_arcrole }}"
                          xlink:href="{{ cpfRel.targetArkID }}">
                 <relationEntry>{{cpfRel.content}}</relationEntry>
             </cpfRelation>
             {% endfor %} 
             {# 
-            xlink:role  
-            xlink:arcrole 
+            resRel.documentType, xlink:role, ArchivalResource, BibliographicResource
+            resRel.role, xlink:arcrole, creatorOf, referencedIn
             #}
             {% for resRel in data.resourceRelations %}
-            {% if cpfRel.documentType.term == 'foo' %}
-            {% set xlink_role = cpfRel.documentType.term %}
-            {% set xlink_arcrole = cpfRel.role.term %}
+            {% if resRel.documentType.uri %}
+            {% set xlink_role = resRel.documentType.uri %}
+            {% else %}
+            {% set xlink_role = resRel.documentType.term %}
+            {% endif %}
+            {% if resRel.role.uri %}
+            {% set xlink_arcrole = resRel.role.uri %}
+            {% else %}
+            {% set xlink_arcrole = resRel.role.term %}
             {% endif %}
             <resourceRelation xlink:type="simple"
-                              xlink:role="{{ resRel.xlinkRole }}"
-                              xlink:arcrole="{{ resRel.arcRole }}"
+                              xlink:role="{{ xlink_role }}"
+                              xlink:arcrole="{{ xlink_arcrole }}"
                               xlink:href="{{ resRel.href }}">
-                <relationEntry>{{ resRel.relEntry }}</relationEntry>
-                <mods>{{ resRel.mods }} </mods>
-                {% if resRel.objectXML %}
-                <objectXMLWrap>
-                    <descriptiveNote>
-			<p>
-			    <span localType="{{ resRel.av_Leader06 }}">{{ resRel.leader06 }}</span>
-			    <span localType="{{ resRel.av_Leader07 }}">{{ resRel.leader07 }}</span>
-			    <span localType="{{ resRel.av_Leader08 }}">{{ resRel.leader08 }}</span>
-			</p>
-		    </descriptiveNote>
-                </objectXMLWrap>
-                {% endif %}
+                <relationEntry>{{ resRel.content }}</relationEntry>
+                {{ resRel.source|raw }}
             </resourceRelation>
         {% endfor %}
         </relations>
