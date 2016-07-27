@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server\database;
 use \snac\server\database\DatabaseConnector;
 
 /**
@@ -18,7 +19,7 @@ use \snac\server\database\DatabaseConnector;
  * @author Robbie Hott
  *
  */
-class DatabaseConnectorTest extends PHPUnit_Framework_TestCase {
+class DatabaseConnectorTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * Tests the generic connection (part of the constructor) 

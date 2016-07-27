@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server\database;
 
 /**
  * Database Utils test suite
@@ -17,7 +18,7 @@
  * @author Tom Laudeman
  *
  */
-class DBUtilTest extends PHPUnit_Framework_TestCase {
+class DBUtilTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * DBUtil object for this class
