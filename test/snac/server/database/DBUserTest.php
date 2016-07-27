@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server\database;
 
 /**
  * Database User test suite
@@ -17,7 +18,7 @@
  * @author Tom Laudeman
  *
  */
-class DBUserTest extends PHPUnit_Framework_TestCase
+class DBUserTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -94,7 +95,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->dbu = new snac\server\database\DBUser();
+        $this->dbu = new \snac\server\database\DBUser();
         $this->dbutil = new \snac\server\database\DBUtil();
 
         // Prototypeing..

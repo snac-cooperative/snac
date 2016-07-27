@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\data;
 
 /**
  * Constellation Test Suite
@@ -17,7 +18,7 @@
  * @author Robbie Hott
  *
  */
-class ConstellationTest extends PHPUnit_Framework_TestCase {
+class ConstellationTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test that trying to read garbage instead of JSON results in not importing any data 
