@@ -85,54 +85,19 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
         <div class="row">
             <div class="col-md-8">
+                
+                <div class="well well-lg">
+                    <p><span style="font-weight: bold;">Instructions: </span> When saving an Identity Constellation, the <em>Entity Type</em> and at least one <em>Name Entry</em> are required.</p>
+                </div>
+
 
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#nameEntries" role="tab" data-toggle="tab">Basic Info</a></li>
-                    <li><a href="#dates" role="tab" data-toggle="tab">Dates</a></li>
-                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
-                    <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Vocabs <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#genders" role="tab" data-toggle="tab">Genders</a></li>
-                        <li><a href="#nationalities" role="tab" data-toggle="tab">Nationalities</a></li>
-                        <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
-                        <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
-                        <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
-                        <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
-                        <li><a href="#legalStatuses" role="tab" data-toggle="tab">Legal Statuses</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#sameAs" role="tab" data-toggle="tab">External Same As</a></li>
-                        <li><a href="#constellationRelations" role="tab" data-toggle="tab">Constellation Relations</a></li>
-                        <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Texts <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#conventionDeclarations" role="tab" data-toggle="tab">Convention Declarations</a></li>
-                        <li><a href="#generalContexts" role="tab" data-toggle="tab">General Contexts</a></li>
-                        <li><a href="#mandates" role="tab" data-toggle="tab">Mandates</a></li>
-                        <li><a href="#structureOrGenealogies" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
-                    </ul>
-                    </li>
-                    <li><a href="#sources" role="tab" data-toggle="tab" id="sources-tab">Sources</a></li>
-
-                </ul>
+                {{ components.displayEditTabs(X) }}
 
                 <div class="tab-content">
 
                     <div class="tab-pane active" id="nameEntries">
-                        <h2>Basic Information</h2>
-
-                        <div class="well well-lg">
-                            <p><span style="font-weight: bold;">Instructions: </span> When saving an Identity Constellation, the <em>Entity Type</em> and at least one <em>Name Entry</em> are required.</p>
-                        </div>
+                        <h2>Core Data</h2>
 
                         <div class="panel panel-default">
                         	<div class="panel-heading">Constellation Information</div>
@@ -149,6 +114,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             </select>
                                         </div>
                                     </div>
+                                    <!--
                                     <div class="form-group">
                                         <label for="entityType" class="control-label col-xs-4"  data-content="{{X.snaccontrolmetadata.tooltip}}" data-toggle="popover" data-placement="top">
                                             {{X.snaccontrolmetadata.display}}
@@ -159,6 +125,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                             </button>
                                         </div>
                                     </div>
+                                    -->
                                 </div>
                                 {{ widgets.scmModal(X, true, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
                             </div>
@@ -241,7 +208,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% endif %}
                                 <div id="textarea_biogHist_text_0">
                                     <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
-                                    <div class="form-control-static">{{ data.biogHists[0].text|raw }}</div>
+                                    <div class="panel panel-default panel-body form-control-static">{{ data.biogHists[0].text|raw }}</div>
                                 </div>
 
 
