@@ -441,6 +441,25 @@ class WebUIExecutor {
                 ));
                 $display->setTemplate("admin_edit_user");
                 break;
+            case "activity_user":
+                if (!isset($input["userid"])) {
+                    return $this->drawErrorPage("Missing UserID", $display);
+                }
+                $userEdit = new \snac\data\User();
+                $userEdit->setUserID($input["userid"]);
+                $ask = array("command"=>"edit_user",
+                    "user_edit" => $userEdit->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $userEdit = $serverResponse["user"];
+                $userGroups = $serverResponse["groups"];
+
+                $serverResponse["title"] = "User Activity";
+                $display->setData($serverResponse);
+                $display->setTemplate("admin_user_activity");
+                break;
             case "edit_user_post":
                 return $this->saveProfile($input, $user);
                 break;
