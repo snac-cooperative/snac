@@ -7,6 +7,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server;
 use \snac\server\Server as Server;
 use function GuzzleHttp\json_decode;
 
@@ -17,7 +18,7 @@ use function GuzzleHttp\json_decode;
  * @author Robbie Hott
  *
  */
-class ServerTest extends PHPUnit_Framework_TestCase {
+class ServerTest extends \PHPUnit_Framework_TestCase {
     
     private $user = null;
     

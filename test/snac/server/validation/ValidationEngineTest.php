@@ -7,6 +7,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server\validation;
 
 use \snac\server\validation\ValidationEngine as ValidationEngine;
 
@@ -17,7 +18,7 @@ use \snac\server\validation\ValidationEngine as ValidationEngine;
  * @author Robbie Hott
  *
  */
-class ValidationEngineTest extends PHPUnit_Framework_TestCase {
+class ValidationEngineTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test adding a null validator

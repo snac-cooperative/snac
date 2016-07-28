@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\util;
 
 /**
  * EAC-CPF Parser Test Suite
@@ -17,7 +18,7 @@
  * @author Robbie Hott
  *
  */
-class EACCPFParserTest extends PHPUnit_Framework_TestCase {
+class EACCPFParserTest extends \PHPUnit_Framework_TestCase {
 
     /**
      * Test that giving the parser a bad filename will throw the right exception. 
