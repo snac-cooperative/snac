@@ -15,12 +15,13 @@
  */
 namespace snac\util;
 
+ 
 /**
- * Database utility object
- * 
- * @var \snac\server\database\DBUtil $dbu object
+ * @var \snac\server\database\DBUtil $dbu object A DBUtil object used internally to read information on
+ * related constellations, necessary for the CPF XML.
  */
 $dbu = null;
+
 /**
  * @var \Monolog\Logger $logger the logger for this server
  *
@@ -32,11 +33,16 @@ $logger = null;
 /**
  * EAC-CPF Serializer
  *
- * Create EAC-CPF xml from a PHP Constellation object. Constellation objects are read out of the SQL database,
- * so this completes the chain from SQL to XML.
+ * Serialize (export) SNAC Constellation to EAC-CPF XML. Create EAC-CPF xml, either by reading a published ARK
+ * from the database, or by extracting the toArray() form of a PHP Constellation.
+ *
+ * These are static classes so there's no need to instantiate this class. Simply call one of the functions:
+ *
+ * $cpfXML = \snac\util\EACCPFSerializer::SerializeByARK('http://n2t.net/ark:/99166/w6xd18cz');
+ * $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($yourConstellation->toArray())
+ * $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']);
  *
  * @author Tom Laudeman
- *        
  */
 class EACCPFSerializer {
 
@@ -80,11 +86,6 @@ class EACCPFSerializer {
         }
     }
 
-    public function __construct() {
-        
-    }
-
-
     /**
      * Serialize an ARK to EAC-CPF XML
      *
@@ -94,7 +95,7 @@ class EACCPFSerializer {
      *
      * @return string EAC-CPF XML
      */ 
-    public static function SerializeByARK($ark, $debug=false) {
+    public static function SerializeByARK($ark) {
         /*
          * There are multiple constellations with the test ARK, which is a problem to be solved, eventually.
          * The internals of readPublishedConstellationByARK() will only return a single record.
@@ -104,7 +105,7 @@ class EACCPFSerializer {
             $dbu = new \snac\server\database\DBUtil();
         }
         $expCon = $dbu->readPublishedConstellationByARK($ark);
-        return self::SerializeCore($expCon->toArray(), $debug);
+        return self::SerializeCore($expCon->toArray());
     }
 
         
@@ -122,7 +123,11 @@ class EACCPFSerializer {
         $data['data'] = $expCon;
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$CPF_TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array());
-        // Create a custom filter and connect it to the Twig filter via the environment
+
+        /*
+         * Create a custom filter and connect it to the Twig filter via the environment. Yes, the second arg
+         * is an inline anonymous function. Looks like a closure.
+         */
         $filter = new \Twig_SimpleFilter('decode_entities', function ($string) {
                 return html_entity_decode($string);
             });
@@ -158,9 +163,9 @@ class EACCPFSerializer {
                 if ($relCon) {
                     /*
                      * The controlled vocabulary table has type, value (aka term) both of which are always
-                     * populated. It also has uri which is populated for some vocabulary. (Other fields are as
-                     * well as id, description, and entity_group). XML elements are limited to using the value,
-                     * while XML attributes should use the uri (when available).
+                     * populated. It also has uri which is populated for some vocabulary. (The other
+                     * vocabulary fields are: id, description, and entity_group). XML elements are limited to
+                     * using the value, while XML attributes should use the uri (when available).
                      */
                     $cpfRel['targetEntityType']['term'] = $relCon->getEntityType()->getTerm();
                     $cpfRel['targetEntityType']['uri'] = $relCon->getEntityType()->getURI();

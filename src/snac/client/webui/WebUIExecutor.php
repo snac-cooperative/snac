@@ -369,15 +369,16 @@ class WebUIExecutor {
                 array_push($headers, "Content-Type: text/xml");
                 array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
                 /*
-                 * Call EAC-CPF serializer 
-                 * $serverResponse is a string[]. If $serverResponse['constellation'] has a constellation as an
-                 * associative list, that is Constellation->toArray(). We can pass $serverResponse['constellation']
-                 * directly to SerializeCore().
+                 * Call the EAC-CPF serializer
+                 * 
+                 * $serverResponse is a string[] and $serverResponse['constellation'] has a constellation as
+                 * an associative list, that is Constellation->toArray(). We can pass
+                 * $serverResponse['constellation'] directly to SerializeCore().
                  *
                  * $serverResponse has keys like: constellation, result, error. See
                  * ServerExecutor->readConstellation() variable $response.
                  */ 
-                $response = \snac\util\EACCPFSerializer::SerializeArray($serverResponse['constellation']);
+                $response = \snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']);
                 
                 // $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
                 // $response = var_export($serverResponse, 1);

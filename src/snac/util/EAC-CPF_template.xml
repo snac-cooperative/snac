@@ -114,25 +114,30 @@
                 {% if data.dates %}
                 {#
 
-                Single dateRange is ok by itself, but single or multiple is ok inside dateSet. Make life easy
-                for ourselves and always use dateSet. We could count and make dateSet conditional on multiple
-                dateRange elements, although the ideal is for the CPF standard to simply drop dateSet, and
-                date and allow 0..n of dateRange, just as we do in the SNAC application.
+                Single dateRange must be by itself. Multiple must be inside dateSet. By checking data.dates[1]
+                we determine if there is more than 1 date. The ideal is for the CPF standard to simply drop
+                dateSet, and drop date, and allow 0..n of dateRange, just as we do in the SNAC application.
 
-                Use Twig trickery with &lt; for the illegal XML less than sign, in order to allow optional XML
+                Use Twig trickery with &lt; for the illegal XML "less than" sign, in order to allow optional XML
                 attributes which Twig cannot do in a valid XML template.
 
                 Create the fromDate and toDate elements as Twig strings. Attributes notBefore and notAfter are
                 optional.
 
-                Other options are: 
+                Other alternatives to allow optional attributes:
 
-                1) create the fromDate and toDate in PHP as strings and pass them in.
+                1) create the fromDate and toDate in PHP as strings and pass them in
 
-                2) put Twig inside the elements, making the template invalid XML even thought the output will be valid.
+                2) put Twig inside the elements, making the template invalid XML even thought the output will be valid
+
+                3) use Twig if to create several opening elements doing all possible attributes, which is hard to read
+
+                4) always have notBefore and notAfter, but leave the value "" empty as necessary
 
                 #}
+                {% if data.dates[1] %}
                 <dateSet>
+                    {% endif %}
                 {% for date in data.dates %}
                 <dateRange>
                     {{'&lt;fromDate'|decode_entities|raw}}
@@ -149,7 +154,9 @@
                     {% endif %}
                 </dateRange>
                 {% endfor %}
+                {% if data.dates[1] %}
                 </dateSet>
+                {% endif %}
                 {% endif %}
             </existDates>
             {% endif %}
