@@ -2,10 +2,15 @@
 <eac-cpf xmlns="urn:isbn:1-931666-33-4" 
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:snac="http://socialarchive.iath.virginia.edu/">
-    <!-- 
-         Author: Tom Laudeman
-         The Institute for Advanced Technology in the Humanities
-    -->
+    {#
+    Author: Tom Laudeman
+    The Institute for Advanced Technology in the Humanities at the University of Virginia
+
+    License: http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+
+    Copyright 2016 the Rector and Visitors of the University of Virginia, and the Regents of the University
+    of California
+    #}
     <control>
         <recordId >{{ data.ark }}</recordId>
         {#
@@ -135,11 +140,13 @@
                     {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}{% endif %}
                     localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
                     standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                    {% if date.toDate %}
                     {{'&lt;toDate'|decode_entities|raw}}
                     {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}{% endif %}
                     {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}{% endif %}
                     localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
                     standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                    {% endif %}
                 </dateRange>
                 {% endfor %}
                 </dateSet>

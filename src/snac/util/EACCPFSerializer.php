@@ -84,6 +84,7 @@ class EACCPFSerializer {
         
     }
 
+
     /**
      * Serialize an ARK to EAC-CPF XML
      *
@@ -93,16 +94,33 @@ class EACCPFSerializer {
      *
      * @return string EAC-CPF XML
      */ 
-    public static function Serialize($ark, $debug=false) {
+    public static function SerializeByARK($ark, $debug=false) {
         /*
          * There are multiple constellations with the test ARK, which is a problem to be solved, eventually.
          * The internals of readPublishedConstellationByARK() will only return a single record.
          */  
         global $dbu;
-        $dbu = new \snac\server\database\DBUtil();
+        if (! $dbu) {
+            $dbu = new \snac\server\database\DBUtil();
+        }
         $expCon = $dbu->readPublishedConstellationByARK($ark);
+        return self::SerializeCore($expCon->toArray(), $debug);
+    }
+
         
-        $loader = new \Twig_Loader_Filesystem("src/snac/util");
+    /**
+     * Export a constellation as EAC-CPF
+     *
+     * The input is a constellation in toArray() format, that is a PHP associative array. If you have a
+     * Constellation object and want to export that, simply pass $yourConstellation->toArray() as param
+     * $expCon.
+     *
+     * @param string[] $expCon Array of string that is the result of Constellation->toArray()
+     * @return string $cpfXML a string containing an EAC-CPF XML file.
+     */ 
+    public static function SerializeCore($expCon) {
+        $data['data'] = $expCon;
+        $loader = new \Twig_Loader_Filesystem(\snac\Config::$CPF_TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array());
         // Create a custom filter and connect it to the Twig filter via the environment
         $filter = new \Twig_SimpleFilter('decode_entities', function ($string) {
@@ -110,17 +128,9 @@ class EACCPFSerializer {
             });
         $twig->addFilter($filter);        
         
-        $data['data'] = $expCon->toArray();
         self::addEntityType($data['data']);
         $data['currentDate'] = date('c');
 
-        if ($debug) {
-            $dFile = 'cpf_data.txt';
-            $cfile = fopen($dFile, 'w');
-            fwrite($cfile, sprintf("\n%s\n", var_export($data, 1)));
-            fclose($cfile); 
-        }
-        
         $cpfXML = $twig->render("EAC-CPF_template.xml", $data);
         return $cpfXML;
     }
@@ -134,33 +144,38 @@ class EACCPFSerializer {
      *
      * @param string $data Constellation as array, pass by reference.
      */
-    private function addEntityType(&$data) {
+    private static function addEntityType(&$data) {
         /*
          * Note foreach by reference, so we can change in place without using an index.
          */
         global $dbu;
-        foreach($data['relations'] as &$cpfRel) {
-            $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], true);
-            if ($relCon) {
-                /*
-                 * The controlled vocabulary table has type, value (aka term) both of which are always
-                 * populated. It also has uri which is populated for some vocabulary. (Other fields are as
-                 * well as id, description, and entity_group). XML elements are limited to using the value,
-                 * while XML attributes should use the uri (when available).
-                 */
-                $cpfRel['targetEntityType']['term'] = $relCon->getEntityType()->getTerm();
-                $cpfRel['targetEntityType']['uri'] = $relCon->getEntityType()->getURI();
+        if (! $dbu) {
+            $dbu = new \snac\server\database\DBUtil();
+        }
+        if ($data['relations']) {
+            foreach($data['relations'] as &$cpfRel) {
+                $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], true);
+                if ($relCon) {
+                    /*
+                     * The controlled vocabulary table has type, value (aka term) both of which are always
+                     * populated. It also has uri which is populated for some vocabulary. (Other fields are as
+                     * well as id, description, and entity_group). XML elements are limited to using the value,
+                     * while XML attributes should use the uri (when available).
+                     */
+                    $cpfRel['targetEntityType']['term'] = $relCon->getEntityType()->getTerm();
+                    $cpfRel['targetEntityType']['uri'] = $relCon->getEntityType()->getURI();
+                }
+                else {
+                    /*
+                     * In the production code this should be rare. Log a warning.
+                     */ 
+                    $cpfRel['targetEntityType']['term'] = '';
+                    $cpfRel['targetEntityType']['uri'] = '';
+                    $msg = sprintf("\nWarning: cannot get constellation for ARK: %s\n", $cpfRel['targetArkID']);
+                    self::enableLogging();
+                    self::logDebug($msg);
+                }
             }
-            else {
-                /*
-                 * In the production code this should be rare. Log a warning.
-                 */ 
-               $cpfRel['targetEntityType']['term'] = '';
-                $cpfRel['targetEntityType']['uri'] = '';
-                $msg = sprintf("\nWarning: cannot get constellation for ARK: %s\n", $cpfRel['targetArkID']);
-                self::enableLogging();
-                self::logDebug($msg);
-             }
         }
     }
 }
