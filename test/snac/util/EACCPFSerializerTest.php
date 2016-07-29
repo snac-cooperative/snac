@@ -149,12 +149,13 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
          * The composer script automatically pulls in the cpf.rng file into the main repository. It should
          * then always deposit the newest rng file in vendor/npm-asset/eac-validator/rng
          *
-         * In other words, if the test below doesn't run due to missing cpf.rng run: composer update
+         * In other words, if the test below doesn't run due to missing cpf.rng, then you should run:
+         *
+         * composer update
          *
          * Jing's error and warning output goes to stdout, so we should see it in $jingResult. No need to io
          * redirect stderr from the jing command.
          */  
-
         $cpfRng = 'vendor/npm-asset/eac-validator/rng/cpf.rng';
         $jingCmd = '/usr/bin/jing';
         if (file_exists($cpfRng) && file_exists($jingCmd)) {
