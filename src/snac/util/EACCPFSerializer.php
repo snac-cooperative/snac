@@ -175,18 +175,40 @@ class EACCPFSerializer {
          *   <relationEntry>George Washington university</relationEntry>
          * </cpfRelation>
          */
+
+    /**
+     * Create cpfRelation sameAs and remove otherRecordIDs sameAs
+     *
+     * The database has cpfRelations that are sameAs saved in table otherid, PHP object otherRecordIDs.
+     *
+     * Serializing back to CPF we need to reverse that, but only for sameAs.
+     *
+     * This adds new ConstellationRelation entries, as appropriated. It also creates a replacement
+     * otherRecordIDs as necessary that only contains the non-sameAs entries.
+     * 
+     * @param string[] $data String array reference which is the constellation as a PHP array, from Constellation->toArray().
+     * Using the reference, changes are made in place.
+     */
     private static function cpfSameAs(&$data) {
-        foreach($data['otherRecordIds'] as $oId) {
-            if ($oId['type']['term'] == 'sameAs') {
-                $cpfRel = array();
-                $cpfRel['dataType'] = "ConstellationRelation"; 
-                $cpfRel['targetArkID'] = $oId['uri']; // xlink:href
-                $cpfRel['type'] = $oId['type']; // .uri is xlink:arcrole
-                $cpfRel['content'] = $oId['text']; // relationEntry
-                $cpfRel['targetEntityType']['uri'] = ''; // xlink:role 
-                $cpfRel['targetEntityType']['term'] = ''; // xlink:role
+        $fixedOIDs = array();
+        if (array_key_exists('otherRecordIDs', $data)) {
+            foreach($data['otherRecordIDs'] as $oId) {
+                if ($oId['type']['term'] == 'sameAs') {
+                    $cpfRel = array();
+                    $cpfRel['dataType'] = "ConstellationRelation"; 
+                    $cpfRel['targetArkID'] = $oId['uri']; // xlink:href
+                    $cpfRel['type'] = $oId['type']; // .uri is xlink:arcrole
+                    if (array_key_exists('text', $oId)) {
+                        $cpfRel['content'] = $oId['text']; // relationEntry
+                    }
+                    $cpfRel['targetEntityType']['uri'] = ''; // xlink:role 
+                    $cpfRel['targetEntityType']['term'] = ''; // xlink:role
+                    array_push($data['relations'], $cpfRel);
+                } else {
+                    array_push($fixedOIDs, $oId);
+                }
             }
-            array_push($data['relations'], $cpfRel);
+            $data['otherRecordIDs'] = $fixedOIDs;
         }
     }
 
