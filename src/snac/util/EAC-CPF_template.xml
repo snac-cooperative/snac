@@ -141,14 +141,14 @@
                 {% for date in data.dates %}
                 <dateRange>
                     {{'&lt;fromDate'|decode_entities|raw}}
-                    {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}{% endif %}
-                    {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}{% endif %}
+                    {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
+                    {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
                     localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
                     standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
                     {% if date.toDate %}
                     {{'&lt;toDate'|decode_entities|raw}}
-                    {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}{% endif %}
-                    {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}{% endif %}
+                    {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
+                    {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
                     localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
                     standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
                     {% endif %}

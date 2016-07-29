@@ -133,11 +133,61 @@ class EACCPFSerializer {
             });
         $twig->addFilter($filter);        
         
+        self::cpfSameAs($data['data']);
         self::addEntityType($data['data']);
         $data['currentDate'] = date('c');
 
         $cpfXML = $twig->render("EAC-CPF_template.xml", $data);
         return $cpfXML;
+    }
+
+        /* 
+         * {
+         *     "dataType": "SameAs",
+         *     "type": {
+         *         "id": "28222",
+         *         "term": "sameAs",
+         *         "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs"
+         *     },
+         *     "text": "George Washington university",
+         *     "uri": "http:\/\/viaf.org\/viaf\/142703516",
+         *     "id": "82076",
+         *     "version": "364"
+         *
+         *     "dataType": "ConstellationRelation",
+         *     "sourceConstellation": "82030",
+         *     "sourceArkID": "http:\/\/n2t.net\/ark:\/99166\/w6fr4rx5",
+         *     "targetArkID": "http:\/\/n2t.net\/ark:\/99166\/w6nc6tpp",
+         *     "type": {
+         *         "id": "28231",
+         *         "term": "associatedWith",
+         *         "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#associatedWith"
+         *     },
+         *     "content": "Lovell, Malcolm Read, Jr., 1921-",
+         *     "id": "82079",
+         *     "version": "364"
+         *
+         * <cpfRelation 
+         * xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#sameAs"
+         * xlink:href="http://viaf.org/viaf/142703516"
+         * xlink:role="http://socialarchive.iath.virginia.edu/control/term#Corporatebody"
+         * xlink:type="simple">
+         *   <relationEntry>George Washington university</relationEntry>
+         * </cpfRelation>
+         */
+    private static function cpfSameAs(&$data) {
+        foreach($data['otherRecordIds'] as $oId) {
+            if ($oId['type']['term'] == 'sameAs') {
+                $cpfRel = array();
+                $cpfRel['dataType'] = "ConstellationRelation"; 
+                $cpfRel['targetArkID'] = $oId['uri']; // xlink:href
+                $cpfRel['type'] = $oId['type']; // .uri is xlink:arcrole
+                $cpfRel['content'] = $oId['text']; // relationEntry
+                $cpfRel['targetEntityType']['uri'] = ''; // xlink:role 
+                $cpfRel['targetEntityType']['term'] = ''; // xlink:role
+            }
+            array_push($data['relations'], $cpfRel);
+        }
     }
 
     /**
@@ -159,6 +209,12 @@ class EACCPFSerializer {
         }
         if ($data['relations']) {
             foreach($data['relations'] as &$cpfRel) {
+                if ($cpfRel['type']['term'] == 'sameAs') {
+                    /*
+                     * Skip sameAs because they are created by cpfSameAs() above. Not our concern here.
+                     */
+                    continue;
+                }
                 $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], true);
                 if ($relCon) {
                     /*
