@@ -135,7 +135,14 @@ class EACCPFSerializer {
         
         self::cpfSameAs($data['data']);
         self::addEntityType($data['data']);
-        $data['currentDate'] = date('c');
+        /*
+         * Leave off the minutes and microseconds. Not necessary, and it complicates testing. For testing we
+         * want to extract by two methods and compare. Seconds and microseconds will be different which
+         * complicates the testing.
+         *
+         * $data['currentDate'] = date('c');
+         */ 
+        $data['currentDate'] = date('Y-m-d');
 
         $cpfXML = $twig->render("EAC-CPF_template.xml", $data);
         return $cpfXML;
@@ -179,9 +186,10 @@ class EACCPFSerializer {
     /**
      * Create cpfRelation sameAs and remove otherRecordIDs sameAs
      *
-     * The database has cpfRelations that are sameAs saved in table otherid, PHP object otherRecordIDs.
+     * Original ingested cpfRelations that are sameAs are saved in table otherid, PHP object
+     * otherRecordIDs. The xlink:href for sameAs is (not surprisingly) the same as the entityType. 
      *
-     * Serializing back to CPF we need to reverse that, but only for sameAs.
+     * Serializing back to CPF we need to reverse that process, but only for sameAs.
      *
      * This adds new ConstellationRelation entries, as appropriated. It also creates a replacement
      * otherRecordIDs as necessary that only contains the non-sameAs entries.
@@ -201,8 +209,8 @@ class EACCPFSerializer {
                     if (array_key_exists('text', $oId)) {
                         $cpfRel['content'] = $oId['text']; // relationEntry
                     }
-                    $cpfRel['targetEntityType']['uri'] = ''; // xlink:role 
-                    $cpfRel['targetEntityType']['term'] = ''; // xlink:role
+                    $cpfRel['targetEntityType']['uri'] = $data['entityType']['uri']; // xlink:role 
+                    $cpfRel['targetEntityType']['term'] = $data['entityType']['term']; // xlink:role
                     array_push($data['relations'], $cpfRel);
                 } else {
                     array_push($fixedOIDs, $oId);
