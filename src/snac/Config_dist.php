@@ -114,6 +114,14 @@ class Config {
     public static $SQL_LIMIT = 42;
 
     /**
+     * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
+     *
+     * The relative path is probably: vendor/npm-asset/eac-validator/rng
+     * 
+     */
+    public static $RNG_DIR = "full/path/to/src/snac/util";
+
+    /**
      * @var string Location of the EAC-CFP XML Serializer template directory. This is the same directory as
      * the serializer class.
      */
