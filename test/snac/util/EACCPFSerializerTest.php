@@ -147,7 +147,8 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
          * A bug was revealed by /data/merge/99166-w6fr4rx5.xml  http://n2t.net/ark:/99166/w6fr4rx5
          * 
          * The composer script automatically pulls in the cpf.rng file into the main repository. It should
-         * then always deposit the newest rng file in vendor/npm-asset/eac-validator/rng
+         * then always deposit the newest rng file in vendor/npm-asset/eac-validator/rng. Use the const
+         * RNG_DIR for that path.
          *
          * In other words, if the test below doesn't run due to missing cpf.rng, then you should run:
          *
@@ -155,8 +156,12 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
          *
          * Jing's error and warning output goes to stdout, so we should see it in $jingResult. No need to io
          * redirect stderr from the jing command.
+         *
+         * Class path constants don't interpolate, so we have to use the . operator to build the full
+         * filename.
+         * 
          */  
-        $cpfRng = 'vendor/npm-asset/eac-validator/rng/cpf.rng';
+        $cpfRng = \snac\Config::$RNG_DIR . "/cpf.rng";
         $jingCmd = '/usr/bin/jing';
         if (file_exists($cpfRng) && file_exists($jingCmd)) {
             $xCon = $this->dbu->readPublishedConstellationByARK('http://n2t.net/ark:/99166/w6fr4rx5');
@@ -178,12 +183,21 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
 
             /*
              * Delete before calling assert, so that a failed assert doesn't leave our temp file.
+             *
+             * Comment this out for debugging. The file is in /tmp.
              */
             unlink($fn);
             $this->assertTrue($jingResult == '');
         } else {
+            $msg = "Not checking via jing. ";
+            if (! file_exists($cpfRng)) {
+                $msg .= "File not exists: $cpfRng ";
+            }
+            if (! file_exists($jingCmd)) {
+                $msg .= "File not exists: $jingCmd";
+            }
             $this->enableLogging();
-            $this->logDebug("Not checking via jing");
+            $this->logDebug($msg);
         }
         /*
          * Uncomment this for debugging.
