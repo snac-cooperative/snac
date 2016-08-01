@@ -89,13 +89,19 @@ $(document).ready(function() {
     <ol class="breadcrumb">
         <li><a href="?command=administrator&subcommand=dashboard">Administrator</a></li>
         <li><a href="?command=administrator&subcommand=users">User Management</a></li>
+        <li><a href="?command=administrator&subcommand=edit_user&userid={{data.user.userid}}">{{data.user.fullName}}</a></li>
         <li>{{ data.title }}</li>
     </ol>
 
     <div class="row">
+        <div class="alert alert-01 alert-info" id="status-message" style="display: none">
+            <p></p>
+        </div><!-- end alert -->
+    </div>
+    <div class="row">
         <div class="col-md-12">
             <div class="well well-lg">
-                <p><span style="font-weight: bold;">Instructions: </span></p>
+                <p><span style="font-weight: bold;">Instructions: </span>This page shows the current activity of the user, {{data.user.fullName}}.  Use the "Action" links to the right of any Constellation to view the published version, view the user's current in-progress version, unlock the constellation if the user is currently editing, or reassign the constellation to be edited by another user. </p>
             </div>
             <div>
                 <h2>{{data.user.fullName}}</h2>
@@ -114,29 +120,29 @@ $(document).ready(function() {
                             </thead>
                             <tbody>
                                 {% for link in data.editing %}
-                                <tr>
+                                <tr id="constellation_{{link.id}}">
                                     <td>{{link.nameEntry}}</td>
-                                    <td>Checked out (not editing)</td>
+                                    <td id="status_{{link.id}}">Checked out (not editing)</td>
                                     <td class="text-right">
                                         <div class="btn-group" role="group" aria-label="Actions">
                                             <a href="?command=details&constellationid={{link.id}}" class="btn btn-info" title="Published Version"><span  class="fa fa-file" aria-hidden="true"></span></a>
                                             <a href="?command=details&constellationid={{link.id}}&version={{link.version}}&preview=1" class="btn btn-success" title="Preview"><span  class="fa fa-eye" aria-hidden="true"></span></a>
                                             <a href="#" class="btn btn-default disabled" title="Unlock"><span  class="fa fa-unlock" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-danger" title="Reassign"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
+                                            <a href="#" class="btn btn-danger" title="Reassign" onClick="reassignConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
                                         </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                                 {% for link in data.editing_lock %}
-                                <tr>
+                                <tr id="constellation_{{link.id}}">
                                     <td>{{link.nameEntry}}</td>
-                                    <td>Locked (currently editing)</td>
+                                    <td id="status_{{link.id}}">Locked (currently editing)</td>
                                     <td class="text-right">
                                         <div class="btn-group" role="group" aria-label="Actions">
                                             <a href="?command=details&constellationid={{link.id}}" class="btn btn-info" title="Published Version"><span  class="fa fa-file" aria-hidden="true"></span></a>
                                             <a href="?command=details&constellationid={{link.id}}&version={{link.version}}&preview=1" class="btn btn-success" title="Preview"><span  class="fa fa-eye" aria-hidden="true"></span></a>
-                                            <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="btn btn-warning" title="Unlock"><span  class="fa fa-unlock" aria-hidden="true"></span></a>
-                                            <a href="#" class="btn btn-danger" title="Reassign"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
+                                            <a href="#" class="btn btn-warning" title="Unlock" id="button_{{link.id}}" onClick="unlockConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-unlock" aria-hidden="true"></span></a>
+                                            <a href="#" class="btn btn-danger" title="Reassign" onClick="reassignConstellation({{link.id}},{{link.version}}); return false;"><span  class="fa fa-retweet" aria-hidden="true"></span></a>
                                         </div>
                                     </td>
                                 </tr>
@@ -146,6 +152,27 @@ $(document).ready(function() {
                     </div>
                 </div>
 
+            </div>
+        </div>
+        <div class="modal fade" id="usersPane" tabindex="-1" role="dialog" aria-labelledby="usersPaneLabel">
+            <div class="modal-dialog" role="document" style="width: 60%;">
+                <div class="modal-content">
+                    <div class="modal-header primary">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="usersPaneLabel">Reassign Constellation</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="well well-lg">
+                            <p><span style="font-weight: bold;">Instructions: </span> Select the user to whom you would like to reassign this Constellation.  Once you click "Reassign" below, the Constellation will be checked out to the chosen user.</p>
+                        </div>
+                        <div id="usersPaneContent">
+                            <p class='text-center'>Loading...</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" onClick="doReassignConstellation();">Reassign</button>
+                    </div>
+                </div>
             </div>
         </div>
 

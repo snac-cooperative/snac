@@ -224,6 +224,13 @@ class Server implements \snac\interfaces\ServerInterface {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.");
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
+            
+            case "reassign_constellation":
+                if (!$executor->hasPermission("Change Locks"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to reassign constellations.");
+                $this->response = $executor->reassignConstellation($this->input);
+                break;
+
 
             case "recently_published":
                 $this->response = $executor->getRecentlyPublished();

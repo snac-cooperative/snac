@@ -797,6 +797,76 @@ class ServerExecutor {
     }
 
     /**
+     * Reassign Constellation
+     *
+     * Reassigns the given constellation to a different user, setting it to be "locked editing" to that user, assuming the
+     * administrator user has "Change Locks" permissions.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function reassignConstellation(&$input) {
+        $response = array();
+        try {
+            $this->logger->addDebug("Reassigning the constellation");
+            if (isset($input["constellation"]) && isset($input["to_user"])) {
+                $constellation = new \snac\data\Constellation($input["constellation"]);
+                $toUser = new \snac\data\User($input["to_user"]);
+
+                // Get the full User object
+                $toUser = $this->uStore->readUser($toUser);
+                if ($toUser === false) {
+                    throw new \snac\exceptions\SNACInputException("Bad user information given.");
+                }
+
+                $currentStatus = $this->cStore->readConstellationStatus($constellation->getID());
+
+                // Read the summary out of the database. if the version numbers match AND the constellation
+                // is currently editing for the user, THEN unlock it.  Else, send back a note to the client with a failure
+
+                // Read the current summary
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                // If the admin user has the current version AND permission to change locks
+                if ($current->getVersion() == $constellation->getVersion() && $this->hasPermission("Change Locks")) {
+                    $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "locked editing",
+                            "Constellation reassigned by " . $this->user->getUserName());
+
+
+                    if (isset($result) && $result !== false) {
+                        $this->logger->addDebug("successfully reassigned constellation");
+                        $constellation->setVersion($result);
+                        $response["constellation"] = $constellation->toArray();
+                        $response["result"] = "success";
+
+
+                    } else {
+
+                        $this->logger->addDebug("could not reassign the constellation");
+                        $response["result"] = "failure";
+                        $response["error"] = "writing status failed";
+                    }
+                } else {
+                    $this->logger->addDebug("constellation versions didn't match or no permissions");
+                    $response["result"] = "failure";
+                    $response["error"] = "other changes have been made to this constellation";
+                    $response["constellation"] = $constellation->toArray();
+                }
+            } else {
+                $this->logger->addDebug("no constellation or user given");
+                $response["result"] = "failure";
+                $response["error"] = "no constellation or user given";
+            }
+        } catch (\Exception $e) {
+            $this->logger->addError("unlocking constellation threw an exception");
+            $response["result"] = "failure";
+            throw $e;
+        }
+        return $response;
+    }
+
+    /**
      * Unlock Constellation
      *
      * Lowers the lock on a constellation from "currently editing" to "locked editing."  The constellation
@@ -830,8 +900,8 @@ class ServerExecutor {
                     }
                 }
 
-                // If this constellation is in the list of currently editing for the user, then unlock it
-                if ($current->getVersion() == $constellation->getVersion() && $inList) {
+                // If this constellation is in the list of currently editing for the user OR the user has change locks permission, then unlock it
+                if ($current->getVersion() == $constellation->getVersion() && ($inList || $this->hasPermission("Change Locks"))) {
                     $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "locked editing",
                             "User finished editing constellation");
 

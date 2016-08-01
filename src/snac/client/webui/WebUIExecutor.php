@@ -545,6 +545,14 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Admin Dashboard", $display);
                 }
                 break;
+
+            case "unlock_constellation":
+                return $this->unlockConstellation($input);
+                break;
+            
+            case "reassign_constellation":
+                return $this->reassignConstellation($input);
+                break;
             default:
                 $this->displayPermissionDeniedPage("Administrator", $display);
         }
@@ -1093,6 +1101,57 @@ class WebUIExecutor {
         return $response;
     }
 
+
+    /**
+     * Reassign Constellation
+     *
+     * Asks the server to reassign the input's constellation to a different user 
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function reassignConstellation(&$input) {
+
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $toUser = null;
+        if (isset($input["userid"])) {
+            $toUser = new \snac\data\User();
+            $toUser->setUserID($input["userid"]);
+        } else {
+            return array( "result" => "failure", "error" => "No user id given");
+        }
+
+        $this->logger->addDebug("reassigning constellation", $constellation->toArray());
+        $this->logger->addDebug("reassigning to user", $toUser->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+            "command" => "reassign_constellation",
+            "constellation" => $constellation->toArray(),
+            "to_user" => $toUser->toArray()
+        );
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["unlock"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
 
     /**
      * Unlock Constellation
