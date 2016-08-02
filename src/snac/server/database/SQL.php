@@ -1709,9 +1709,6 @@ class SQL
     /**
      * Select list of dates
      *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
-     *
      * Select a date knowing a date id values. selectDate() relies on the date.id being in the original table,
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
@@ -1767,9 +1764,6 @@ class SQL
      * Returns an array of all Dates for a given constellation, regardless of what piece of the constellation they are
      * actually attached to.
      *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
-     *
      * @param integer $cid A constellation ID
      *
      * @param integer $version The constellation version. For edits this is max version of the
@@ -1804,9 +1798,6 @@ class SQL
 
     /**
      * Select list of place_link
-     *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
      *
      * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
      * place applies. We do not know or care what the other record is, and that works because all the ids come
@@ -1926,9 +1917,6 @@ class SQL
      * Returns an array of all SCMs for a given constellation, regardless of what piece of the constellation they are
      * actually attached to.
      *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
-     *
      * @param integer $cid A constellation ID
      *
      * @param integer $version The constellation version. For edits this is max version of the
@@ -1960,11 +1948,6 @@ class SQL
 
     /**
      * Select a snac control meta data record
-     *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
-     *
-     * Old comment: Select a meta data record. We expect only one record, and will only return one (or zero).
      *
      * May 6 2016: Reading the code, we will return zero or many records. I'm pretty sure that anything which
      * can have an SCM can have multiple SCM records related to it.
