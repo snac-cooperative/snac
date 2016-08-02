@@ -1762,6 +1762,47 @@ class SQL
     }
 
     /**
+     * Select all dates for constellation
+     *
+     * Returns an array of all Dates for a given constellation, regardless of what piece of the constellation they are
+     * actually attached to.
+     *
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
+     *
+     * @param integer $cid A constellation ID
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names
+     */
+    public function selectAllDatesForConstellation($cid, $version)
+    {
+        $qq = 'select_date';
+
+        $query = 'select
+        aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
+        aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+        aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
+        aa.from_type,aa.to_type
+        from date_range as aa,
+        (select id,max(version) as version from date_range where ic_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
      * Select list of place_link
      *
      * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
@@ -1879,6 +1920,43 @@ class SQL
         return $id;
     }
 
+    /**
+     * Select all snac control meta data for constellation
+     *
+     * Returns an array of all SCMs for a given constellation, regardless of what piece of the constellation they are
+     * actually attached to.
+     *
+     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
+     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
+     *
+     * @param integer $cid A constellation ID
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
+     * version, ic_id, citation_id, sub_citation, source_data, rule_id, language_id, note, fk_id, fk_table.
+     */
+    public function selectAllMetaForConstellation($cid, $version)
+    {
+        $qq = 'select_meta';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data,
+                            aa.rule_id, aa.note, aa.fk_id, aa.fk_table
+                            from scm as aa,
+                            (select id,max(version) as version from scm where ic_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
 
     /**
      * Select a snac control meta data record

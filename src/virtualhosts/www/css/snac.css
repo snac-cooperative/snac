@@ -231,6 +231,57 @@ button.list-group-item-download.active:focus {
 }
 
 
+.list-group-item-review {
+    color: #AE5A0B;
+    background-color: #F3ECE0;
+}
+a.list-group-item-review,
+button.list-group-item-review {
+    color: #AE5A0B;
+}
+a.list-group-item-review .list-group-item-heading,
+button.list-group-item-review .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-review:hover,
+button.list-group-item-review:hover,
+a.list-group-item-review:focus,
+button.list-group-item-review:focus {
+    color: #AE5A0B;
+    background-color: #EBD9CD;
+}
+a.list-group-item-review.active,
+button.list-group-item-review.active,
+a.list-group-item-review.active:hover,
+button.list-group-item-review.active:hover,
+a.list-group-item-review.active:focus,
+button.list-group-item-review.active:focus {
+    color: #fff;
+    background-color: #AE5A0B;
+    border-color: #AE5A0B;
+}
+
+/* Use the following to define new panel styles */
+.panel-review {
+    border-color: #FBDECE;
+}
+.panel-review > .panel-heading {
+    color: #B84905;
+    background-color: #FCE0CD;
+    border-color: #FBDECE;
+}
+.panel-review > .panel-heading + .panel-collapse > .panel-body {
+    border-top-color: #FBDECE;
+}
+.panel-review > .panel-heading .badge {
+    color: #FCE0CD;
+    background-color: #B84905;
+}
+.panel-review > .panel-footer + .panel-collapse > .panel-body {
+    border-bottom-color: #FBDECE;
+}
+
+
 @media (min-width: 992px) {
     .affix {
         position: fixed;

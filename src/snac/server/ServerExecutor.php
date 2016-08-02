@@ -612,9 +612,10 @@ class ServerExecutor {
 
         // Give the editing list back in alphabetical order
         usort($response["editing_lock"],
-                function ($a, $b) {
-                    return $a['nameEntry'] <=> $b['nameEntry'];
-                });
+            function ($a, $b) {
+                return $a['nameEntry'] <=> $b['nameEntry'];
+        });
+
         return $response;
     }
 
@@ -796,6 +797,76 @@ class ServerExecutor {
     }
 
     /**
+     * Reassign Constellation
+     *
+     * Reassigns the given constellation to a different user, setting it to be "locked editing" to that user, assuming the
+     * administrator user has "Change Locks" permissions.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function reassignConstellation(&$input) {
+        $response = array();
+        try {
+            $this->logger->addDebug("Reassigning the constellation");
+            if (isset($input["constellation"]) && isset($input["to_user"])) {
+                $constellation = new \snac\data\Constellation($input["constellation"]);
+                $toUser = new \snac\data\User($input["to_user"]);
+
+                // Get the full User object
+                $toUser = $this->uStore->readUser($toUser);
+                if ($toUser === false) {
+                    throw new \snac\exceptions\SNACInputException("Bad user information given.");
+                }
+
+                $currentStatus = $this->cStore->readConstellationStatus($constellation->getID());
+
+                // Read the summary out of the database. if the version numbers match AND the constellation
+                // is currently editing for the user, THEN unlock it.  Else, send back a note to the client with a failure
+
+                // Read the current summary
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                // If the admin user has the current version AND permission to change locks
+                if ($current->getVersion() == $constellation->getVersion() && $this->hasPermission("Change Locks")) {
+                    $result = $this->cStore->writeConstellationStatus($toUser, $constellation->getID(), "locked editing",
+                            "Constellation reassigned by " . $this->user->getUserName());
+
+
+                    if (isset($result) && $result !== false) {
+                        $this->logger->addDebug("successfully reassigned constellation");
+                        $constellation->setVersion($result);
+                        $response["constellation"] = $constellation->toArray();
+                        $response["result"] = "success";
+
+
+                    } else {
+
+                        $this->logger->addDebug("could not reassign the constellation");
+                        $response["result"] = "failure";
+                        $response["error"] = "writing status failed";
+                    }
+                } else {
+                    $this->logger->addDebug("constellation versions didn't match or no permissions");
+                    $response["result"] = "failure";
+                    $response["error"] = "other changes have been made to this constellation";
+                    $response["constellation"] = $constellation->toArray();
+                }
+            } else {
+                $this->logger->addDebug("no constellation or user given");
+                $response["result"] = "failure";
+                $response["error"] = "no constellation or user given";
+            }
+        } catch (\Exception $e) {
+            $this->logger->addError("unlocking constellation threw an exception");
+            $response["result"] = "failure";
+            throw $e;
+        }
+        return $response;
+    }
+
+    /**
      * Unlock Constellation
      *
      * Lowers the lock on a constellation from "currently editing" to "locked editing."  The constellation
@@ -829,8 +900,8 @@ class ServerExecutor {
                     }
                 }
 
-                // If this constellation is in the list of currently editing for the user, then unlock it
-                if ($current->getVersion() == $constellation->getVersion() && $inList) {
+                // If this constellation is in the list of currently editing for the user OR the user has change locks permission, then unlock it
+                if ($current->getVersion() == $constellation->getVersion() && ($inList || $this->hasPermission("Change Locks"))) {
                     $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "locked editing",
                             "User finished editing constellation");
 
@@ -861,6 +932,81 @@ class ServerExecutor {
             }
         } catch (\Exception $e) {
             $this->logger->addError("unlocking constellation threw an exception");
+            $response["result"] = "failure";
+            throw $e;
+        }
+        return $response;
+    }
+
+    /**
+     * Send Constellation For Review
+     *
+     * Lowers the lock on a constellation from editing to "needs review."  This essentially puts the
+     * constellation into the list of constellations needing review.  The constellation must be given in the input.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
+    public function sendForReviewConstellation(&$input) {
+        $response = array();
+        try {
+            $this->logger->addDebug("Marking the constellation as needs review");
+            if (isset($input["constellation"])) {
+                $constellation = new \snac\data\Constellation($input["constellation"]);
+
+                $currentStatus = $this->cStore->readConstellationStatus($constellation->getID());
+
+                // Read the summary out of the database. if the version numbers match AND the constellation
+                // is currently editing for the user, THEN send it for review it.  Else, send back a note to the client with a failure
+
+                // Read the current summary
+                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+
+                $inList = false;
+                $userList = array_merge(
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
+                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
+                );
+                foreach ($userList as $item) {
+                    if ($item->getID() == $constellation->getID()) {
+                        $inList = true;
+                        break;
+                    }
+                }
+
+                // If this constellation is in the list of currently editing for the user, then send it for review
+                if ($current->getVersion() == $constellation->getVersion() && $inList) {
+                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "needs review",
+                            "User sending Constellation for review");
+
+
+                    if (isset($result) && $result !== false) {
+                        $this->logger->addDebug("successfully sent constellation for review");
+                        $constellation->setVersion($result);
+                        $response["constellation"] = $constellation->toArray();
+                        $response["result"] = "success";
+
+
+                    } else {
+
+                        $this->logger->addDebug("could not send the constellation for review");
+                        $response["result"] = "failure";
+                        $response["error"] = "writing status failed";
+                    }
+                } else {
+                    $this->logger->addDebug("constellation versions didn't match or was not in users currently editing list");
+                    $response["result"] = "failure";
+                    $response["error"] = "other changes have been made to this constellation";
+                    $response["constellation"] = $constellation->toArray();
+                }
+            } else {
+                $this->logger->addDebug("no constellation given to send for review");
+                $response["result"] = "failure";
+                $response["error"] = "no constellation given";
+            }
+        } catch (\Exception $e) {
+            $this->logger->addError("sending constellation for review threw an exception");
             $response["result"] = "failure";
             throw $e;
         }
@@ -1123,6 +1269,7 @@ class ServerExecutor {
                                 $input["constellationid"] . " does not have a published version.");
                     }
                 }
+                $this->logger->addDebug("Finished reading constellation from the database");
 
                 // Get the list of constellations locked editing for this user
                 $inList = false;
@@ -1140,7 +1287,7 @@ class ServerExecutor {
                 if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                     $constellation->setStatus("editable");
                 }
-                $this->logger->addDebug("Finished reading constellation from the database");
+                $this->logger->addDebug("Finished checking constellation status against the user");
                 $response["constellation"] = $constellation->toArray();
                 $this->logger->addDebug("Serialized constellation for output to client");
             } catch (Exception $e) {
@@ -1214,8 +1361,9 @@ class ServerExecutor {
                 }
 
                 // If the current status is published OR the user has that constellation locked editing (checked out to them),
+                // OR the constellation needs review and the user has permission to review (TODO)
                 // then the user is allowed to edit.
-                if ( $status == "published" || $inList) {
+                if ( $status == "published" || $inList || ($status == "needs review" && 1)) {
                     // Can edit this!
 
                     // lock the constellation to the user as currently editing
@@ -1250,6 +1398,58 @@ class ServerExecutor {
             }
         }
         return $response;
+    }
+
+    public function listConstellations(&$input) {
+
+        $status = "published";
+        if (isset($input["status"]))
+            $status = $input["status"];
+
+        $hasPermission = false;
+
+        switch ($status) {
+
+            case "needs review":
+                if ($this->hasPermission("Change Locks"))
+                    $hasPermission = true;
+                break;
+
+            case "published":
+                $hasPermission = true;
+                break;
+
+            //default is no permission
+        }
+
+        if (!$hasPermission) {
+            //throw permission denied
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to list constellations with this status");
+        }
+
+        $list = $this->cStore->listConstellationsWithStatusForAny($status);
+
+        //TODO: may want to rewrite this as a list of Constellation objects
+        $response["results"] = array ();
+        if ($list !== false) {
+            foreach ($list as $constellation) {
+                $item = array (
+                    "id" => $constellation->getID(),
+                    "version" => $constellation->getVersion(),
+                    "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                );
+                $this->logger->addDebug("Needs Review", $item);
+                array_push($response["results"], $item);
+            }
+        }
+        // Give the needs review back in alphabetical order
+        usort($response["results"],
+            function ($a, $b) {
+                return $a['nameEntry'] <=> $b['nameEntry'];
+            });
+
+        return $response;
+
     }
 
     /**

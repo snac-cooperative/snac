@@ -73,6 +73,24 @@ class DBUtil
     private $db = null;
 
     /**
+     * Term Cache
+     *
+     * Cache of term objects to use when filling out structures so we don't have to repeat lookups
+     *
+     * @var \snac\data\Term[] Array of term objects indexed by termID
+     */
+    private $termCache = null;
+
+    /**
+     * Constellation Cache
+     *
+     * Cache of constellation pieces to use when filling out structures so we don't have to repeat lookups
+     *
+     * @var mixed[] Associative array of arrays of objects indexed by their ids
+     */
+    private $dataCache = null;
+    
+    /**
      * Constellation status
      *
      * These are the valid values for constellation status. These are used in the code, so an enumerated type
@@ -145,6 +163,8 @@ class DBUtil
     public function __construct()
     {
         $this->db = new \snac\server\database\DatabaseConnector();
+
+        $this->termCache = array();
 
         /*
          * See private var $statusList. Passing the value of deleted to the SQL constructor is a valiant, but
@@ -641,6 +661,9 @@ class DBUtil
      */
     private function selectConstellation($vhInfo, $summary=false)
     {
+        // empty data cache
+        $this->dataCache = array();
+
         $tableName = 'version_history';
         $cObj = new \snac\data\Constellation();
         $this->populateNrd($vhInfo, $cObj);
@@ -658,6 +681,10 @@ class DBUtil
          * Constellation SCM aka populateMeta() call moved here from populateNrd() because it is *not* the scm
          * for table nrd.
          */
+
+        $this->populateMetaCache($vhInfo);
+        $this->populateDateCache($vhInfo);
+
         $this->populateMeta($vhInfo, $cObj, $tableName);
         $this->populateBiogHist($vhInfo, $cObj);
         $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
@@ -821,6 +848,55 @@ class DBUtil
     }
 
     /**
+     * Populate the meta cache
+     *
+     * Gets all the SCMs associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
+     *
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+     */
+    private function populateMetaCache($vhInfo)
+    {
+        $this->dataCache["meta"] = array();
+
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
+         * I'm pretty sure that first arg is an $fkID.
+         */
+        if ( $recList = $this->sql->selectAllMetaForConstellation($vhInfo['ic_id'], $vhInfo['version']))
+        {
+            foreach($recList as $rec)
+            {
+                if (!isset($this->dataCache["meta"][$rec['fk_table']]))
+                    $this->dataCache["meta"][$rec['fk_table']] = array();
+
+                if (!isset($this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']]))
+                    $this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']] = array();
+
+                $gObj = new \snac\data\SNACControlMetadata();
+                $gObj->setSubCitation($rec['sub_citation']);
+                $gObj->setSourceData($rec['source_data']);
+                $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
+                $gObj->setNote($rec['note']);
+                $gObj->setDBInfo($rec['version'], $rec['id']);
+                /*
+                 * Prior to creating the Language object, language was strange and not fully functional. Now
+                 * language is a related record that links back here via our record id as a foreign key.
+                 */
+                $this->populateLanguage($vhInfo, $gObj, $rec['id'], 'scm');
+                /*
+                 * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
+                 * addSource() for Constellation object. SCM has only a single source, so it calls
+                 * populateSourceByID().
+                 */
+                $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
+                array_push($this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']], $gObj);
+            }
+        }
+    }
+
+
+    /**
      * Populate the SNACControlMetadata (SCM)
      *
      * Read the SCM from the database and add it to the object in $cObj.
@@ -845,27 +921,11 @@ class DBUtil
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          * I'm pretty sure that first arg is an $fkID.
          */
-        if ( $recList = $this->sql->selectMeta($cObj->getID(), $vhInfo['version'], $fkTable))
+        if ( isset($this->dataCache["meta"][$fkTable]) && 
+             isset($this->dataCache["meta"][$fkTable][$cObj->getID()]) )
         {
-            foreach($recList as $rec)
+            foreach($this->dataCache["meta"][$fkTable][$cObj->getID()] as $gObj)
             {
-                $gObj = new \snac\data\SNACControlMetadata();
-                $gObj->setSubCitation($rec['sub_citation']);
-                $gObj->setSourceData($rec['source_data']);
-                $gObj->setDescriptiveRule($this->populateTerm($rec['rule_id']));
-                $gObj->setNote($rec['note']);
-                $gObj->setDBInfo($rec['version'], $rec['id']);
-                /*
-                 * Prior to creating the Language object, language was strange and not fully functional. Now
-                 * language is a related record that links back here via our record id as a foreign key.
-                 */
-                $this->populateLanguage($vhInfo, $gObj, $rec['id'], 'scm');
-                /*
-                 * populateSourceByID() will call setCitation() for SNACControlMetadata objects and
-                 * addSource() for Constellation object. SCM has only a single source, so it calls
-                 * populateSourceByID().
-                 */
-                $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
                 $cObj->addSNACControlMetadata($gObj);
             }
         }
@@ -1012,6 +1072,46 @@ class DBUtil
         }
     }
 
+
+    /**
+     * Populate the date cache
+     *
+     * Gets all the dates associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
+     *
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+     */
+    private function populateDateCache($vhInfo) {
+        $this->dataCache["dates"] = array();
+
+        $dateRows = $this->sql->selectAllDatesForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($dateRows as $singleDate)
+        {
+            if (!isset($this->dataCache["dates"][$singleDate['fk_table']]))
+                $this->dataCache["dates"][$singleDate['fk_table']] = array();
+            if (!isset($this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']]))
+                $this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']] = array();
+            $dateObj = new \snac\data\SNACDate();
+            $dateObj->setRange($this->db->pgToBool($singleDate['is_range']));
+            $dateObj->setFromDate($singleDate['from_original'],
+                                  $singleDate['from_date'],
+                                  $this->populateTerm($singleDate['from_type']));
+            $dateObj->setFromBC($this->db->pgToBool($singleDate['from_bc']));
+            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
+            $dateObj->setToDate($singleDate['to_original'],
+                                $singleDate['to_date'],
+                                $this->populateTerm($singleDate['to_type']));
+            $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
+            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+            $dateObj->setNote($singleDate['descriptive_note']);
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
+            $this->populateMeta($vhInfo, $dateObj, 'date_range');
+            array_push($this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']], $dateObj);
+        }
+
+    }
+
     /**
      * Populate dates
      *
@@ -1024,7 +1124,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
      *
-     * @param object $cObj \snac\data\Constellation object or other object with related date.
+     * @param object $cObj \snac\data\AbtractData object with related date.
      *
      * @param string $fkTable The related table name.
      */
@@ -1044,27 +1144,13 @@ class DBUtil
         {
             $breakAfterOne = true;
         }
-        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version'], $fkTable);
 
-        foreach ($dateRows as $singleDate)
+        if (!isset($this->dataCache["dates"][$fkTable][$cObj->getID()]))
+            return;
+
+        foreach ($this->dataCache["dates"][$fkTable][$cObj->getID()] as $singleDate)
         {
-            $dateObj = new \snac\data\SNACDate();
-            $dateObj->setRange($this->db->pgToBool($singleDate['is_range']));
-            $dateObj->setFromDate($singleDate['from_original'],
-                                  $singleDate['from_date'],
-                                  $this->populateTerm($singleDate['from_type']));
-            $dateObj->setFromBC($this->db->pgToBool($singleDate['from_bc']));
-            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
-            $dateObj->setToDate($singleDate['to_original'],
-                                $singleDate['to_date'],
-                                $this->populateTerm($singleDate['to_type']));
-            $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
-            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            $dateObj->setNote($singleDate['descriptive_note']);
-            $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
-            $this->populateMeta($vhInfo, $dateObj, 'date_range');
-
-            $cObj->addDate($dateObj);
+            $cObj->addDate($singleDate);
             if ($breakAfterOne)
             {
                 break;
@@ -1091,6 +1177,10 @@ class DBUtil
      */
     public function populateTerm($termID)
     {
+        // If in the cache, then don't re-query
+        if (isset($this->termCache[$termID]))
+            return $this->termCache[$termID];
+        
         $row = $this->sql->selectTerm($termID);
         if ($row == null || empty($row))
             return null;
@@ -1100,6 +1190,9 @@ class DBUtil
         $newObj->setTerm($row['value']);
         $newObj->setURI($row['uri']);
         $newObj->setDescription($row['description']);
+
+        // Save this to the cache
+        $this->termCache[$termID] = $newObj;
         /*
          * Class Term has no SNACControlMetadata
          */

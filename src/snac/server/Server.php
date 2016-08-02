@@ -213,14 +213,30 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->publishConstellation($this->input);
                 break;
 
+            case "review_constellation":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to send constellation for review.");
+                $this->response = $executor->sendForReviewConstellation($this->input);
+                break;
+
             case "delete_constellation":
                 if (!$executor->hasPermission("Delete"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.");
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
+            
+            case "reassign_constellation":
+                if (!$executor->hasPermission("Change Locks"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to reassign constellations.");
+                $this->response = $executor->reassignConstellation($this->input);
+                break;
+
 
             case "recently_published":
                 $this->response = $executor->getRecentlyPublished();
+                break;
+            case "list_constellations":
+                $this->response = $executor->listConstellations($this->input);
                 break;
 
             case "read":

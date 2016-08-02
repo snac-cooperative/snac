@@ -317,11 +317,19 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         $this->logger->addDebug("Received server response", array($serverResponse));
         $this->logger->addDebug("Setting dashboard data into the page template");
+        
+        $needsReview = $this->connect->query(array(
+            "command"=>"list_constellations",
+            "status"=>"needs review"
+        ));
+        if (isset($needsReview["results"]))
+            $serverResponse["needs_review"] = $needsReview["results"];
+
 
         $recentConstellations = $this->connect->query(array(
                 "command"=>"recently_published"
         ))["constellation"];
-
+        
         $recents = array();
         foreach ($recentConstellations as $constellationArray) {
             $constellation = new \snac\data\Constellation($constellationArray);
@@ -452,6 +460,25 @@ class WebUIExecutor {
                 ));
                 $display->setTemplate("admin_edit_user");
                 break;
+            case "activity_user":
+                if (!isset($input["userid"])) {
+                    return $this->drawErrorPage("Missing UserID", $display);
+                }
+                $userEdit = new \snac\data\User();
+                $userEdit->setUserID($input["userid"]);
+                $ask = array("command"=>"edit_user",
+                    "user_edit" => $userEdit->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $userEdit = $serverResponse["user"];
+                $userGroups = $serverResponse["groups"];
+
+                $serverResponse["title"] = "User Activity";
+                $display->setData($serverResponse);
+                $display->setTemplate("admin_user_activity");
+                break;
             case "edit_user_post":
                 return $this->saveProfile($input, $user);
                 break;
@@ -536,6 +563,14 @@ class WebUIExecutor {
                 } else {
                     $this->displayPermissionDeniedPage("Admin Dashboard", $display);
                 }
+                break;
+
+            case "unlock_constellation":
+                return $this->unlockConstellation($input);
+                break;
+            
+            case "reassign_constellation":
+                return $this->reassignConstellation($input);
                 break;
             default:
                 $this->displayPermissionDeniedPage("Administrator", $display);
@@ -951,6 +986,74 @@ class WebUIExecutor {
 
 
     /**
+     * Save and Send Constellation For Review
+     *
+     * Maps the constellation given on input to a Constellation object, passes that to the server with an
+     * update_constellation call.  If successful, it then maps any updates (new ids or version numbers) to the
+     * Constellation object and web components from input, and returns the web ui's response (the list of
+     * updates that must be made to the web ui GUI).
+     *
+     * After saving, it also calls to the server to have the constellation sent for review, if the write was successful.
+     *
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveAndSendForReviewConstellation(&$input) {
+
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+        // Get the constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        $this->logger->addDebug("writing constellation", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "update_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        if (isset($input['savemessage'])) {
+            $request["message"] = $input["savemessage"];
+        }
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["update"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        if (! is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+
+            if (isset($serverResponse["constellation"])) {
+                $this->logger->addDebug("server's response written constellation", $serverResponse["constellation"]);
+            }
+
+            if (isset($serverResponse["result"]) && $serverResponse["result"] == "success" &&
+                     isset($serverResponse["constellation"])) {
+                $request["command"] = "review_constellation";
+                $request["constellation"] = $serverResponse["constellation"];
+                $serverResponse = $this->connect->query($request);
+                $response["server_debug"]["review"] = $serverResponse;
+                if (isset($serverResponse["result"]))
+                    $response["result"] = $serverResponse["result"];
+                if (isset($serverResponse["error"]))
+                    $response["error"] = $serverResponse["error"];
+            }
+        }
+
+        return $response;
+    }
+
+
+    /**
      * Save and Unlock Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an
@@ -1017,6 +1120,57 @@ class WebUIExecutor {
         return $response;
     }
 
+
+    /**
+     * Reassign Constellation
+     *
+     * Asks the server to reassign the input's constellation to a different user 
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function reassignConstellation(&$input) {
+
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $toUser = null;
+        if (isset($input["userid"])) {
+            $toUser = new \snac\data\User();
+            $toUser->setUserID($input["userid"]);
+        } else {
+            return array( "result" => "failure", "error" => "No user id given");
+        }
+
+        $this->logger->addDebug("reassigning constellation", $constellation->toArray());
+        $this->logger->addDebug("reassigning to user", $toUser->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+            "command" => "reassign_constellation",
+            "constellation" => $constellation->toArray(),
+            "to_user" => $toUser->toArray()
+        );
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["unlock"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
 
     /**
      * Unlock Constellation
@@ -1102,6 +1256,52 @@ class WebUIExecutor {
         $response = array ();
         $response["server_debug"] = array ();
         $response["server_debug"]["publish"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
+
+
+    /**
+     * Send Constellation for Review
+     *
+     * Requests the server to send the given constellation for review.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function sendForReviewConstellation(&$input) {
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else if (isset($input["id"]) && isset($input["version"])) {
+            $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+
+            // Get the constellation object
+            $constellation = $mapper->serializeToConstellation($input);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $this->logger->addDebug("sending constellation for review", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+                "command" => "review_constellation"
+        );
+
+        // Send the query to the server
+        $request["constellation"] = $constellation->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["review"] = $serverResponse;
         if (isset($serverResponse["result"]))
             $response["result"] = $serverResponse["result"];
         if (isset($serverResponse["error"]))

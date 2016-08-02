@@ -29,6 +29,10 @@ $('.selectpicker').selectpicker();
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="css/snac.css">
 
@@ -49,6 +53,9 @@ $(document).ready(function() {
     $("select").each(function() {
         select_replace_simple($(this));
     });
+
+    // Load the table into a datatable
+    $('.table').DataTable();
 });
 </script>
 </head>
@@ -108,7 +115,12 @@ $(document).ready(function() {
                                 <i class="fa fa-check" aria-hidden="true"></i>
                                 {% endif %}
                             </p></td>
-                            <td><p><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></p></td>
+                            <td>
+                                <div class="btn-group" role="group" aria-label="Actions">
+                                    <a href="?command=administrator&subcommand=activity_user&userid={{editUser.userid}}" class="btn btn-warning" title="Activity"><span  class="fa fa-archive" aria-hidden="true"></span></a>
+                                    <a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info" title="Edit"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span></a>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -195,6 +195,21 @@ $('.selectpicker').selectpicker();
             </div>
         </form>
 
+            {% if permissions.ChangeLocks %}
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Constellations Needing Review</h3>
+                </div>
+                <div class="panel-body">
+                    <p>The following Constellations need review.  Select one to check it out and begin editing.</p>
+                    <div class="list-group">
+                        {% for link in data.needs_review %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>
@@ -208,6 +223,7 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

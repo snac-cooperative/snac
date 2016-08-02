@@ -68,6 +68,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <form class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
+               {% if data.preview %}
+               <div class="pull-right"><h2><span class='glyphicon glyphicon-eye-open'></span> Preview</h2></div>
+               {% endif %}
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
@@ -79,48 +82,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="col-md-8">
 
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#nameEntries" role="tab" data-toggle="tab">Basic Info</a></li>
-                    <li><a href="#dates" role="tab" data-toggle="tab">Dates</a></li>
-                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
-                    <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Vocabs <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#genders" role="tab" data-toggle="tab">Genders</a></li>
-                        <li><a href="#nationalities" role="tab" data-toggle="tab">Nationalities</a></li>
-                        <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
-                        <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
-                        <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
-                        <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
-                        <li><a href="#legalStatuses" role="tab" data-toggle="tab">Legal Statuses</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#sameAs" role="tab" data-toggle="tab">External Same As</a></li>
-                        <li><a href="#constellationRelations" role="tab" data-toggle="tab">Constellation Relations</a></li>
-                        <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Texts <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#conventionDeclarations" role="tab" data-toggle="tab">Convention Declarations</a></li>
-                        <li><a href="#generalContexts" role="tab" data-toggle="tab">General Contexts</a></li>
-                        <li><a href="#mandates" role="tab" data-toggle="tab">Mandates</a></li>
-                        <li><a href="#structureOrGenealogies" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
-                    </ul>
-                    </li>
-                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
-
-                </ul>
+                {{ components.displayEditTabs(X) }}
 
                 <div class="tab-content">
 
                     <div class="tab-pane active" id="nameEntries">
-                        <h2>Basic Information</h2>
+                        <h2>Core Data</h2>
 
                         <div class="panel panel-default">
                         	<div class="panel-heading">Constellation Information</div>
@@ -200,7 +167,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% endif %}
                                 <div id="textarea_biogHist_text_0">
                                     <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
-                                    <div class="form-control-static">{{ data.biogHists[0].text|raw }}</div>
+                                    <div class="panel panel-default panel-body form-control-static">{{ data.biogHists[0].text|raw }}</div>
                                 </div>
 
 
@@ -241,7 +208,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     </div>
 
                     <div class="tab-pane" id="sameAs">
-                        <h2>Same As</h2>
+                        <h2>External CPF Relations (Same As)</h2>
 
 
 
@@ -282,7 +249,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
-                        <h2>Constellation Relations</h2>
+                        <h2>Internal CPF Relations</h2>
 
 
                         {% set i = 0 %}

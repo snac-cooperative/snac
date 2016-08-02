@@ -39,6 +39,96 @@ function removeGroupFromUser(id) {
     return false;
 }
 
+function unlockConstellation(id, version) {
+    $.get("?command=administrator&subcommand=unlock_constellation&constellationid="+id+"&version="+version, null, function(data) {
+        if (data.result == "success") {
+            $('#status-message').html("<p>Successfully Unlocked Constellation.</p>");
+            $('#status-message').slideDown();
+            setTimeout(function(){
+                $('#status-message').slideUp();
+            }, 3000);
+           
+            $("#button_"+id).addClass("disabled").removeClass("btn-warning").addClass("btn-default"); 
+            $("#status_"+id).text("Checked out (not editing)"); 
+        }
+    });
+}
+
+function doReassignConstellation() {
+    var id = $('#reassignedConstellationID').val();
+    var version = $('#reassignedConstellationVersion').val();
+
+    if (typeof $('input[name=reassignTo]:checked') == 'undefined')
+        return false;
+    
+    var toUserID = $('input[name=reassignTo]:checked').val();
+    
+    if (typeof toUserID == 'undefined')
+        return false;
+
+    // We have an ID to reassign this constellation
+    $.get("?command=administrator&subcommand=reassign_constellation&constellationid="+id+"&version="+version+"&userid="+toUserID, null, function(data) {
+        if (data.result == "success") {
+            $('#status-message').html("<p>Successfully Reassigned Constellation.</p>");
+            $('#status-message').slideDown();
+            setTimeout(function(){
+                $('#status-message').slideUp();
+            }, 3000);
+
+            // Remove this constellation from the DOM (no longer attached to this user)
+            $("#constellation_"+id).remove();
+        }
+    });
+
+
+}
+
+function reassignConstellation(id, version) {
+    
+    $("#usersPaneContent").html("<p class='text-center'>Loading...</p>");
+    $("#usersPane").modal();
+
+    $.post("?command=administrator&subcommand=user_list", null, function (data) {
+        if (data.users.length > 0) {
+            var html = "";
+            var heading = '<input type="hidden" id="reassignedConstellationID" value="'+id+'">'
+                        + '<input type="hidden" id="reassignedConstellationVersion" value="'+version+'">'
+                        + '<table class="table">'
+                        + '<thead>'
+                    + '<tr>'
+                        + '<th></th>'
+                        + '<th>Name</th>'
+                        + '<th>User Name</th>'
+                        + '<th>Affiliation</th>'
+                    + '</tr>'
+                + '</thead>'
+                + '<tbody>';
+            for (var key in data.users) {
+                var affil = "";
+                if ( typeof data.users[key].affiliation != 'undefined')
+                    affil = data.users[key].affiliation.nameEntries[0].original;
+
+                html += '<tr>'
+                    + '<td><input type="radio" name="reassignTo" value="'+data.users[key].userid+'"></td>'
+                    + '<td>' + data.users[key].fullName
+                    + '</td>';
+                html += "<td>"+data.users[key].userName+"</td>";
+                html += "<td>"+affil+"</td>";
+                html += '</tr>';
+            }
+            var footing = '</tbody></table>';
+
+            if (html == "") {
+                $("#usersPaneContent").html("<p class='text-center'>There are no users</p>");
+            } else {
+                $("#usersPaneContent").html(heading + html + footing);
+            }
+        } else {
+            $("#usersPaneContent").html("<p class='text-center'>There are no users</p>");
+        }
+    });
+}
+
 /**
  * Only load this script once the document is fully loaded
  */
