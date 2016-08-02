@@ -1269,6 +1269,7 @@ class ServerExecutor {
                                 $input["constellationid"] . " does not have a published version.");
                     }
                 }
+                $this->logger->addDebug("Finished reading constellation from the database");
 
                 // Get the list of constellations locked editing for this user
                 $inList = false;
@@ -1286,7 +1287,7 @@ class ServerExecutor {
                 if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                     $constellation->setStatus("editable");
                 }
-                $this->logger->addDebug("Finished reading constellation from the database");
+                $this->logger->addDebug("Finished checking constellation status against the user");
                 $response["constellation"] = $constellation->toArray();
                 $this->logger->addDebug("Serialized constellation for output to client");
             } catch (Exception $e) {
