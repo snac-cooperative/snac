@@ -163,6 +163,12 @@ class WebUIExecutor {
          $display->setData($constellation);
     }
 
+    /**
+     *
+     * $this->connect is \snac\client\util\ServerConnect
+     *
+     * @return string[] The response from the server. It is a json_decode'ed response from curl.
+     */ 
     protected function getConstellation(&$input, &$display) {
         $query = array();
         $query["constellationid"] = $input["constellationid"];
@@ -339,7 +345,8 @@ class WebUIExecutor {
     /**
      * Handle download tasks
      *
-     * This method handles the downloading of content in any type.
+     * This method handles the downloading of content in any type. Download tasks include serializing a
+     * constellation as EAC-CPF XML, and downloading the XML (a string) as a file.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
@@ -369,8 +376,20 @@ class WebUIExecutor {
                 }
                 array_push($headers, "Content-Type: text/xml");
                 array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
-                // Call EAC-CPF serializer instead here
-                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                /*
+                 * Call the EAC-CPF serializer
+                 * 
+                 * $serverResponse is a string[] and $serverResponse['constellation'] has a constellation as
+                 * an associative list, that is Constellation->toArray(). We can pass
+                 * $serverResponse['constellation'] directly to SerializeCore().
+                 *
+                 * $serverResponse has keys like: constellation, result, error. See
+                 * ServerExecutor->readConstellation() variable $response.
+                 */ 
+                $response = \snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']);
+                
+                // $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
+                // $response = var_export($serverResponse, 1);
                 break;
         }
 

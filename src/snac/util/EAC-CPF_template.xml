@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" 
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:snac="http://socialarchive.iath.virginia.edu/">
+    {#
+    Author: Tom Laudeman
+    The Institute for Advanced Technology in the Humanities at the University of Virginia
+
+    License: http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+
+    Copyright 2016 the Rector and Visitors of the University of Virginia, and the Regents of the University
+    of California
+    #}
+    <control>
+        <recordId >{{ data.ark }}</recordId>
+        {#
+        Some vocabulary that has a uri is saved in the db and PHP objects with both the term and full uri that
+        includes the term.  We prefer the uri, and we use the term as a fall back.
+
+        Two examples:
+        http://socialarchive.iath.virginia.edu/control/term#MergedRecord
+        http://viaf.org/viaf/terms#viafID
+        #}
+        {% for other in data.otherRecordIDs %}
+        {% if other.type.uri %}
+        <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
+        {% else %}
+        <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
+        {% endif %}
+        {% endfor %}
+        <maintenanceStatus>revised</maintenanceStatus>
+        <maintenanceAgency>
+            <agencyName>
+                SNAC Social Networks in Archival Context
+            </agencyName>
+        </maintenanceAgency>
+        {#
+        Yes, languageDecaration is piggy backed on biogHist. It doesn't have its own storage in PHP or the database.
+        If we have languageDeclaration, it will be the language of the biogHist.
+        #}
+        {% if data.biogHists.0.language.term or data.biogHists.0.script.term %}
+        <languageDeclaration>
+            <language languageCode="{{data.biogHists.0.language.term}}">{{ data.biogHists.0.language.description }}</language>
+            <script scriptCode="{{data.biogHists.0.script.term}}">{{ data.biogHists.0..script.description}}</script>
+        </languageDeclaration>
+        {% endif %}
+        {% for cdecl in data.conventionDeclarations %}
+        {{ cdecl.text|raw }}
+        {% endfor %}
+        <maintenanceHistory>
+            <maintenanceEvent>
+                <eventType>created</eventType>
+                <eventDateTime standardDateTime="{{ currentDate }}">
+                    {{ currentDate }}
+                </eventDateTime>
+                <agentType>machine</agentType>
+                <agent>
+                    EACCPFSerializer.php
+                </agent>
+                <eventDescription>{{ data.ev_desc }}</eventDescription>
+            </maintenanceEvent>
+        </maintenanceHistory>
+        <sources>
+            {% for src in data.sources %}
+            <source xlink:href="{{ src.uri }}" xlink:type="simple">
+                {{ src.text|raw }}
+            </source>
+            {% endfor %}
+        </sources>
+    </control>
+    <cpfDescription>
+        <identity>
+            <entityType>{{ data.entityType.term }}</entityType>
+            {# 
+            We appear not to use the language element.
+
+            Twig can't do optional XML attributes and still maintain an XML compliant template.
+            I use if-else for both opening and closing nameEntry as the best compromise.
+            It is also invalid XML to have the if-else on the opening tag due to mismatched
+            closing element.
+            #}
+            {% for nameEntry in data.nameEntries %}
+            {% if nameEntry.lang %}            
+            <nameEntry xml:lang="{{ nameEntry.lang }}">
+                {% else %}
+                <nameEntry>
+                    {% endif %}
+                <part>{{ nameEntry.original }}</part>
+                {% for contrib in nameEntry.contributors %}
+                {% if contrib.type.term == 'authorizedForm' %}
+                <authorizedForm>{{ contrib.name }}</authorizedForm>
+                {% else %}
+                <alternativeForm>{{ contrib.name }}</alternativeForm>
+                {% endif %}
+                {% endfor %}
+                {% if nameEntry.lang %}            
+                </nameEntry>
+                {% else %}
+            </nameEntry>
+            {% endif %}
+            {% endfor %}
+            {{ data.descriptiveNote }}
+        </identity>
+        <description>
+            {#
+            There is no way to have a Twig template can be valid XML with optional attributes. Here
+            the opening and closing fromDate are done with Twig literals, and an custom filter decode_entities.
+            This compromise is slighly more MVC than moving the XML into a literal PHP string.
+
+            Interestingly a lone > seems to be valid XML. 
+            #}
+            {% if data.dates %}
+            <existDates>
+                {% if data.dates %}
+                {#
+
+                Single dateRange must be by itself. Multiple must be inside dateSet. By checking data.dates[1]
+                we determine if there is more than 1 date. The ideal is for the CPF standard to simply drop
+                dateSet, and drop date, and allow 0..n of dateRange, just as we do in the SNAC application.
+
+                Use Twig trickery with &lt; for the illegal XML "less than" sign, in order to allow optional XML
+                attributes which Twig cannot do in a valid XML template.
+
+                Create the fromDate and toDate elements as Twig strings. Attributes notBefore and notAfter are
+                optional.
+
+                Other alternatives to allow optional attributes:
+
+                1) create the fromDate and toDate in PHP as strings and pass them in
+
+                2) put Twig inside the elements, making the template invalid XML even thought the output will be valid
+
+                3) use Twig if to create several opening elements doing all possible attributes, which is hard to read
+
+                4) always have notBefore and notAfter, but leave the value "" empty as necessary
+
+                #}
+                {% if data.dates[1] %}
+                <dateSet>
+                    {% endif %}
+                {% for date in data.dates %}
+                <dateRange>
+                    {{'&lt;fromDate'|decode_entities|raw}}
+                    {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}{% endif %}
+                    {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}{% endif %}
+                    localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                    standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                    {% if date.toDate %}
+                    {{'&lt;toDate'|decode_entities|raw}}
+                    {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}{% endif %}
+                    {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}{% endif %}
+                    localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                    standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                    {% endif %}
+                </dateRange>
+                {% endfor %}
+                {% if data.dates[1] %}
+                </dateSet>
+                {% endif %}
+                {% endif %}
+            </existDates>
+            {% endif %}
+            {% for occupation in data.occupations %}
+            <occupation><term>{{ occupation.term.term }}</term></occupation>
+            {% endfor %}
+            {% for function in data.functions %}
+            <function><term>{{ function.term.term }}</term></function>
+            {% endfor %}
+            {% for localAffiliation in data.localAffiliation %}
+            <localAffiliation>
+                {{ localAffiliation }}
+            </localAffiliation>
+            {% endfor %}
+            {% for subject in data.subjects %}
+            <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                <term>{{ subject.term.term }}</term>
+            </localDescription>
+            {% endfor %}
+            {% for place in data.places %}
+            <place localType="{{place.type.uri}}">
+                <snac:placeEntry>
+                    <placeEntry>{{ place.original }}</placeEntry>
+                    {% if place.geoplace %}
+                    <snac:placeEntryLikelySame localType="{{place.type.uri}}"
+                                               certaintyScore="{{ place.score }}"
+                                               vocabularySource="{{place.geoplace.uri}}" 
+                                               latitude="{{place.geoplace.latitude}}" 
+                                               longitude="{{place.geoplace.longitude}}" 
+                                               administrationCode="{{place.geoplace.administrationCode}}" 
+                                               countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}</snac:placeEntryLikelySame>
+                    {% endif %}
+                </snac:placeEntry>
+            </place>
+            {% endfor %}
+            {% for lang in data.languagesUsed %}
+            <languageUsed>
+                <language languageCode="{{lang.language.term}}">{{ lang.language.description }}</language>
+                <script scriptCode="{{lang.script.term}}">{{ lang.script.description}}</script>
+            </languageUsed>
+            {% endfor %}
+            {{ data.biogHists.0.text|raw }}
+        </description>
+        <relations>
+            {% for cpfRel in data.relations %}
+            {# 
+            Use the uri when available. The uri is the full namespace#term.
+            #}
+            {% if cpfRel.targetEntityType.uri %}
+            {% set xlink_role = cpfRel.targetEntityType.uri %}
+            {% else %}
+            {% set xlink_role = cpfRel.targetEntityType.term %}
+            {% endif %}
+            {% if cpfRel.type.uri %}
+            {% set xlink_arcrole = cpfRel.type.uri %}
+            {% else %}
+            {% set xlink_arcrole = cpfRel.type.term %}
+            {% endif %}
+            <cpfRelation xlink:type="simple"
+                         xlink:role="{{ xlink_role }}" 
+                         xlink:arcrole="{{ xlink_arcrole }}"
+                         xlink:href="{{ cpfRel.targetArkID }}">
+                <relationEntry>{{cpfRel.content}}</relationEntry>
+            </cpfRelation>
+            {% endfor %} 
+            {# 
+            resRel.documentType, xlink:role, ArchivalResource, BibliographicResource
+            resRel.role, xlink:arcrole, creatorOf, referencedIn
+            #}
+            {% for resRel in data.resourceRelations %}
+            {% if resRel.documentType.uri %}
+            {% set xlink_role = resRel.documentType.uri %}
+            {% else %}
+            {% set xlink_role = resRel.documentType.term %}
+            {% endif %}
+            {% if resRel.role.uri %}
+            {% set xlink_arcrole = resRel.role.uri %}
+            {% else %}
+            {% set xlink_arcrole = resRel.role.term %}
+            {% endif %}
+            <resourceRelation xlink:type="simple"
+                              xlink:role="{{ xlink_role }}"
+                              xlink:arcrole="{{ xlink_arcrole }}"
+                              xlink:href="{{ resRel.href }}">
+                <relationEntry>{{ resRel.content }}</relationEntry>
+                {{ resRel.source|raw }}
+            </resourceRelation>
+        {% endfor %}
+        </relations>
+    </cpfDescription>
+</eac-cpf>

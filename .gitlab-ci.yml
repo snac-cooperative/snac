@@ -5,6 +5,7 @@ before_script:
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
     - ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
+    - ln -s `pwd`/src/snac/util ~/cpf_templates
     - mkdir -p coverage/ 
 
 
@@ -40,7 +41,7 @@ run_test_coverage:
 
 generate_docs:
   script:
-    - vendor/bin/phpdoc -d src/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
+    - vendor/bin/phpdoc -d src/ -d test/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
     - rsync -av doc/ /projects/snac_server/doc/
   stage: documentation
   only:

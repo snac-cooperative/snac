@@ -114,6 +114,12 @@ class Config {
     public static $SQL_LIMIT = 42;
 
     /**
+     * @var string Location of the EAC-CFP XML Serializer template directory. This is the same directory as
+     * the serializer class.
+     */
+    public static $CPF_TEMPLATE_DIR = "full/path/to/src/snac/util";
+
+    /**
      * @var string Location of the template directory
      */
     public static $TEMPLATE_LANGUAGE_DIR = "full/path/to/src/snac/client/webui/template/languages";
