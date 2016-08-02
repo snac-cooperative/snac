@@ -279,9 +279,15 @@ body {
                      <div class="panel panel-default" data-xsl="linkedData">
                         <div class="panel-heading">
                            <h4>
+                            {% set numRels = 0 %}
+                            {% for relation in data.otherRecordIDs %}
+                            {% if relation.type.term == 'sameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                            {% endfor %}
                               <a data-toggle="collapse" data-parent="#relations" href="#linkedData">
                                  <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related External Links
-                                 <span class="badge pull-right">{{data.otherRecordIDs|length}}</span>
+                                 <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
                         </div>
@@ -289,9 +295,11 @@ body {
                            <div class="panel-body">
 
                                         {% for sameas in data.otherRecordIDs %}
+                                            {% if sameas.type.term == 'sameAs' %}
                                             <div class="related">
                                                 <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
                                             </div>
+                                            {% endif %}
                                         {% endfor %}
                         <!--
                               <div>
