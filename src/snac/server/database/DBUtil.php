@@ -3341,4 +3341,15 @@ class DBUtil
         return $newVersion;
     }
 
+    /**
+     * Read version history of published versions.
+     *
+     * Currently only used by EACCPFSerializer.php for maintenanceEvent data.
+     * 
+     * @param $ic_id integer The relevant constellation id.
+     * @return string[] An associative list with keys corresponding to the version_history table columns.
+     */
+    public function readVersionHistory($ic_id) {
+        return $this->sql->selectVersionHistory($ic_id);
+    }
 }

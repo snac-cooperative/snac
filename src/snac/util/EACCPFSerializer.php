@@ -120,6 +120,11 @@ class EACCPFSerializer {
      * @return string $cpfXML a string containing an EAC-CPF XML file.
      */ 
     public static function SerializeCore($expCon) {
+        global $dbu;
+        if (! $dbu) {
+            $dbu = new \snac\server\database\DBUtil();
+        }
+
         $data['data'] = $expCon;
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$CPF_TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array());
@@ -143,8 +148,22 @@ class EACCPFSerializer {
          * $data['currentDate'] = date('c');
          */ 
         $data['currentDate'] = date('Y-m-d');
+        $data['versionHistory'] = $dbu->readVersionHistory($expCon['id']);
+
+        /* 
+         * $cfile = fopen('cpf_data.txt', 'w');
+         * fwrite($cfile, var_export($data, 1));
+         * fclose($cfile);
+         */
 
         $cpfXML = $twig->render("EAC-CPF_template.xml", $data);
+
+        /* 
+         * $cfile = fopen('cpf_out.xml', 'w');
+         * fwrite($cfile, $cpfXML);
+         * fclose($cfile);
+         */
+
         return $cpfXML;
     }
 

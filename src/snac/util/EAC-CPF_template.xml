@@ -48,16 +48,24 @@
         {{ cdecl.text|raw }}
         {% endfor %}
         <maintenanceHistory>
+            {% for event in versionHistory %}
+            <maintenanceEvent>
+                {#
+                eventType must contain one of: "cancelled" or "created" or "deleted" or "derived" or "revised" or "updated" 
+                #}
+                <eventType>revised</eventType>
+                <eventDateTime standardDateTime="{{ event.cpf_date }}">{{ event.cpf_date }}</eventDateTime>
+                <agentType>human</agentType>
+                <agent>{{ event.user_id }}</agent>
+                <eventDescription>notes: {{ data.ev_desc }} status: {{ event.status }} version: {{ event.version }}</eventDescription>
+            </maintenanceEvent>
+            {% endfor %}
             <maintenanceEvent>
                 <eventType>created</eventType>
-                <eventDateTime standardDateTime="{{ currentDate }}">
-                    {{ currentDate }}
-                </eventDateTime>
+                <eventDateTime standardDateTime="{{ currentDate }}">{{ currentDate }}</eventDateTime>
                 <agentType>machine</agentType>
-                <agent>
-                    EACCPFSerializer.php
-                </agent>
-                <eventDescription>{{ data.ev_desc }}</eventDescription>
+                <agent>EACCPFSerializer.php</agent>
+                <eventDescription>SQL Constellation serialized to EAC-CPF</eventDescription>
             </maintenanceEvent>
         </maintenanceHistory>
         <sources>

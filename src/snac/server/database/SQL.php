@@ -4673,6 +4673,39 @@ class SQL
         }
     }
 
+    /**
+     * Get publish version history info
+     *
+     * Currently used only the EACCPFSerializer.php for maintenanceEvent data. Called via DBUtil->readVersionHistory().
+     *
+     * cpf.rng doesn't like milliseconds so create an ISO date without them. Note I have included the "T"
+     * which has issues.
+     *
+     * https://www.postgresql.org/docs/current/static/datatype-datetime.html
+     *
+     * Note: ISO 8601 specifies the use of uppercase letter T to separate the date and time. PostgreSQL
+     * accepts that format on input, but on output it uses a space rather than T, as shown above[below]. This is for
+     * readability and for consistency with RFC 3339 as well as some other database systems.
+     *
+     * Bad: 2016-07-28 16:30:16.18485 Good: 2016-07-28T16:30:16
+     * 
+     * @param $ic_id integer The relevant constellation id.
+     * @return string[] An associative list with keys corresponding to the version_history table columns.
+     */ 
+    public function selectVersionHistory($ic_id) {
+        $result = $this->sdb->query(
+            'select *, to_char(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as cpf_date from version_history 
+            where id=$1 and status=\'published\' order by timestamp desc',
+            array($ic_id));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
     /* Not used. See insertInstitution() above */
     /*
      * Update a institution.

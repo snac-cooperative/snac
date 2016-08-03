@@ -128,7 +128,7 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
         $cpfXML = \snac\util\EACCPFSerializer::SerializeByARK('http://snac/test/record-1', true);
         preg_match_all("/(\n)/m", $cpfXML, $matches);
         // printf("\nrec1 matches: %s\n", sizeof($matches[1]));
-        $this->assertEquals(359, sizeof($matches[1]));
+        $this->assertEquals(362, sizeof($matches[1]));
 
         $vernOne = \snac\util\EACCPFSerializer::SerializeByARK('http://n2t.net/ark:/99166/w6xd18cz');
 
@@ -137,7 +137,7 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
         preg_match_all("/(\n)/m", $cpfXML, $matches);
         // printf("\nvern matches: %s\n", sizeof($matches[1]));
 
-        $this->assertEquals(111, sizeof($matches[1]));
+        $this->assertEquals(114, sizeof($matches[1]));
         /* 
          * Check that we get the same XML by both methods. 
          */  
