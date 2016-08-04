@@ -21,7 +21,11 @@ use \Monolog\Logger;
 use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
-$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$REST_LOGFILE, Logger::DEBUG);
+$loglevel = Logger::WARNING;
+if (\snac\Config::$DEBUG_MODE) {
+    $loglevel = Logger::DEBUG;
+}
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$REST_LOGFILE, $loglevel);
 
 try {
     // Get the request body for processing
