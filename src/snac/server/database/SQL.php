@@ -3498,6 +3498,78 @@ class SQL
     }
 
     /**
+     * Select a related identity with Terms
+     *
+     * Related identity aka cpf relation. Code in DBUtils turns the returned array into a
+     * ConstellationRelation object.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
+     * version, ic_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
+     * arcrole, date.
+     *
+     */
+    public function selectRelationWithTerms($vhInfo)
+    {
+        $qq = 'selectrelatedidentity';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.related_id, aa.related_ark,
+                            aa.relation_entry, aa.descriptive_note, 
+                            aa.relation_type, 
+                                relt.value as relation_type_value, 
+                                relt.uri as relation_type_uri, 
+                                relt.description as relation_type_description,
+                                relt.type as relation_type_type,
+                            aa.role, 
+                                rolt.value as role_value, 
+                                rolt.uri as role_uri, 
+                                rolt.description as role_description,
+                                rolt.type as role_type,
+                            aa.arcrole, 
+                                arct.value as arcrole_value, 
+                                arct.uri as arcrole_uri, 
+                                arct.description as arcrole_description,
+                                arct.type as arcrole_type
+                            from related_identity as aa
+                            left outer join vocabulary as relt on relt.id=aa.relation_type
+                            left outer join vocabulary as rolt on rolt.id=aa.role
+                            left outer join vocabulary as arct on arct.id=aa.arcrole
+                            inner join
+                                (select id, max(version) as version from related_identity where version<=$1 and ic_id=$2 group by id) as bb
+                                on aa.id=bb.id and aa.version=bb.version
+                            where not aa.is_deleted
+
+                            ');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            /*
+             * $relationId = $row['id'];
+             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
+             * $row['date'] = array();
+             * if (count($dateList)>=1)
+             * {
+             *     $row['date'] = $dateList[0];
+             * }
+             * if (count($dateList)>1)
+             * {
+             *     //TODO Throw warning or log
+             * }
+             */
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
      * Select a related identity
      *
      * Related identity aka cpf relation. Code in DBUtils turns the returned array into a
@@ -3510,7 +3582,6 @@ class SQL
      * arcrole, date.
      *
      */
-
     public function selectRelation($vhInfo)
     {
         $qq = 'selectrelatedidentity';
