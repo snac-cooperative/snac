@@ -983,14 +983,16 @@ class DBUtil
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Subject();
-            
-            $tmpTerm = new \snac\data\Term();
-            $tmpTerm->setID($rec['term_id']);
-            $tmpTerm->setTerm($rec['term_value']);
-            $tmpTerm->setType($rec['term_type']);
-            $tmpTerm->setURI($rec['term_uri']);
-            $tmpTerm->setDescription($rec['term_description']);
-            $gObj->setTerm($tmpTerm);
+
+            if ($rec['term_id'] != null) { 
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($rec['term_id']);
+                $tmpTerm->setTerm($rec['term_value']);
+                $tmpTerm->setType($rec['term_type']);
+                $tmpTerm->setURI($rec['term_uri']);
+                $tmpTerm->setDescription($rec['term_description']);
+                $gObj->setTerm($tmpTerm);
+            }
             
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'subject');
@@ -2417,31 +2419,36 @@ class DBUtil
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
 
-            $tmpTerm = new \snac\data\Term();
-            $tmpTerm->setID($oneRel['role']);
-            $tmpTerm->setTerm($oneRel['role_value']);
-            $tmpTerm->setType($oneRel['role_type']);
-            $tmpTerm->setURI($oneRel['role_uri']);
-            $tmpTerm->setDescription($oneRel['role_description']);
-            $relatedObj->setTargetEntityType($tmpTerm);
+            if ($oneRel['role'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['role']);
+                $tmpTerm->setTerm($oneRel['role_value']);
+                $tmpTerm->setType($oneRel['role_type']);
+                $tmpTerm->setURI($oneRel['role_uri']);
+                $tmpTerm->setDescription($oneRel['role_description']);
+                $relatedObj->setTargetEntityType($tmpTerm);
+            }
 
-            $tmpTerm = new \snac\data\Term();
-            $tmpTerm->setID($oneRel['arcrole']);
-            $tmpTerm->setTerm($oneRel['arcrole_value']);
-            $tmpTerm->setType($oneRel['arcrole_type']);
-            $tmpTerm->setURI($oneRel['arcrole_uri']);
-            $tmpTerm->setDescription($oneRel['arcrole_description']);
-            $relatedObj->setType($tmpTerm);
+            if ($oneRel['arcrole'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['arcrole']);
+                $tmpTerm->setTerm($oneRel['arcrole_value']);
+                $tmpTerm->setType($oneRel['arcrole_type']);
+                $tmpTerm->setURI($oneRel['arcrole_uri']);
+                $tmpTerm->setDescription($oneRel['arcrole_description']);
+                $relatedObj->setType($tmpTerm);
+            }
             
             /* Not using setAltType(). It is never used. See ConstellationRelation.php */
-            
-            $tmpTerm = new \snac\data\Term();
-            $tmpTerm->setID($oneRel['relation_type']);
-            $tmpTerm->setTerm($oneRel['relation_type_value']);
-            $tmpTerm->setType($oneRel['relation_type_type']);
-            $tmpTerm->setURI($oneRel['relation_type_uri']);
-            $tmpTerm->setDescription($oneRel['relation_type_description']);
-            $relatedObj->setCPFRelationType($tmpTerm);
+            if ($oneRel['relation_type'] != null) { 
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['relation_type']);
+                $tmpTerm->setTerm($oneRel['relation_type_value']);
+                $tmpTerm->setType($oneRel['relation_type_type']);
+                $tmpTerm->setURI($oneRel['relation_type_uri']);
+                $tmpTerm->setDescription($oneRel['relation_type_description']);
+                $relatedObj->setCPFRelationType($tmpTerm);
+            }
             
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
