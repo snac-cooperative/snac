@@ -1232,29 +1232,25 @@ class ServerExecutor {
     public function readConstellation(&$input) {
         $this->logger->addDebug("Reading constellation");
         $reponse = array();
+        $constellation = null;
 
-        if (isset($input["arkid"])) {
-            // Reading the given ark id by reading querying the current HRT
+        try {
+            $this->logger->addDebug("Reading constellation from the database");
+            if (isset($input["arkid"])) {
+                // Reading the given ark id 
+                $constellation = $this->cStore->readPublishedConstellationByArk(
+                        $input["arkid"]);
 
-            // split on ark:/
-            $tmp = explode("ark:/", $input["arkid"]);
-            if (isset($tmp[1])) {
-                $pieces = explode("/", $tmp[1]);
-                if (count($pieces) == 2) {
-                    $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
-                    // Create new parser for this file and parse it
-                    $parser = new \snac\util\EACCPFParser();
-                    $id = $parser->parseFile($filename);
-                    $response["constellation"] = $id->toArray();
+                if ($constellation === false) {
+                    // This means that the Constellation doesn't have a published version!
+                    throw new \snac\exceptions\SNACInputException("Constellation with ark " .
+                            $input["arkid"] . " does not have a published version.");
                 }
-            }
-        } else if (isset($input["constellationid"])) {
-            // Reading the given constellation id by reading the database
 
-            try {
+            } else if (isset($input["constellationid"])) {
+                // Reading the given constellation id by reading the database
+
                 // Read the constellation
-                $this->logger->addDebug("Reading constellation from the database");
-                $constellation = null;
                 if (isset($input["version"])) {
                     $constellation = $this->cStore->readConstellation(
                             $input["constellationid"],
@@ -1269,37 +1265,30 @@ class ServerExecutor {
                                 $input["constellationid"] . " does not have a published version.");
                     }
                 }
-                $this->logger->addDebug("Finished reading constellation from the database");
+            }
+            $this->logger->addDebug("Finished reading constellation from the database");
 
-                // Get the list of constellations locked editing for this user
-                $inList = false;
-                if ($this->user != null) {
-                    $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
-                    if ($editable !== false) {
-                        foreach ($editable as $cEdit) {
-                            if ($cEdit->getID() == $constellation->getID()) {
-                                $inList = true;
-                                break;
-                            }
+            // Get the list of constellations locked editing for this user
+            $inList = false;
+            if ($this->user != null) {
+                $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
+                if ($editable !== false) {
+                    foreach ($editable as $cEdit) {
+                        if ($cEdit->getID() == $constellation->getID()) {
+                            $inList = true;
+                            break;
                         }
                     }
                 }
-                if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
-                    $constellation->setStatus("editable");
-                }
-                $this->logger->addDebug("Finished checking constellation status against the user");
-                $response["constellation"] = $constellation->toArray();
-                $this->logger->addDebug("Serialized constellation for output to client");
-            } catch (Exception $e) {
-                $response["error"] = $e;
             }
-        } else if (isset($input["testid"])) {
-            if ($input["testid"] == 1) {
-                // Create new parser for this file and parse it
-                $parser = new \snac\util\EACCPFParser();
-                $id = $parser->parseFile("http://shannonvm.village.virginia.edu/~jh2jf/test_record.xml");
-                $response["constellation"] = $id->toArray();
+            if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
+                $constellation->setStatus("editable");
             }
+            $this->logger->addDebug("Finished checking constellation status against the user");
+            $response["constellation"] = $constellation->toArray();
+            $this->logger->addDebug("Serialized constellation for output to client");
+        } catch (Exception $e) {
+            $response["error"] = $e;
         }
         return $response;
 
