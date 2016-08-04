@@ -979,11 +979,19 @@ class DBUtil
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectSubject($vhInfo);
+        $gRows = $this->sql->selectSubjectWithTerms($vhInfo);
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Subject();
-            $gObj->setTerm($this->populateTerm($rec['term_id']));
+            
+            $tmpTerm = new \snac\data\Term();
+            $tmpTerm->setID($rec['term_id']);
+            $tmpTerm->setTerm($rec['term_value']);
+            $tmpTerm->setType($rec['term_type']);
+            $tmpTerm->setURI($rec['term_uri']);
+            $tmpTerm->setDescription($rec['term_description']);
+            $gObj->setTerm($tmpTerm);
+            
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'subject');
             $cObj->addSubject($gObj);

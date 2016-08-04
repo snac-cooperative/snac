@@ -3292,6 +3292,49 @@ class SQL
     }
 
     /**
+     * Select subjects with Terms
+     *
+     * DBUtils has code to turn the return values into subjects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
+     * term_id.
+     *
+     * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
+     * list of list.
+     *
+     */
+    public function selectSubjectWithTerms($vhInfo)
+    {
+        $qq = 'ssubj';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.term_id, v.value as term_value, v.type as term_type, v.uri as term_uri, v.description as term_description
+                            from subject aa
+                            left outer join vocabulary v on aa.term_id = v.id
+                            inner join
+                                (select id, max(version) as version from subject where version<=$1 and ic_id=$2 group by id) as bb
+                                on aa.id=bb.id and aa.version=bb.version
+                            where not aa.is_deleted');
+        /*
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
      * Insert legalStatus.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
