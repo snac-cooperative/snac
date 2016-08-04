@@ -164,8 +164,6 @@ class DBUtil
     {
         $this->db = new \snac\server\database\DatabaseConnector();
 
-        $this->termCache = array();
-
         /*
          * See private var $statusList. Passing the value of deleted to the SQL constructor is a valiant, but
          * probably pointless, attempt to use the deleted status symbolically, instead of being tightly
@@ -219,6 +217,9 @@ class DBUtil
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
                                  'snac\data\Subject' => 'subject');
+
+        // Term Cache 
+        $this->termCache = array();
     }
 
     /**
@@ -978,11 +979,21 @@ class DBUtil
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectSubject($vhInfo);
+        $gRows = $this->sql->selectSubjectWithTerms($vhInfo);
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Subject();
-            $gObj->setTerm($this->populateTerm($rec['term_id']));
+
+            if ($rec['term_id'] != null) { 
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($rec['term_id']);
+                $tmpTerm->setTerm($rec['term_value']);
+                $tmpTerm->setType($rec['term_type']);
+                $tmpTerm->setURI($rec['term_uri']);
+                $tmpTerm->setDescription($rec['term_description']);
+                $gObj->setTerm($tmpTerm);
+            }
+            
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'subject');
             $cObj->addSubject($gObj);
@@ -1197,6 +1208,29 @@ class DBUtil
          * Class Term has no SNACControlMetadata
          */
         return $newObj;
+    }
+
+    /**
+     * Build the Term Cache
+     *
+     * This function builds an entire copy of the term cache in memory.  It is too big to fit in memory, and therefore should
+     * not be used.
+     *
+     * @deprecated
+     */
+    public function buildTermCache() {
+        $vocab = $this->getAllVocabulary();
+        // Fix up the vocabulary into a nested array
+        foreach($vocab as $v) {
+            $newObj = new \snac\data\Term();
+            $newObj->setID($v['id']);
+            $newObj->setType($v['type']); // Was setDataType() but this is a vocaulary type. See Term.php.
+            $newObj->setTerm($v['value']);
+            $newObj->setURI($v['uri']);
+            $newObj->setDescription($v['description']);
+            // Save this to the cache
+            $this->termCache[$v["id"]] = $newObj;
+        }
     }
 
     /**
@@ -2376,7 +2410,7 @@ class DBUtil
     private function populateRelation($vhInfo, $cObj)
     {
         $tableName = 'related_identity';
-        $relRows = $this->sql->selectRelation($vhInfo);
+        $relRows = $this->sql->selectRelationWithTerms($vhInfo);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
@@ -2384,10 +2418,38 @@ class DBUtil
             $relatedObj->setSourceArkID($cObj->getARK());
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
-            $relatedObj->setTargetEntityType($this->populateTerm($oneRel['role']));
-            $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
+
+            if ($oneRel['role'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['role']);
+                $tmpTerm->setTerm($oneRel['role_value']);
+                $tmpTerm->setType($oneRel['role_type']);
+                $tmpTerm->setURI($oneRel['role_uri']);
+                $tmpTerm->setDescription($oneRel['role_description']);
+                $relatedObj->setTargetEntityType($tmpTerm);
+            }
+
+            if ($oneRel['arcrole'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['arcrole']);
+                $tmpTerm->setTerm($oneRel['arcrole_value']);
+                $tmpTerm->setType($oneRel['arcrole_type']);
+                $tmpTerm->setURI($oneRel['arcrole_uri']);
+                $tmpTerm->setDescription($oneRel['arcrole_description']);
+                $relatedObj->setType($tmpTerm);
+            }
+            
             /* Not using setAltType(). It is never used. See ConstellationRelation.php */
-            $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
+            if ($oneRel['relation_type'] != null) { 
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['relation_type']);
+                $tmpTerm->setTerm($oneRel['relation_type_value']);
+                $tmpTerm->setType($oneRel['relation_type_type']);
+                $tmpTerm->setURI($oneRel['relation_type_uri']);
+                $tmpTerm->setDescription($oneRel['relation_type_description']);
+                $relatedObj->setCPFRelationType($tmpTerm);
+            }
+            
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);

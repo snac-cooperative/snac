@@ -31,7 +31,11 @@ use \Monolog\Logger;
 use \Monolog\Handler\StreamHandler;
 
 // Set up the global log stream
-$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$WEBUI_LOGFILE, Logger::DEBUG);
+$loglevel = Logger::WARNING;
+if (\snac\Config::$DEBUG_MODE) {
+    $loglevel = Logger::DEBUG;
+}
+$log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$WEBUI_LOGFILE, $loglevel);
 
 // Use the REQUEST (GET, POST, COOKIE) variables as input
 $input = $_REQUEST;

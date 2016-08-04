@@ -171,9 +171,12 @@ class WebUIExecutor {
      */ 
     protected function getConstellation(&$input, &$display) {
         $query = array();
-        $query["constellationid"] = $input["constellationid"];
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
         if (isset($input["version"]))
             $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
         $query["command"] = "read";
 
         $this->logger->addDebug("Sending query to the server", $query);

@@ -688,7 +688,7 @@ create table related_identity (
     arcrole             int,  -- @xlink:arcrole, (fk to vocabulary.id) associatedWith, correspondedWith, etc, was relation_type
     type                int,  -- @xlink:type, always simple?
     href                text, -- @xlink:href, optional
-    relation_type       text, -- @cpfRelationType, only from AnF, maybe put in a second table
+    relation_type       int, -- @cpfRelationType, only from AnF, maybe put in a second table
     relation_entry      text, -- relationEntry (name) of the related eac-cpf record (should be unnecessary in db)
     descriptive_note    text, -- descriptiveNote, xml fragment, used only for non-ExtractedRecordId data
     extracted_record_id text, -- descriptiveNote/p/span[localType='http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId']
