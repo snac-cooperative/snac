@@ -117,7 +117,6 @@ class Config {
      * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
      *
      * The relative path is probably: vendor/npm-asset/eac-validator/rng
-     * 
      */
     public static $RNG_DIR = "full/path/to/src/snac/util";
 
