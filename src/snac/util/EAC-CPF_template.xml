@@ -248,7 +248,7 @@
             <resourceRelation xlink:type="simple"
                               xlink:role="{{ xlink_role }}"
                               xlink:arcrole="{{ xlink_arcrole }}"
-                              xlink:href="{{ resRel.href }}">
+                              xlink:href="{{ resRel.link  }}">
                 <relationEntry>{{ resRel.content }}</relationEntry>
                 {{ resRel.source|raw }}
             </resourceRelation>
