@@ -55,11 +55,23 @@ class Constellation extends AbstractData {
      * From EAC-CPF tag(s):
      *
      * * eac-cpf/control/otherRecordId
-     * * eac-cpf/cpfDescription/identity/entityID
+     * * cpfRelation where type=sameAs
      *
      * @var \snac\data\SameAs[] Other record IDs by which this constellation may be known
      */
     private $otherRecordIDs = null;
+
+
+    /**
+    * EntityID List
+    *
+    * From EAC-CPF tag(s):
+    *
+    * * eac-cpf/cpfDescription/identity/entityID
+    *
+    * @var \snac\data\EntityId[] Other external record IDs by which this constellation may be known
+    */
+    private $entityIDs = null;
 
     /**
      * Maintenace Status
@@ -156,9 +168,9 @@ class Constellation extends AbstractData {
     private $nameEntries = null;
 
     /**
-     * Preferred Name Entry 
+     * Preferred Name Entry
      *
-     * @var \snac\data\NameEntry|null The preferred name entry on view (based on the viewing user) 
+     * @var \snac\data\NameEntry|null The preferred name entry on view (based on the viewing user)
      */
     private $preferredNameEntry = null;
 
@@ -339,6 +351,7 @@ class Constellation extends AbstractData {
             $this->generalContexts = array();
             $this->structureOrGenealogies = array();
             $this->mandates = array();
+            $this->entityIDs = array();
         }
         // always call the parent constructor
         parent::__construct($data);
@@ -375,6 +388,17 @@ class Constellation extends AbstractData {
     public function getOtherRecordIDs()
     {
         return $this->otherRecordIDs;
+    }
+
+    /**
+    * Get the other entityIDs
+    *
+    * @return \snac\data\EntityId[] Other entity IDs by which this constellation may be known
+    *
+    */
+    public function getEntityIDs()
+    {
+        return $this->entityIDs;
     }
 
     /**
@@ -483,7 +507,7 @@ class Constellation extends AbstractData {
     /**
      * Get the preferred name
      *
-     * Gets the preferred name entry for this constellation.  If the preferred 
+     * Gets the preferred name entry for this constellation.  If the preferred
      * name entry has been set by the server, that one is returned.  If not, it
      * gets the nameEntry in this constellation with the highest score, or the
      * first one if the scores are equal, or null if there is no name entry
@@ -497,7 +521,7 @@ class Constellation extends AbstractData {
             return null;
 
         if ($this->preferredNameEntry != null)
-            return $this->preferredNameEntry; 
+            return $this->preferredNameEntry;
 
         $max = 0;
         $id = 0;
@@ -751,6 +775,7 @@ class Constellation extends AbstractData {
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
             "otherRecordIDs" => array(),
+            "entityIDs" => array(),
             "maintenanceStatus" => $this->maintenanceStatus == null ? null : $this->maintenanceStatus->toArray($shorten),
             "maintenanceAgency" => $this->maintenanceAgency,
             "maintenanceEvents" => array(),
@@ -794,6 +819,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->otherRecordIDs as $i => $v)
             $return["otherRecordIDs"][$i] = $v->toArray($shorten);
+
+        foreach ($this->entityIDs as $i => $v)
+            $return["entityIDs"][$i] = $v->toArray($shorten);
 
         foreach ($this->maintenanceEvents as $i => $v)
             $return["maintenanceEvents"][$i] = $v->toArray($shorten);
@@ -885,6 +913,13 @@ class Constellation extends AbstractData {
             foreach ($data["otherRecordIDs"] as $i => $entry)
                 if ($entry != null)
                     $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
+
+        unset($this->entityIDs);
+        $this->entityIDs = array();
+        if (isset($data["entityIDs"]))
+            foreach ($data["entityIDs"] as $i => $entry)
+                if ($entry != null)
+                    $this->entityIDs[$i] = new \snac\data\EntityId($entry);
 
         unset($this->maintenanceStatus);
         if (isset($data["maintenanceStatus"]) && $data["maintenanceStatus"] != null)
@@ -1083,6 +1118,17 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Add an alternate entityId
+     *
+     * @param \snac\data\EntityId $other The other entityId in an EntityId object
+     */
+    public function addEntityID($other) {
+
+        array_push($this->entityIDs, $other);
+    }
+
+
+    /**
      * Set maintenance status
      *
      * @param \snac\data\Term $status status
@@ -1157,7 +1203,7 @@ class Constellation extends AbstractData {
      * Set the list of name entries
      *
      * Sets the list of name entries to the list provided.  This will overwrite any other
-     * name entries currently set for this constellation. 
+     * name entries currently set for this constellation.
      *
      * @param \snac\data\NameEntry[] $nameEntries Name entry list to set
      */
@@ -1410,6 +1456,8 @@ class Constellation extends AbstractData {
         **/
 
         if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getEntityIDs(), $other->getEntityIDs(), $strict))
             return false;
         if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict))
             return false;

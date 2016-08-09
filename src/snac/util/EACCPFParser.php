@@ -24,7 +24,7 @@ namespace snac\util;
  * understood by the parser.
  *
  * @author Robbie Hott
- *        
+ *
  */
 class EACCPFParser {
 
@@ -64,13 +64,13 @@ class EACCPFParser {
      * Constructor. This reads all the vocab from the database, and therefore takes a second or two. You
      * probably do not want multiple instances of this parser. Just create one instance and used it as a
      * static class.
-     * 
+     *
      * Order of operations to initialize is a bit unclear. The vocabulary can't exist until the data is
      * parsed, so there must be some pre-parsing step. Generally, once the vocaulary table is populated, we
      * keep using it, even if the database is reset.
      *
-     * 
-     */ 
+     *
+     */
     public function __construct() {
         $this->vocabulary = null;
     }
@@ -140,7 +140,7 @@ class EACCPFParser {
      * @param string $termString A string that can be found in the vocabulary
      *
      * @param string $vocab A vocabulary category such as "record_type", "language_code"
-     * 
+     *
      * @return \snac\data\Term A Term object.
      */
     public function getTerm($termString, $vocab) {
@@ -152,38 +152,38 @@ class EACCPFParser {
             $term = $this->vocabulary->getTermByValue($termString, $vocab);
         } else {
             $term = new \snac\data\Term();
-            $term->setTerm($termString);   
+            $term->setTerm($termString);
         }
         return $term;
     }
-    
+
     /**
      * Generate Display Name for Source
-     * 
+     *
      * Generates a display name for a given source by inspecting the source and creating a name
      * for this entity.  This will be stored in the database until updated by a human to create
      * a more meaningful name.
-     * 
+     *
      * @param \snac\data\Source $source Source object to create name for
      * @param int $i optional The index into the source list
      * @return string the display name
      */
     private function generateSourceDisplayName($source, $i = null) {
-        
+
         $display = "";
-        
+
         if ($i != null) {
             $display .= "Source $i: ";
         }
-        
+
         if (stristr($source->getText(), "ead_entity"))
             $display .= "EAD from ";
-        
+
         if ($source->getURI() != null && $source->getURI() != "") {
             $display .= $source->getURI();
         }
-        
-        return $display; 
+
+        return $display;
     }
 
     /**
@@ -195,19 +195,19 @@ class EACCPFParser {
     public function parse($xmlText) {
 
         $xml = simplexml_load_string($xmlText);
-        
+
         $identity = new \snac\data\Constellation();
-      
+
         $this->unknowns = array ();
         $this->namespaces = $xml->getNamespaces(true);
 
         $languageDeclaration = new \snac\data\Language();
-        
+
         $sourceCounter = 1;
-        
+
         foreach ($this->getChildren($xml) as $node) {
             if ($node->getName() == "control") {
-                
+
                 foreach ($this->getChildren($node) as $control) {
                     $catts = $this->getAttributes($control);
                     switch ($control->getName()) {
@@ -243,7 +243,7 @@ class EACCPFParser {
                                 array (
                                     $node->getName,
                                     $control->getName()
-                                ), 
+                                ),
                                 array (
                                     $agencyInfo[$i]
                                 ));
@@ -272,7 +272,7 @@ class EACCPFParser {
                                 /*
                                  * Set the language term globally
                                  * Setting the language Term of a Language object.
-                                 */  
+                                 */
                                 $languageTerm = $this->getTerm($code, "language_code");
                                 $languageDeclaration->setLanguage($languageTerm);
                                 $this->markUnknownAtt(
@@ -291,7 +291,7 @@ class EACCPFParser {
                                 /*
                                  * Set the script term globally
                                  * Setting the script Term of a Language object.
-                                 */ 
+                                 */
                                 $scriptTerm = $this->getTerm($code, "script_code");
                                 $languageDeclaration->setScript($scriptTerm);
                                 $this->markUnknownAtt(
@@ -362,7 +362,7 @@ class EACCPFParser {
                                     $control->getName(),
                                     $mevent->getName()
                                 ), $this->getAttributes($mevent));
-                                
+
                             $event->setOperation($this->operation);
                             $identity->addMaintenanceEvent($event);
                         }
@@ -417,29 +417,33 @@ class EACCPFParser {
                         $this->markUnknownTag(
                             array (
                                 $node->getName()
-                            ), 
+                            ),
                             array (
                                 $control
                             ));
                     }
                 }
             } elseif ($node->getName() == "cpfDescription") {
-                
+
                 foreach ($this->getChildren($node) as $desc) {
                     $datts = $this->getAttributes($desc);
-                    
+
                     switch ($desc->getName()) {
                     case "identity":
                         foreach ($this->getChildren($desc) as $ident) {
                             $iatts = $this->getAttributes($ident);
                             switch ($ident->getName()) {
                             case "entityId":
-                                $term = $this->getTerm("entityID","record_type");
-                                $sameas = new \snac\data\SameAs();
+                                $term = $this->getTerm("unknown","entityid_type");
+                                if (isset($iatts["localType"])) {
+                                    $term = $this->getTerm($this->getValue($iatts["localType"]), "entityid_type");
+                                    unset($iatts["localType"]);
+                                }
+                                $sameas = new \snac\data\EntityId();
                                 $sameas->setType($term);
-                                $sameas->setURI((string) $ident);
+                                $sameas->setText((string) $ident);
                                 $sameas->setOperation($this->operation);
-                                $identity->addOtherRecordID($sameas);
+                                $identity->addEntityID($sameas);
                                 break;
                             case "entityType":
                                 $identity->setEntityType($this->getTerm((string) $ident, "entity_type"));
@@ -488,7 +492,7 @@ class EACCPFParser {
                                             if ($dateEntry->getName() == "dateRange" ||
                                                 $dateEntry->getName() == "date") {
                                                 $nameEntry->addDate(
-                                                    $this->parseDate($dateEntry, 
+                                                    $this->parseDate($dateEntry,
                                                                      array (
                                                                          $node->getName(),
                                                                          $desc->getName(),
@@ -514,7 +518,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $ident->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $npart
                                             ));
@@ -535,7 +539,7 @@ class EACCPFParser {
                                     array (
                                         $node->getName(),
                                         $desc->getName()
-                                    ), 
+                                    ),
                                     array (
                                         $ident
                                     ));
@@ -559,14 +563,14 @@ class EACCPFParser {
                                         foreach ($this->getChildren($dates) as $dateEntry) {
                                             $dateEntryName = $dateEntry->getName();
                                             if ($dateEntryName == "dateRange" || $dateEntryName == "date") {
-                                                $date = $this->parseDate($dateEntry, 
+                                                $date = $this->parseDate($dateEntry,
                                                                          array (
                                                                              $node->getName(),
                                                                              $desc->getName(),
                                                                              $desc2->getName(),
                                                                              $dates->getName()
                                                                          ));
-                                                /* 
+                                                /*
                                                  * Old code: $identity->addExistDates($date);
                                                  * Add a date object to the list of date objects for this constellation.
                                                  */
@@ -579,7 +583,7 @@ class EACCPFParser {
                                                         $desc->getName(),
                                                         $desc2->getName(),
                                                         $dates->getName()
-                                                    ), 
+                                                    ),
                                                     array (
                                                         $dateEntry
                                                     ));
@@ -588,7 +592,7 @@ class EACCPFParser {
                                         break;
                                     case "dateRange":
                                     case "date":
-                                        $date = $this->parseDate($dates, 
+                                        $date = $this->parseDate($dates,
                                                                  array (
                                                                      $node->getName() . $desc->getName(),
                                                                      $desc2->getName()
@@ -616,7 +620,7 @@ class EACCPFParser {
                                          * The original code clearly assumes only one date. Lets go with
                                          * adding a note to the first date in the $identity Constellation
                                          * object.
-                                         */ 
+                                         */
                                         if ($firstDate = $identity->getDateList()[0])
                                         {
                                             $firstDate->setNote((string) $dates);
@@ -626,7 +630,7 @@ class EACCPFParser {
                                             $message = sprintf("Warning: exists date note, but no exists date: %s\n", $this->arkID);
                                             $stderr = fopen('php://stderr', 'w');
                                             fwrite($stderr,"  $message\n");
-                                            fclose($stderr); 
+                                            fclose($stderr);
                                         }
                                         $this->markUnknownAtt(
                                             array (
@@ -642,7 +646,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $dates
                                             ));
@@ -663,7 +667,7 @@ class EACCPFParser {
                                     case "date":
                                     case "dateRange":
                                         $place->addDate(
-                                            $this->parseDate($placePart, 
+                                            $this->parseDate($placePart,
                                                              array (
                                                                  $node->getName(),
                                                                  $desc->getName(),
@@ -695,13 +699,13 @@ class EACCPFParser {
                                         // individually, take everything from the place tag and add it to the
                                         // Place objects created by the placeEntry tags, then add those Places
                                         // to the identity constellation
-                                        array_push($newPlaces, $this->parsePlaceEntry($placePart, 
+                                        array_push($newPlaces, $this->parsePlaceEntry($placePart,
                                                                    array (
                                                                        $node->getName(),
                                                                        $desc->getName(),
                                                                        $desc2->getName()
                                                                    )));
-                                        
+
                                         break;
                                     default:
                                         $this->markUnknownTag(
@@ -709,7 +713,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $placePart
                                             ));
@@ -721,7 +725,7 @@ class EACCPFParser {
                                         $desc->getName(),
                                         $desc2->getName()
                                     ), $platts);
-                                
+
                                 // Go through each placeEntry found and add the Place to the IC with
                                 // all the information from the <place> tag appended.
                                 foreach ($newPlaces as $newPlace) {
@@ -734,9 +738,9 @@ class EACCPFParser {
                                     $newPlace->setOperation($this->operation);
                                     $identity->addPlace($newPlace);
                                 }
-                                
+
                                 break;
-                                
+
                             case "localDescription":
                                 $subTags = $this->getChildren($desc2);
                                 $subTag = $subTags[0];
@@ -746,7 +750,7 @@ class EACCPFParser {
                                             $node->getName(),
                                             $desc->getName(),
                                             $desc2->getName()
-                                        ), 
+                                        ),
                                         array (
                                             $subTags[$i]
                                         ));
@@ -778,7 +782,7 @@ class EACCPFParser {
                                         array (
                                             $node->getName(),
                                             $desc->getName()
-                                        ), 
+                                        ),
                                         array (
                                             $desc2
                                         ));
@@ -788,7 +792,7 @@ class EACCPFParser {
                                 /*
                                  * The test example test1.xml doesn't have langaugeUsed, only languageDeclaration, yet
                                  * the test code clearly used to pass constellation langauge tests. How was that possible?
-                                 */ 
+                                 */
                                 $language = new \snac\data\Language();
                                 $updatedLanguage = false;
                                 foreach ($this->getChildren($desc2) as $lang) {
@@ -870,7 +874,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $legal
                                             ));
@@ -918,7 +922,7 @@ class EACCPFParser {
                                         $occupation->setNote((string) $occ);
                                         break;
                                     case "dateRange":
-                                        $date = $this->parseDate($occ, 
+                                        $date = $this->parseDate($occ,
                                                                  array (
                                                                      $node->getName(),
                                                                      $desc->getName(),
@@ -928,7 +932,7 @@ class EACCPFParser {
                                          * Occupation extends AbstractData which has a date list.
                                          *
                                          * change setDateRange() to addDate()
-                                         */ 
+                                         */
                                         $occupation->addDate($date);
                                         break;
                                     default:
@@ -937,7 +941,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $occ
                                             ));
@@ -975,7 +979,7 @@ class EACCPFParser {
                                         $function->setNote((string) $fun);
                                         break;
                                     case "dateRange":
-                                        $date = $this->parseDate($fun, 
+                                        $date = $this->parseDate($fun,
                                                                  array (
                                                                      $node->getName(),
                                                                      $desc->getName(),
@@ -985,7 +989,7 @@ class EACCPFParser {
                                          * Function extends AbstractData which has a date list.
                                          *
                                          * change setDateRange() to addDate()
-                                         */ 
+                                         */
                                         $function->addDate($date);
                                         break;
                                     default:
@@ -994,7 +998,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $desc2->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $fun
                                             ));
@@ -1026,7 +1030,7 @@ class EACCPFParser {
                                 $bh->setText($desc2->asXML());
                                 /*
                                  * Is it correct to set the language of the biogHist to the <languageDeclaration> element?
-                                 */ 
+                                 */
                                 $languageDeclaration->setOperation($this->operation);
                                 $bh->setLanguage($languageDeclaration);
                                 $bh->setOperation($this->operation);
@@ -1037,7 +1041,7 @@ class EACCPFParser {
                                     array (
                                         $node->getName(),
                                         $desc->getName()
-                                    ), 
+                                    ),
                                     array (
                                         $desc2
                                     ));
@@ -1051,17 +1055,17 @@ class EACCPFParser {
                             if ( ! isset($ratts['href']))
                             {
                                 // In retrospect, we can silently just make this an empty string, probably.
-                                /* 
+                                /*
                                  * $message = sprintf("Warning: empty href in relations for: %s\n", $this->arkID);
                                  * $stderr = fopen('php://stderr', 'w');
                                  * fwrite($stderr,"  $message\n");
-                                 * fclose($stderr); 
+                                 * fclose($stderr);
                                  */
                                 $ratts['href'] = "";
                             }
                             switch ($rel->getName()) {
                             case "cpfRelation":
-                                
+
                                 // If this is a sameAs, we need to treat it differently:
                                 if ($this->getValue($ratts["arcrole"]) == "sameAs") {
                                     $sameas = new \snac\data\SameAs();
@@ -1071,7 +1075,7 @@ class EACCPFParser {
                                     unset($ratts["href"]);
                                     unset($ratts["role"]);
                                     unset($ratts["type"]);
-                                    
+
                                     $children = $this->getChildren($rel);
                                     if (! empty($children)) {
                                         $sameas->setText((string) $children[0]);
@@ -1120,9 +1124,9 @@ class EACCPFParser {
                                     $sameas->setOperation($this->operation);
                                     $identity->addOtherRecordID($sameas);
                                 } else { // real relation
-                                        
+
                                     $relation = new \snac\data\ConstellationRelation();
-                                    
+
                                     $relation->setType($this->getTerm($this->getValue($ratts["arcrole"]), "relation_type"));
                                     $relation->setSourceArkID($identity->getArk());
                                     $relation->setTargetArkID($ratts['href']);
@@ -1156,9 +1160,9 @@ class EACCPFParser {
                                         case "dateRange":
                                             /*
                                              * setDates() changed to addDate()
-                                             */ 
+                                             */
                                             $relation->addDate(
-                                                $this->parseDate($child, 
+                                                $this->parseDate($child,
                                                                  array (
                                                                      $node->getName(),
                                                                      $desc->getName(),
@@ -1181,7 +1185,7 @@ class EACCPFParser {
                                                     $node->getName(),
                                                     $desc->getName(),
                                                     $rel->getName()
-                                                ), 
+                                                ),
                                                 array (
                                                     $child
                                                 ));
@@ -1246,7 +1250,7 @@ class EACCPFParser {
                                                 $node->getName(),
                                                 $desc->getName(),
                                                 $rel->getName()
-                                            ), 
+                                            ),
                                             array (
                                                 $relItem
                                             ));
@@ -1260,7 +1264,7 @@ class EACCPFParser {
                                     array (
                                         $node->getName(),
                                         $desc->getName()
-                                    ), 
+                                    ),
                                     array (
                                         $rel
                                     ));
@@ -1271,7 +1275,7 @@ class EACCPFParser {
                         $this->markUnknownTag(
                             array (
                                 $node->getName()
-                            ), 
+                            ),
                             array (
                                 $desc
                             ));
@@ -1331,10 +1335,10 @@ class EACCPFParser {
     private function getAttributes($element) {
 
         $att = array ();
-        
+
         foreach ($element->attributes() as $k => $v)
             $att[$k] = (string) $v;
-        
+
         foreach ($this->namespaces as $s => $n) {
             foreach ($element->attributes($n) as $k => $v)
                 $att[$k] = (string) $v;
@@ -1353,12 +1357,12 @@ class EACCPFParser {
     private function getChildren($element) {
 
         $children = array ();
-        
+
         foreach ($element->children() as $k => $v) {
             // if (!isset($children[$k])) $children[$k] = array();
             // array_push($children, $v);
         }
-        
+
         foreach ($this->namespaces as $s => $n) {
             foreach ($element->children($n) as $k => $v)
                 // if (!isset($children[$k])) $children[$k] = array();
@@ -1380,11 +1384,11 @@ class EACCPFParser {
 
         $path = implode("/", $xpath);
         $path .= "/";
-        
+
         if (! $isTag) {
             $path .= "@";
         }
-        
+
         foreach ($missing as $k => $v) {
             array_push($this->unknowns, $path . $k . " :: " . $v);
         }
@@ -1418,7 +1422,7 @@ class EACCPFParser {
             $this->markUnknowns(array_merge($xpath, array (
                 $m->getName()
             )), $this->getAttributes($m), false);
-            
+
             // Traverse down the children
             $this->markUnknownTag(array_merge($xpath, array (
                 $m->getName()
@@ -1442,13 +1446,13 @@ class EACCPFParser {
             // Handle the date range
             $date->setRange(true);
             foreach ($this->getChildren($dateElement) as $dateTag) {
-                /* 
+                /*
                  *   File /data/merge/99166-w62r7n84.xml ok.
                  * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1255
                  * PHP Notice:  Undefined index: standardDate in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1279
                  */
 
-                /* 
+                /*
                  * File /data/merge/99166-w6163116.xml ok.
                  * PHP Notice:  Undefined index: localType in /lv1/home/twl8n/snac/src/snac/util/EACCPFParser.php on line 1256
                  */
@@ -1463,10 +1467,10 @@ class EACCPFParser {
 
                         if (! isset($dateAtts['standardDate']))
                         {
-                            $dateAtts['standardDate'] = '';   
+                            $dateAtts['standardDate'] = '';
                         }
-                        $date->setFromDate((string) $dateTag, 
-                                           $dateAtts["standardDate"], 
+                        $date->setFromDate((string) $dateTag,
+                                           $dateAtts["standardDate"],
                                            $dateType);
                         $notBefore = null;
                         $notAfter = null;
@@ -1475,13 +1479,13 @@ class EACCPFParser {
                         if (isset($dateAtts["notAfter"]))
                             $notAfter = $dateAtts["notAfter"];
                         $date->setFromDateRange($notBefore, $notAfter);
-                            
+
                         unset($dateAtts["notBefore"]);
                         unset($dateAtts["notAfter"]);
                         unset($dateAtts["standardDate"]);
                         unset($dateAtts["localType"]);
                         $this->markUnknownAtt(
-                            array_merge($xpath, 
+                            array_merge($xpath,
                                         array (
                                             $dateElement->getName(),
                                             $dateTag->getName()
@@ -1495,10 +1499,10 @@ class EACCPFParser {
                             $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
                         if (! isset($dateAtts['standardDate']))
                         {
-                            $dateAtts['standardDate'] = '';   
+                            $dateAtts['standardDate'] = '';
                         }
-                        $date->setToDate((string) $dateTag, 
-                                $dateAtts["standardDate"], 
+                        $date->setToDate((string) $dateTag,
+                                $dateAtts["standardDate"],
                                 $dateType);
                         $notBefore = null;
                         $notAfter = null;
@@ -1507,13 +1511,13 @@ class EACCPFParser {
                         if (isset($dateAtts["notAfter"]))
                             $notAfter = $dateAtts["notAfter"];
                         $date->setToDateRange($notBefore, $notAfter);
-                            
+
                         unset($dateAtts["notBefore"]);
                         unset($dateAtts["notAfter"]);
                         unset($dateAtts["standardDate"]);
                         unset($dateAtts["localType"]);
                         $this->markUnknownAtt(
-                            array_merge($xpath, 
+                            array_merge($xpath,
                                         array (
                                             $dateElement->getName(),
                                             $dateTag->getName()
@@ -1522,23 +1526,23 @@ class EACCPFParser {
                     break;
                 default:
                     $this->markUnknownTag(
-                        array_merge($xpath, 
+                        array_merge($xpath,
                                     array (
                                         $dateElement->getName()
-                                    )), 
+                                    )),
                         array (
                             $dateTag
                         ));
                 }
             }
         } elseif ($dateElement->getName() == "date") {
-            /* 
+            /*
              * Sanity check standardDate. Unclear what should happen if we don't have a standardDate
              * value. This code leaves $date unchanged, and hopes that the initialization was sane.
              */
             if (isset($dateAtts["standardDate"]))
             {
-                
+
                 // Handle the single date that appears
                 $date->setRange(false);
                 $dateAtts = $this->getAttributes($dateElement);
@@ -1546,8 +1550,8 @@ class EACCPFParser {
                 $dateType = null;
                 if (isset($dateAtts["localType"]))
                     $dateType = $this->getTerm($this->getValue($dateAtts["localType"]), "date_type");
-                $date->setDate((string) $dateElement, 
-                        $dateAtts["standardDate"], 
+                $date->setDate((string) $dateElement,
+                        $dateAtts["standardDate"],
                         $dateType);
                 $notBefore = null;
                 $notAfter = null;
@@ -1556,13 +1560,13 @@ class EACCPFParser {
                 if (isset($dateAtts["notAfter"]))
                     $notAfter = $dateAtts["notAfter"];
                 $date->setDateRange($notBefore, $notAfter);
-                
+
                 unset($dateAtts["notBefore"]);
                 unset($dateAtts["notAfter"]);
                 unset($dateAtts["standardDate"]);
                 unset($dateAtts["localType"]);
                 $this->markUnknownAtt(
-                    array_merge($xpath, 
+                    array_merge($xpath,
                                 array (
                                     $dateElement->getName()
                                 )), $dateAtts);
@@ -1572,14 +1576,14 @@ class EACCPFParser {
                 /* Silently make dates with no standard date only partial complete.
                  *
                  * Arg 3 is type which is Term object
-                 * 
+                 *
                  * $message = sprintf("Warning: empty standardDate in date for: %s\n", $this->arkID);
                  * $stderr = fopen('php://stderr', 'w');
                  * fwrite($stderr,"  $message\n");
-                 * fclose($stderr); 
-                 * 
-                 * 
-                 * 
+                 * fclose($stderr);
+                 *
+                 *
+                 *
                  */
                 $date->setDate((string) $dateElement, '', null);
             }
@@ -1610,10 +1614,10 @@ class EACCPFParser {
         $plAtts = $this->getAttributes($placeTag);
         $place = new \snac\data\Place();
         $geoTerm = new \snac\data\GeoTerm();
-        
+
         $geoInfoSet = false;
         $score = 0;
-        
+
         if (isset($plAtts["latitude"])) {
             $geoInfoSet = true;
             $geoTerm->setLatitude($plAtts["latitude"]);
@@ -1650,11 +1654,11 @@ class EACCPFParser {
         $this->markUnknownAtt(array_merge($xpath, array (
                 $placeTag->getName()
         )), $plAtts);
-        
+
         // Set the original string. If this is a snac:placeEntry, it will be empty, but there will be a sub-placeEntry
         // that will be found below to overwrite the original string
         $place->setOriginal((string) $placeTag);
-        
+
         // Look for the children, check for a snac:placeEntryBestMaybeSame or snac:placeEntryLikelySame
         foreach ($this->getChildren($placeTag) as $child) {
             switch ($child->getName()) {
@@ -1662,7 +1666,7 @@ class EACCPFParser {
                 case "placeEntryLikelySame":
                     // Use this as the GeoTerm for this object!
                     $plAtts = $this->getAttributes($child);
-                    
+
                     if (isset($plAtts["latitude"])) {
                         $geoInfoSet = true;
                         $geoTerm->setLatitude($plAtts["latitude"]);
@@ -1692,16 +1696,16 @@ class EACCPFParser {
                         $score = $plAtts["certaintyScore"];
                         unset($plAtts["certaintyScore"]);
                     }
-                    
+
                     $geoTerm->setName((string) $child);
 
                     $this->markUnknownAtt(array_merge(
-                            $xpath, 
+                            $xpath,
                             array (
                                 $placeTag->getName(),
                                 $child->getName()
                             )), $plAtts);
-                    
+
                     break;
                 case "placeEntryMaybeSame":
                     // Silently ignore the rest of the list
@@ -1711,7 +1715,7 @@ class EACCPFParser {
                     // internal placeEntry, so we must set it again.
                     $place->setOriginal((string) $child);
                     $this->markUnknownAtt(
-                            array_merge($xpath, 
+                            array_merge($xpath,
                                     array (
                                             $placeTag->getName(),
                                             $child->getName()
@@ -1719,7 +1723,7 @@ class EACCPFParser {
                     break;
                 default:
                     $this->markUnknownTag(
-                            array_merge($xpath, 
+                            array_merge($xpath,
                                     array (
                                             $placeTag->getName()
                                     )), array (
@@ -1727,15 +1731,15 @@ class EACCPFParser {
                             ));
             }
         }
-        
+
         // Create a SCM object for this place to store the original.
-        
+
         $scm = new \snac\data\SNACControlMetadata();
         $scm->setSourceData($place->getOriginal());
         $scm->setNote("Parsed from SNAC EAC-CPF.");
         $scm->setOperation($this->operation);
         $place->addSNACControlMetadata($scm);
-        
+
         // If the geo information was set, try to find the real term
         if ($geoInfoSet) {
             $realGeoPlace = null;
@@ -1748,7 +1752,7 @@ class EACCPFParser {
                 $place->setGeoTerm($geoTerm);
             $place->setScore($score);
         }
-        
+
         $place->setOperation($this->operation);
         return $place;
     }

@@ -89,7 +89,7 @@ class DBUtil
      * @var mixed[] Associative array of arrays of objects indexed by their ids
      */
     private $dataCache = null;
-    
+
     /**
      * Constellation status
      *
@@ -218,7 +218,7 @@ class DBUtil
                                  'snac\data\Source' => 'source',
                                  'snac\data\Subject' => 'subject');
 
-        // Term Cache 
+        // Term Cache
         $this->termCache = array();
     }
 
@@ -700,6 +700,7 @@ class DBUtil
         $this->populateNationality($vhInfo, $cObj);
         $this->populateOccupation($vhInfo, $cObj);
         $this->populateOtherRecordID($vhInfo, $cObj);
+        $this->populateEntityID($vhInfo, $cObj);
         $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
         $this->populateStructureOrGenealogy($vhInfo, $cObj);
         $this->populateSubject($vhInfo, $cObj);
@@ -775,6 +776,31 @@ class DBUtil
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'otherid');
             $cObj->addOtherRecordID($gObj);
+        }
+    }
+
+    /**
+    * Populate EntityID
+    *
+    * Populate the EntityID object(s), and add it/them to an existing Constellation object.
+    *
+    * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
+    *
+    * @param \snac\data\Constellation $cObj object, passed by reference, and changed in place
+    *
+    */
+    private function populateEntityID($vhInfo, $cObj)
+    {
+        $oridRows = $this->sql->selectEntityID($vhInfo);
+        foreach ($oridRows as $rec)
+        {
+            $gObj = new \snac\data\EntityId();
+            $gObj->setText($rec['text']); // the text of this sameAs or otherRecordID
+            $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
+            $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $this->populateMeta($vhInfo, $gObj, 'entityid');
+            $cObj->addEntityID($gObj);
         }
     }
 
@@ -922,7 +948,7 @@ class DBUtil
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          * I'm pretty sure that first arg is an $fkID.
          */
-        if ( isset($this->dataCache["meta"][$fkTable]) && 
+        if ( isset($this->dataCache["meta"][$fkTable]) &&
              isset($this->dataCache["meta"][$fkTable][$cObj->getID()]) )
         {
             foreach($this->dataCache["meta"][$fkTable][$cObj->getID()] as $gObj)
@@ -984,7 +1010,7 @@ class DBUtil
         {
             $gObj = new \snac\data\Subject();
 
-            if ($rec['term_id'] != null) { 
+            if ($rec['term_id'] != null) {
                 $tmpTerm = new \snac\data\Term();
                 $tmpTerm->setID($rec['term_id']);
                 $tmpTerm->setTerm($rec['term_value']);
@@ -993,7 +1019,7 @@ class DBUtil
                 $tmpTerm->setDescription($rec['term_description']);
                 $gObj->setTerm($tmpTerm);
             }
-            
+
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'subject');
             $cObj->addSubject($gObj);
@@ -1191,7 +1217,7 @@ class DBUtil
         // If in the cache, then don't re-query
         if (isset($this->termCache[$termID]))
             return $this->termCache[$termID];
-        
+
         $row = $this->sql->selectTerm($termID);
         if ($row == null || empty($row))
             return null;
@@ -1986,6 +2012,36 @@ class DBUtil
         }
     }
 
+
+    /**
+    * Save entityID
+    *
+    * Entity id can be found in the EntityId class.
+    *
+    * @param integer[] $vhInfo list with keys version, ic_id.
+    *
+    * @param \snac\data\Constellation $cObj Constellation object
+    */
+    private function saveEntityID($vhInfo, $cObj)
+    {
+        foreach ($cObj->getEntityIDs() as $otherID)
+        {
+            $rid = $otherID->getID();
+            if ($this->prepOperation($vhInfo, $otherID))
+            {
+                $rid = $this->sql->insertEntityID($vhInfo,
+                    $otherID->getID(),
+                    $otherID->getText(),
+                    $this->thingID($otherID->getType()),
+                    $otherID->getURI());
+                    $otherID->setID($rid);
+                    $otherID->setVersion($vhInfo['version']);
+            }
+            $this->saveMeta($vhInfo, $otherID, 'entityid', $rid);
+        }
+    }
+
+
     /**
      * Save Source of constellation
      *
@@ -1995,7 +2051,7 @@ class DBUtil
      */
     private function saveConstellationSource($vhInfo, $cObj)
     {
-        
+
         throw new \snac\exceptions\SNACDatabaseException("DBUtil saveConstellationSource() no longer used. See saveSource()");
         return;
         foreach ($cObj->getSources() as $fdata)
@@ -2438,9 +2494,9 @@ class DBUtil
                 $tmpTerm->setDescription($oneRel['arcrole_description']);
                 $relatedObj->setType($tmpTerm);
             }
-            
+
             /* Not using setAltType(). It is never used. See ConstellationRelation.php */
-            if ($oneRel['relation_type'] != null) { 
+            if ($oneRel['relation_type'] != null) {
                 $tmpTerm = new \snac\data\Term();
                 $tmpTerm->setID($oneRel['relation_type']);
                 $tmpTerm->setTerm($oneRel['relation_type_value']);
@@ -2449,7 +2505,7 @@ class DBUtil
                 $tmpTerm->setDescription($oneRel['relation_type_description']);
                 $relatedObj->setCPFRelationType($tmpTerm);
             }
-            
+
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
@@ -2868,6 +2924,7 @@ class DBUtil
         $this->saveNrd($vhInfo, $cObj);
         $this->saveOccupation($vhInfo, $cObj);
         $this->saveOtherRecordID($vhInfo, $cObj);
+        $this->saveEntityID($vhInfo, $cObj);
         $this->savePlace($vhInfo, $cObj, 'version_history', $vhInfo['ic_id']);
         $this->saveStructureOrGenealogy($vhInfo, $cObj);
         $this->saveSubject($vhInfo, $cObj);
@@ -3360,7 +3417,7 @@ class DBUtil
      *
      * The code below fails to distinguish constellation from data, and instead does both things, which makes
      * no sense.
-     * 
+     *
      * This should do to separate things depending on what is being undeleted, but "what is being undeleted"
      * is not handled properly. Constellations are undeleted via writeConstellationStatus().
      *
@@ -3407,7 +3464,7 @@ class DBUtil
      * Read version history of published versions.
      *
      * Currently only used by EACCPFSerializer.php for maintenanceEvent data.
-     * 
+     *
      * @param $ic_id integer The relevant constellation id.
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */

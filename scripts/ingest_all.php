@@ -22,7 +22,13 @@ $parsedFile = false;
 
 // SNAC Postgres DB Handler
 $dbu = new snac\server\database\DBUtil();
-$dbuser = new snac\server\database\DBUser();
+
+// SNAC Postgres User Handler
+$dbuser = new \snac\server\database\DBUser();
+$tempUser = new \snac\data\User();
+$tempUser->setUserName("system@localhost");
+$user = $dbuser->readUser($tempUser);
+$user->generateTemporarySession();
 
 // ElasticSearch Handler
 $eSearch = null;
@@ -33,18 +39,13 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->build();
 }
 
-list($appUserID, $role) = $dbu->getAppUserInfo('system');
-printf("appUserID: %s role: %s\n", $appUserID, $role);
-
-$user = new \snac\data\User();
-$user->setUserName('system@localhost');
-$user = $this->dbuser->readUser($user);
+$seenArks = array();
 
 if (is_dir($argv[1])) {
     printf("Opening dir: $argv[1]\n");
     $dh = opendir($argv[1]);
     printf("Done.\n");
-    
+
     // Create new parser
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
@@ -65,19 +66,63 @@ if (is_dir($argv[1])) {
 
         $constellation = $e->parseFile($filename);
 
-        // Write the constellations to the DB
-        $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
+        // Make sure it isn't already in the database
+        $check = $dbu->readPublishedConstellationByARK($constellation->getArk(), true);
 
-        // Update them to be published
-        $dbu->writeConstellationStatus($written->getID(), "published");
+        $written = null;
+        if ($check !== false) {
+            $written = $dbu->readConstellation($check->getID());
+        } else {
+            // Write the constellation to the DB
+            $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
+            echo "    Written: " . $written->getID() . "\n";
+        }
 
+        // Update it to be published
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
+
+        // index ES
         indexESearch($written);
+
+        $seenArks[$written->getArk()] = $written->getID();
 
         // try to help memory by freeing up the constellation
         unset($written);
     }
 
-    echo "\nCompleted input of sample data.\n\n";
+    echo "\nCompleted input of records\n\n";
+}
+
+echo "\nFixing up Relations:\n";
+// Go back and fix the constellation relations
+foreach ($seenArks as $ark => $id) {
+    echo "Editing: $ark ($id)\n    Relations: ";
+    $constellation = $dbu->readConstellation($id);
+    // For each relation, try to do a lookup
+    foreach ($constellation->getRelations() as &$rel) {
+        if (isset($seenArks[$rel->getTargetArkID()])) {
+            $other = $dbu->readConstellation($seenArks[$rel->getTargetArkID()], null, true);
+            $rel->setTargetConstellation($other->getID());
+            $rel->setTargetEntityType($other->getEntityType());
+            $rel->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+            echo ".";
+        }
+    }
+
+    // Update the constellation in the database
+    try {
+        // Write the constellation to the DB
+        $written = $dbu->writeConstellation($user, $constellation, "updated Constellation Relations", 'locked editing');
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
+        indexESearch($written);
+        echo "\n    Published\n";
+        unset($written);
+    } catch (\snac\exceptions\SNACValidationException $e) {
+        echo "      no changes to write\n";
+    } catch (\Exception $e) {
+        echo "      silently ignoring error...\n";
+    }
+    unset($constellation);
 }
 
 // If no file was parsed, then print the output that something went wrong
