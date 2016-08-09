@@ -128,7 +128,7 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
         $cpfXML = \snac\util\EACCPFSerializer::SerializeByARK('http://snac/test/record-1', true);
         preg_match_all("/(\n)/m", $cpfXML, $matches);
         // printf("\nrec1 matches: %s\n", sizeof($matches[1]));
-        $this->assertEquals(362, sizeof($matches[1]));
+        $this->assertEquals(381, sizeof($matches[1]));
 
         $vernOne = \snac\util\EACCPFSerializer::SerializeByARK('http://n2t.net/ark:/99166/w6xd18cz');
 
@@ -199,14 +199,39 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
             $this->enableLogging();
             $this->logDebug($msg);
         }
+    }
+
+    public function testCPFtoCPF() {
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $origCon = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($origCon->toArray());
+
+        $fn = '/tmp/' . uniqid(rand(), true) . '.xml';
+        
+        $cfile = fopen($fn, 'w');
+        fwrite($cfile, $cpfXML);
+        fclose($cfile); 
+
+        $recycledCon = $eParser->parseFile("$fn");
+        
         /*
-         * Uncomment this for debugging.
-         */ 
-        /* 
-         * $cfile = fopen('cpf_out.xml', 'w');
-         * fwrite($cfile, $cpfXML);
-         * fclose($cfile); 
+         * Delete before calling assert, so that a failed assert doesn't leave our temp file.
+         *
+         * Comment this out for debugging. The file is in /tmp.
          */
+        // unlink($fn);
+
+        $cfile = fopen('tmp_orig.json', 'w');
+        fwrite($cfile, $origCon->toJSON());
+        fclose($cfile); 
+
+        $cfile = fopen('tmp_dest.json', 'w');
+        fwrite($cfile, $recycledCon->toJSON());
+        fclose($cfile); 
+
+        $this->assertTrue($recycledCon->equals($origCon, false));
+
     }
 
   }

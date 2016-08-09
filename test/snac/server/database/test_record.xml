@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:snac="http://socialarchive.iath.virginia.edu/" xmlns:xlink="http://www.w3.org/1999/xlink">
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" 
+         xmlns:owl="http://www.w3.org/2002/07/owl#" 
+         xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+         xmlns:snac="http://socialarchive.iath.virginia.edu/" 
+         xmlns:xlink="http://www.w3.org/1999/xlink">
     <control>
         <recordId>http://snac/test/record-1</recordId>
         <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">taro/utcah/00015.c03</otherRecordId>
@@ -106,18 +110,27 @@
         </identity>
         <description>
             <existDates>
-                <dateRange>
-                    <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth" standardDate="2016-02-23">2016-02-23</fromDate>
-                    <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" standardDate="2016-02-24">2016-02-24</toDate>
-                </dateRange>
-                <dateRange>
-                    <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth" standardDate="1912">1912</fromDate>
-                    <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" standardDate="1992">1992</toDate>
-                </dateRange>
+                <dateSet>
+                    <dateRange>
+                        <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
+                                  standardDate="2016-02-23">2016-02-23</fromDate>
+                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" 
+                                standardDate="2016-02-24">2016-02-24</toDate>
+                    </dateRange>
+                    <dateRange>
+                        <fromDate localType="http://socialarchive.iath.virginia.edu/control/term#Birth"
+                                  standardDate="1912">1912</fromDate>
+                        <toDate localType="http://socialarchive.iath.virginia.edu/control/term#Death" 
+                                standardDate="1992">1992</toDate>
+                    </dateRange>
+                </dateSet>
                 <descriptiveNote>
-                    Sample existDates note should be on date range
+                    <p>Sample existDates note should be on date range</p>
                 </descriptiveNote>
             </existDates>
+            <structureOrGenealogy>
+                <p>Sample SOG</p>
+            </structureOrGenealogy>
             <languageUsed>
                 <language languageCode="eng"/>
                 <script scriptCode="Zyyy"/>
@@ -161,13 +174,13 @@
                 </dateRange>
             </place>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
-                <snac:placeEntry xmlns:snac="http://socialarchive.iath.virginia.edu/">
+                <snac:placeEntry>
                     <placeEntry>United States</placeEntry>
                     <snac:placeEntryLikelySame administrationCode="00" certaintyScore="1.0" countryCode="US" latitude="39.76" longitude="-98.5" vocabularySource="http://www.geonames.org/6252001">United States</snac:placeEntryLikelySame>
                 </snac:placeEntry>
             </place>
             <place localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedPlace">
-                <snac:placeEntry xmlns:snac="http://socialarchive.iath.virginia.edu/">
+                <snac:placeEntry>
                     <placeEntry>Virginia</placeEntry>
                     <snac:placeEntryLikelySame administrationCode="VA" certaintyScore="1.0" countryCode="US" latitude="37.54812" longitude="-77.44675" vocabularySource="http://www.geonames.org/6254928">Virginia</snac:placeEntryLikelySame>
                 </snac:placeEntry>
@@ -188,29 +201,26 @@
             <occupation>
                 <term>Philosophers.</term>
             </occupation>
+            <generalContext>
+                <p>Sample GC</p>
+            </generalContext>
+            <function>
+                <term vocabularySource="d5bhviikk9--y6te63k761ib">culture</term>
+            </function>
+            <legalStatus>
+                <term>Sample legal status</term>
+            </legalStatus>
+            <mandate>
+                <descriptiveNote>
+                    <p>A sample mandate note</p>
+                </descriptiveNote>
+            </mandate>
             <biogHist>
                 <p xmlns="urn:isbn:1-931666-33-4">This record is a test record of SNAC.</p>
                 <citation xmlns="urn:isbn:1-931666-33-4">From the description of test records.</citation>
                 <p xmlns="urn:isbn:1-931666-33-4">Not much else is known about this sample record.</p>
                 <citation xmlns="urn:isbn:1-931666-33-4">From the guide to the José Francisco Correia da Serra letters, 1810-1823, 1810-1823, (American Philosophical Society)</citation>
             </biogHist>
-        <structureOrGenealogy>
-            <p>Sample SOG</p>
-        </structureOrGenealogy>
-        <generalContext>
-            <p>Sample GC</p>
-        </generalContext>
-        <function>
-            <term vocabularySource="d5bhviikk9--y6te63k761ib">culture</term>
-        </function>
-        <legalStatus>
-            <term>Sample legal status</term>
-        </legalStatus>
-        <mandate>
-            <descriptiveNote>
-                <p>A sample mandate note</p>
-            </descriptiveNote>
-        </mandate>
         </description>
         <relations>
             <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6qc06d0" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">

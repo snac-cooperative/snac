@@ -38,10 +38,10 @@
         Yes, languageDecaration is piggy backed on biogHist. It doesn't have its own storage in PHP or the database.
         If we have languageDeclaration, it will be the language of the biogHist.
         #}
-        {% if data.biogHists.0.language.term or data.biogHists.0.script.term %}
+        {% if data.biogHists.0.language.language.term or data.biogHists.0.language.script.term %}
         <languageDeclaration>
-            <language languageCode="{{data.biogHists.0.language.term}}">{{ data.biogHists.0.language.description }}</language>
-            <script scriptCode="{{data.biogHists.0.script.term}}">{{ data.biogHists.0..script.description}}</script>
+            <language languageCode="{{data.biogHists.0.language.language.term}}">{{ data.biogHists.0.language.language.description }}</language>
+            <script scriptCode="{{data.biogHists.0.language.script.term}}">{{ data.biogHists.0.language.script.description}}</script>
         </languageDeclaration>
         {% endif %}
         {% for cdecl in data.conventionDeclarations %}
@@ -82,30 +82,37 @@
             {# 
             We appear not to use the language element.
 
-            Twig can't do optional XML attributes and still maintain an XML compliant template.
-            I use if-else for both opening and closing nameEntry as the best compromise.
-            It is also invalid XML to have the if-else on the opening tag due to mismatched
-            closing element.
+            Support two optional attributes: xml:lang and snac:preferenceScore.
+
+            Twig can't do optional XML attributes and still maintain an XML compliant template. Use a literal
+            Twig string for nameEntry where &lt; opens and a > closes it after the 2 if statements.
+
+            Need to use decode_entites for the &lt; to work, and need raw so that Twig doesn't re-encode them.
+
+            A literal "less than" is illegal here in XML.
+
             #}
             {% for nameEntry in data.nameEntries %}
-            {% if nameEntry.lang %}            
-            <nameEntry xml:lang="{{ nameEntry.lang }}">
-                {% else %}
-                <nameEntry>
-                    {% endif %}
-                <part>{{ nameEntry.original }}</part>
-                {% for contrib in nameEntry.contributors %}
-                {% if contrib.type.term == 'authorizedForm' %}
-                <authorizedForm>{{ contrib.name }}</authorizedForm>
-                {% else %}
-                <alternativeForm>{{ contrib.name }}</alternativeForm>
-                {% endif %}
-                {% endfor %}
-                {% if nameEntry.lang %}            
-                </nameEntry>
-                {% else %}
-            </nameEntry>
+            {{'&lt;nameEntry'|decode_entities|raw}}
+            {% if nameEntry.lang %}
+            xml:lang="{{ nameEntry.lang }}">
             {% endif %}
+            {% if nameEntry.preferenceScore %}
+            snac:preferenceScore="{{ nameEntry.preferenceScore }}"
+            {% endif %}
+            >
+            <part>{{ nameEntry.original }}</part>
+            {% for contrib in nameEntry.contributors %}
+            {% if contrib.type.term == 'authorizedForm' %}
+            <authorizedForm>{{ contrib.name }}</authorizedForm>
+            {% else %}
+            <alternativeForm>{{ contrib.name }}</alternativeForm>
+            {% endif %}
+            {% endfor %}
+            {#
+            The closing nameEntry is also a literal Twig string.
+            #}
+            {{'&lt;/nameEntry>'|decode_entities|raw}}
             {% endfor %}
             {{ data.descriptiveNote }}
         </identity>
@@ -146,38 +153,45 @@
                 {% if data.dates[1] %}
                 <dateSet>
                     {% endif %}
-                {% for date in data.dates %}
-                <dateRange>
-                    {{'&lt;fromDate'|decode_entities|raw}}
-                    {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
-                    {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
-                    localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
-                    standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
-                    {% if date.toDate %}
-                    {{'&lt;toDate'|decode_entities|raw}}
-                    {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
-                    {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
-                    localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
-                    standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                    {% for date in data.dates %}
+                    {% if not date.isRange %}
+                    <date standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}</date>
+                    {% else %}
+                    <dateRange>
+                        {{'&lt;fromDate'|decode_entities|raw}}
+                        {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
+                        {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                        standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                        {% if date.toDate %}
+                        {{'&lt;toDate'|decode_entities|raw}}
+                        {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
+                        {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                        standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                        {% endif %}
+                    </dateRange>
                     {% endif %}
-                </dateRange>
-                {% endfor %}
-                {% if data.dates[1] %}
+                    {% endfor %}
+                    {% if data.dates[1] %}
                 </dateSet>
                 {% endif %}
                 {% endif %}
             </existDates>
             {% endif %}
-            {% for occupation in data.occupations %}
-            <occupation><term>{{ occupation.term.term }}</term></occupation>
+            {% for struct in data.structureOrGenealogies %}
+            {{ struct.text|raw }}
             {% endfor %}
-            {% for function in data.functions %}
-            <function><term>{{ function.term.term }}</term></function>
+            {% for lang in data.languagesUsed %}
+            <languageUsed>
+                <language languageCode="{{lang.language.term}}">{{ lang.language.description }}</language>
+                <script scriptCode="{{lang.script.term}}">{{ lang.script.description}}</script>
+            </languageUsed>
             {% endfor %}
-            {% for localAffiliation in data.localAffiliation %}
-            <localAffiliation>
-                {{ localAffiliation }}
-            </localAffiliation>
+            {% for gender in data.genders %}
+            <localDescription localType="http://viaf.org/viaf/terms#gender">
+                <term>{{ gender.term.term }}</term>
+            </localDescription>
             {% endfor %}
             {% for subject in data.subjects %}
             <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
@@ -185,26 +199,133 @@
             </localDescription>
             {% endfor %}
             {% for place in data.places %}
+            {% if place.geoplace %}
             <place localType="{{place.type.uri}}">
                 <snac:placeEntry>
                     <placeEntry>{{ place.original }}</placeEntry>
-                    {% if place.geoplace %}
-                    <snac:placeEntryLikelySame localType="{{place.type.uri}}"
-                                               certaintyScore="{{ place.score }}"
+                    {% if place.score > 0.06 %}
+                    <snac:placeEntryLikelySame certaintyScore="{{ place.score }}"
                                                vocabularySource="{{place.geoplace.uri}}" 
                                                latitude="{{place.geoplace.latitude}}" 
                                                longitude="{{place.geoplace.longitude}}" 
                                                administrationCode="{{place.geoplace.administrationCode}}" 
-                                               countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}</snac:placeEntryLikelySame>
+                                               countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
+                    </snac:placeEntryLikelySame>
+                    {% else %}
+                    <snac:placeEntryBestMaybeSame certaintyScore="{{ place.score }}"
+                                                  vocabularySource="{{place.geoplace.uri}}" 
+                                                  latitude="{{place.geoplace.latitude}}" 
+                                                  longitude="{{place.geoplace.longitude}}" 
+                                                  administrationCode="{{place.geoplace.administrationCode}}" 
+                                                  countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
+                    </snac:placeEntryBestMaybeSame>
+                    {% if place.dates %}
+                    {% if place.dates[1] %}
+                    <dateSet>
+                        {% endif %}
+                        {% for date in place.dates %}
+                        {% if not date.isRange %}
+                        <date standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}</date>
+                        {% else %}
+                        <dateRange>
+                            {{'&lt;fromDate'|decode_entities|raw}}
+                            {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
+                            {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
+                            localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                            standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                            {% if date.toDate %}
+                            {{'&lt;toDate'|decode_entities|raw}}
+                            {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
+                            {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
+                            localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                            standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                            {% endif %}
+                        </dateRange>
+                        {% endif %}
+                        {% endfor %}
+                        {% if place.dates[1] %}
+                    </dateSet>
+                    {% endif %}
+                    {% endif %}
                     {% endif %}
                 </snac:placeEntry>
             </place>
+            {% else %}
+            <place localType="{{place.type.uri}}">
+                <placeEntry>{{ place.original }}</placeEntry>
+                {% if place.dates %}
+                {% if place.dates[1] %}
+                <dateSet>
+                    {% endif %}
+                    {% for date in place.dates %}
+                    {% if not date.isRange %}
+                    <date standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}</date>
+                    {% else %}
+                    <dateRange>
+                        {{'&lt;fromDate'|decode_entities|raw}}
+                        {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
+                        {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                        standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
+                        {% if date.toDate %}
+                        {{'&lt;toDate'|decode_entities|raw}}
+                        {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
+                        {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                        standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
+                        {% endif %}
+                    </dateRange>
+                    {% endif %}
+                    {% endfor %}
+                    {% if place.dates[1] %}
+                </dateSet>
+                {% endif %}
+                {% endif %}
+            </place>
+            {% endif %}
             {% endfor %}
-            {% for lang in data.languagesUsed %}
-            <languageUsed>
-                <language languageCode="{{lang.language.term}}">{{ lang.language.description }}</language>
-                <script scriptCode="{{lang.script.term}}">{{ lang.script.description}}</script>
-            </languageUsed>
+            {% for nation in data.nationalities %}
+            <localDescription localType="http://viaf.org/viaf/terms#nationalityOfEntity">
+                <placeEntry countryCode="US"/>
+            </localDescription>
+            {% endfor %}
+            {% for occupation in data.occupations %}
+            <occupation><term>{{ occupation.term.term }}</term></occupation>
+            {% endfor %}
+
+            {% for ctxt in generalContexts %}
+            <generalContext>
+                <p>{{ ctxt.text }}</p>
+            </generalContext>
+            {% endfor %}
+
+            {% for function in data.functions %}
+            {% if function.vocabularySource %}
+            <function ><term vocabularySource="{{ function.vocabularySource}}">{{ function.term.term }}</term></function>
+            {% else %}
+            <function><term>{{ function.term.term }}</term></function>
+            {% endif %}
+            {% endfor %}
+
+            {% for ls in legalStatuses %}
+            <legalStatus>
+                <p>{{ ls.text }}</p>
+            </legalStatus>
+            {% endfor %}
+            
+            {% for mand in data.mandates %}
+            {#
+
+            The data is full xml including the surrounding mandate tags. Just put the raw data in here.
+
+            #}
+            {{ mand.text|raw }}
+            {% endfor %}
+
+            {% for localAffiliation in data.localAffiliation %}
+            <localAffiliation>
+                {{ localAffiliation }}
+            </localAffiliation>
             {% endfor %}
             {{ data.biogHists.0.text|raw }}
         </description>
@@ -251,6 +372,7 @@
                               xlink:href="{{ resRel.link  }}">
                 <relationEntry>{{ resRel.content }}</relationEntry>
                 {{ resRel.source|raw }}
+                {{ resRel.note|raw }}
             </resourceRelation>
         {% endfor %}
         </relations>
