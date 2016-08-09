@@ -161,7 +161,7 @@ if (is_dir($argv[1])) {
     $dbu->writeConstellationStatus($user, $written->getID(), "locked editing");
 
     echo "Parsing: Parsons, Edward Alexander, 1878-1962 (needed for cpfRelation sameAs test_record.xml)\n";
-    $constellation = $e->parseFile($argv[1] . '99166-w6qc06d0.xml'); 
+    $constellation = $e->parseFile($argv[1] . '/99166-w6qc06d0.xml'); 
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
