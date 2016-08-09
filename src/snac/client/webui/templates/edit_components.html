@@ -24,6 +24,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
             <ul class="dropdown-menu">
+                <li><a href="#entityID" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li>
                 <li><a href="#sameAs" role="tab" data-toggle="tab">External CPF (Same As)</a></li>
                 <li><a href="#constellationRelations" role="tab" data-toggle="tab">Internal CPF Relations</a></li>
                 <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
@@ -351,6 +352,44 @@
 
                 {{ widgets.scmModal(X, inEdit, showSubElements, "sameAs", i, other.uri, "Same-As Relation", other) }}
                 {{ widgets.optionsList(X, inEdit, showSubElements, "sameAs", i) }}
+            </div>
+        </div>
+
+{% endmacro %}
+
+{% macro displayEntityID(X, inEdit, showSubElements, other, i) %}
+    {% import 'widgets.html' as widgets %}
+        <div class="panel panel-default" id="entityID_panel_{{i}}">
+            <div class="panel-body">
+                <div class="col-xs-10" id="entityID_datapart_{{i}}">
+                    <input id="entityID_id_{{i}}" name="entityID_id_{{i}}" type="hidden" value="{{ other.id }}"/>
+                    <input id="entityID_version_{{i}}" name="entityID_version_{{i}}" type="hidden" value="{{ other.version }}"/>
+                    <input id="entityID_operation_{{i}}" name="entityID_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
+                    <div class="form-group">
+                        <label for="entityID_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.entityIdText.tooltip}}" data-toggle="popover" data-placement="top">
+                           {{ X.entityIdText.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_entityID_text_{{i}}">
+                            <input id="entityID_text_{{i}}" name="entityID_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
+                            <p class="form-control-static">{{ other.text }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entityID_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.entityIdType.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.entityIdType.display }}
+                        </label>
+                        <div class="col-xs-8" id="select_entityID_type_{{i}}">
+                            <input id="entityID_type_id_{{i}}" name="entityID_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
+                            <input id="entityID_type_term_{{i}}" name="entityID_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
+                            <input id="entityID_type_vocabtype_{{i}}" name="entityID_type_vocabtype_{{i}}" type="hidden" class="form-control" value="entityid_type"/>
+                            <input id="entityID_type_minlength_{{i}}" name="entityID_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                            <p class="form-control-static">{{ other.type.term }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{ widgets.scmModal(X, inEdit, showSubElements, "entityID", i, other.text, "Entity ID", other) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "entityID", i) }}
             </div>
         </div>
 
