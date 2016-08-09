@@ -33,18 +33,16 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->build();
 }
 
-list($appUserID, $role) = $dbu->getAppUserInfo('system');
-printf("appUserID: %s role: %s\n", $appUserID, $role);
 
 $user = new \snac\data\User();
 $user->setUserName('system@localhost');
-$user = $this->dbuser->readUser($user);
+$user = $dbuser->readUser($user);
 
 if (is_dir($argv[1])) {
     printf("Opening dir: $argv[1]\n");
     $dh = opendir($argv[1]);
     printf("Done.\n");
-    
+
     // Create new parser
     $e = new \snac\util\EACCPFParser();
     $e->setConstellationOperation("insert");
@@ -69,7 +67,7 @@ if (is_dir($argv[1])) {
         $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
 
         // Update them to be published
-        $dbu->writeConstellationStatus($written->getID(), "published");
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
 
         indexESearch($written);
 
