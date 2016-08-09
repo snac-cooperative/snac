@@ -39,12 +39,13 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         ->build();
 }
 
-$seenArks = array();
 
 if (is_dir($argv[1])) {
     printf("Opening dir: $argv[1]\n");
     $dh = opendir($argv[1]);
     printf("Done.\n");
+
+    $cache = fopen('parsed_list.csv', 'w');
 
     // Create new parser
     $e = new \snac\util\EACCPFParser();
@@ -84,7 +85,7 @@ if (is_dir($argv[1])) {
         // index ES
         indexESearch($written);
 
-        $seenArks[$written->getArk()] = $written->getID();
+        fputcsv($cache, array($written->getArk(), $written->getID()));
 
         // try to help memory by freeing up the constellation
         unset($written);
@@ -93,15 +94,22 @@ if (is_dir($argv[1])) {
     echo "\nCompleted input of records\n\n";
 }
 
+fclose($cache);
+
 echo "\nFixing up Relations:\n";
 // Go back and fix the constellation relations
-foreach ($seenArks as $ark => $id) {
+$handle = null;
+if (($handle = fopen("parsed_list.csv", "r")) === FALSE) {
+    die ("Cannot read temp file");
+}
+while (($seenEntry = fgetcsv($handle, 1000, ",")) !== FALSE) {
+    $ark = $seenEntry[0];
+    $id = $seenEntry[1];
     echo "Editing: $ark ($id)\n    Relations: ";
     $constellation = $dbu->readConstellation($id);
     // For each relation, try to do a lookup
     foreach ($constellation->getRelations() as &$rel) {
-        if (isset($seenArks[$rel->getTargetArkID()])) {
-            $other = $dbu->readConstellation($seenArks[$rel->getTargetArkID()], null, true);
+        if ($other = $dbu->readPublishedConstellationByARK($rel->getTargetArkID(), true) !== false) {
             $rel->setTargetConstellation($other->getID());
             $rel->setTargetEntityType($other->getEntityType());
             $rel->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
@@ -124,6 +132,7 @@ foreach ($seenArks as $ark => $id) {
     }
     unset($constellation);
 }
+fclose($cache);
 
 // If no file was parsed, then print the output that something went wrong
 if ($parsedFile == false) {
