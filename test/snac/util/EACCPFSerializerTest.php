@@ -205,6 +205,7 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $origCon = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        // printf("unknowns: %s\n", var_export($eParser->getMissing(), 1));
         $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($origCon->toArray());
 
         $fn = '/tmp/' . uniqid(rand(), true) . '.xml';

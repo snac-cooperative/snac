@@ -177,6 +177,23 @@
                 </dateSet>
                 {% endif %}
                 {% endif %}
+                {#
+
+                existDates/descriptiveNote is saved in the date object because there is no existDates object
+                (because dates have been generalized and made normative). There could be multiple existDates,
+                so to build the descriptiveNote we pull out all the date.note fields.
+
+                Assume that date.note is already surrounded by p tags, and since it includes XML data, it must
+                be rendered as raw.
+
+                #}
+                {% if data.dates %}
+                <descriptiveNote>
+                    {% for date in data.dates %}
+                    {{ date.note|raw }}
+                    {% endfor %}
+                </descriptiveNote>
+                {% endif %}
             </existDates>
             {% endif %}
             {% for struct in data.structureOrGenealogies %}
@@ -293,10 +310,8 @@
             <occupation><term>{{ occupation.term.term }}</term></occupation>
             {% endfor %}
 
-            {% for ctxt in generalContexts %}
-            <generalContext>
-                <p>{{ ctxt.text }}</p>
-            </generalContext>
+            {% for ctxt in data.generalContexts %}
+            {{ ctxt.text|raw }}
             {% endfor %}
 
             {% for function in data.functions %}
@@ -307,9 +322,9 @@
             {% endif %}
             {% endfor %}
 
-            {% for ls in legalStatuses %}
+            {% for ls in data.legalStatuses %}
             <legalStatus>
-                <p>{{ ls.text }}</p>
+                <term>{{ ls.term.term }}</term>
             </legalStatus>
             {% endfor %}
             
