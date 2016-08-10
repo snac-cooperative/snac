@@ -651,7 +651,7 @@ function makeSCMUneditable(shortName, i, j) {
     var idstr = j + "_" + i;
 
     subMakeUneditable('scm_'+shortName, idstr);
-    
+
     // restore the edit button
     $("#scm_" + shortName + "_editbutton_" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
     $("#scm_" + shortName + "_editbutton_" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
@@ -1350,6 +1350,26 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
+
+
+    var entityIDid = 1;
+    if ($('#next_entityID_i').exists()) {
+        entityIDid = parseInt($('#next_entityID_i').text());
+    }
+    console.log("Next entityID ID: " + entityIDid);
+    if ($('#btn_add_entityID').exists()){
+        $('#btn_add_entityID').click(function(){
+            somethingHasBeenEdited = true;
+            var text = $('#entityID_template').clone();
+            var html = text.html().replace(/ZZ/g, entityIDid);
+            $('#add_entityID_div').after(html);
+            turnOnButtons("entityID", entityIDid);
+            turnOnTooltips("entityID", entityIDid);
+            makeEditable("entityID", entityIDid);
+            entityIDid = entityIDid + 1;
+            return false;
+        });
+    }
 
 	var sourceid = 1;
 	if ($('#next_source_i').exists()) {

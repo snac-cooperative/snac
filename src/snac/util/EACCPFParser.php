@@ -623,7 +623,14 @@ class EACCPFParser {
                                          */
                                         if ($firstDate = $identity->getDateList()[0])
                                         {
-                                            $firstDate->setNote((string) $dates);
+                                            $note = "";
+                                            if ($dates->count() == 0)
+                                                $note = (string) $dates;
+                                            else {
+                                                foreach ($dates->children() as $noteChild)
+                                                    $note .= $noteChild->asXML();
+                                            }
+                                            $firstDate->setNote($note);
                                         }
                                         else
                                         {

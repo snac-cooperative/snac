@@ -499,6 +499,12 @@ class ConstellationPostMapper {
             }
         }
 
+        foreach ($this->constellation->getEntityIDs() as $otherid) {
+            foreach ($constellation->getEntityIDs() as $other) {
+                $this->reconcileObject($otherid, $other);
+            }
+        }
+
         foreach ($this->constellation->getPlaces() as $place) {
             foreach ($constellation->getPlaces() as $other) {
                 $this->reconcileObject($place, $other);
@@ -607,6 +613,7 @@ class ConstellationPostMapper {
         $nested["mandate"] = array ();
         $nested["nameEntry"] = array ();
         $nested["sameAs"] = array ();
+        $nested["entityID"] = array ();
         $nested["source"] = array ();
         $nested["resourceRelation"] = array ();
         $nested["constellationRelation"] = array ();
@@ -1048,6 +1055,26 @@ class ConstellationPostMapper {
             $this->addToMapping("sameAs", $k, $data, $sameas);
 
             $this->constellation->addOtherRecordID($sameas);
+        }
+
+        foreach ($nested["entityID"] as $k => $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
+            $sameas = new \snac\data\EntityId();
+            $sameas->setID($data["id"]);
+            $sameas->setVersion($data["version"]);
+            $sameas->setOperation($this->getOperation($data));
+
+            $sameas->setText($data["text"]);
+
+            $sameas->setType($this->parseTerm($data["type"]));
+
+            $sameas->setAllSNACControlMetadata($this->parseSCM($data, "entityID", $k));
+
+            $this->addToMapping("entityID", $k, $data, $sameas);
+
+            $this->constellation->addEntityID($sameas);
         }
 
         foreach ($nested["resourceRelation"] as $k => $data) {
