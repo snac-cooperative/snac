@@ -40,6 +40,10 @@
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
 <!-- SNAC Javascript -->
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
@@ -533,33 +537,19 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
         </form>
 
-<div class="modal fade" id="relationSearchPane" tabindex="-1" role="dialog" aria-labelledby="relationSearchPane">
+<div class="modal fade" id="geoPlaceInfoPane" tabindex="-1" role="dialog" aria-labelledby="geoPlaceInfoPane">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header primary">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="relationSearchLabel">Choose Relationship</h4>
+                <h4 class="modal-title" id="geoPlaceInfoPaneLabel">GeoPlace Information</h4>
             </div>
-            <div class="modal-body" id="relationSearchPaneContent">
-                <form class="form-horizontal" id="relation_search_form" onsubmit="return false;">
-                    <div class="modal-body">
-                        <p>Use the search box below to find a Constellation.  Select one by using the radio button to the left. You may view any constellation
-                        by choosing the "View" link next to the ARK</p>
-	                    <input type="hidden" id="relation-search-count" name="count" value="10">
-	                    <input type="hidden" id="relation-search-start" name="start" value="0">
-	                    <div class="form-group">
-	                        <input type="text" class="form-control"
-	                            placeholder="Search for..." id="relation-searchbox" name="term">
-	                    </div>
-
-	                    <div id="relation-results-box">
-	                    </div>
-                    </div>
-                </form>
+            <div class="modal-body" id="geoPlaceInfoPaneContent">
+                <div class="geoplace-map" id="geoPlaceMap"></div>
+                <div id="geoPlaceInfo"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Done</span></button>
             </div>
         </div>
     </div>

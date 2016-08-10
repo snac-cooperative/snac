@@ -878,7 +878,12 @@
                             <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
                             <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
                             <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="4"/>
-                            <p class="form-control-static">{{ place.geoplace.name }}</p>
+                            <p class="form-control-static">
+                                {{ place.geoplace.name }}
+                                {% if place.geoplace.id %}
+                                    <a class="label label-info" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;">View</a>
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                     <div class="form-group">

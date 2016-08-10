@@ -44,6 +44,10 @@
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
 <!-- SNAC Javascript -->
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
@@ -778,6 +782,24 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
                 <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="geoPlaceInfoPane" tabindex="-1" role="dialog" aria-labelledby="geoPlaceInfoPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="geoPlaceInfoPaneLabel">GeoPlace Information</h4>
+            </div>
+            <div class="modal-body" id="geoPlaceInfoPaneContent">
+                <div class="geoplace-map" id="geoPlaceMap"></div>
+                <div id="geoPlaceInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Done</span></button>
             </div>
         </div>
     </div>

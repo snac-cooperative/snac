@@ -168,7 +168,7 @@ class WebUIExecutor {
      * $this->connect is \snac\client\util\ServerConnect
      *
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
-     */ 
+     */
     protected function getConstellation(&$input, &$display) {
         $query = array();
         if (isset($input["constellationid"]))
@@ -320,7 +320,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         $this->logger->addDebug("Received server response", array($serverResponse));
         $this->logger->addDebug("Setting dashboard data into the page template");
-        
+
         $needsReview = $this->connect->query(array(
             "command"=>"list_constellations",
             "status"=>"needs review"
@@ -332,7 +332,7 @@ class WebUIExecutor {
         $recentConstellations = $this->connect->query(array(
                 "command"=>"recently_published"
         ))["constellation"];
-        
+
         $recents = array();
         foreach ($recentConstellations as $constellationArray) {
             $constellation = new \snac\data\Constellation($constellationArray);
@@ -381,16 +381,16 @@ class WebUIExecutor {
                 array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
                 /*
                  * Call the EAC-CPF serializer
-                 * 
+                 *
                  * $serverResponse is a string[] and $serverResponse['constellation'] has a constellation as
                  * an associative list, that is Constellation->toArray(). We can pass
                  * $serverResponse['constellation'] directly to SerializeCore().
                  *
                  * $serverResponse has keys like: constellation, result, error. See
                  * ServerExecutor->readConstellation() variable $response.
-                 */ 
+                 */
                 $response = \snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']);
-                
+
                 // $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
                 // $response = var_export($serverResponse, 1);
                 break;
@@ -571,7 +571,7 @@ class WebUIExecutor {
             case "unlock_constellation":
                 return $this->unlockConstellation($input);
                 break;
-            
+
             case "reassign_constellation":
                 return $this->reassignConstellation($input);
                 break;
@@ -1127,7 +1127,7 @@ class WebUIExecutor {
     /**
      * Reassign Constellation
      *
-     * Asks the server to reassign the input's constellation to a different user 
+     * Asks the server to reassign the input's constellation to a different user
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
@@ -1433,6 +1433,26 @@ class WebUIExecutor {
         return array (
                     "notice" => "Not Using ElasticSearch"
         );
+    }
+
+    /**
+     * Read Vocabulary Term
+     *
+     * Asks the server for the controlled vocabulary term information.
+     *
+     */
+    public function readVocabulary(&$input) {
+        if (!isset($input["type"]) || !isset($input["id"])) {
+            return array ("result" => "failure");
+        }
+
+        $serverResponse = $this->connect->query(array(
+            "command" => "read_vocabulary",
+            "type" => $input["type"],
+            "term_id" => $input["id"]
+        ));
+
+        return $serverResponse;
     }
 
     /**

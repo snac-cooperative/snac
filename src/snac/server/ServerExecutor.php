@@ -450,6 +450,36 @@ class ServerExecutor {
     }
 
     /**
+     * Read Vocabulary
+     *
+     * Reads the vocabulary from the database, based on the input given and returns
+     * the result
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function readVocabulary(&$input) {
+        $response = array();
+        if (isset($input["term_id"])) {
+            $term = null;
+            if (isset($input["type"]) && $input["type"] == "geoPlace") {
+                $term = $this->cStore->buildGeoTerm($input["term_id"]);
+            } else {
+                $term = $this->cStore->populateTerm($input["term_id"]);
+            }
+
+            if ($term != null) {
+                $response["term"] = $term->toArray();
+                $response["result"] = "success";
+            } else {
+                $response["term"] = null;
+                $response["result"] = "failure";
+            }
+        }
+        return $response;
+    }
+
+    /**
      * Search Vocabulary
      *
      * Searches the vocabulary from the database, based on the input given and returns
@@ -461,12 +491,7 @@ class ServerExecutor {
     public function searchVocabulary(&$input) {
         $response = array();
         if (isset($input["term_id"])) {
-            $term = $this->cStore->populateTerm($input["term_id"]);
-            if ($term != null) {
-                $response["term"] = $term->toArray();
-            } else {
-                $response["term"] = null;
-            }
+            return $this->readVocabulary($input);
         } else {
             switch ($input["type"]) {
                 default:
@@ -1237,7 +1262,7 @@ class ServerExecutor {
         try {
             $this->logger->addDebug("Reading constellation from the database");
             if (isset($input["arkid"])) {
-                // Reading the given ark id 
+                // Reading the given ark id
                 $constellation = $this->cStore->readPublishedConstellationByArk(
                         $input["arkid"]);
 
