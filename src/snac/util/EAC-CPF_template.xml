@@ -186,8 +186,11 @@
                 Assume that date.note is already surrounded by p tags, and since it includes XML data, it must
                 be rendered as raw.
 
+                The value must be enclosed in p tags, which it normally will be. Don't put the elements in
+                with no value, as Jing validation will fail. I guess empty value would be empty p tags.
+
                 #}
-                {% if data.dates %}
+                {% if data.dates.0.note %}
                 <descriptiveNote>
                     {% for date in data.dates %}
                     {{ date.note|raw }}
