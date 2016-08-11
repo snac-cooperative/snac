@@ -870,6 +870,28 @@ class DBUtil
              * A whole raft of place related properties have been moved from Place to GeoTerm.
              */
             $this->populateDate($vhInfo, $gObj, $tableName);
+
+            /*
+             * Address 
+             */
+            $addressRows = $this->sql->selectAddress($gObj->getID(), $vhInfo['version']);
+            foreach ($addressRows as $addr)
+            {
+                /*
+                 * | class         | json key        | php property                        | getter     | setter      | SQL field   |
+                 * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
+                 * | AddressLine   | "text"          | $this->text                         | getText()  | setText()   | value       |
+                 * | AddressLine   | "order"         | $this->order                        | getOrder() | setOrder()  | order       |
+                 * | AddressLine   | "type"          | $this->type                         | getType()  | setType()   | label       |
+                 * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
+                 */
+                $aObj = new \snac\data\AddressLine();
+                $aObj->setText($addr['value']);
+                $aObj->setOrder($addr['line_order']);
+                $aObj->setType($this->populateTerm($addr['label']));
+                $aObj->setDBInfo($addr['version'], $addr['id']);
+                $gObj->addAddressLine($aObj);
+            }
             $cObj->addPlace($gObj);
         }
     }
@@ -3056,6 +3078,26 @@ class DBUtil
                         foreach ($dObj as $date)
                         {
                             $this->saveDate($vhInfo, $date, 'place_link', $pid);
+                        }
+                    }
+                }
+                /*
+                 * Inline the code that would be saveAddress() because it is only used here.
+                 */
+                if ($addressList = $gObj->getAddress())
+                {
+                    foreach($addressList as $addr)
+                    {
+                        if ($this->prepOperation($vhInfo, $addr))
+                        {
+                            $rid = $this->sql->insertAddressLine($vhInfo,
+                                                               $addr->getID(),
+                                                               $pid,
+                                                               $addr->getText(),
+                                                               $this->thingID($addr->getType()),
+                                                               $addr->getOrder());
+                            $addr->setID($rid);
+                            $addr->setVersion($vhInfo['version']);
                         }
                     }
                 }

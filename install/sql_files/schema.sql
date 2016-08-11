@@ -844,6 +844,22 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
+-- Address lines from a place_link 
+
+create table address_line (
+             id int default nextval('id_seq'),
+       place_id int,  -- fk to place.id
+          ic_id int,  -- fk to place.id
+        version int,
+     is_deleted boolean default false,
+          label int,  -- typeID, getType() fk to vocabulary.id: City, State, Street, etc..
+          value text, -- text, getText(), the string value of the address line
+     line_order int,  -- line order within this address/place, as entered.
+        primary key(id, version)
+    );
+
+create unique index address_line_idx1 on address_line(id,place_id,version);
+
 -- Maybe SameAs links, a binary relationship between Constellations that may be the same
 
 create table maybe_same (

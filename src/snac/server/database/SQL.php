@@ -2370,6 +2370,89 @@ class SQL
         return $all;
     }
 
+    /**
+     * Insert an address line
+     *
+     * Related to place where component.place_id=place.id. This is a one-sided fk relationship also used for
+     * date and language.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id of this address line. If null one will be minted. The id (existing or new) is always returned.
+     *
+     * @param integer $placeID Record id of related place
+     *
+     * @param string $text Text of the address line
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this address line.
+     * @param integer $order The ordering of this line in the place's address
+     *
+     * @return integer $id Return the existing id, or the newly minted id.
+     */
+    public function insertAddressLine($vhInfo, $id, $placeID, $text, $typeID, $order)
+    {
+        if ($placeID == null)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to write an address line for a non-existant place");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq_2 = 'insert_address_line';
+        $this->sdb->prepare($qq_2,
+                            'insert into address_line
+                            (ic_id, version, id, place_id, value, label, line_order)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['ic_id'],
+                                  $vhInfo['version'],
+                                  $id,
+                                  $placeID,
+                                  $text,
+                                  $typeID,
+                                  $order));
+        $this->sdb->deallocate($qq_2);
+        return $id;
+    }
+
+
+    /**
+     * Select a list of address line records
+     *
+     * Select all related address line records and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * address_line.place_id=place.id.
+     *
+     * @param integer $placeID Record id of related place.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single address line.
+     */
+    public function selectAddress($placeID, $version)
+    {
+        $qq_2 = 'select_address';
+        $this->sdb->prepare($qq_2,
+                            'select
+                            aa.id, aa.place_id, aa.version, aa.label, aa.value, aa.line_order
+                            from address_line as aa,
+                            (select place_id,max(version) as version from address_line 
+                                where place_id=$1 and version<=$2 group by place_id) as bb
+                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq_2, array($placeID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
 
     /**
      * Insert a contributor record
