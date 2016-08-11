@@ -1,217 +1,389 @@
-<?xml version="1.0" encoding="utf-8"?><eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:snac="http://socialarchive.iath.virginia.edu/" xmlns:xlink="http://www.w3.org/1999/xlink"><control><recordId>http://n2t.net/ark:/99166/w65k3tsm</recordId><otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">FRAN_NP_010180</otherRecordId><maintenanceStatus>revised</maintenanceStatus><maintenanceAgency>
-                         <agencyName>SNAC: Social Networks and Archival Context Project</agencyName>
-                    </maintenanceAgency><languageDeclaration>
-                    <language languageCode="eng">English</language>
-                    <script scriptCode="Latn">Latin Alphabet</script>
-                    </languageDeclaration><maintenanceHistory>
-                        <maintenanceEvent>
-                        <eventType>revised</eventType>
-                        <eventDateTime standardDateTime="2015-10-30T21:17:14.066121">2015-10-30 21:17:14.066139</eventDateTime> 
-                        <agentType>machine</agentType>
-                        <agent>CPF merge program</agent>
-                        <eventDescription>Merge v2.0</eventDescription>
-                        </maintenanceEvent>
-                        </maintenanceHistory><sources><source>
-            <descriptiveNote>
-               <p>Poisson (Jean-Paul), &quot; Une comptabilité notariale parisienne à la fin du XVIIIe siècle étude LIII, 1783-1790) &quot;, 
+<?xml version="1.0" encoding="utf-8"?>
+<eac-cpf xmlns="urn:isbn:1-931666-33-4" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:snac="http://socialarchive.iath.virginia.edu/" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <control>
+    <recordId>http://n2t.net/ark:/99166/w65k3tsm</recordId>
+    <otherRecordId localType="http://socialarchive.iath.virginia.edu/control/term#MergedRecord">FRAN_NP_010180</otherRecordId>
+    <maintenanceStatus>revised</maintenanceStatus>
+    <maintenanceAgency>
+      <agencyName>SNAC: Social Networks and Archival Context Project</agencyName>
+    </maintenanceAgency>
+    <languageDeclaration>
+      <language languageCode="eng">English</language>
+      <script scriptCode="Latn">Latin Alphabet</script>
+    </languageDeclaration>
+    <maintenanceHistory>
+      <maintenanceEvent>
+        <eventType>revised</eventType>
+        <eventDateTime standardDateTime="2015-10-30T21:17:14.066121">2015-10-30 21:17:14.066139</eventDateTime>
+        <agentType>machine</agentType>
+        <agent>CPF merge program</agent>
+        <eventDescription>Merge v2.0</eventDescription>
+      </maintenanceEvent>
+    </maintenanceHistory>
+    <sources>
+      <source>
+        <descriptiveNote>
+          <p>Poisson (Jean-Paul), " Une comptabilité notariale parisienne à la fin du XVIIIe siècle étude LIII, 1783-1790) ", 
       <span style="italic">Essais de notarialogie</span>, 2002, p. 187. 
      </p>
-               <p>Limon-Bonnet (M.-F.) [dir.], 
+          <p>Limon-Bonnet (M.-F.) [dir.], 
       <span style="italic">122 minutes d'histoire. Actes des notaires de Paris, XVIe-XXe siècle, Pari</span>s, 2012, pp. 110-111. 
      </p>
-            </descriptiveNote>
-         </source></sources></control><cpfDescription><identity><entityType>corporateBody</entityType><nameEntry scriptCode="Latn" snac:preferenceScore="01" xml:lang="fre"><part>Etude LIII</part>
-<authorizedForm>ANF</authorizedForm>
-</nameEntry>
-<nameEntry snac:preferenceScore="00"><part>75029</part>
-</nameEntry>
-</identity><description><existDates>
-            <dateRange>
-               <fromDate standardDate="1648-01-01">1648</fromDate>
-            </dateRange>
-         </existDates><function>
-               <term vocabularySource="d3nyui3o8w--11y7jgy8q3wnt">notaire à Paris</term>
-               <dateRange>
-                  <fromDate standardDate="1648-01-01">1648</fromDate>
-                  <toDate standardDate="1973-12-31">1973</toDate>
-               </dateRange>
-            </function><place>
-               <placeRole>Lieu de Paris</placeRole>
-               <placeEntry localType="nomLieu">28, avenue Marceau, 75016 Paris</placeEntry>
-               <placeEntry localType="voie" vocabularySource="d3nzbwmxm0-ga1cbuqy9zyg">Marceau (avenue)</placeEntry>
-               <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv8l7vr--1oyxkw6yfemf2">16e arrondissement</placeEntry>
-               <dateRange>
-                  <fromDate standardDate="1923-01-01">1923</fromDate>
-                  <toDate standardDate="1973-12-31">1973</toDate>
-               </dateRange>
-            </place>
-<biogHist>
-            <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Cette étude est installée depuis le XVIIe siècle rue Saint-Honoré, vis-à-vis l'ancien hôpital des Quinze-Vingts (actuelle place du Palais-Royal), puis, à partir de 1763, en face de l'hôtel de Noailles, soit au n° 333, puis au n°339. Elle se transporte place Boieldieu en 1856, 66, rue Pierre-Charron en 1887, puis 28, avenue Marceau en 1929. Elle est absorbée en 1973, de même que les études XL et LXIII, par l'étude XV, dont l'adresse se trouve au 54, avenue Victor-Hugo. Cette étude est celle de Diderot, qui y passe de nombreux actes. Parmi les clients célèbres, on relève également, outre le comte d'Artois (donation de ce dernier au duc de Berry, 9 novembre 1819), Mirabeau, Helvétius, le baron d'Holbach, le baron de Grimm et Mme Caron de Beaumarchais.</p>
-            <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Le Minutier central conserve les minutes de l'étude LII à partir de l'année 1648.</p>
-            <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Les minutes de cette étude ont été versées aux Archives nationales (2013) jusqu'au 31 décembre 1938, mais elles n'ont pas encore été cotées. Leur communication en salle de lecture n'est donc pas encore possible.</p>
-         <citation xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Information extraite de la notice des Archives nationals de France (FRAN_NP_010180)</citation></biogHist><legalStatus>
-               <term>office notarial</term>
-            </legalStatus><generalContext>
-            <p>Les minutes de cette étude ont été versées aux Archives nationales (2013) jusqu'au 31 décembre 1938, mais elles n'ont pas encore été cotées. Leur communication en salle de lecture n'est donc pas encore possible.</p>
-         </generalContext><mandate/></description><relations><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6w82zx3" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Peaulejeune, Joseph</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1808-01-19">19 janvier 1808</fromDate>
-               <toDate standardDate="1811-01-09">9 janvier 1811</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010868</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6530bcg" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Pérignon, François-Nicolas</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1790-03-06">6 mars 1790</fromDate>
-               <toDate standardDate="1808-01-19">19 janvier 1808</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010883</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6wj932z" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Le pot d'auteuil, Jules</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1759-03-16">16 mars 1759</fromDate>
-               <toDate standardDate="1783-09-13">13 septembre 1783</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011423</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6c69zxd" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Griveau, Louis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1783-09-13">13 septembre 1783</fromDate>
-               <toDate standardDate="1790-03-06">6 mars 1790</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011965</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6dd4f4c" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Barat, Louis-Victor</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1811-01-09">9 janvier 1811</fromDate>
-               <toDate standardDate="1817-04-09">9 avril 1817</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012762</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6hc5j8c" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Gilbert, Augustin-Louis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1817-04-09">9 avril 1817</fromDate>
-               <toDate standardDate="1827-02-28">28 février 1827</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011896</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6n17kfk" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Bertrand-Taillet, Raymond Joseph</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1929-07-24">24 juillet 1929</fromDate>
-               <toDate standardDate="1961-02-08">8 février 1961</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012885</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6jr7cxp" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Ferran, Jean</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1841-10-16">16 octobre 1841</fromDate>
-               <toDate standardDate="1849-09-26">26 septembre 1849</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012041</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6fh05bk" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Billeheu, Louis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1711-05-29">29 mai 1711</fromDate>
-               <toDate standardDate="1759-03-18">18 mars 1759</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012907</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6d389w0" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Bouchard, Jules</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1866-12-04">4 décembre 1866</fromDate>
-               <toDate standardDate="1870-07-26">26 juillet 1870</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012972</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6ph84rr" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Brun, Charles-Marie</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1849-09-26">26 septembre 1849</fromDate>
-               <toDate standardDate="1866-12-04">4 décembre 1866</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_013071</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6hz7rpv" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Bertrand-Taillet, Onésime-André</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1889-06-19">19 juin 1889</fromDate>
-               <toDate standardDate="1929-07-24">24 juillet 1929</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012884</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6c98pb4" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Ogier, Claude</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1664-04-04">4 avril 1664</fromDate>
-               <toDate standardDate="1711-05-29">29 mai 1711</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010770</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6878vrz" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Martin-Deslandes, Ernest-Alfred</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1870-07-26">26 juillet 1870</fromDate>
-               <toDate standardDate="1889-06-19">19 juin 1889</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011100</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6364zkj" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Linard, Denis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1837-02-17">17 février 1837</fromDate>
-               <toDate standardDate="1841-10-16">16 octobre 1841</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011617</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6xr3j3w" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Jourdain, Bernard Louis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1961-02-08">8 février 1961</fromDate>
-               <toDate standardDate="1973-04-18">18 avril 1973</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011694</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6d95qhz" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Daloz, Alphonse-Jean-Baptiste</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1827-02-28">28 février 1827</fromDate>
-               <toDate standardDate="1837-02-17">17 février 1837</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012278</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6sd0jvx" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Daubanton, Louis</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1648-04-25">25 avril 1648</fromDate>
-               <toDate standardDate="1664-04-04">4 avril 1664</toDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012279</span></p></descriptiveNote></cpfRelation><cpfRelation cpfRelationType="temporal-later" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#isSucceededBy" xlink:href="http://n2t.net/ark:/99166/w61t330s" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry>Etude XV</relationEntry>
-            <dateRange>
-               <fromDate standardDate="1973-01-01">1973</fromDate>
-            </dateRange>
-         <descriptiveNote><p><span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010142</span></p></descriptiveNote></cpfRelation><cpfRelation xlink:arcrole="http://www.w3.org/2002/07/owl#sameAs" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/producteur/consultationProducteur.action?notProdId=FRAN_NP_010180" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink"><relationEntry>Etude LIII</relationEntry></cpfRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052154" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Alphonse-Jean-Baptiste Daloz pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052160" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Charles-Marie Brun pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052144" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Claude Ogier pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052149" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Denis Linard pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052146" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Joseph Peaulejeune pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052156" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Louis-Victor Barat pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052155" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images du répertoire du notaire Louis Daubanton pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042268" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Aphonse Jean-Baptiste DALOZ, 1er juillet 1826 - 28 septembre 1839 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042270" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Charles Marie BRUN, 1er octobre 1839 - 8 décembre 1877 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042271" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Jean FERRAN, 1er octobre 1839 - 3 juillet 1851 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042263" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Joseph PEAULEJEUNE, 24 mars 1759 - 9 avril 1817 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042262" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Jules LE POT d'AUTEUIL, 16 mars 1759 - 9 avril 1817 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053000" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images du répertoire du notaire Louis Griveau pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053001" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Images des répertoires du notaire Jules Le Pot d'Auteuil pour l'étude LIII</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042266" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Louis GRIVEAU, 13 septembre 1783 - 2 mars 1790 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042272" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Jules BOUCHARD, 4 décembre 1866 - 26 juillet 1870 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042274" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Onésime André BERTRAND-TAILLET, 19 juin 1889 - 24 juillet 1929 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042261" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Louis BILLEHEU, 29 mai 1711 - 9 mars 1759 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042259" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Louis DAUBANTON, 25 avril 1648 - 3 avril 1664 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042269" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Denis LINARD, 17 février 1837 - 15 octobre 1841 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042273" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Ernest Alfred MARTIN-DESLANDES, 27 juillet 1870 - 18 juin 1889 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042260" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Claude OGIER, 4 avril 1664 - 28 mai 1711 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042265" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">Minutes et répertoires du notaire Louis Victor BARAT, 9 janvier 1811 - 8 avril 1817 (étude LIII)</relationEntry>
-         </resourceRelation><resourceRelation resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053365" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <relationEntry localType="archival">«Mélanges» (dossiers de clients) de l’étude LIII. MC/ET/LIII/633-MC/ET/LIII/640/B (1768-1789)</relationEntry>
-         </resourceRelation></relations></cpfDescription></eac-cpf>
+        </descriptiveNote>
+      </source>
+    </sources>
+  </control>
+  <cpfDescription>
+    <identity>
+      <entityType>corporateBody</entityType>
+      <nameEntry scriptCode="Latn" snac:preferenceScore="01" xml:lang="fre">
+        <part>Etude LIII</part>
+        <authorizedForm>ANF</authorizedForm>
+      </nameEntry>
+      <nameEntry snac:preferenceScore="00">
+        <part>75029</part>
+      </nameEntry>
+    </identity>
+    <description>
+      <existDates>
+        <dateRange>
+          <fromDate standardDate="1648-01-01">1648</fromDate>
+        </dateRange>
+      </existDates>
+      <function>
+        <term vocabularySource="d3nyui3o8w--11y7jgy8q3wnt">notaire à Paris</term>
+        <dateRange>
+          <fromDate standardDate="1648-01-01">1648</fromDate>
+          <toDate standardDate="1973-12-31">1973</toDate>
+        </dateRange>
+      </function>
+      <place>
+        <placeRole>Lieu de Paris</placeRole>
+        <placeEntry localType="nomLieu">28, avenue Marceau, 75016 Paris</placeEntry>
+        <placeEntry localType="voie" vocabularySource="d3nzbwmxm0-ga1cbuqy9zyg">Marceau (avenue)</placeEntry>
+        <placeEntry localType="arrondissement_actuel" vocabularySource="d3nyv8l7vr--1oyxkw6yfemf2">16e arrondissement</placeEntry>
+        <dateRange>
+          <fromDate standardDate="1923-01-01">1923</fromDate>
+          <toDate standardDate="1973-12-31">1973</toDate>
+        </dateRange>
+      </place>
+      <legalStatus>
+        <term>office notarial</term>
+      </legalStatus>
+      <generalContext>
+        <p>Les minutes de cette étude ont été versées aux Archives nationales (2013) jusqu'au 31 décembre 1938, mais elles n'ont pas encore été cotées. Leur communication en salle de lecture n'est donc pas encore possible.</p>
+      </generalContext>
+      <mandate/>
+      <biogHist>
+        <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Cette étude est installée depuis le XVIIe siècle rue Saint-Honoré, vis-à-vis l'ancien hôpital des Quinze-Vingts (actuelle place du Palais-Royal), puis, à partir de 1763, en face de l'hôtel de Noailles, soit au n° 333, puis au n°339. Elle se transporte place Boieldieu en 1856, 66, rue Pierre-Charron en 1887, puis 28, avenue Marceau en 1929. Elle est absorbée en 1973, de même que les études XL et LXIII, par l'étude XV, dont l'adresse se trouve au 54, avenue Victor-Hugo. Cette étude est celle de Diderot, qui y passe de nombreux actes. Parmi les clients célèbres, on relève également, outre le comte d'Artois (donation de ce dernier au duc de Berry, 9 novembre 1819), Mirabeau, Helvétius, le baron d'Holbach, le baron de Grimm et Mme Caron de Beaumarchais.</p>
+        <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Le Minutier central conserve les minutes de l'étude LII à partir de l'année 1648.</p>
+        <p xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Les minutes de cette étude ont été versées aux Archives nationales (2013) jusqu'au 31 décembre 1938, mais elles n'ont pas encore été cotées. Leur communication en salle de lecture n'est donc pas encore possible.</p>
+        <citation xmlns="urn:isbn:1-931666-33-4" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Information extraite de la notice des Archives nationals de France (FRAN_NP_010180)</citation>
+      </biogHist>
+    </description>
+    <relations>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6w82zx3" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Peaulejeune, Joseph</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1808-01-19">19 janvier 1808</fromDate>
+          <toDate standardDate="1811-01-09">9 janvier 1811</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010868</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6530bcg" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Pérignon, François-Nicolas</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1790-03-06">6 mars 1790</fromDate>
+          <toDate standardDate="1808-01-19">19 janvier 1808</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010883</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6wj932z" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Le pot d'auteuil, Jules</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1759-03-16">16 mars 1759</fromDate>
+          <toDate standardDate="1783-09-13">13 septembre 1783</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011423</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6c69zxd" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Griveau, Louis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1783-09-13">13 septembre 1783</fromDate>
+          <toDate standardDate="1790-03-06">6 mars 1790</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011965</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6dd4f4c" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Barat, Louis-Victor</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1811-01-09">9 janvier 1811</fromDate>
+          <toDate standardDate="1817-04-09">9 avril 1817</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012762</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6hc5j8c" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Gilbert, Augustin-Louis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1817-04-09">9 avril 1817</fromDate>
+          <toDate standardDate="1827-02-28">28 février 1827</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011896</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6n17kfk" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Bertrand-Taillet, Raymond Joseph</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1929-07-24">24 juillet 1929</fromDate>
+          <toDate standardDate="1961-02-08">8 février 1961</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012885</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6jr7cxp" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Ferran, Jean</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1841-10-16">16 octobre 1841</fromDate>
+          <toDate standardDate="1849-09-26">26 septembre 1849</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012041</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6fh05bk" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Billeheu, Louis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1711-05-29">29 mai 1711</fromDate>
+          <toDate standardDate="1759-03-18">18 mars 1759</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012907</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6d389w0" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Bouchard, Jules</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1866-12-04">4 décembre 1866</fromDate>
+          <toDate standardDate="1870-07-26">26 juillet 1870</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012972</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6ph84rr" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Brun, Charles-Marie</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1849-09-26">26 septembre 1849</fromDate>
+          <toDate standardDate="1866-12-04">4 décembre 1866</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_013071</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6hz7rpv" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Bertrand-Taillet, Onésime-André</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1889-06-19">19 juin 1889</fromDate>
+          <toDate standardDate="1929-07-24">24 juillet 1929</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012884</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6c98pb4" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Ogier, Claude</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1664-04-04">4 avril 1664</fromDate>
+          <toDate standardDate="1711-05-29">29 mai 1711</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010770</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6878vrz" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Martin-Deslandes, Ernest-Alfred</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1870-07-26">26 juillet 1870</fromDate>
+          <toDate standardDate="1889-06-19">19 juin 1889</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011100</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6364zkj" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Linard, Denis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1837-02-17">17 février 1837</fromDate>
+          <toDate standardDate="1841-10-16">16 octobre 1841</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011617</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6xr3j3w" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Jourdain, Bernard Louis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1961-02-08">8 février 1961</fromDate>
+          <toDate standardDate="1973-04-18">18 avril 1973</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_011694</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6d95qhz" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Daloz, Alphonse-Jean-Baptiste</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1827-02-28">28 février 1827</fromDate>
+          <toDate standardDate="1837-02-17">17 février 1837</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012278</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="associative" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#associatedWith" xlink:href="http://n2t.net/ark:/99166/w6sd0jvx" xlink:role="http://socialarchive.iath.virginia.edu/control/term#Person" xlink:type="simple">
+        <relationEntry>Daubanton, Louis</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1648-04-25">25 avril 1648</fromDate>
+          <toDate standardDate="1664-04-04">4 avril 1664</toDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_012279</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" cpfRelationType="temporal-later" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#isSucceededBy" xlink:href="http://n2t.net/ark:/99166/w61t330s" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:type="simple">
+        <relationEntry>Etude XV</relationEntry>
+        <dateRange>
+          <fromDate standardDate="1973-01-01">1973</fromDate>
+        </dateRange>
+        <descriptiveNote>
+          <p>
+            <span localType="http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId">FRAN_NP_010142</span>
+          </p>
+        </descriptiveNote>
+      </cpfRelation>
+      <cpfRelation xmlns:xlink="http://www.w3.org/1999/xlink" xlink:arcrole="http://www.w3.org/2002/07/owl#sameAs" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/producteur/consultationProducteur.action?notProdId=FRAN_NP_010180" xlink:role="http://socialarchive.iath.virginia.edu/control/term#CorporateBody" xlink:type="simple">
+        <relationEntry>Etude LIII</relationEntry>
+      </cpfRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052154" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Alphonse-Jean-Baptiste Daloz pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052160" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Charles-Marie Brun pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052144" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Claude Ogier pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052149" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Denis Linard pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052146" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Joseph Peaulejeune pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052156" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Louis-Victor Barat pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_052155" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images du répertoire du notaire Louis Daubanton pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042268" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Aphonse Jean-Baptiste DALOZ, 1er juillet 1826 - 28 septembre 1839 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042270" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Charles Marie BRUN, 1er octobre 1839 - 8 décembre 1877 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042271" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Jean FERRAN, 1er octobre 1839 - 3 juillet 1851 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042263" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Joseph PEAULEJEUNE, 24 mars 1759 - 9 avril 1817 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042262" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Jules LE POT d'AUTEUIL, 16 mars 1759 - 9 avril 1817 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053000" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images du répertoire du notaire Louis Griveau pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053001" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Images des répertoires du notaire Jules Le Pot d'Auteuil pour l'étude LIII</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042266" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Louis GRIVEAU, 13 septembre 1783 - 2 mars 1790 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042272" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Jules BOUCHARD, 4 décembre 1866 - 26 juillet 1870 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042274" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Onésime André BERTRAND-TAILLET, 19 juin 1889 - 24 juillet 1929 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042261" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Louis BILLEHEU, 29 mai 1711 - 9 mars 1759 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042259" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Louis DAUBANTON, 25 avril 1648 - 3 avril 1664 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042269" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Denis LINARD, 17 février 1837 - 15 octobre 1841 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042273" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Ernest Alfred MARTIN-DESLANDES, 27 juillet 1870 - 18 juin 1889 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042260" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Claude OGIER, 4 avril 1664 - 28 mai 1711 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="subjectOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#referencedIn" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_042265" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">Minutes et répertoires du notaire Louis Victor BARAT, 9 janvier 1811 - 8 avril 1817 (étude LIII)</relationEntry>
+      </resourceRelation>
+      <resourceRelation xmlns:xlink="http://www.w3.org/1999/xlink" resourceRelationType="creatorOf" xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:href="https://www.siv.archives-nationales.culture.gouv.fr/siv/rechercheconsultation/consultation/ir/consultationIR.action?irId=FRAN_IR_053365" xlink:role="http://socialarchive.iath.virginia.edu/control/term#ArchivalResource" xlink:type="simple">
+        <relationEntry localType="archival">«Mélanges» (dossiers de clients) de l’étude LIII. MC/ET/LIII/633-MC/ET/LIII/640/B (1768-1789)</relationEntry>
+      </resourceRelation>
+    </relations>
+  </cpfDescription>
+</eac-cpf>
