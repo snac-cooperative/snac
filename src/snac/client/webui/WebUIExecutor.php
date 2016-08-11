@@ -914,6 +914,7 @@ class WebUIExecutor {
                     $mapper->reconcile($updatedConstellation);
 
                     $response["updates"] = $mapper->getUpdates();
+                    $this->logger->addDebug("Requires the following UI updates", $response["updates"]);
                 }
         }
 

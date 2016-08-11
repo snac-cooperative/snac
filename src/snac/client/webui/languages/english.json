@@ -206,6 +206,10 @@
         "display" : "GeoPlace Confirmed",
         "tooltip" : "This GeoPlace was human-confirmed to be the same place as the one mentioned in Original above"
     },
+    "address" : {
+        "display" : "Address",
+        "tooltip" : "The physical or mailing address"
+    },
 
     "_comment" : "%%% Controlled vocabulary elements",
 

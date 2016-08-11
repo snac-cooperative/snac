@@ -924,6 +924,36 @@ function turnOnSCMButtons(shortName, i, j) {
 }
 
 /**
+ * Create a new Address Line object on page
+ *
+ * Puts a new Place Address Line object DIV on the page and attaches it correctly to the DOM and javascript.
+ *
+ * @param  int     i    The index on the page of the place to add this component to
+ * @return boolean      false to play nice with the browser.
+ */
+function newAddressLine(i) {
+	var nextid = 1;
+	if ($('#place_address_next_j_'+i).exists()) {
+	    nextid = parseInt($('#place_address_next_j_'+i).text());
+	}
+	console.log("Creating new address line for place " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#addressline_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#place_address_add_div_'+i).before(html);
+
+    $('#place_address_' + nextid + '_operation_' + 1).val("insert");
+    subMakeEditable("place_address_" + nextid, i);
+
+    vocab_select_replace($("#place_address_"+nextid+"_type_id_"+i), "_"+i, 'address_part', 0);
+
+    // Put the updated version number back in the DOM
+    $('#place_address_next_j_'+i).text(++nextid);
+
+    return false;
+}
+
+/**
  * Create a new Name Entry Component object on page
  *
  * Puts a new Name Entry component object DIV on the page and attaches it correctly to the DOM and javascript.
