@@ -389,10 +389,12 @@ class WebUIExecutor {
                  * $serverResponse has keys like: constellation, result, error. See
                  * ServerExecutor->readConstellation() variable $response.
                  */
-                $response = \snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']);
-
-                // $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
-                // $response = var_export($serverResponse, 1);
+                $xml = new \SimpleXMLElement(\snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']));
+                $domxml = new \DOMDocument('1.0');
+                $domxml->preserveWhiteSpace = false;
+                $domxml->formatOutput = true;
+                $domxml->loadXML($xml->asXML());
+                $response = $domxml->saveXML();
                 break;
         }
 
