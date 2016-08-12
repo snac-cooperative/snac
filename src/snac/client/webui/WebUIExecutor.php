@@ -369,7 +369,7 @@ class WebUIExecutor {
                     return $this->drawErrorPage("Error getting constellation", $display);
                 }
                 array_push($headers, "Content-Type: text/json");
-                array_push($headers, 'Content-Disposition: attachment; filename="constellation.json"');
+                array_push($headers, 'Content-Disposition: inline; filename="'.$this->arkToFilename($serverResponse["constellation"]["ark"]).'.json"');
                 $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
                 break;
             case "eac-cpf":
@@ -378,7 +378,7 @@ class WebUIExecutor {
                     return $this->drawErrorPage("Error getting constellation", $display);
                 }
                 array_push($headers, "Content-Type: text/xml");
-                array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
+                array_push($headers, 'Content-Disposition: inline; filename="'.$this->arkToFilename($serverResponse["constellation"]["ark"]).'.xml"');
                 /*
                  * Call the EAC-CPF serializer
                  *
@@ -403,6 +403,30 @@ class WebUIExecutor {
         }
 
         return $response;
+    }
+
+    /**
+     * Convert an ARK to Filename
+     *
+     * This method converts an ark with "ark:/" to a filename by stripping out everything up to and
+     * including "ark:/", then replacing any slashes in the remainder with a hyphens.  If the string does
+     * not include "ark:/", this method will just return the filename "constellation."
+     *
+     * This does not include the extension on the filename.
+     *
+     * @param string $ark The ark to convert
+     * @return string The filename based on the ark (without an extension)
+     */
+    public function arkToFilename($ark) {
+        $filename = "constellation";
+        if (!stristr($ark, 'ark:/'))
+            return $filename;
+
+        $pieces = explode("ark:/", $ark);
+        if (isset($pieces[1])) {
+            $filename = str_replace('/', "-", $pieces[1]); 
+        }
+        return $filename;
     }
 
     /**
