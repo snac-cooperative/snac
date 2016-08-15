@@ -531,6 +531,22 @@ function subMakeEditable(short, i) {
         textToDate(short, i);
     }
 
+    // Make things re-orderable if something exists
+    // $( "#nameEntry_component_ui_0" ).sortable({  // id of the container containing sortable things
+    //      items       : '.name_component'         // class of the things that are sortable.  They MUST have ids
+    // });
+    $("#"+short+"_datapart_" + i + " span.move-handle").each(function() {
+        $(this).removeClass("snac-hidden");
+    });
+    $( "#"+short+"_reorderable_"+i ).sortable({
+          items       : '.reorderable',
+          opacity     : 0.5,
+          update      : function( event, ui ) {
+              var neworder = $( "#"+short+"_reorderable_"+i ).sortable("toArray");
+              console.log(neworder); 
+              updateNameEntryHeading(i);}
+    });
+
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
     	$("#" + short + "_operation_" + i).val("update");
@@ -559,6 +575,12 @@ function subMakeUneditable(shortName, i) {
     var idstr = "_" + i;
 
 
+    // Turn off the reordering js
+    $("#"+shortName+"_datapart_" + i + " span.move-handle").each(function() {
+        $(this).addClass("snac-hidden");
+    });
+    if ($( "#"+shortName+"_reorderable_"+i ).hasClass("ui-sortable"))
+        $( "#"+shortName+"_reorderable_"+i ).sortable("destroy");
 
     // Remove CodeMirror editors
     $("#"+shortName+"_datapart_" + i + " textarea[id^='"+shortName+"_']").each(function() {
@@ -598,6 +620,7 @@ function subMakeUneditable(shortName, i) {
         selectToText(shortName, i);
         dateToText(shortName,i);
     }
+
 
     // Clear the operation flags
     //$("#" + shortName + "_operation_" + i).val("");

@@ -109,7 +109,7 @@
                     <label class="control-label col-xs-4" data-content="{{X.nameComponents.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.nameComponents.display }}
                     </label>
-                    <div class="col-xs-8 well well-sm">
+                    <div class="col-xs-8 well well-sm" id="nameEntry_reorderable_{{i}}">
                         {% set j = 0 %}
                         {% for component in nameEntry.components %}
                             {{ components.displayComponent(X, inEdit, showSubElements, component, i, j) }}
@@ -174,7 +174,7 @@
 {% endmacro %}
 
 {% macro displayComponent(X, inEdit, showSubElements, component, i, j) %}
-        <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+        <div class="col-xs-12 reorderable" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
             <div id="nameEntry_component_{{j}}_datapart_{{i}}">
                 <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}"
                     name="nameEntry_component_{{j}}_id_{{i}}"
@@ -187,6 +187,7 @@
                     value="{{component.operation}}"/>
                 <div>
                     <div class="input-group select2-bootstrap-append">
+                        <span class="input-group-addon move-handle sizing-addon3 snac-hidden"><i class="glyphicon glyphicon-menu-hamburger"></i></span>
                         <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 50%">
                             <input id="nameEntry_component_{{j}}_type_id_{{i}}"
                                 name="nameEntry_component_{{j}}_type_id_{{i}}"
