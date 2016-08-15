@@ -876,7 +876,7 @@
                         <label class="control-label col-xs-4" data-content="{{X.address.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.address.display }}
                         </label>
-                        <div class="col-xs-8 well well-sm">
+                        <div class="col-xs-8 well well-sm" id="place_reorderable_{{i}}">
                             {% set j = 0 %}
                             {% for part in place.address %}
                                 {{ components.displayAddressLine(X, inEdit, showSubElements, part, i, j) }}
@@ -954,7 +954,7 @@
 {% endmacro %}
 
 {% macro displayAddressLine(X, inEdit, showSubElements, address, i, j) %}
-        <div class="col-xs-12" id="place_address_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+        <div class="col-xs-12 reorderable" id="place_address_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
             <div id="place_address_{{j}}_datapart_{{i}}">
                 <input type="hidden" id="place_address_{{j}}_id_{{i}}"
                     name="place_address_{{j}}_id_{{i}}"
@@ -967,6 +967,8 @@
                     value="{{address.operation}}"/>
                 <div>
                     <div class="input-group select2-bootstrap-append">
+                        <span class="input-group-addon move-handle sizing-addon3 snac-hidden"><i class="fa fa-bars" aria-hidden="true"></i>
+                        </span>
                         <div id="select_place_address_{{j}}_type_{{i}}" style="width: 50%">
                             <input id="place_address_{{j}}_type_id_{{i}}"
                                 name="place_address_{{j}}_type_id_{{i}}"
