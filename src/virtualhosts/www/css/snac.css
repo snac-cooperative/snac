@@ -186,6 +186,13 @@ td.rotate > div > span {
     height: 300px;
 }
 
+
+.move-handle {
+    border: 0;
+    background: transparent;
+    cursor: grab;
+}
+
 /* centered columns styles */
 .row-centered {
     text-align:center;
