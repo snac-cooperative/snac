@@ -1029,7 +1029,7 @@ class ConstellationPostMapper {
 
                     $component->setText($cData["text"]);
                     $component->setType($this->parseTerm($cData["type"]));
-                    $component->setOrder($l);
+                    $component->setOrder($cData["order"]);
 
                     $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
 
@@ -1234,7 +1234,7 @@ class ConstellationPostMapper {
 
                     $part->setText($aData["text"]);
                     $part->setType($this->parseTerm($aData["type"]));
-                    $part->setOrder($l);
+                    $part->setOrder($aData["order"]);
 
                     $this->addToMapping("place_address_".$l, $k, $aData, $part);
 

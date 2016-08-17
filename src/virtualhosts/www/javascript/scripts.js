@@ -543,8 +543,13 @@ function subMakeEditable(short, i) {
           opacity     : 0.5,
           update      : function( event, ui ) {
               var neworder = $( "#"+short+"_reorderable_"+i ).sortable("toArray");
-              console.log(neworder); 
-              updateNameEntryHeading(i);}
+              console.log(neworder);
+              neworder.forEach(function(orderedID, index) {
+                    $("#"+orderedID + " input.order-index").val(index);
+              });
+              if (short == "nameEntry") 
+                    updateNameEntryHeading(i);
+          }
     });
 
     // Set this data's operation value appropriately
