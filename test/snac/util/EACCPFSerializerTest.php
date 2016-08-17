@@ -10,6 +10,7 @@
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\util;
 
 /**
  * EAC CPF Serializer test suite
@@ -21,10 +22,13 @@ class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
     
     /**
      * DBUtil object for this class
-     * @var $dbu \snac\server\database\DBUtil object
+     * @var \snac\server\database\DBUtil $dbu object
      */ 
     private $dbu = null;
-    
+
+    /**
+     * @var \snac\data\User $user User object
+     */
     private $user = null;
 
     /**
