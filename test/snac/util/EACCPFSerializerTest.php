@@ -18,7 +18,7 @@ namespace test\snac\util;
  * @author Tom Laudeman
  *
  */
-class EACCPFSerializerTest extends PHPUnit_Framework_TestCase {
+class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
     
     /**
      * DBUtil object for this class
