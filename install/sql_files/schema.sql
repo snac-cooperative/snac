@@ -66,7 +66,8 @@ drop table if exists contributor;
 -- these shouldn't even be in the database anymore
 drop table if exists place;
 drop table if exists geoplace;
-
+drop table if exists address_line;
+drop table if exists unassigned_arks;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -900,4 +901,9 @@ create table appuser_group_link (
         uid        int,                -- fk to appuser.id
         gid        int,                -- fk to appuser_group.id
         is_default boolean default 'f' -- this group is a default for the given user
+);
+
+-- Table for the arks that the system may assign (queue)
+create table unassigned_arks (
+           ark text
 );
