@@ -179,4 +179,9 @@ class Config {
      */
     public static $ELASTIC_SEARCH_BASE_TYPE = "";
     
+    /**
+     * @var string Search base for ALL of the snac name entries (and alternates)
+     */
+    public static $ELASTIC_SEARCH_ALL_TYPE = "";
+
 }
