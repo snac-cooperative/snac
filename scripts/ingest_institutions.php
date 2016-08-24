@@ -73,17 +73,21 @@ foreach ($line as $data) {
 
     $written = null;
     if ($check !== false) {
+        echo "  Using existing constellation\n";
         $written = $dbu->readConstellation($check->getID());
     } else {
         // Write the constellation to the DB
+        echo "  Writing new constellation\n";
         $written = $dbu->writeConstellation($user,
                                             $constellation,
                                             "bulk ingest of merged",
                                             'ingest cpf');
-    }
 
-    // Update it to be published
-    $dbu->writeConstellationStatus($user, $written->getID(), "published");
+        // Update it to be published
+        $dbu->writeConstellationStatus($user, $written->getID(), "published");
+        // index ES
+        indexESearch($written);
+    }
 
     /*
      * Add to the snac_institution table. An institution is a constellation, usually in summary form. The
@@ -92,8 +96,6 @@ foreach ($line as $data) {
     $dbuser->writeInstitution($written);
     printf("Added to table snac_institutions: %s (ARK: %s)\n", $written->getID(), $written->getArk());
 
-    // index ES
-    indexESearch($written);
 
     $seenArks[$written->getID()] = $written->getArk();
 }

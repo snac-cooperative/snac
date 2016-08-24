@@ -1217,10 +1217,9 @@ class SQL
     {
         $result = $this->sdb->query(
             'select nrd.ic_id
-            from version_history, nrd
+            from nrd
             where
-            nrd.ark_id=$1
-            and version_history.id=nrd.ic_id',
+            nrd.ark_id=$1',
             array($arkID));
         $row = $this->sdb->fetchrow($result);
         return $row['ic_id'];

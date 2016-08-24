@@ -28,6 +28,13 @@ $db = new \snac\server\database\DatabaseConnector();
 
 // ElasticSearch Handler
 $eSearch = null;
+
+$primaryCount = 0;
+$secondaryCount = 0;
+$primaryStart = false;
+$secondaryStart = false;
+$primaryBody = array();
+$secondaryBody = array();
 if (\snac\Config::$USE_ELASTIC_SEARCH) {
     $eSearch = Elasticsearch\ClientBuilder::create()
         ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
@@ -103,47 +110,115 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         $previousICID = $name["ic_id"];
     }
 
+    echo "Cleaning up last bulk updates\n";
+    bulkUpdate($primaryBody, $primaryCount);
+    bulkUpdate($secondaryBody, $secondaryCount);
+
+
     echo "Done\n";
 } else {
     echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
 }
 
 function indexMain($nameText, $ark, $icid) {
-    global $eSearch;
+    global $eSearch, $primaryBody, $primaryStart, $primaryCount;
     if ($eSearch != null) {
-        $params = [
-                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                'id' => $icid,
-                'body' => [
-                        'nameEntry' => $nameText,
-                        'arkID' => $ark,
-                        'id' => $icid,
-                        'timestamp' => date("c")
-                ]
-        ];
+        // do one first to get the index going
+        if (!$primaryStart) {
+            $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                    'id' => $icid,
+                    'body' => [
+                            'nameEntry' => $nameText,
+                            'arkID' => $ark,
+                            'id' => $icid,
+                            'timestamp' => date("c")
+                    ]
+            ];
 
-        $eSearch->index($params);
+            $eSearch->index($params);
+            $primaryStart = true;
+        } else {
+            if ($primaryCount == 100000) {
+                echo "  Running Primary bulk update\n";
+                bulkUpdate($primaryBody, $primaryCount);
+            }
+            $primaryBody['body'][] = [
+                'index' => [
+                    '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    '_type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                    '_id' => $icid
+                ]
+            ];
+            $primaryBody['body'][] = [
+                'nameEntry' => $nameText,
+                'arkID' => $ark,
+                'id' => $icid,
+                'timestamp' => date("c")
+            ];
+            $primaryCount++;
+        }
     }
 }
 
 
 function indexSecondary($nameText, $ark, $icid, $nameid) {
+    global $eSearch, $secondaryBody, $secondaryStart, $secondaryCount;
+    if ($eSearch != null) {
+        // do one first to get the index going
+        if (!$secondaryStart) {
+            $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    'id' => $nameid,
+                    'body' => [
+                            'nameEntry' => $nameText,
+                            'arkID' => $ark,
+                            'id' => $icid,
+                            'name_id' => $nameid,
+                            'timestamp' => date("c")
+                    ]
+            ];
+
+            $eSearch->index($params);
+            $secondaryStart = true;
+        } else {
+            if ($secondaryCount == 100000) {
+                echo "  Running Secondary bulk update\n";
+                bulkUpdate($secondaryBody, $secondaryCount);
+            }
+            // elasticsearch api = array with "index" => array(information), followed by array of data, then repeated
+            $secondaryBody['body'][] = [
+                'index' => [
+                    '_index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    '_type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    '_id' => $nameid
+                ]
+            ];
+            $secondaryBody['body'][] = [
+                'nameEntry' => $nameText,
+                'arkID' => $ark,
+                'id' => $icid,
+                'name_id' => $nameid,
+                'timestamp' => date("c")
+            ];
+            $secondaryCount++;
+        }
+    }
+}
+
+function bulkUpdate(&$body, &$count) {
     global $eSearch;
     if ($eSearch != null) {
-        $params = [
-                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
-                'id' => $nameid,
-                'body' => [
-                        'nameEntry' => $nameText,
-                        'arkID' => $ark,
-                        'id' => $icid,
-                        'name_id' => $nameid,
-                        'timestamp' => date("c")
-                ]
-        ];
+        $count = 0;
 
-        $eSearch->index($params);
+        $responses = $eSearch->bulk($body);
+
+        // erase the old bulk request
+        $body = array();
+
+        // unset the bulk response when you are done to save memory
+        unset($responses);
     }
 }
