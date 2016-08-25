@@ -350,6 +350,8 @@ create table name (
     primary key(id, version)
     );
 
+create index name_idx1 on name (ic_id, version);
+
 -- Parsed components of name string. There are multiple of these per one name.
 
 -- Note: no ic_id because this table only related to name.id, and through that to the identity
@@ -390,6 +392,7 @@ create table name_contributor (
     );
 
 create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
+create unique index name_contributor_idx2 on name_contributor(id,name_id,version);
 
 -- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
 -- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
