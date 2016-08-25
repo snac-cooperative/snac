@@ -2162,6 +2162,48 @@ class SQL
     }
 
     /**
+     * Insert entityID record
+     *
+     * Insert an ID from external records for this constellation. For the sake of convention, we put
+     * the SQL columns in the same order as the function args.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param int $id The id of this record, otherid.id
+     *
+     * @param string $text The text of the SameAs object.
+     *
+     * @param integer $typeID Vocabulary id foreign key for the type of this entityID. Probably the ids for
+     * ISNI, LoC MARC organization, etc.
+     *
+     * @param string $uri The URI of the other record (not currently used)
+     *
+     */
+    public function insertEntityID($vhInfo, $id, $text, $typeID, $uri)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_entity_id';
+        $this->sdb->prepare($qq,
+                            'insert into entityid
+                            (version, ic_id, id, text, type, uri)
+                            values
+                            ($1, $2, $3, $4, $5, $6)');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id'],
+                                            $id,
+                                            $text,
+                                            $typeID,
+                                            $uri));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
      * Insert otherID record
      *
      * Insert an ID from records that were merged into this constellation. For the sake of convention, we put
@@ -2318,6 +2360,89 @@ class SQL
                             (select name_id,max(version) as version from name_component where name_id=$1 and version<=$2 group by name_id) as bb
                             where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
         $result = $this->sdb->execute($qq_2, array($nameID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
+    /**
+     * Insert an address line
+     *
+     * Related to place where component.place_id=place.id. This is a one-sided fk relationship also used for
+     * date and language.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id of this address line. If null one will be minted. The id (existing or new) is always returned.
+     *
+     * @param integer $placeID Record id of related place
+     *
+     * @param string $text Text of the address line
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this address line.
+     * @param integer $order The ordering of this line in the place's address
+     *
+     * @return integer $id Return the existing id, or the newly minted id.
+     */
+    public function insertAddressLine($vhInfo, $id, $placeID, $text, $typeID, $order)
+    {
+        if ($placeID == null)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to write an address line for a non-existant place");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq_2 = 'insert_address_line';
+        $this->sdb->prepare($qq_2,
+                            'insert into address_line
+                            (ic_id, version, id, place_id, value, label, line_order)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['ic_id'],
+                                  $vhInfo['version'],
+                                  $id,
+                                  $placeID,
+                                  $text,
+                                  $typeID,
+                                  $order));
+        $this->sdb->deallocate($qq_2);
+        return $id;
+    }
+
+
+    /**
+     * Select a list of address line records
+     *
+     * Select all related address line records and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * address_line.place_id=place.id.
+     *
+     * @param integer $placeID Record id of related place.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single address line.
+     */
+    public function selectAddress($placeID, $version)
+    {
+        $qq_2 = 'select_address';
+        $this->sdb->prepare($qq_2,
+                            'select
+                            aa.id, aa.place_id, aa.version, aa.label, aa.value, aa.line_order
+                            from address_line as aa,
+                            (select place_id,max(version) as version from address_line 
+                                where place_id=$1 and version<=$2 group by place_id) as bb
+                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq_2, array($placeID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -3128,77 +3253,11 @@ class SQL
         return $rowList;
     }
 
-
-    /**
-     * Helper for selectOtherID()
-     *
-     * Mar 1 2016: The comment below is incomplete because we have lots of cases where there could be multiple
-     * versions. All queries deal with multiple version by using a subquery. This function is probably
-     * redundant.
-     *
-     * Select flat list of distinct id values meeting the version and ic_id constraint. Specifically a
-     * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
-     * have several versions while other otherid.id values are different (and single) versions.
-     *
-     *
-     * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @return integer[] Return a list of record id values meeting the version and ic_id constriants.
-     *
-     */
-    public function matchORID($vhInfo)
-    {
-
-        $qq = 'morid';
-        $this->sdb->prepare($qq,
-                            'select
-                            distinct(id)
-                            from otherid
-                            where
-                            version=(select max(version) from otherid where version<=$1 and ic_id=$2)
-                            and ic_id=$2');
-        /*
-         * Always use key names explicitly when going from associative context to flat indexed list context.
-         */
-        $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version'],
-                                            $vhInfo['ic_id']));
-        $all = array();
-        while($row = $this->sdb->fetchrow($result))
-        {
-            array_push($all, $row['id']);
-        }
-        $this->sdb->deallocate($qq);
-        return $all;
-    }
-
-
     /**
      * select other IDs
      *
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
-     *
-     * Mar 25 2016: The fix described below only worked in certain cases. It is unclear why the subquery was
-     * not just turned into a join like all the other tables. Fixed and this query works in at least one case
-     * where the original failed. It failed when the versions were not in order.
-     *
-     * I just noticed that otherid doesn't have is_deleted. There is a historical reason for that, but I
-     * suspect history needs to be updated. Unless there is some really good reason otherid will never be
-     * deleted. Or even edited?
-     *
-     * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
-     * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
-     * was all fairly odd, but worked. This code now follows our idiom for ic_id and version constraint via
-     * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
-     * database versions, and the otherRecordID JSON looks correct.
-     *
-     * select
-     * id, version, ic_id, text, uri, type
-     * from otherid
-     * where
-     * version=(select max(version) from otherid where version<=$1)
-     * and ic_id=$2 order by id
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
@@ -3229,6 +3288,44 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+
+    /**
+    * select entity IDs
+    *
+    * These were originally ID values of external records for the same entity. DBUtils has code that adds an entityID to a
+    * Constellation object.
+    *
+    * @param string[] $vhInfo associative list with keys: version, ic_id
+    *
+    * @return string[] Return an associative ist of otherid rows with keys: id, version, ic_id, text, uri,
+    * type, link_type. otherid.type is an integer fk id from vocabulary, not that we need to concern
+    * ourselves with that here.
+    *
+    */
+    public function selectEntityID($vhInfo)
+    {
+        $qq = 'sedid';
+        $this->sdb->prepare($qq,
+            'select
+                    aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
+                from entityid as aa,
+                    (select id,max(version) as version from entityid where version<=$1 and ic_id=$2 group by id) as bb
+                where
+                    aa.id = bb.id and
+                    aa.version = bb.version order by id asc');
+
+        $all = array();
+        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['ic_id']));
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
 
 
     /**
@@ -3541,20 +3638,20 @@ class SQL
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.ic_id, aa.related_id, aa.related_ark,
-                            aa.relation_entry, aa.descriptive_note, 
-                            aa.relation_type, 
-                                relt.value as relation_type_value, 
-                                relt.uri as relation_type_uri, 
+                            aa.relation_entry, aa.descriptive_note,
+                            aa.relation_type,
+                                relt.value as relation_type_value,
+                                relt.uri as relation_type_uri,
                                 relt.description as relation_type_description,
                                 relt.type as relation_type_type,
-                            aa.role, 
-                                rolt.value as role_value, 
-                                rolt.uri as role_uri, 
+                            aa.role,
+                                rolt.value as role_value,
+                                rolt.uri as role_uri,
                                 rolt.description as role_description,
                                 rolt.type as role_type,
-                            aa.arcrole, 
-                                arct.value as arcrole_value, 
-                                arct.uri as arcrole_uri, 
+                            aa.arcrole,
+                                arct.value as arcrole_value,
+                                arct.uri as arcrole_uri,
                                 arct.description as arcrole_description,
                                 arct.type as arcrole_type
                             from related_identity as aa
@@ -4690,7 +4787,7 @@ class SQL
      * @param integer $groupID A group id
      *
      * @param boolean $everyone. If true include inactive users, else only list active.
-     * 
+     *
      * @return integer[] List of group ID values.
      */
     public function selectUserIDsFromGroup($groupID, $everyone)
@@ -4699,10 +4796,10 @@ class SQL
         if (! $everyone) {
             /*
              * Must join with appuser to get only active users.
-             * 
+             *
              * Table names are not necessary in the select or where clause. The field names are
              * unique. However, explicitly using table names (or the alias agl) makes the intent clear.
-             */ 
+             */
             $query = "select agl.uid from appuser_group_link as agl, appuser where gid=$1 and agl.uid=appuser.id and appuser.active";
         }
         $result = $this->sdb->query($query,
@@ -4801,13 +4898,13 @@ class SQL
      * readability and for consistency with RFC 3339 as well as some other database systems.
      *
      * Bad: 2016-07-28 16:30:16.18485 Good: 2016-07-28T16:30:16
-     * 
+     *
      * @param $ic_id integer The relevant constellation id.
      * @return string[] An associative list with keys corresponding to the version_history table columns.
-     */ 
+     */
     public function selectVersionHistory($ic_id) {
         $result = $this->sdb->query(
-            'select *, to_char(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as cpf_date from version_history 
+            'select *, to_char(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as cpf_date from version_history
             where id=$1 and status=\'published\' order by timestamp desc',
             array($ic_id));
         $usernames = "";

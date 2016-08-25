@@ -5,26 +5,16 @@
     "entityType": {
         "id": "698",
         "term": "corporateBody",
-        "uri": null,
+        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
         "description": null
     },
     "otherRecordIDs": [
         {
             "dataType": "SameAs",
-            "type": null,
-            "text": null,
-            "uri": "Un seul identifiant",
-            "id": null,
-            "version": null,
-            "operation": null,
-            "dates": []
-        },
-        {
-            "dataType": "SameAs",
             "type": {
-                "id": "28222",
+                "id": "28225",
                 "term": "sameAs",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
                 "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
@@ -37,13 +27,30 @@
         {
             "dataType": "SameAs",
             "type": {
-                "id": "28222",
+                "id": "28225",
                 "term": "sameAs",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
                 "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
             "uri": "http:\/\/isni.org\/isni\/Unseulidentifiant",
+            "id": null,
+            "version": null,
+            "operation": null,
+            "dates": []
+        }
+    ],
+    "entityIDs": [
+        {
+            "dataType": "EntityId",
+            "type": {
+                "id": "701",
+                "term": "unknown",
+                "uri": null,
+                "description": null
+            },
+            "text": "Un seul identifiant",
+            "uri": null,
             "id": null,
             "version": null,
             "operation": null,
@@ -69,7 +76,7 @@
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
-                "id": "701",
+                "id": "704",
                 "term": "revised",
                 "uri": null,
                 "description": null
@@ -109,7 +116,7 @@
         {
             "dataType": "legalStatus",
             "term": {
-                "id": "400203",
+                "id": "400206",
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
                 "uri": null,
                 "description": null
@@ -140,7 +147,7 @@
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "7655",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
                         "description": null
@@ -159,7 +166,7 @@
                     "text": "Notice Test Collectivit\u00e9",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
                         "description": null
@@ -207,7 +214,7 @@
                     "text": "Test Collectivit\u00e9",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
                         "description": null
@@ -261,7 +268,7 @@
                     "text": "Collectivit\u00e9 test",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
                         "description": null
@@ -310,7 +317,7 @@
         {
             "dataType": "Occupation",
             "term": {
-                "id": "9479",
+                "id": "9482",
                 "term": "archiviste",
                 "uri": null,
                 "description": null
@@ -365,7 +372,7 @@
             "type": null,
             "altType": null,
             "cpfRelationType": {
-                "id": "28261",
+                "id": "28264",
                 "term": "hierarchical-parent",
                 "uri": null,
                 "description": null
@@ -411,14 +418,14 @@
             "targetArkID": null,
             "targetEntityType": null,
             "type": {
-                "id": "28231",
+                "id": "28234",
                 "term": "associatedWith",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#associatedWith",
                 "description": null
             },
             "altType": null,
             "cpfRelationType": {
-                "id": "28232",
+                "id": "28235",
                 "term": "associative",
                 "uri": null,
                 "description": null
@@ -463,7 +470,7 @@
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                 "description": null
             },
             "linkType": null,
@@ -472,7 +479,7 @@
             "role": {
                 "id": "692",
                 "term": "creatorOf",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#creatorOf",
                 "description": null
             },
             "content": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
@@ -488,7 +495,7 @@
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                 "description": null
             },
             "linkType": null,
@@ -497,7 +504,7 @@
             "role": {
                 "id": "693",
                 "term": "referencedIn",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
                 "description": null
             },
             "content": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
@@ -513,7 +520,7 @@
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
                 "description": null
             },
             "linkType": null,
@@ -522,7 +529,7 @@
             "role": {
                 "id": "693",
                 "term": "referencedIn",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
                 "description": null
             },
             "content": "Gr\u00e2ces accord\u00e9es",
@@ -538,7 +545,7 @@
         {
             "dataType": "SNACFunction",
             "term": {
-                "id": "2662",
+                "id": "2665",
                 "term": "culture",
                 "uri": null,
                 "description": null
@@ -558,11 +565,12 @@
             "original": "Pierrefitte-sur-Seine",
             "type": null,
             "role": {
-                "id": "704",
+                "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
@@ -618,11 +626,12 @@
             "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
             "type": null,
             "role": {
-                "id": "704",
+                "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3ntxf5186--sga9u2l9iboc",
@@ -686,11 +695,12 @@
             "original": "Paris, Archives nationales",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
@@ -746,11 +756,12 @@
             "original": "03e arrondissement",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nyv8gloo-1mqax06e8pe1d",
@@ -814,11 +825,12 @@
             "original": "Francs-Bourgeois (rue des)",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nzaj2p6v--hrd7lqok52tn",
@@ -934,7 +946,7 @@
                 "notAfter": null
             },
             "isRange": true,
-            "note": "\n               \n            ",
+            "note": "<p>Date de cr\u00e9ation incertaine.<\/p>",
             "id": null,
             "version": null,
             "operation": null,

@@ -1,6 +1,6 @@
 {
     "_comment" : "%%% The following are commands on the page",
-    
+
     "save" : {
         "display" : "Save",
         "tooltip" : "Save"
@@ -40,9 +40,9 @@
         "display" : "Permalink",
         "tooltip" : "The permanent identifier for this Constellation"
     },
-    
+
     "_comment" : "%%% Global pieces",
-    
+
     "language" : {
         "display" : "Language",
         "tooltip" : "The ISO-standard language of this data element"
@@ -55,9 +55,9 @@
         "display" : "Descriptive Note",
         "tooltip" : "A note about this data element"
     },
-    
+
     "_comment" : "%%% Languages Used",
-    
+
     "languageUsed" : {
         "display" : "Language",
         "tooltip" : "The ISO-standard language used by the identity described in this Constellation"
@@ -66,9 +66,9 @@
         "display" : "Script",
         "tooltip" : "The ISO-standard script used by the identity described in this Constellation"
     },
-    
+
     "_comment" : "%%% Name Entry pieces",
-    
+
     "nameEntry" : {
         "display" : "Name Entry",
         "plural" : "Name Entries",
@@ -106,9 +106,9 @@
         "display" : "Rules",
         "tooltip" : "Descriptive rules used to formulate this name heading"
     },
-    
+
     "_comment" : "%%% Date Pieces",
-    
+
     "existDate" : {
         "display" : "Exist Date",
         "plural" : "Exist Dates",
@@ -206,6 +206,10 @@
         "display" : "GeoPlace Confirmed",
         "tooltip" : "This GeoPlace was human-confirmed to be the same place as the one mentioned in Original above"
     },
+    "address" : {
+        "display" : "Address",
+        "tooltip" : "The physical or mailing address"
+    },
 
     "_comment" : "%%% Controlled vocabulary elements",
 
@@ -217,7 +221,7 @@
         "display" : "URI",
         "tooltip" : "The auto-populated URI for the Term selected above"
     },
-   
+
     "_comment" : "%%% XML/Text elements",
 
     "xml" : {
@@ -236,6 +240,21 @@
         "tooltip" : "How this Identity Constellation is related to the external identity"
     },
     "sameAsURI" : {
+        "display" : "URI",
+        "tooltip" : "The permanent link to the external identity"
+    },
+
+    "_comment" : "%%% EntityID elements",
+
+    "entityIdText" : {
+        "display" : "Entity Identifier",
+        "tooltip" : "Another identifier for this identity"
+    },
+    "entityIdType" : {
+        "display" : "Type",
+        "tooltip" : "What kind of identifier this entityID contains"
+    },
+    "entityIdURI" : {
         "display" : "URI",
         "tooltip" : "The permanent link to the external identity"
     },

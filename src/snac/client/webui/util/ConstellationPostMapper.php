@@ -316,6 +316,7 @@ class ConstellationPostMapper {
                 return $map;
             }
         }
+        return null;
     }
 
     /**
@@ -345,13 +346,14 @@ class ConstellationPostMapper {
                 $object->equals($other, false) && $object->getOperation() == $other->getOperation()) {
             // loose equality (not checking IDs, since they may not exist)
             $piece = $this->getMatchInfo($object);
+            
+            if ($piece != null && !empty($piece)) {
+                $this->logger->addDebug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
 
-            $this->logger->addDebug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
-
-            // Other object is the one that we received from the server (with new ID and/or version)
-            $this->updates[$piece["idField"]] = $other->getID();
-            $this->updates[$piece["versionField"]] = $other->getVersion();
-
+                // Other object is the one that we received from the server (with new ID and/or version)
+                $this->updates[$piece["idField"]] = $other->getID();
+                $this->updates[$piece["versionField"]] = $other->getVersion();
+            }
             // Set success to be true (they matched)
             $success = true;
         }
@@ -471,10 +473,14 @@ class ConstellationPostMapper {
         foreach ($this->constellation->getNameEntries() as $nameEntry) {
             foreach ($constellation->getNameEntries() as $other) {
                 if ($this->reconcileObject($nameEntry, $other, true)) {
-
                     foreach ($nameEntry->getContributors() as $contributor) {
                         foreach ($other->getContributors() as $otherContrib) {
                             $this->reconcileObject($contributor, $otherContrib);
+                        }
+                    }
+                    foreach ($nameEntry->getComponents() as $component) {
+                        foreach ($other->getComponents() as $otherComponent) {
+                            $this->reconcileObject($component, $otherComponent);
                         }
                     }
                 }
@@ -499,9 +505,21 @@ class ConstellationPostMapper {
             }
         }
 
+        foreach ($this->constellation->getEntityIDs() as $otherid) {
+            foreach ($constellation->getEntityIDs() as $other) {
+                $this->reconcileObject($otherid, $other);
+            }
+        }
+
         foreach ($this->constellation->getPlaces() as $place) {
             foreach ($constellation->getPlaces() as $other) {
-                $this->reconcileObject($place, $other);
+                if ($this->reconcileObject($place, $other)) {
+                    foreach ($place->getAddress() as $addressLine) {
+                        foreach ($other->getAddress() as $otherAddressLine) {
+                            $this->reconcileObject($addressLine, $otherAddressLine);
+                        }
+                    }
+                }
             }
         }
 
@@ -607,6 +625,7 @@ class ConstellationPostMapper {
         $nested["mandate"] = array ();
         $nested["nameEntry"] = array ();
         $nested["sameAs"] = array ();
+        $nested["entityID"] = array ();
         $nested["source"] = array ();
         $nested["resourceRelation"] = array ();
         $nested["constellationRelation"] = array ();
@@ -977,8 +996,10 @@ class ConstellationPostMapper {
                     $contributor->setVersion($cData["version"]);
                     if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
                         $contributor->setOperation($this->getOperation($cData));
-                    else
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
                         $contributor->setOperation($this->getOperation($data));
+                    }
 
                     $contributor->setName($cData["name"]);
                     $contributor->setType($this->parseTerm($cData["type"]));
@@ -1001,12 +1022,14 @@ class ConstellationPostMapper {
                     $component->setVersion($cData["version"]);
                     if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
                         $component->setOperation($this->getOperation($cData));
-                    else
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
                         $component->setOperation($this->getOperation($data));
+                    }
 
                     $component->setText($cData["text"]);
                     $component->setType($this->parseTerm($cData["type"]));
-                    $component->setOrder($l);
+                    $component->setOrder($cData["order"]);
 
                     $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
 
@@ -1048,6 +1071,26 @@ class ConstellationPostMapper {
             $this->addToMapping("sameAs", $k, $data, $sameas);
 
             $this->constellation->addOtherRecordID($sameas);
+        }
+
+        foreach ($nested["entityID"] as $k => $data) {
+            // If the user added an object, but didn't actually edit it
+            if ($data["id"] == "" && $data["operation"] != "insert")
+                continue;
+            $sameas = new \snac\data\EntityId();
+            $sameas->setID($data["id"]);
+            $sameas->setVersion($data["version"]);
+            $sameas->setOperation($this->getOperation($data));
+
+            $sameas->setText($data["text"]);
+
+            $sameas->setType($this->parseTerm($data["type"]));
+
+            $sameas->setAllSNACControlMetadata($this->parseSCM($data, "entityID", $k));
+
+            $this->addToMapping("entityID", $k, $data, $sameas);
+
+            $this->constellation->addEntityID($sameas);
         }
 
         foreach ($nested["resourceRelation"] as $k => $data) {
@@ -1172,6 +1215,33 @@ class ConstellationPostMapper {
                 $place->deconfirm();
 
             $place->setAllSNACControlMetadata($this->parseSCM($data, "place", $k));
+            
+            // right now, update components if updating name entry
+            if (isset($data["address"])) {
+                foreach ($data["address"] as $l => $aData) {
+                    if ($aData["id"] == "" && $aData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through address", $aData);
+                    $part = new \snac\data\AddressLine();
+                    $part->setID($aData["id"]);
+                    $part->setVersion($aData["version"]);
+                    if ($aData["operation"] == "insert" || $aData["operation"] == "delete")
+                        $part->setOperation($this->getOperation($aData));
+                    else {
+                        $aData["operation"] = $this->getOperation($data);
+                        $part->setOperation($this->getOperation($data));
+                    }
+
+                    $part->setText($aData["text"]);
+                    $part->setType($this->parseTerm($aData["type"]));
+                    $part->setOrder($aData["order"]);
+
+                    $this->addToMapping("place_address_".$l, $k, $aData, $part);
+
+                    $place->addAddressLine($part);
+                }
+            }
+
 
             $this->addToMapping("place", $k, $data, $place);
 

@@ -117,7 +117,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "view",
                 "details",
                 "download",
-                "error"
+                "error",
+                "vocabulary"
         );
 
 
@@ -388,7 +389,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "vocabulary":
-                $response = $executor->performVocabularySearch($this->input);
+                if (isset($this->input["subcommand"]) && $this->input["subcommand"] == "read")
+                    $response = $executor->readVocabulary($this->input);
+                else
+                    $response = $executor->performVocabularySearch($this->input);
                 break;
 
             case "search":

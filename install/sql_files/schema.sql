@@ -21,7 +21,7 @@
 -- drop table if exists control;
 -- drop table if exists pre_snac_maintenance_history;
 
-drop table if exists appuser; 
+drop table if exists appuser;
 drop table if exists appuser_role_link;
 drop table if exists appuser_group;
 drop table if exists appuser_group_link;
@@ -42,6 +42,7 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
+drop table if exists entityid;
 drop table if exists place_link;
 drop table if exists related_identity;
 drop table if exists related_resource;
@@ -53,6 +54,8 @@ drop table if exists scm;
 drop table if exists snac_institution;
 drop table if exists structure_genealogy;
 drop table if exists source;
+drop table if exists maybe_same;
+drop table if exists stakeholder;
 -- drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists version_history;
@@ -63,12 +66,13 @@ drop table if exists contributor;
 -- these shouldn't even be in the database anymore
 drop table if exists place;
 drop table if exists geoplace;
-
+drop table if exists address_line;
+drop table if exists unassigned_arks;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
 
--- Feb 19 2016 stop using type icstatus 
+-- Feb 19 2016 stop using type icstatus
 -- drop data types after any tables using them have been dropped.
 -- drop type if exists icstatus;
 
@@ -226,7 +230,7 @@ create table session (
 -- although in historical times (before versioning) table nrd was "the" central CPF table.
 
 -- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, ic_id.
--- Move to table: 
+-- Move to table:
 -- convention_declaration text,
 -- mandate text,
 -- general_context text,
@@ -236,8 +240,8 @@ create table session (
 -- language      text,         -- not in vocab yet, keep the string
 -- language_code int,          -- (fk to vocabulary.id) 3 letter iso language code
 -- script        text,         -- not in vocab yet, keep the string
--- script_code   int,          -- (fk to vocabulary.id) 
--- language_used int,          -- (fk to vocabulary.id) from languageUsed/language 
+-- script_code   int,          -- (fk to vocabulary.id)
+-- language_used int,          -- (fk to vocabulary.id) from languageUsed/language
 -- script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
 -- exist_date    int,          -- fk to date_range.id
 
@@ -346,6 +350,8 @@ create table name (
     primary key(id, version)
     );
 
+create index name_idx1 on name (ic_id, version);
+
 -- Parsed components of name string. There are multiple of these per one name.
 
 -- Note: no ic_id because this table only related to name.id, and through that to the identity
@@ -381,11 +387,12 @@ create table name_contributor (
     name_id        int,  -- (fk to name.id)
     short_name     text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
     name_type      int,  -- (fk to vocabulary.id) -- type of name (authorizedForm, alternativeForm)
-    rule           int,  -- (fk to vocabulary.id) -- rule used to formulate the bame by this contributing entity 
+    rule           int,  -- (fk to vocabulary.id) -- rule used to formulate the bame by this contributing entity
     primary key(id, version)
     );
 
 create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
+create unique index name_contributor_idx2 on name_contributor(id,name_id,version);
 
 -- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
 -- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
@@ -394,7 +401,7 @@ create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
 -- Nov 12 2015: New think: skip the table contributor, and simply save the short_name in name_contributor. No
 -- matter what we do, there is a mess to clean up later on.
 
--- Removed from table name_contributor:    contributor_id int,  
+-- Removed from table name_contributor:    contributor_id int,
 -- (fk to contributor.id, which is a temp table until we link to SNAC records for each contributor)
 
 -- Applies only to name/authorizedForm and name/alternativeForm. contributor.short_name is contributor
@@ -428,7 +435,7 @@ create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
 -- If not birth and death, and if two dates, is_range must be true. If birth and death, one of the dates can
 -- be left empty without setting missing_from or missing_to.
 
--- Active dates may be a single (from_date) or date range. 
+-- Active dates may be a single (from_date) or date range.
 
 -- date string is iso standard (mostly), largest to smallest units, left to right. By using a string in this
 -- format, dates will sort alphbetically correctly, even for partial dates.
@@ -466,8 +473,8 @@ create table date_range (
         to_not_before    text,
         to_not_after     text,
         to_present       boolean,
-        to_original      text,                  -- the to date tag value 
-        descriptive_note text, 
+        to_original      text,                  -- the to date tag value
+        descriptive_note text,
         fk_table         text,                  -- table name of the related foreign table. Exists only as a backup
         fk_id            int,                   -- table.id of the related record
         primary          key(id, version)
@@ -504,9 +511,9 @@ create unique index language_idx1 on date_range(id,ic_id,version);
 -- sources, but each constellation thinks its sources are unique).  Going forward we use this table for all
 -- sources.  For example, SNACControlMetadata->citation is a Source object. Constellation->sources is a list
 -- of sources.
--- 
+--
 -- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
--- just like date. 
+-- just like date.
 
 -- Apr 4 2016. We have switched to per constellation list of sources. Finally removing type, which is always
 -- "simple", and essentially not used. Removing fk_id and fk_table since sources are linked to each
@@ -559,7 +566,7 @@ create unique index source_idx2 on source (id,version,ic_id);
 --     ic_id             int not null,
 --     is_deleted          boolean default false,
 --     maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
---     maintenance_status  int,  -- (fk to vocabulary.id) 
+--     maintenance_status  int,  -- (fk to vocabulary.id)
 --     conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
 --     primary key(id, version)
 --     );
@@ -576,8 +583,8 @@ create unique index source_idx2 on source (id,version,ic_id);
 --     ic_id int not null,
 --     is_deleted boolean default false,
 --     modified_time       date,
---     event_type          int,  -- (fk to vocabulary.id)     
---     agent_type          int,  -- (fk to vocabulary.id)     
+--     event_type          int,  -- (fk to vocabulary.id)
+--     agent_type          int,  -- (fk to vocabulary.id)
 --     agent               text,
 --     description         text,
 --     primary key(id, version)
@@ -720,7 +727,7 @@ create table related_resource (
 create unique index related_resource_idx1 on related_resource(id,ic_id,version);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
--- 
+--
 -- No language_id. Language is an object, and has its own table related where scm.id=language.fk_id.
 
 create table scm (
@@ -753,6 +760,18 @@ create table otherid (
     );
 
 
+-- Entity id table
+create table entityid (
+        id         int default nextval('id_seq'),
+        version    int not null,
+        ic_id    int not null,
+        text text, -- text of the entityId field (ex: ISNI id, MARC organization code, etc)
+        uri  text, -- URI of the other record, might not be used (not supported in EAC-CPF)
+        type int,  -- type of id, such as ISNI, MARC org, etc
+        primary    key(id, version)
+);
+
+
 -- Tables needing place data use place_link to relate to geo_place. Table place_link also relates to snac meta
 -- data in order to capture original strings. The php denormalizes (using more space, but optimising i/o) by
 -- combining fields from place_link and geo_place into PlaceEntry.
@@ -761,7 +780,7 @@ create table otherid (
 -- tables was place, now commented out.
 --
 -- Table place_link associates a place to another table. Each place_link relates to one geo_place authority
--- (controlled vocabulary) records. 
+-- (controlled vocabulary) records.
 --
 -- The original place text was here because it only occured once per Constellation place.
 --
@@ -829,7 +848,40 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
--- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
+-- Address lines from a place_link 
+
+create table address_line (
+             id int default nextval('id_seq'),
+       place_id int,  -- fk to place.id
+          ic_id int,  -- fk to place.id
+        version int,
+     is_deleted boolean default false,
+          label int,  -- typeID, getType() fk to vocabulary.id: City, State, Street, etc..
+          value text, -- text, getText(), the string value of the address line
+     line_order int,  -- line order within this address/place, as entered.
+        primary key(id, version)
+    );
+
+create unique index address_line_idx1 on address_line(id,place_id,version);
+
+-- Maybe SameAs links, a binary relationship between Constellations that may be the same
+
+create table maybe_same (
+        ic_id1  integer,  -- fk to version_history.id
+        ic_id2  integer,  -- fk to version_history.id
+        status  integer,  -- fk to vocabulary.id, status of the maybe_same
+        note    text      -- fk to version_history.id
+);
+
+-- Stakeholder links, a binary relationship between an institution constellation
+-- and the constellation that it has a stake in.
+create table stakeholder (
+        institution_id  integer,  -- fk to version_history.id (institution's ic_id)
+        ic_id           integer   -- fk to version_history.id (constellation's ic_id)
+);
+
+
+        -- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
 -- appuser.affiliation. snac_institution.ic_id=appuser.affiliation.
 
 create table snac_institution (
@@ -852,4 +904,9 @@ create table appuser_group_link (
         uid        int,                -- fk to appuser.id
         gid        int,                -- fk to appuser_group.id
         is_default boolean default 'f' -- this group is a default for the given user
+);
+
+-- Table for the arks that the system may assign (queue)
+create table unassigned_arks (
+           ark text
 );

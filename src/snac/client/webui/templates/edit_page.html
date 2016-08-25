@@ -9,7 +9,8 @@
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-
+<link href="//code.jquery.com/ui/1.10.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="//code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
 
@@ -43,6 +44,10 @@
 <link rel="stylesheet" href="css/select2-bootstrap.min.css">
 
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
 <script src="javascript/save_actions.js"></script>
@@ -85,7 +90,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
         <div class="row">
             <div class="col-md-8">
-                
+
                 <div class="well well-lg">
                     <p><span style="font-weight: bold;">Instructions: </span> When saving an Identity Constellation, the <em>Entity Type</em> and at least one <em>Name Entry</em> are required.</p>
                 </div>
@@ -264,6 +269,26 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
+
+
+                    </div>
+
+                    <div class="tab-pane" id="entityID">
+                        <h2>Other Entity IDs (Same As)</h2>
+
+                        <div class="form-group" id="add_entityID_div">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success" id="btn_add_entityID"><span class="glyphicon glyphicon-plus"></span> Add New Entity ID</button>
+                            </div>
+                        </div>
+
+
+                        {% set i = 0 %}
+                        {% for other in data.entityIDs %}
+                            {{ components.displayEntityID(X, true, true, other, i) }}
+                            {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_entityID_i' style='display:none;'>{{i}}</span>
 
 
                     </div>
@@ -645,6 +670,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     <div id="sameAs_template" style="display:none">
     {{ components.displaySameAs(X, true, true, null, 'ZZ') }}
     </div>
+    <div id="entityID_template" style="display:none">
+    {{ components.displayEntityID(X, true, true, null, 'ZZ') }}
+    </div>
     <div id="source_template" style="display:none">
     {{ components.displaySource(X, true, true, null, 'ZZ') }}
     </div>
@@ -708,6 +736,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     <div id="contributor_template" style="display:none">
     {{ components.displayContributor(X, true, true, null, 'ZZ', 'YY') }}
     </div>
+    <div id="addressline_template" style="display:none">
+    {{ components.displayAddressLine(X, true, true, null, 'ZZ', 'YY') }}
+    </div>
     </div>
 
 
@@ -755,6 +786,24 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
                 <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="geoPlaceInfoPane" tabindex="-1" role="dialog" aria-labelledby="geoPlaceInfoPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="geoPlaceInfoPaneLabel">GeoPlace Information</h4>
+            </div>
+            <div class="modal-body" id="geoPlaceInfoPaneContent">
+                <div class="geoplace-map" id="geoPlaceMap"></div>
+                <div id="geoPlaceInfo"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Done</span></button>
             </div>
         </div>
     </div>

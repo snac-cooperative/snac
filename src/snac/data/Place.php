@@ -109,6 +109,17 @@ class Place extends AbstractData {
     private $geoTerm;
 
     /**
+     * Address Lines 
+     * 
+     * From EAC-CPF tag(s):
+     * 
+     * * place/address/addressLine
+     * 
+     * @var \snac\data\AddressLine[] $address Address of this place
+     */
+    private $address;
+
+    /**
      * Constructor
      *
      * Set up the Place object.  Read an associative array as a parameter.  This object may only have one
@@ -124,7 +135,9 @@ class Place extends AbstractData {
         // Set some default values
         $this->confirmed = false;
         $this->score = 0;
-        
+
+        $this->address = array();
+
         if ($data != null)
             $this->fromArray($data);
         
@@ -239,6 +252,39 @@ class Place extends AbstractData {
     }
 
     /**
+     * Add an address line
+     *
+     * Add an address line to this place
+     *
+     * @param \snac\data\AddressLine $addressLine The address line to add
+     */
+    public function addAddressLine($addressLine) {
+        array_push($this->address, $addressLine);
+    }
+
+    /**
+     * Set address
+     *
+     * Sets the address this set
+     *
+     * @param \snac\data\AddressLine[] $address The address to use
+     */
+    public function setAddress($address) {
+        $this->address = $address;
+    }
+
+    /**
+     * Get Address
+     *
+     * Gets the address associated with this place
+     *
+     * @return \snac\data\AddressLine[] The address as a set of lines
+     */
+    public function getAddress() {
+        return $this->address;
+    }
+
+    /**
      * Get the original place name
      *
      * @return string $original original place name
@@ -329,11 +375,15 @@ class Place extends AbstractData {
             "original" => $this->original,
             "type" => $this->type == null ? null : $this->type->toArray($shorten),
             "role" => $this->role == null ? null : $this->role->toArray($shorten),
+            "address" => array(),
             "geoplace" => $this->geoTerm == null ? null : $this->geoTerm->toArray($shorten),
             "score" => $this->score,
             "confirmed" => $this->confirmed,
             "note" => $this->note
         );
+        
+        foreach ($this->address as $i => $v)
+            $return["address"][$i] = $v->toArray($shorten);
 
         $return = array_merge($return, parent::toArray($shorten));
 
@@ -396,6 +446,13 @@ class Place extends AbstractData {
         else
             $this->note = null;
 
+        unset($this->address);
+        $this->address = array();
+        if (isset($data["address"]))
+            foreach ($data["address"] as $i => $entry)
+                if ($entry != null)
+                    $this->address[$i] = new \snac\data\AddressLine($entry);
+
         return true;
     }
 
@@ -434,6 +491,9 @@ class Place extends AbstractData {
             return false;
         if (($this->getGeoTerm() != null && ! $this->getGeoTerm()->equals($other->getGeoTerm())) ||
                  ($this->getGeoTerm() == null && $other->getGeoTerm() != null))
+            return false;
+        
+        if (!$this->checkArrayEqual($this->getAddress(), $other->getAddress(), $strict))
             return false;
         
         return true;

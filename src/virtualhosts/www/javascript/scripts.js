@@ -6,6 +6,55 @@ var somethingHasBeenEdited = false;
 // Global Undo Set
 var undoSet = new Array();
 
+// Global map
+var geoMapView = null;
+
+/**
+ * Open the GeoPlace display
+ *
+ * @return boolean false to play nice with the browser
+ */
+function openGeoPlaceViewer(id) {
+
+    $("#geoPlaceInfo").html("<p class='text-center'>Loading...</p>");
+    $("#geoPlaceInfoPane").modal();
+
+    $.get("?command=vocabulary&subcommand=read&type=geoPlace&id="+id, null, function (data) {
+        if (data.result && data.result == "success" && data.term) {
+            // Remove the old map
+            if (geoMapView != null) {
+                geoMapView.remove();
+                geoMapView = null;
+                $("#geoPlaceMap").html("");
+            }
+
+            // Add a slight delay to the map viewing so that the modal window has time to load
+            setTimeout(function() {
+                // Create the Map and add it
+                geoMapView = L.map('geoPlaceMap').setView([data.term.latitude, data.term.longitude], 6);
+                L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                }).addTo(geoMapView);
+                var marker = L.marker([data.term.latitude, data.term.longitude]).addTo(geoMapView);
+
+                // Add the data about the GeoTerm
+                var html = "<h3>" + data.term.name + "</h3>" +
+                            "<p>" +
+                                "<strong>URI:</strong> " + data.term.uri + " <a class=\"label label-info\" target=\"_blank\" href=\"" + data.term.uri + "\">View</a>" + "<br/>" +
+                                "<strong>Administration Code:</strong> " + data.term.administrationCode + "<br/>" +
+                                "<strong>Country Code:</strong> " + data.term.countryCode + "<br/>" +
+                                "<strong>Location:</strong> (" + data.term.latitude + ", " + data.term.longitude + ")" +
+                            "</p>";
+                $("#geoPlaceInfo").html(html);
+            }, 200);
+        }
+
+    });
+
+    return false;
+}
+
 /**
  * Display Error message
  *
@@ -482,6 +531,27 @@ function subMakeEditable(short, i) {
         textToDate(short, i);
     }
 
+    // Make things re-orderable if something exists
+    // $( "#nameEntry_component_ui_0" ).sortable({  // id of the container containing sortable things
+    //      items       : '.name_component'         // class of the things that are sortable.  They MUST have ids
+    // });
+    $("#"+short+"_datapart_" + i + " span.move-handle").each(function() {
+        $(this).removeClass("snac-hidden");
+    });
+    $( "#"+short+"_reorderable_"+i ).sortable({
+          items       : '.reorderable',
+          opacity     : 0.5,
+          update      : function( event, ui ) {
+              var neworder = $( "#"+short+"_reorderable_"+i ).sortable("toArray");
+              console.log(neworder);
+              neworder.forEach(function(orderedID, index) {
+                    $("#"+orderedID + " input.order-index").val(index);
+              });
+              if (short == "nameEntry") 
+                    updateNameEntryHeading(i);
+          }
+    });
+
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
     	$("#" + short + "_operation_" + i).val("update");
@@ -510,6 +580,12 @@ function subMakeUneditable(shortName, i) {
     var idstr = "_" + i;
 
 
+    // Turn off the reordering js
+    $("#"+shortName+"_datapart_" + i + " span.move-handle").each(function() {
+        $(this).addClass("snac-hidden");
+    });
+    if ($( "#"+shortName+"_reorderable_"+i ).hasClass("ui-sortable"))
+        $( "#"+shortName+"_reorderable_"+i ).sortable("destroy");
 
     // Remove CodeMirror editors
     $("#"+shortName+"_datapart_" + i + " textarea[id^='"+shortName+"_']").each(function() {
@@ -549,6 +625,7 @@ function subMakeUneditable(shortName, i) {
         selectToText(shortName, i);
         dateToText(shortName,i);
     }
+
 
     // Clear the operation flags
     //$("#" + shortName + "_operation_" + i).val("");
@@ -651,7 +728,7 @@ function makeSCMUneditable(shortName, i, j) {
     var idstr = j + "_" + i;
 
     subMakeUneditable('scm_'+shortName, idstr);
-    
+
     // restore the edit button
     $("#scm_" + shortName + "_editbutton_" + idstr).addClass("list-group-item-info").removeClass("list-group-item-warning");
     $("#scm_" + shortName + "_editbutton_" + idstr).html("<span class=\"fa fa-pencil-square-o\"></span>");
@@ -872,6 +949,36 @@ function turnOnSCMButtons(shortName, i, j) {
     $("#scm_"+shortName+"_deletebutton_"+j+"_"+i).on("click", function() {
         setSCMDeleted(shortName, i, j);
     });
+}
+
+/**
+ * Create a new Address Line object on page
+ *
+ * Puts a new Place Address Line object DIV on the page and attaches it correctly to the DOM and javascript.
+ *
+ * @param  int     i    The index on the page of the place to add this component to
+ * @return boolean      false to play nice with the browser.
+ */
+function newAddressLine(i) {
+	var nextid = 1;
+	if ($('#place_address_next_j_'+i).exists()) {
+	    nextid = parseInt($('#place_address_next_j_'+i).text());
+	}
+	console.log("Creating new address line for place " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#addressline_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#place_address_add_div_'+i).before(html);
+
+    $('#place_address_' + nextid + '_operation_' + 1).val("insert");
+    subMakeEditable("place_address_" + nextid, i);
+
+    vocab_select_replace($("#place_address_"+nextid+"_type_id_"+i), "_"+i, 'address_part', 0);
+
+    // Put the updated version number back in the DOM
+    $('#place_address_next_j_'+i).text(++nextid);
+
+    return false;
 }
 
 /**
@@ -1350,6 +1457,26 @@ $(document).ready(function() {
 	        return false;
 		});
 	}
+
+
+    var entityIDid = 1;
+    if ($('#next_entityID_i').exists()) {
+        entityIDid = parseInt($('#next_entityID_i').text());
+    }
+    console.log("Next entityID ID: " + entityIDid);
+    if ($('#btn_add_entityID').exists()){
+        $('#btn_add_entityID').click(function(){
+            somethingHasBeenEdited = true;
+            var text = $('#entityID_template').clone();
+            var html = text.html().replace(/ZZ/g, entityIDid);
+            $('#add_entityID_div').after(html);
+            turnOnButtons("entityID", entityIDid);
+            turnOnTooltips("entityID", entityIDid);
+            makeEditable("entityID", entityIDid);
+            entityIDid = entityIDid + 1;
+            return false;
+        });
+    }
 
 	var sourceid = 1;
 	if ($('#next_source_i').exists()) {
