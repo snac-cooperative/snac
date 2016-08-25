@@ -570,6 +570,7 @@
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
@@ -630,6 +631,7 @@
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3ntxf5186--sga9u2l9iboc",
@@ -698,6 +700,7 @@
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
@@ -758,6 +761,7 @@
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nyv8gloo-1mqax06e8pe1d",
@@ -826,6 +830,7 @@
                 "uri": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nzaj2p6v--hrd7lqok52tn",
@@ -941,7 +946,7 @@
                 "notAfter": null
             },
             "isRange": true,
-            "note": "\n               \n            ",
+            "note": "<p>Date de cr\u00e9ation incertaine.<\/p>",
             "id": null,
             "version": null,
             "operation": null,

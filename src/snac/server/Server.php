@@ -123,6 +123,11 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->searchVocabulary($this->input);
                 break;
 
+            // Vocabulary Reading
+            case "read_vocabulary":
+                $this->response = $executor->readVocabulary($this->input);
+                break;
+
             // Reconciliation Engine tasks
             case "reconcile":
                 $this->response = $executor->reconcileConstellation($this->input);
@@ -224,7 +229,7 @@ class Server implements \snac\interfaces\ServerInterface {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to delete constellations.");
                 $this->response = $executor->deleteConstellation($this->input);
                 break;
-            
+
             case "reassign_constellation":
                 if (!$executor->hasPermission("Change Locks"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to reassign constellations.");
@@ -244,7 +249,7 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "edit":
-                if (!$executor->hasPermission("Edit")) { 
+                if (!$executor->hasPermission("Edit")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to edit constellations.");
                 }
                 $this->response = $executor->editConstellation($this->input);

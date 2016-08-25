@@ -148,7 +148,10 @@ class EACCPFSerializer {
          * $data['currentDate'] = date('c');
          */ 
         $data['currentDate'] = date('Y-m-d');
-        $data['versionHistory'] = $dbu->readVersionHistory($expCon['id']);
+        $data['versionHistory'] = array();
+        if (array_key_exists('id', $expCon)) {
+            $dbu->readVersionHistory($expCon['id']);
+        }
 
         /* 
          * $cfile = fopen('cpf_data.txt', 'w');

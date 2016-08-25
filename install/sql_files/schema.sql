@@ -66,7 +66,8 @@ drop table if exists contributor;
 -- these shouldn't even be in the database anymore
 drop table if exists place;
 drop table if exists geoplace;
-
+drop table if exists address_line;
+drop table if exists unassigned_arks;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -349,6 +350,8 @@ create table name (
     primary key(id, version)
     );
 
+create index name_idx1 on name (ic_id, version);
+
 -- Parsed components of name string. There are multiple of these per one name.
 
 -- Note: no ic_id because this table only related to name.id, and through that to the identity
@@ -389,6 +392,7 @@ create table name_contributor (
     );
 
 create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
+create unique index name_contributor_idx2 on name_contributor(id,name_id,version);
 
 -- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
 -- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
@@ -844,6 +848,22 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
+-- Address lines from a place_link 
+
+create table address_line (
+             id int default nextval('id_seq'),
+       place_id int,  -- fk to place.id
+          ic_id int,  -- fk to place.id
+        version int,
+     is_deleted boolean default false,
+          label int,  -- typeID, getType() fk to vocabulary.id: City, State, Street, etc..
+          value text, -- text, getText(), the string value of the address line
+     line_order int,  -- line order within this address/place, as entered.
+        primary key(id, version)
+    );
+
+create unique index address_line_idx1 on address_line(id,place_id,version);
+
 -- Maybe SameAs links, a binary relationship between Constellations that may be the same
 
 create table maybe_same (
@@ -884,4 +904,9 @@ create table appuser_group_link (
         uid        int,                -- fk to appuser.id
         gid        int,                -- fk to appuser_group.id
         is_default boolean default 'f' -- this group is a default for the given user
+);
+
+-- Table for the arks that the system may assign (queue)
+create table unassigned_arks (
+           ark text
 );

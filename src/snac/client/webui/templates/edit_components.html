@@ -24,6 +24,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
             <ul class="dropdown-menu">
+                <li><a href="#entityID" role="tab" data-toggle="tab">Other Entity IDs (Same As)</a></li>
                 <li><a href="#sameAs" role="tab" data-toggle="tab">External CPF (Same As)</a></li>
                 <li><a href="#constellationRelations" role="tab" data-toggle="tab">Internal CPF Relations</a></li>
                 <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
@@ -108,7 +109,7 @@
                     <label class="control-label col-xs-4" data-content="{{X.nameComponents.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.nameComponents.display }}
                     </label>
-                    <div class="col-xs-8 well well-sm">
+                    <div class="col-xs-8 well well-sm" id="nameEntry_reorderable_{{i}}">
                         {% set j = 0 %}
                         {% for component in nameEntry.components %}
                             {{ components.displayComponent(X, inEdit, showSubElements, component, i, j) }}
@@ -173,7 +174,7 @@
 {% endmacro %}
 
 {% macro displayComponent(X, inEdit, showSubElements, component, i, j) %}
-        <div class="col-xs-12" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+        <div class="col-xs-12 reorderable" id="nameEntry_component_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
             <div id="nameEntry_component_{{j}}_datapart_{{i}}">
                 <input type="hidden" id="nameEntry_component_{{j}}_id_{{i}}"
                     name="nameEntry_component_{{j}}_id_{{i}}"
@@ -184,8 +185,13 @@
                 <input type="hidden" id="nameEntry_component_{{j}}_operation_{{i}}"
                     name="nameEntry_component_{{j}}_operation_{{i}}"
                     value="{{component.operation}}"/>
+                <input type="hidden" class="order-index" id="nameEntry_component_{{j}}_order_{{i}}"
+                    name="nameEntry_component_{{j}}_order_{{i}}"
+                    value="{{j}}"/>
                 <div>
                     <div class="input-group select2-bootstrap-append">
+                        <span class="input-group-addon move-handle sizing-addon3 snac-hidden"><i class="fa fa-bars" aria-hidden="true"></i>
+                        </span>
                         <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 50%">
                             <input id="nameEntry_component_{{j}}_type_id_{{i}}"
                                 name="nameEntry_component_{{j}}_type_id_{{i}}"
@@ -351,6 +357,44 @@
 
                 {{ widgets.scmModal(X, inEdit, showSubElements, "sameAs", i, other.uri, "Same-As Relation", other) }}
                 {{ widgets.optionsList(X, inEdit, showSubElements, "sameAs", i) }}
+            </div>
+        </div>
+
+{% endmacro %}
+
+{% macro displayEntityID(X, inEdit, showSubElements, other, i) %}
+    {% import 'widgets.html' as widgets %}
+        <div class="panel panel-default" id="entityID_panel_{{i}}">
+            <div class="panel-body">
+                <div class="col-xs-10" id="entityID_datapart_{{i}}">
+                    <input id="entityID_id_{{i}}" name="entityID_id_{{i}}" type="hidden" value="{{ other.id }}"/>
+                    <input id="entityID_version_{{i}}" name="entityID_version_{{i}}" type="hidden" value="{{ other.version }}"/>
+                    <input id="entityID_operation_{{i}}" name="entityID_operation_{{i}}" type="hidden" value="{{ other.operation }}"/>
+                    <div class="form-group">
+                        <label for="entityID_text_{{ i }}" class="control-label col-xs-4" data-content="{{X.entityIdText.tooltip}}" data-toggle="popover" data-placement="top">
+                           {{ X.entityIdText.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_entityID_text_{{i}}">
+                            <input id="entityID_text_{{i}}" name="entityID_text_{{i}}" type="hidden" class="form-control" value="{{ other.text }}"/>
+                            <p class="form-control-static">{{ other.text }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entityID_type_{{ i }}" class="control-label col-xs-4" data-content="{{X.entityIdType.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.entityIdType.display }}
+                        </label>
+                        <div class="col-xs-8" id="select_entityID_type_{{i}}">
+                            <input id="entityID_type_id_{{i}}" name="entityID_type_id_{{i}}" type="hidden" class="form-control" value="{{ other.type.id }}"/>
+                            <input id="entityID_type_term_{{i}}" name="entityID_type_term_{{i}}" type="hidden" class="form-control" value="{{ other.type.term }}"/>
+                            <input id="entityID_type_vocabtype_{{i}}" name="entityID_type_vocabtype_{{i}}" type="hidden" class="form-control" value="entityid_type"/>
+                            <input id="entityID_type_minlength_{{i}}" name="entityID_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                            <p class="form-control-static">{{ other.type.term }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{ widgets.scmModal(X, inEdit, showSubElements, "entityID", i, other.text, "Entity ID", other) }}
+                {{ widgets.optionsList(X, inEdit, showSubElements, "entityID", i) }}
             </div>
         </div>
 
@@ -791,6 +835,7 @@
 
 {% macro displayPlace(X, inEdit, showSubElements, place, i) %}
     {% import 'widgets.html' as widgets %}
+    {% import _self as components %}
         <div class="panel panel-default" id="place_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="place_datapart_{{i}}">
@@ -813,7 +858,7 @@
                         <div class="col-xs-8" id="select_place_type_{{i}}">
                             <input id="place_type_id_{{i}}" name="place_type_id_{{i}}" type="hidden" class="form-control" value="{{ place.type.id }}"/>
                             <input id="place_type_term_{{i}}" name="place_type_term_{{i}}" type="hidden" class="form-control" value="{{ place.type.term }}"/>
-                            <input id="place_type_vocabtype_{{i}}" name="place_type_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                            <input id="place_type_vocabtype_{{i}}" name="place_type_vocabtype_{{i}}" type="hidden" class="form-control" value="place_type"/>
                             <input id="place_type_minlength_{{i}}" name="place_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
                             <p class="form-control-static">{{ place.type.term }}</p>
                         </div>
@@ -825,9 +870,33 @@
                         <div class="col-xs-8" id="select_place_role_{{i}}">
                             <input id="place_role_id_{{i}}" name="place_role_id_{{i}}" type="hidden" class="form-control" value="{{ place.role.id }}"/>
                             <input id="place_role_term_{{i}}" name="place_role_term_{{i}}" type="hidden" class="form-control" value="{{ place.role.term }}"/>
-                            <input id="place_role_vocabtype_{{i}}" name="place_role_vocabtype_{{i}}" type="hidden" class="form-control" value="place_match"/>
+                            <input id="place_role_vocabtype_{{i}}" name="place_role_vocabtype_{{i}}" type="hidden" class="form-control" value="place_role"/>
                             <input id="place_role_minlength_{{i}}" name="place_role_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
                             <p class="form-control-static">{{ place.role.term }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4" data-content="{{X.address.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.address.display }}
+                        </label>
+                        <div class="col-xs-8 well well-sm" id="place_reorderable_{{i}}">
+                            {% set j = 0 %}
+                            {% for part in place.address %}
+                                {{ components.displayAddressLine(X, inEdit, showSubElements, part, i, j) }}
+                                {% set j = j + 1 %}
+                            {% endfor %}
+
+                            <span id='place_address_next_j_{{i}}' style='display:none;'>{{j}}</span>
+
+                            <div class="form-group" id="place_address_add_div_{{i}}">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success snac-hidden" id="place_address_add_{{i}}"
+                                        onClick="return newAddressLine({{i}});" disabled>
+                                        <span class="glyphicon glyphicon-plus-sign"></span> Add Line
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                     <div class="form-group">
@@ -839,7 +908,12 @@
                             <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
                             <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
                             <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="4"/>
-                            <p class="form-control-static">{{ place.geoplace.name }}</p>
+                            <p class="form-control-static">
+                                {{ place.geoplace.name }}
+                                {% if place.geoplace.id %}
+                                    <a class="label label-info" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;">View</a>
+                                {% endif %}
+                            </p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -877,6 +951,65 @@
                 {{ widgets.scmModal(X, inEdit, showSubElements, "place", i, place.original, "Place", place) }}
                 {{ widgets.optionsList(X, inEdit, showSubElements, "place", i) }}
 
+            </div>
+        </div>
+
+{% endmacro %}
+
+{% macro displayAddressLine(X, inEdit, showSubElements, address, i, j) %}
+        <div class="col-xs-12 reorderable" id="place_address_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+            <div id="place_address_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="place_address_{{j}}_id_{{i}}"
+                    name="place_address_{{j}}_id_{{i}}"
+                    value="{{address.id}}"/>
+                <input type="hidden" id="place_address_{{j}}_version_{{i}}"
+                    name="place_address_{{j}}_version_{{i}}"
+                    value="{{address.version}}"/>
+                <input type="hidden" id="place_address_{{j}}_operation_{{i}}"
+                    name="place_address_{{j}}_operation_{{i}}"
+                    value="{{address.operation}}"/>
+                <input type="hidden" class="order-index" id="place_address_{{j}}_order_{{i}}"
+                    name="place_address_{{j}}_order_{{i}}"
+                    value="{{j}}"/>
+                <div>
+                    <div class="input-group select2-bootstrap-append">
+                        <span class="input-group-addon move-handle sizing-addon3 snac-hidden"><i class="fa fa-bars" aria-hidden="true"></i>
+                        </span>
+                        <div id="select_place_address_{{j}}_type_{{i}}" style="width: 50%">
+                            <input id="place_address_{{j}}_type_id_{{i}}"
+                                name="place_address_{{j}}_type_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ address.type.id }}"/>
+                            <input id="place_address_{{j}}_type_term_{{i}}"
+                                name="place_address_{{j}}_type_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ address.type.term }}"/>
+                            <input id="place_address_{{j}}_type_vocabtype_{{i}}"
+                                name="place_address_{{j}}_type_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="address_part"/>
+                            <input id="place_address_{{j}}_type_minlength_{{i}}"
+                                name="place_address_{{j}}_type_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="place_address_{{j}}_type_placeholder_{{i}}"
+                                type="hidden" value="Part"/>
+                            <p class="form-control-static">{{ address.type.term }}</p>
+                        </div>
+                        <div id="text_place_address_{{j}}_text_{{i}}" style="width: 50%; clear: none; float: left;">
+                            <input type="hidden" name="place_address_{{j}}_text_{{i}}" id="place_address_{{j}}_text_{{i}}"
+                                class="form-control" value="{{ address.text  }}">
+                            <p class="form-control-static">{{ address.text }}</p>
+                        </div>
+
+
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger snac-hidden"
+                                id="place_address_{{j}}_remove_{{i}}" disabled
+                                onClick="setRepeatedDataDeleted('place_address_{{j}}', '{{i}}'); return false;">
+                                <span class="glyphicon glyphicon-minus-sign"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
 

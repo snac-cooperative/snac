@@ -181,6 +181,18 @@ td.rotate > div > span {
     padding: 5px 10px;
 }
 
+
+.geoplace-map {
+    height: 300px;
+}
+
+
+.move-handle {
+    border: 0;
+    background: transparent;
+    cursor: grab;
+}
+
 /* centered columns styles */
 .row-centered {
     text-align:center;
@@ -280,6 +292,7 @@ button.list-group-item-review.active:focus {
 .panel-review > .panel-footer + .panel-collapse > .panel-body {
     border-bottom-color: #FBDECE;
 }
+
 
 
 @media (min-width: 992px) {
