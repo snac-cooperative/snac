@@ -16,6 +16,7 @@
 namespace snac\server;
 
 use League\OAuth2\Client\Token\AccessToken;
+use snac\server\database\DBUtil;
 /**
  * Server Executor Class
  *
@@ -851,7 +852,7 @@ class ServerExecutor {
                 // is currently editing for the user, THEN unlock it.  Else, send back a note to the client with a failure
 
                 // Read the current summary
-                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+                $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 // If the admin user has the current version AND permission to change locks
                 if ($current->getVersion() == $constellation->getVersion() && $this->hasPermission("Change Locks")) {
@@ -914,7 +915,7 @@ class ServerExecutor {
                 // is currently editing for the user, THEN unlock it.  Else, send back a note to the client with a failure
 
                 // Read the current summary
-                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+                $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 $inList = false;
                 $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
@@ -986,7 +987,7 @@ class ServerExecutor {
                 // is currently editing for the user, THEN send it for review it.  Else, send back a note to the client with a failure
 
                 // Read the current summary
-                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+                $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 $inList = false;
                 $userList = array_merge(
@@ -1060,7 +1061,7 @@ class ServerExecutor {
                 // Check the status of the constellation.  Make sure the input has the old version number (read the summary)
                 // and then only publish if the user has permission (it was locked to them, etc).
 
-                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+                $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 $inList = false;
                 $userList = array_merge(
@@ -1091,7 +1092,7 @@ class ServerExecutor {
 
                     // Read in the constellation from the database to update elastic search
                     //      currently, we only need the summary for the name entries
-                    $published = $this->cStore->readPublishedConstellationByID($constellation->getID(), true);
+                    $published = $this->cStore->readPublishedConstellationByID($constellation->getID(), DBUtil::$READ_ALL_NAMES);
 
                     // add to elastic search
                     $eSearch = null;
@@ -1164,7 +1165,7 @@ class ServerExecutor {
                 // Check the status of the constellation.  Make sure the input has the old version number (read the summary)
                 // and then only publish if the user has permission (it was locked to them, etc).
 
-                $current = $this->cStore->readConstellation($constellation->getID(), null, true);
+                $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
                 $inList = false;
                 $userList = array_merge(
@@ -1363,7 +1364,7 @@ class ServerExecutor {
                 // if that constellation is attached to that user.  So, need to loop through the constellations for that user
 
                 // Read the current summary
-                $current = $this->cStore->readConstellation($cId, null, true);
+                $current = $this->cStore->readConstellation($cId, null, DBUtil::$READ_NRD);
 
                 $inList = false;
                 $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing");

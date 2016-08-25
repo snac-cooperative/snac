@@ -51,6 +51,28 @@ use \snac\server\validation\validators\HasOperationValidator;
  */
 class DBUtil
 {
+
+    /**
+     * The following are constants that are used when reading a constellation.  They should be ORed together.
+     *
+     * EX: FULL_CONSTELLATION = READ_NRD | READ_PREFERRED_NAME | READ_ALL_NAMES | READ_BIOGHIST | READ_ALL_BUT_RELATIONS | READ_RELATIONS
+     * EX2: summary1 = READ_NRD | READ_PREFERRED_NAME | READ_ALL_NAMES
+     *
+     */
+
+    public static $FULL_CONSTELLATION = 63;
+    public static $READ_ALL_BUT_RELATIONS = 31;
+    public static $READ_FULL_SUMMARY = 15;
+    public static $READ_SHORT_SUMMARY = 11;
+    public static $READ_MICRO_SUMMARY = 3;
+
+    public static $READ_NRD = 1;
+    public static $READ_PREFERRED_NAME = 2;
+    public static $READ_ALL_NAMES = 4;
+    public static $READ_BIOGHIST = 8;
+    public static $READ_OTHER_EXCEPT_RELATIONS = 16;
+    public static $READ_RELATIONS = 32;
+
     /**
      * SQL object
      *
@@ -363,7 +385,7 @@ class DBUtil
      * @return \snac\data\Constellation|boolean A PHP constellation object or false if none found.
      *
      */
-    public function readPublishedConstellationByARK($arkID, $summary=false)
+    public function readPublishedConstellationByARK($arkID, $flags=0)
     {
         $mainID = $this->sql->selectMainID($arkID);
         if ($mainID)
@@ -371,7 +393,7 @@ class DBUtil
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
             if ($version)
             {
-                $cObj = $this->readConstellation($mainID, $version, $summary);
+                $cObj = $this->readConstellation($mainID, $version, $flags);
                 return $cObj;
             }
         }
@@ -389,12 +411,12 @@ class DBUtil
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */
-    public function readPublishedConstellationByID($mainID, $summary=false)
+    public function readPublishedConstellationByID($mainID, $flags=0)
     {
         $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
         if ($version)
         {
-            $cObj = $this->readConstellation($mainID, $version, $summary);
+            $cObj = $this->readConstellation($mainID, $version, $flags);
             return $cObj;
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
@@ -502,7 +524,7 @@ class DBUtil
             $constellationList = array();
             foreach ($infoList as $idVer)
             {
-                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], true);
+                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], DBUtil::$READ_NRD | DBUtil::$READ_PREFERRED_NAME);
                 array_push($constellationList, $cObj);
             }
             return $constellationList;
@@ -562,7 +584,7 @@ class DBUtil
             $constellationList = array();
             foreach ($infoList as $idVer)
             {
-                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], true);
+                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], DBUtil::$READ_NRD | DBUtil::$READ_PREFERRED_NAME);
                 array_push($constellationList, $cObj);
             }
             return $constellationList;
@@ -660,52 +682,62 @@ class DBUtil
      * @return \snac\data\Constellation A PHP constellation object.
      *
      */
-    private function selectConstellation($vhInfo, $summary=false)
+    private function selectConstellation($vhInfo, $flags=0)
     {
+        // Update the flags, if needed, to be the full constellation
+        if ($flags == 0)
+            $flags = DBUtil::$FULL_CONSTELLATION;
+
         // empty data cache
         $this->dataCache = array();
 
         $tableName = 'version_history';
         $cObj = new \snac\data\Constellation();
+
+        // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        $this->populateNameEntry($vhInfo, $cObj);
-        /*
-         * If any true value in $summary, only return a summary (partial) constellation constising of data
-         * from nrd and name_entry. Yes, we are returning from the middle of the function when doing a
-         * summary.
-         */
-        if ($summary)
-        {
-            return $cObj;
+
+        // If the caller has requested any names, then we should pull them out
+        if ($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME) != 0) {
+            $getAllNames = false;
+            if ($flags & DBUtil::$READ_ALL_NAMES != 0)
+                $getAllNames = true;
+            $this->populateNameEntry($vhInfo, $cObj, $getAllNames);
         }
-        /*
-         * Constellation SCM aka populateMeta() call moved here from populateNrd() because it is *not* the scm
-         * for table nrd.
-         */
 
-        $this->populateMetaCache($vhInfo);
-        $this->populateDateCache($vhInfo);
+        if ($flags & (DBUtil::$READ_BIOGHIST)) {
+            $this->populateBiogHist($vhInfo, $cObj);
+        }
 
-        $this->populateMeta($vhInfo, $cObj, $tableName);
-        $this->populateBiogHist($vhInfo, $cObj);
-        $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-        $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
-        $this->populateConventionDeclaration($vhInfo, $cObj);
-        $this->populateFunction($vhInfo, $cObj);
-        $this->populateGender($vhInfo, $cObj);
-        $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
-        $this->populateLegalStatus($vhInfo, $cObj);
-        $this->populateMandate($vhInfo, $cObj);
-        $this->populateNationality($vhInfo, $cObj);
-        $this->populateOccupation($vhInfo, $cObj);
-        $this->populateOtherRecordID($vhInfo, $cObj);
-        $this->populateEntityID($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
-        $this->populateStructureOrGenealogy($vhInfo, $cObj);
-        $this->populateSubject($vhInfo, $cObj);
-        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
-        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
+        if ($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS) != 0) {
+            $this->populateMetaCache($vhInfo);
+            $this->populateDateCache($vhInfo);
+        }
+
+        if ($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS != 0) {
+            $this->populateMeta($vhInfo, $cObj, $tableName);
+            $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
+            $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
+            $this->populateConventionDeclaration($vhInfo, $cObj);
+            $this->populateFunction($vhInfo, $cObj);
+            $this->populateGender($vhInfo, $cObj);
+            $this->populateGeneralContext($vhInfo, $cObj);
+            $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
+            $this->populateLegalStatus($vhInfo, $cObj);
+            $this->populateMandate($vhInfo, $cObj);
+            $this->populateNationality($vhInfo, $cObj);
+            $this->populateOccupation($vhInfo, $cObj);
+            $this->populateOtherRecordID($vhInfo, $cObj);
+            $this->populateEntityID($vhInfo, $cObj);
+            $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
+            $this->populateStructureOrGenealogy($vhInfo, $cObj);
+            $this->populateSubject($vhInfo, $cObj);
+        }
+
+        if ($flags & DBUtil::$READ_RELATIONS != 0) {
+            $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+            $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
+        }
         /*
          * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
          */
@@ -872,7 +904,7 @@ class DBUtil
             $this->populateDate($vhInfo, $gObj, $tableName);
 
             /*
-             * Address 
+             * Address
              */
             $addressRows = $this->sql->selectAddress($gObj->getID(), $vhInfo['version']);
             foreach ($addressRows as $addr)
@@ -1076,7 +1108,7 @@ class DBUtil
      * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
      *
      */
-    private function populateNameEntry($vhInfo, $cObj)
+    private function populateNameEntry($vhInfo, $cObj, $getAll=true)
     {
         $tableName = 'name';
         $neRows = $this->sql->selectName($vhInfo);
@@ -1128,6 +1160,11 @@ class DBUtil
             $this->populateLanguage($vhInfo, $neObj, $oneName['id'], $tableName);
             $this->populateDate($vhInfo, $neObj, $tableName);
             $cObj->addNameEntry($neObj);
+
+            // If the user only asked for one name entry (not all), then return after adding the first one.
+            if ($getAll == false) {
+                return;
+            }
         }
     }
 
@@ -2977,7 +3014,7 @@ class DBUtil
      * @return \snac\data\Constellation or boolean If successful, return a constellation, else if not successful return false.
      *
      */
-    public function readConstellation($mainID, $version=null, $summary=false)
+    public function readConstellation($mainID, $version=null, $flags=0)
     {
         if (! $mainID)
         {
@@ -2993,7 +3030,7 @@ class DBUtil
         }
         $vhInfo = array('version' => $version,
                         'ic_id' => $mainID);
-        $cObj = $this->selectConstellation($vhInfo, $summary);
+        $cObj = $this->selectConstellation($vhInfo, $flags);
         if ($cObj)
         {
             /*

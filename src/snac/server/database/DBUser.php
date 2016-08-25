@@ -322,7 +322,7 @@ class DBUser
         /*
          * In fact, selectUserByEmail() returns an entire user record from the database as an associative
          * list.
-         */ 
+         */
         $appUserID = $this->sql->selectUserByEmail($email);
         if (isset($appUserID['id']))
         {
@@ -416,7 +416,7 @@ class DBUser
          * get the most recent. We pass true for $summary so that we get a summary constellation which only
          * has ic_id, entityType, ARK, Name entry.
          */
-        $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, true));
+        $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, DBUtil::$READ_MICRO_SUMMARY));
 
         $user->setPreferredRules($record['preferred_rules']);
         return $user;
@@ -1127,10 +1127,10 @@ class DBUser
      * List users in a group
      *
      * @param \snac\data\Group $group The group
-     * 
+     *
      * @param boolean $everyone optional If true list both inactive and active users. If false, only list
      * active users.
-     * 
+     *
      * @return \snac\data\User[] List of users
      */
     public function listUsersInGroup($group, $everyone=false)
