@@ -696,25 +696,29 @@ class DBUtil
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-
+        $this->enableLogging();
+        $this->logger->addDebug("The flags are set at " . $flags);
         // If the caller has requested any names, then we should pull them out
-        if ($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME) != 0) {
+        if (($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME)) != 0) {
+            $this->logger->addDebug("The user wants name(s)");
             $getAllNames = false;
-            if ($flags & DBUtil::$READ_ALL_NAMES != 0)
+            if (($flags & DBUtil::$READ_ALL_NAMES) != 0)
                 $getAllNames = true;
             $this->populateNameEntry($vhInfo, $cObj, $getAllNames);
         }
 
-        if ($flags & (DBUtil::$READ_BIOGHIST)) {
+        if (($flags & (DBUtil::$READ_BIOGHIST)) != 0) {
+            $this->logger->addDebug("The user wants BiogHist");
             $this->populateBiogHist($vhInfo, $cObj);
         }
 
-        if ($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS) != 0) {
+        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS)) != 0) {
             $this->populateMetaCache($vhInfo);
             $this->populateDateCache($vhInfo);
         }
 
-        if ($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS != 0) {
+        if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants data except relations");
             $this->populateMeta($vhInfo, $cObj, $tableName);
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
             $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
@@ -734,7 +738,8 @@ class DBUtil
             $this->populateSubject($vhInfo, $cObj);
         }
 
-        if ($flags & DBUtil::$READ_RELATIONS != 0) {
+        if (($flags & DBUtil::$READ_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants relations");
             $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
             $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
         }
@@ -1118,47 +1123,53 @@ class DBUtil
             $neObj->setOriginal($oneName['original']);
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
-            /*
-             * Contributor
-             *
-             * This line works because $oneName['id'] == $neObj->getID() after calling setDBInfo(). Both are
-             * record id, not constellation id. Both are non-null when reading from the database.
-             */
-            $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
-            foreach ($cRows as $contrib)
-            {
-                $ctObj = new \snac\data\Contributor();
-                $ctObj->setType($this->populateTerm($contrib['name_type']));
-                $ctObj->setRule($this->populateTerm($contrib['rule']));
-                $ctObj->setName($contrib['short_name']);
-                $ctObj->setDBInfo($contrib['version'], $contrib['id']);
-                $neObj->addContributor($ctObj);
+
+            // For now, only get the parts if the user requests all names
+            if ($getAll) {
+                /*
+                 * Contributor
+                 *
+                 * This line works because $oneName['id'] == $neObj->getID() after calling setDBInfo(). Both are
+                 * record id, not constellation id. Both are non-null when reading from the database.
+                 */
+                $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
+                foreach ($cRows as $contrib)
+                {
+                    $ctObj = new \snac\data\Contributor();
+                    $ctObj->setType($this->populateTerm($contrib['name_type']));
+                    $ctObj->setRule($this->populateTerm($contrib['rule']));
+                    $ctObj->setName($contrib['short_name']);
+                    $ctObj->setDBInfo($contrib['version'], $contrib['id']);
+                    $neObj->addContributor($ctObj);
+                }
+
+                /*
+                 * Component
+                 */
+                $componentRows = $this->sql->selectComponent($neObj->getID(), $vhInfo['version']);
+                foreach ($componentRows as $cp)
+                {
+                    /*
+                     * | class         | json key        | php property                        | getter     | setter      | SQL field   |
+                     * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
+                     * | NameComponent | "text"          | $this->text                         | getText()  | setText()   | nc_value    |
+                     * | NameComponent | "order"         | $this->order                        | getOrder() | setOrder()  | c_order     |
+                     * | NameComponent | "type"          | $this->type                         | getType()  | setType()   | nc_label    |
+                     * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
+                     */
+                    $cpObj = new \snac\data\NameComponent();
+                    $cpObj->setText($cp['nc_value']);
+                    $cpObj->setOrder($cp['c_order']);
+                    $cpObj->setType($this->populateTerm($cp['nc_label']));
+                    $cpObj->setDBInfo($cp['version'], $cp['id']);
+                    $neObj->addComponent($cpObj);
+                }
             }
 
-            /*
-             * Component
-             */
-            $componentRows = $this->sql->selectComponent($neObj->getID(), $vhInfo['version']);
-            foreach ($componentRows as $cp)
-            {
-                /*
-                 * | class         | json key        | php property                        | getter     | setter      | SQL field   |
-                 * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
-                 * | NameComponent | "text"          | $this->text                         | getText()  | setText()   | nc_value    |
-                 * | NameComponent | "order"         | $this->order                        | getOrder() | setOrder()  | c_order     |
-                 * | NameComponent | "type"          | $this->type                         | getType()  | setType()   | nc_label    |
-                 * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
-                 */
-                $cpObj = new \snac\data\NameComponent();
-                $cpObj->setText($cp['nc_value']);
-                $cpObj->setOrder($cp['c_order']);
-                $cpObj->setType($this->populateTerm($cp['nc_label']));
-                $cpObj->setDBInfo($cp['version'], $cp['id']);
-                $neObj->addComponent($cpObj);
-            }
             $this->populateMeta($vhInfo, $neObj, $tableName);
             $this->populateLanguage($vhInfo, $neObj, $oneName['id'], $tableName);
             $this->populateDate($vhInfo, $neObj, $tableName);
+            
             $cObj->addNameEntry($neObj);
 
             // If the user only asked for one name entry (not all), then return after adding the first one.

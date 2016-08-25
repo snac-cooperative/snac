@@ -354,16 +354,16 @@ class DBUser
         $newUser = null;
         if ($newUserRec = $this->sql->selectUserByID($user->getUserID()))
         {
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         else if ($newUserRec = $this->sql->selectUserByUserName($user->getUserName()))
         {
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         else if ($newUserRec = $this->sql->selectUserByEmail($user->getEmail()))
         {
             // Warning: the returned user may not be the only user with the given email address.
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         if ($newUser)
         {
@@ -382,10 +382,11 @@ class DBUser
      * After calling this you probably want to call addSession().
      *
      * @param string[] $record A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     * @param \snac\data\User $userQuery optional User object with query data to read the user out of the database
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    private function populateUser($record)
+    private function populateUser($record, $userQuery=null)
     {
         $user = new \snac\data\User();
         $user->setUserID($record['id']);
@@ -416,7 +417,11 @@ class DBUser
          * get the most recent. We pass true for $summary so that we get a summary constellation which only
          * has ic_id, entityType, ARK, Name entry.
          */
-        $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, DBUtil::$READ_MICRO_SUMMARY));
+        if ($userQuery != null && $userQuery->getAffiliation()->getID() == $record['affiliation']) {
+            $user->setAffiliation($userQuery->getAffiliation());
+        } else {
+            $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, DBUtil::$READ_MICRO_SUMMARY));
+        }
 
         $user->setPreferredRules($record['preferred_rules']);
         return $user;
