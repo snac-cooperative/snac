@@ -417,7 +417,7 @@ class DBUser
          * get the most recent. We pass true for $summary so that we get a summary constellation which only
          * has ic_id, entityType, ARK, Name entry.
          */
-        if ($userQuery != null && $userQuery->getAffiliation()->getID() == $record['affiliation']) {
+        if ($userQuery != null && $userQuery->getAffiliation() != null && $userQuery->getAffiliation()->getID() == $record['affiliation']) {
             $user->setAffiliation($userQuery->getAffiliation());
         } else {
             $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, DBUtil::$READ_MICRO_SUMMARY));
