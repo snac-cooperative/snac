@@ -244,7 +244,7 @@ class DBUserTest extends \PHPUnit_Framework_TestCase
          * Hard code the ARK for UVa. This means that the UVa constellation must be in the database.
          * When second param is true, we get a summary constellation.
          */
-        $inst = $this->dbutil->readPublishedConstellationByArk('http://n2t.net/ark:/99166/w6xq0t7h', true);
+        $inst = $this->dbutil->readPublishedConstellationByArk('http://n2t.net/ark:/99166/w6xq0t7h', \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
         $userObj->setAffiliation($inst);
 
         $newUser = $this->dbu->createUser($userObj);

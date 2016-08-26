@@ -267,7 +267,7 @@ class EACCPFSerializer {
                      */
                     continue;
                 }
-                $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], true);
+                $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], \snac\server\database\DBUtil::$READ_NRD);
                 if ($relCon) {
                     /*
                      * The controlled vocabulary table has type, value (aka term) both of which are always

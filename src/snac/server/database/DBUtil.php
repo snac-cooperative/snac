@@ -52,7 +52,7 @@ use \snac\server\validation\validators\HasOperationValidator;
 class DBUtil
 {
 
-    /**
+    /*
      * The following are constants that are used when reading a constellation.  They should be ORed together.
      *
      * EX: FULL_CONSTELLATION = READ_NRD | READ_PREFERRED_NAME | READ_ALL_NAMES | READ_BIOGHIST | READ_ALL_BUT_RELATIONS | READ_RELATIONS
@@ -60,18 +60,64 @@ class DBUtil
      *
      */
 
+    /**
+     * @var int Flag to read the entire constellation 
+     */
     public static $FULL_CONSTELLATION = 63;
+
+    /**
+     * @var int Flag to read the entire constellation except relations
+     */
     public static $READ_ALL_BUT_RELATIONS = 31;
+
+    /**
+     * @var int Flag to read the nrd, name entries and biog hist only
+     */
     public static $READ_FULL_SUMMARY = 15;
+
+    /**
+     * @var int Flag to read the nrd, preferred name entry, and biog hist only 
+     */
     public static $READ_SHORT_SUMMARY = 11;
+
+    /**
+     * @var int Flag to read the nrd and first (referred) name entry only
+     */
     public static $READ_MICRO_SUMMARY = 3;
 
+
+    /**
+     * @var int Flag to read the NRD
+     */
     public static $READ_NRD = 1;
+
+    /**
+     * @var int Flag to read the Preferred Name entry (first one)
+     */
     public static $READ_PREFERRED_NAME = 2;
+
+    /**
+     * @var int Flag to read all names (including the preferred name entry)
+     */
     public static $READ_ALL_NAMES = 4;
+
+    /**
+     * @var int Flag to read the biog hist
+     */
     public static $READ_BIOGHIST = 8;
+
+    /**
+     * @var int Flag to read other data (not nrd, biogHist or names) except relations
+     */
     public static $READ_OTHER_EXCEPT_RELATIONS = 16;
+
+    /**
+     * @var int Flag to read relations
+     */
     public static $READ_RELATIONS = 32;
+
+
+
 
     /**
      * SQL object
@@ -379,8 +425,18 @@ class DBUtil
      *
      * Read a published constellation by ARK from the database.
      *
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     * 
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
+     *
      * @param string $arkID An ARK
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read 
      *
      * @return \snac\data\Constellation|boolean A PHP constellation object or false if none found.
      *
@@ -406,8 +462,18 @@ class DBUtil
      *
      * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.
      *
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     * 
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
+     *
      * @param integer $mainID A constellation id
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read 
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */
@@ -652,32 +718,26 @@ class DBUtil
     }
 
     /**
-     * Fill in a constellation.
+     * Fill a constellation object from the database
      *
-     * Call all necessary functions to essentially traverse the constellation, getting all data from the
-     * database.
+     * Given the id and version number for the Constellation to read, this function does the work of getting
+     * that information from the database and populating a Constellation object.  It understands the flags
+     * available to read partial constellations, fills out the parts of the constellation requested, and
+     * returns the constellation.  This does no checking on the id and version number passed, so if they
+     * are not valid, this method will return an empty constellation object.
      *
-     * Calling overview: readConstellation() calls selectConstellation() which calls many populate*() functions each of
-     * which call one or more select*() SQL functions.
-     *
-     * This function serves two purposes. First, it simplfies the API so that all outside code sees
-     * something high level. Second, it wraps all the mid-level functions that know something about structure
-     * of objects. Each populate*() function knows how to populate its own object. selectConstellation() only
-     * knows the list of populate*() functions to call. By factoring the code to have 4 levels of functions,
-     * we avoid massive copy/paste. Each of the 4 levels does some bookkeeping appropriate to its level, so
-     * this architecture is not merely to make the code more legible.
-     *
-     * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
-     * $vhInfo arg, but populateDate(), populateConstellationSource(), and populateLanguage() rely on the
-     * internals of the constellation object.
-     *
-     * We always need nrd data for ARK and entity type, and we always need the name. The constellation
-     * object has mainID and version. That is enough data to render the user interface.
-     *
-     * Use readConstellation() as the public API. This is private.
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     * 
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param integer[] $vhInfo An associative list with keys 'version', 'ic_id'. Values are integers.
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read 
      *
      * @return \snac\data\Constellation A PHP constellation object.
      *
@@ -3007,20 +3067,22 @@ class DBUtil
      *
      * Read constellation ID $mainID from the database.
      *
-     * This the public exposed interface function to read constellation data from the db, and handles a bit of
-     * bookkeeping. It might be possible to move the logic here into selectConstellation(), but I can't see a
-     * compelling reason to do that. The word "select" is reserved for SQL functions, so selectConstellation()
-     * really should be renamed, and we really do not want a public API function with "select" in the name.
-     *
-     * If we need to do any read related bookkeeping, do it here, and not in the lower level code.
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     * 
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param integer $mainID A constellation ID number
      *
      * @param integer $version optional An optional version number. When not supplied this function will look
      * up the most recent version, regardless of status.
      *
-     * @param boolean $summary Any true value means return a summary constellation. Defaults to false which is
-     * return the full constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read 
      *
      * @return \snac\data\Constellation or boolean If successful, return a constellation, else if not successful return false.
      *
