@@ -288,6 +288,8 @@ class DBUtil
 
         // Term Cache
         $this->termCache = array();
+
+        $this->enableLogging();
     }
 
     /**
@@ -487,7 +489,6 @@ class DBUtil
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
         // force asking for a published constellation. Returning false means the request didn't work.
-        $this->enableLogging();
         $this->logDebug(sprintf("Warning: cannot get constellation id: $mainID (This is expected for test testFullCPFWithEditList)"));
         return false;
     }
@@ -756,7 +757,6 @@ class DBUtil
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        $this->enableLogging();
         $this->logger->addDebug("The flags are set at " . $flags);
         // If the caller has requested any names, then we should pull them out
         if (($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME)) != 0) {
@@ -1804,7 +1804,6 @@ class DBUtil
             else
             {
                 $msg = sprintf("Cannot add Source to class: %s\n", $class);
-                $this->enableLogging();
                 $this->logDebug($msg);
                 throw new \snac\exceptions\SNACDatabaseException($msg);
             }
@@ -2816,7 +2815,6 @@ class DBUtil
         }
         else
         {
-            $this->enableLogging();
             $this->logDebug("DBUtil.php Error: bad status $status\n");
         }
         return false;
@@ -2887,7 +2885,6 @@ class DBUtil
         $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
         $status = $defaultStatus;
         if ($user == null || $user->getUserID() == null) {
-            $this->enableLogging();
             $this->logDebug("dbutil user or userid is null");
             return false;
         }
@@ -2947,7 +2944,6 @@ class DBUtil
         else
         {
             $json = $cObj->toJSON();
-            $this->enableLogging();
             $opErrorMsg = sprintf("Error: Bad operation: $op\n%s", $json);
             $this->logDebug($opErrorMsg);
             throw new \snac\exceptions\SNACException($opErrorMsg);
@@ -2968,12 +2964,10 @@ class DBUtil
         if (!$ve->validateConstellation($cObj))
         {
             // problem
-            $this->enableLogging();
             $this->logDebug(sprintf("Error: Validation failed: %s", $ve->getErrors()));
         }
         if (! $status)
         {
-            $this->enableLogging();
             $msg = sprintf("Error: writeConstellation() cannot determine version status.\n");
             $msg .= sprintf("operation: %s mainID: %s\n",
                             $op, $mainID);
@@ -3543,7 +3537,6 @@ class DBUtil
             $snCount = $this->sql->siblingNameCount($cObj->getID());
             if (($table == 'name') && ($snCount <= 1))
             {
-                $this->enableLogging();
                 $this->logDebug(sprintf("DBUtil.php Error: Cannot delete the only name for id: %s count: %s\n",
                                         $cObj->getID(),
                                         $this->sql->siblingNameCount($cObj->getID())));
@@ -3556,7 +3549,6 @@ class DBUtil
         else
         {
             // Warn the user and write into the log.
-            $this->enableLogging();
             $this->logDebug(sprintf("DBUtil.php Error: Cannot set deleted on class: %s table: $table json: %s\n",
                                     get_class($cObj),
                                     $cObj->toJSON()));
@@ -3603,7 +3595,6 @@ class DBUtil
         if (! isset($this->canDelete[$table]))
         {
             // Warn the user and write into the log.
-            $this->enableLogging();
             $this->logDebug(sprintf("Cannot clear deleted on table: $table"));
             return null;
         }

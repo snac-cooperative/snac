@@ -73,6 +73,7 @@ class SQL
     {
         $this->sdb = $db;
         $this->deleted = $deletedValue;
+        $this->enableLogging();
     }
 
     /**
