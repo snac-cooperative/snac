@@ -138,6 +138,7 @@ create table version_history (
 
 -- We will often select status='published' so we need an index
 create index version_history_idx1 on version_history(status);
+create index version_history_idx2 on version_history(user_id);
 
 
 -- Users of the system (editors, authors, researchers, admins etc)
