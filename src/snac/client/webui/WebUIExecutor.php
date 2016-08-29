@@ -1419,7 +1419,7 @@ class WebUIExecutor {
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'body' => [
-                            'query' => [
+                            /*'query' => [
                                     'query_string' => [
                                             'fields' => [
                                                     "nameEntry"
@@ -1428,9 +1428,18 @@ class WebUIExecutor {
                                     ]
                             ],
                             'from' => $start,
-                            'size' => $count
+                            'size' => $count*/
+                        'query' => [
+                            'match_phrase_prefix' => [
+                                'nameEntry' => [
+                                    'query' => $input["term"]
+                                ]
+                            ]
+                        ],
+                        'from' => $start,
+                        'size' => $count
                     ]
-            ];
+                ];
             $this->logger->addDebug("Defined parameters for search", $params);
 
             $results = $eSearch->search($params);
