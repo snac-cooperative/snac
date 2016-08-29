@@ -755,9 +755,18 @@ class DBUtil
         $tableName = 'version_history';
         $cObj = new \snac\data\Constellation();
 
+        // Log what completeness of constellation we're getting
+        $this->logger->addDebug("The flags are set at " . $flags);
+
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        $this->logger->addDebug("The flags are set at " . $flags);
+
+        // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
+        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS)) != 0) {
+            $this->populateMetaCache($vhInfo);
+            $this->populateDateCache($vhInfo);
+        }
+
         // If the caller has requested any names, then we should pull them out
         if (($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME)) != 0) {
             $this->logger->addDebug("The user wants name(s)");
