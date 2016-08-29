@@ -1227,7 +1227,7 @@ class DBUser
         $instList = array();
         foreach($rowList as $row)
         {
-            $cObj = $this->dbutil->readPublishedConstellationByID($row['ic_id'], DBUser::$READ_MICRO_SUMMARY);
+            $cObj = $this->dbutil->readPublishedConstellationByID($row['ic_id'], DBUtil::$READ_MICRO_SUMMARY);
             array_push($instList, $cObj);
         }
         return $instList;
