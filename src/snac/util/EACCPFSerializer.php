@@ -15,20 +15,6 @@
  */
 namespace snac\util;
 
- 
-/**
- * @var \snac\server\database\DBUtil $dbu object A DBUtil object used internally to read information on
- * related constellations, necessary for the CPF XML.
- */
-$dbu = null;
-
-/**
- * @var \Monolog\Logger $logger the logger for this server
- *
- * See enableLogging() in this file.
- */
-$logger = null;
-
 
 /**
  * EAC-CPF Serializer
@@ -47,23 +33,22 @@ $logger = null;
 class EACCPFSerializer {
 
     /**
-     * Enable logging
-     *
-     * Call this to enabled logging. For various reasons, logging is not enabled by default.
-     *
-     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
-     * with no problems.
+     * @var \Monolog\Logger The logger instance for this class
      */
-    private static function enableLogging()
+    private $logger = null;
+
+    /**
+     * Constructor
+     *
+     * Creates the Serializer and adds logging
+     */
+    public function __construct()
     {
         global $log;
-        global $logger;
-        if (! $logger)
-        {
-            // create a log channel
-            $logger = new \Monolog\Logger('EACCPFSerializer');
-            $logger->pushHandler($log);
-        }
+        // create a log channel
+        $logger = new \Monolog\Logger('EACCPFSerializer');
+        $logger->pushHandler($log);
+        
     }
 
     /**
@@ -77,7 +62,7 @@ class EACCPFSerializer {
      *
      * @param string[] $debugArray An associative list of keys and values to send to the logger.
      */
-    private static function logDebug($msg, $debugArray=array())
+    private function logDebug($msg, $debugArray=array())
     {
         global $logger;
         if ($logger)
@@ -86,29 +71,19 @@ class EACCPFSerializer {
         }
     }
 
+
     /**
-     * Serialize an ARK to EAC-CPF XML
+     * Serialize Constellation
      *
-     * Read a published ARK from the database and return EAC-CPF XML as a string. 
+     * Serialize the constellation to an XML string
      *
-     * @param string $ark An ARK to serialize from the database into CPF XML
-     *
-     * @return string EAC-CPF XML
-     */ 
-    public static function SerializeByARK($ark) {
-        /*
-         * There are multiple constellations with the test ARK, which is a problem to be solved, eventually.
-         * The internals of readPublishedConstellationByARK() will only return a single record.
-         */  
-        global $dbu;
-        if (! $dbu) {
-            $dbu = new \snac\server\database\DBUtil();
-        }
-        $expCon = $dbu->readPublishedConstellationByARK($ark);
-        return self::SerializeCore($expCon->toArray());
+     * @param \snac\data\Constellation $constellation The constellation to serialize
+     * @return string The EAC-CPF XML for this constellation
+     */
+    public function serialize($constellation) {
+        return $this->serializeCore($constellation->toArray());
     }
 
-        
     /**
      * Export a constellation as EAC-CPF
      *
@@ -119,11 +94,7 @@ class EACCPFSerializer {
      * @param string[] $expCon Array of string that is the result of Constellation->toArray()
      * @return string $cpfXML a string containing an EAC-CPF XML file.
      */ 
-    public static function SerializeCore($expCon) {
-        global $dbu;
-        if (! $dbu) {
-            $dbu = new \snac\server\database\DBUtil();
-        }
+    private function serializeCore($expCon) {
 
         $data['data'] = $expCon;
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$CPF_TEMPLATE_DIR);
@@ -138,8 +109,7 @@ class EACCPFSerializer {
             });
         $twig->addFilter($filter);        
         
-        self::cpfSameAs($data['data']);
-        self::addEntityType($data['data']);
+        $this->cpfSameAs($data['data']);
         /*
          * Leave off the minutes and microseconds. Not necessary, and it complicates testing. For testing we
          * want to extract by two methods and compare. Seconds and microseconds will be different which
@@ -149,9 +119,9 @@ class EACCPFSerializer {
          */ 
         $data['currentDate'] = date('Y-m-d');
         $data['versionHistory'] = array();
-        if (array_key_exists('id', $expCon)) {
-            $dbu->readVersionHistory($expCon['id']);
-        }
+        //if (array_key_exists('id', $expCon)) {
+        //    $dbu->readVersionHistory($expCon['id']);
+        //}
 
         /* 
          * $cfile = fopen('cpf_data.txt', 'w');
@@ -242,53 +212,4 @@ class EACCPFSerializer {
         }
     }
 
-    /**
-     * Look up related constellation entityType
-     *
-     * Get the summary constellation for each constellation relation in the $data which is a constellation in
-     * array form, passed by reference, and we change it in place, adding a new key array 'targetEntityType'
-     * with keys 'term' and 'uri'.
-     *
-     * @param string $data Constellation as array, pass by reference.
-     */
-    private static function addEntityType(&$data) {
-        /*
-         * Note foreach by reference, so we can change in place without using an index.
-         */
-        global $dbu;
-        if (! $dbu) {
-            $dbu = new \snac\server\database\DBUtil();
-        }
-        if ($data['relations']) {
-            foreach($data['relations'] as &$cpfRel) {
-                if ($cpfRel['type']['term'] == 'sameAs') {
-                    /*
-                     * Skip sameAs because they are created by cpfSameAs() above. Not our concern here.
-                     */
-                    continue;
-                }
-                $relCon = $dbu->readPublishedConstellationByARK($cpfRel['targetArkID'], \snac\server\database\DBUtil::$READ_NRD);
-                if ($relCon) {
-                    /*
-                     * The controlled vocabulary table has type, value (aka term) both of which are always
-                     * populated. It also has uri which is populated for some vocabulary. (The other
-                     * vocabulary fields are: id, description, and entity_group). XML elements are limited to
-                     * using the value, while XML attributes should use the uri (when available).
-                     */
-                    $cpfRel['targetEntityType']['term'] = $relCon->getEntityType()->getTerm();
-                    $cpfRel['targetEntityType']['uri'] = $relCon->getEntityType()->getURI();
-                }
-                else {
-                    /*
-                     * In the production code this should be rare. Log a warning.
-                     */ 
-                    $cpfRel['targetEntityType']['term'] = '';
-                    $cpfRel['targetEntityType']['uri'] = '';
-                    $msg = sprintf("\nWarning: cannot get constellation for ARK: %s\n", $cpfRel['targetArkID']);
-                    self::enableLogging();
-                    self::logDebug($msg);
-                }
-            }
-        }
-    }
 }
