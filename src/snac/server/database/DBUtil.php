@@ -585,6 +585,7 @@ class DBUtil
         {
             $offset = \snac\Config::$SQL_OFFSET;
         }
+        
         $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset);
         if ($infoList)
         {
@@ -1238,7 +1239,7 @@ class DBUtil
             $this->populateMeta($vhInfo, $neObj, $tableName);
             $this->populateLanguage($vhInfo, $neObj, $oneName['id'], $tableName);
             $this->populateDate($vhInfo, $neObj, $tableName);
-            
+
             $cObj->addNameEntry($neObj);
 
             // If the user only asked for one name entry (not all), then return after adding the first one.

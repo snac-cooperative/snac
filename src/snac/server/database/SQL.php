@@ -2446,7 +2446,7 @@ class SQL
                             'select
                             aa.id, aa.place_id, aa.version, aa.label, aa.value, aa.line_order
                             from address_line as aa,
-                            (select place_id,max(version) as version from address_line 
+                            (select place_id,max(version) as version from address_line
                                 where place_id=$1 and version<=$2 group by place_id) as bb
                             where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version');
         $result = $this->sdb->execute($qq_2, array($placeID, $version));
