@@ -911,3 +911,28 @@ create table appuser_group_link (
 create table unassigned_arks (
            ark text
 );
+
+-- Long list of indices that are useful in querying the database
+
+create index otherid_idx1 on otherid (ic_id, version);
+create index subject_idx2 on subject (ic_id, version);
+create index scm_idx1 on scm (id, version, ic_id);
+create index source_idx3 on source (ic_id, version);
+create index related_identity_idx2 on related_identity (ic_id, version);
+create index related_resource_idx2 on related_resource (ic_id, version);
+create index name_component_idx2 on name_component (name_id, version);
+create index name_contributor_idx3 on name_contributor (name_id, version);
+create index name_contributor_idx4 on name_contributor (ic_id, version);
+create index language_idx2 on language (ic_id, version);
+create index occupation_idx2 on occupation (ic_id, version);
+create index function_idx2 on function (ic_id, version);
+create index biog_hist_idx3 on biog_hist (ic_id, version);
+create index address_line_idx2 on address_line (place_id, version);
+create index address_line_idx3 on address_line (ic_id, version); 
+create index place_link_idx2 on place_link (ic_id, version);
+create index place_link_idx3 on place_link (fk_id, fk_table, version);
+create index convention_declaration_idx2 on convention_declaration (ic_id, version);
+create index gender_idx2 on gender (ic_id, version);
+create index general_context_idx2 on general_context (ic_id, version);
+create index legal_status_idx2 on legal_status (ic_id, version);
+create index language_idx3 on language (fk_id, fk_table, version);
