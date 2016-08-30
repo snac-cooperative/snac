@@ -781,11 +781,6 @@ class DBUtil
             $this->populateBiogHist($vhInfo, $cObj);
         }
 
-        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS)) != 0) {
-            $this->populateMetaCache($vhInfo);
-            $this->populateDateCache($vhInfo);
-        }
-
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants data except relations");
             $this->populateMeta($vhInfo, $cObj, $tableName);
