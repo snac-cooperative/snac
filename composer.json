@@ -6,7 +6,8 @@
         "league/oauth2-google": "^1.0",
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "~2.0@beta",
-        "npm-asset/eac-validator": ">0.1"
+        "snac/ark-manager": "*",
+        "snac/eac-validator": "*"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",
@@ -21,13 +22,15 @@
             "snac\\": "src/snac/"
         }
     },
-    "extra": {
-        "asset-repositories": {
-            "npm-asset/eac-validator": {
-                "name": "eac-validator",
-                "type": "npm-git",
-                "url": "git@gitlab.iath.virginia.edu:snac/eac-validator.git"
-            }
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@gitlab.iath.virginia.edu:snac/ark-manager.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.iath.virginia.edu:snac/eac-validator.git"
         }
-    }
+
+    ]
 }
