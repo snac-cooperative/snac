@@ -1079,8 +1079,30 @@ class ServerExecutor {
 
                 // If this constellation is the correct version, and the user was editing it, then publish it
                 if ($current->getVersion() == $constellation->getVersion() && $inList) {
-                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                    if ($current->getArk() != null) {
+                        // If the constellation already has an ARK, then just update the status
+                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                                                         "published", "User published constellation");
+                    } else {
+                        // We must mint an ark
+                        $arkManager = new \ark\ArkManager();
+
+                        $microConstellation = new \snac\data\Constellation();
+                        $microConstellation->setID($current->getID());
+                        $microConstellation->setVersion($current->getVersion());
+                        $microConstellation->setArkID($arkManager->mintTemporaryArk());
+                        $microConstellation->setEntityType($current->getEntityType());
+                        $microConstellation->setOperation(\snac\data\Constellation::$OPERATION_UPDATE);
+
+                        $written = $this->cStore->writeConstellation($this->user, $microConstellation,
+                        "System assigning new ARK to constellation", "locked editing");
+                        if ($written !== false && $written != null) {
+                            $result = $written->getVersion();
+                            unset($written);
+                        }
+                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                                                        "published", "User published constellation");
+                    }
                 }
 
                 if (isset($result) && $result !== false) {
