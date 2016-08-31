@@ -54,47 +54,56 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
 
     echo "Querying the names from the database.\n";
 
-    $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score from
+    $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score, one.entity_type, one.degree from
         (select
-        	aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
+            aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
         from
-        	name as aa,
-        	(select name.id,max(name.version) as version from name
-        		left join (select v.id as ic_id, v.version, nrd.ark_id
-        				from version_history v
-        				left join (select bb.id, max(bb.version) as version from
-        				(select id, version from version_history where status in ('published', 'deleted')) bb
-        				group by id order by id asc) mv
-        				on v.id = mv.id and v.version = mv.version
-        				left join nrd on v.id = nrd.ic_id
-        				where
-        				v.status = 'published'
-        				order by v.id asc, v.version desc) vh
-        			on name.version<=vh.version and
-        			name.ic_id=vh.ic_id
-        		group by name.id) as bb
+            name as aa,
+            (select name.id,max(name.version) as version from name
+                left join (select v.id as ic_id, v.version, nrd.ark_id
+                        from version_history v
+                        left join (select bb.id, max(bb.version) as version from
+                        (select id, version from version_history where status in ('published', 'deleted')) bb
+                        group by id order by id asc) mv
+                        on v.id = mv.id and v.version = mv.version
+                        left join nrd on v.id = nrd.ic_id
+                        where
+                        v.status = 'published'
+                        order by v.id asc, v.version desc) vh
+                    on name.version<=vh.version and
+                    name.ic_id=vh.ic_id
+                group by name.id) as bb
         where
-        	aa.id = bb.id and
-        	not aa.is_deleted and
-        	aa.version = bb.version
+            aa.id = bb.id and
+            not aa.is_deleted and
+            aa.version = bb.version
         order by ic_id asc, preference_score desc, id asc) two,
-        (select v.id as ic_id, v.version, n.ark_id
+        (select v.id as ic_id, v.version, n.ark_id, etv.value as entity_type, rels.degree
         from
-        	version_history v,
-        	(select bb.id, max(bb.version) as version from
-        		(select id, version from version_history where status in ('published', 'deleted')) bb
-        		group by id order by id asc) mv,
-        	nrd n
+            version_history v,
+            (select bb.id, max(bb.version) as version from
+                (select id, version from version_history where status in ('published', 'deleted')) bb
+                group by id order by id asc) mv,
+            nrd n,
+            vocabulary etv,
+            (select a.ic_id, count(*) as degree from
+                (select r.id, r.ic_id from
+                    related_identity r,
+                    (select distinct id, max(version) as version from related_identity group by id) a
+                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
+            group by ic_id) rels
         where
-        	v.id = mv.id and
-        	v.version = mv.version and
-        	v.status = 'published' and
-        	v.id = n.ic_id
+            v.id = mv.id and
+            v.version = mv.version and
+            v.status = 'published' and
+            v.id = n.ic_id and
+            n.entity_type = etv.id and
+            v.id = rels.ic_id
         order by v.id asc, v.version desc) one
-        where
-        	two.ic_id = one.ic_id
-        order by
-        	one.ic_id asc, two.preference_score desc, two.id asc;", array());
+    where
+        two.ic_id = one.ic_id
+    order by
+        one.ic_id asc, two.preference_score desc, two.id asc;", array());
 
 
     echo "Updating the Elastic Search indices. This may take a while...\n";
@@ -104,9 +113,9 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         // is the one with the highest preference score for each ic_id.  So, if we haven't ever seen this ic_id
         // before, this is the preferred name entry for this ic.
         if ($previousICID != $name["ic_id"]) {
-            indexMain($name["original"], $name["ark_id"], $name["ic_id"]);
+            indexMain($name["original"], $name["ark_id"], $name["ic_id"], $name["entity_type"], $name["degree"]);
         }
-        indexSecondary($name["original"], $name["ark_id"], $name["ic_id"], $name["name_id"]);
+        indexSecondary($name["original"], $name["ark_id"], $name["ic_id"], $name["name_id"], $name["entity_type"], $name["degree"]);
         $previousICID = $name["ic_id"];
     }
 
@@ -120,7 +129,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
 }
 
-function indexMain($nameText, $ark, $icid) {
+function indexMain($nameText, $ark, $icid, $entityType, $degree) {
     global $eSearch, $primaryBody, $primaryStart, $primaryCount;
     if ($eSearch != null) {
         // do one first to get the index going
@@ -131,8 +140,10 @@ function indexMain($nameText, $ark, $icid) {
                     'id' => $icid,
                     'body' => [
                             'nameEntry' => $nameText,
+                            'entityType' => $entityType,
                             'arkID' => $ark,
                             'id' => $icid,
+                            'degree' => $degree,
                             'timestamp' => date("c")
                     ]
             ];
@@ -153,8 +164,10 @@ function indexMain($nameText, $ark, $icid) {
             ];
             $primaryBody['body'][] = [
                 'nameEntry' => $nameText,
+                'entityType' => $entityType,
                 'arkID' => $ark,
                 'id' => $icid,
+                'degree' => $degree,
                 'timestamp' => date("c")
             ];
             $primaryCount++;
@@ -163,7 +176,7 @@ function indexMain($nameText, $ark, $icid) {
 }
 
 
-function indexSecondary($nameText, $ark, $icid, $nameid) {
+function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree) {
     global $eSearch, $secondaryBody, $secondaryStart, $secondaryCount;
     if ($eSearch != null) {
         // do one first to get the index going
@@ -174,9 +187,11 @@ function indexSecondary($nameText, $ark, $icid, $nameid) {
                     'id' => $nameid,
                     'body' => [
                             'nameEntry' => $nameText,
+                            'entityType' => $entityType,
                             'arkID' => $ark,
                             'id' => $icid,
                             'name_id' => $nameid,
+                            'degree' => $degree,
                             'timestamp' => date("c")
                     ]
             ];
@@ -198,9 +213,11 @@ function indexSecondary($nameText, $ark, $icid, $nameid) {
             ];
             $secondaryBody['body'][] = [
                 'nameEntry' => $nameText,
+                'entityType' => $entityType,
                 'arkID' => $ark,
                 'id' => $icid,
                 'name_id' => $nameid,
+                'degree' => $degree,
                 'timestamp' => date("c")
             ];
             $secondaryCount++;
