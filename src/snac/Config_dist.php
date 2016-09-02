@@ -39,6 +39,11 @@ class Config {
     public static $DEBUG_MODE = true;
 
     /**
+     * @var boolean Whether or not the system is in SANDBOX mode (generate temporary/fake arks)
+     */
+    public static $SANDBOX_MODE = true;
+
+    /**
      * @var the full path of this project (to the root of the repository)
      */
     public static $PROJECT_DIR = "";

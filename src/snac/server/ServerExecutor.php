@@ -1091,7 +1091,7 @@ class ServerExecutor {
 
                         $newArk = null;
                         // Mint a temporary ark if we are in testing mode, else mint real ark
-                        if (true) {
+                        if (\snac\Config::$SANDBOX_MODE) {
                             $newArk = $arkManager->mintTemporaryArk();
                         } else {
                             $newArk = $arkManager->mintArk();
