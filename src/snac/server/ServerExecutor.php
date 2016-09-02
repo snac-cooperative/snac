@@ -5,9 +5,6 @@
  *
  * Contains the ServerExector class that performs all the tasks for the main Server
  *
- * License:
- *
- *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
@@ -510,6 +507,8 @@ class ServerExecutor {
     /**
     * List the SNAC roles
     *
+    * List all the roles in SNAC.
+    *
     * @return \snac\data\Role[] List of Roles
     */
     public function listRoles() {
@@ -527,6 +526,9 @@ class ServerExecutor {
 
     /**
      * List the SNAC institutions
+     *
+     * Gets a list of constellations that are institutions in SNAC (those that individual users could be
+     * affiliated with).
      *
      * @return \snac\data\Constellation[] List of Institutional Constellations
      */
@@ -1245,9 +1247,6 @@ class ServerExecutor {
      * creates a Constellation object.  The object is converted to an array and put in the response to send to the
      * user.
      *
-     * If given an ark or test id, this method will use the parser to read the latest version of the EAC-CPF and
-     * create a Constellation, without going through the database.
-     *
      * If given a constellationid, it reads the constellation from the database.  If trying to read a constellation
      * without a published version, an exception is thrown.
      *
@@ -1261,38 +1260,7 @@ class ServerExecutor {
         $constellation = null;
 
         try {
-            $this->logger->addDebug("Reading constellation from the database");
-            if (isset($input["arkid"])) {
-                // Reading the given ark id
-                $constellation = $this->cStore->readPublishedConstellationByArk(
-                        $input["arkid"]);
-
-                if ($constellation === false) {
-                    // This means that the Constellation doesn't have a published version!
-                    throw new \snac\exceptions\SNACInputException("Constellation with ark " .
-                            $input["arkid"] . " does not have a published version.");
-                }
-
-            } else if (isset($input["constellationid"])) {
-                // Reading the given constellation id by reading the database
-
-                // Read the constellation
-                if (isset($input["version"])) {
-                    $constellation = $this->cStore->readConstellation(
-                            $input["constellationid"],
-                            $input["version"]);
-                } else {
-                    $constellation = $this->cStore->readPublishedConstellationByID(
-                            $input["constellationid"]);
-
-                    if ($constellation === false) {
-                        // This means that the Constellation doesn't have a published version!
-                        throw new \snac\exceptions\SNACInputException("Constellation with id " .
-                                $input["constellationid"] . " does not have a published version.");
-                    }
-                }
-            }
-            $this->logger->addDebug("Finished reading constellation from the database");
+            $constellation = $this->readConstellationFromDatabase($input);
 
             // Get the list of constellations locked editing for this user
             $inList = false;
@@ -1319,6 +1287,66 @@ class ServerExecutor {
         return $response;
 
     }
+
+    /**
+     * Read Constellation From Database
+     *
+     * Asks the Constellation Store (DBUtil) for the constellation requested, and returns it if it exists.
+     *
+     * If given a constellationid, it reads the constellation from the database.  If trying to read a constellation
+     * without a published version, an exception is thrown.
+     *
+     * @param string[] $input Input array from the Server object
+     * @param boolean $includeMaintenanceHistory optional True will include maintenance history, false (default) will not
+     * @throws \snac\exceptions\SNACInputException
+     * @return null|\snac\data\Constellation The constellation object (or null)
+     */
+    public function readConstellationFromDatabase(&$input,  $includeMaintenanceHistory=false) {
+        $constellation = null;
+
+        $readFlags = \snac\server\database\DBUtil::$FULL_CONSTELLATION;
+        if ($includeMaintenanceHistory) {
+            $readFlags = $readFlags | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION;
+        }
+
+        $this->logger->addDebug("Reading constellation from the database, flags=$readFlags");
+        if (isset($input["arkid"])) {
+            // Reading the given ark id
+            $constellation = $this->cStore->readPublishedConstellationByARK(
+                    $input["arkid"],
+                    $readFlags
+                );
+            if ($constellation === false) {
+                // This means that the Constellation doesn't have a published version!
+                throw new \snac\exceptions\SNACInputException("Constellation with ark " .
+                        $input["arkid"] . " does not have a published version.");
+            }
+
+        } else if (isset($input["constellationid"])) {
+            // Reading the given constellation id by reading the database
+                // Read the constellation
+            if (isset($input["version"])) {
+                $constellation = $this->cStore->readConstellation(
+                        $input["constellationid"],
+                        $input["version"],
+                        $readFlags);
+            } else {
+                $constellation = $this->cStore->readPublishedConstellationByID(
+                        $input["constellationid"],
+                        $readFlags);
+                if ($constellation === false) {
+                    // This means that the Constellation doesn't have a published version!
+                    throw new \snac\exceptions\SNACInputException("Constellation with id " .
+                            $input["constellationid"] . " does not have a published version.");
+                }
+            }
+        }
+        $this->logger->addDebug("Finished reading constellation from the database");
+
+        return $constellation;
+
+    }
+
 
     /**
      * Edit Constellation
@@ -1415,6 +1443,84 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Download/Serialize a Constellation
+     *
+     * This method handles the downloading of content in any type. Download tasks include serializing a
+     * constellation as EAC-CPF XML, and downloading the XML (a string) as a file.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function downloadConstellation($input) {
+        if (!isset($input["type"])) {
+            throw new \snac\exceptions\SNACInputException("No download type specified");
+        }
+
+
+        $constellation = $this->readConstellationFromDatabase($input, true);
+        if ($constellation == null) {
+            throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+        }
+        $response = null;
+        switch($input["type"]) {
+            case "constellation_json":
+                $response["file"] = array();
+                $response["file"]["mime-type"] = "application/json";
+                $response["file"]["filename"] = $this->arkToFilename($constellation->getArkID()).".json";
+                $response["file"]["content"] = base64_encode(json_encode($constellation->toArray(), JSON_PRETTY_PRINT));
+                break;
+            case "eac-cpf":
+                $response["file"] = array();
+                $response["file"]["mime-type"] = "text/xml";
+                $response["file"]["filename"] = $this->arkToFilename($constellation->getArkID()).".xml";
+
+                $serializer = new \snac\util\EACCPFSerializer();
+                $response["file"]["content"] = base64_encode($serializer->serialize($constellation));
+                break;
+            default:
+                throw new \snac\exceptions\SNACInputException("Unknown download file type: " . $input["type"]);
+        }
+
+        return $response;
+    }
+
+
+    /**
+    * Convert an ARK to Filename
+    *
+    * This method converts an ark with "ark:/" to a filename by stripping out everything up to and
+    * including "ark:/", then replacing any slashes in the remainder with a hyphens.  If the string does
+    * not include "ark:/", this method will just return the filename "constellation."
+    *
+    * This does not include the extension on the filename.
+    *
+    * @param string $ark The ark to convert
+    * @return string The filename based on the ark (without an extension)
+    */
+    public function arkToFilename($ark) {
+        $filename = "constellation";
+        if (!stristr($ark, 'ark:/'))
+            return $filename;
+
+        $pieces = explode("ark:/", $ark);
+        if (isset($pieces[1])) {
+            $filename = str_replace('/', "-", $pieces[1]);
+        }
+        return $filename;
+    }
+
+    /**
+     * List Constellations
+     *
+     * Lists the Constellations with a given status for any user.  If the requesting user needs permission
+     * to actually get the list of constellations, this method also checks permissions.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
     public function listConstellations(&$input) {
 
         $status = "published";

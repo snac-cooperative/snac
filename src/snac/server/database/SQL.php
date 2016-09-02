@@ -1023,15 +1023,15 @@ class SQL
         $queryString = sprintf(
                 'select aa.version, aa.id as ic_id
                     from version_history as aa,
-                        (select max(version) as version, id from version_history 
-                            where id in (select distinct id from version_history where user_id=$1) 
+                        (select max(version) as version, id from version_history
+                            where id in (select distinct id from version_history where user_id=$1)
                             group by id) as cc
                     where
                         aa.id=cc.id and
                         aa.version=cc.version and
                         aa.user_id=$1 and
                         aa.status = $2 %s %s', $limitStr, $offsetStr);
-        
+
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
         $result = $this->sdb->query($queryString,
@@ -4906,14 +4906,17 @@ class SQL
      *
      * Bad: 2016-07-28 16:30:16.18485 Good: 2016-07-28T16:30:16
      *
-     * @param $ic_id integer The relevant constellation id.
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
-    public function selectVersionHistory($ic_id) {
+    public function selectVersionHistory($vhInfo) {
         $result = $this->sdb->query(
-            'select *, to_char(timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as cpf_date from version_history
-            where id=$1 and status=\'published\' order by timestamp desc',
-            array($ic_id));
+            'select v.*, to_char(v.timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as update_date, a.username, a.fullname
+            from version_history v, appuser a
+            where v.user_id = a.id and v.id=$1 and v.version<=$2
+                and (v.status=\'published\' or v.status=\'ingest cpf\')
+            order by v.timestamp asc',
+            array($vhInfo["ic_id"], $vhInfo["version"]));
         $usernames = "";
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
@@ -4922,23 +4925,4 @@ class SQL
         }
         return $all;
     }
-
-    /* Not used. See insertInstitution() above */
-    /*
-     * Update a institution.
-     *
-     * @param integer $rid Institution row id
-     *
-     * @param string $ic_id Institution ic_id
-     *
-     */
-    /*
-     * public function updateInstitution($iid, $ic_id)
-     * {
-     *     $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
-     *                                 array($ic_id, $iid));
-     * }
-     */
-
-
 }

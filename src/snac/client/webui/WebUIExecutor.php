@@ -361,48 +361,42 @@ class WebUIExecutor {
             return $this->drawErrorPage("Content Type not specified", $display);
         }
 
-        $response = null;
-        switch($input["type"]) {
-            case "constellation_json":
-                $serverResponse = $this->getConstellation($input, $display);
-                if (!isset($serverResponse["constellation"])) {
-                    return $this->drawErrorPage("Error getting constellation", $display);
-                }
-                array_push($headers, "Content-Type: text/json");
-                array_push($headers, 'Content-Disposition: inline; filename="'.$this->arkToFilename($serverResponse["constellation"]["ark"]).'.json"');
-                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
-                break;
-            case "eac-cpf":
-                $serverResponse = $this->getConstellation($input, $display);
-                if (!isset($serverResponse["constellation"])) {
-                    return $this->drawErrorPage("Error getting constellation", $display);
-                }
-                array_push($headers, "Content-Type: text/xml");
-                array_push($headers, 'Content-Disposition: inline; filename="'.$this->arkToFilename($serverResponse["constellation"]["ark"]).'.xml"');
-                /*
-                 * Call the EAC-CPF serializer
-                 *
-                 * $serverResponse is a string[] and $serverResponse['constellation'] has a constellation as
-                 * an associative list, that is Constellation->toArray(). We can pass
-                 * $serverResponse['constellation'] directly to SerializeCore().
-                 *
-                 * $serverResponse has keys like: constellation, result, error. See
-                 * ServerExecutor->readConstellation() variable $response.
-                 */
-                $xml = new \SimpleXMLElement(\snac\util\EACCPFSerializer::SerializeCore($serverResponse['constellation']));
-                $domxml = new \DOMDocument('1.0');
-                $domxml->preserveWhiteSpace = false;
-                $domxml->formatOutput = true;
-                $domxml->loadXML($xml->asXML());
-                $response = $domxml->saveXML();
-                break;
-        }
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["type"] = $input["type"];
+        $query["command"] = "download_constellation";
 
-        if ($response == null)  {
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        /*
+            Ask server to "download_constellation" with the type parameter and constellationid, arkid, etc.
+
+            $input["type"]
+
+            Server will give the following response:
+
+            $response["file"] = array();
+            $response["file"]["mime-type"] = "text/json";
+            $response["file"]["filename"] = $this->arkToFilename($constellation->getArkID()).".json";
+            $response["file"]["content"] = base64_encode(json_encode($constellation, JSON_PRETTY_PRINT));
+        */
+
+
+        if (isset($serverResponse["file"])) {
+            array_push($headers, "Content-Type: " . $serverResponse["file"]["mime-type"]);
+            array_push($headers, 'Content-Disposition: inline; filename="'.$serverResponse["file"]["filename"].'"');
+            return base64_decode($serverResponse["file"]["content"]);
+        } else {
             $this->drawErrorPage("Download error occurred", $display);
         }
 
-        return $response;
+        return null;
     }
 
     /**
@@ -424,7 +418,7 @@ class WebUIExecutor {
 
         $pieces = explode("ark:/", $ark);
         if (isset($pieces[1])) {
-            $filename = str_replace('/', "-", $pieces[1]); 
+            $filename = str_replace('/', "-", $pieces[1]);
         }
         return $filename;
     }
@@ -633,17 +627,22 @@ class WebUIExecutor {
      * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
      * @return boolean False, since an error occurred to get here
      */
-    public function drawErrorPage(&$serverResponse, &$display) {
+    public function drawErrorPage($serverResponse, &$display) {
+        $this->logger->addDebug("Drawing Error page", array($serverResponse));
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
                 return $this->displayPermissionDeniedPage(null, $display);
             }
             $display->setTemplate("error_page");
             $display->setData($serverResponse["error"]);
-            return false;
+        } else if (is_array($serverResponse)) {
+            $display->setTemplate("error_page");
+            $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
+        } else {
+            $this->logger->addDebug("Drawing the text version of the error page");
+            $display->setTemplate("error_page");
+            $display->setData(array("type" => "System Error", "message" => $serverResponse, "display" => "pre"));
         }
-        $display->setTemplate("error_page");
-        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
         return false;
     }
 
