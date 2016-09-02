@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<eac-cpf xmlns="urn:isbn:1-931666-33-4" 
+<eac-cpf xmlns="urn:isbn:1-931666-33-4"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:snac="http://socialarchive.iath.virginia.edu/">
     {#
@@ -28,10 +28,10 @@
         <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
         {% endif %}
         {% endfor %}
-        <maintenanceStatus>revised</maintenanceStatus>
+        <maintenanceStatus>{{data.maintenanceStatus.term}}</maintenanceStatus>
         <maintenanceAgency>
             <agencyName>
-                SNAC Social Networks in Archival Context
+                {{data.maintenanceAgency}}
             </agencyName>
         </maintenanceAgency>
         {#
@@ -48,24 +48,24 @@
         {{ cdecl.text|raw }}
         {% endfor %}
         <maintenanceHistory>
-            {% for event in versionHistory %}
+            {% for event in data.maintenanceEvents %}
             <maintenanceEvent>
                 {#
-                eventType must contain one of: "cancelled" or "created" or "deleted" or "derived" or "revised" or "updated" 
+                eventType must contain one of: "cancelled" or "created" or "deleted" or "derived" or "revised" or "updated"
                 #}
-                <eventType>revised</eventType>
-                <eventDateTime standardDateTime="{{ event.cpf_date }}">{{ event.cpf_date }}</eventDateTime>
-                <agentType>human</agentType>
-                <agent>{{ event.user_id }}</agent>
-                <eventDescription>notes: {{ data.ev_desc }} status: {{ event.status }} version: {{ event.version }}</eventDescription>
+                <eventType>{{ event.eventType.term }}</eventType>
+                <eventDateTime standardDateTime="{{ event.standardDateTime }}">{{ event.eventDateTime }}</eventDateTime>
+                <agentType>{{ event.agentType.term }}</agentType>
+                <agent>{{ event.agent }}</agent>
+                <eventDescription>{{ event.eventDescription }}</eventDescription>
             </maintenanceEvent>
             {% endfor %}
             <maintenanceEvent>
                 <eventType>created</eventType>
                 <eventDateTime standardDateTime="{{ currentDate }}">{{ currentDate }}</eventDateTime>
                 <agentType>machine</agentType>
-                <agent>EACCPFSerializer.php</agent>
-                <eventDescription>SQL Constellation serialized to EAC-CPF</eventDescription>
+                <agent>SNAC EAC-CPF Serializer</agent>
+                <eventDescription>SNAC Identity Constellation serialized to EAC-CPF</eventDescription>
             </maintenanceEvent>
         </maintenanceHistory>
         <sources>
@@ -79,7 +79,7 @@
     <cpfDescription>
         <identity>
             <entityType>{{ data.entityType.term }}</entityType>
-            {# 
+            {#
             We appear not to use the language element.
 
             Support two optional attributes: xml:lang and snac:preferenceScore.
@@ -122,7 +122,7 @@
             the opening and closing fromDate are done with Twig literals, and an custom filter decode_entities.
             This compromise is slighly more MVC than moving the XML into a literal PHP string.
 
-            Interestingly a lone > seems to be valid XML. 
+            Interestingly a lone > seems to be valid XML.
             #}
             {% if data.dates %}
             <existDates>
@@ -161,13 +161,13 @@
                         {{'&lt;fromDate'|decode_entities|raw}}
                         {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
                         {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
-                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}"
                         standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
                         {% if date.toDate %}
                         {{'&lt;toDate'|decode_entities|raw}}
                         {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
                         {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
-                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}"
                         standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
                         {% endif %}
                     </dateRange>
@@ -225,18 +225,18 @@
                     <placeEntry>{{ place.original }}</placeEntry>
                     {% if place.score > 0.06 %}
                     <snac:placeEntryLikelySame certaintyScore="{{ place.score }}"
-                                               vocabularySource="{{place.geoplace.uri}}" 
-                                               latitude="{{place.geoplace.latitude}}" 
-                                               longitude="{{place.geoplace.longitude}}" 
-                                               administrationCode="{{place.geoplace.administrationCode}}" 
+                                               vocabularySource="{{place.geoplace.uri}}"
+                                               latitude="{{place.geoplace.latitude}}"
+                                               longitude="{{place.geoplace.longitude}}"
+                                               administrationCode="{{place.geoplace.administrationCode}}"
                                                countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                     </snac:placeEntryLikelySame>
                     {% else %}
                     <snac:placeEntryBestMaybeSame certaintyScore="{{ place.score }}"
-                                                  vocabularySource="{{place.geoplace.uri}}" 
-                                                  latitude="{{place.geoplace.latitude}}" 
-                                                  longitude="{{place.geoplace.longitude}}" 
-                                                  administrationCode="{{place.geoplace.administrationCode}}" 
+                                                  vocabularySource="{{place.geoplace.uri}}"
+                                                  latitude="{{place.geoplace.latitude}}"
+                                                  longitude="{{place.geoplace.longitude}}"
+                                                  administrationCode="{{place.geoplace.administrationCode}}"
                                                   countryCode="{{place.geoplace.countryCode}}">{{place.geoplace.name }}
                     </snac:placeEntryBestMaybeSame>
                     {% if place.dates %}
@@ -251,13 +251,13 @@
                             {{'&lt;fromDate'|decode_entities|raw}}
                             {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
                             {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
-                            localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                            localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}"
                             standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
                             {% if date.toDate %}
                             {{'&lt;toDate'|decode_entities|raw}}
                             {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
                             {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
-                            localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                            localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}"
                             standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
                             {% endif %}
                         </dateRange>
@@ -285,13 +285,13 @@
                         {{'&lt;fromDate'|decode_entities|raw}}
                         {% if date.fromRange.notBefore %}notBefore="{{date.fromRange.notBefore}}"{% endif %}
                         {% if date.fromRange.notAfter %}notAfter="{{date.fromRange.notAfter}}"{% endif %}
-                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}" 
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{ date.fromType.term }}"
                         standardDate="{{date.fromDate}}">{{date.fromDateOriginal}}{{'&lt;/fromDate>'|decode_entities|raw}}
                         {% if date.toDate %}
                         {{'&lt;toDate'|decode_entities|raw}}
                         {% if date.toRange.notBefore %}notBefore="{{date.toRange.notBefore}}"{% endif %}
                         {% if date.toRange.notAfter %}notAfter="{{date.toRange.notAfter}}"{% endif %}
-                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}" 
+                        localType="http://socialarchive.iath.virginia.edu/control/term#{{date.toType.term}}"
                         standardDate="{{date.toDate}}">{{date.toDateOriginal}}{{'&lt;/toDate>'|decode_entities|raw}}
                         {% endif %}
                     </dateRange>
@@ -330,7 +330,7 @@
                 <term>{{ ls.term.term }}</term>
             </legalStatus>
             {% endfor %}
-            
+
             {% for mand in data.mandates %}
             {#
 
@@ -349,7 +349,7 @@
         </description>
         <relations>
             {% for cpfRel in data.relations %}
-            {# 
+            {#
             Use the uri when available. The uri is the full namespace#term.
             #}
             {% if cpfRel.targetEntityType.uri %}
@@ -363,13 +363,13 @@
             {% set xlink_arcrole = cpfRel.type.term %}
             {% endif %}
             <cpfRelation xlink:type="simple"
-                         xlink:role="{{ xlink_role }}" 
+                         xlink:role="{{ xlink_role }}"
                          xlink:arcrole="{{ xlink_arcrole }}"
                          xlink:href="{{ cpfRel.targetArkID }}">
                 <relationEntry>{{cpfRel.content}}</relationEntry>
             </cpfRelation>
-            {% endfor %} 
-            {# 
+            {% endfor %}
+            {#
             resRel.documentType, xlink:role, ArchivalResource, BibliographicResource
             resRel.role, xlink:arcrole, creatorOf, referencedIn
             #}

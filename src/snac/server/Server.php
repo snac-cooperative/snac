@@ -244,6 +244,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listConstellations($this->input);
                 break;
 
+            case "download_constellation":
+                $this->response = $executor->downloadConstellation($this->input);
+                break;
+
             case "read":
                 $this->response = $executor->readConstellation($this->input);
                 break;

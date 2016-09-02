@@ -312,7 +312,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
-                return;
+                if ($display->hasTemplate()) {
+                    break;
+                } else {
+                    return;
+                }
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":

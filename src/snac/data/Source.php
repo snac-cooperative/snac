@@ -288,7 +288,7 @@ class Source extends AbstractData {
         if (! parent::equals($other, $strict))
             return false;
 
-        if ($this->getDisplayName() != $other->getDisplayName())
+        if ($strict && ($this->getDisplayName() != $other->getDisplayName()))
             return false;
         if ($this->getText() != $other->getText())
             return false;

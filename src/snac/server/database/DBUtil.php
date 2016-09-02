@@ -61,7 +61,9 @@ class DBUtil
      */
 
     /**
-     * @var int Flag to read the entire constellation 
+     * @var int Flag to read the entire constellation
+     *
+     * Note: this does not include the maintenance history by default
      */
     public static $FULL_CONSTELLATION = 63;
 
@@ -76,7 +78,7 @@ class DBUtil
     public static $READ_FULL_SUMMARY = 15;
 
     /**
-     * @var int Flag to read the nrd, preferred name entry, and biog hist only 
+     * @var int Flag to read the nrd, preferred name entry, and biog hist only
      */
     public static $READ_SHORT_SUMMARY = 11;
 
@@ -116,13 +118,18 @@ class DBUtil
      */
     public static $READ_RELATIONS = 32;
 
+    /**
+     * @var int Flag to read the maintenance history and other maintenance info
+     */
+    public static $READ_MAINTENANCE_INFORMATION = 64;
+
 
 
 
     /**
      * SQL object
      *
-     * @var \snac\server\database\SQL low-level SQL class
+     * @var \snac\server\database\SQL $sql low-level SQL class
      */
     private $sql = null;
 
@@ -429,7 +436,7 @@ class DBUtil
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
-     * 
+     *
      * ```
      * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
      *                       | $READ_BIOGHIST | $READ_RELATIONS
@@ -438,7 +445,7 @@ class DBUtil
      * ```
      *
      * @param string $arkID An ARK
-     * @param int $flags optional Flags to indicate which parts of the constellation to read 
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation|boolean A PHP constellation object or false if none found.
      *
@@ -466,7 +473,7 @@ class DBUtil
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
-     * 
+     *
      * ```
      * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
      *                       | $READ_BIOGHIST | $READ_RELATIONS
@@ -475,7 +482,7 @@ class DBUtil
      * ```
      *
      * @param integer $mainID A constellation id
-     * @param int $flags optional Flags to indicate which parts of the constellation to read 
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */
@@ -585,7 +592,7 @@ class DBUtil
         {
             $offset = \snac\Config::$SQL_OFFSET;
         }
-        
+
         $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset);
         if ($infoList)
         {
@@ -730,7 +737,7 @@ class DBUtil
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
-     * 
+     *
      * ```
      * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
      *                       | $READ_BIOGHIST | $READ_RELATIONS
@@ -739,7 +746,7 @@ class DBUtil
      * ```
      *
      * @param integer[] $vhInfo An associative list with keys 'version', 'ic_id'. Values are integers.
-     * @param int $flags optional Flags to indicate which parts of the constellation to read 
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation A PHP constellation object.
      *
@@ -808,9 +815,16 @@ class DBUtil
             $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
             $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
         }
-        /*
-         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
-         */
+
+        // If the user requested maintenance history be added to the constellation, then add it.
+        if (($flags & DBUtil::$READ_MAINTENANCE_INFORMATION) != 0) {
+            $this->logger->addDebug("The user wants maintenance info");
+            $this->populateMaintenanceInformation($vhInfo, $cObj);
+
+            $cObj->setMaintenanceAgency("SNAC: Social Networks and Archival Context");
+            $cObj->setMaintenanceStatus(new \snac\data\Term(array("term"=>"revised")));
+        }
+
         return $cObj;
     } // end selectConstellation
 
@@ -2725,6 +2739,79 @@ class DBUtil
         }
     }
 
+    /**
+     * Populate Mainenance History
+     *
+     * Populates the Maintenance History of the given $cObj with the published version updates and adds
+     * the original maintenance stataus if the CPF was ingested.
+     *
+     * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
+     * @param \snac\data\Constellation $cObj Constellation passed by reference, and changed in place
+     */
+    public function populateMaintenanceInformation($vhInfo, &$cObj) {
+
+        // Need some terms
+        $searchResult = $this->searchVocabulary("event_type", "revised");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $revisedTerm = $this->populateTerm($searchResult[0]["id"]);
+
+        $searchResult = $this->searchVocabulary("agent_type", "human");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $humanTerm = $this->populateTerm($searchResult[0]["id"]);
+
+        $searchResult = $this->searchVocabulary("agent_type", "machine");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $machineTerm = $this->populateTerm($searchResult[0]["id"]);
+
+
+        // Fill in the Maintenance History Events
+        $history = $this->sql->selectVersionHistory($vhInfo);
+        foreach ($history as $event) {
+
+            // If the event was an ingest, then grab any pre-snac history and add it to the Constellation,
+            // then create an event in the constellation detailing the ingest step by the parser
+            if ($event["status"] == 'ingest cpf') {
+                // Put all the previous snac information in
+                $preSnac = json_decode($event["note"], true);
+                $this->logger->addDebug("Got the following pre-snac history", array($preSnac));
+                if (isset($preSnac["maintenanceEvents"])) {
+                    foreach ($preSnac["maintenanceEvents"] as $oldEvent) {
+                        $cObj->addMaintenanceEvent(new \snac\data\MaintenanceEvent($oldEvent));
+                    }
+                }
+
+                // Put in the ingest record from our database
+                $newEvent = new \snac\data\MaintenanceEvent();
+                $newEvent->setEventDateTime($event["update_date"]);
+                $newEvent->setStandardDateTime($event["update_date"]);
+                $newEvent->setAgentType($machineTerm);
+                $newEvent->setAgent("SNAC EAC-CPF Parser");
+                $newEvent->setEventDescription("Bulk ingest into SNAC Database");
+                $newEvent->setEventType($revisedTerm);
+                $cObj->addMaintenanceEvent($newEvent);
+
+            } else {
+                // If it was any other kind of revision, then just state which user made the change
+
+                $newEvent = new \snac\data\MaintenanceEvent();
+                $newEvent->setEventDateTime($event["update_date"]);
+                $newEvent->setStandardDateTime($event["update_date"]);
+                $newEvent->setAgentType($humanTerm);
+                $newEvent->setAgent($event["fullname"] . " (".$event["username"].")");
+                $newEvent->setEventDescription($event["note"]);
+                $newEvent->setEventType($revisedTerm);
+                $cObj->addMaintenanceEvent($newEvent);
+            }
+        }
+
+
+    }
 
     /**
      * Read the status of a constellation.
@@ -3068,7 +3155,7 @@ class DBUtil
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
-     * 
+     *
      * ```
      * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
      *                       | $READ_BIOGHIST | $READ_RELATIONS
@@ -3081,7 +3168,7 @@ class DBUtil
      * @param integer $version optional An optional version number. When not supplied this function will look
      * up the most recent version, regardless of status.
      *
-     * @param int $flags optional Flags to indicate which parts of the constellation to read 
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation or boolean If successful, return a constellation, else if not successful return false.
      *
@@ -3608,15 +3695,4 @@ class DBUtil
         return $newVersion;
     }
 
-    /**
-     * Read version history of published versions.
-     *
-     * Currently only used by EACCPFSerializer.php for maintenanceEvent data.
-     *
-     * @param $ic_id integer The relevant constellation id.
-     * @return string[] An associative list with keys corresponding to the version_history table columns.
-     */
-    public function readVersionHistory($ic_id) {
-        return $this->sql->selectVersionHistory($ic_id);
-    }
 }
