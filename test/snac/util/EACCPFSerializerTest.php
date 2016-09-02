@@ -2,10 +2,8 @@
 /**
  * EAC CPF Serializer Test File
  *
- *
- * License:
- *
  * @author Tom Laudeman
+ * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2016 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
@@ -14,16 +12,16 @@ namespace test\snac\util;
 
 /**
  * EAC CPF Serializer test suite
- * 
- * @author Tom Laudeman
  *
+ * @author Tom Laudeman
+ * @author Robbie Hott
  */
 class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
-    
+
     /**
      * DBUtil object for this class
      * @var \snac\server\database\DBUtil $dbu object
-     */ 
+     */
     private $dbu = null;
 
     /**
@@ -42,7 +40,7 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
      * Constructor
      *
      * Note about how things are different here in testing world vs normal execution:
-     * 
+     *
      * Any vars that aren't set up in the constructor won't be initialized, even though the other functions
      * appear to run in order. Initializing instance vars anywhere except the constructor does not initialize
      * for the whole class. phpunit behaves as though the class where being instantiated from scratch for each
@@ -53,60 +51,19 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
      *
      * Notice that nowhere do we set up the logger. I'm guessing this is due to this test class extending
      * PHPUnit_Framework_TestCase.
-     */ 
-    public function __construct() 
-    {
-        $this->dbu = new \snac\server\database\DBUtil();
-        // $dbuser = new \snac\server\database\DBUser();
-        /*
-         * Apr 12 2016 Use the username, not email. Username is unique, email is not. For now, username is
-         * defaulted to be email address, and we create the system account with username testing@localhost.
-         */ 
-        /* 
-         * $testUser = new \snac\data\User();
-         * $testUser->setUserName("testing@localhost");
-         * $this->user = $dbuser->readUser($testUser);
-         */
-    }
-
-    /**
-     * Enable logging
-     *
-     * Call this to enabled logging. For various reasons, logging is not enabled by default.
-     *
-     * Check that we don't have a logger before creating a new one. This can be called as often as one wants
-     * with no problems.
      */
-    private static function enableLogging()
+    public function __construct()
     {
         global $log;
-        global $logger;
-        if (! $logger)
-        {
-            // create a log channel
-            $logger = new \Monolog\Logger('EACCPFSerializer');
-            $logger->pushHandler($log);
-        }
-    }
+        // create a log channel
+        $this->logger = new \Monolog\Logger('EACCPFSerializer');
+        $this->logger->pushHandler($log);
+        $this->dbu = new \snac\server\database\DBUtil();
+        $dbuser = new \snac\server\database\DBUser();
 
-        /**
-     * Wrap logging
-     *
-     * When logging is disabled, we don't want to call the logger because we don't want to generate errors. We
-     * also don't want logs to just magically start up. Doing logging should be very intentional, especially
-     * in a low level class like SQL. Call enableLogging() before calling logDebug().
-     *
-     * @param string $msg The logging messages
-     *
-     * @param string[] $debugArray An associative list of keys and values to send to the logger.
-     */
-    private static function logDebug($msg, $debugArray=array())
-    {
-        global $logger;
-        if ($logger)
-        {
-            $logger->addDebug($msg, $debugArray);
-        }
+        $testUser = new \snac\data\User();
+        $testUser->setUserName("testing@localhost");
+        $this->user = $dbuser->readUser($testUser);
     }
 
     /**
@@ -115,10 +72,55 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
      *
      * This is run before each test, not just once before all tests.
      */
-    public function setUp() 
-    {
+    public function setUp() {
     }
-    
+
+    public function testParsedConstellationConstellation() {
+        $eParser = new \snac\util\EACCPFParser();
+        $eSerializer = new \snac\util\EACCPFSerializer();
+        $origCon = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cpfXML = $eSerializer->serialize($origCon);
+        $secondCon = $eParser->parse($cpfXML);
+        $cpfXML = $eSerializer->serialize($secondCon);
+        $thirdCon = $eParser->parse($cpfXML);
+
+
+        $this->assertTrue($origCon->equals($secondCon), "The original parsed constellation is different than the parsed serialized constellation");
+        $this->assertTrue($thirdCon->equals($secondCon), "The third parsed constellation is different than the second parsed serialized constellation");
+        $this->assertTrue($thirdCon->equals($origCon), "The third parsed constellation is different than the original parsed constellation");
+    }
+
+    public function testConstellationDatabaseConstellation() {
+        $eParser = new \snac\util\EACCPFParser();
+        $eSerializer = new \snac\util\EACCPFSerializer();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+        $cObj->setArkID("test-ark:constellationdatabaseconstellation/".time());
+
+        // Eventually, we may want this interaction to go through the server itself.
+
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 null,
+                                                 'ingest cpf');
+        $this->dbu->writeConstellationStatus($this->user,$retObj->getID(), "published");
+
+        $fromDB = $this->dbu->readPublishedConstellationByID($retObj->getID(), \snac\server\database\DBUtil::$FULL_CONSTELLATION
+                                                                | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION);
+
+        $cpfXML = $eSerializer->serialize($fromDB);
+        $secondCon = $eParser->parse($cpfXML);
+
+        $this->assertTrue($fromDB->equals($secondCon, false), "Constellation read from DB is not the same as the one re-serialized");
+        $this->assertTrue($secondCon->equals($fromDB, false), "Constellation re-serialized is not the same as the one read from the DB");
+
+        $this->assertTrue($cObj->equals($secondCon, false), "Constellation parsed is not the same as the one serialized from the database");
+        $this->assertTrue($secondCon->equals($cObj, false), "Constellation serialized from db is not the same as the one originally parsed");
+
+        // Be nice and "delete" the evidence
+        $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), "deleted");
+    }
+
     /**
      * Test basic XML rendering
      *
@@ -126,30 +128,11 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
      * has to be changed everytime the template gets an update that changes number of lines of output.
      *
      * Other tests do a Constellation->equals().
-     * 
-     */ 
-    public function testRender() {
-        $cpfXML = \snac\util\EACCPFSerializer::SerializeByARK('http://snac/test/record-1', true);
-        preg_match_all("/(\n)/m", $cpfXML, $matches);
-        // printf("\nrec1 matches: %s\n", sizeof($matches[1]));
-        $this->assertEquals(417, sizeof($matches[1]));
-
-        $vernOne = \snac\util\EACCPFSerializer::SerializeByARK('http://n2t.net/ark:/99166/w6xd18cz');
-
-        $xCon = $this->dbu->readPublishedConstellationByARK('http://n2t.net/ark:/99166/w6xd18cz');
-        $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($xCon->toArray());
-        preg_match_all("/(\n)/m", $cpfXML, $matches);
-        // printf("\nvern matches: %s\n", sizeof($matches[1]));
-
-        $this->assertEquals(123, sizeof($matches[1]));
-        /* 
-         * Check that we get the same XML by both methods. 
-         */  
-        $this->assertEquals($cpfXML, $vernOne);
-
+     */
+    public function testRenderWithJing() {
         /*
          * A bug was revealed by /data/merge/99166-w6fr4rx5.xml  http://n2t.net/ark:/99166/w6fr4rx5
-         * 
+         *
          * The composer script automatically pulls in the cpf.rng file into the main repository. It should
          * then always deposit the newest rng file in vendor/npm-asset/eac-validator/rng. Use the const
          * RNG_DIR for that path.
@@ -163,27 +146,26 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
          *
          * Class path constants don't interpolate, so we have to use the . operator to build the full
          * filename.
-         * 
-         */  
+         */
         $cpfRng = \snac\Config::$RNG_DIR . "/cpf.rng";
         $jingCmd = '/usr/bin/jing';
         if (file_exists($cpfRng) && file_exists($jingCmd)) {
             $xCon = $this->dbu->readPublishedConstellationByARK('http://n2t.net/ark:/99166/w6fr4rx5');
-            $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($xCon->toArray());
-            /* 
+            $eSerializer = new \snac\util\EACCPFSerializer();
+            $cpfXML = $eSerializer->serialize($xCon);
+            /*
              * $cfile = fopen('cpf_data.txt', 'w');
              * fwrite($cfile, $xCon->toJSON());
-             * fclose($cfile); 
+             * fclose($cfile);
              */
             $fn = '/tmp/' . uniqid(rand(), true) . '.xml';
 
             $cfile = fopen($fn, 'w');
             fwrite($cfile, $cpfXML);
-            fclose($cfile); 
+            fclose($cfile);
             $jingResult = `$jingCmd $cpfRng $fn`;
-            $this->enableLogging();
-            $this->logDebug("jing result (should be empty): $jingResult");
-            $this->logDebug("temp xml: $fn");
+            $this->logger->addDebug("jing result (should be empty): $jingResult");
+            $this->logger->addDebug("temp xml: $fn");
 
             /*
              * Delete before calling assert, so that a failed assert doesn't leave our temp file.
@@ -193,7 +175,7 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
             unlink($fn);
             /*
              * Assertion disabled until we resolve the regex for snac:preferenceScore
-             */ 
+             */
             // $this->assertTrue($jingResult == '');
         } else {
             $msg = "Not checking via jing. ";
@@ -203,43 +185,7 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
             if (! file_exists($jingCmd)) {
                 $msg .= "File not exists: $jingCmd";
             }
-            $this->enableLogging();
-            $this->logDebug($msg);
+            $this->logger->addDebug($msg);
         }
     }
-
-    public function testCPFtoCPF() {
-        $eParser = new \snac\util\EACCPFParser();
-        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-        $origCon = $eParser->parseFile("test/snac/server/database/test_record.xml");
-        // printf("unknowns: %s\n", var_export($eParser->getMissing(), 1));
-        $cpfXML = \snac\util\EACCPFSerializer::SerializeCore($origCon->toArray());
-
-        $fn = '/tmp/' . uniqid(rand(), true) . '.xml';
-        
-        $cfile = fopen($fn, 'w');
-        fwrite($cfile, $cpfXML);
-        fclose($cfile); 
-
-        $recycledCon = $eParser->parseFile("$fn");
-        
-        /*
-         * Delete before calling assert, so that a failed assert doesn't leave our temp file.
-         *
-         * Comment this out for debugging. The file is in /tmp.
-         */
-        // unlink($fn);
-
-        $cfile = fopen('tmp_orig.json', 'w');
-        fwrite($cfile, $origCon->toJSON());
-        fclose($cfile); 
-
-        $cfile = fopen('tmp_dest.json', 'w');
-        fwrite($cfile, $recycledCon->toJSON());
-        fclose($cfile); 
-
-        $this->assertTrue($recycledCon->equals($origCon, false));
-
-    }
-
   }
