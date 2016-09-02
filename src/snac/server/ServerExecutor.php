@@ -1089,10 +1089,17 @@ class ServerExecutor {
                         // We must mint an ark
                         $arkManager = new \ark\ArkManager();
 
+                        $newArk = null;
+                        // Mint a temporary ark if we are in testing mode, else mint real ark
+                        if (true) {
+                            $newArk = $arkManager->mintTemporaryArk();
+                        } else {
+                            $newArk = $arkManager->mintArk();
+                        }
                         $microConstellation = new \snac\data\Constellation();
                         $microConstellation->setID($current->getID());
                         $microConstellation->setVersion($current->getVersion());
-                        $microConstellation->setArkID($arkManager->mintTemporaryArk());
+                        $microConstellation->setArkID($newArk);
                         $microConstellation->setEntityType($current->getEntityType());
                         $microConstellation->setOperation(\snac\data\Constellation::$OPERATION_UPDATE);
 
