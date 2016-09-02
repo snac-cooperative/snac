@@ -129,7 +129,7 @@ class DBUtil
     /**
      * SQL object
      *
-     * @var \snac\server\database\SQL low-level SQL class
+     * @var \snac\server\database\SQL $sql low-level SQL class
      */
     private $sql = null;
 
@@ -2750,6 +2750,26 @@ class DBUtil
      */
     public function populateMaintenanceInformation($vhInfo, &$cObj) {
 
+        // Need some terms
+        $searchResult = $this->searchVocabulary("event_type", "revised");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $revisedTerm = $this->populateTerm($searchResult[0]["id"]);
+
+        $searchResult = $this->searchVocabulary("agent_type", "human");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $humanTerm = $this->populateTerm($searchResult[0]["id"]);
+
+        $searchResult = $this->searchVocabulary("agent_type", "machine");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $machineTerm = $this->populateTerm($searchResult[0]["id"]);
+
+
         // Fill in the Maintenance History Events
         $history = $this->sql->selectVersionHistory($vhInfo);
         foreach ($history as $event) {
@@ -2770,10 +2790,10 @@ class DBUtil
                 $newEvent = new \snac\data\MaintenanceEvent();
                 $newEvent->setEventDateTime($event["update_date"]);
                 $newEvent->setStandardDateTime($event["update_date"]);
-                $newEvent->setAgentType(new \snac\data\Term(array("term" => "machine")));
+                $newEvent->setAgentType($machineTerm);
                 $newEvent->setAgent("SNAC EAC-CPF Parser");
                 $newEvent->setEventDescription("Bulk ingest into SNAC Database");
-                $newEvent->setEventType(new \snac\data\Term(array("term" => "revised")));
+                $newEvent->setEventType($revisedTerm);
                 $cObj->addMaintenanceEvent($newEvent);
 
             } else {
@@ -2782,10 +2802,10 @@ class DBUtil
                 $newEvent = new \snac\data\MaintenanceEvent();
                 $newEvent->setEventDateTime($event["update_date"]);
                 $newEvent->setStandardDateTime($event["update_date"]);
-                $newEvent->setAgentType(new \snac\data\Term(array("term" => "human")));
+                $newEvent->setAgentType($humanTerm);
                 $newEvent->setAgent($event["fullname"] . " (".$event["username"].")");
                 $newEvent->setEventDescription($event["note"]);
-                $newEvent->setEventType(new \snac\data\Term(array("term" => "revised")));
+                $newEvent->setEventType($revisedTerm);
                 $cObj->addMaintenanceEvent($newEvent);
             }
         }
