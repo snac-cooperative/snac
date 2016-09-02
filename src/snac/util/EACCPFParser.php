@@ -194,7 +194,16 @@ class EACCPFParser {
      */
     public function parse($xmlText) {
 
-        $xml = simplexml_load_string($xmlText);
+        // Clean up the XML before parsing
+        $xml = new \SimpleXMLElement($xmlText);
+        $domxml = new \DOMDocument('1.0');
+        $domxml->preserveWhiteSpace = false;
+        $domxml->formatOutput = true;
+        $domxml->loadXML($xml->asXML());
+        $cpfXML = $domxml->saveXML();
+
+
+        $xml = simplexml_load_string($cpfXML);
 
         $identity = new \snac\data\Constellation();
 
