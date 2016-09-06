@@ -1089,6 +1089,59 @@
         </div>
 {% endmacro %}
 
+
+{% macro displayBiogHist(X, inEdit, showSubElements, biogHist, i) %}
+    {% import 'widgets.html' as widgets %}
+    <div class="panel-body" id="biogHist_panel_{{i}}">
+        <div class="col-xs-10" id="biogHist_datapart_{{i}}">
+            <input type="hidden" id="biogHist_id_{{i}}" name="biogHist_id_{{i}}" value="{{biogHist.id}}"/>
+            <input type="hidden" id="biogHist_version_{{i}}" name="biogHist_version_{{i}}" value="{{biogHist.version}}"/>
+            {% if biogHist.id %}
+                <input type="hidden" id="biogHist_operation_{{i}}" name="biogHist_operation_{{i}}" value=""/>
+            {% else %}
+                <input type="hidden" id="biogHist_operation_{{i}}" name="biogHist_operation_{{i}}" value="insert"/>
+            {% endif %}
+            <div class="bioghist-text" id="textarea_biogHist_text_{{i}}">
+                <input type="hidden" id="biogHist_text_{{i}}" name="biogHist_text_{{i}}" value="{{ biogHist.text|e }}"/>
+                <div class="panel panel-default panel-body form-control-static">{{ biogHist.text|raw }}</div>
+            </div>
+
+
+            <input type="hidden" id="biogHist_language_id_{{i}}" name="biogHist_language_id_{{i}}" value="{{biogHist.language.id}}"/>
+            <input type="hidden" id="biogHist_language_version_{{i}}" name="biogHist_language_version_{{i}}" value="{{biogHist.language.version}}"/>
+            <div class="form-group">
+                <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.language.display }}
+                </label>
+                <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
+                    <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.id }}"/>
+                    <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.language.term }}"/>
+                    <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
+                    <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                    <p class="form-control-static">{{ biogHist.language.language.term }}</p>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{ X.script.display }}
+                </label>
+                <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
+                    <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.id }}"/>
+                    <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ biogHist.language.script.term }}"/>
+                    <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
+                    <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                    <p class="form-control-static">{{ biogHist.language.script.term }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{ widgets.scmModal(X, inEdit, showSubElements, "biogHist", i, "BiogHist", "BiogHist", biogHist) }}
+        {{ widgets.optionsList(X, inEdit, showSubElements, "biogHist", i) }}
+    </div>
+{% endmacro %}
+
 {% macro displayMandate(X, inEdit, showSubElements, mandate, i) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="mandate_panel_{{i}}">
