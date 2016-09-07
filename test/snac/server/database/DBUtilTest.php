@@ -332,42 +332,18 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $modNameID = $newRetObj->getNameEntries()[0]->getContributors()[0]->getID();
         $newRetObj->getNameEntries()[0]->getContributors()[0]->setName("TestName");
 
-        /*
-         * printf("\ndbutiltest: pre-change id: %s to name: %s pre-change cons version: %s\n",
-         *        $modNameID,
-         *        $newRetObj->getNameEntries()[0]->getContributors()[0]->getName(),
-         *        $newRetObj->getVersion());
-         */
-
-        // printf("\nDBUtilTest Writing cons with changed contributor name\n");
         $postWriteObj = $this->dbu->writeConstellation($this->user,
                                                        $newRetObj,
                                                        'change contributor name',
                                                        'ingest cpf');
         $this->dbu->writeConstellationStatus($this->user, $postWriteObj->getID(), 'published', 'probably already published, but setting again');
 
-        // printf("\nReading constellation version: %s\n", $postWriteObj->getVersion());
         $newObj = $this->dbu->readConstellation($postWriteObj->getID(),
                                                 $postWriteObj->getVersion());
-
-        // printf("\npost-change cons version: %s\n", $newObj->getVersion());
 
         $newContribName = $newObj->getNameEntries()[0]->getContributors()[0]->getName();
         $newNameVersion = $newObj->getNameEntries()[0]->getVersion();
         $newContribVersion = $newObj->getNameEntries()[0]->getContributors()[0]->getVersion();
-
-        /*
-         * printf("dbutiltest post change name zero nameID: %s\n", $newObj->getNameEntries()[0]->getID());
-         *
-         * foreach($newObj->getNameEntries()[0]->getContributors() as $item)
-         * {
-         *     printf("\ndbutiltest contrib name: %s id: %s post-change cons version: %s\n json:%s\n",
-         *            $item->getName(),
-         *            $item->getID(),
-         *            $newObj->getVersion(),
-         *            $item->toJSON());
-         * }
-         */
 
         $this->assertEquals("TestName", $newContribName);
         $this->assertEquals($nameVersion, $newNameVersion);

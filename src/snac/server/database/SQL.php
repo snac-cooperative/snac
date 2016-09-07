@@ -2377,6 +2377,47 @@ class SQL
     }
 
     /**
+     * Select a list of name components for an icid
+     *
+     * Select all name_component records for a constellation and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * name_component.name_id=name.id and name.ic_id = version_history.id.
+     *
+     * @param integer $icid Constellation ID.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+     */
+    public function selectAllNameComponentsForConstellation($icid, $version) {
+
+            $qq_2 = 'select_components';
+            $this->sdb->prepare($qq_2,
+                                'select aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+                                from
+                                    name_component as aa,
+                                    (select nc.name_id,max(nc.version) as version
+                                        from name_component nc,
+                                        (select
+                                        aa.id,aa.version, aa.ic_id
+                                        from name as aa,
+                                        (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                                        where
+                                        aa.id = bb.id and not aa.is_deleted and
+                                        aa.version = bb.version) as n
+                                     where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+                                where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version;');
+            $result = $this->sdb->execute($qq_2, array($icid, $version));
+            $all = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+            $this->sdb->deallocate($qq_2);
+            return $all;
+    }
+
+    /**
      * Insert an address line
      *
      * Related to place where component.place_id=place.id. This is a one-sided fk relationship also used for
@@ -3936,6 +3977,44 @@ class SQL
         return $all;
     }
 
+
+    /**
+    * Select a list of name contributors for an icid
+    *
+    * Select all name_contributor records for a constellation and return a list of associated lists.
+    *
+    * @param integer $icid Constellation ID.
+    *
+    * @param inteter $version Version number.
+    *
+    * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+    */
+    public function selectAllNameContributorsForConstellation($icid, $version) {
+
+        $qq_2 = 'select_contributors';
+        $this->sdb->prepare($qq_2,
+            'select aa.id, aa.version, aa.ic_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
+            from
+                name_contributor as aa,
+                (select nc.name_id,max(nc.version) as version
+                    from name_contributor nc,
+                    (select
+                    aa.id,aa.version, aa.ic_id
+                    from name as aa,
+                    (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                    where
+                    aa.id = bb.id and not aa.is_deleted and
+                    aa.version = bb.version) as n
+                 where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version order by aa.name_id, aa.id asc');
+        $result = $this->sdb->execute($qq_2, array($icid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
 
     /**
      * Return a test constellation
