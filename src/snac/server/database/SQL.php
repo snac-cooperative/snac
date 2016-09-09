@@ -1271,6 +1271,25 @@ class SQL
         return $all;
     }
 
+
+    public function selectSourceList($mainID, $version)
+    {
+        $qq = 'select_source_list';
+        $this->sdb->prepare($qq,
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            from source as aa,
+                            (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($mainID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
     /**
      * Select all source id only by constellation ID
      *
@@ -2692,6 +2711,28 @@ class SQL
 
         $this->sdb->prepare($qq, $query);
         $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+    
+    public function selectAllLanguagesForConstellation($cid, $version)
+    {
+        $qq = 'select_language';
+        
+        $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note,
+            aa.fk_table, aa.fk_id
+        from language as aa,
+        (select id,max(version) as version from language where ic_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
