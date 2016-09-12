@@ -1260,8 +1260,8 @@ class DBUtil
      * |                                  |                            |
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
-     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
-     *
+     * @param \snac\data\Constellation $cObj Constellation to populate
+     * @param boolean $getAll optional Whether to read all names (true, default) or only one (false)
      */
     private function populateNameEntry($vhInfo, $cObj, $getAll=true)
     {
@@ -1754,6 +1754,7 @@ class DBUtil
      * @param object $cObj An object. May be: \snac\data\Constellation, snac\data\SNACControlMetadata,
      * snac\data\Source, snac\data\BiogHist. Passed by reference, and changed in place
      *
+     * @param integer $fkID ID of the entry from the related table.
      * @param string $fkTable Table name of the related table.
      *
      */

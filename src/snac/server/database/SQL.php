@@ -1272,6 +1272,15 @@ class SQL
     }
 
 
+    /**
+     * Get all sources for Constellation
+     *
+     * Returns the list of all sources for a given ic_id and version.
+     *
+     * @param int $mainID The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of source data from the database
+     */
     public function selectSourceList($mainID, $version)
     {
         $qq = 'select_source_list';
@@ -2720,6 +2729,15 @@ class SQL
         return $all;
     }
     
+    /**
+     * Get all laguages for constellation
+     *
+     * Returns the list of all languages for a given ic_id and version.
+     *
+     * @param int $cid The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of language data from the database
+     */
     public function selectAllLanguagesForConstellation($cid, $version)
     {
         $qq = 'select_language';
@@ -4517,8 +4535,8 @@ class SQL
      *
      * This method searches the database for a place URI and returns the entry
      *
-     * @param string $term The "type" term for what type of vocabulary to search
-     * @param string $query The string to search through the vocabulary
+     * @param string $uri The URI string to search through the vocabulary
+     * @return string[]|null Array of information about the Geo Place or null if not found
      */
     public function getPlaceByURI($uri)
     {
@@ -4913,7 +4931,7 @@ class SQL
      *
      * @param integer $groupID A group id
      *
-     * @param boolean $everyone. If true include inactive users, else only list active.
+     * @param boolean $everyone If true include inactive users, else only list active.
      *
      * @return integer[] List of group ID values.
      */

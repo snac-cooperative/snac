@@ -164,9 +164,12 @@ class WebUIExecutor {
     }
 
     /**
+     * Get Constellation
      *
-     * $this->connect is \snac\client\util\ServerConnect
+     * Query the server to read a full Constellation object.
      *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
      */
     protected function getConstellation(&$input, &$display) {
@@ -1475,6 +1478,8 @@ class WebUIExecutor {
      *
      * Asks the server for the controlled vocabulary term information.
      *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The server's response with the vocabulary for the given term id
      */
     public function readVocabulary(&$input) {
         if (!isset($input["type"]) || !isset($input["id"])) {
