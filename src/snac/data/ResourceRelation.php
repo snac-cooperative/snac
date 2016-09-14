@@ -18,7 +18,7 @@ namespace snac\data;
 /**
  * Resource Relation
  *
- * Data storage class for relationships of an Identity Constellation to an external Resource.
+ * Data storage class for relationships of an Identity Constellation to an external (archival) Resource.
  *
  * @author Robbie Hott
  *        
@@ -119,6 +119,141 @@ class ResourceRelation extends AbstractData {
      * @var string Note attached to relation
      */
     private $note = null;
+
+    /**
+     * Title of the archival resource
+     *
+     * @var string Resource title
+     */
+    private $title = null;
+    
+    /**
+     * Abstract of the archival resource
+     *
+     * 
+     * @var string Abstract describing the resource
+     */
+    private $abstract text = null;
+
+
+    /**
+     * Extent of the resource
+     *
+     * @var string Extent of the materials, for example "1 box", "3 linear feet"
+     */ 
+    private $extent = null;
+
+
+    /**
+     * Repository ic_id
+     *
+     * @var integer The ic_id of the constellation that is the repository holding this related archival
+     * resource.
+     */ 
+    private $repoIcId = null;
+
+
+    /**
+     * Origination (creator) of the resource
+     * @var string[] List of origination names (names of the creators) of this resource.
+     */
+    private $relatedResourceOriginationName = array();
+
+    
+    /**
+     * Get title of the archival resource
+     *
+     * @return string Resource title
+     */
+    public function getTitle() {
+        return $this->title;
+    }
+
+    /**
+     * Set title of the archival resource
+     *
+     * @param string Resource title
+     */
+    public function setTitle($title) {
+        $this->title = $title;
+    }
+
+    /**
+     * Get abstract of the archival resource
+     *
+     * 
+     * @return string Abstract describing the resource
+     */
+    public function getAbstract() {
+        return $this->abstract;
+    }
+    
+    /**
+     * Set abstract of the archival resource
+     *
+     * 
+     * @param string Abstract describing the resource
+     */
+    public function setAbstract($abstract) {
+        $this->abstract = $abstract;
+    }
+
+    /**
+     * Get extent of the resource
+     *
+     * @return string Extent of the materials, for example "1 box", "3 linear feet"
+     */ 
+    public function getExtent() {
+        return $this->extent;
+    }
+    
+    /**
+     * Set extent of the resource
+     *
+     * @param string Extent of the materials, for example "1 box", "3 linear feet"
+     */ 
+    public function setExtent($extent) {
+        $this->extent = $extent;
+    }
+
+    /**
+     * Get repository ic_id
+     *
+     * @return integer The ic_id of the constellation that is the repository holding this related archival
+     * resource.
+     */ 
+    public function getRepoIcId() {
+        return $this->repoIcId;
+    }
+    
+    /**
+     * Set repository ic_id
+     *
+     * @param integer The ic_id of the constellation that is the repository holding this related archival
+     * resource.
+     */ 
+    public function setRepoIcId($repoIcId) {
+        $this->repoIcId = $repoIcId;
+    }
+
+    /**
+     * Get list of origination (creator) of the resource
+     *
+     * @return \snac\data\RROriginationName[] List of origination names (names of the creators) of this resource.
+     */
+    public function getRelatedResourceOriginationName() {
+        return $this->relatedResourceOriginationName;
+    }
+
+    /**
+     * Add an origination (creator) of the resource
+     *
+     * @param \snac\data\RROriginationName[] List of origination names (names of the creators) of this resource.
+     */
+    public function AddRelatedResourceOriginationName($relatedResourceOriginationName) {
+        array_push($this->relatedResourceOriginationName, $relatedResourceOriginationName);
+    }
+
 
     /**
      * Get the document type

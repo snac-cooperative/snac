@@ -706,26 +706,69 @@ create table related_identity (
 
 create unique index related_identity_idx1 on related_identity(id,ic_id,version);
 
+--
 -- resourceRelation
+-- The role aka roleTerm of repo_ic_id is always http://id.loc.gov/vocabulary/relators/rps
+--
 
 create table related_resource (
     id                  int default nextval('id_seq'),
+    is_deleted          boolean default false,
+
+    -- this constellation information
     version             int not null,
-    ic_id             int not null,
-    is_deleted          boolean default false, --
-    role                int,                   -- @xlink:role, fk to vocabulary.id, type document_type, e.g. ArchivalResource
-    arcrole             int,                   -- @xlnk:arcrole, fk to vocabulary.id type document_role, creatorOf, referencedIn, etc
-    type                int,                   -- @xlink:type, fk to vocabulary.id type source_type, was field document_type, always "simple"?
-    href                text,                  -- @xlink:href, link to the resource
-    relation_type       text,                  -- @resourceRelationType, only from AnF, maybe put in a second table
-    relation_entry      text,                  -- relationEntry (name) of the related eac-cpf record (should be unnecessary in db)
-    relation_entry_type text,                  -- relationEntry@localType, AnF, always "archiva"?
-    descriptive_note text,
-    object_xml_wrap     text,                  -- from objectXMLWrap, xml
+    ic_id               int not null,
+
+    -- connection between this constellation and resource
+    arcrole             int,  -- @xlnk:arcrole, fk to vocabulary.id type document_role, creatorOf, referencedIn, etc
+
+    -- information about the resource
+    relation_entry      text, -- relationEntry — “shortcut” description of this resource
+    title               text, -- resource title, from EAD/MODS
+    abstract            text, -- resource abstract, from EAD/MODS
+    extent              text, -- resource extent, from EAD and from original MARC
+    href                text, -- @xlink:href, URL link to the resource
+    repo_ic_id          int,  -- holding repository ic_id, fk to other constellation ic_id
+                              -- has name, address, and location information of the holding institution
+    role                int,  -- @xlink:role, fk to vocabulary.id, type document_type, e.g. ArchivalResource
+                              -- to  be deprecated
+    type                int,  -- @xlink:type, fk to vocabulary.id type source_type, always "simple"?
+                              -- to be deprecated
+    relation_type       text, -- @resourceRelationType, only from AnF, maybe put in a second table
+    relation_entry_type text, -- relationEntry@localType, AnF, always "archival"?
+                              -- to be deprecated
+    object_xml_wrap     text, -- contains more information about the resource (title, extent, etc)
+                              -- to be deprecated
+
+                              -- other useful information
+    descriptive_note    text,
     primary key(id, version)
-    );
+);
 
 create unique index related_resource_idx1 on related_resource(id,ic_id,version);
+
+-- 
+-- This is origination name aka originationName aka creator.
+-- No need for field role aka roleTerm since all these names are creators. The term "origination" seems to be from EAD.
+--
+-- http://id.loc.gov/vocabulary/relators/cre
+--
+-- This table can be updated via the web UI, so it needs the id,version,ic_id. Name is simply a string and we
+-- will not require names to be SNAC identities at this time. Later we will link these names to constellations
+-- via field name_ic_id.
+-- 
+create table related_resource_origination_name (
+    id         int default nextval('id_seq'),
+    version    int not null,
+    ic_id      int not null,                          
+    name_ic_id int,                            -- ic_id of this creator, eventually filled in by humans
+                                               -- reserved for future use
+    name       text,                           -- name of creator of the related resource
+    fk_id      int,                            -- fk to related_resource.id
+    fk_table   text default 'related_resource' -- related table name
+);
+
+create unique index rron_idx1 on related_resource_origination_name(id,ic_id,version);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
 --
@@ -773,20 +816,21 @@ create table entityid (
 );
 
 
--- Tables needing place data use place_link to relate to geo_place. Table place_link also relates to snac meta
--- data in order to capture original strings. The php denormalizes (using more space, but optimising i/o) by
--- combining fields from place_link and geo_place into PlaceEntry.
+-- Tables needing place data use place_link, and if there is a related geo_place then the place_link has the
+-- geo_place foreign key as well. Table place_link also relates to snac meta data in order to capture original
+-- strings. The php denormalizes (using more space, but optimising i/o) by combining fields from place_link
+-- and geo_place into PlaceEntry.
 --
 -- At one point the Constellation concept of place required two classes, and three SQL tables. One of those
--- tables was place, now commented out.
+-- tables was place, now superceded by place_link.
 --
--- Table place_link associates a place to another table. Each place_link relates to one geo_place authority
+-- Table place_link associates a place to another table. Each place_link relates to zero or one geo_place authority
 -- (controlled vocabulary) records.
 --
--- The original place text was here because it only occured once per Constellation place.
+-- The original place text is here because it only occurs once per Constellation place.
 --
--- The various matches each had their own geo_place_id, place_match_type, and confidence so they were found in
--- table place_link.
+-- When there are matches to geo_place, each match has their own geo_place_id, place_match_type, and score,
+-- therefore the matches are handled via one record per match in table place_link.
 --
 -- Table place_link and geo_place are denormalized together to create php PlaceEntry objects.
 
@@ -805,30 +849,11 @@ create table entityid (
 -- /data/merge/99166-w6p37bxz.xml:            <placeEntry>Bermuda Islands, North Atlantic Ocean</placeEntry>
 -- /data/merge/99166-w6rr6xvw.xml:            <placeEntry>Australia</placeEntry>
 
--- Feb 2 2016 table place unused. Stuff humans previously typed is in meta data related to place_link. First
--- order data which needs place uses place_link to relate to geo_place authority records.
-
--- create table place (
---     id         int default nextval('id_seq'),
---     version    int not null,
---     ic_id    int not null,
---     is_deleted boolean default false,
---     original   text, -- the original place text
---     type       int,  -- fk to vocabulary.id, from place/@localType
---     note       text, -- descriptive note, from place/descriptiveNote
---     role       int   -- fk to vocabulary.id, from place/placeRole
---     primary key(id, version)
---     );
-
--- create unique index place_idx1 on place(id,ic_id,version);
-
--- One to many linking table between place and geo_place. For the usual reasons SNAC place entry is
--- denormalized. Some of these fields are in the SNAC XML.
+-- Capture place info and serve as a one to many linking table between any other table and geo_place. This has
+-- the odd trait that there may be no related geo_place, so place_link is something of a conditional link. For
+-- the usual reasons SNAC place entry is denormalized. Some of these fields are in the SNAC XML.
 --
 -- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
-
--- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
--- confidence       int,  -- confidence of this link, from snac place entry
 
 create table place_link (
         id           int default nextval('id_seq'),
@@ -849,7 +874,13 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
--- Address lines from a place_link 
+-- Address lines related to a place_link. Note that place_link holds place data and optionally links that data
+-- to a geo_place when possible.
+-- 
+-- The address_line mirrors the EAC-CPF addressLine tag, and is associated with place tags.  That seems to
+-- make sense so that you can have a P.O. Box address for the special collections department and a geo_place
+-- that has the lat/lon for the Small Library at UVA (for example)
+    --
 
 create table address_line (
              id int default nextval('id_seq'),

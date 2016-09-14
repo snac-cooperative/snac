@@ -84,6 +84,37 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
 
 
     /**
+     * Test the new related resource code.
+     *
+     */ 
+    public function testRelatedResource()
+    {
+
+
+        $eParser = new \snac\util\EACCPFParser();
+        $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+        $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
+
+        $rron = new \snac\util\RROriginationName();
+        $rron->setName("F. R. Ute");
+        $rron2 = new \snac\util\RROriginationName();
+        $rron2->setName("Al Dente");
+        $cObj->AddRelatedResourceOriginationName($rron);
+        $cObj->AddRelatedResourceOriginationName($rron2);
+
+
+        $retObj = $this->dbu->writeConstellation($this->user,
+                                                 $cObj,
+                                                 'test demo constellation',
+                                                 'ingest cpf');
+
+        $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'locked editing');
+        $newObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+        
+    }
+
+
+    /**
      * Check that name components come back the correct order. Minimal check really only looks at the first
      * element, but that should be enough, especially since we will eventually replace all the vocabulary code.
      *

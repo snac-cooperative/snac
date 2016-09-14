@@ -2463,7 +2463,9 @@ class DBUtil
     /**
      * Save Relation aka  ConstellationRelation
      *
-     * "ConstellationRelation" has had many names: cpfRelation related_resource, relation,
+     * This is cpfRelation aka a relation to a constellation (as opposed to a relation to archival material).
+     *  
+     * "ConstellationRelation" has had many names: cpfRelation relation,
      * related_identity. We're attempting to make that more consistent, although the class is
      * ConstellationRelation and the SQL table is related_identity.
      *
@@ -2536,6 +2538,9 @@ class DBUtil
     /**
      * Save resourceRelation
      *
+     * This is resourceRelation aka related_resource which is a related archival material (as opposed to a
+     * relation to another constellation).
+     *
      * ignored: $this->linkType, @xlink:type always 'simple', vocab source_type, .type
      *
      * | placeholder | php                 | what, CPF                                        | sql                  |
@@ -2566,6 +2571,10 @@ class DBUtil
             if ($this->prepOperation($vhInfo, $fdata))
             {
                 $rid = $this->sql->insertResourceRelation($vhInfo,
+                                                          $fdata->getTitle(),
+                                                          $fdata->getAbstract(),
+                                                          $fdata->getExtent(),
+                                                          $fdata->getRepoIcId(),
                                                           $this->thingID($fdata->getDocumentType()), // xlink:role
                                                           $this->thingID($fdata->getEntryType()), // relationEntry@localType
                                                           $fdata->getLink(), // xlink:href
@@ -2577,9 +2586,39 @@ class DBUtil
                 $fdata->setID($rid);
                 $fdata->setVersion($vhInfo['version']);
             }
+            $this->saveRRON($vhInfo, $fdata, 'related_resource', $rid);
             $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
         }
     }
+    
+    /**
+     * Save the resource relation origination name
+     *
+     * RRON is a many-to-one relationship back to related_resource.
+     *
+     * $rron is a RROriginationName object. It has fields for operation, ic_id, version, and so on and thus
+     * supports full insert/update/delete.
+     *
+     * @param integer[] $vhInfo list with keys version, ic_id.
+     *
+     * @param \snac\data\ResourceRelation $fdata  object
+     *
+     * @param string $fkTable Name of the related table. Always 'related_resource' for RRON.
+     *
+     * @param integer $fkID Foreign key to the related_resource.id field.
+     */ 
+    private function saveRRON($vhInfo, $fdata, $fkTable, $fkID) {
+        foreach ($fdata->getRelatedResourceOriginationName() as $rron) {
+            if ($this->prepOperation($vhInfo, $rron))
+            {
+                $this->sql->insertRRON($vhInfo,
+                                       $rron->getName(),
+                                       $fkTable,
+                                       $fkID);
+            }
+        }
+    }
+
 
     /**
      * Select gender from database
