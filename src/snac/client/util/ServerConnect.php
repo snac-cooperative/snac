@@ -39,6 +39,10 @@ class ServerConnect {
 
     /**
      * Default constructor
+     *
+     * Creates a connection to the server with the given user object.
+     *
+     * @param \snac\data\User $user User object to use in making server requests
      */
     public function __construct($user = null) {
         global $log;

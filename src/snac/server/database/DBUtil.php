@@ -771,8 +771,14 @@ class DBUtil
 
         // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
         if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS)) != 0) {
+            $this->logger->addDebug("Populating Caches: Meta");
             $this->populateMetaCache($vhInfo);
+            $this->logger->addDebug("Populating Caches: Date");
             $this->populateDateCache($vhInfo);
+            $this->logger->addDebug("Populating Caches: Name");
+            $this->populateNameCache($vhInfo);
+            $this->logger->addDebug("Populating Caches: Language");
+            $this->populateLanguageCache($vhInfo);
         }
 
         // If the caller has requested any names, then we should pull them out
@@ -791,22 +797,39 @@ class DBUtil
 
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants data except relations");
+            $this->logger->addDebug("  Meta");
             $this->populateMeta($vhInfo, $cObj, $tableName);
+            $this->logger->addDebug("  Dates");
             $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
+            $this->logger->addDebug("  Source");
             $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
+            $this->logger->addDebug("  CD");
             $this->populateConventionDeclaration($vhInfo, $cObj);
+            $this->logger->addDebug("  Function");
             $this->populateFunction($vhInfo, $cObj);
+            $this->logger->addDebug("  Gender");
             $this->populateGender($vhInfo, $cObj);
+            $this->logger->addDebug("  General Context");
             $this->populateGeneralContext($vhInfo, $cObj);
+            $this->logger->addDebug("  Languages");
             $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
+            $this->logger->addDebug("  Legal Status");
             $this->populateLegalStatus($vhInfo, $cObj);
+            $this->logger->addDebug("  Mandate");
             $this->populateMandate($vhInfo, $cObj);
+            $this->logger->addDebug("  Nationality");
             $this->populateNationality($vhInfo, $cObj);
+            $this->logger->addDebug("  Occupation");
             $this->populateOccupation($vhInfo, $cObj);
+            $this->logger->addDebug("  OtherRecordID");
             $this->populateOtherRecordID($vhInfo, $cObj);
+            $this->logger->addDebug("  EntityID");
             $this->populateEntityID($vhInfo, $cObj);
+            $this->logger->addDebug("  Place");
             $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
+            $this->logger->addDebug("  SoG");
             $this->populateStructureOrGenealogy($vhInfo, $cObj);
+            $this->logger->addDebug("  Subject");
             $this->populateSubject($vhInfo, $cObj);
         }
 
@@ -1166,6 +1189,54 @@ class DBUtil
 
 
     /**
+    * Populate the name cache
+    *
+    * Gets all the name components and name contributors for the given constellation and stores
+    * them in a cache for later use
+    *
+    * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+    */
+    private function populateNameCache($vhInfo) {
+        $this->dataCache["name_entries"] = array();
+
+        // Start with name components
+        $componentRows = $this->sql->selectAllNameComponentsForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+        // aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+        foreach ($componentRows as $component) {
+            $cpObj = new \snac\data\NameComponent();
+            $cpObj->setText($component['nc_value']);
+            $cpObj->setOrder($component['c_order']);
+            $cpObj->setType($this->populateTerm($component['nc_label']));
+            $cpObj->setDBInfo($component['version'], $component['id']);
+            if (!isset($this->dataCache["name_entries"][$component["name_id"]]))
+                $this->dataCache["name_entries"][$component["name_id"]] = array();
+            if (!isset($this->dataCache["name_entries"][$component["name_id"]]["components"]))
+                $this->dataCache["name_entries"][$component["name_id"]]["components"] = array();
+            array_push($this->dataCache["name_entries"][$component["name_id"]]["components"], $cpObj);
+        }
+
+        // Then do name contributors
+        $contributorRows = $this->sql->selectAllNameContributorsForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($contributorRows as $contributor) {
+            $ctObj = new \snac\data\Contributor();
+            $ctObj->setType($this->populateTerm($contributor['name_type']));
+            $ctObj->setRule($this->populateTerm($contributor['rule']));
+            $ctObj->setName($contributor['short_name']);
+            $ctObj->setDBInfo($contributor['version'], $contributor['id']);
+
+            if (!isset($this->dataCache["name_entries"][$contributor["name_id"]]))
+                $this->dataCache["name_entries"][$contributor["name_id"]] = array();
+            if (!isset($this->dataCache["name_entries"][$contributor["name_id"]]["contributors"]))
+                $this->dataCache["name_entries"][$contributor["name_id"]]["contributors"] = array();
+            array_push($this->dataCache["name_entries"][$contributor["name_id"]]["contributors"], $ctObj);
+        }
+
+
+    }
+
+
+    /**
      * Populate nameEntry objects
      *
      * test with: scripts/get_constellation_demo.php 2 10
@@ -1189,8 +1260,8 @@ class DBUtil
      * |                                  |                            |
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
-     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
-     *
+     * @param \snac\data\Constellation $cObj Constellation to populate
+     * @param boolean $getAll optional Whether to read all names (true, default) or only one (false)
      */
     private function populateNameEntry($vhInfo, $cObj, $getAll=true)
     {
@@ -1204,44 +1275,24 @@ class DBUtil
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
 
             // For now, only get the parts if the user requests all names
-            if ($getAll) {
+            if ($getAll && isset($this->dataCache["name_entries"]) &&
+                isset($this->dataCache["name_entries"][$neObj->getID()])) {
                 /*
                  * Contributor
-                 *
-                 * This line works because $oneName['id'] == $neObj->getID() after calling setDBInfo(). Both are
-                 * record id, not constellation id. Both are non-null when reading from the database.
                  */
-                $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
-                foreach ($cRows as $contrib)
-                {
-                    $ctObj = new \snac\data\Contributor();
-                    $ctObj->setType($this->populateTerm($contrib['name_type']));
-                    $ctObj->setRule($this->populateTerm($contrib['rule']));
-                    $ctObj->setName($contrib['short_name']);
-                    $ctObj->setDBInfo($contrib['version'], $contrib['id']);
-                    $neObj->addContributor($ctObj);
-                }
+               if (isset($this->dataCache["name_entries"][$neObj->getID()]["contributors"])) {
+                   foreach ($this->dataCache["name_entries"][$neObj->getID()]["contributors"] as $contributor) {
+                       $neObj->addContributor($contributor);
+                   }
+               }
 
                 /*
                  * Component
                  */
-                $componentRows = $this->sql->selectComponent($neObj->getID(), $vhInfo['version']);
-                foreach ($componentRows as $cp)
-                {
-                    /*
-                     * | class         | json key        | php property                        | getter     | setter      | SQL field   |
-                     * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
-                     * | NameComponent | "text"          | $this->text                         | getText()  | setText()   | nc_value    |
-                     * | NameComponent | "order"         | $this->order                        | getOrder() | setOrder()  | c_order     |
-                     * | NameComponent | "type"          | $this->type                         | getType()  | setType()   | nc_label    |
-                     * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
-                     */
-                    $cpObj = new \snac\data\NameComponent();
-                    $cpObj->setText($cp['nc_value']);
-                    $cpObj->setOrder($cp['c_order']);
-                    $cpObj->setType($this->populateTerm($cp['nc_label']));
-                    $cpObj->setDBInfo($cp['version'], $cp['id']);
-                    $neObj->addComponent($cpObj);
+                if (isset($this->dataCache["name_entries"][$neObj->getID()]["components"])) {
+                    foreach ($this->dataCache["name_entries"][$neObj->getID()]["components"] as $component) {
+                        $neObj->addComponent($component);
+                    }
                 }
             }
 
@@ -1658,6 +1709,38 @@ class DBUtil
     }
 
     /**
+     * Populate the language cache
+     *
+     * Gets all the languages associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
+     *
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+     */
+    private function populateLanguageCache($vhInfo) {
+        $this->dataCache["languages"] = array();
+
+        $languageRows = $this->sql->selectAllLanguagesForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($languageRows as $item)
+        {
+            if (!isset($this->dataCache["languages"][$item['fk_table']]))
+                $this->dataCache["languages"][$item['fk_table']] = array();
+            if (!isset($this->dataCache["languages"][$item['fk_table']][$item['fk_id']]))
+                $this->dataCache["languages"][$item['fk_table']][$item['fk_id']] = array();
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($vhInfo, $newObj, 'language');
+            array_push($this->dataCache["languages"][$item['fk_table']][$item['fk_id']], $newObj);
+        }
+
+    }
+
+
+    /**
      * Select language from the database, create a language object, add the language to the object referenced
      * by $cObj.
      *
@@ -1671,40 +1754,31 @@ class DBUtil
      * @param object $cObj An object. May be: \snac\data\Constellation, snac\data\SNACControlMetadata,
      * snac\data\Source, snac\data\BiogHist. Passed by reference, and changed in place
      *
+     * @param integer $fkID ID of the entry from the related table.
      * @param string $fkTable Table name of the related table.
      *
      */
     private function populateLanguage($vhInfo, $cObj, $fkID, $fkTable)
     {
-        /*
-         * This reflects reality table.id=language.fk_id. Do not use the $cObj->getID(). The calling code
-         * knows which ID to use. In one case the calling code does pass $cObj->getID() for $fkID, but we
-         * can't know that down here, so we must use the $fkID param.
-         */
-        $rows = $this->sql->selectLanguage($fkID, $vhInfo['version'], $fkTable);
-
-        foreach ($rows as $item)
+        if ( isset($this->dataCache["languages"][$fkTable]) &&
+             isset($this->dataCache["languages"][$fkTable][$cObj->getID()]) )
         {
-            $newObj = new \snac\data\Language();
-            $newObj->setLanguage($this->populateTerm($item['language_id']));
-            $newObj->setScript($this->populateTerm($item['script_id']));
-            $newObj->setVocabularySource($item['vocabulary_source']);
-            $newObj->setNote($item['note']);
-            $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj, 'language');
-            $class = get_class($cObj);
-            /*
-             * Class specific method for setting/adding a language.
-             */
-            if ($class == 'snac\data\SNACControlMetadata' ||
-                $class == 'snac\data\Source' ||
-                $class == 'snac\data\BiogHist')
+            foreach($this->dataCache["languages"][$fkTable][$cObj->getID()] as $gObj)
             {
-                $cObj->setLanguage($newObj);
-            }
-            else if ($class == 'snac\data\Constellation')
-            {
-                $cObj->addLanguage($newObj);
+                $class = get_class($cObj);
+                /*
+                 * Class specific method for setting/adding a language.
+                 */
+                if ($class == 'snac\data\SNACControlMetadata' ||
+                    $class == 'snac\data\Source' ||
+                    $class == 'snac\data\BiogHist')
+                {
+                    $cObj->setLanguage($gObj);
+                }
+                else if ($class == 'snac\data\Constellation')
+                {
+                    $cObj->addLanguage($gObj);
+                }
             }
         }
     }
@@ -1736,12 +1810,34 @@ class DBUtil
      */
     private function populateSourceConstellation($vhInfo, $cObj)
     {
+        // Set the type to "simple", the default required by Daniel
+        $type = null;
+        $types = $this->searchVocabulary("source_type", "simple");
+        if (count($types) == 1) {
+            $type = $this->populateTerm($types[0]["id"]);
+        }
+        
+        $tableName = 'source';
         // Constellation version aka version_history.id is always the "newest". See note above.
-        $rows = $this->sql->selectSourceIDList($cObj->getID(), $vhInfo['version']);
-
+        $rows = $this->sql->selectSourceList($cObj->getID(), $vhInfo['version']);
         foreach ($rows as $rec)
         {
-            $this->populateSourceByID($vhInfo, $cObj, $rec['id']);
+            $newObj = new \snac\data\Source();
+            $newObj->setDisplayName($rec['display_name']);
+            $newObj->setText($rec['text']);
+            $newObj->setNote($rec['note']);
+            $newObj->setURI($rec['uri']);
+            $newObj->setDBInfo($rec['version'], $rec['id']);
+
+            $newObj->setType($type);
+
+            $this->populateMeta($vhInfo, $newObj, $tableName);
+            /*
+             * setLanguage() is a Language object.
+             */
+            $this->populateLanguage($vhInfo, $newObj, $rec['id'], $tableName);
+
+            $cObj->addSource($newObj);
         }
     }
 

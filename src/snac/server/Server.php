@@ -259,6 +259,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->editConstellation($this->input);
                 break;
 
+            case "search":
+                $this->response = $executor->searchConstellations($this->input);
+                break;
+
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
 

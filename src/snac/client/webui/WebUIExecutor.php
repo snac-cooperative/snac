@@ -164,9 +164,12 @@ class WebUIExecutor {
     }
 
     /**
+     * Get Constellation
      *
-     * $this->connect is \snac\client\util\ServerConnect
+     * Query the server to read a full Constellation object.
      *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
      * @return string[] The response from the server. It is a json_decode'ed response from curl.
      */
     protected function getConstellation(&$input, &$display) {
@@ -1395,79 +1398,20 @@ class WebUIExecutor {
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
     public function performNameSearch(&$input) {
-
-        $this->logger->addDebug("Searching for a Constellation");
-
-        $start = 0;
-        if (isset($input["start"]) && is_numeric($input["start"]))
-            $start = $input["start"];
-
-        $count = 10;
-        if (isset($input["count"]) && is_numeric($input["count"]))
-            $count = $input["count"];
-
-            // ElasticSearch Handler
-        $eSearch = null;
-        if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $this->logger->addDebug("Creating ElasticSearch Client");
-            $eSearch = \Elasticsearch\ClientBuilder::create()->setHosts([
-                    \snac\Config::$ELASTIC_SEARCH_URI
-            ])->setRetries(0)->build();
-
-            $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                    'body' => [
-                            /*'query' => [
-                                    'query_string' => [
-                                            'fields' => [
-                                                    "nameEntry"
-                                            ],
-                                            'query' => '*' . $input["term"] . '*'
-                                    ]
-                            ],
-                            'from' => $start,
-                            'size' => $count*/
-                        'query' => [
-                            'match_phrase_prefix' => [
-                                'nameEntry' => [
-                                    'query' => $input["term"]
-                                ]
-                            ]
-                        ],
-                        'from' => $start,
-                        'size' => $count
-                    ]
-                ];
-            $this->logger->addDebug("Defined parameters for search", $params);
-
-            $results = $eSearch->search($params);
-
-            $this->logger->addDebug("Completed Elastic Search", $results);
-
-            $return = array ();
-            foreach ($results["hits"]["hits"] as $i => $val) {
-                array_push($return, $val["_source"]);
-            }
-
-            $response = array();
-            $response["total"] = $results["hits"]["total"];
-            $response["results"] = $return;
-
-            if ($response["total"] == 0 || $count == 0) {
-                $response["pagination"] = 0;
-                $response["page"] = 0;
-            } else {
-                $response["pagination"] = ceil($response["total"] / $count);
-                $response["page"] = floor($start / $count);
-            }
-            $this->logger->addDebug("Created search response to the user", $response);
-
-            return $response;
+        if (!isset($input["term"])) {
+            return array ("total" => 0, "results" => array());
         }
-        return array (
-                    "notice" => "Not Using ElasticSearch"
-        );
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query(array(
+            "command" => "search",
+            "term" => $input["term"],
+            "start" => isset($input["start"]) ? $input["start"] : 0,
+            "count" => isset($input["count"]) ? $input["count"] : 10
+        ));
+
+        return $serverResponse;
+
     }
 
     /**
@@ -1475,6 +1419,8 @@ class WebUIExecutor {
      *
      * Asks the server for the controlled vocabulary term information.
      *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The server's response with the vocabulary for the given term id
      */
     public function readVocabulary(&$input) {
         if (!isset($input["type"]) || !isset($input["id"])) {

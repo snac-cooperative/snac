@@ -1271,6 +1271,34 @@ class SQL
         return $all;
     }
 
+
+    /**
+     * Get all sources for Constellation
+     *
+     * Returns the list of all sources for a given ic_id and version.
+     *
+     * @param int $mainID The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of source data from the database
+     */
+    public function selectSourceList($mainID, $version)
+    {
+        $qq = 'select_source_list';
+        $this->sdb->prepare($qq,
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            from source as aa,
+                            (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($mainID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
     /**
      * Select all source id only by constellation ID
      *
@@ -2377,6 +2405,47 @@ class SQL
     }
 
     /**
+     * Select a list of name components for an icid
+     *
+     * Select all name_component records for a constellation and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * name_component.name_id=name.id and name.ic_id = version_history.id.
+     *
+     * @param integer $icid Constellation ID.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+     */
+    public function selectAllNameComponentsForConstellation($icid, $version) {
+
+            $qq_2 = 'select_components';
+            $this->sdb->prepare($qq_2,
+                                'select aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+                                from
+                                    name_component as aa,
+                                    (select nc.name_id,max(nc.version) as version
+                                        from name_component nc,
+                                        (select
+                                        aa.id,aa.version, aa.ic_id
+                                        from name as aa,
+                                        (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                                        where
+                                        aa.id = bb.id and not aa.is_deleted and
+                                        aa.version = bb.version) as n
+                                     where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+                                where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version;');
+            $result = $this->sdb->execute($qq_2, array($icid, $version));
+            $all = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+            $this->sdb->deallocate($qq_2);
+            return $all;
+    }
+
+    /**
      * Insert an address line
      *
      * Related to place where component.place_id=place.id. This is a one-sided fk relationship also used for
@@ -2651,6 +2720,37 @@ class SQL
 
         $this->sdb->prepare($qq, $query);
         $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+    
+    /**
+     * Get all laguages for constellation
+     *
+     * Returns the list of all languages for a given ic_id and version.
+     *
+     * @param int $cid The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of language data from the database
+     */
+    public function selectAllLanguagesForConstellation($cid, $version)
+    {
+        $qq = 'select_language';
+        
+        $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note,
+            aa.fk_table, aa.fk_id
+        from language as aa,
+        (select id,max(version) as version from language where ic_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -3938,6 +4038,44 @@ class SQL
 
 
     /**
+    * Select a list of name contributors for an icid
+    *
+    * Select all name_contributor records for a constellation and return a list of associated lists.
+    *
+    * @param integer $icid Constellation ID.
+    *
+    * @param inteter $version Version number.
+    *
+    * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+    */
+    public function selectAllNameContributorsForConstellation($icid, $version) {
+
+        $qq_2 = 'select_contributors';
+        $this->sdb->prepare($qq_2,
+            'select aa.id, aa.version, aa.ic_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
+            from
+                name_contributor as aa,
+                (select nc.name_id,max(nc.version) as version
+                    from name_contributor nc,
+                    (select
+                    aa.id,aa.version, aa.ic_id
+                    from name as aa,
+                    (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                    where
+                    aa.id = bb.id and not aa.is_deleted and
+                    aa.version = bb.version) as n
+                 where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version order by aa.name_id, aa.id asc');
+        $result = $this->sdb->execute($qq_2, array($icid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
+    /**
      * Return a test constellation
      *
      * This is used for testing. Not really random. Get a record that has a date_range record. The query
@@ -4397,8 +4535,8 @@ class SQL
      *
      * This method searches the database for a place URI and returns the entry
      *
-     * @param string $term The "type" term for what type of vocabulary to search
-     * @param string $query The string to search through the vocabulary
+     * @param string $uri The URI string to search through the vocabulary
+     * @return string[]|null Array of information about the Geo Place or null if not found
      */
     public function getPlaceByURI($uri)
     {
@@ -4793,7 +4931,7 @@ class SQL
      *
      * @param integer $groupID A group id
      *
-     * @param boolean $everyone. If true include inactive users, else only list active.
+     * @param boolean $everyone If true include inactive users, else only list active.
      *
      * @return integer[] List of group ID values.
      */
