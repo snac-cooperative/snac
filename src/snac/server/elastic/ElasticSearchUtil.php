@@ -63,20 +63,37 @@ class ElasticSearchUtil {
 
         if ($this->connector != null) {
             $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                'id' => $constellation->getID(),
+                'body' => [
+                    'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
+                    'entityType' => $constellation->getEntityType()->getTerm(),
+                    'arkID' => $constellation->getArk(),
                     'id' => $constellation->getID(),
-                    'body' => [
-                            'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
-                            'entityType' => $constellation->getEntityType()->getID(),
-                            'arkID' => $constellation->getArk(),
-                            'id' => $constellation->getID(),
-                            'degree' => count($constellation->getRelations()),
-                            'timestamp' => date('c')
-                    ]
+                    'degree' => count($constellation->getRelations()),
+                    'timestamp' => date('c')
+                ]
             ];
 
             $this->connector->index($params);
+            foreach ($constellation->getNameEntries() as $entry) { 
+                $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    'id' => $entry->getID(),
+                    'body' => [
+                        'nameEntry' => $entry->getOriginal(),
+                        'entityType' => $constellation->getEntityType()->getTerm(),
+                        'arkID' => $constellation->getArk(),
+                        'id' => $constellation->getID(),
+                        'name_id' => $entry->getID(),
+                        'degree' => count($constellation->getRelations()),
+                        'timestamp' => date("c")
+                    ]
+                ];
+                $this->connector->index($params);
+            }
             $this->logger->addDebug("Updated elastic search with new constellation name entries");
         }
     }
@@ -98,6 +115,14 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->delete($params);
+            foreach ($constellation->getNameEntries() as $entry) { 
+                $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
+                    'id' => $entry->getID()
+                ];
+                $this->connector->delete($params);
+            }
             $this->logger->addDebug("Updated elastic search to remove constellation");
         }
 
