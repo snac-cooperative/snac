@@ -760,6 +760,7 @@ create unique index related_resource_idx1 on related_resource(id,ic_id,version);
 -- 
 create table related_resource_origination_name (
     id         int default nextval('id_seq'),
+    is_deleted boolean default false,
     version    int not null,
     ic_id      int not null,                          
     name_ic_id int,                            -- ic_id of this creator, eventually filled in by humans

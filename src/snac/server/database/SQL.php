@@ -3306,6 +3306,47 @@ class SQL
     }
 
     /**
+     * Select related resource origination name record
+     *
+     * Where $vhInfo has keys 'version' and 'ic_id'.
+     *
+     * Note that the related table is always 'related_resource'. It could be left out of the query entirely.
+     *
+     * This SQL query is based on selectLanguage() which is also a foreign key back-relation to the related table.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param integer $fkID Foreign key to getID() of the ResourceRelation object.
+     * 
+     * @return string[][] Return a list of lists. Inner list keys: id, version, name
+     */
+    public function selectRRON($vhInfo, $fkID)
+    {
+        $qq = 'select_related_resource_origination_name';
+
+        $query = 'select aa.version, aa.id, aa.name
+        from related_resource_origination_name as aa,
+        (select id,max(version) as version from related_resource_origination_name where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq,
+                                      array($fkID,
+                                            $vhInfo['version'],
+                                            'related_resource'));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+
+    /**
      * Get a single vocabulary record
      *
      * @param integer $termID The record id of a vocabulary term

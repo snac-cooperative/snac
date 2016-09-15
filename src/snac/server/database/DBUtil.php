@@ -2628,6 +2628,35 @@ class DBUtil
         }
     }
 
+    /**
+     * Populate the resource relation origination name
+     *
+     * ResourceRelation (aka related_resource) has a one-to-many relation to origination name
+     * 
+     * Do not need an arg for table name, because rron only has a relation to 'related_resource'. Other
+     * back-related data (such as language) are very generic, and thus need args for fkID and fkTable.
+     *
+     * Like all populate* functions, this modifies the $rrelObj by calling one its setters, in this case
+     * addRelatedResourceOriginationName().
+     *
+     * @param integer[] $vhInfo list with keys version, ic_id.
+     *
+     * @param \snac\data\ResourceRelation $rrelObj A ResourceRelation object
+     */ 
+    private function populateRRON($vhInfo, $rrelObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
+         */
+        $gRows = $this->sql->selectRRON($vhInfo, $rrelObj->getID());
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\RROriginationName();
+            $gObj->setName($rec['name']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $rrelObj->addRelatedResourceOriginationName($gObj);
+        }
+    }
 
     /**
      * Select gender from database
@@ -2846,6 +2875,7 @@ class DBUtil
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
+            $this->populateRRON($vhInfo, $rrObj);
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
             $cObj->addResourceRelation($rrObj);
         }

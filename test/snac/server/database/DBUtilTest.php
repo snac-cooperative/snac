@@ -95,12 +95,14 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
 
-        $rron = new \snac\util\RROriginationName();
+        $rron = new \snac\data\RROriginationName();
         $rron->setName("F. R. Ute");
-        $rron2 = new \snac\util\RROriginationName();
+        $rron2 = new \snac\data\RROriginationName();
         $rron2->setName("Al Dente");
-        $cObj->AddRelatedResourceOriginationName($rron);
-        $cObj->AddRelatedResourceOriginationName($rron2);
+        $resRelList = $cObj->getResourceRelations();
+        $resRel = $resRelList[0];
+        $resRel->AddRelatedResourceOriginationName($rron);
+        $resRel->AddRelatedResourceOriginationName($rron2);
 
 
         $retObj = $this->dbu->writeConstellation($this->user,
@@ -110,7 +112,17 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
 
         $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'locked editing');
         $newObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
-        
+        /*
+         * Only the first [0] element has an origination name. Assume the order is unchanged when round
+         * tripping to the db.
+         */ 
+        $resRelList = $newObj->getResourceRelations();
+        foreach ($resRelList as $resrel) {
+            printf("\nresrel id: %s\n", $resrel->getID());
+            foreach ($resrel->getRelatedResourceOriginationName() as $rron) {
+                printf("\nrron: %s\n", $rron->getName());
+            }
+        }
     }
 
 
