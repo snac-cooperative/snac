@@ -45,6 +45,7 @@ drop table if exists otherid;
 drop table if exists entityid;
 drop table if exists place_link;
 drop table if exists related_identity;
+drop table if exists related_resource_origination_name;
 drop table if exists related_resource;
 drop table if exists privilege_role_link;
 drop table if exists privilege;

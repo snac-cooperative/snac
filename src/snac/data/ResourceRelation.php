@@ -133,7 +133,7 @@ class ResourceRelation extends AbstractData {
      * 
      * @var string Abstract describing the resource
      */
-    private $abstract text = null;
+    private $abstract = null;
 
 
     /**

@@ -2609,12 +2609,21 @@ class DBUtil
      */ 
     private function saveRRON($vhInfo, $fdata, $fkTable, $fkID) {
         foreach ($fdata->getRelatedResourceOriginationName() as $rron) {
+            /*
+             * Other functions call getID() twice. Unclear if that is a feature or just an oversight.  Here I
+             * call getID before the if() statement to get what may (or may not) be a non-null record
+             * id. Inside the if I use the $rid variable.
+             */ 
+            $rid = $rron->getID();
             if ($this->prepOperation($vhInfo, $rron))
             {
-                $this->sql->insertRRON($vhInfo,
-                                       $rron->getName(),
-                                       $fkTable,
-                                       $fkID);
+                $rid = $this->sql->insertRRON($vhInfo,
+                                              $rid,
+                                              $rron->getName(),
+                                              $fkTable,
+                                              $fkID);
+                $rron->setID($rid);
+                $rron->setVersion($vhInfo['version']);
             }
         }
     }

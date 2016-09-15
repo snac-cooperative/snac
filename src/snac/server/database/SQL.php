@@ -3218,6 +3218,10 @@ class SQL
      *
      */
     public function insertResourceRelation($vhInfo,
+                                           $title,
+                                           $abstract,
+                                           $extent,
+                                           $repoIcId,
                                            $relationEntryType, // aka documentType aka xlink:role
                                            $entryType, // relationEntry@localType
                                            $href,  // xlink:href
@@ -3234,23 +3238,68 @@ class SQL
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, ic_id, id, role, relation_entry_type, href, arcrole, relation_entry,
+                            (version, ic_id, id, title, abstract, extent, repo_ic_id, role, relation_entry_type, href, arcrole, relation_entry,
                             object_xml_wrap, descriptive_note)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
         $execList = array($vhInfo['version'], // 1
-                          $vhInfo['ic_id'], // 2
-                          $id, // 3
-                          $relationEntryType, // 4
-                          $entryType, // 5
-                          $href, // 6
-                          $arcRole, // 7
-                          $relationEntry, // 8
-                          $objectXMLWrap, // 9
-                          $note); // 10
+                          $vhInfo['ic_id'],   // 2
+                          $id,                // 3
+                          $title,             // 4
+                          $abstract,          // 5
+                          $extent,            // 6
+                          $repoIcId,          // 7
+                          $relationEntryType, // 8
+                          $entryType,         // 9 
+                          $href,              // 10
+                          $arcRole,           // 11
+                          $relationEntry,     // 12
+                          $objectXMLWrap,     // 13
+                          $note);             // 14
+        $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /**
+     * Insert into table related_resource_origination_name
+     *
+     * Use data from php RROriginationName object. It is assumed that the calling code in DBUtils knows the php
+     * to sql fields. 
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+
+     * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
+     */
+    public function insertRRON($vhInfo,
+                               $id,
+                               $name,
+                               $fkTable,
+                               $fkID)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insertRRON';
+        $this->sdb->prepare($qq,
+                            'insert into related_resource_origination_name
+                            (version, ic_id, id, name, fk_table, fk_id)
+                            values
+                            ($1, $2, $3, $4, $5, $6)');
+        /*
+         * Combine vhInfo and the remaining args into a big array for execute().
+         */
+        $execList = array($vhInfo['version'],
+                          $vhInfo['ic_id'],
+                          $id,
+                          $name,
+                          $fkTable,
+                          $fkID);
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return $id;
