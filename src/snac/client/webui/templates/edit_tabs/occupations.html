@@ -1,0 +1,18 @@
+{% import '../widgets.html' as widgets %}
+{% import '../edit_components.html' as components %}
+{% import '../date_entry.html' as dates %}
+
+<h2>Occupations</h2>
+
+<div class="form-group" id="add_occupation_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_occupation"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
+    </div>
+</div>
+
+{% set i = 0 %}
+{% for occupation in data.occupations %}
+    {{ components.displayOccupation(X, true, true, occupation, i) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_occupation_i' style='display:none;'>{{i}}</span>

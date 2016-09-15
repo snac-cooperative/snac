@@ -1,0 +1,19 @@
+{% import '../widgets.html' as widgets %}
+{% import '../edit_components.html' as components %}
+{% import '../date_entry.html' as dates %}
+
+<h2>Nationalities</h2>
+
+
+<div class="form-group" id="add_nationality_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_nationality"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
+    </div>
+</div>
+
+{% set i = 0 %}
+{% for nationality in data.nationalities %}
+    {{ components.displayNationality(X, true, true, nationality, i) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_nationality_i' style='display:none;'>{{i}}</span>
