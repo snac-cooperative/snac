@@ -34,6 +34,11 @@ class ServerExecutor {
     private $uStore = null;
 
     /**
+     * @var \snac\server\elastic\ElasticSearchUtil Elastic Search Utility class
+     */
+    private $elasticSearch = null;
+
+    /**
      * @var \snac\data\User Current user object
      */
     private $user = null;
@@ -63,6 +68,7 @@ class ServerExecutor {
 
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
+        $this->elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
@@ -1125,36 +1131,7 @@ class ServerExecutor {
                     //      currently, we only need the summary for the name entries
                     $published = $this->cStore->readPublishedConstellationByID($constellation->getID(), DBUtil::$READ_ALL_NAMES);
 
-                    // add to elastic search
-                    $eSearch = null;
-                    if (\snac\Config::$USE_ELASTIC_SEARCH) {
-                        $eSearch = \Elasticsearch\ClientBuilder::create()
-                        ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-                        ->setRetries(0)
-                        ->build();
-                    }
-
-                    $this->logger->addDebug("Created elastic search client to update");
-
-                    if ($eSearch != null) {
-                        $params = [
-                                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                                'id' => $published->getID(),
-                                'body' => [
-                                        'nameEntry' => $published->getPreferredNameEntry()->getOriginal(),
-                                        'entityType' => $published->getEntityType()->getID(),
-                                        'arkID' => $published->getArk(),
-                                        'id' => $published->getID(),
-                                        'degree' => count($published->getRelations()),
-                                        'timestamp' => date('c')
-                                ]
-                        ];
-
-                        $eSearch->index($params);
-                        $this->logger->addDebug("Updated elastic search with newly published constellation");
-                    }
-
+                    $this->elasticSearch->writeToNameIndices($published);
                 } else {
                     $this->logger->addDebug("could not publish the constellation");
                     $response["result"] = "failure";
@@ -1228,27 +1205,8 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
 
-                    // update elastic search
-                    $eSearch = null;
-                    if (\snac\Config::$USE_ELASTIC_SEARCH) {
-                        $eSearch = \Elasticsearch\ClientBuilder::create()
-                        ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-                        ->setRetries(0)
-                        ->build();
-                    }
 
-                    $this->logger->addDebug("Created elastic search client to update");
-
-                    if ($eSearch != null) {
-                        $params = [
-                                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                                'id' => $published->getID()
-                        ];
-
-                        $eSearch->delete($params);
-                        $this->logger->addDebug("Updated elastic search to remove constellation");
-                    }
+                    $this->elasticSearch->deleteFromNameIndices($constellation);
 
                 } else {
                     $this->logger->addDebug("could not delete the constellation");
@@ -1614,35 +1572,14 @@ class ServerExecutor {
     public function getRecentlyPublished() {
         $response = array();
 
-        // ElasticSearch Handler
-        $eSearch = null;
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $this->logger->addDebug("Creating ElasticSearch Client");
-            $eSearch = \Elasticsearch\ClientBuilder::create()
-            ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-            ->setRetries(0)
-            ->build();
 
-
-            $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                    'body' => [
-                            'sort' => [
-                                    'timestamp' => [
-                                            "order" => "desc"
-                                    ]
-                            ]
-                    ]
-            ];
-            $this->logger->addDebug("Defined parameters for search", $params);
-
-            $results = $eSearch->search($params);
-
-            $this->logger->addDebug("Completed Elastic Search", $results);
+            $results = $this->elasticSearch->listRecentlyUpdated(
+                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        \snac\Config::$ELASTIC_SEARCH_BASE_TYPE);
 
             $return = array();
-            foreach ($results["hits"]["hits"] as $i => $val) {
+            foreach ($results as $i => $val) {
                 $related = new \snac\data\Constellation();
                 $related->setID($val["_source"]["id"]);
                 $related->setArkID($val["_source"]["arkID"]);
@@ -1660,6 +1597,31 @@ class ServerExecutor {
         } else {
             $response["result"] = "Not Using ElasticSearch";
         }
+        return $response;
+    }
+
+    /**
+     * Search For Constellation
+     *
+     * Given a search term, starting point (0+), and a count of results, search SNAC for a
+     * constellation matching that name heading and return the list of results.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function searchConstellations(&$input) {
+        $response = array();
+
+        // error condition
+        if (!isset($input["term"]) || !isset($input["start"]) || !isset($input["count"])) {
+            $this->logger->addDebug("Something was not set correctly", $input);
+            return $response;
+        }
+
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+            $response = $this->elasticSearch->searchMainIndex($input["term"], $input["start"], $input["count"]);
+        }
+
         return $response;
     }
 

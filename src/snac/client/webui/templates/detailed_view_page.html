@@ -155,59 +155,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                     </div>
 
-
-                    {% set i = 0 %}
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
 
-                        <div class="panel-body" id="biogHist_panel_0">
-                            <div class="col-xs-10" id="biogHist_datapart_0">
-                                <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
-                                <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
-                                {% if data.biogHists[0].id %}
-                                    <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
-                                {% else %}
-                                    <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value="insert"/>
-                                {% endif %}
-                                <div id="textarea_biogHist_text_0">
-                                    <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
-                                    <div class="panel panel-default panel-body form-control-static">{{ data.biogHists[0].text|raw }}</div>
-                                </div>
-
-
-                                <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
-                                <input type="hidden" id="biogHist_language_version_0" name="biogHist_language_version_0" value="{{data.biogHists[0].language.version}}"/>
-                                <div class="form-group">
-                                    <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
-                                        {{ X.language.display }}
-                                    </label>
-                                    <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
-                                        <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
-                                        <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.term }}"/>
-                                        <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                        <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ data.biogHists[0].language.language.term }}</p>
-                                    </div>
-                                </div>
-
-
-                                <div class="form-group">
-                                    <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
-                                        {{ X.script.display }}
-                                    </label>
-                                    <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
-                                        <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
-                                        <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.term }}"/>
-                                        <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                        <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ data.biogHists[0].language.script.term }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{ widgets.scmModal(X, false, false, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
-                            {{ widgets.optionsList(X, false, false, "biogHist", i) }}
-                        </div>
+                            {% set i = 0 %}
+                            {% for biogHist in data.biogHists %}
+                                {{ components.displayBiogHist(X, false, false, biogHist, i) }}
+                                {% set i = i + 1 %}
+                            {% endfor %}
 
                     </div>
 

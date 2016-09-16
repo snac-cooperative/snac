@@ -211,6 +211,10 @@ td.rotate > div > span {
     font-size: 11px;
 }
 
+.bioghist-text {
+    margin-bottom: 15px;
+}
+
 /* Use the following to make other colors of list items */
 .list-group-item-download {
     color: #7a3583;
