@@ -107,14 +107,6 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $resRel->AddRelatedResourceOriginationName($rron);
         $resRel->AddRelatedResourceOriginationName($rron2);
 
-        $resRelList = $cObj->getResourceRelations();
-        foreach ($resRelList as $resrel) {
-            printf("\norig resrel id: %s\n", $resrel->getID());
-            foreach ($resrel->getRelatedResourceOriginationName() as $rron) {
-                printf("\norig rron: %s\n", $rron->getName());
-            }
-        }
-
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $cObj,
                                                  'test demo constellation',
