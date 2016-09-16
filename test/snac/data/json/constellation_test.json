@@ -467,6 +467,7 @@
     "resourceRelations": [
         {
             "dataType": "ResourceRelation",
+            "relatedResourceOriginationName": [],
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",
@@ -492,6 +493,7 @@
         },
         {
             "dataType": "ResourceRelation",
+            "relatedResourceOriginationName": [],
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",
@@ -517,6 +519,7 @@
         },
         {
             "dataType": "ResourceRelation",
+            "relatedResourceOriginationName": [],
             "documentType": {
                 "id": "696",
                 "term": "ArchivalResource",

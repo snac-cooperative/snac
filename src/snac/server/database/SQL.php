@@ -3285,7 +3285,7 @@ class SQL
         {
             $id = $this->selectID();
         }
-        $qq = 'insertRRON';
+        $qq = 'insert_rron';
         $this->sdb->prepare($qq,
                             'insert into related_resource_origination_name
                             (version, ic_id, id, name, fk_table, fk_id)

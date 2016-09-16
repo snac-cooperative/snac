@@ -2601,7 +2601,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
      *
-     * @param \snac\data\ResourceRelation $fdata  object
+     * @param \snac\data\ResourceRelation $fdata ResourceRelation object
      *
      * @param string $fkTable Name of the related table. Always 'related_resource' for RRON.
      *
@@ -2615,8 +2615,7 @@ class DBUtil
              * id. Inside the if I use the $rid variable.
              */ 
             $rid = $rron->getID();
-            if ($this->prepOperation($vhInfo, $rron))
-            {
+            if ($this->prepOperation($vhInfo, $rron)) {
                 $rid = $this->sql->insertRRON($vhInfo,
                                               $rid,
                                               $rron->getName(),

@@ -84,26 +84,36 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
 
 
     /**
-     * Test the new related resource code.
-     *
+     * Test the new related resource code and origination name
      */ 
     public function testRelatedResource()
     {
-
-
         $eParser = new \snac\util\EACCPFParser();
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
 
+        /*
+         * Must setOperation(\snac\data\AbstractData::$OPERATION_INSERT) on ad-hoc created objects, otherwise
+         * they won't be written to the db.
+         */ 
         $rron = new \snac\data\RROriginationName();
+        $rron->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $rron->setName("F. R. Ute");
         $rron2 = new \snac\data\RROriginationName();
+        $rron2->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $rron2->setName("Al Dente");
         $resRelList = $cObj->getResourceRelations();
         $resRel = $resRelList[0];
         $resRel->AddRelatedResourceOriginationName($rron);
         $resRel->AddRelatedResourceOriginationName($rron2);
 
+        $resRelList = $cObj->getResourceRelations();
+        foreach ($resRelList as $resrel) {
+            printf("\norig resrel id: %s\n", $resrel->getID());
+            foreach ($resrel->getRelatedResourceOriginationName() as $rron) {
+                printf("\norig rron: %s\n", $rron->getName());
+            }
+        }
 
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $cObj,
@@ -112,17 +122,22 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
 
         $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'locked editing');
         $newObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+
         /*
-         * Only the first [0] element has an origination name. Assume the order is unchanged when round
-         * tripping to the db.
+         * Resource relation order changes during the round trip to the db, so we look at all resource
+         * relations, and gather all the origination names as keys in a list. Then check for our two keys at the end.
          */ 
+        $foundList = array();
         $resRelList = $newObj->getResourceRelations();
         foreach ($resRelList as $resrel) {
-            printf("\nresrel id: %s\n", $resrel->getID());
             foreach ($resrel->getRelatedResourceOriginationName() as $rron) {
-                printf("\nrron: %s\n", $rron->getName());
+                $foundList[$rron->getName()] = 1;
             }
         }
+
+        $this->assertTrue(array_key_exists('F. R. Ute', $foundList));
+        $this->assertTrue(array_key_exists('Al Dente', $foundList));
+
     }
 
 

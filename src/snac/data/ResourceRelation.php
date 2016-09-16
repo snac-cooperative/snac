@@ -157,8 +157,22 @@ class ResourceRelation extends AbstractData {
      * Origination (creator) of the resource
      * @var string[] List of origination names (names of the creators) of this resource.
      */
-    private $relatedResourceOriginationName = array();
+    private $relatedResourceOriginationName = null;
 
+    /**
+     * Constructor
+     *
+     * Now that ResourceRelation has a property that is an array, we need a constructor that can initialize it.
+     *
+     */ 
+    public function __construct($data = null) {
+        $this->setMaxDateCount(0);
+        if ($data == null) {
+            $this->relatedResourceOriginationName = array();
+        }
+        // always call the parent constructor
+        parent::__construct($data);
+    }
     
     /**
      * Get title of the archival resource
@@ -388,6 +402,7 @@ class ResourceRelation extends AbstractData {
     public function toArray($shorten = true) {
         $return = array(
             "dataType" => "ResourceRelation",
+            "relatedResourceOriginationName" => array(),            
             "documentType" => $this->documentType == null ? null : $this->documentType->toArray($shorten),
             "linkType" => $this->linkType == null ? null : $this->linkType->toArray($shorten),
             "entryType" => $this->entryType == null ? null : $this->entryType->toArray($shorten),
@@ -398,6 +413,10 @@ class ResourceRelation extends AbstractData {
             "note" => $this->note
         );
             
+        foreach ($this->relatedResourceOriginationName as $vv) {
+            array_push($return['relatedResourceOriginationName'], $vv->toArray($shorten));
+        }
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -424,6 +443,16 @@ class ResourceRelation extends AbstractData {
             return false;
 
         parent::fromArray($data);
+
+        unset($this->relatedResourceOriginationName);
+        $this->relatedResourceOriginationName = array();
+        if (isset($data['relatedResourceOriginationName'])) {
+            foreach ($data['relatedResourceOriginationName'] as $entry) {
+                if ($entry != null) {
+                    array_push($this->relatedResourceOriginationName, new \snac\data\RROriginationName($entry));
+                }
+            }
+        }
 
         if (isset($data["documentType"]) && $data["documentType"] != null)
             $this->documentType = new \snac\data\Term($data["documentType"]);
@@ -565,7 +594,18 @@ class ResourceRelation extends AbstractData {
         
         if (! parent::equals($other, $strict))
             return false;
-        
+
+        if ($this->getTitle() != $other->getTitle())
+            return false;
+        if ($this->getAbstract() != $other->getAbstract())
+            return false;
+        if ($this->getExtent() != $other->getExtent())
+            return false;
+        if ($this->getRepoIcId() != $other->getRepoIcId())
+            return false;
+        if (!$this->checkArrayEqual($this->getRelatedResourceOriginationName(), $other->getRelatedResourceOriginationName(), $strict))
+            return false;
+
         if ($this->getSource() != $other->getSource())
             return false;
         if ($this->getLink() != $other->getLink())
