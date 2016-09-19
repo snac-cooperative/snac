@@ -1286,20 +1286,12 @@ function getDeleted() {
     return html;
 }
 
-
-/**
- * Things to do when the page finishes loading
- */
-$(document).ready(function() {
-
-
-    // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
-    // to be true...
-    if ($('#operation').val() == 'insert')
-        somethingHasBeenEdited = true;
-
+function turnOnEditDeleteButtons(part='') {
+    var divID = '';
+    if (part != '')
+        divID = "#" + part + " ";
     // Turn on the edit buttons
-    $("a[id*='editbutton']").each(function() {
+    $(divID + "a[id*='editbutton']").each(function() {
         var obj = $(this);
         var pieces = obj.attr('id').split("_");
 
@@ -1326,7 +1318,7 @@ $(document).ready(function() {
     });
 
     // Turn on the delete buttons
-    $("a[id*='deletebutton']").each(function() {
+    $(divID + "a[id*='deletebutton']").each(function() {
         var obj = $(this);
         var pieces = obj.attr('id').split("_");
 
@@ -1351,6 +1343,38 @@ $(document).ready(function() {
             });
         }
     });
+}
+
+function turnOnTooltipsForTab(part='') {
+    var divID = '';
+    if (part != '')
+        divID = "#" + part + " ";
+    // Load tooltips
+    $(function () {
+          $(divID + '[data-toggle="tooltip"]').tooltip()
+    })
+
+    // Load popovers
+    $(function () {
+          $(divID + '[data-toggle="popover"]').popover({
+                trigger: 'hover',
+                container: 'body'
+          })
+    })
+
+}
+/**
+ * Things to do when the page finishes loading
+ */
+$(document).ready(function() {
+
+
+    // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
+    // to be true...
+    if ($('#operation').val() == 'insert')
+        somethingHasBeenEdited = true;
+
+    turnOnEditDeleteButtons();
 
 	// Attach functions to the entityType select
 	if ($('#entityType').exists()) {
@@ -1364,62 +1388,8 @@ $(document).ready(function() {
 			}
 		});
 	}
-
-	// Attach functions to each of the "+ Add New _______" buttons
-
-	// Code to handle adding new genders to the page
-	var genderid = 1;
-	if ($('#next_gender_i').exists()) {
-	    genderid = parseInt($('#next_gender_i').text());
-	}
-	console.log("Next Gender ID: " + genderid);
-	if ($('#btn_add_gender').exists()){
-		$('#btn_add_gender').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#gender_template').clone();
-	        var html = text.html().replace(/ZZ/g, genderid);
-	        $('#add_gender_div').after(html);
-            turnOnButtons("gender", genderid);
-            turnOnTooltips("gender", genderid);
-            makeEditable("gender", genderid);
-	        genderid = genderid + 1;
-	        return false;
-		});
-	}
-
-	// Code to handle adding new genders to the page
-	var existid = 1;
-	if ($('#next_exist_i').exists()) {
-	    existid = parseInt($('#next_exist_i').text());
-	}
-	console.log("Next Exist Date ID: " + existid);
-	if ($('#btn_add_exist_date').exists()){
-		$('#btn_add_exist_date').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#exist_date_template').clone();
-	        var html = text.html().replace(/ZZ/g, existid);
-	        $('#add_exist_div').after(html);
-            turnOnButtons("exist", existid);
-            turnOnTooltips("exist", existid);
-            makeEditable("exist", existid);
-	        existid = existid + 1;
-	        return false;
-		});
-	}
-	if ($('#btn_add_exist_dateRange').exists()){
-		$('#btn_add_exist_dateRange').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#exist_dateRange_template').clone();
-	        var html = text.html().replace(/ZZ/g, existid);
-	        $('#add_exist_div').after(html);
-            turnOnButtons("exist", existid);
-            turnOnTooltips("exist", existid);
-            makeEditable("exist", existid);
-	        existid = existid + 1;
-	        return false;
-		});
-	}
-
+    
+    // Name Entry doesn't get any AJAX, since it is pre-loaded
 	var nameEntryid = 1;
 	if ($('#next_nameEntry_i').exists()) {
 	    nameEntryid = parseInt($('#next_nameEntry_i').text());
@@ -1439,350 +1409,746 @@ $(document).ready(function() {
 		});
 	}
 
-	var sameAsid = 1;
-	if ($('#next_sameAs_i').exists()) {
-	    sameAsid = parseInt($('#next_sameAs_i').text());
-	}
-	console.log("Next sameAs ID: " + sameAsid);
-	if ($('#btn_add_sameAs').exists()){
-		$('#btn_add_sameAs').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#sameAs_template').clone();
-	        var html = text.html().replace(/ZZ/g, sameAsid);
-	        $('#add_sameAs_div').after(html);
-            turnOnButtons("sameAs", sameAsid);
-            turnOnTooltips("sameAs", sameAsid);
-            makeEditable("sameAs", sameAsid);
-	        sameAsid = sameAsid + 1;
-	        return false;
-		});
-	}
 
+	// Attach functions to each of the "+ Add New _______" buttons
 
-    var entityIDid = 1;
-    if ($('#next_entityID_i').exists()) {
-        entityIDid = parseInt($('#next_entityID_i').text());
+	// Code to handle adding new genders to the page
+	var genderid = 1;
+    var genderOpen = false;
+	if ($('#genderstab').exists()){
+		$('#genderstab').click(function(){
+            // Don't open a second time
+            if (genderOpen)
+                return;
+
+            $.get("?command=edit_part&part=genders&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                genderOpen = true;
+                $('#genders').html(data);
+
+                turnOnEditDeleteButtons("genders");
+                
+                if ($('#next_gender_i').exists()) {
+                    genderid = parseInt($('#next_gender_i').text());
+                }
+                console.log("Next Gender ID: " + genderid);
+                if ($('#btn_add_gender').exists()){
+                    $('#btn_add_gender').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#gender_template').clone();
+                        var html = text.html().replace(/ZZ/g, genderid);
+                        $('#add_gender_div').after(html);
+                        turnOnButtons("gender", genderid);
+                        turnOnTooltips("gender", genderid);
+                        makeEditable("gender", genderid);
+                        genderid = genderid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("genders");
+            });
+        });
     }
-    console.log("Next entityID ID: " + entityIDid);
-    if ($('#btn_add_entityID').exists()){
-        $('#btn_add_entityID').click(function(){
-            somethingHasBeenEdited = true;
-            var text = $('#entityID_template').clone();
-            var html = text.html().replace(/ZZ/g, entityIDid);
-            $('#add_entityID_div').after(html);
-            turnOnButtons("entityID", entityIDid);
-            turnOnTooltips("entityID", entityIDid);
-            makeEditable("entityID", entityIDid);
-            entityIDid = entityIDid + 1;
-            return false;
+
+	// Code to handle adding new genders to the page
+	var existid = 1;
+    var existOpen = false;
+	if ($('#existstab').exists()){
+		$('#existstab').click(function(){
+            // Don't open a second time
+            if (existOpen)
+                return;
+
+            $.get("?command=edit_part&part=dates&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                existOpen = true;
+                $('#dates').html(data);
+
+                turnOnEditDeleteButtons("dates");
+                
+                if ($('#next_exist_i').exists()) {
+                    existid = parseInt($('#next_exist_i').text());
+                }
+                console.log("Next Exist Date ID: " + existid);
+                if ($('#btn_add_exist_date').exists()){
+                    $('#btn_add_exist_date').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#exist_date_template').clone();
+                        var html = text.html().replace(/ZZ/g, existid);
+                        $('#add_exist_div').after(html);
+                        turnOnButtons("exist", existid);
+                        turnOnTooltips("exist", existid);
+                        makeEditable("exist", existid);
+                        existid = existid + 1;
+                        return false;
+                    });
+                }
+                if ($('#btn_add_exist_dateRange').exists()){
+                    $('#btn_add_exist_dateRange').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#exist_dateRange_template').clone();
+                        var html = text.html().replace(/ZZ/g, existid);
+                        $('#add_exist_div').after(html);
+                        turnOnButtons("exist", existid);
+                        turnOnTooltips("exist", existid);
+                        makeEditable("exist", existid);
+                        existid = existid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("dates");
+            });
+        });
+    }
+
+	var sameAsid = 1;
+    var sameAsOpen = false;
+	if ($('#sameAstab').exists()){
+		$('#sameAstab').click(function(){
+            // Don't open a second time
+            if (sameAsOpen)
+                return;
+
+            $.get("?command=edit_part&part=sameAs&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                sameAsOpen = true;
+                $('#sameAs').html(data);
+
+                turnOnEditDeleteButtons("sameAs");
+                
+                if ($('#next_sameAs_i').exists()) {
+                    sameAsid = parseInt($('#next_sameAs_i').text());
+                }
+                console.log("Next sameAs ID: " + sameAsid);
+                if ($('#btn_add_sameAs').exists()){
+                    $('#btn_add_sameAs').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#sameAs_template').clone();
+                        var html = text.html().replace(/ZZ/g, sameAsid);
+                        $('#add_sameAs_div').after(html);
+                        turnOnButtons("sameAs", sameAsid);
+                        turnOnTooltips("sameAs", sameAsid);
+                        makeEditable("sameAs", sameAsid);
+                        sameAsid = sameAsid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("sameAs");
+            });
+        });
+    }
+
+
+	var entityIDid = 1;
+    var entityIDOpen = false;
+	if ($('#entityIDtab').exists()){
+		$('#entityIDtab').click(function(){
+            // Don't open a second time
+            if (entityIDOpen)
+                return;
+
+            $.get("?command=edit_part&part=entityID&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                entityIDOpen = true;
+                $('#entityID').html(data);
+
+                turnOnEditDeleteButtons("entityID");
+                
+                if ($('#next_entityID_i').exists()) {
+                    entityIDid = parseInt($('#next_entityID_i').text());
+                }
+                console.log("Next entityID ID: " + entityIDid);
+                if ($('#btn_add_entityID').exists()){
+                    $('#btn_add_entityID').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#entityID_template').clone();
+                        var html = text.html().replace(/ZZ/g, entityIDid);
+                        $('#add_entityID_div').after(html);
+                        turnOnButtons("entityID", entityIDid);
+                        turnOnTooltips("entityID", entityIDid);
+                        makeEditable("entityID", entityIDid);
+                        entityIDid = entityIDid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("entityID");
+            });
         });
     }
 
 	var sourceid = 1;
-	if ($('#next_source_i').exists()) {
-	    sourceid = parseInt($('#next_source_i').text());
-	}
-	console.log("Next source ID: " + sourceid);
-	if ($('#btn_add_source').exists()){
-		$('#btn_add_source').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#source_template').clone();
-	        var html = text.html().replace(/ZZ/g, sourceid);
-	        $('#add_source_div').after(html);
-            turnOnButtons("source", sourceid);
-            turnOnTooltips("source", sourceid);
-            makeEditable("source", sourceid);
-	        sourceid = sourceid + 1;
-	        return false;
-		});
-	}
+    var sourceOpen = false;
+	if ($('#sourcestab').exists()){
+		$('#sourcestab').click(function(){
+            // Don't open a second time
+            if (sourceOpen)
+                return;
+
+            $.get("?command=edit_part&part=sources&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                sourceOpen = true;
+                $('#sources').html(data);
+
+                turnOnEditDeleteButtons("sources");
+                
+                if ($('#next_source_i').exists()) {
+                    sourceid = parseInt($('#next_source_i').text());
+                }
+                console.log("Next source ID: " + sourceid);
+                if ($('#btn_add_source').exists()){
+                    $('#btn_add_source').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#source_template').clone();
+                        var html = text.html().replace(/ZZ/g, sourceid);
+                        $('#add_source_div').after(html);
+                        turnOnButtons("source", sourceid);
+                        turnOnTooltips("source", sourceid);
+                        makeEditable("source", sourceid);
+                        sourceid = sourceid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("sources");
+            });
+        });
+    }
 
 	var resourceRelationid = 1;
-	if ($('#next_resourceRelation_i').exists()) {
-	    resourceRelationid = parseInt($('#next_resourceRelation_i').text());
-	}
-	console.log("Next resourceRelation ID: " + resourceRelationid);
-	if ($('#btn_add_resourceRelation').exists()){
-		$('#btn_add_resourceRelation').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#resourceRelation_template').clone();
-	        var html = text.html().replace(/ZZ/g, resourceRelationid);
-	        $('#add_resourceRelation_div').after(html);
-            turnOnButtons("resourceRelation", resourceRelationid);
-            turnOnTooltips("resourceRelation", resourceRelationid);
-            makeEditable("resourceRelation", resourceRelationid);
-	        resourceRelationid = resourceRelationid + 1;
-	        return false;
-		});
-	}
+    var resourceRelationOpen = false;
+	if ($('#resourceRelationstab').exists()){
+		$('#resourceRelationstab').click(function(){
+            // Don't open a second time
+            if (resourceRelationOpen)
+                return;
+
+            $.get("?command=edit_part&part=resourceRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                resourceRelationOpen = true;
+                $('#resourceRelations').html(data);
+
+                turnOnEditDeleteButtons("resourceRelations");
+                
+                if ($('#next_resourceRelation_i').exists()) {
+                    resourceRelationid = parseInt($('#next_resourceRelation_i').text());
+                }
+                console.log("Next resourceRelation ID: " + resourceRelationid);
+                if ($('#btn_add_resourceRelation').exists()){
+                    $('#btn_add_resourceRelation').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#resourceRelation_template').clone();
+                        var html = text.html().replace(/ZZ/g, resourceRelationid);
+                        $('#add_resourceRelation_div').after(html);
+                        turnOnButtons("resourceRelation", resourceRelationid);
+                        turnOnTooltips("resourceRelation", resourceRelationid);
+                        makeEditable("resourceRelation", resourceRelationid);
+                        resourceRelationid = resourceRelationid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("resourceRelations");
+            });
+        });
+    }
+	
+    
 	var constellationRelationid = 1;
+    var constellationRelationOpen = false;
+	if ($('#constellationRelationstab').exists()){
+		$('#constellationRelationstab').click(function(){
+            // Don't open a second time
+            if (constellationRelationOpen)
+                return;
 
-	if ($('#next_constellationRelation_i').exists()) {
-	    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
-	}
-	console.log("Next constellationRelation ID: " + constellationRelationid);
-	if ($('#btn_create_constellationRelation').exists()){
-		$('#btn_create_constellationRelation').click(function(){
-	        var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
-	        if (cid != null) {
-	            somethingHasBeenEdited = true;
-				var text = $('#constellationRelation_template').clone();
-		        var html = text.html().replace(/ZZ/g, constellationRelationid);
-		        $('#add_constellationRelation_div').after(html);
-		        $('#constellationRelation_targetID_'+constellationRelationid).val(cid);
-		        $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
-		        $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
-		        $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
+            $.get("?command=edit_part&part=constellationRelations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                constellationRelationOpen = true;
+                $('#constellationRelations').html(data);
 
-		        $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
-		        $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
+                turnOnEditDeleteButtons("constellationRelations");
+                
+                if ($('#next_constellationRelation_i').exists()) {
+                    constellationRelationid = parseInt($('#next_constellationRelation_i').text());
+                }
+                console.log("Next constellationRelation ID: " + constellationRelationid);
+                if ($('#btn_create_constellationRelation').exists()){
+                    $('#btn_create_constellationRelation').click(function(){
+                        var cid = $('input[name=relationChoice]:checked', '#relation_search_form').val()
+                        if (cid != null) {
+                            somethingHasBeenEdited = true;
+                            var text = $('#constellationRelation_template').clone();
+                            var html = text.html().replace(/ZZ/g, constellationRelationid);
+                            $('#add_constellationRelation_div').after(html);
+                            $('#constellationRelation_targetID_'+constellationRelationid).val(cid);
+                            $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
+                            $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
+                            $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
 
-                turnOnButtons("constellationRelation", constellationRelationid);
-                turnOnTooltips("constellationRelation", constellationRelationid);
-		        makeEditable("constellationRelation", constellationRelationid);
+                            $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
+                            $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());
 
-		        constellationRelationid = constellationRelationid + 1;
+                            turnOnButtons("constellationRelation", constellationRelationid);
+                            turnOnTooltips("constellationRelation", constellationRelationid);
+                            makeEditable("constellationRelation", constellationRelationid);
 
-		        return true;
+                            constellationRelationid = constellationRelationid + 1;
 
-	        }
+                            return true;
+
+                        }
 
 
-	        return false;
-		});
-	}
-/**
-	if ($('#btn_add_constellationRelation').exists()){
-		$('#btn_add_constellationRelation').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#constellationRelation_template').clone();
-	        var html = text.html().replace(/ZZ/g, constellationRelationid);
-	        $('#add_constellationRelation_div').after(html);
-	        constellationRelationid = constellationRelationid + 1;
-	        return false;
-		});
-	}
-**/
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("constellationRelations");
+            });
+        });
+    }
+	
 	var languageid = 1;
-	if ($('#next_language_i').exists()) {
-	    languageid = parseInt($('#next_language_i').text());
-	}
-	console.log("Next language ID: " + languageid);
-	if ($('#btn_add_language').exists()){
-		$('#btn_add_language').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#language_template').clone();
-	        var html = text.html().replace(/ZZ/g, languageid);
-	        $('#add_language_div').after(html);
-            turnOnButtons("language", languageid);
-            turnOnTooltips("language", languageid);
-            makeEditable("language", languageid);
-	        languageid = languageid + 1;
-	        return false;
-		});
-	}
+    var languageOpen = false;
+	if ($('#languagesUsedtab').exists()){
+		$('#languagesUsedtab').click(function(){
+            // Don't open a second time
+            if (languageOpen)
+                return;
+
+            $.get("?command=edit_part&part=languagesUsed&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                languageOpen = true;
+                $('#languagesUsed').html(data);
+
+                turnOnEditDeleteButtons("languagesUsed");
+                
+                if ($('#next_language_i').exists()) {
+                    languageid = parseInt($('#next_language_i').text());
+                }
+                console.log("Next language ID: " + languageid);
+                if ($('#btn_add_language').exists()){
+                    $('#btn_add_language').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#language_template').clone();
+                        var html = text.html().replace(/ZZ/g, languageid);
+                        $('#add_language_div').after(html);
+                        turnOnButtons("language", languageid);
+                        turnOnTooltips("language", languageid);
+                        makeEditable("language", languageid);
+                        languageid = languageid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("languagesUsed");
+            });
+        });
+    }
 
 	var subjectid = 1;
-	if ($('#next_subject_i').exists()) {
-	    subjectid = parseInt($('#next_subject_i').text());
-	}
-	console.log("Next subject ID: " + subjectid);
-	if ($('#btn_add_subject').exists()){
-		$('#btn_add_subject').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#subject_template').clone();
-	        var html = text.html().replace(/ZZ/g, subjectid);
-	        $('#add_subject_div').after(html);
-            turnOnButtons("subject", subjectid);
-            turnOnTooltips("subject", subjectid);
-            makeEditable("subject", subjectid);
-	        subjectid = subjectid + 1;
-	        return false;
-		});
-	}
+    var subjectOpen = false;
+	if ($('#subjectstab').exists()){
+		$('#subjectstab').click(function(){
+            // Don't open a second time
+            if (subjectOpen)
+                return;
+
+            $.get("?command=edit_part&part=subjects&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                subjectOpen = true;
+                $('#subjects').html(data);
+
+                turnOnEditDeleteButtons("subjects");
+                
+                if ($('#next_subject_i').exists()) {
+                    subjectid = parseInt($('#next_subject_i').text());
+                }
+                console.log("Next subject ID: " + subjectid);
+                if ($('#btn_add_subject').exists()){
+                    $('#btn_add_subject').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#subject_template').clone();
+                        var html = text.html().replace(/ZZ/g, subjectid);
+                        $('#add_subject_div').after(html);
+                        turnOnButtons("subject", subjectid);
+                        turnOnTooltips("subject", subjectid);
+                        makeEditable("subject", subjectid);
+                        subjectid = subjectid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("subjects");
+            });
+        });
+    }
 
 	var nationalityid = 1;
-	if ($('#next_nationality_i').exists()) {
-	    nationalityid = parseInt($('#next_nationality_i').text());
-	}
-	console.log("Next nationality ID: " + nationalityid);
-	if ($('#btn_add_nationality').exists()){
-		$('#btn_add_nationality').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#nationality_template').clone();
-	        var html = text.html().replace(/ZZ/g, nationalityid);
-	        $('#add_nationality_div').after(html);
-            turnOnButtons("nationality", nationalityid);
-            turnOnTooltips("nationality", nationalityid);
-            makeEditable("nationality", nationalityid);
-	        nationalityid = nationalityid + 1;
-	        return false;
-		});
-	}
+    var nationalityOpen = false;
+	if ($('#nationalitiestab').exists()){
+		$('#nationalitiestab').click(function(){
+            // Don't open a second time
+            if (nationalityOpen)
+                return;
+
+            $.get("?command=edit_part&part=nationalities&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                nationalityOpen = true;
+                $('#nationalities').html(data);
+
+                turnOnEditDeleteButtons("nationalities");
+                
+                if ($('#next_nationality_i').exists()) {
+                    nationalityid = parseInt($('#next_nationality_i').text());
+                }
+                console.log("Next nationality ID: " + nationalityid);
+                if ($('#btn_add_nationality').exists()){
+                    $('#btn_add_nationality').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#nationality_template').clone();
+                        var html = text.html().replace(/ZZ/g, nationalityid);
+                        $('#add_nationality_div').after(html);
+                        turnOnButtons("nationality", nationalityid);
+                        turnOnTooltips("nationality", nationalityid);
+                        makeEditable("nationality", nationalityid);
+                        nationalityid = nationalityid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("nationalities");
+            });
+        });
+    }
 
 	var functionid = 1;
-	if ($('#next_function_i').exists()) {
-	    functionid = parseInt($('#next_function_i').text());
-	}
-	console.log("Next function ID: " + functionid);
-	if ($('#btn_add_function').exists()){
-		$('#btn_add_function').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#function_template').clone();
-	        var html = text.html().replace(/ZZ/g, functionid);
-	        $('#add_function_div').after(html);
-            turnOnButtons("function", functionid);
-            turnOnTooltips("function", functionid);
-            makeEditable("function", functionid);
-	        functionid = functionid + 1;
-	        return false;
-		});
-	}
+    var functionOpen = false;
+	if ($('#functionstab').exists()){
+		$('#functionstab').click(function(){
+            // Don't open a second time
+            if (functionOpen)
+                return;
+
+            $.get("?command=edit_part&part=functions&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                functionOpen = true;
+                $('#functions').html(data);
+
+                turnOnEditDeleteButtons("functions");
+                
+                if ($('#next_function_i').exists()) {
+                    functionid = parseInt($('#next_function_i').text());
+                }
+                console.log("Next function ID: " + functionid);
+                if ($('#btn_add_function').exists()){
+                    $('#btn_add_function').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#function_template').clone();
+                        var html = text.html().replace(/ZZ/g, functionid);
+                        $('#add_function_div').after(html);
+                        turnOnButtons("function", functionid);
+                        turnOnTooltips("function", functionid);
+                        makeEditable("function", functionid);
+                        functionid = functionid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("functions");
+            });
+        });
+    }
 
 	var occupationid = 1;
-	if ($('#next_occupation_i').exists()) {
-	    occupationid = parseInt($('#next_occupation_i').text());
-	}
-	console.log("Next occupation ID: " + occupationid);
-	if ($('#btn_add_occupation').exists()){
-		$('#btn_add_occupation').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#occupation_template').clone();
-	        var html = text.html().replace(/ZZ/g, occupationid);
-	        $('#add_occupation_div').after(html);
-            turnOnButtons("occupation", occupationid);
-            turnOnTooltips("occupation", occupationid);
-            makeEditable("occupation", occupationid);
-	        occupationid = occupationid + 1;
-	        return false;
-		});
-	}
+    var occupationOpen = false;
+	if ($('#occupationstab').exists()){
+		$('#occupationstab').click(function(){
+            // Don't open a second time
+            if (occupationOpen)
+                return;
+
+            $.get("?command=edit_part&part=occupations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                occupationOpen = true;
+                $('#occupations').html(data);
+
+                turnOnEditDeleteButtons("occupations");
+                
+                if ($('#next_occupation_i').exists()) {
+                    occupationid = parseInt($('#next_occupation_i').text());
+                }
+                console.log("Next occupation ID: " + occupationid);
+                if ($('#btn_add_occupation').exists()){
+                    $('#btn_add_occupation').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#occupation_template').clone();
+                        var html = text.html().replace(/ZZ/g, occupationid);
+                        $('#add_occupation_div').after(html);
+                        turnOnButtons("occupation", occupationid);
+                        turnOnTooltips("occupation", occupationid);
+                        makeEditable("occupation", occupationid);
+                        occupationid = occupationid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("occupations");
+            });
+        });
+    }
 
 	var legalStatusid = 1;
-	if ($('#next_legalStatus_i').exists()) {
-	    legalStatusid = parseInt($('#next_legalStatus_i').text());
-	}
-	console.log("Next legalStatus ID: " + legalStatusid);
-	if ($('#btn_add_legalStatus').exists()){
-		$('#btn_add_legalStatus').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#legalStatus_template').clone();
-	        var html = text.html().replace(/ZZ/g, legalStatusid);
-	        $('#add_legalStatus_div').after(html);
-            turnOnButtons("legalStatus", legalStatusid);
-            turnOnTooltips("legalStatus", legalStatusid);
-            makeEditable("legalStatus", legalStatusid);
-	        legalStatusid = legalStatusid + 1;
-	        return false;
-		});
-	}
+    var legalStatusOpen = false;
+	if ($('#legalStatusestab').exists()){
+		$('#legalStatusestab').click(function(){
+            // Don't open a second time
+            if (legalStatusOpen)
+                return;
+
+            $.get("?command=edit_part&part=legalStatuses&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                legalStatusOpen = true;
+                $('#legalStatuses').html(data);
+
+                turnOnEditDeleteButtons("legalStatuses");
+                
+                if ($('#next_legalStatus_i').exists()) {
+                    legalStatusid = parseInt($('#next_legalStatus_i').text());
+                }
+                console.log("Next legalStatus ID: " + legalStatusid);
+                if ($('#btn_add_legalStatus').exists()){
+                    $('#btn_add_legalStatus').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#legalStatus_template').clone();
+                        var html = text.html().replace(/ZZ/g, legalStatusid);
+                        $('#add_legalStatus_div').after(html);
+                        turnOnButtons("legalStatus", legalStatusid);
+                        turnOnTooltips("legalStatus", legalStatusid);
+                        makeEditable("legalStatus", legalStatusid);
+                        legalStatusid = legalStatusid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("legalStatuses");
+            });
+        });
+    }
 
 	var placeid = 1;
-	if ($('#next_place_i').exists()) {
-	    placeid = parseInt($('#next_place_i').text());
-	}
-	console.log("Next place ID: " + placeid);
-	if ($('#btn_add_place').exists()){
-		$('#btn_add_place').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#place_template').clone();
-	        var html = text.html().replace(/ZZ/g, placeid);
-	        $('#add_place_div').after(html);
-            turnOnButtons("place", placeid);
-            turnOnTooltips("place", placeid);
-            makeEditable("place", placeid);
-	        placeid = placeid + 1;
-	        return false;
-		});
-	}
+    var placeOpen = false;
+	if ($('#placestab').exists()){
+		$('#placestab').click(function(){
+            // Don't open a second time
+            if (placeOpen)
+                return;
+
+            $.get("?command=edit_part&part=places&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                placeOpen = true;
+                $('#places').html(data);
+
+                turnOnEditDeleteButtons("places");
+                
+                if ($('#next_place_i').exists()) {
+                    placeid = parseInt($('#next_place_i').text());
+                }
+                console.log("Next place ID: " + placeid);
+                if ($('#btn_add_place').exists()){
+                    $('#btn_add_place').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#place_template').clone();
+                        var html = text.html().replace(/ZZ/g, placeid);
+                        $('#add_place_div').after(html);
+                        turnOnButtons("place", placeid);
+                        turnOnTooltips("place", placeid);
+                        makeEditable("place", placeid);
+                        placeid = placeid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("places");
+            });
+        });
+    }
 
 	var conventionDeclarationid = 1;
-	if ($('#next_conventionDeclaration_i').exists()) {
-	    conventionDeclarationid = parseInt($('#next_conventionDeclaration_i').text());
-	}
-	console.log("Next conventionDeclaration ID: " + conventionDeclarationid);
-	if ($('#btn_add_conventionDeclaration').exists()){
-		$('#btn_add_conventionDeclaration').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#conventionDeclaration_template').clone();
-	        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
-	        $('#add_conventionDeclaration_div').after(html);
-            turnOnButtons("conventionDeclaration", conventionDeclarationid);
-            turnOnTooltips("conventionDeclaration", conventionDeclarationid);
-            makeEditable("conventionDeclaration", conventionDeclarationid);
-	        conventionDeclarationid = conventionDeclarationid + 1;
-	        return false;
-		});
-	}
+    var conventionDeclarationOpen = false;
+	if ($('#conventionDeclarationstab').exists()){
+		$('#conventionDeclarationstab').click(function(){
+            // Don't open a second time
+            if (conventionDeclarationOpen)
+                return;
+
+            $.get("?command=edit_part&part=conventionDeclarations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                conventionDeclarationOpen = true;
+                $('#conventionDeclarations').html(data);
+
+                turnOnEditDeleteButtons("conventionDeclarations");
+                
+                if ($('#next_conventionDeclaration_i').exists()) {
+                    conventionDeclarationid = parseInt($('#next_conventionDeclaration_i').text());
+                }
+                console.log("Next conventionDeclaration ID: " + conventionDeclarationid);
+                if ($('#btn_add_conventionDeclaration').exists()){
+                    $('#btn_add_conventionDeclaration').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#conventionDeclaration_template').clone();
+                        var html = text.html().replace(/ZZ/g, conventionDeclarationid);
+                        $('#add_conventionDeclaration_div').after(html);
+                        turnOnButtons("conventionDeclaration", conventionDeclarationid);
+                        turnOnTooltips("conventionDeclaration", conventionDeclarationid);
+                        makeEditable("conventionDeclaration", conventionDeclarationid);
+                        conventionDeclarationid = conventionDeclarationid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("conventionDeclarations");
+            });
+        });
+    }
 
 	var generalContextid = 1;
-	if ($('#next_generalContext_i').exists()) {
-	    generalContextid = parseInt($('#next_generalContext_i').text());
-	}
-	console.log("Next generalContext ID: " + generalContextid);
-	if ($('#btn_add_generalContext').exists()){
-		$('#btn_add_generalContext').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#generalContext_template').clone();
-	        var html = text.html().replace(/ZZ/g, generalContextid);
-	        $('#add_generalContext_div').after(html);
-            turnOnButtons("generalContext", generalContextid);
-            turnOnTooltips("generalContext", generalContextid);
-            makeEditable("generalContext", generalContextid);
-	        generalContextid = generalContextid + 1;
-	        return false;
-		});
-	}
+    var generalContextOpen = false;
+	if ($('#generalContextstab').exists()){
+		$('#generalContextstab').click(function(){
+            // Don't open a second time
+            if (generalContextOpen)
+                return;
+
+            $.get("?command=edit_part&part=generalContexts&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                generalContextOpen = true;
+                $('#generalContexts').html(data);
+
+                turnOnEditDeleteButtons("generalContexts");
+                
+                if ($('#next_generalContext_i').exists()) {
+                    generalContextid = parseInt($('#next_generalContext_i').text());
+                }
+                console.log("Next generalContext ID: " + generalContextid);
+                if ($('#btn_add_generalContext').exists()){
+                    $('#btn_add_generalContext').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#generalContext_template').clone();
+                        var html = text.html().replace(/ZZ/g, generalContextid);
+                        $('#add_generalContext_div').after(html);
+                        turnOnButtons("generalContext", generalContextid);
+                        turnOnTooltips("generalContext", generalContextid);
+                        makeEditable("generalContext", generalContextid);
+                        generalContextid = generalContextid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("generalContexts");
+            });
+        });
+    }
 
 	var structureOrGenealogyid = 1;
-	if ($('#next_structureOrGenealogy_i').exists()) {
-	    structureOrGenealogyid = parseInt($('#next_structureOrGenealogy_i').text());
-	}
-	console.log("Next structureOrGenealogy ID: " + structureOrGenealogyid);
-	if ($('#btn_add_structureOrGenealogy').exists()){
-		$('#btn_add_structureOrGenealogy').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#structureOrGenealogy_template').clone();
-	        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
-	        $('#add_structureOrGenealogy_div').after(html);
-            turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
-            turnOnTooltips("structureOrGenealogy", structureOrGenealogyid);
-            makeEditable("structureOrGenealogy", structureOrGenealogyid);
-	        structureOrGenealogyid = structureOrGenealogyid + 1;
-	        return false;
-		});
-	}
+    var structureOrGenealogyOpen = false;
+	if ($('#structureOrGenealogiestab').exists()){
+		$('#structureOrGenealogiestab').click(function(){
+            // Don't open a second time
+            if (structureOrGenealogyOpen)
+                return;
+
+            $.get("?command=edit_part&part=structureOrGenealogies&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                structureOrGenealogyOpen = true;
+                $('#structureOrGenealogies').html(data);
+
+                turnOnEditDeleteButtons("structureOrGenealogies");
+                
+                if ($('#next_structureOrGenealogy_i').exists()) {
+                    structureOrGenealogyid = parseInt($('#next_structureOrGenealogy_i').text());
+                }
+                console.log("Next structureOrGenealogy ID: " + structureOrGenealogyid);
+                if ($('#btn_add_structureOrGenealogy').exists()){
+                    $('#btn_add_structureOrGenealogy').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#structureOrGenealogy_template').clone();
+                        var html = text.html().replace(/ZZ/g, structureOrGenealogyid);
+                        $('#add_structureOrGenealogy_div').after(html);
+                        turnOnButtons("structureOrGenealogy", structureOrGenealogyid);
+                        turnOnTooltips("structureOrGenealogy", structureOrGenealogyid);
+                        makeEditable("structureOrGenealogy", structureOrGenealogyid);
+                        structureOrGenealogyid = structureOrGenealogyid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("structureOrGenealogies");
+            });
+        });
+    }
 
 	var mandateid = 1;
-	if ($('#next_mandate_i').exists()) {
-	    mandateid = parseInt($('#next_mandate_i').text());
-	}
-	console.log("Next mandate ID: " + mandateid);
-	if ($('#btn_add_mandate').exists()){
-		$('#btn_add_mandate').click(function(){
-            somethingHasBeenEdited = true;
-			var text = $('#mandate_template').clone();
-	        var html = text.html().replace(/ZZ/g, mandateid);
-	        $('#add_mandate_div').after(html);
-            turnOnButtons("mandate", mandateid);
-            turnOnTooltips("mandate", mandateid);
-            makeEditable("mandate", mandateid);
-	        mandateid = mandateid + 1;
-	        return false;
-		});
-	}
+    var mandateOpen = false;
+	if ($('#mandatestab').exists()){
+		$('#mandatestab').click(function(){
+            // Don't open a second time
+            if (mandateOpen)
+                return;
 
-    // Load tooltips
-    $(function () {
-          $('[data-toggle="tooltip"]').tooltip()
-    })
+            $.get("?command=edit_part&part=mandates&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                mandateOpen = true;
+                $('#mandates').html(data);
 
-    // Load popovers
-    $(function () {
-          $('[data-toggle="popover"]').popover({
-                trigger: 'hover',
-                container: 'body'
-          })
-    })
+                turnOnEditDeleteButtons("mandates");
+                
+                if ($('#next_mandate_i').exists()) {
+                    mandateid = parseInt($('#next_mandate_i').text());
+                }
+                console.log("Next mandate ID: " + mandateid);
+                if ($('#btn_add_mandate').exists()){
+                    $('#btn_add_mandate').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#mandate_template').clone();
+                        var html = text.html().replace(/ZZ/g, mandateid);
+                        $('#add_mandate_div').after(html);
+                        turnOnButtons("mandate", mandateid);
+                        turnOnTooltips("mandate", mandateid);
+                        makeEditable("mandate", mandateid);
+                        mandateid = mandateid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("mandates");
+            });
+        });
+    }
+
+	var biogHistid = 1;
+    var biogHistOpen = false;
+	if ($('#biogHiststab').exists()){
+		$('#biogHiststab').click(function(){
+            // Don't open a second time
+            if (biogHistOpen)
+                return;
+
+            $.get("?command=edit_part&part=biogHists&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                biogHistOpen = true;
+                $('#biogHists').html(data);
+
+                turnOnEditDeleteButtons("biogHists");
+                
+                if ($('#next_biogHist_i').exists()) {
+                    biogHistid = parseInt($('#next_biogHist_i').text());
+                }
+                console.log("Next biogHist ID: " + biogHistid);
+                if ($('#btn_add_biogHist').exists()){
+                    $('#btn_add_biogHist').click(function(){
+                        somethingHasBeenEdited = true;
+                        var text = $('#biogHist_template').clone();
+                        var html = text.html().replace(/ZZ/g, biogHistid);
+                        $('#add_biogHist_div').after(html);
+                        turnOnButtons("biogHist", biogHistid);
+                        turnOnTooltips("biogHist", biogHistid);
+                        makeEditable("biogHist", biogHistid);
+                        biogHistid = biogHistid + 1;
+                        return false;
+                    });
+                }
+                
+                turnOnTooltipsForTab("biogHists");
+            });
+        });
+    }
+
+    turnOnTooltipsForTab();
 
 });
