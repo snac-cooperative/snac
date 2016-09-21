@@ -275,6 +275,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Editing, Preview, View, and Other Commands
             case "edit":
+            case "edit_part":
                 if (isset($permissions["Edit"]) && $permissions["Edit"]) {
                     $executor->displayEditPage($this->input, $display);
                 } else {

@@ -99,13 +99,15 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayEditPage(&$input, &$display) {
-
         $query = $input;
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
         if (isset($serverResponse["constellation"])) {
-            $display->setTemplate("edit_page");
+            if ($input["command"] == "edit_part" && isset($input["part"]))
+                $display->setTemplate("edit_tabs/".$input["part"]);
+            else
+                $display->setTemplate("edit_page");
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
