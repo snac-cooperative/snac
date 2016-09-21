@@ -3960,8 +3960,7 @@ class SQL
                             'select
                             aa.id, aa.version, aa.ic_id,
                             aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
-                            aa.role,
-                            aa.arcrole
+                            aa.role, aa.arcrole, aa.title, aa.extent, aa.abstract, aa.repo_ic_id
                             from related_resource as aa,
                             (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and

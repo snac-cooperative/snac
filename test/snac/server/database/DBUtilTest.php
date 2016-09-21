@@ -11,6 +11,7 @@
  *            the Regents of the University of California
  */
 namespace test\snac\server\database;
+use \snac\server\database\DBUtil as DBUtil;
 
 /**
  * Database Utils test suite
@@ -92,9 +93,14 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $eParser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $cObj = $eParser->parseFile("test/snac/server/database/test_record.xml");
 
+
+
         /*
          * Must setOperation(\snac\data\AbstractData::$OPERATION_INSERT) on ad-hoc created objects, otherwise
          * they won't be written to the db.
+         *
+         * Some fields must be added here because they do not exist in the CPF: title, abstract, extent,
+         * ic_id. Add those before writing, then test for equals against the constellation that we wrote.
          */ 
         $rron = new \snac\data\RROriginationName();
         $rron->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -107,13 +113,20 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $resRel->AddRelatedResourceOriginationName($rron);
         $resRel->AddRelatedResourceOriginationName($rron2);
 
+        $resRel->setTitle("test title");
+        $resRel->setAbstract("this is a test abstract added via the setAbstract setter");
+        $resRel->setExtent("test extent which in this case is only a few characters");
+        $resRel->setRepoIcId(12345);
+
         $retObj = $this->dbu->writeConstellation($this->user,
                                                  $cObj,
                                                  'test demo constellation',
                                                  'ingest cpf');
 
         $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), 'locked editing');
-        $newObj = $this->dbu->readConstellation($retObj->getID(), $retObj->getVersion());
+        $newObj = $this->dbu->readConstellation($retObj->getID(),
+                                                $retObj->getVersion(),
+                                                DBUtil::$FULL_CONSTELLATION | DBUtil::$READ_MAINTENANCE_INFORMATION);
 
         /*
          * Resource relation order changes during the round trip to the db, so we look at all resource
@@ -130,6 +143,24 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue(array_key_exists('F. R. Ute', $foundList));
         $this->assertTrue(array_key_exists('Al Dente', $foundList));
 
+        /* 
+         * $cfile = fopen('cobj.txt', 'w');
+         * $ncJSON = $cObj->toJSON();
+         * fwrite($cfile, $ncJSON);
+         * fclose($cfile);
+         * 
+         * $cfile = fopen('retobj.txt', 'w');
+         * $ncJSON = $retObj->toJSON();
+         * fwrite($cfile, $ncJSON);
+         * fclose($cfile);
+         * 
+         * $cfile = fopen('newobj.txt', 'w');
+         * $ncJSON = $newObj->toJSON();
+         * fwrite($cfile, $ncJSON);
+         * fclose($cfile);
+         */
+        
+        $this->assertTrue($retObj->equals($newObj, false));
     }
 
 

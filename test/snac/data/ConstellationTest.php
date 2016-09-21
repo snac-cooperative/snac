@@ -65,6 +65,7 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
         /*
          * Run only this test if you uncomment the section below to update the constellation test file. 
          * phpunit --filter 'testJSONJSON' ./test/snac/data/ConstellationTest.php  > test.log 2>&1 &
+         * diff -y new_constellation_test.json test/snac/data/json/constellation_test.json | less
          * cp test/snac/data/json/constellation_test.json ~/constellation_test-`date +"%F-%H%M%S"`.json
          * mv new_constellation_test.json test/snac/data/json/constellation_test.json
          */
@@ -96,15 +97,15 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
          *
          * Run only this test if you uncomment the section below to update the constellation test file. 
          * phpunit --filter 'testJSONJSON2' ./test/snac/data/ConstellationTest.php  > test.log 2>&1 &
+         * diff -y new_constellation_test2.json test/snac/data/json/constellation_test2.json | less
+         * diff -y --suppress-common-lines new_constellation_test2.json test/snac/data/json/constellation_test2.json | sort -u | uniq
          * cp test/snac/data/json/constellation_test2.json ~/constellation_test2-`date +"%F-%H%M%S"`.json
          * mv new_constellation_test2.json test/snac/data/json/constellation_test2.json
          */
 
-        /* 
-         * $cfile = fopen('new_constellation_test2.json', 'w');
-         * fwrite($cfile, $identity->toJSON(false));
-         * fclose($cfile); 
-         */
+        $cfile = fopen('new_constellation_test2.json', 'w');
+        fwrite($cfile, $identity->toJSON(false));
+        fclose($cfile); 
 
         unset($jsonIn);
         $arrayOut = json_decode($identity->toJSON(false), true);
