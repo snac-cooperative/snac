@@ -542,6 +542,24 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="resourceRelation_abstract_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceAbstract.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_resourceRelation_abstract_{{i}}">
+                            <textarea id="resourceRelation_abstract_{{i}}" name="resourceRelation_abstract_{{i}}" class="form-control" style="display:none;">{{ relation.abstract }}</textarea>
+                            <p class="form-control-static">{{ relation.abstract }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resourceRelation_extent_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceExtent.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_resourceRelation_extent_{{i}}">
+                            <textarea id="resourceRelation_extent_{{i}}" name="resourceRelation_extent_{{i}}" class="form-control" style="display:none;">{{ relation.extent }}</textarea>
+                            <p class="form-control-static">{{ relation.extent }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceXML.display }}
                         </label>

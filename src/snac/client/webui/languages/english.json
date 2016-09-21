@@ -292,6 +292,18 @@
         "display" : "ObjectXMLWrap",
         "tooltip" : "The XML of the object used to create this relationship"
     },
+    "resourceTitle" : {
+        "display" : "Title",
+        "tooltip" : "The title of this resource"
+    },
+    "resourceAbstract" : {
+        "display" : "Abstract",
+        "tooltip" : "The abstract of this resource"
+    },
+    "resourceExtent" : {
+        "display" : "Extent",
+        "tooltip" : "The extent of this resource"
+    },
 
     "_comment" : "%%% Source elements",
 

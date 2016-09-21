@@ -1106,6 +1106,10 @@ class ConstellationPostMapper {
             $relation->setLink($data["link"]);
             $relation->setSource($data["source"]);
             $relation->setNote($data["note"]);
+            
+            $relation->setTitle($data["title"]);
+            $relation->setAbstract($data["abstract"]);
+            $relation->setExtent($data["extent"]);
 
             $relation->setDocumentType($this->parseTerm($data["documentType"]));
 
