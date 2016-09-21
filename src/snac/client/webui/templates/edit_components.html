@@ -542,6 +542,15 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label for="resourceRelation_title_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceTitle.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_resourceRelation_title_{{i}}">
+                            <input id="resourceRelation_title_{{i}}" name="resourceRelation_title_{{i}}" type="hidden" class="form-control" value="{{ relation.title }}"/>
+                            <p class="form-control-static">{{ relation.title }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="resourceRelation_abstract_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceAbstract.display }}
                         </label>
