@@ -288,6 +288,7 @@ class DBUtil
                                  'snac\data\Place' => 'place_link',
                                  'snac\data\ConstellationRelation' => 'related_identity',
                                  'snac\data\ResourceRelation' => 'related_resource',
+                                 'snac\data\RROriginationName' => 'related_resource_origination_name', 
                                  'snac\data\SNACControlMetadata' => 'scm',
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
@@ -1816,7 +1817,7 @@ class DBUtil
         if (count($types) == 1) {
             $type = $this->populateTerm($types[0]["id"]);
         }
-        
+
         $tableName = 'source';
         // Constellation version aka version_history.id is always the "newest". See note above.
         $rows = $this->sql->selectSourceList($cObj->getID(), $vhInfo['version']);
@@ -2464,7 +2465,7 @@ class DBUtil
      * Save Relation aka  ConstellationRelation
      *
      * This is cpfRelation aka a relation to a constellation (as opposed to a relation to archival material).
-     *  
+     *
      * "ConstellationRelation" has had many names: cpfRelation relation,
      * related_identity. We're attempting to make that more consistent, although the class is
      * ConstellationRelation and the SQL table is related_identity.
@@ -2590,7 +2591,7 @@ class DBUtil
             $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
         }
     }
-    
+
     /**
      * Save the resource relation origination name
      *
@@ -2606,14 +2607,14 @@ class DBUtil
      * @param string $fkTable Name of the related table. Always 'related_resource' for RRON.
      *
      * @param integer $fkID Foreign key to the related_resource.id field.
-     */ 
+     */
     private function saveRRON($vhInfo, $fdata, $fkTable, $fkID) {
         foreach ($fdata->getRelatedResourceOriginationName() as $rron) {
             /*
              * Other functions call getID() twice. Unclear if that is a feature or just an oversight.  Here I
              * call getID before the if() statement to get what may (or may not) be a non-null record
              * id. Inside the if I use the $rid variable.
-             */ 
+             */
             $rid = $rron->getID();
             if ($this->prepOperation($vhInfo, $rron)) {
                 $rid = $this->sql->insertRRON($vhInfo,
@@ -2631,7 +2632,7 @@ class DBUtil
      * Populate the resource relation origination name
      *
      * ResourceRelation (aka related_resource) has a one-to-many relation to origination name
-     * 
+     *
      * Do not need an arg for table name, because rron only has a relation to 'related_resource'. Other
      * back-related data (such as language) are very generic, and thus need args for fkID and fkTable.
      *
@@ -2641,7 +2642,7 @@ class DBUtil
      * @param integer[] $vhInfo list with keys version, ic_id.
      *
      * @param \snac\data\ResourceRelation $rrelObj A ResourceRelation object
-     */ 
+     */
     private function populateRRON($vhInfo, $rrelObj)
     {
         /*
