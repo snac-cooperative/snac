@@ -2873,6 +2873,10 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
+            $rrObj->setTitle($oneRes['title']);
+            $rrObj->setExtent($oneRes['extent']);
+            $rrObj->setAbstract($oneRes['abstract']);
+            $rrObj->setRepoIcId($oneRes['repo_ic_id']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $this->populateRRON($vhInfo, $rrObj);
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );

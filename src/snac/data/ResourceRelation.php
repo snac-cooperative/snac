@@ -410,7 +410,11 @@ class ResourceRelation extends AbstractData {
             "role" => $this->role == null ? null : $this->role->toArray($shorten),
             "content" => $this->content,
             "source" => $this->source,
-            "note" => $this->note
+            "note" => $this->note,
+            "title" => $this->title,
+            "abstract" => $this->abstract,
+            "extent" => $this->extent,
+            "repoIcId" => $this->repoIcId
         );
             
         foreach ($this->relatedResourceOriginationName as $vv) {
@@ -493,6 +497,26 @@ class ResourceRelation extends AbstractData {
             $this->note = $data["note"];
         else
             $this->note = null;
+        
+        if (isset($data["title"]))
+            $this->title = $data["title"];
+        else
+            $this->title = null;
+
+        if (isset($data["abstract"]))
+            $this->abstract = $data["abstract"];
+        else
+            $this->abstract = null;
+
+        if (isset($data["extent"]))
+            $this->extent = $data["extent"];
+        else
+            $this->extent = null;
+
+        if (isset($data["repoIcId"]))
+            $this->repoIcId = $data["repoIcId"];
+        else
+            $this->repoIcId = null;
 
         return true;
     }
@@ -603,8 +627,10 @@ class ResourceRelation extends AbstractData {
             return false;
         if ($this->getRepoIcId() != $other->getRepoIcId())
             return false;
-        if (!$this->checkArrayEqual($this->getRelatedResourceOriginationName(), $other->getRelatedResourceOriginationName(), $strict))
+        if (!$this->checkArrayEqual($this->getRelatedResourceOriginationName(), $other->getRelatedResourceOriginationName(), $strict)) {
             return false;
+        }
+        
 
         if ($this->getSource() != $other->getSource())
             return false;
