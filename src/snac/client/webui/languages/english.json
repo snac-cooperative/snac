@@ -304,6 +304,10 @@
         "display" : "Extent",
         "tooltip" : "The extent of this resource"
     },
+    "resourceOriginationName" : {
+        "display" : "Origination Names",
+        "tooltip" : "The creators or 'origination names' of this resource"
+    },
 
     "_comment" : "%%% Source elements",
 

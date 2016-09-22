@@ -346,7 +346,7 @@ class ConstellationPostMapper {
                 $object->equals($other, false) && $object->getOperation() == $other->getOperation()) {
             // loose equality (not checking IDs, since they may not exist)
             $piece = $this->getMatchInfo($object);
-            
+
             if ($piece != null && !empty($piece)) {
                 $this->logger->addDebug("Reconciling an object", array("info"=>$piece, "object"=>$object->toArray(), "other"=>$other->toArray()));
 
@@ -532,6 +532,12 @@ class ConstellationPostMapper {
         foreach ($this->constellation->getResourceRelations() as $relation) {
             foreach ($constellation->getResourceRelations() as $other) {
                 $this->reconcileObject($relation, $other);
+
+                foreach ($relation->getRelatedResourceOriginationName() as $originationName) {
+                    foreach ($other->getRelatedResourceOriginationName() as $otherOriginationName) {
+                        $this->reconcileObject($originationName, $otherOriginationName);
+                    }
+                }
             }
         }
 
@@ -1106,7 +1112,7 @@ class ConstellationPostMapper {
             $relation->setLink($data["link"]);
             $relation->setSource($data["source"]);
             $relation->setNote($data["note"]);
-            
+
             $relation->setTitle($data["title"]);
             $relation->setAbstract($data["abstract"]);
             $relation->setExtent($data["extent"]);
@@ -1116,6 +1122,31 @@ class ConstellationPostMapper {
             $relation->setRole($this->parseTerm($data["role"]));
 
             $relation->setAllSNACControlMetadata($this->parseSCM($data, "resourceRelation", $k));
+
+            // right now, update origination names if updating resource relation
+            if (isset($data["originationName"])) {
+                foreach ($data["originationName"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through originationName", $cData);
+                    $originationName = new \snac\data\RROriginationName();
+                    $originationName->setID($cData["id"]);
+                    $originationName->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $originationName->setOperation($this->getOperation($cData));
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
+                        $originationName->setOperation($this->getOperation($data));
+                    }
+
+                    $originationName->setName($cData["name"]);
+
+                    $this->addToMapping("resourceRelation_originationName_".$l, $k, $cData, $originationName);
+
+                    $relation->AddRelatedResourceOriginationName($originationName);
+                }
+            }
+
 
             $this->addToMapping("resourceRelation", $k, $data, $relation);
 
@@ -1219,7 +1250,7 @@ class ConstellationPostMapper {
                 $place->deconfirm();
 
             $place->setAllSNACControlMetadata($this->parseSCM($data, "place", $k));
-            
+
             // right now, update components if updating name entry
             if (isset($data["address"])) {
                 foreach ($data["address"] as $l => $aData) {

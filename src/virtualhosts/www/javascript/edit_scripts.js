@@ -498,7 +498,7 @@ function subMakeEditable(short, i) {
               neworder.forEach(function(orderedID, index) {
                     $("#"+orderedID + " input.order-index").val(index);
               });
-              if (short == "nameEntry") 
+              if (short == "nameEntry")
                     updateNameEntryHeading(i);
           }
     });
@@ -933,6 +933,35 @@ function newAddressLine(i) {
 }
 
 /**
+ * Create a new Resource Relation Origination Name object on page
+ *
+ * Puts a new Resource Relation Origination Name object DIV on the page and attaches it correctly to the DOM and javascript.
+ *
+ * @param  int     i    The index on the page of the Resource Relation to add this Origination Name to
+ * @return boolean      false to play nice with the browser.
+ */
+function newOriginationName(i) {
+	var nextid = 1;
+	if ($('#resourceRelation_originationName_next_j_'+i).exists()) {
+	    nextid = parseInt($('#resourceRelation_originationName_next_j_'+i).text());
+	}
+	console.log("Creating new origination name for resource relation " + i + " with id: " + nextid);
+    somethingHasBeenEdited = true;
+    var text = $('#originationName_template').clone();
+    var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
+    $('#resourceRelation_originationName_add_div_'+i).before(html);
+
+    $('#resourceRelation_originationName_' + nextid + '_operation_' + 1).val("insert");
+    subMakeEditable("resourceRelation_originationName_" + nextid, i);
+
+    // Put the updated version number back in the DOM
+    $('#resourceRelation_originationName_next_j_'+i).text(++nextid);
+
+    return false;
+}
+
+
+/**
  * Create a new Name Entry Component object on page
  *
  * Puts a new Name Entry component object DIV on the page and attaches it correctly to the DOM and javascript.
@@ -1339,7 +1368,7 @@ $(document).ready(function() {
 			}
 		});
 	}
-    
+
     // Name Entry doesn't get any AJAX, since it is pre-loaded
 	var nameEntryid = 1;
 	if ($('#next_nameEntry_i').exists()) {
@@ -1377,7 +1406,7 @@ $(document).ready(function() {
                 $('#genders').html(data);
 
                 turnOnEditDeleteButtons("genders");
-                
+
                 if ($('#next_gender_i').exists()) {
                     genderid = parseInt($('#next_gender_i').text());
                 }
@@ -1395,7 +1424,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("genders");
             });
         });
@@ -1415,7 +1444,7 @@ $(document).ready(function() {
                 $('#dates').html(data);
 
                 turnOnEditDeleteButtons("dates");
-                
+
                 if ($('#next_exist_i').exists()) {
                     existid = parseInt($('#next_exist_i').text());
                 }
@@ -1446,7 +1475,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("dates");
             });
         });
@@ -1465,7 +1494,7 @@ $(document).ready(function() {
                 $('#sameAs').html(data);
 
                 turnOnEditDeleteButtons("sameAs");
-                
+
                 if ($('#next_sameAs_i').exists()) {
                     sameAsid = parseInt($('#next_sameAs_i').text());
                 }
@@ -1483,7 +1512,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("sameAs");
             });
         });
@@ -1503,7 +1532,7 @@ $(document).ready(function() {
                 $('#entityID').html(data);
 
                 turnOnEditDeleteButtons("entityID");
-                
+
                 if ($('#next_entityID_i').exists()) {
                     entityIDid = parseInt($('#next_entityID_i').text());
                 }
@@ -1521,7 +1550,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("entityID");
             });
         });
@@ -1540,7 +1569,7 @@ $(document).ready(function() {
                 $('#sources').html(data);
 
                 turnOnEditDeleteButtons("sources");
-                
+
                 if ($('#next_source_i').exists()) {
                     sourceid = parseInt($('#next_source_i').text());
                 }
@@ -1558,7 +1587,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("sources");
             });
         });
@@ -1577,7 +1606,7 @@ $(document).ready(function() {
                 $('#resourceRelations').html(data);
 
                 turnOnEditDeleteButtons("resourceRelations");
-                
+
                 if ($('#next_resourceRelation_i').exists()) {
                     resourceRelationid = parseInt($('#next_resourceRelation_i').text());
                 }
@@ -1595,13 +1624,13 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("resourceRelations");
             });
         });
     }
-	
-    
+
+
 	var constellationRelationid = 1;
     var constellationRelationOpen = false;
 	if ($('#constellationRelationstab').exists()){
@@ -1615,7 +1644,7 @@ $(document).ready(function() {
                 $('#constellationRelations').html(data);
 
                 turnOnEditDeleteButtons("constellationRelations");
-                
+
                 if ($('#next_constellationRelation_i').exists()) {
                     constellationRelationid = parseInt($('#next_constellationRelation_i').text());
                 }
@@ -1650,12 +1679,12 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("constellationRelations");
             });
         });
     }
-	
+
 	var languageid = 1;
     var languageOpen = false;
 	if ($('#languagesUsedtab').exists()){
@@ -1669,7 +1698,7 @@ $(document).ready(function() {
                 $('#languagesUsed').html(data);
 
                 turnOnEditDeleteButtons("languagesUsed");
-                
+
                 if ($('#next_language_i').exists()) {
                     languageid = parseInt($('#next_language_i').text());
                 }
@@ -1687,7 +1716,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("languagesUsed");
             });
         });
@@ -1706,7 +1735,7 @@ $(document).ready(function() {
                 $('#subjects').html(data);
 
                 turnOnEditDeleteButtons("subjects");
-                
+
                 if ($('#next_subject_i').exists()) {
                     subjectid = parseInt($('#next_subject_i').text());
                 }
@@ -1724,7 +1753,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("subjects");
             });
         });
@@ -1743,7 +1772,7 @@ $(document).ready(function() {
                 $('#nationalities').html(data);
 
                 turnOnEditDeleteButtons("nationalities");
-                
+
                 if ($('#next_nationality_i').exists()) {
                     nationalityid = parseInt($('#next_nationality_i').text());
                 }
@@ -1761,7 +1790,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("nationalities");
             });
         });
@@ -1780,7 +1809,7 @@ $(document).ready(function() {
                 $('#functions').html(data);
 
                 turnOnEditDeleteButtons("functions");
-                
+
                 if ($('#next_function_i').exists()) {
                     functionid = parseInt($('#next_function_i').text());
                 }
@@ -1798,7 +1827,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("functions");
             });
         });
@@ -1817,7 +1846,7 @@ $(document).ready(function() {
                 $('#occupations').html(data);
 
                 turnOnEditDeleteButtons("occupations");
-                
+
                 if ($('#next_occupation_i').exists()) {
                     occupationid = parseInt($('#next_occupation_i').text());
                 }
@@ -1835,7 +1864,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("occupations");
             });
         });
@@ -1854,7 +1883,7 @@ $(document).ready(function() {
                 $('#legalStatuses').html(data);
 
                 turnOnEditDeleteButtons("legalStatuses");
-                
+
                 if ($('#next_legalStatus_i').exists()) {
                     legalStatusid = parseInt($('#next_legalStatus_i').text());
                 }
@@ -1872,7 +1901,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("legalStatuses");
             });
         });
@@ -1891,7 +1920,7 @@ $(document).ready(function() {
                 $('#places').html(data);
 
                 turnOnEditDeleteButtons("places");
-                
+
                 if ($('#next_place_i').exists()) {
                     placeid = parseInt($('#next_place_i').text());
                 }
@@ -1909,7 +1938,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("places");
             });
         });
@@ -1928,7 +1957,7 @@ $(document).ready(function() {
                 $('#conventionDeclarations').html(data);
 
                 turnOnEditDeleteButtons("conventionDeclarations");
-                
+
                 if ($('#next_conventionDeclaration_i').exists()) {
                     conventionDeclarationid = parseInt($('#next_conventionDeclaration_i').text());
                 }
@@ -1946,7 +1975,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("conventionDeclarations");
             });
         });
@@ -1965,7 +1994,7 @@ $(document).ready(function() {
                 $('#generalContexts').html(data);
 
                 turnOnEditDeleteButtons("generalContexts");
-                
+
                 if ($('#next_generalContext_i').exists()) {
                     generalContextid = parseInt($('#next_generalContext_i').text());
                 }
@@ -1983,7 +2012,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("generalContexts");
             });
         });
@@ -2002,7 +2031,7 @@ $(document).ready(function() {
                 $('#structureOrGenealogies').html(data);
 
                 turnOnEditDeleteButtons("structureOrGenealogies");
-                
+
                 if ($('#next_structureOrGenealogy_i').exists()) {
                     structureOrGenealogyid = parseInt($('#next_structureOrGenealogy_i').text());
                 }
@@ -2020,7 +2049,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("structureOrGenealogies");
             });
         });
@@ -2039,7 +2068,7 @@ $(document).ready(function() {
                 $('#mandates').html(data);
 
                 turnOnEditDeleteButtons("mandates");
-                
+
                 if ($('#next_mandate_i').exists()) {
                     mandateid = parseInt($('#next_mandate_i').text());
                 }
@@ -2057,7 +2086,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("mandates");
             });
         });
@@ -2076,7 +2105,7 @@ $(document).ready(function() {
                 $('#biogHists').html(data);
 
                 turnOnEditDeleteButtons("biogHists");
-                
+
                 if ($('#next_biogHist_i').exists()) {
                     biogHistid = parseInt($('#next_biogHist_i').text());
                 }
@@ -2094,7 +2123,7 @@ $(document).ready(function() {
                         return false;
                     });
                 }
-                
+
                 turnOnTooltipsForTab("biogHists");
             });
         });

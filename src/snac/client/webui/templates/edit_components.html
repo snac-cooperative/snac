@@ -484,6 +484,7 @@
 
 {% macro displayResourceRelation(X, inEdit, showSubElements, relation, i) %}
     {% import 'widgets.html' as widgets %}
+    {% import _self as components %}
         <div class="panel panel-default" id="resourceRelation_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="resourceRelation_datapart_{{i}}">
@@ -560,6 +561,30 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label class="control-label col-xs-4" data-content="{{X.resourceOriginationName.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceOriginationName.display }}
+                        </label>
+                        <div class="col-xs-8 well well-sm">
+                            {% set j = 0 %}
+                            {% for originationName in relation.relatedResourceOriginationName %}
+                                {{ components.displayResourceOriginationName(X, inEdit, showSubElements, originationName, i, j) }}
+                                {% set j = j + 1 %}
+                            {% endfor %}
+
+                            <span id='resourceRelation_originationName_next_j_{{i}}' style='display:none;'>{{j}}</span>
+
+                            <div class="form-group" id="resourceRelation_originationName_add_div_{{i}}">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success snac-hidden" id="resourceRelation_originationName_add_{{i}}"
+                                        onClick="return newOriginationName({{i}});" disabled>
+                                        <span class="glyphicon glyphicon-plus-sign"></span> Add Origination Name
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceXML.display }}
                         </label>
@@ -585,6 +610,41 @@
         </div>
 
 {% endmacro %}
+
+{% macro displayResourceOriginationName(X, inEdit, showSubElements, originationName, i, j) %}
+        <div class="col-xs-12" id="resourceRelation_originationName_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+            <div id="resourceRelation_originationName_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="resourceRelation_originationName_{{j}}_id_{{i}}"
+                    name="resourceRelation_originationName_{{j}}_id_{{i}}"
+                    value="{{originationName.id}}"/>
+                <input type="hidden" id="resourceRelation_originationName_{{j}}_version_{{i}}"
+                    name="resourceRelation_originationName_{{j}}_version_{{i}}"
+                    value="{{originationName.version}}"/>
+                <input type="hidden" id="resourceRelation_originationName_{{j}}_operation_{{i}}"
+                    name="resourceRelation_originationName_{{j}}_operation_{{i}}"
+                    value="{{originationName.operation}}"/>
+                <div>
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="text_resourceRelation_originationName_{{j}}_name_{{i}}" style="width: 100%; clear: none; float: left;">
+                            <input type="hidden" name="resourceRelation_originationName_{{j}}_name_{{i}}" id="resourceRelation_originationName_{{j}}_name_{{i}}"
+                                class="form-control" value="{{ originationName.name  }}">
+                            <p class="form-control-static">{{ originationName.name }}</p>
+                        </div>
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger snac-hidden"
+                                id="resourceRelation_originationName_{{j}}_remove_{{i}}" disabled
+                                onClick="setRepeatedDataDeleted('resourceRelation_originationName_{{j}}', '{{i}}'); return false;">
+                                <span class="glyphicon glyphicon-minus-sign"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endmacro %}
+
+
 
 {% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i) %}
     {% import 'widgets.html' as widgets %}
