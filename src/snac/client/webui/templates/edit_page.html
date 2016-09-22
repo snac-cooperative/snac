@@ -53,6 +53,7 @@
 <script src="javascript/save_actions.js"></script>
 <script src="javascript/select_loaders.js"></script>
 <script src="javascript/scripts.js"></script>
+<script src="javascript/edit_scripts.js"></script>
 <script src="javascript/relation_search.js"></script>
 
 <script>
@@ -158,359 +159,106 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     </div>
 
                     <div class="tab-pane" id="genders">
-                        <h2>Genders</h2>
-
-                        <div class="form-group" id="add_gender_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_gender"><span class="glyphicon glyphicon-plus"></span> Add New Gender</button>
-                            </div>
-                        </div>
-
-
-
-                        {% set i = 0 %}
-                        {% for gender in data.genders %}
-                            {{ components.displayGender(X, true, true, gender, i) }}
-                            {% set i = i + 1 %}
-                        {% endfor %}
-
-                        <span id='next_gender_i' style='display:none;'>{{i}}</span>
-
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="dates">
-                        <h2>Exist Dates</h2>
-
-                        <div class="form-group" id="add_exist_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button>
-                                <button class="btn btn-success" id="btn_add_exist_dateRange"><span class="glyphicon glyphicon-plus"></span> Add New Date Range</button>
-                            </div>
-                        </div>
-
-                        {% set i = 0 %}
-                        {% for exist in data.dates %}
-                            {{ components.displayExist(X, true, true, exist, i) }}
-                            {% set i = i + 1 %}
-                        {% endfor %}
-
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
                     </div>
 
 
                     <div class="tab-pane" id="biogHists" style='height: auto'>
-                        <h2>Biographical History</h2>
-
-                        {% if data.biogHists is empty %}
-                            {{ components.displayBiogHist(X, true, true, null, 0) }}
-                        {% else %}
-                            {% set i = 0 %}
-                            {% for biogHist in data.biogHists %}
-                                {{ components.displayBiogHist(X, true, true, biogHist, i) }}
-                                {% set i = i + 1 %}
-                            {% endfor %}
-                        {% endif %}
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="sameAs">
-                        <h2>External CPF Relations (Same As)</h2>
-
-                        <div class="form-group" id="add_sameAs_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_sameAs"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
-                            </div>
-                        </div>
-
-
-                        {% set i = 0 %}
-                        {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, true, true, other, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
-
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="entityID">
-                        <h2>Other Entity IDs (Same As)</h2>
-
-                        <div class="form-group" id="add_entityID_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_entityID"><span class="glyphicon glyphicon-plus"></span> Add New Entity ID</button>
-                            </div>
-                        </div>
-
-
-                        {% set i = 0 %}
-                        {% for other in data.entityIDs %}
-                            {{ components.displayEntityID(X, true, true, other, i) }}
-                            {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_entityID_i' style='display:none;'>{{i}}</span>
-
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="sources">
-                        <h2>Sources</h2>
-
-                        <div class="form-group" id="add_source_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_source"><span class="glyphicon glyphicon-plus"></span> Add New Source</button>
-                            </div>
-                        </div>
-
-                        {% set i = 0 %}
-                        {% for source in data.sources %}
-                            {{ components.displaySource(X, true, true, source, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_source_i' style='display:none;'>{{i}}</span>
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="resourceRelations">
-                        <h2>Resource Relations</h2>
-
-                        <div class="form-group" id="add_resourceRelation_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_resourceRelation"><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
-                            </div>
-                        </div>
-
-
-                        {% set i = 0 %}
-                        {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, true, true, relation, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
-                        <h2>Internal CPF Relations</h2>
-
-                        <div class="form-group" id="add_constellationRelation_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_constellationRelation" data-toggle="modal" data-target="#relationSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation</button>
-                            </div>
-                        </div>
-
-                        {% set i = 0 %}
-                        {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, true, true, relation, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
 
                     <div class="tab-pane" id="languagesUsed">
-                        <h2>Languages Used</h2>
-
-                        <div class="form-group" id="add_language_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_language"><span class="glyphicon glyphicon-plus"></span> Add New Language</button>
-                            </div>
-                        </div>
-
-                        {% set i = 0 %}
-                        {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, true, true, language, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_language_i' style='display:none;'>{{i}}</span>
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
 
                     <div class="tab-pane" id="subjects">
-                        <h2>Subjects</h2>
-
-
-                        <div class="form-group" id="add_subject_div">
-                            <div class="col-xs-12 text-center">
-                                <button class="btn btn-success" id="btn_add_subject"><span class="glyphicon glyphicon-plus"></span> Add New Subject</button>
-                            </div>
-                        </div>
-
-                        {% set i = 0 %}
-                        {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, true, true, subject, i) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_subject_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="nationalities">
-                            <h2>Nationalities</h2>
-
-
-                            <div class="form-group" id="add_nationality_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_nationality"><span class="glyphicon glyphicon-plus"></span> Add New Nationality</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, true, true, nationality, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_nationality_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="functions">
-                            <h2>Functions</h2>
-
-
-                            <div class="form-group" id="add_function_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_function"><span class="glyphicon glyphicon-plus"></span> Add New Function</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for function in data.functions %}
-                                {{ components.displayFunction(X, true, true, function, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_function_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="occupations">
-                            <h2>Occupations</h2>
-
-                            <div class="form-group" id="add_occupation_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_occupation"><span class="glyphicon glyphicon-plus"></span> Add New Occupation</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, true, true, occupation, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_occupation_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="legalStatuses">
-                            <h2>Legal Statuses</h2>
-
-                            <div class="form-group" id="add_legalStatus_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_legalStatus"><span class="glyphicon glyphicon-plus"></span> Add New Legal Status</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, true, true, legalStatus, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="places">
-                            <h2>Places</h2>
-
-                            <div class="form-group" id="add_place_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_place"><span class="glyphicon glyphicon-plus"></span> Add New Place</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for place in data.places %}
-                                {{ components.displayPlace(X, true, true, place, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_place_i' style='display:none;'>{{i}}</span>
-
-                        </div>
-
-                        <div class="tab-pane" id="conventionDeclarations">
-                            <h2>Convention Declarations</h2>
-
-                            <div class="form-group" id="add_conventionDeclaration_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_conventionDeclaration"><span class="glyphicon glyphicon-plus"></span> Add New Convention Declaration</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, true, true, conventionDeclaration, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="generalContexts">
-                            <h2>General Contexts</h2>
-
-                            <div class="form-group" id="add_generalContext_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_generalContext"><span class="glyphicon glyphicon-plus"></span> Add New General Context</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, true, true, generalContext, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="structureOrGenealogies">
-                            <h2>Structure or Genealogies</h2>
-
-                            <div class="form-group" id="add_structureOrGenealogy_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_structureOrGenealogy"><span class="glyphicon glyphicon-plus"></span> Add New Structure or Genealogy</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, true, true, structureOrGenealogy, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-                        <div class="tab-pane" id="mandates">
-                            <h2>Mandates</h2>
-
-                            <div class="form-group" id="add_mandate_div">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success" id="btn_add_mandate"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
-                                </div>
-                            </div>
-
-                            {% set i = 0 %}
-                            {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, true, true, mandate, i) }}
-                            {% set i = i + 1 %}
-                            {% endfor %}
-                            <span id='next_mandate_i' style='display:none;'>{{i}}</span>
-                        </div>
-
-
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
 
                     </div>
+
+                    <div class="tab-pane" id="nationalities">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="functions">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="occupations">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="legalStatuses">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="places">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="conventionDeclarations">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="generalContexts">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+                    </div>
+
+                    <div class="tab-pane" id="structureOrGenealogies">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+                    <div class="tab-pane" id="mandates">
+                        <h5 style="margin-top: 50px" class="text-center">Loading ...</h5>
+
+                    </div>
+
+
+
                 </div>
-                <div class="col-md-4">
-                    <!-- Right Column -->
+            </div>
+            <div class="col-md-4">
+                <!-- Right Column -->
 
                     <div class="alert alert-01 alert-warning" id="notification-message" style="display: none">
                         <p>Saving Constellation...</p>

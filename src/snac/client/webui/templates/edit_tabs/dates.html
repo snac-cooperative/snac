@@ -1,0 +1,18 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Exist Dates</h2>
+
+<div class="form-group" id="add_exist_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_exist_date"><span class="glyphicon glyphicon-plus"></span> Add New Date</button>
+        <button class="btn btn-success" id="btn_add_exist_dateRange"><span class="glyphicon glyphicon-plus"></span> Add New Date Range</button>
+    </div>
+</div>
+
+{% set i = 0 %}
+{% for exist in data.dates %}
+    {{ components.displayExist(X, true, true, exist, i) }}
+    {% set i = i + 1 %}
+{% endfor %}

@@ -1,0 +1,15 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Biographical History</h2>
+
+{% if data.biogHists is empty %}
+    {{ components.displayBiogHist(X, true, true, null, 0) }}
+{% else %}
+    {% set i = 0 %}
+    {% for biogHist in data.biogHists %}
+        {{ components.displayBiogHist(X, true, true, biogHist, i) }}
+        {% set i = i + 1 %}
+    {% endfor %}
+{% endif %}
