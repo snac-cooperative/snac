@@ -362,6 +362,7 @@ create index name_idx1 on name (ic_id, version);
 create table name_component (
              id int default nextval('id_seq'),
         name_id int,  -- fk to name.id
+          ic_id int,  -- fk to name.id
         version int,
      is_deleted boolean default false,
        nc_label int,  -- typeID, getType() fk to vocabulary.id, surname, forename, etc.
@@ -802,6 +803,7 @@ create table otherid (
         text text, -- unclear what this is parse from in CPF. See SameAs.php.
         uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.ic_id
         type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
+        is_deleted       boolean default false,
         primary    key(id, version)
     );
 
@@ -814,6 +816,7 @@ create table entityid (
         text text, -- text of the entityId field (ex: ISNI id, MARC organization code, etc)
         uri  text, -- URI of the other record, might not be used (not supported in EAC-CPF)
         type int,  -- type of id, such as ISNI, MARC org, etc
+        is_deleted       boolean default false,
         primary    key(id, version)
 );
 
