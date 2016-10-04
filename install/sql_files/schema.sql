@@ -21,6 +21,35 @@
 -- drop table if exists control;
 -- drop table if exists pre_snac_maintenance_history;
 
+drop view if exists biog_hist_view;
+drop view if exists convention_declaration_view;
+drop view if exists date_range_view;
+drop view if exists function_view;
+drop view if exists gender_view;
+drop view if exists general_context_view;
+drop view if exists language_view;
+drop view if exists legal_status_view;
+drop view if exists mandate_view;
+drop view if exists name_view;
+drop view if exists name_component_view;
+drop view if exists name_contributor_view;
+drop view if exists nationality_view;
+drop view if exists nrd_view;
+drop view if exists occupation_view;
+drop view if exists otherid_view;
+drop view if exists entityid_view;
+drop view if exists place_link_view;
+drop view if exists related_identity_view;
+drop view if exists related_resource_origination_name_view;
+drop view if exists related_resource_view;
+drop view if exists scm_view;
+drop view if exists structure_genealogy_view;
+drop view if exists source_view;
+drop view if exists subject_view;
+drop view if exists version_history_view;
+drop view if exists address_line_view;
+
+
 drop table if exists appuser;
 drop table if exists appuser_role_link;
 drop table if exists appuser_group;
