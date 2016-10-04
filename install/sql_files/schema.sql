@@ -1001,3 +1001,358 @@ create index gender_idx2 on gender (ic_id, version);
 create index general_context_idx2 on general_context (ic_id, version);
 create index legal_status_idx2 on legal_status (ic_id, version);
 create index language_idx3 on language (fk_id, fk_table, version);
+
+-- Views that allow us to query the most recent constellation data
+
+create or replace view address_line_view as
+select g.* 
+    from address_line g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from address_line g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view biog_hist_view as
+select g.* 
+    from biog_hist g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from biog_hist g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view convention_declaration_view as
+select g.* 
+    from convention_declaration g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from convention_declaration g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view date_range_view as
+select g.* 
+    from date_range g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from date_range g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view entityid_view as
+select g.* 
+    from entityid g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from entityid g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view function_view as
+select g.* 
+    from function g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from function g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view gender_view as
+select g.* 
+    from gender g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from gender g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view general_context_view as
+select g.* 
+    from general_context g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from general_context g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view language_view as
+select g.* 
+    from language g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from language g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view legal_status_view as
+select g.* 
+    from legal_status g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from legal_status g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view mandate_view as
+select g.* 
+    from mandate g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from mandate g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_view as
+select g.* 
+    from name g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_component_view as
+select g.* 
+    from name_component g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name_component g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_contributor_view as
+select g.* 
+    from name_contributor g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name_contributor g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view nationality_view as
+select g.* 
+    from nationality g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from nationality g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view nrd_view as
+select g.* 
+    from nrd g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from nrd g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view occupation_view as
+select g.* 
+    from occupation g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from occupation g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view otherid_view as
+select g.* 
+    from otherid g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from otherid g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view place_link_view as
+select g.* 
+    from place_link g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from place_link g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view related_identity_view as
+select g.* 
+    from related_identity g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from related_identity g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view related_resource_view as
+select g.* 
+    from related_resource g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from related_resource g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view scm_view as
+select g.* 
+    from scm g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from scm g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
