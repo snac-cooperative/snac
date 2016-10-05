@@ -1356,3 +1356,19 @@ select g.*
         group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
     where not g.is_deleted;
 
+create or replace view subject_view as
+select g.* 
+    from subject g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from subject g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
