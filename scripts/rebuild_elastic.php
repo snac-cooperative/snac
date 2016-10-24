@@ -50,11 +50,26 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         echo "   - could not delete search index. It did not exist.\n";
     }
 
+    echo "Querying the relation degrees from the database.\n";
+
+    $allRelCount = $db->query("select a.ic_id, count(*) as degree from
+                (select r.id, r.ic_id from
+                    related_identity r,
+                    (select distinct id, max(version) as version from related_identity group by id) a
+                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
+                    group by ic_id", array());
+    $counts = array();
+    while($c = $db->fetchrow($allRelCount))
+    {
+        $counts[$allRelCount["ic_id"]] = $allRelCount["degree"];
+    }
+
     $previousICID = -1;
+
 
     echo "Querying the names from the database.\n";
 
-    $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score, one.entity_type, one.degree from
+    $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score, one.entity_type from
         (select
             aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
         from
@@ -78,28 +93,20 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
             not aa.is_deleted and
             aa.version = bb.version
         order by ic_id asc, preference_score desc, id asc) two,
-        (select v.id as ic_id, v.version, n.ark_id, etv.value as entity_type, rels.degree
+        (select v.id as ic_id, v.version, n.ark_id, etv.value as entity_type
         from
             version_history v,
             (select bb.id, max(bb.version) as version from
                 (select id, version from version_history where status in ('published', 'deleted')) bb
                 group by id order by id asc) mv,
-            nrd n,
             vocabulary etv,
-            (select a.ic_id, count(*) as degree from
-                (select r.id, r.ic_id from
-                    related_identity r,
-                    (select distinct id, max(version) as version from related_identity group by id) a
-                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
-            group by ic_id) rels
+            nrd n 
         where
             v.id = mv.id and
             v.version = mv.version and
             v.status = 'published' and
             v.id = n.ic_id and
-            n.entity_type = etv.id and
-            v.id = rels.ic_id
-        order by v.id asc, v.version desc) one
+            n.entity_type = etv.id) one
     where
         two.ic_id = one.ic_id
     order by
@@ -112,6 +119,11 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         // The data is ordered by ic_id and then preference score.  We will currently say the preferred name
         // is the one with the highest preference score for each ic_id.  So, if we haven't ever seen this ic_id
         // before, this is the preferred name entry for this ic.
+        if (isset($counts[$name["ic_id"]]))
+            $name["degree"] = $counts[$name["ic_id"]];
+        else
+            $name["degree"] = 0;
+
         if ($previousICID != $name["ic_id"]) {
             indexMain($name["original"], $name["ark_id"], $name["ic_id"], $name["entity_type"], $name["degree"]);
         }
