@@ -1695,13 +1695,15 @@ class ServerExecutor {
             $this->logger->addDebug("Search results:", $response);
             $this->logger->addDebug("Entity Types:", $terms);
 
+            $searchResults = array();
             // Update the ES search results to include information from the constellation
             foreach ($response["results"] as $k => $result) {
+                $constellation = $this->cStore->readPublishedConstellationByID($result["id"], DBUtil::$READ_SHORT_SUMMARY);
                 $this->logger->addDebug("Looking for EType: ". $result["entityType"]);
-                $eType = array ("id"=>$terms[$result["entityType"]], "term"=>$result["entityType"]);
-                $response["results"][$k]["entityType"] = $eType;
+                array_push($searchResults, $constellation->toArray());
             }
-
+            $response["results"] = $searchResults;
+            $this->logger->addDebug("Search results2:", $response);
         }
 
         return $response;

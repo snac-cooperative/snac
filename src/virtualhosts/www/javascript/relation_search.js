@@ -17,12 +17,12 @@
                     	 //html += "<div class='input-group'><span class='input-group-addon'><input type='radio'></span><p class='form-static'>Blah</p><span class='input-group-button'><button class='btn btn-default' type='button'>View</button></span></div>";
                          html += "<div class='list-group-item'><div class='row'>";
                          html += "<div class='col-xs-1'><input type='radio' name='relationChoice' id='relationChoice' value='"+data.results[key].id+"'></div>";
-                         html += "<div class='col-xs-10'><h4 class='list-group-item-heading'>"+data.results[key].nameEntry+"</h4>";
-                         html += "<p class='list-group-item-text'>"+data.results[key].arkID+" <a class='label label-info' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'>View</a></p></div>";
-                         html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntry.replace("'", "&#39;")+"'/>";
+                         html += "<div class='col-xs-10'><h4 class='list-group-item-heading'>"+data.results[key].nameEntries[0].original+"</h4>";
+                         html += "<p class='list-group-item-text'>"+data.results[key].ark+" <a class='label label-info' target='_blank' href='?command=view&constellationid="+data.results[key].id+"'>View</a></p></div>";
+                         html += "<input type='hidden' id='relationChoice_nameEntry_"+data.results[key].id+"' value='"+data.results[key].nameEntries[0].original.replace("'", "&#39;")+"'/>";
                          var arkID = "";
-                         if (data.results[key].arkID != null)
-                             arkID = data.results[key].arkID;
+                         if (data.results[key].ark != null)
+                             arkID = data.results[key].ark;
                          html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
                          html += "<input type='hidden' id='relationChoice_entityType_"+data.results[key].id+"' value='"+data.results[key].entityType.id+"'/>";
                          html += "</div></div>";
