@@ -75,7 +75,7 @@ $('.selectpicker').selectpicker();
                     {% if result.biogHists.0.text %}
                         <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
                     {% else %}
-                        <p>No biographical history available for this identity.</p>
+                        <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}
                 {% endfor %}
 
