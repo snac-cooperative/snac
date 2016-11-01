@@ -134,6 +134,9 @@ class EACCPFSerializer {
     private static function cpfSameAs(&$data) {
         $fixedOIDs = array();
         if (array_key_exists('otherRecordIDs', $data)) {
+            if (!isset($data['relations'])) {
+                $data['relations'] = array();
+            }
             foreach($data['otherRecordIDs'] as $oId) {
                 if ($oId['type']['term'] == 'sameAs') {
                     $cpfRel = array();
