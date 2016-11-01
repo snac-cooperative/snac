@@ -1685,6 +1685,23 @@ class ServerExecutor {
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
             $response = $this->elasticSearch->searchMainIndex($input["term"], $input["start"], $input["count"]);
+
+            // Get the entity types and store them, using a reverse key lookup
+            $terms = array();
+            $tmp = $this->cStore->searchVocabulary('entity_type', '');
+            foreach ($tmp as $type) {
+                $terms[$type["value"]] = $type["id"];
+            }
+            $this->logger->addDebug("Search results:", $response);
+            $this->logger->addDebug("Entity Types:", $terms);
+
+            // Update the ES search results to include information from the constellation
+            foreach ($response["results"] as $k => $result) {
+                $this->logger->addDebug("Looking for EType: ". $result["entityType"]);
+                $eType = array ("id"=>$terms[$result["entityType"]], "term"=>$result["entityType"]);
+                $response["results"][$k]["entityType"] = $eType;
+            }
+
         }
 
         return $response;

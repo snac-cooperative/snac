@@ -1,7 +1,7 @@
      function setRelationSearchPosition(start) {
          $('#relation-search-start').val(start);
      }
-     
+
      function searchAndUpdate() {
          if ($("#relation-searchbox").val() == "" || $("#relation-searchbox").val().length < 2) {
              $("#relation-results-box").html("");
@@ -9,7 +9,7 @@
              $.post("?command=search", $("#relation_search_form").serialize(), function (data) {
                  //var previewWindow = window.open("", "Preview");
                  //previewWindow.document.write(data);
-                 
+
                  var html = "";
                  html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
                  if (data.results.length > 0) {
@@ -24,17 +24,17 @@
                          if (data.results[key].arkID != null)
                              arkID = data.results[key].arkID;
                          html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
-                         html += "<input type='hidden' id='relationChoice_entityType_"+data.results[key].id+"' value='"+data.results[key].entityType+"'/>";
+                         html += "<input type='hidden' id='relationChoice_entityType_"+data.results[key].id+"' value='"+data.results[key].entityType.id+"'/>";
                          html += "</div></div>";
                      }
                  } else {
                      html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
                  }
                  html += "</div>";
-                 
+
                  // Have pagination (total number of pages) and page (current page number) in data
                  // ... use them to help stepping through the search for multiple pages.
-                 
+
                  if (data.results.length > 0 && data.results.length < data.total) {
                      var start = $('#relation-search-start').val();
                      var count = $('#relation-search-count').val();
@@ -71,11 +71,11 @@
          }
      }
 
-     
+
      /**
       * Only load this script once the document is fully loaded
       */
-      
+
      $(document).ready(function() {
     	 /**
         $(function() {
@@ -86,17 +86,15 @@
                 }
             });
         });**/
-        
 
-        
+
+
         var timeoutID = null;
 
 
         $('#relation-searchbox').keyup(function() {
           clearTimeout(timeoutID);
           var $target = $(this);
-          timeoutID = setTimeout(function() { setRelationSearchPosition(0); searchAndUpdate(); }, 500); 
+          timeoutID = setTimeout(function() { setRelationSearchPosition(0); searchAndUpdate(); }, 500);
         });
      });
-        
-
