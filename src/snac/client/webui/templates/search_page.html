@@ -64,7 +64,7 @@ $('.selectpicker').selectpicker();
 
     <div class="row">
         <div class="col-md-12 search-results">
-            {% if data.timing %}
+            {% if data.term %}
                 <p class="search-info">Found {{data.total}} results in {{data.timing}} ms</p>
                 {% for result in data.results %}
                     <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
@@ -79,21 +79,23 @@ $('.selectpicker').selectpicker();
                     {% endif %}
                 {% endfor %}
 
-                {% if data.pagination > 0 %}
+                {% if data.pagination > 1 %}
                     <nav class="text-center"><ul class='pagination'>
                         {% if data.page != 0 %}
                         <li><a href='?command=search&count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
                         {% endif %}
+
                         {% for i in 1..data.pagination %}
                         <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}">{{i}}</a></li>
                         {% endfor %}
+
                         {% if data.page != data.pagination - 1 %}
                         <li><a href='?command=search&count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
                         {% endif %}
                     </ul></nav>
                 {% endif %}
             {% else %}
-                <p>Use the search bar above to search.</p>
+                <p>Please use the search bar above to search.</p>
             {% endif %}
         </div>
     </div>
