@@ -6,7 +6,7 @@
          if ($("#relation-searchbox").val() == "" || $("#relation-searchbox").val().length < 2) {
              $("#relation-results-box").html("");
          } else {
-             $.post("?command=search", $("#relation_search_form").serialize(), function (data) {
+             $.post("?command=quicksearch", $("#relation_search_form").serialize(), function (data) {
                  //var previewWindow = window.open("", "Preview");
                  //previewWindow.document.write(data);
 

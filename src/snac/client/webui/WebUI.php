@@ -118,7 +118,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "details",
                 "download",
                 "error",
-                "vocabulary"
+                "vocabulary",
+                "search",
+                "quicksearch"
         );
 
 
@@ -400,8 +402,12 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $response = $executor->performVocabularySearch($this->input);
                 break;
 
-            case "search":
+            case "quicksearch":
                 $response = $executor->performNameSearch($this->input);
+                break;
+
+            case "search":
+                $executor->displaySearchPage($this->input, $display);
                 break;
 
             case "error":

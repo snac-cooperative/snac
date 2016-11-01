@@ -45,7 +45,7 @@ $('.selectpicker').selectpicker();
 
 		<h1>SNAC Prototype</h1>
 
-		<form class="form-horizontal" id="search_form" onsubmit="return false;">
+		<form class="form-horizontal" id="search_form" method="GET" action="?">
 			<div class="well well-lg text-center">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
@@ -53,7 +53,7 @@ $('.selectpicker').selectpicker();
 						<input type="text" class="form-control"
 							placeholder="Search for..." id="searchbox" name="term">
 							<span class="input-group-btn">
-							     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
 						    </span>
 					</div>
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Prototype</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css">
+
+<!-- SNAC includes -->
+<script src="javascript/search.js"></script>
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions) }}
+
+
+<div class="container snac" role="main">
+
+		<h1>SNAC Search</h1>
+
+		<form class="form-horizontal" id="search_form" method="GET" action="?">
+			<div class="well well-lg text-center">
+                    <input type="hidden" id="count" name="count" value="10">
+                    <input type="hidden" id="start" name="start" value="0">
+					<div class="input-group">
+						<input type="text" class="form-control"
+							placeholder="Search for..." id="searchbox" name="term" value="{{data.query}}">
+							<span class="input-group-btn">
+							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+						    </span>
+					</div>
+
+					<div id="search-results-box">
+					</div>
+			</div>
+		</form>
+
+    <div class="row">
+        <div class="col-md-12 search-results">
+            {% if data.timing %}
+                <p class="search-info">Found {{data.total}} results in {{data.timing}} ms</p>
+                {% for result in data.results %}
+                    <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
+                    <p class="identity-info">
+                        <span>{{result.ark}}</span>
+                        <span>({{result.entityType.term}})</span>
+                    </p>
+                    {% if result.biogHists.0.text %}
+                        <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                    {% else %}
+                        <p>No biographical history available for this identity.</p>
+                    {% endif %}
+                {% endfor %}
+
+                {% if data.pagination > 0 %}
+                    <nav class="text-center"><ul class='pagination'>
+                        {% if data.page != 0 %}
+                        <li><a href='#' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
+                        {% endif %}
+                        {% for i in 1..data.pagination %}
+                        <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}">{{i}}</a></li>
+                        {% endfor %}
+                        {% if data.page != data.pagination - 1 %}
+                        <li><a href='#' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
+                        {% endif %}
+                    </ul></nav>
+                {% endif %}
+            {% else %}
+                <p>Use the search bar above to search.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

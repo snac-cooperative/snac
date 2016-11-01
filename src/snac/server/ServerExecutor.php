@@ -1686,15 +1686,6 @@ class ServerExecutor {
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
             $response = $this->elasticSearch->searchMainIndex($input["term"], $input["start"], $input["count"]);
 
-            // Get the entity types and store them, using a reverse key lookup
-            $terms = array();
-            $tmp = $this->cStore->searchVocabulary('entity_type', '');
-            foreach ($tmp as $type) {
-                $terms[$type["value"]] = $type["id"];
-            }
-            $this->logger->addDebug("Search results:", $response);
-            $this->logger->addDebug("Entity Types:", $terms);
-
             $searchResults = array();
             // Update the ES search results to include information from the constellation
             foreach ($response["results"] as $k => $result) {
@@ -1703,7 +1694,14 @@ class ServerExecutor {
                 array_push($searchResults, $constellation->toArray());
             }
             $response["results"] = $searchResults;
-            $this->logger->addDebug("Search results2:", $response);
+            $response["count"] = $input["count"];
+            $response["term"] = $input["term"];
+
+            // Limit the search results, if specified in the configuration
+            if (isset(\snac\Config::$MAX_SEARCH_RESULT_PAGES) &&
+                    $response["pagination"] > \snac\Config::$MAX_SEARCH_RESULT_PAGES)
+                $response["pagination"] = \snac\Config::$MAX_SEARCH_RESULT_PAGES;
+
         }
 
         return $response;

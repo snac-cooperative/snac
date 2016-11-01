@@ -191,6 +191,32 @@ class WebUIExecutor {
     }
 
     /**
+    * Display Search Page
+    *
+    * Loads the search page for a given query input into the display.
+    *
+    * @param string[] $input Post/Get inputs from the webui
+    * @param \snac\client\webui\display\Display $display The display object for page creation
+    */
+    public function displaySearchPage(&$input, &$display) {
+        if (!isset($input["term"]))
+            $input["term"] = "";
+            
+        if (isset($input["q"])) {
+            $input["term"] = $input["q"];
+        }
+        $results = $this->performNameSearch($input);
+        $results["query"] = $input["term"];
+        if (isset($results["results"])) {
+            $display->setTemplate("search_page");
+            $display->setData($results);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($results, $display);
+        }
+    }
+
+    /**
      * Display View Page
      *
      * Loads the view page for a given constellation input into the display.
