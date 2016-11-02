@@ -72,7 +72,7 @@ class ElasticSearchUtil {
                     'arkID' => $constellation->getArk(),
                     'id' => (int) $constellation->getID(),
                     'degree' => (int) count($constellation->getRelations()),
-                    'relations' => (int) count($constellation->getResourceRelations()),
+                    'resources' => (int) count($constellation->getResourceRelations()),
                     'timestamp' => date('c')
                 ]
             ];
@@ -90,7 +90,7 @@ class ElasticSearchUtil {
                         'id' => (int) $constellation->getID(),
                         'name_id' => (int) $entry->getID(),
                         'degree' => (int) count($constellation->getRelations()),
-                        'relations' => (int) count($constellation->getResourceRelations()),
+                        'resources' => (int) count($constellation->getResourceRelations()),
                         'timestamp' => date("c")
                     ]
                 ];
