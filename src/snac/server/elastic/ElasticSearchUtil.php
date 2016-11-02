@@ -191,7 +191,8 @@ class ElasticSearchUtil {
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [
-                                'query' => $query
+                                'query' => $query,
+                                'slop' => 20
                             ]
                         ]
                     ],
@@ -232,9 +233,9 @@ class ElasticSearchUtil {
     }
 
     /**
-     * Search SNAC Main Index
+     * Search SNAC Main Index with Resource Degree
      *
-     * Searches the main names index for the query.  Allows for pagination by the start and count parameters.
+     * Searches the main names index for the query using number of related resources as a factor.  Allows for pagination by the start and count parameters.
      *
      * @param string $query The search query
      * @param integer $start optional The result index to start from (default 0)
@@ -250,32 +251,25 @@ class ElasticSearchUtil {
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                 'body' => [
-                    /* This query uses a keyword search
-                       'query' => [
-                        'query_string' => [
-                            'fields' => [
-                                "nameEntry"
-                            ],
-                            'query' => '*' . $input["term"] . '*'
-                        ]
-                    ],
-                    'from' => $start,
-                    'size' => $count*/
 
-                    /* This query uses a full-phrase matching search */
+                    /* This query uses a full-word matching search */
                     'query' => [
                         'function_score' => [
                             'query' => [
-                                'match_phrase_prefix' => [
+                                'match' => [
                                     'nameEntry' => [
-                                        'query' => $query
+                                        'query' => $query,
+                                        'operator' => 'and'
                                     ]
                                 ]
                             ],
                             'field_value_factor' => [
-                                'field' => 'degree',
-                                'modifier' => 'log1p'
-                            ]
+                                'field' => 'resources',
+                                'modifier' => 'log1p',
+                                'factor' => 1.5 
+                            ],
+                            'boost_mode' => "multiply",
+                            'max_boost' => 3 
                         ]
                     ],
                     'from' => $start,
