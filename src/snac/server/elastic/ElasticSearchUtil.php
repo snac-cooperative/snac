@@ -18,8 +18,8 @@ use \snac\exceptions\SNACDatabaseException;
 /**
  * Elastic Search Utility Class
  *
- * This class provides the Elastic Search methods to query and update the ES indices. 
- * 
+ * This class provides the Elastic Search methods to query and update the ES indices.
+ *
  * @author Robbie Hott
  *
  */
@@ -41,7 +41,7 @@ class ElasticSearchUtil {
         // create a log channel
         $this->logger = new \Monolog\Logger('ElasticSearchUtil');
         $this->logger->pushHandler($log);
-        
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
             $this->connector = \Elasticsearch\ClientBuilder::create()
             ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
@@ -70,8 +70,9 @@ class ElasticSearchUtil {
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
-                    'id' => $constellation->getID(),
-                    'degree' => count($constellation->getRelations()),
+                    'id' => (int) $constellation->getID(),
+                    'degree' => (int) count($constellation->getRelations()),
+                    'relations' => (int) count($constellation->getResourceRelations()),
                     'timestamp' => date('c')
                 ]
             ];
@@ -86,9 +87,10 @@ class ElasticSearchUtil {
                         'nameEntry' => $entry->getOriginal(),
                         'entityType' => $constellation->getEntityType()->getTerm(),
                         'arkID' => $constellation->getArk(),
-                        'id' => $constellation->getID(),
-                        'name_id' => $entry->getID(),
-                        'degree' => count($constellation->getRelations()),
+                        'id' => (int) $constellation->getID(),
+                        'name_id' => (int) $entry->getID(),
+                        'degree' => (int) count($constellation->getRelations()),
+                        'relations' => (int) count($constellation->getResourceRelations()),
                         'timestamp' => date("c")
                     ]
                 ];
@@ -115,7 +117,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->delete($params);
-            foreach ($constellation->getNameEntries() as $entry) { 
+            foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
@@ -164,7 +166,7 @@ class ElasticSearchUtil {
      * @param string $query The search query
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
-     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page) 
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchMainIndex($query, $start=0, $count=10) {
         $this->logger->addDebug("Searching for a Constellation");
@@ -231,4 +233,3 @@ class ElasticSearchUtil {
         );
     }
 }
-
