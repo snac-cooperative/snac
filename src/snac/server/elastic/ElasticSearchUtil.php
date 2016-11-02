@@ -70,8 +70,9 @@ class ElasticSearchUtil {
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
-                    'id' => $constellation->getID(),
-                    'degree' => count($constellation->getRelations()),
+                    'id' => (int) $constellation->getID(),
+                    'degree' => (int) count($constellation->getRelations()),
+                    'relations' => (int) count($constellation->getResourceRelations()),
                     'timestamp' => date('c')
                 ]
             ];
@@ -86,9 +87,10 @@ class ElasticSearchUtil {
                         'nameEntry' => $entry->getOriginal(),
                         'entityType' => $constellation->getEntityType()->getTerm(),
                         'arkID' => $constellation->getArk(),
-                        'id' => $constellation->getID(),
-                        'name_id' => $entry->getID(),
-                        'degree' => count($constellation->getRelations()),
+                        'id' => (int) $constellation->getID(),
+                        'name_id' => (int) $entry->getID(),
+                        'degree' => (int) count($constellation->getRelations()),
+                        'relations' => (int) count($constellation->getResourceRelations()),
                         'timestamp' => date("c")
                     ]
                 ];
