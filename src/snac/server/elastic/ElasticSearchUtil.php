@@ -18,8 +18,8 @@ use \snac\exceptions\SNACDatabaseException;
 /**
  * Elastic Search Utility Class
  *
- * This class provides the Elastic Search methods to query and update the ES indices. 
- * 
+ * This class provides the Elastic Search methods to query and update the ES indices.
+ *
  * @author Robbie Hott
  *
  */
@@ -41,7 +41,7 @@ class ElasticSearchUtil {
         // create a log channel
         $this->logger = new \Monolog\Logger('ElasticSearchUtil');
         $this->logger->pushHandler($log);
-        
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
             $this->connector = \Elasticsearch\ClientBuilder::create()
             ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
@@ -77,7 +77,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->index($params);
-            foreach ($constellation->getNameEntries() as $entry) { 
+            foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
@@ -115,7 +115,7 @@ class ElasticSearchUtil {
             ];
 
             $this->connector->delete($params);
-            foreach ($constellation->getNameEntries() as $entry) { 
+            foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
@@ -164,7 +164,7 @@ class ElasticSearchUtil {
      * @param string $query The search query
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
-     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page) 
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
     public function searchMainIndex($query, $start=0, $count=10) {
         $this->logger->addDebug("Searching for a Constellation");
@@ -230,5 +230,87 @@ class ElasticSearchUtil {
                     "notice" => "Not Using ElasticSearch"
         );
     }
-}
 
+    /**
+     * Search SNAC Main Index
+     *
+     * Searches the main names index for the query.  Allows for pagination by the start and count parameters.
+     *
+     * @param string $query The search query
+     * @param integer $start optional The result index to start from (default 0)
+     * @param integer $count optional The number of results to return from the start (default 10)
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
+     */
+    public function searchMainIndexWithDegree($query, $start=0, $count=10) {
+        $this->logger->addDebug("Searching for a Constellation");
+
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+
+            $params = [
+                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                'body' => [
+                    /* This query uses a keyword search
+                       'query' => [
+                        'query_string' => [
+                            'fields' => [
+                                "nameEntry"
+                            ],
+                            'query' => '*' . $input["term"] . '*'
+                        ]
+                    ],
+                    'from' => $start,
+                    'size' => $count*/
+
+                    /* This query uses a full-phrase matching search */
+                    'query' => [
+                        'function_score' => [
+                            'query' => [
+                                'match_phrase_prefix' => [
+                                    'nameEntry' => [
+                                        'query' => $query
+                                    ]
+                                ]
+                            ],
+                            'field_value_factor' => [
+                                'field' => 'degree',
+                                'modifier' => 'log1p'
+                            ]
+                        ]
+                    ],
+                    'from' => $start,
+                    'size' => $count
+                ]
+            ];
+            $this->logger->addDebug("Defined parameters for search", $params);
+
+            $results = $this->connector->search($params);
+
+            $this->logger->addDebug("Completed Elastic Search", $results);
+
+            $return = array ();
+            foreach ($results["hits"]["hits"] as $i => $val) {
+                array_push($return, $val["_source"]);
+            }
+
+            $response = array();
+            $response["total"] = $results["hits"]["total"];
+            $response["results"] = $return;
+
+            if ($response["total"] == 0 || $count == 0) {
+                $response["pagination"] = 0;
+                $response["page"] = 0;
+            } else {
+                $response["pagination"] = ceil($response["total"] / $count);
+                $response["page"] = floor($start / $count);
+            }
+            $this->logger->addDebug("Created search response to the user", $response);
+
+            return $response;
+        }
+
+        return array (
+                    "notice" => "Not Using ElasticSearch"
+        );
+    }
+}

@@ -1684,13 +1684,12 @@ class ServerExecutor {
         }
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $response = $this->elasticSearch->searchMainIndex($input["term"], $input["start"], $input["count"]);
+            $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["start"], $input["count"]);
 
             $searchResults = array();
             // Update the ES search results to include information from the constellation
             foreach ($response["results"] as $k => $result) {
                 $constellation = $this->cStore->readPublishedConstellationByID($result["id"], DBUtil::$READ_SHORT_SUMMARY);
-                $this->logger->addDebug("Looking for EType: ". $result["entityType"]);
                 array_push($searchResults, $constellation->toArray());
             }
             $response["results"] = $searchResults;
