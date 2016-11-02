@@ -49,6 +49,8 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     } catch (\Exception $e) {
         echo "   - could not delete search index. It did not exist.\n";
     }
+    
+    $counts = array();
 
     echo "Querying the relation degrees from the database.\n";
 
@@ -58,10 +60,23 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                     (select distinct id, max(version) as version from related_identity group by id) a
                     where a.id = r.id and a.version = r.version and not r.is_deleted) a
                     group by ic_id", array());
-    $counts = array();
     while($c = $db->fetchrow($allRelCount))
     {
-        $counts[$allRelCount["ic_id"]] = $allRelCount["degree"];
+        $counts[$c["ic_id"]] = array();
+        $counts[$c["ic_id"]]["degree"] = $c["degree"];
+    }
+
+    echo "Querying the resource relations from the database.\n";
+
+    $allRelCount = $db->query("select a.ic_id, count(*) as degree from
+                (select r.id, r.ic_id from
+                    related_resource r,
+                    (select distinct id, max(version) as version from related_resource group by id) a
+                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
+                    group by ic_id", array());
+    while($c = $db->fetchrow($allRelCount))
+    {
+        $counts[$c["ic_id"]]["resources"] = $c["degree"];
     }
 
     $previousICID = -1;
@@ -119,15 +134,21 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         // The data is ordered by ic_id and then preference score.  We will currently say the preferred name
         // is the one with the highest preference score for each ic_id.  So, if we haven't ever seen this ic_id
         // before, this is the preferred name entry for this ic.
-        if (isset($counts[$name["ic_id"]]))
-            $name["degree"] = $counts[$name["ic_id"]];
-        else
+        if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["degree"])) {
+            $name["degree"] = (int) $counts[$name["ic_id"]]["degree"];
+        } else {
             $name["degree"] = 0;
+        }
+        if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["resources"])) {
+            $name["resources"] = (int) $counts[$name["ic_id"]]["resources"];
+        } else {
+            $name["resources"] = 0;
+        }
 
         if ($previousICID != $name["ic_id"]) {
-            indexMain($name["original"], $name["ark_id"], $name["ic_id"], $name["entity_type"], $name["degree"]);
+            indexMain($name["original"], $name["ark_id"], (int) $name["ic_id"], $name["entity_type"], $name["degree"], $name["resources"]);
         }
-        indexSecondary($name["original"], $name["ark_id"], $name["ic_id"], $name["name_id"], $name["entity_type"], $name["degree"]);
+        indexSecondary($name["original"], $name["ark_id"], (int) $name["ic_id"], (int) $name["name_id"], $name["entity_type"], $name["degree"], $name["resources"]);
         $previousICID = $name["ic_id"];
     }
 
@@ -141,7 +162,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
 }
 
-function indexMain($nameText, $ark, $icid, $entityType, $degree) {
+function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
     global $eSearch, $primaryBody, $primaryStart, $primaryCount;
     if ($eSearch != null) {
         // do one first to get the index going
@@ -156,6 +177,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree) {
                             'arkID' => $ark,
                             'id' => $icid,
                             'degree' => $degree,
+                            'resources' => $resources,
                             'timestamp' => date("c")
                     ]
             ];
@@ -180,6 +202,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree) {
                 'arkID' => $ark,
                 'id' => $icid,
                 'degree' => $degree,
+                'resources' => $resources,
                 'timestamp' => date("c")
             ];
             $primaryCount++;
@@ -188,7 +211,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree) {
 }
 
 
-function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree) {
+function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree, $resources) {
     global $eSearch, $secondaryBody, $secondaryStart, $secondaryCount;
     if ($eSearch != null) {
         // do one first to get the index going
@@ -204,6 +227,7 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree) {
                             'id' => $icid,
                             'name_id' => $nameid,
                             'degree' => $degree,
+                            'resources' => $resources,
                             'timestamp' => date("c")
                     ]
             ];
@@ -230,6 +254,7 @@ function indexSecondary($nameText, $ark, $icid, $nameid, $entityType, $degree) {
                 'id' => $icid,
                 'name_id' => $nameid,
                 'degree' => $degree,
+                'resources' => $resources,
                 'timestamp' => date("c")
             ];
             $secondaryCount++;
