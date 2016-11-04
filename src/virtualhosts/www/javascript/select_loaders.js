@@ -10,7 +10,7 @@
  */
 function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
-        minLength = 4;
+        minLength = 2;
     }
 
         if(selectItem.attr('id').endsWith(idMatch)
