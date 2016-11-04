@@ -34,14 +34,14 @@ $('.selectpicker').selectpicker();
 <script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js"></script>
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/relation_search.js"></script>
+<script src="javascript/admin.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/relation_search.js{{control.noCache}}"></script>
 
 
 <script>
@@ -53,7 +53,7 @@ $(document).ready(function() {
     $("select").each(function() {
         select_replace_simple($(this));
     });
-    
+
     // Load the table into a datatable
     $('.table').DataTable();
 });

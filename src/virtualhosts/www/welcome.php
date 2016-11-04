@@ -44,16 +44,6 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
-<!-- SNAC Javascript -->
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/relation_search.js"></script>
-<script src="javascript/search.js"></script>
-
-<!-- SNAC CSS -->
-<link rel="stylesheet" href="css/snac.css">
-
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </script>
@@ -73,12 +63,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 <script>
 
     var scripts = [
-           'javascript/save_actions.js', 
-           'javascript/select_loaders.js', 
-           'javascript/scripts.js',
-           'javascript/relation_search.js', 
-           'javascript/search.js',
-           'css/snac.css' 
         ];
 
     function updateProgress(percent, statusText) {
@@ -110,7 +94,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             for (var i = 0; i < scripts.length; i++) {
                 requests.push($.ajax({
                     url : scripts[i],
-                        cache : false,
+                        //cache : false,
                         dataType : "text",
                     complete: function(xhr, success) {
                         if (success != "success")
@@ -135,8 +119,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     $(document).ready(function() {
 
         setTimeout(function(){
-            updateProgress(30, "Refreshing scripts...");
-            loadScripts();
+            updateProgress(75, "Preparing SNAC...");
+            openSNACButton(); 
         }, 5000);
 
 
@@ -150,9 +134,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
         <div class="well well-lg">
             <div class="progress">
                 <div class="progress-bar progress-bar-striped active" id="progress-bar"
-                        role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" 
-                        style="width: 10%">
-                    <span class="sr-only"><span id="progress-text">10%</span> Complete</span>
+                        role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100" 
+                        style="width: 30%">
+                    <span class="sr-only"><span id="progress-text">30%</span> Complete</span>
                 </div>
             </div>
             <div class="row text-center" id="status">

@@ -154,6 +154,14 @@ class Display {
             $this->data["X"] = $this->language;
         }
 
+        // If the system is in DEBUG mode, then the display will disallow
+        // caching of javascript.
+        if (\snac\Config::$DEBUG_MODE == true) {
+            $this->data["control"] = array (
+                "noCache" => "?_=".`git rev-parse HEAD` 
+            );
+        }
+
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);
         $twig = new \Twig_Environment($loader, array(
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
