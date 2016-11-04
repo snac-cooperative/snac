@@ -163,7 +163,7 @@ abstract class AbstractOrderedComponent extends AbstractData {
         if ($shorten) {
             $return2 = array();
             foreach ($return as $i => $v)
-                if ($v != null && !empty($v))
+                if ($v != null && (!empty($v) || $v == 0))
                     $return2[$i] = $v;
             unset($return);
             $return = $return2;

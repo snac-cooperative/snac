@@ -2435,7 +2435,7 @@ class SQL
                                         aa.id = bb.id and not aa.is_deleted and
                                         aa.version = bb.version) as n
                                      where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
-                                where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version;');
+                                where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version order by aa.name_id, aa.c_order;');
             $result = $this->sdb->execute($qq_2, array($icid, $version));
             $all = array();
             while($row = $this->sdb->fetchrow($result))

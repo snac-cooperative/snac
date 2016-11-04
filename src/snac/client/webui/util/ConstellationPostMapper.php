@@ -1037,6 +1037,7 @@ class ConstellationPostMapper {
                     $component->setType($this->parseTerm($cData["type"]));
                     $component->setOrder($cData["order"]);
 
+                    $this->logger->addDebug("Adding component to mapping:", $component->toArray());
                     $this->addToMapping("nameEntry_component_".$l, $k, $cData, $component);
 
                     $nameEntry->addComponent($component);
