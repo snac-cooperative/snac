@@ -1772,7 +1772,8 @@ class DBUtil
                  */
                 if ($class == 'snac\data\SNACControlMetadata' ||
                     $class == 'snac\data\Source' ||
-                    $class == 'snac\data\BiogHist')
+                    $class == 'snac\data\BiogHist' ||
+                    $class == 'snac\data\NameEntry')
                 {
                     $cObj->setLanguage($gObj);
                 }
