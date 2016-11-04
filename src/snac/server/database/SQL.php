@@ -4690,7 +4690,10 @@ class SQL
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
                                'gender' => 1,
-                               'nationality' => 1);
+                               'nationality' => 1,
+                               'subject' => 1,
+                               'function' => 1,
+                               'occupation' => 1);
         $likeStr = "%$query%";
         if (isset($useStartsWith[$term]))
         {
