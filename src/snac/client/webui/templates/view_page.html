@@ -127,29 +127,35 @@ body {
                <div class="biog">
                   <div class="facts">
                      <div class="life" data-xsl="life">
-                        <dt>Dates:</dt>
-                        <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
-                        <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
-                        <dt>Gender:</dt>
-                        <dd>{{data.genders.0.term.term}}</dd>
+                            <dt>Dates:</dt>
+                            <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
+                            <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
+                        {% if data.genders.0.term.term %}
+                            <dt>Gender:</dt>
+                            <dd>{{data.genders.0.term.term}}</dd>
+                        {% endif %}
                      </div>
                      <div>
                         <div data-xsl="authoritySource">
                            <label>Authority Source:</label>
                            <!-- TEMPLATE_SOURCE  -->
                         </div>
+                        {% if data.nationalities %}
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
                            {% for nat in data.nationalities %}
                                 {{ nat.term.term }},
                            {% endfor %}
                         </div>
+                        {% endif %}
+                        {% if data.languagesUsed %}
                         <div data-xsl="language">
                            <label>Language: </label>
                             {% for lang in data.languagesUsed %}
                                 {{ lang.language.description }},
                             {% endfor %}
                         </div>
+                        {% endif %}
                      </div>
                   </div>
                   <h2>Biographical notes:</h2>
