@@ -100,18 +100,28 @@ class WebUIExecutor {
      */
     public function displayEditPage(&$input, &$display) {
         $query = $input;
-        $this->logger->addDebug("Sending query to the server", $query);
-        $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", array($serverResponse));
-        if (isset($serverResponse["constellation"])) {
+        $constellation = null;
+        // If they are asking for a part and they haven't been given a constellation ID (new page), then let them through anyway
+        if ($input["command"] == "edit_part" && isset($input["part"]) && (!isset($input["constellationid"]) || $input["constellationid"] == '') ) {
+            $c = new \snac\data\Constellation();
+            $constellation = $c->toArray();
+        } else {
+            $this->logger->addDebug("Sending query to the server", $query);
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            if (isset($serverResponse["constellation"])) 
+                $constellation = $serverResponse["constellation"];
+        }
+
+        if ($constellation != null) {
             if ($input["command"] == "edit_part" && isset($input["part"]))
                 $display->setTemplate("edit_tabs/".$input["part"]);
             else
                 $display->setTemplate("edit_page");
-            $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+                if (isset($serverResponse))
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData($constellation);
