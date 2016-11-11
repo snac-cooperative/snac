@@ -511,6 +511,29 @@ class ServerExecutor {
     }
 
     /**
+     * Search Resources
+     *
+     * Searches the resources from the database, based on the input given and returns
+     * a list of results
+     *
+     * @param string[] $input Direct server input
+     * @return string[] The response to send to the client
+     */
+    public function searchResources(&$input) {
+        $response = array();
+        if (isset($input["term"])) {
+            $results = $this->cStore->searchResources($input["term"]);
+            $response["results"] = array();
+            foreach ($results as $result)
+                array_push($response["results"], $result->toArray());
+
+            $response["total"] = count($response["results"]);
+        }
+
+        return $response;
+    }
+
+    /**
     * List the SNAC roles
     *
     * List all the roles in SNAC.

@@ -270,6 +270,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->searchConstellations($this->input);
                 break;
 
+            case "resource_search":
+                $this->response = $executor->searchResources($this->input);
+                break;
+
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);
 

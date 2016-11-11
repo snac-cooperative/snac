@@ -1466,7 +1466,7 @@ class WebUIExecutor {
 
         // Query the server for the elastic search results
         $serverResponse = $this->connect->query(array(
-            "command" => "relation_search",
+            "command" => "resource_search",
             "term" => $input["term"]
         ));
 

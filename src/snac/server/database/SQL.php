@@ -4752,6 +4752,29 @@ class SQL
     }
 
     /**
+     * Search Resources
+     *
+     * @param string $query The string to search through the vocabulary
+     *
+     * @return string[][] Returns a list of lists.
+     */
+    public function searchResources($query)
+    {
+        $queryStr =
+                  'select distinct role, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  from related_resource_view
+                  where href ilike $1 order by title asc';
+        $result = $this->sdb->query($queryStr, array("%$query%"));
+        
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
      * Temporary function to brute force order name components.
      *
      * Sort $orig to put it in the order we want, not the order it exists in the database. Could have added

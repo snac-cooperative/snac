@@ -3581,6 +3581,38 @@ class DBUtil
     }
 
     /**
+     * Search Resources
+     *
+     * Searches the resources and returns an array of Resource objects.
+     *
+     * @param string $query search string
+     *
+     * @return \snac\data\Resource list of results
+     */
+    public function searchResources($query) {
+
+        $results = $this->sql->searchResources($query);
+
+        $return = array();
+        foreach ($results as $result) {
+            $resource = new \snac\data\Resource();
+
+            $resource->setDocumentType($this->populateTerm($result['role']));
+            $resource->setLink($result['href']);
+            $resource->setSource($result['object_xml_wrap']);
+            $resource->setTitle($result['title']);
+            $resource->setExtent($result['extent']);
+            $resource->setAbstract($result['abstract']);
+            $resource->setRepoIcId($result['repo_ic_id']);
+
+            array_push($return, $resource);
+        }
+
+        return $return;
+
+    }
+
+    /**
      * Search Vocabulary
      *
      * Searches the vocabulary and returns an array of id, value pairs.
