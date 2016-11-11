@@ -395,6 +395,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            // Search commands
             case "vocabulary":
                 if (isset($this->input["subcommand"]) && $this->input["subcommand"] == "read")
                     $response = $executor->readVocabulary($this->input);
@@ -410,6 +411,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displaySearchPage($this->input, $display);
                 break;
 
+            case "resource_search":
+                $response = $executor->performResourceSearch($this->input);
+                break;
+
+            // Error command
             case "error":
                 $error = array("error" => array(
                     "type" => "Not Found",

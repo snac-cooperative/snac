@@ -1418,10 +1418,9 @@ class WebUIExecutor {
     /**
      * Perform Name Search
      *
-     * Connects to Elastic Search to perform a name search on the terms given on the input and
-     * then returns the JSON-ready associative array of results.  Eventually, this will need to be handled
-     * in the Server's code.
-     *
+     * Perform a name search on the terms given on the input by requesting the results from the server and
+     * then returns the JSON-ready associative array of results.  
+     * 
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
@@ -1436,6 +1435,29 @@ class WebUIExecutor {
             "term" => $input["term"],
             "start" => isset($input["start"]) ? $input["start"] : 0,
             "count" => isset($input["count"]) ? $input["count"] : 10
+        ));
+
+        return $serverResponse;
+
+    }
+
+    /**
+     * Perform Resource Search
+     *
+     * Requests the server to perform a search of resource URLs to display the results.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function performResourceSearch(&$input) {
+        if (!isset($input["term"])) {
+            return array ("total" => 0, "results" => array());
+        }
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query(array(
+            "command" => "relation_search",
+            "term" => $input["term"]
         ));
 
         return $serverResponse;
