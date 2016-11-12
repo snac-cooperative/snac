@@ -50,10 +50,10 @@
 <script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js{{control.noCache}}"></script>
 <script src="javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/edit_scripts.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
 
 <script>
@@ -424,6 +424,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     <div id="source_template" style="display:none">
     {{ components.displaySource(X, true, true, null, 'ZZ') }}
     </div>
+    <div id="resource_template" style="display:none">
+    {{ components.displayResource(X, true, true, null, 'ZZ') }}
+    </div>
     <div id="resourceRelation_template" style="display:none">
     {{ components.displayResourceRelation(X, true, true, null, 'ZZ') }}
     </div>
@@ -443,9 +446,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     {{ components.displayFunction(X, true, true, null, 'ZZ') }}
     </div>
     <div id="occupation_template" style="display:none">
-    {{ components.displayOccupation(X, true, true, null, 'ZZ') }}
-    </div>
-    <div id="legalStatus_template" style="display:none">
+
     {{ components.displayLegalStatus(X, true, true, null, 'ZZ') }}
     </div>
     <div id="place_template" style="display:none">
@@ -537,6 +538,64 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
                 <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="resourceSearchPane" tabindex="-1" role="dialog" aria-labelledby="resourceSearchPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="resourceSearchLabel">Search Resources</h4>
+            </div>
+            <div class="modal-body" id="resourceSearchPaneContent">
+                <form class="form-horizontal" id="resource_search_form" onsubmit="return false;">
+                    <div class="modal-body">
+	                    <input type="hidden" id="resource-search-count" name="count" value="10">
+                        <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource" and click "Continue."</p>
+                        <div class="input-group">
+	                        <input type="text" class="form-control"
+	                            placeholder="Resource URL..." id="resource-searchbox" name="term">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-default" type="submit" id="resource-searchbutton"><i class="fa fa-search" aria-hidden="true"></i></button>
+                                </span>
+	                    </div>
+
+	                    <div id="resource-results-box">
+	                    </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                <button type="button" class="btn btn-primary" id="btn_create_resourceRelation" data-dismiss="modal">Continue</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="resourceCreatePane" tabindex="-1" role="dialog" aria-labelledby="resourceCreatePane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="resourceCreateLabel">Create Resource</h4>
+            </div>
+            <div class="modal-body" id="resourceCreatePaneContent">
+                <form class="form-horizontal" id="resource_create_form" onsubmit="return false;">
+                    <div class="modal-body">
+                        <p>Use the form below to create a new resource and then press "Continue" to continue creating a new resource relation.</p>
+	                    <div id="resource-create-box">
+	                    </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
+                <button type="button" class="btn btn-primary" id="btn_create_resource" data-dismiss="modal">Continue</button>
             </div>
         </div>
     </div>
