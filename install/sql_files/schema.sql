@@ -532,7 +532,7 @@ create table language (
         primary         key(id, version)
         );
 
-create unique index language_idx1 on date_range(id,ic_id,version);
+create unique index language_idx1 on language(id,ic_id,version);
 
 -- From the <source> element. This appears to derive from /eac-cpf/control/source in the CPF. The href and
 -- objectXMLWrap is not consistently used. There will (often?) be a related entry in table language, related
