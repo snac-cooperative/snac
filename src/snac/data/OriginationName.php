@@ -3,7 +3,7 @@
  * Resource Relation Origination Name File
  *
  * Contains the data class for the originators (creators) of resource relations
- * 
+ *
  * License:
  *
  *
@@ -16,26 +16,26 @@
 namespace snac\data;
 
 /**
- * Resource Relation Origination Name 
+ * Resource Relation Origination Name
  *
  * Stores the name (string) and eventually the ic_id of the creator
- * 
+ *
  * @author Tom Laudeman
  * @author Robbie Hott
  *
  */
-class RROriginationName extends AbstractData {
+class OriginationName extends AbstractData {
 
     /**
      * @var string Name of the originator (creator).
-     * 
+     *
      * A simple string.
      */
     private $name = null;
-    
+
     /**
      * Constructor
-     * 
+     *
      * @param string[] $data optional An array of data to pre-fill this object
      */
     public function __construct($data = null) {
@@ -75,10 +75,10 @@ class RROriginationName extends AbstractData {
      */
     public function toArray($shorten = true) {
         $return = array(
-            "dataType" => "RROriginationName",
+            "dataType" => "OriginationName",
             "name" => $this->name
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -101,7 +101,7 @@ class RROriginationName extends AbstractData {
      * @return boolean true on success, false on failure
      */
     public function fromArray($data) {
-        if (!isset($data["dataType"]) || $data["dataType"] != "RROriginationName")
+        if (!isset($data["dataType"]) || $data["dataType"] != "OriginationName")
             return false;
 
         parent::fromArray($data);
@@ -121,20 +121,20 @@ class RROriginationName extends AbstractData {
      * @param \snac\data\RROriginationName $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
-        if ($other == null || !($other instanceof \snac\data\RROriginationName))
+        if ($other == null || !($other instanceof \snac\data\OriginationName))
             return false;
-        
+
         if (!parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getName() != $other->getName())
             return false;
-        
+
         return true;
     }
 }

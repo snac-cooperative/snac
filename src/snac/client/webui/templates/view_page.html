@@ -183,7 +183,7 @@ body {
 
                                         {% set numRels = 0 %}
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.resource.documentType.term == 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
                                         {% endif %}
                                         {% endfor %}
@@ -215,9 +215,9 @@ body {
                                        </div>
                                         -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.role.term == 'creatorOf' and relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
                                                 <div></div>
                                             </div>
                                         {% endif %}
@@ -233,9 +233,9 @@ body {
                                        </div>
                                        -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.role.term == 'referencedIn' and relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link}}">{{relation.content}}</a>
+                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
                                                 <div></div>
                                             </div>
                                         {% endif %}
@@ -248,7 +248,7 @@ body {
                      </div>
                                         {% set numRels = 0 %}
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term != 'ArchivalResource' %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
                                         {% endif %}
                                         {% endfor %}
@@ -271,9 +271,9 @@ body {
                               </div>
                               -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term != 'ArchivalResource' %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link ? relation.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content}}</a>
+                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.resource.title}}</a>
                                                 <span class="arcrole">{{relation.role.term}}</span>
                                                 <div></div>
                                             </div>

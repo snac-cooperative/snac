@@ -853,6 +853,35 @@ class ServerExecutor {
         return $response;
     }
 
+    public function writeResource(&$input) {
+        $response = array();
+        if (isset($input["resource"])) {
+            $resource = new \snac\data\Resource($input["resource"]);
+            try {
+                $result = $this->cStore->writeResource($resource);
+                if (isset($result) && $result != false) {
+                    $this->logger->addDebug("successfully wrote resource");
+                    $response["resource"] = $result->toArray();
+                    $response["result"] = "success";
+                } else {
+                    $this->logger->addDebug("writeResource returned a null result or edits not allowed");
+                    $response["result"] = "failure";
+                    $response["error"] = "could not write the resource";
+                }
+            } catch (\Exception $e) {
+                $this->logger->addError("writeResource threw an exception");
+                // Rethrow it, since we just wanted a log statement
+                throw $e;
+            }
+
+        } else {
+            $this->logger->addDebug("Resource input value wasn't set to write");
+            $response["result"] = "failure";
+            $response["error"] = "no resource to write";
+        }
+        return $response;
+    }
+
     /**
      * Reassign Constellation
      *

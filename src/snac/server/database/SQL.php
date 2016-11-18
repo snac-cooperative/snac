@@ -2729,7 +2729,7 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
-    
+
     /**
      * Get all laguages for constellation
      *
@@ -2742,7 +2742,7 @@ class SQL
     public function selectAllLanguagesForConstellation($cid, $version)
     {
         $qq = 'select_language';
-        
+
         $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note,
             aa.fk_table, aa.fk_id
         from language as aa,
@@ -2752,6 +2752,33 @@ class SQL
         $this->sdb->prepare($qq, $query);
 
         $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Select All Languages for Resource
+     * @param  int $rid     Resource ID to look up
+     * @param  int $version Version number for the resource
+     * @return string[][]          Array of resource language data
+     */
+    public function selectAllLanguagesForResource($rid, $version)
+    {
+        $qq = 'select_language';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from resource_language as aa,
+        (select id,max(version) as version from resource_language where resource_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($rid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -3219,16 +3246,10 @@ class SQL
      *
      */
     public function insertResourceRelation($vhInfo,
-                                           $title,
-                                           $abstract,
-                                           $extent,
-                                           $repoIcId,
-                                           $relationEntryType, // aka documentType aka xlink:role
-                                           $entryType, // relationEntry@localType
-                                           $href,  // xlink:href
+                                           $resourceID,
+                                           $resourceVersion,
                                            $arcRole,  // xlink:arcrole
                                            $relationEntry, // relationEntry
-                                           $objectXMLWrap, // objectXMLWrap
                                            $note, // descriptiveNote
                                            $id)
     {
@@ -3239,28 +3260,119 @@ class SQL
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, ic_id, id, title, abstract, extent, repo_ic_id, role, relation_entry_type, href, arcrole, relation_entry,
-                            object_xml_wrap, descriptive_note)
+                            (version, ic_id, id, resource_id, resource_version, arcrole, relation_entry, descriptive_note)
                             values
-                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)');
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
         $execList = array($vhInfo['version'], // 1
                           $vhInfo['ic_id'],   // 2
                           $id,                // 3
-                          $title,             // 4
-                          $abstract,          // 5
-                          $extent,            // 6
-                          $repoIcId,          // 7
-                          $relationEntryType, // 8
-                          $entryType,         // 9 
-                          $href,              // 10
-                          $arcRole,           // 11
-                          $relationEntry,     // 12
-                          $objectXMLWrap,     // 13
-                          $note);             // 14
+                          $resourceID,        // 4
+                          $resourceVersion,   // 5
+                          $arcRole,           // 6
+                          $relationEntry,     // 7
+                          $note);             // 8
         $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    private function selectResourceID()
+    {
+        $result = $this->sdb->query('select nextval(\'resource_id_seq\') as id',array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    private function selectResourceVersion()
+    {
+        $result = $this->sdb->query('select nextval(\'resource_version_id_seq\') as id',array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+
+
+    /**
+     * Insert resource
+     *
+     * @param  int|null $resourceID      Resource ID or null if it doesn't exist
+     * @param  int|null $resourceVersion Resource version or null if it doesn't exist
+     * @param  string $title           Title of the resource
+     * @param  string $abstract        Abstract of the resource
+     * @param  string $extent          Extent of the resource
+     * @param  int $repoICID        Repository ID for the holding repository of this resource
+     * @param  int $docTypeID       Document Type ID
+     * @param  int $entryTypeID     Entity Type ID
+     * @param  text|null $link            Link for this resource
+     * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @return string[]                  Array containing id, version
+     */
+    public function insertResource(        $resourceID,
+                                           $resourceVersion,
+                                           $title,
+                                           $abstract,
+                                           $extent,
+                                           $repoICID,
+                                           $docTypeID,
+                                           $entryTypeID,
+                                           $link,
+                                           $objectXMLWrap)
+    {
+        if (! $resourceID)
+        {
+            $resourceID = $this->selectResourceID();
+        }
+        if (! $resourceVersion) {
+            $resourceVersion = $this->selectResourceVersion();
+        }
+        $qq = 'insert_resource';
+        $this->sdb->prepare($qq,
+                            'insert into resource_cache
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
+        /*
+         * Combine vhInfo and the remaining args into a big array for execute().
+         */
+        $execList = array($resourceID,        // 1
+                          $resourceVersion,   // 2
+                          $title,             // 3
+                          $abstract,          // 4
+                          $extent,            // 5
+                          $repoICID,          // 6
+                          $docTypeID,         // 7
+                          $entryTypeID,       // 8
+                          $link,              // 9
+                          $objectXMLWrap);    // 10
+        $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
+        return array($resourceID, $resourceVersion);
+    }
+
+    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
+    {
+        if (! $id)
+        {
+            $id = $this->selectResourceID();
+        }
+        $qq = 'insert_resource_language';
+        $this->sdb->prepare($qq,
+                            'insert into resource_language
+                            (resource_id, version, id, language_id, script_id, vocabulary_source, note)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $eArgs = array($resourceID,
+                       $resourceVersion,
+                       $id,
+                       $languageID,
+                       $scriptID,
+                       $vocabularySource,
+                       $note);
+        $result = $this->sdb->execute($qq, $eArgs);
         $this->sdb->deallocate($qq);
         return $id;
     }
@@ -3270,37 +3382,33 @@ class SQL
      * Insert into table related_resource_origination_name
      *
      * Use data from php RROriginationName object. It is assumed that the calling code in DBUtils knows the php
-     * to sql fields. 
+     * to sql fields.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
 
      * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
      */
-    public function insertRRON($vhInfo,
+    public function insertOriginationName($resourceID, $resourceVersion,
                                $id,
-                               $name,
-                               $fkTable,
-                               $fkID)
+                               $name)
     {
         if (! $id)
         {
-            $id = $this->selectID();
+            $id = $this->selectResourceID();
         }
-        $qq = 'insert_rron';
+        $qq = 'insert_origination_name';
         $this->sdb->prepare($qq,
-                            'insert into related_resource_origination_name
-                            (version, ic_id, id, name, fk_table, fk_id)
+                            'insert into resource_origination_name
+                            (resource_id, version, id, name)
                             values
-                            ($1, $2, $3, $4, $5, $6)');
+                            ($1, $2, $3, $4)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
-        $execList = array($vhInfo['version'],
-                          $vhInfo['ic_id'],
+        $execList = array($resourceID,
+                          $resourceVersion,
                           $id,
-                          $name,
-                          $fkTable,
-                          $fkID);
+                          $name);
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return $id;
@@ -3309,7 +3417,7 @@ class SQL
     /**
      * Select related resource origination name record
      *
-     * Where $vhInfo has keys 'version' and 'ic_id'.
+     * Where $vhInfo has keys 'version' and 'id'.
      *
      * Note that the related table is always 'related_resource'. It could be left out of the query entirely.
      *
@@ -3318,24 +3426,23 @@ class SQL
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
      * @param integer $fkID Foreign key to getID() of the ResourceRelation object.
-     * 
+     *
      * @return string[][] Return a list of lists. Inner list keys: id, version, name
      */
-    public function selectRRON($vhInfo, $fkID)
+    public function selectOriginationNames($resourceID, $version)
     {
-        $qq = 'select_related_resource_origination_name';
+        $qq = 'select_resource_origination_name';
 
         $query = 'select aa.version, aa.id, aa.name
-        from related_resource_origination_name as aa,
-        (select id,max(version) as version from related_resource_origination_name where fk_id=$1 and fk_table=$3 and version<=$2 group by id) as bb
+        from resource_origination_name as aa,
+        (select id,max(version) as version from resource_origination_name where resource_id=$1 and version<=$2 group by id) as bb
         where not is_deleted and aa.id=bb.id and aa.version=bb.version';
 
         $this->sdb->prepare($qq, $query);
 
         $result = $this->sdb->execute($qq,
-                                      array($fkID,
-                                            $vhInfo['version'],
-                                            'related_resource'));
+                                      array($resourceID,
+                                            $version));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -3960,8 +4067,8 @@ class SQL
         $this->sdb->prepare($qq,
                             'select
                             aa.id, aa.version, aa.ic_id,
-                            aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
-                            aa.role, aa.arcrole, aa.title, aa.extent, aa.abstract, aa.repo_ic_id
+                            aa.relation_entry, aa.descriptive_note, aa.arcrole,
+                            aa.resource_id, aa.resource_version
                             from related_resource as aa,
                             (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
@@ -3979,6 +4086,33 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+
+   public function selectResource($id, $version)
+   {
+       $qq = 'select_resource';
+       $this->sdb->prepare($qq,
+                           'select
+                           aa.id, aa.version, aa.title, aa.href, aa.abstract, aa.extent, aa.repo_ic_id,
+                           aa.object_xml_wrap, aa.type
+                           from resource_cache as aa,
+                           (select max(version) as version from resource_cache where version<=$1 and id=$2) as bb
+                           where not aa.is_deleted and
+                           aa.id=$2
+                           and aa.version=bb.version');
+
+       $result = $this->sdb->execute($qq,
+                                     array($version,
+                                           $id));
+       $all = array();
+       while ($row = $this->sdb->fetchrow($result))
+       {
+           array_push($all, $row);
+       }
+       $this->sdb->deallocate($qq);
+       return $all;
+   }
+
 
     /**
      * Select all function records
@@ -4765,7 +4899,7 @@ class SQL
                   from related_resource_view
                   where href ilike $1 order by title asc';
         $result = $this->sdb->query($queryStr, array("%$query%"));
-        
+
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {

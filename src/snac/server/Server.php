@@ -270,6 +270,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->searchConstellations($this->input);
                 break;
 
+            // Resource Management
+            case "insert_resource":
+                //if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
+                //    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
+                $this->response = $executor->writeResource($this->input);
+                break;
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
                 break;

@@ -87,6 +87,10 @@ class DBUtil
      */
     public static $READ_MICRO_SUMMARY = 3;
 
+    /**
+     * @var int Flag to read the Holding Institution level of information
+     */
+    public static $READ_REPOSITORY_SUMMARY = 67;
 
     /**
      * @var int Flag to read the NRD
@@ -121,7 +125,12 @@ class DBUtil
     /**
      * @var int Flag to read the maintenance history and other maintenance info
      */
-    public static $READ_MAINTENANCE_INFORMATION = 64;
+    public static $READ_MAINTENANCE_INFORMATION = 128;
+
+    /**
+     * @var int Flag to read the places only (used for holding institutions)
+     */
+    public static $READ_PLACE_INFORMATION = 64;
 
 
 
@@ -288,7 +297,7 @@ class DBUtil
                                  'snac\data\Place' => 'place_link',
                                  'snac\data\ConstellationRelation' => 'related_identity',
                                  'snac\data\ResourceRelation' => 'related_resource',
-                                 'snac\data\RROriginationName' => 'related_resource_origination_name', 
+                                 'snac\data\OriginationName' => 'resource_origination_name',
                                  'snac\data\SNACControlMetadata' => 'scm',
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
@@ -489,6 +498,9 @@ class DBUtil
      */
     public function readPublishedConstellationByID($mainID, $flags=0)
     {
+        if ($mainID == null || $mainID == '') {
+            return false;
+        }
         $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
         if ($version)
         {
@@ -497,7 +509,7 @@ class DBUtil
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
         // force asking for a published constellation. Returning false means the request didn't work.
-        $this->logDebug(sprintf("Warning: cannot get constellation id: $mainID (This is expected for test testFullCPFWithEditList)"));
+        $this->logDebug("Warning: cannot get constellation id: $mainID");
         return false;
     }
 
@@ -796,6 +808,12 @@ class DBUtil
             $this->populateBiogHist($vhInfo, $cObj);
         }
 
+        if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0 ||
+            ($flags & DBUtil::$READ_PLACE_INFORMATION) != 0) {
+            $this->logger->addDebug("The user wants place information");
+            $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
+        }
+
         if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants data except relations");
             $this->logger->addDebug("  Meta");
@@ -826,8 +844,6 @@ class DBUtil
             $this->populateOtherRecordID($vhInfo, $cObj);
             $this->logger->addDebug("  EntityID");
             $this->populateEntityID($vhInfo, $cObj);
-            $this->logger->addDebug("  Place");
-            $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
             $this->logger->addDebug("  SoG");
             $this->populateStructureOrGenealogy($vhInfo, $cObj);
             $this->logger->addDebug("  Subject");
@@ -2573,23 +2589,87 @@ class DBUtil
             if ($this->prepOperation($vhInfo, $fdata))
             {
                 $rid = $this->sql->insertResourceRelation($vhInfo,
-                                                          $fdata->getTitle(),
-                                                          $fdata->getAbstract(),
-                                                          $fdata->getExtent(),
-                                                          $fdata->getRepoIcId(),
-                                                          $this->thingID($fdata->getDocumentType()), // xlink:role
-                                                          $this->thingID($fdata->getEntryType()), // relationEntry@localType
-                                                          $fdata->getLink(), // xlink:href
+                                                          $fdata->getResource()->getID(),
+                                                          $fdata->getResource()->getVersion(),
                                                           $this->thingID($fdata->getRole()), // xlink:arcrole
                                                           $fdata->getContent(), // relationEntry
-                                                          $fdata->getSource(), // objectXMLWrap
                                                           $fdata->getNote(), // descriptiveNote
                                                           $fdata->getID());
                 $fdata->setID($rid);
                 $fdata->setVersion($vhInfo['version']);
             }
-            $this->saveRRON($vhInfo, $fdata, 'related_resource', $rid);
             $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
+        }
+    }
+
+    /**
+     * Save Resource
+     *
+     * Save a resource
+     *
+     * @param  \snac\data\Resource $resource Resource object to save
+     * @return \snac\data\Resource|boolean           The resource object saved with ID and version or false if not written
+     */
+    public function writeResource($resource)
+    {
+        $op = $resource->getOperation();
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
+        {
+            /*
+             * Right now, only do an insert. We need to add functionality to
+             * edit in the NEAR future
+             */
+            $rid = null;
+            $version = null;
+            $repoID = null;
+            if ($resource->getRepository() != null)
+                $repoID = $resource->getRepository()->getID();
+            list($rid, $version) = $this->sql->insertResource($rid,
+                                                      $version,
+                                                      $resource->getTitle(),
+                                                      $resource->getAbstract(),
+                                                      $resource->getExtent(),
+                                                      $repoID,
+                                                      $this->thingID($resource->getDocumentType()), // xlink:role
+                                                      $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                      $resource->getLink(), // xlink:href
+                                                      $resource->getSource()); // objectXMLWrap
+            $resource->setID($rid);
+            $resource->setVersion($version);
+            $this->saveOriginationNames($resource);
+            $this->saveResourceLanguages($resource);
+            return $resource;
+        }
+        return false;
+    }
+
+    /**
+     * Save Resource Languages
+     *
+     *
+     * @param  \snac\data\Resource $resource Resource with languages to save
+     * @return [type]           [description]
+     */
+    private function saveResourceLanguages($resource)
+    {
+        $langList = $resource->getLanguages();
+
+        foreach ($langList as $lang)
+        {
+
+            $rid = $lang->getID();
+            if ($lang->getOperation() == \snac\data\Language::$OPERATION_INSERT ||
+                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE) {
+                    $rid = $this->sql->insertResourceLanguage($resource->getID(),
+                                                      $resource->getVersion(),
+                                                      $lang->getID(),
+                                                      $this->thingID($lang->getLanguage()),
+                                                      $this->thingID($lang->getScript()),
+                                                      $lang->getVocabularySource(),
+                                                      $lang->getNote());
+                    $lang->setID($rid);
+                    $lang->setVersion($resource->getVersion());
+            }
         }
     }
 
@@ -2603,28 +2683,28 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
      *
-     * @param \snac\data\ResourceRelation $fdata ResourceRelation object
+     * @param \snac\data\Resource $resource Resource object
      *
      * @param string $fkTable Name of the related table. Always 'related_resource' for RRON.
      *
      * @param integer $fkID Foreign key to the related_resource.id field.
      */
-    private function saveRRON($vhInfo, $fdata, $fkTable, $fkID) {
-        foreach ($fdata->getRelatedResourceOriginationName() as $rron) {
+    private function saveOriginationNames($resource) {
+        foreach ($resource->getOriginationNames() as $ron) {
             /*
              * Other functions call getID() twice. Unclear if that is a feature or just an oversight.  Here I
              * call getID before the if() statement to get what may (or may not) be a non-null record
              * id. Inside the if I use the $rid variable.
              */
-            $rid = $rron->getID();
-            if ($this->prepOperation($vhInfo, $rron)) {
-                $rid = $this->sql->insertRRON($vhInfo,
+            $rid = $ron->getID();
+            if ($ron->getOperation() == \snac\data\OriginationName::$OPERATION_INSERT ||
+                $ron->getOperation() == \snac\data\OriginationName::$OPERATION_UPDATE) {
+                $rid = $this->sql->insertOriginationName($resource->getID(),
+                                              $resource->getVersion(),
                                               $rid,
-                                              $rron->getName(),
-                                              $fkTable,
-                                              $fkID);
-                $rron->setID($rid);
-                $rron->setVersion($vhInfo['version']);
+                                              $ron->getName());
+                $ron->setID($rid);
+                $ron->setVersion($resource->getVersion());
             }
         }
     }
@@ -2642,20 +2722,20 @@ class DBUtil
      *
      * @param integer[] $vhInfo list with keys version, ic_id.
      *
-     * @param \snac\data\ResourceRelation $rrelObj A ResourceRelation object
+     * @param \snac\data\Resource $rObj A Resource object
      */
-    private function populateRRON($vhInfo, $rrelObj)
+    private function populateOriginationNames($rObj)
     {
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectRRON($vhInfo, $rrelObj->getID());
+        $gRows = $this->sql->selectOriginationNames($rObj->getID(), $rObj->getVersion());
         foreach ($gRows as $rec)
         {
-            $gObj = new \snac\data\RROriginationName();
+            $gObj = new \snac\data\OriginationName();
             $gObj->setName($rec['name']);
             $gObj->setDBInfo($rec['version'], $rec['id']);
-            $rrelObj->addRelatedResourceOriginationName($gObj);
+            $rObj->addOriginationName($gObj);
         }
     }
 
@@ -2867,22 +2947,60 @@ class DBUtil
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
-            $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
-            $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
-            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
-            $rrObj->setLink($oneRes['href']);
             $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
-            $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
-            $rrObj->setTitle($oneRes['title']);
-            $rrObj->setExtent($oneRes['extent']);
-            $rrObj->setAbstract($oneRes['abstract']);
-            $rrObj->setRepoIcId($oneRes['repo_ic_id']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
-            $this->populateRRON($vhInfo, $rrObj);
+            $rrObj->setResource($this->populateResource($oneRes["resource_id"], $oneRes["resource_version"]));
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
             $cObj->addResourceRelation($rrObj);
+        }
+    }
+
+    private function populateResource($id, $version)
+    {
+        $rRows = $this->sql->selectResource($id, $version);
+        if (count($rRows) == 1) {
+            $oneRes = $rRows[0];
+            $rObj = new \snac\data\Resource();
+            $rObj->setDocumentType($this->populateTerm($oneRes['type']));
+            //$rObj->setEntryType($oneRes['entry_type']);
+            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
+            $rObj->setLink($oneRes['href']);
+            $rObj->setSource($oneRes['object_xml_wrap']);
+            $rObj->setTitle($oneRes['title']);
+            $rObj->setExtent($oneRes['extent']);
+            $rObj->setAbstract($oneRes['abstract']);
+            $rObj->setRepository($this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
+            $rObj->setDBInfo($oneRes['version'], $oneRes['id']);
+            $this->populateOriginationNames($rObj);
+            $this->populateResourceLanguages($rObj);
+            // TODO: Populate Languages from the Resource_Language table
+            //$this->populateLanguage($vhInfo, $rObj, $rObj->getID(), 'resource_cache');
+            return $rObj;
+        }
+        return null;
+    }
+
+    /**
+     * Populate Resource's Languages
+     *
+     * Reads the resource's languages from the database and populates them into the resource object
+     *
+     * @param  \snac\data\Resource $rObj Resource object to populate
+     */
+    function populateResourceLanguages(&$rObj) {
+        $languageRows = $this->sql->selectAllLanguagesForResource($rObj->getID(), $rObj->getVersion());
+
+        foreach ($languageRows as $item)
+        {
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $rObj->addLanguage($newObj);
         }
     }
 
