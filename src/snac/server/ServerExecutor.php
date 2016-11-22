@@ -1115,6 +1115,7 @@ class ServerExecutor {
                             $result = $written->getVersion();
                             unset($written);
                         }
+                        $constellation->setArkID($newArk);
                         $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                                                         "published", "User published constellation");
                     }
