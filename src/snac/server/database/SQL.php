@@ -2518,7 +2518,8 @@ class SQL
                             from address_line as aa,
                             (select place_id,max(version) as version from address_line
                                 where place_id=$1 and version<=$2 group by place_id) as bb
-                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version');
+                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version
+                            order by aa.line_order asc');
         $result = $this->sdb->execute($qq_2, array($placeID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
