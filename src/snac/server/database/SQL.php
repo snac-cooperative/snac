@@ -982,7 +982,7 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['status'];
     }
-    
+
     /**
      * User for Constellation by mainID and version number
      *
@@ -993,7 +993,7 @@ class SQL
      * @param integer $version A specific version number. We assume that you have called some function to get
      * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
      *
-     * @return int The user id who most recently touched this constellation 
+     * @return int The user id who most recently touched this constellation
      */
     public function selectCurrentUserForConstellation($mainID, $version)
     {
@@ -1004,7 +1004,7 @@ class SQL
         return $row['user_id'];
     }
 
-    
+
     /**
      * Version History Log Note by mainID and version number
      *
@@ -4939,9 +4939,9 @@ class SQL
     public function searchResources($query)
     {
         $queryStr =
-                  'select distinct role, href, object_xml_wrap, title, extent, abstract, repo_ic_id
-                  from related_resource_view
-                  where href ilike $1 order by title asc';
+                  'select type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  from resource_cache
+                  where href ilike $1 or title ilike $1 order by title asc';
         $result = $this->sdb->query($queryStr, array("%$query%"));
 
         $all = array();

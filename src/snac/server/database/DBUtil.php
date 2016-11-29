@@ -3143,7 +3143,7 @@ class DBUtil
     /**
      * Read Detailed Constellation Status
      *
-     * Reads the status, user, and note for the given version of the constellation.  If there is no 
+     * Reads the status, user, and note for the given version of the constellation.  If there is no
      * version given, it returns the values for the most recent version of the constellation.
      *
      * @param int $mainID Constellation ID
@@ -3743,13 +3743,13 @@ class DBUtil
         foreach ($results as $result) {
             $resource = new \snac\data\Resource();
 
-            $resource->setDocumentType($this->populateTerm($result['role']));
+            $resource->setDocumentType($this->populateTerm($result['type']));
             $resource->setLink($result['href']);
             $resource->setSource($result['object_xml_wrap']);
             $resource->setTitle($result['title']);
             $resource->setExtent($result['extent']);
             $resource->setAbstract($result['abstract']);
-            $resource->setRepoIcId($result['repo_ic_id']);
+            $resource->setRepository($this->readPublishedConstellationByID($result['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
 
             array_push($return, $resource);
         }
