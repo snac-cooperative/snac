@@ -66,7 +66,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
         $counts[$c["ic_id"]]["degree"] = $c["degree"];
     }
 
-    echo "Querying the resource relations from the database.\n";
+    echo "Querying the resource relation degrees from the database.\n";
 
     $allRelCount = $db->query("select a.ic_id, count(*) as degree from
                 (select r.id, r.ic_id from
@@ -121,6 +121,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
             v.version = mv.version and
             v.status = 'published' and
             v.id = n.ic_id and
+            n.ark_id is not null and
             n.entity_type = etv.id) one
     where
         two.ic_id = one.ic_id
