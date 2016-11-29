@@ -1619,41 +1619,30 @@ $(document).ready(function() {
                             var text = $('#resourceRelation_template').clone();
                             var html = text.html().replace(/ZZ/g, resourceRelationid);
                             $('#add_resourceRelation_div').after(html);
-                           
-                            if (typeof resourceResults[rid].link !== 'undefined') 
-                                $('#resourceRelation_link_'+resourceRelationid).val(resourceResults[rid].link);
-                            if (typeof resourceResults[rid].title !== 'undefined') 
-                                $('#resourceRelation_title_'+resourceRelationid).val(resourceResults[rid].title);
-                            if (typeof resourceResults[rid].abstract !== 'undefined') 
-                                $('#resourceRelation_abstract_'+resourceRelationid).val(resourceResults[rid].abstract);
-                            if (typeof resourceResults[rid].extent !== 'undefined') 
-                                $('#resourceRelation_extent_'+resourceRelationid).val(resourceResults[rid].extent);
-                            if (typeof resourceResults[rid].repoIcId !== 'undefined') 
-                                $('#resourceRelation_repo_'+resourceRelationid).val(resourceResults[rid].repoIcId);
-                            if (typeof resourceResults[rid].source !== 'undefined') 
-                                $('#resourceRelation_source_'+resourceRelationid).val(resourceResults[rid].source);
-                            if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.id !== 'undefined') 
-                                $('#resourceRelation_documentType_id_'+resourceRelationid).val(resourceResults[rid].documentType.id);
-                            
-                            if (typeof resourceResults[rid].link !== 'undefined') 
-                                $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
-                            if (typeof resourceResults[rid].title !== 'undefined') 
-                                $('#resourceRelation_titleText_'+resourceRelationid).text(resourceResults[rid].title);
-                            if (typeof resourceResults[rid].abstract !== 'undefined') 
-                                $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceResults[rid].abstract);
-                            if (typeof resourceResults[rid].extent !== 'undefined') 
-                                $('#resourceRelation_extentText_'+resourceRelationid).text(resourceResults[rid].extent);
-                            if (typeof resourceResults[rid].source !== 'undefined') 
-                                $('#resourceRelation_sourceText_'+resourceRelationid).text(resourceResults[rid].source);
-                            if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined') 
-                                $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
-                          
 
-                            if ( typeof resourceResults[rid].relatedResourceOriginationName !== 'undefined' ) { 
+                            if (typeof resourceResults[rid].id !== 'undefined')
+                                $('#resourceRelation_resourceid_'+resourceRelationid).val(resourceResults[rid].id);
+                            if (typeof resourceResults[rid].version !== 'undefined')
+                                $('#resourceRelation_resourceversion_'+resourceRelationid).val(resourceResults[rid].version);
+
+                            if (typeof resourceResults[rid].link !== 'undefined')
+                                $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
+                            if (typeof resourceResults[rid].title !== 'undefined')
+                                $('#resourceRelation_titleText_'+resourceRelationid).text(resourceResults[rid].title);
+                            if (typeof resourceResults[rid].abstract !== 'undefined')
+                                $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceResults[rid].abstract);
+                            if (typeof resourceResults[rid].extent !== 'undefined')
+                                $('#resourceRelation_extentText_'+resourceRelationid).text(resourceResults[rid].extent);
+                            if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
+                                $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
+
+
+                            /**
+                            if ( typeof resourceResults[rid].relatedResourceOriginationName !== 'undefined' ) {
                                 $('#resourceRelation_originationNames_'+resourceRelationid).before("<span style=\"font-weight: bold\">Origination Names</span>");
                                 var originationNames = [];
                                 for (var j = 0; j < resourceResults[rid].relatedResourceOriginationName.length; j++) {
-                                    var tmpHtml = ""; 
+                                    var tmpHtml = "";
                                     tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"";
                                     tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"/>";
                                     tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"";
@@ -1662,9 +1651,9 @@ $(document).ready(function() {
                                     tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"/>";
                                     tmpHtml += "<input type=\"hidden\" name=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\"";
                                     tmpHtml += "    id=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\" class=\"form-control\">";
-                                    
+
                                     $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                                   
+
                                     originationNames[j] = resourceResults[rid].relatedResourceOriginationName[j].name;
 
                                     $('#resourceRelation_originationName_'+j+'_name_'+resourceRelationid).val(resourceResults[rid].relatedResourceOriginationName[j].name);
@@ -1673,7 +1662,8 @@ $(document).ready(function() {
                                 }
                                 var tmpHtml = "<p class=\"form-control-static\">"+originationNames.join("<br/>")+"</p>";
                                 $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                            } 
+                                **/
+                            }
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -1695,7 +1685,7 @@ $(document).ready(function() {
                             turnOnButtons("resource", 0);
                             turnOnTooltips("resource", 0);
                             makeEditable("resource", 0);
-                            
+
                             // Remove the search results from the other modal
                             $("#resource-results-box").html("");
                             return false;
@@ -1710,7 +1700,7 @@ $(document).ready(function() {
                             var text = $('#resourceRelation_template').clone();
                             var html = text.html().replace(/ZZ/g, resourceRelationid);
                             $('#add_resourceRelation_div').after(html);
-                            
+
                             $('#resourceRelation_link_'+resourceRelationid).val($("#resource_link_0").val());
                             $('#resourceRelation_title_'+resourceRelationid).val($("#resource_title_0").val());
                             $('#resourceRelation_abstract_'+resourceRelationid).val($("#resource_abstract_0").val());
@@ -1718,30 +1708,30 @@ $(document).ready(function() {
                             $('#resourceRelation_source_'+resourceRelationid).val($("#resource_source_0").text());
                             $('#resourceRelation_repo_'+resourceRelationid).val($("#resource_repo_0").val());
                             $('#resourceRelation_documentType_id_'+resourceRelationid).val($("#resource_documentType_id_0").val());
-                            
+
                             $('#resourceRelation_linkText_'+resourceRelationid).html($("#resource_link_0").val() + " <a class='label label-info' target='_blank' href='"+$("#resource_link_0").val()+"'>View</a>");
                             $('#resourceRelation_titleText_'+resourceRelationid).text($("#resource_title_0").val());
                             $('#resourceRelation_abstractText_'+resourceRelationid).text($("#resource_abstract_0").val());
                             $('#resourceRelation_extentText_'+resourceRelationid).text($("#resource_extent_0").val());
                             $('#resourceRelation_sourceText_'+resourceRelationid).text($("#resource_source_0").val());
                             $('#resourceRelation_documentTypeText_'+resourceRelationid).text($("#resource_documentType_id_0 option:selected").text());
-                         
+
                             // get origination names
                             var originationNames = [];
                             $("input[id^='resource_originationName_']").each(function () {
                                 var obj = $(this);
                                 var pieces = obj.attr('id').split("_");
-                               
+
                                 if (pieces[3] == "name") {
                                     originationNames[parseInt(pieces[2])] = obj.val();
                                 }
-                                 
+
                             });
 
-                            if ( originationNames.length > 0 ) { 
+                            if ( originationNames.length > 0 ) {
                                 $('#resourceRelation_originationNames_'+resourceRelationid).before("<span style=\"font-weight: bold\">Origination Names</span>");
                                 for (var j = 0; j < originationNames.length; j++) {
-                                    var tmpHtml = ""; 
+                                    var tmpHtml = "";
                                     tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"";
                                     tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"/>";
                                     tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"";
@@ -1750,7 +1740,7 @@ $(document).ready(function() {
                                     tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"/>";
                                     tmpHtml += "<input type=\"hidden\" name=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\"";
                                     tmpHtml += "    id=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\" class=\"form-control\">";
-                                   
+
                                     $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
 
                                     $('#resourceRelation_originationName_'+j+'_name_'+resourceRelationid).val(originationNames[j]);
@@ -1761,7 +1751,7 @@ $(document).ready(function() {
                                 }
                                 var tmpHtml = "<p class=\"form-control-static\">"+originationNames.join("<br/>")+"</p>";
                                 $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                            } 
+                            }
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);

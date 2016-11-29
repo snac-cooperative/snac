@@ -1109,44 +1109,17 @@ class ConstellationPostMapper {
             $relation->setVersion($data["version"]);
             $relation->setOperation($this->getOperation($data));
 
+            $resource = new \snac\data\Resource();
+            $resource->setID($data["resourceid"]);
+            $resource->setVersion($data["resourceversion"]);
+            $relation->setResource($resource);
+
             $relation->setContent($data["content"]);
-            $relation->setLink($data["link"]);
-            $relation->setSource($data["source"]);
             $relation->setNote($data["note"]);
-
-            $relation->setTitle($data["title"]);
-            $relation->setAbstract($data["abstract"]);
-            $relation->setExtent($data["extent"]);
-
-            $relation->setDocumentType($this->parseTerm($data["documentType"]));
 
             $relation->setRole($this->parseTerm($data["role"]));
 
             $relation->setAllSNACControlMetadata($this->parseSCM($data, "resourceRelation", $k));
-
-            // right now, update origination names if updating resource relation
-            if (isset($data["originationName"])) {
-                foreach ($data["originationName"] as $l => $cData) {
-                    if ($cData["id"] == "" && $cData["operation"] != "insert")
-                        continue;
-                    $this->logger->addDebug("Parsing through originationName", $cData);
-                    $originationName = new \snac\data\RROriginationName();
-                    $originationName->setID($cData["id"]);
-                    $originationName->setVersion($cData["version"]);
-                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
-                        $originationName->setOperation($this->getOperation($cData));
-                    else {
-                        $cData["operation"] = $this->getOperation($data);
-                        $originationName->setOperation($this->getOperation($data));
-                    }
-
-                    $originationName->setName($cData["name"]);
-
-                    $this->addToMapping("resourceRelation_originationName_".$l, $k, $cData, $originationName);
-
-                    $relation->AddRelatedResourceOriginationName($originationName);
-                }
-            }
 
 
             $this->addToMapping("resourceRelation", $k, $data, $relation);
