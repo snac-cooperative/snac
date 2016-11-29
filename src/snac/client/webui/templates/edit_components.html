@@ -482,6 +482,98 @@
 
 {% endmacro %}
 
+{% macro displayResource(X, inEdit, showSubElements, resource, i) %}
+    {% import 'widgets.html' as widgets %}
+    {% import _self as components %}
+        <div class="panel panel-default" id="resource_panel_{{i}}">
+            <div class="panel-body">
+                <div class="col-xs-10" id="resource_datapart_{{i}}">
+                    <div class="form-group">
+                        <label for="resource_link_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceURI.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_resource_link_{{i}}">
+                            <input id="resource_link_{{i}}" name="resource_link_{{i}}" type="hidden" class="form-control" value="{{ resource.link }}"/>
+                            <p class="form-control-static" id="resource_linkText_{{i}}">{{ resource.link }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_documentType_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceDocumentType.display }}
+                        </label>
+                        <div class="col-xs-8" id="select_resource_documentType_{{i}}">
+                            <input id="resource_documentType_id_{{i}}" name="resource_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ resource.documentType.id }}"/>
+                            <input id="resource_documentType_term_{{i}}" name="resource_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ resource.documentType.term }}"/>
+                            <input id="resource_documentType_vocabtype_{{i}}" name="resource_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
+                            <input id="resource_documentType_minlength_{{i}}" name="resource_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
+                            <p class="form-control-static" id="resource_documentTypeText_{{i}}">{{ resource.documentType.term }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_title_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceTitle.display }}
+                        </label>
+                        <div class="col-xs-8" id="text_resource_title_{{i}}">
+                            <input id="resource_title_{{i}}" name="resource_title_{{i}}" type="hidden" class="form-control" value="{{ resource.title }}"/>
+                            <p class="form-control-static" id="resource_titleText_{{i}}">{{ resource.title }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_abstract_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceAbstract.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_resource_abstract_{{i}}">
+                            <textarea id="resource_abstract_{{i}}" name="resource_abstract_{{i}}" class="form-control" style="display:none;">{{ resource.abstract }}</textarea>
+                            <p class="form-control-static" id="resource_abstractText_{{i}}">{{ resource.abstract }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_extent_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceExtent.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_resource_extent_{{i}}">
+                            <textarea id="resource_extent_{{i}}" name="resource_extent_{{i}}" class="form-control" style="display:none;">{{ resource.extent }}</textarea>
+                            <p class="form-control-static" id="resource_extentText_{{i}}">{{ resource.extent }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4" data-content="{{X.resourceOriginationName.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceOriginationName.display }}
+                        </label>
+                        <div class="col-xs-8 well well-sm">
+                            {% set j = 0 %}
+                            <span id='resource_originationName_next_j_{{i}}' style='display:none;'>{{j}}</span>
+
+                            <div class="form-group" id="resource_originationName_add_div_{{i}}">
+                                <div class="col-xs-12 text-center">
+                                    <button class="btn btn-success snac-hidden" id="resource_originationName_add_{{i}}"
+                                        onClick="return newOriginationName({{i}});" disabled>
+                                        <span class="glyphicon glyphicon-plus-sign"></span> Add Origination Name
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="resource_repo_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceRepository.display }}
+                        </label>
+                        <div class="col-xs-6" id="text_resource_repo_{{i}}">
+                            <input id="resource_repo_{{i}}" name="resource_repo_{{i}}" type="hidden" class="form-control" value="{{ resource.repoIcId }}"/>
+                            <p class="form-control-static" id="resource_repoText_{{i}}">{{ resource.repoIcId }}</p>
+                        </div>
+                        <div class="col-xs-2">
+                            <a href="?command=search" target="_blank" class="btn btn-primary">Search</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endmacro %}
+
+
 {% macro displayResourceRelation(X, inEdit, showSubElements, relation, i) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
@@ -491,6 +583,64 @@
                     <input id="resourceRelation_id_{{i}}" name="resourceRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                     <input id="resourceRelation_version_{{i}}" name="resourceRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                     <input id="resourceRelation_operation_{{i}}" name="resourceRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
+                    <input id="resourceRelation_title_{{i}}" name="resourceRelation_title_{{i}}" type="hidden" class="form-control" value="{{ relation.title }}"/>
+                    <textarea id="resourceRelation_abstract_{{i}}" name="resourceRelation_abstract_{{i}}" class="form-control" style="display:none;">{{ relation.abstract }}</textarea>
+                    <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="hidden" class="form-control" value="{{ relation.link }}"/>
+                    <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
+                    <textarea id="resourceRelation_extent_{{i}}" name="resourceRelation_extent_{{i}}" class="form-control" style="display:none;">{{ relation.extent }}</textarea>
+                    <input id="resourceRelation_repo_{{i}}" name="resourceRelation_repo_{{i}}" type="hidden" class="form-control" value="{{ relation.repoIcId }}"/>
+                    <div class="form-group">
+                        <label class="control-label col-xs-4" data-content="{{X.resourceResource.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceResource.display }}
+                        </label>
+                        <div class="col-xs-8 well well-sm">
+                            <p>
+                                <span style="font-weight: bold" id="resourceRelation_titleText_{{i}}">{{ relation.title ? relation.title : 'Title Unknown' }}</span><br>
+                                <span id="resourceRelation_abstractText_{{i}}">{{relation.abstract}}</span>
+                            </p>
+                            <p>
+                                <span id="resourceRelation_documentTypeText_{{i}}">{{relation.documentType.term}}</span>: 
+                                <span id="resourceRelation_extentText_{{i}}">{{relation.extent ? relation.extent : 'Extent Unknown'}}</span>
+                            </p>
+                            <p id="resourceRelation_LinkText_{{i}}">
+                                <span id="resourceRelation_linkText_{{i}}">{{relation.link}}
+                                {% if relation.link %}
+                                    <a class="label label-info" target="_blank" href="{{relation.link}}">View</a>
+                                {% endif %}
+                            </p>
+                            <div id="resourceRelation_originationNames_{{i}}">
+                                {% if relation.relatedResourceOriginationName %}
+                                    <span style="font-weight: bold">{{X.resourceOriginationName.display}}</span>
+                                    {% set j = 0 %}
+                                    {% for originationName in relation.relatedResourceOriginationName %}
+                                        <input type="hidden" id="resourceRelation_originationName_{{j}}_id_{{i}}"
+                                            name="resourceRelation_originationName_{{j}}_id_{{i}}"
+                                            value="{{originationName.id}}"/>
+                                        <input type="hidden" id="resourceRelation_originationName_{{j}}_version_{{i}}"
+                                            name="resourceRelation_originationName_{{j}}_version_{{i}}"
+                                            value="{{originationName.version}}"/>
+                                        <input type="hidden" id="resourceRelation_originationName_{{j}}_operation_{{i}}"
+                                            name="resourceRelation_originationName_{{j}}_operation_{{i}}"
+                                            value="{{originationName.operation}}"/>
+                                        <input type="hidden" id="resourceRelation_originationName_{{j}}_name_{{i}}"
+                                            name="resourceRelation_originationName_{{j}}_name_{{i}}"
+                                            value="{{originationName.name}}"/>
+                                        {% set j = j + 1 %}
+                                    {% endfor %}
+                                    <p class="form-control-static">
+                                    {% set j = 0 %}
+                                    {% for originationName in relation.relatedResourceOriginationName %}
+                                        {{originationName.name}}
+                                        {% set j = j + 1 %}
+                                        {% if relation.relatedResourceOriginationName[j].name %}
+                                        <br/>
+                                        {% endif %}
+                                    {% endfor %}
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="resourceRelation_content_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceText.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceText.display }}
@@ -513,93 +663,21 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="resourceRelation_link_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceURI.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_resourceRelation_link_{{i}}">
-                            <input id="resourceRelation_link_{{i}}" name="resourceRelation_link_{{i}}" type="hidden" class="form-control" value="{{ relation.link }}"/>
-                            <p class="form-control-static">{{ relation.link }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="resourceRelation_documentType_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceDocumentType.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceDocumentType.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_resourceRelation_documentType_{{i}}">
-                            <input id="resourceRelation_documentType_id_{{i}}" name="resourceRelation_documentType_id_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.id }}"/>
-                            <input id="resourceRelation_documentType_term_{{i}}" name="resourceRelation_documentType_term_{{i}}" type="hidden" class="form-control" value="{{ relation.documentType.term }}"/>
-                            <input id="resourceRelation_documentType_vocabtype_{{i}}" name="resourceRelation_documentType_vocabtype_{{i}}" type="hidden" class="form-control" value="document_type"/>
-                            <input id="resourceRelation_documentType_minlength_{{i}}" name="resourceRelation_documentType_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ relation.documentType.term }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="resourceRelation_title_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceTitle.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceTitle.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_resourceRelation_title_{{i}}">
-                            <input id="resourceRelation_title_{{i}}" name="resourceRelation_title_{{i}}" type="hidden" class="form-control" value="{{ relation.title }}"/>
-                            <p class="form-control-static">{{ relation.title }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="resourceRelation_abstract_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceAbstract.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceAbstract.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_resourceRelation_abstract_{{i}}">
-                            <textarea id="resourceRelation_abstract_{{i}}" name="resourceRelation_abstract_{{i}}" class="form-control" style="display:none;">{{ relation.abstract }}</textarea>
-                            <p class="form-control-static">{{ relation.abstract }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="resourceRelation_extent_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceExtent.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceExtent.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_resourceRelation_extent_{{i}}">
-                            <textarea id="resourceRelation_extent_{{i}}" name="resourceRelation_extent_{{i}}" class="form-control" style="display:none;">{{ relation.extent }}</textarea>
-                            <p class="form-control-static">{{ relation.extent }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.resourceOriginationName.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceOriginationName.display }}
-                        </label>
-                        <div class="col-xs-8 well well-sm">
-                            {% set j = 0 %}
-                            {% for originationName in relation.relatedResourceOriginationName %}
-                                {{ components.displayResourceOriginationName(X, inEdit, showSubElements, originationName, i, j) }}
-                                {% set j = j + 1 %}
-                            {% endfor %}
-
-                            <span id='resourceRelation_originationName_next_j_{{i}}' style='display:none;'>{{j}}</span>
-
-                            <div class="form-group" id="resourceRelation_originationName_add_div_{{i}}">
-                                <div class="col-xs-12 text-center">
-                                    <button class="btn btn-success snac-hidden" id="resourceRelation_originationName_add_{{i}}"
-                                        onClick="return newOriginationName({{i}});" disabled>
-                                        <span class="glyphicon glyphicon-plus-sign"></span> Add Origination Name
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="form-group" style="display: none;">
-                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.resourceXML.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_resourceRelation_source_{{i}}">
-                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" style="display:none;">{{ relation.source }}</textarea>
-                            <p class="form-control-static">{{ relation.source }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
                         <label for="resourceRelation_note_{{ i }}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
                         </label>
                         <div class="col-xs-8" id="textarea_resourceRelation_note_{{i}}">
                             <textarea id="resourceRelation_note_{{i}}" name="resourceRelation_note_{{i}}" class="form-control" style="display:none;">{{ relation.note }}</textarea>
                             <p class="form-control-static">{{ relation.note }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group" style="display: none;">
+                        <label for="resourceRelation_source_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceXML.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.resourceXML.display }}
+                        </label>
+                        <div class="col-xs-8" id="resourceRelation_source_{{i}}">
+                            <textarea id="resourceRelation_source_{{i}}" name="resourceRelation_source_{{i}}" class="form-control" style="display:none;">{{ relation.source }}</textarea>
+                            <p class="form-control-static" id="resourceRelation_sourceText_{{i}}">{{ relation.source }}</p>
                         </div>
                     </div>
                 </div>
@@ -612,28 +690,28 @@
 {% endmacro %}
 
 {% macro displayResourceOriginationName(X, inEdit, showSubElements, originationName, i, j) %}
-        <div class="col-xs-12" id="resourceRelation_originationName_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
-            <div id="resourceRelation_originationName_{{j}}_datapart_{{i}}">
-                <input type="hidden" id="resourceRelation_originationName_{{j}}_id_{{i}}"
-                    name="resourceRelation_originationName_{{j}}_id_{{i}}"
+        <div class="col-xs-12" id="resource_originationName_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+            <div id="resource_originationName_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="resource_originationName_{{j}}_id_{{i}}"
+                    name="resource_originationName_{{j}}_id_{{i}}"
                     value="{{originationName.id}}"/>
-                <input type="hidden" id="resourceRelation_originationName_{{j}}_version_{{i}}"
-                    name="resourceRelation_originationName_{{j}}_version_{{i}}"
+                <input type="hidden" id="resource_originationName_{{j}}_version_{{i}}"
+                    name="resource_originationName_{{j}}_version_{{i}}"
                     value="{{originationName.version}}"/>
-                <input type="hidden" id="resourceRelation_originationName_{{j}}_operation_{{i}}"
-                    name="resourceRelation_originationName_{{j}}_operation_{{i}}"
+                <input type="hidden" id="resource_originationName_{{j}}_operation_{{i}}"
+                    name="resource_originationName_{{j}}_operation_{{i}}"
                     value="{{originationName.operation}}"/>
                 <div>
                     <div class="input-group select2-bootstrap-append">
-                        <div id="text_resourceRelation_originationName_{{j}}_name_{{i}}" style="width: 100%; clear: none; float: left;">
-                            <input type="hidden" name="resourceRelation_originationName_{{j}}_name_{{i}}" id="resourceRelation_originationName_{{j}}_name_{{i}}"
+                        <div id="text_resource_originationName_{{j}}_name_{{i}}" style="width: 100%; clear: none; float: left;">
+                            <input type="hidden" name="resource_originationName_{{j}}_name_{{i}}" id="resource_originationName_{{j}}_name_{{i}}"
                                 class="form-control" value="{{ originationName.name  }}">
                             <p class="form-control-static">{{ originationName.name }}</p>
                         </div>
                         <span class="input-group-btn">
                             <button class="btn btn-danger snac-hidden"
-                                id="resourceRelation_originationName_{{j}}_remove_{{i}}" disabled
-                                onClick="setRepeatedDataDeleted('resourceRelation_originationName_{{j}}', '{{i}}'); return false;">
+                                id="resource_originationName_{{j}}_remove_{{i}}" disabled
+                                onClick="setRepeatedDataDeleted('resource_originationName_{{j}}', '{{i}}'); return false;">
                                 <span class="glyphicon glyphicon-minus-sign"></span>
                             </button>
                         </span>

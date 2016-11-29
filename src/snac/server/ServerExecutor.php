@@ -762,6 +762,8 @@ class ServerExecutor {
         $response = array();
         if (isset($input["constellation"])) {
             $constellation = new \snac\data\Constellation($input["constellation"]);
+            $this->logger->addDebug("Writing Constellation Data", $input["constellation"]);
+            $this->logger->addDebug("Writing Constellation toArray", $constellation->toArray());
 
             try {
                 $validation = new \snac\server\validation\ValidationEngine();
