@@ -1662,8 +1662,8 @@ $(document).ready(function() {
                                 }
                                 var tmpHtml = "<p class=\"form-control-static\">"+originationNames.join("<br/>")+"</p>";
                                 $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                                **/
                             }
+                            **/
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
