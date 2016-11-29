@@ -1123,18 +1123,14 @@ class ServerExecutor {
 
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
-                $inList = false;
-                $userList = array_merge(
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
-                );
-                foreach ($userList as $item) {
-                    if ($item->getID() == $constellation->getID()) {
-                        $inList = true;
-                        break;
-                    }
-                }
+                list($currentStatus, $currentUserID, $currentNote) = $this->cStore->readConstellationUserStatus($constellation->getID());
 
+                $inList = false;
+                if ($currentUserID == $this->user->getUserID() &&
+                    ($currentStatus == 'currently editing' || $currentStatus == 'locked editing')) {
+                        $inList = true;
+                    }
+                
                 $result = false;
 
                 // If this constellation is the correct version, and the user was editing it, then publish it
@@ -1167,6 +1163,7 @@ class ServerExecutor {
                             $result = $written->getVersion();
                             unset($written);
                         }
+                        $constellation->setArkID($newArk);
                         $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                                                         "published", "User published constellation");
                     }

@@ -982,6 +982,49 @@ class SQL
         $row = $this->sdb->fetchrow($result);
         return $row['status'];
     }
+    
+    /**
+     * User for Constellation by mainID and version number
+     *
+     * Get the version_history user id editing this constellation.
+     *
+     * @param integer $mainID The constellation ID
+     *
+     * @param integer $version A specific version number. We assume that you have called some function to get
+     * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
+     *
+     * @return int The user id who most recently touched this constellation 
+     */
+    public function selectCurrentUserForConstellation($mainID, $version)
+    {
+        $result = $this->sdb->query(
+                                    'select user_id from version_history where id=$1 and version=$2',
+                                    array($mainID, $version));
+        $row = $this->sdb->fetchrow($result);
+        return $row['user_id'];
+    }
+
+    
+    /**
+     * Version History Log Note by mainID and version number
+     *
+     * Get the version_history log note.
+     *
+     * @param integer $mainID The constellation ID
+     *
+     * @param integer $version A specific version number. We assume that you have called some function to get
+     * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
+     *
+     * @return string The log note string of that version for the given mainID.
+     */
+    public function selectCurrentNoteForConstellation($mainID, $version)
+    {
+        $result = $this->sdb->query(
+                                    'select note from version_history where id=$1 and version=$2',
+                                    array($mainID, $version));
+        $row = $this->sdb->fetchrow($result);
+        return $row['note'];
+    }
 
     /**
      * Select by status and most recent, user only
@@ -2518,7 +2561,8 @@ class SQL
                             from address_line as aa,
                             (select place_id,max(version) as version from address_line
                                 where place_id=$1 and version<=$2 group by place_id) as bb
-                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version');
+                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version
+                            order by aa.line_order asc');
         $result = $this->sdb->execute($qq_2, array($placeID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))

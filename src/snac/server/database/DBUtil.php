@@ -3141,6 +3141,34 @@ class DBUtil
     }
 
     /**
+     * Read Detailed Constellation Status
+     *
+     * Reads the status, user, and note for the given version of the constellation.  If there is no 
+     * version given, it returns the values for the most recent version of the constellation.
+     *
+     * @param int $mainID Constellation ID
+     * @param int $version optional The version of the Constellation to read status
+     * @return string[] The status, userid, and note (in that order) for the constellation
+     */
+    public function readConstellationUserStatus($mainID, $version=null) {
+        if (! $version)
+        {
+            $version = $this->sql->selectCurrentVersion($mainID);
+        }
+        if ($version)
+        {
+            $status = $this->sql->selectStatus($mainID, $version);
+            $userid = $this->sql->selectCurrentUserForConstellation($mainID, $version);
+            $note   = $this->sql->selectCurrentNoteForConstellation($mainID, $version);
+            if ($status && $userid)
+            {
+                return array($status, $userid, $note);
+            }
+        }
+        return false;
+    }
+
+    /**
      * Modify constellation status
      *
      * Write a new version history record, updating the constellation status.
