@@ -532,12 +532,6 @@ class ConstellationPostMapper {
         foreach ($this->constellation->getResourceRelations() as $relation) {
             foreach ($constellation->getResourceRelations() as $other) {
                 $this->reconcileObject($relation, $other);
-
-                foreach ($relation->getRelatedResourceOriginationName() as $originationName) {
-                    foreach ($other->getRelatedResourceOriginationName() as $otherOriginationName) {
-                        $this->reconcileObject($originationName, $otherOriginationName);
-                    }
-                }
             }
         }
 
