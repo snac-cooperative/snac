@@ -412,7 +412,7 @@
                         {% if resRel.resource.languages %}
                         <langmaterial>
                             {% for lang in resRel.resource.languages %}
-                            <language langcode="{{lang.term}}">{{lang.description}}</language>
+                            <language langcode="{{lang.language.term}}">{{lang.language.description}}</language>
                             {% endfor %}
                         </langmaterial>
                         {% endif %}
