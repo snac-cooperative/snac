@@ -522,14 +522,21 @@ class ServerExecutor {
     public function searchResources(&$input) {
         $response = array();
         if (isset($input["term"])) {
-            $results = $this->cStore->searchResources($input["term"]);
-            $response["results"] = array();
-            foreach ($results as $result)
-                array_push($response["results"], $result->toArray());
-
-            $response["total"] = count($response["results"]);
+            $response = $this->elasticSearch->searchResourceIndex($input["term"]);
+            // If there are results from the search, then replace them with full
+            // resources from the database (rather than from ES results)
+            $this->logger->addDebug("Got the following ES result", $response);
+            if (isset($response["results"])) {
+                $results = $response["results"];
+                $response["results"] = array();
+                foreach ($results as $result)
+                    array_push(
+                        $response["results"], 
+                        $this->cStore->readResource($result["id"])->toArray());
+            }
         }
 
+        $this->logger->addDebug("Returning the following resource search results", $response);
         return $response;
     }
 
@@ -862,6 +869,7 @@ class ServerExecutor {
             try {
                 $result = $this->cStore->writeResource($resource);
                 if (isset($result) && $result != false) {
+                    $this->elasticSearch->writeToResourceIndices($resource);
                     $this->logger->addDebug("successfully wrote resource");
                     $response["resource"] = $result->toArray();
                     $response["result"] = "success";

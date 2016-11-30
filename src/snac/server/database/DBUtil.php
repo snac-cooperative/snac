@@ -2982,6 +2982,15 @@ class DBUtil
         return null;
     }
 
+    public function readResource($id, $version=null) {
+        if (! $version)
+        {
+            $version = $this->sql->selectCurrentResourceVersion($id);
+        }
+
+        return $this->populateResource($id, $version);
+    }
+
     /**
      * Populate Resource's Languages
      *
@@ -3742,7 +3751,8 @@ class DBUtil
         $return = array();
         foreach ($results as $result) {
             $resource = new \snac\data\Resource();
-
+            $resource->setID($result['id']);
+            $resource->setVersion($result['version']);
             $resource->setDocumentType($this->populateTerm($result['type']));
             $resource->setLink($result['href']);
             $resource->setSource($result['object_xml_wrap']);

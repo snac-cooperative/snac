@@ -188,5 +188,15 @@ class Config {
      * @var string Search base for ALL of the snac name entries (and alternates)
      */
     public static $ELASTIC_SEARCH_ALL_TYPE = "";
+    
+    /**
+     * @var string Resource index for the resource search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_RESOURCE_INDEX = "";
+    
+    /**
+     * @var string Resource type for the resource search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
 
 }

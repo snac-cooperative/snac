@@ -309,4 +309,144 @@ class ElasticSearchUtil {
                     "notice" => "Not Using ElasticSearch"
         );
     }
+
+    /**
+     * Write or Update Resource Indices
+     *
+     * Writes the given resource to the resource indices in Elastic Search.  If they already exist in ES, they
+     * are updated. If not, they are inserted.
+     *
+     * @param \snac\data\Resource $resource The resource object to insert/update in Elastic Search
+     */
+    public function writeToResourceIndices(&$resource) {
+
+        if ($this->connector != null) {
+            $params = [
+                'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+                'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
+                'id' => $resource->getID(),
+                'body' => [
+                    'id' => (int) $resource->getID(),
+                    'title' => $resource->getTitle(),
+                    'url' => $resource->getLink(),
+                    'abstract' => $resource->getAbstract(),
+                    'type' => $resource->getDocumentType()->getTerm(),
+                    'type_id' => (int) $resource->getDocumentType()->getID(),
+                    'timestamp' => date('c')
+                ]
+            ];
+
+            $this->connector->index($params);
+            $this->logger->addDebug("Updated elastic search with new resource");
+        }
+    }
+
+    /**
+     * Delete Resource from Resource Indices
+     *
+     * Deletes the given resource from the Elastic Search resource indices.
+     *
+     * @param \snac\data\Resource $resource The resource object to delete from Elastic Search
+     */
+    public function deleteFromResourceIndices(&$resource) {
+
+        if ($this->connector != null) {
+            $params = [
+                    'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+                    'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
+                    'id' => $resource->getID()
+            ];
+
+            $this->logger->addDebug("Updated elastic search to remove resource");
+        }
+
+    }
+
+    /**
+     * Search SNAC Resources Index
+     *
+     * Searches the resources index for the query.  Allows for pagination by the start and count parameters.
+     *
+     * @param string $query The search query
+     * @param integer $start optional The result index to start from (default 0)
+     * @param integer $count optional The number of results to return from the start (default 10)
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
+     */
+    public function searchResourceIndex($query, $start=0, $count=10) {
+        $this->logger->addDebug("Searching for a Resource");
+
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+
+            $params = [
+                'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
+                'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
+                'body' => [
+                    /* This query uses a keyword search 
+                       'query' => [
+                        'query_string' => [
+                            'fields' => [
+                                "title",
+                                "url"
+                            ],
+                            'query' => '*' . $query . '*'
+                        ]
+                    ],
+                    'from' => $start,
+                    'size' => $count*/
+
+                    /* This query uses a full-phrase matching search */
+                    'query' => [
+                        'match_phrase' => [
+                            '_all' => [
+                                'query' => $query,
+                                'slop' => 20
+                            ]                        ]
+                    ],
+                    'from' => $start,
+                    'size' => $count
+                    /* This query uses a full-phrase matching search 
+                    'query' => [
+                        'match_phrase_prefix' => [
+                            'nameEntry' => [
+                                'query' => $query,
+                                'slop' => 20
+                            ]
+                        ]
+                    ],
+                    'from' => $start,
+                    'size' => $count*/
+                ]
+            ];
+            $this->logger->addDebug("Defined parameters for search", $params);
+
+            $results = $this->connector->search($params);
+
+            $this->logger->addDebug("Completed Elastic Search", $results);
+
+            $return = array ();
+            foreach ($results["hits"]["hits"] as $i => $val) {
+                array_push($return, $val["_source"]);
+            }
+
+            $response = array();
+            $response["total"] = $results["hits"]["total"];
+            $response["results"] = $return;
+
+            if ($response["total"] == 0 || $count == 0) {
+                $response["pagination"] = 0;
+                $response["page"] = 0;
+            } else {
+                $response["pagination"] = ceil($response["total"] / $count);
+                $response["page"] = floor($start / $count);
+            }
+            $this->logger->addDebug("Created resource search response to the user", $response);
+
+            return $response;
+        }
+
+        return array (
+                    "notice" => "Not Using ElasticSearch"
+        );
+    }
+
 }

@@ -3338,6 +3338,27 @@ class SQL
         return $row['id'];
     }
 
+    /**
+     * Current resource version by ID
+     *
+     * The max, that is: current version for ID regardless of status. This will return max for deleted as
+     * well as all other status values.      
+     * @param integer $id The resource ID
+     *
+     * @return integer Latest version number from resource.version
+     *
+     */
+    public function selectCurrentResourceVersion($id)
+    {
+        $result = $this->sdb->query(
+                                    'select max(version) as version
+                                    from resource_cache
+                                    where resource_cache.id=$1',
+                                    array($id));
+        $row = $this->sdb->fetchrow($result);
+        return $row['version'];
+    }
+
 
 
     /**
@@ -4939,7 +4960,7 @@ class SQL
     public function searchResources($query)
     {
         $queryStr =
-                  'select type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
                   from resource_cache
                   where href ilike $1 or title ilike $1 order by title asc';
         $result = $this->sdb->query($queryStr, array("%$query%"));
