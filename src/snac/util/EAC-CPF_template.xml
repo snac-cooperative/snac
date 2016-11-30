@@ -3,7 +3,7 @@
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:snac="http://socialarchive.iath.virginia.edu/">
     {#
-    Author: Tom Laudeman
+    Author: Tom Laudeman, Robbie Hott
     The Institute for Advanced Technology in the Humanities at the University of Virginia
 
     License: http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
@@ -387,9 +387,42 @@
             <resourceRelation xlink:type="simple"
                               xlink:role="{{ xlink_role }}"
                               xlink:arcrole="{{ xlink_arcrole }}"
-                              xlink:href="{{ resRel.link  }}">
+                              xlink:href="{{ resRel.resource.link  }}">
                 <relationEntry>{{ resRel.content }}</relationEntry>
                 {{ resRel.source|raw }}
+                <objectXMLWrap>
+                    <did xmlns="urn:isbn:1-931666-22-9">
+                        {% if resRel.resource.originationNames %}
+                        <origination>
+
+                            {# TODO Once ONames come from relations: For each CPF linked to the resource with arcrole of CreatorOf
+                                 repeatable <pername>, <corpname>, <famname> with the preferred name in each. 
+                            <persname authfilenumber="ARK of the CPF entity">[preferred name of]</persname>
+                            <corpname authfilenumber="ARK of the CPF entity">[preferred name of]</corpname>
+                            <famname  authfilenumber="ARK of the CPF entity">[preferred name of]</famname>
+                            #}
+                            {% for oName in resRel.resource.originationNames %}
+                            <persname>{{oName.name}}</persname>
+                            {% endfor %}
+                        </origination>
+                        {% endif %}
+                        <unittitle>{{resRel.resource.title}}</unittitle>
+                        <physdesc><extent>{{resRel.resource.extent}}</extent></physdesc>
+                        <abstract>{{resRel.resource.abstract}}</abstract>
+                        {% if resRel.resource.languages %}
+                        <langmaterial>
+                            {% for lang in resRel.resource.languages %}
+                            <language langcode="{{lang.term}}">{{lang.description}}</language>
+                            {% endfor %}
+                        </langmaterial>
+                        {% endif %}
+                        {% if resRel.resource.repository %}
+                        <repository>
+                            <corpname authfilenumber="{{resRel.resource.repository.ark}}">{{resRel.resource.repository.nameEntries.0.original}}</corpname>
+                        </repository>
+                        {% endif %}
+                    </did>
+                </objectXMLWrap>
                 {{ resRel.note|raw }}
             </resourceRelation>
         {% endfor %}
