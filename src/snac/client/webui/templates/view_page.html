@@ -54,6 +54,10 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
@@ -500,6 +504,7 @@ body {
                <div class="others">
                   <h3>Actions:</h3>
                   <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-info" data-toggle="modal" data-target="#collection_locations" onClick="displayHoldingsMap();"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                         <a class="list-group-item list-group-item-success"
                            href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
                       {% if user.email and permissions.Edit %}
@@ -643,7 +648,34 @@ body {
                                              Congress
                               </div>
                                -->
-                               TEMPLATE_COLL_LOCATIONS
+                              {% if data.holdings|length > 0 %}
+                                  <div class="geoplace-map" id="holdingsMap">
+                                  </div>
+                                  <script>
+                                    var holdingsMapView = null;
+                                    function displayHoldingsMap() {
+                                        if (holdingsMapView != null) return;
+                                        // Add a slight delay to the map viewing so that the modal window has time to load
+                                        setTimeout(function() {
+                                            holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+                                            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                maxZoom: 19,
+                                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                            }).addTo(holdingsMapView);
+                                            {% for location in data.holdings %}
+                                            {% if location.latitude and location.longitude %}
+                                            var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            {% endif %}
+                                            {% endfor %}
+                                            }, 200);
+                                    }
+                                  </script>
+                                  {% for location in data.holdings %}
+                                    <div>{{location.name}}</div>
+                                  {% endfor %}
+                              {% else %}
+                                <div class="alert alert-info">no collection locations known</div>
+                              {% endif %}
                            </div>
                            <div class="modal-footer">
                               <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
