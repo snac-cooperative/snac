@@ -114,13 +114,11 @@ function setRelationSearchPosition(start) {
          } else {
              html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
          }
-         /* Disabling new resource creation for now
          html += "<div class='list-group-item list-group-item-warning'><div class='row'>";
          html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='new'></div>";
          html += "<div class='col-xs-10'>Create New Resource";
          html += "</div></div>";
          html += "</div>";
-         */
 
          // Have pagination (total number of pages) and page (current page number) in data
          // ... use them to help stepping through the search for multiple pages.

@@ -30,6 +30,16 @@ class ResourcePostMapper {
     private $resource = null;
 
     /**
+     * @var boolean Whether or not to look up Term values in the database
+     */
+    private $lookupTerms = false;
+
+    /**
+    * @var \snac\client\util\ServerConnect Whether or not to look up Term values in the database
+    */
+    private $lookupTermsConnector = null;
+
+    /**
      * @var \Monolog\Logger $logger Logger for this class
      */
     private $logger = null;
@@ -44,6 +54,75 @@ class ResourcePostMapper {
         // create a log channel
         $this->logger = new \Monolog\Logger('ResourcePOSTMapper');
         $this->logger->pushHandler($log);
+    }
+
+    /**
+     * Allow Term Lookups
+     *
+     * Calling this method allows the PostMapper to connect to the server and
+     * use the vocabulary search mechanism to look up terms.
+     */
+    public function allowTermLookup() {
+        $this->lookupTerms = true;
+        $this->lookupTermsConnector = new \snac\client\util\ServerConnect();
+    }
+
+    /**
+     * Disallow Term Lookups
+     *
+     * By default, the PostMapper is not allowed to query the server and look
+     * up any terms using the vocabulary search mechanism. Calling this method
+     * returns the PostMapper to that default behavior.
+     */
+    public function disallowTermLookup() {
+        $this->lookupTerms = false;
+        $this->lookupTermsConnector = null;
+    }
+
+    /**
+     * Get Operation
+     *
+     * Gets the operation from the parameter, if it exists.  If not, it returns null
+     *
+     * @param string[][] $data The input POST data
+     * @return string|NULL The operation associated with this data
+     */
+    private function getOperation($data) {
+
+        if (isset($data['operation'])) {
+            $op = $data["operation"];
+            if ($op == "insert") {
+                return \snac\data\AbstractData::$OPERATION_INSERT;
+            } else if ($op == "update") {
+                return \snac\data\AbstractData::$OPERATION_UPDATE;
+            } else if ($op == "delete") {
+                return \snac\data\AbstractData::$OPERATION_DELETE;
+            }
+
+            return null;
+        }
+        return null;
+    }
+
+    /**
+     * Parse Term
+     *
+     * Parses and creates a Term object if the information exists in the data given.
+     *
+     * @param string[][] $data  Data to inspect for term object
+     * @return NULL|\snac\data\Term Correct Term object or null if no term
+     */
+    private function parseTerm($data) {
+        $term = null;
+        if (isset($data) && $data != null && isset($data["id"]) && $data["id"] != "" && $data["id"] != null) {
+            if ($this->lookupTerms) {
+                $term = $this->lookupTermsConnector->lookupTerm($data["id"]);
+            } else {
+                $term = new \snac\data\Term();
+                $term->setID($data["id"]);
+            }
+        }
+        return $term;
     }
 
     /**
@@ -108,26 +187,41 @@ class ResourcePostMapper {
         $this->logger->addDebug("parsed values", $nested);
 
         foreach ($nested["resource"] as $k => $data) {
-            $relation->setID($data["id"]);
-            $relation->setVersion($data["version"]);
+            $this->resource->setID($data["id"]);
+            $this->resource->setVersion($data["version"]);
+            $this->resource->setOperation($this->getOperation($data));
 
-            $relation->setTitle($data["title"]);
-            $relation->setAbstract($data["abstract"]);
-            $relation->setExtent($data["extent"]);
-            $relation->setLink($data["link"]);
-            $relation->setSource($data["source"]);
-            $relation->setNote($data["note"]);
+            $this->resource->setTitle($data["title"]);
+            $this->resource->setAbstract($data["abstract"]);
+            $this->resource->setExtent($data["extent"]);
+            $this->resource->setLink($data["link"]);
+            $this->resource->setSource($data["source"]);
+            $this->resource->setNote($data["note"]);
 
-            $relation->setDocumentType($this->parseTerm($data["documentType"]));
+            $this->resource->setDocumentType($this->parseTerm($data["documentType"]));
+            
+            if (isset($data["originationName"])) {
+                foreach ($data["originationName"] as $l => $oData) {
+                    $part = new \snac\data\OriginationName();
+                    $part->setID($oData["id"]);
+                    $part->setVersion($oData["version"]);
+                    if ($oData["operation"] == "insert" || $oData["operation"] == "delete")
+                        $part->setOperation($this->getOperation($oData));
+                    else {
+                        $oData["operation"] = $this->getOperation($data);
+                        $part->setOperation($this->getOperation($data));
+                    }
 
-            $relation->setRole($this->parseTerm($data["role"]));
+                    $part->setName($oData["name"]);
 
-            $relation->setAllSNACControlMetadata($this->parseSCM($data, "resourceRelation", $k));
+                    $this->resource->addOriginationName($part);
+                }
+            }
 
-            $this->addToMapping("resourceRelation", $k, $data, $relation);
 
         }
 
-
+        return $this->resource;
+    }
 
 }
