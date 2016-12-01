@@ -2638,7 +2638,8 @@ class DBUtil
             $resource->setVersion($version);
             $this->saveOriginationNames($resource);
             $this->saveResourceLanguages($resource);
-            return $resource;
+            // Return the full resource
+            return $this->populateResource($rid, $version);
         }
         return false;
     }

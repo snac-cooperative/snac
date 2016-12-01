@@ -977,7 +977,7 @@ class WebUIExecutor {
         // Get the resource object
         $resource = $mapper->serializeToResource($input);
 
-        $this->logger->addDebug("writing resource", $constellation->toArray());
+        $this->logger->addDebug("writing resource", $resource->toArray());
 
         // Build a data structure to send to the server
         $request = array("command"=>"update_resource");

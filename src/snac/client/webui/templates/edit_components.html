@@ -488,6 +488,9 @@
         <div class="panel panel-default" id="resource_panel_{{i}}">
             <div class="panel-body">
                 <div class="col-xs-10" id="resource_datapart_{{i}}">
+                    <input id="resource_id_{{i}}" name="resource_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
+                    <input id="resource_version_{{i}}" name="resource_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
+                    <input id="resource_operation_{{i}}" name="resource_operation_{{i}}" type="hidden" value="{{ resource.operation }}"/>
                     <div class="form-group">
                         <label for="resource_link_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceURI.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceURI.display }}

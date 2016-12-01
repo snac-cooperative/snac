@@ -134,7 +134,7 @@ class ResourcePostMapper {
      * @param string[][] $postData The POST input data from the WebUI user interface
      * @return \snac\data\Resource
      */
-    public function serializeToConstellation($postData) {
+    public function serializeToResource($postData) {
 
         $this->resource = new \snac\data\Resource();
 
@@ -195,11 +195,15 @@ class ResourcePostMapper {
             $this->resource->setAbstract($data["abstract"]);
             $this->resource->setExtent($data["extent"]);
             $this->resource->setLink($data["link"]);
-            $this->resource->setSource($data["source"]);
-            $this->resource->setNote($data["note"]);
 
             $this->resource->setDocumentType($this->parseTerm($data["documentType"]));
-            
+
+            if (isset($data["repo"]) && $data["repo"] !== null) {
+                $repo = new \snac\data\Constellation();
+                $repo->setID($data["repo"]);
+                $this->resource->setRepository($repo);
+            }
+
             if (isset($data["originationName"])) {
                 foreach ($data["originationName"] as $l => $oData) {
                     $part = new \snac\data\OriginationName();
