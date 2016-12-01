@@ -4115,9 +4115,9 @@ class SQL
     }
 
     /**
-     * select related archival resource records
+     * select related resource records
      *
-     * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a pgp
+     * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a php
      * ResourceRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
@@ -4130,15 +4130,17 @@ class SQL
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, aa.ic_id,
-                            aa.relation_entry, aa.descriptive_note, aa.arcrole,
-                            aa.resource_id, aa.resource_version
-                            from related_resource as aa,
-                            (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
-                            where not aa.is_deleted and
-                            aa.id=bb.id
-                            and aa.version=bb.version');
+            'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
+                    r.abstract, r.repo_ic_id from
+                (select aa.id, aa.version, aa.ic_id,
+                        aa.relation_entry, aa.descriptive_note, aa.arcrole,
+                        aa.resource_id, aa.resource_version
+                    from related_resource as aa,
+                        (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
+                    where not aa.is_deleted and
+                    aa.id=bb.id
+                    and aa.version=bb.version) rr 
+                left join resource_cache r on rr.resource_id = r.id and rr.resource_version = r.version');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
