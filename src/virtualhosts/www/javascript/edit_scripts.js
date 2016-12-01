@@ -1636,34 +1636,6 @@ $(document).ready(function() {
                             if (typeof resourceResults[rid].documentType !== 'undefined' && typeof resourceResults[rid].documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(resourceResults[rid].documentType.term);
 
-
-                            /**
-                            if ( typeof resourceResults[rid].relatedResourceOriginationName !== 'undefined' ) {
-                                $('#resourceRelation_originationNames_'+resourceRelationid).before("<span style=\"font-weight: bold\">Origination Names</span>");
-                                var originationNames = [];
-                                for (var j = 0; j < resourceResults[rid].relatedResourceOriginationName.length; j++) {
-                                    var tmpHtml = "";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" name=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\"";
-                                    tmpHtml += "    id=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\" class=\"form-control\">";
-
-                                    $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-
-                                    originationNames[j] = resourceResults[rid].relatedResourceOriginationName[j].name;
-
-                                    $('#resourceRelation_originationName_'+j+'_name_'+resourceRelationid).val(resourceResults[rid].relatedResourceOriginationName[j].name);
-                                    $('#resourceRelation_originationName_'+j+'_operation_'+resourceRelationid).val('insert');
-                                    // NOT copying origination name IDs and Versions, since they should be copied into this resource relation.
-                                }
-                                var tmpHtml = "<p class=\"form-control-static\">"+originationNames.join("<br/>")+"</p>";
-                                $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                            }
-                            **/
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
@@ -1679,7 +1651,10 @@ $(document).ready(function() {
                             var text = $('#resource_template').clone();
                             var html = text.html().replace(/ZZ/g, 0);
                             $('#resource-create-box').html(html);
-                            $("#resource_link_0").val($("#resource-searchbox").val());
+                            if ($("#resource-searchbox").val().indexOf("http:") == -1)
+                                $("#resource_title_0").val($("#resource-searchbox").val());
+                            else
+                                $("#resource_link_0").val($("#resource-searchbox").val());
 
                             // Make the new resource editable
                             turnOnButtons("resource", 0);
@@ -1695,70 +1670,36 @@ $(document).ready(function() {
                 }
                 if ($('#btn_create_resource').exists()){
                     $('#btn_create_resource').click(function(){
-                        if ($("#resource_link_0").val() != '') {
+                        $.post("?command=save_resource", $("#resource_create_form").serialize(), function (data) {
                             somethingHasBeenEdited = true;
                             var text = $('#resourceRelation_template').clone();
                             var html = text.html().replace(/ZZ/g, resourceRelationid);
                             $('#add_resourceRelation_div').after(html);
 
-                            $('#resourceRelation_link_'+resourceRelationid).val($("#resource_link_0").val());
-                            $('#resourceRelation_title_'+resourceRelationid).val($("#resource_title_0").val());
-                            $('#resourceRelation_abstract_'+resourceRelationid).val($("#resource_abstract_0").val());
-                            $('#resourceRelation_extent_'+resourceRelationid).val($("#resource_extent_0").val());
-                            $('#resourceRelation_source_'+resourceRelationid).val($("#resource_source_0").text());
-                            $('#resourceRelation_repo_'+resourceRelationid).val($("#resource_repo_0").val());
-                            $('#resourceRelation_documentType_id_'+resourceRelationid).val($("#resource_documentType_id_0").val());
+                            if (typeof data.resource.id !== 'undefined')
+                                $('#resourceRelation_resourceid_'+resourceRelationid).val(data.resource.id);
+                            if (typeof data.resource.version !== 'undefined')
+                                $('#resourceRelation_resourceversion_'+resourceRelationid).val(data.resource.version);
 
-                            $('#resourceRelation_linkText_'+resourceRelationid).html($("#resource_link_0").val() + " <a class='label label-info' target='_blank' href='"+$("#resource_link_0").val()+"'>View</a>");
-                            $('#resourceRelation_titleText_'+resourceRelationid).text($("#resource_title_0").val());
-                            $('#resourceRelation_abstractText_'+resourceRelationid).text($("#resource_abstract_0").val());
-                            $('#resourceRelation_extentText_'+resourceRelationid).text($("#resource_extent_0").val());
-                            $('#resourceRelation_sourceText_'+resourceRelationid).text($("#resource_source_0").val());
-                            $('#resourceRelation_documentTypeText_'+resourceRelationid).text($("#resource_documentType_id_0 option:selected").text());
+                            if (typeof data.resource.link !== 'undefined')
+                                $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                            if (typeof data.resource.title !== 'undefined')
+                                $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
+                            if (typeof data.resource.abstract !== 'undefined')
+                                $('#resourceRelation_abstractText_'+resourceRelationid).text(data.resource.abstract);
+                            if (typeof data.resource.extent !== 'undefined')
+                                $('#resourceRelation_extentText_'+resourceRelationid).text(data.resource.extent);
+                            if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
+                                $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
-                            // get origination names
-                            var originationNames = [];
-                            $("input[id^='resource_originationName_']").each(function () {
-                                var obj = $(this);
-                                var pieces = obj.attr('id').split("_");
-
-                                if (pieces[3] == "name") {
-                                    originationNames[parseInt(pieces[2])] = obj.val();
-                                }
-
-                            });
-
-                            if ( originationNames.length > 0 ) {
-                                $('#resourceRelation_originationNames_'+resourceRelationid).before("<span style=\"font-weight: bold\">Origination Names</span>");
-                                for (var j = 0; j < originationNames.length; j++) {
-                                    var tmpHtml = "";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_id_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_version_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" id=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"";
-                                    tmpHtml += "    name=\"resourceRelation_originationName_"+j+"_operation_"+resourceRelationid+"\"/>";
-                                    tmpHtml += "<input type=\"hidden\" name=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\"";
-                                    tmpHtml += "    id=\"resourceRelation_originationName_"+j+"_name_"+resourceRelationid+"\" class=\"form-control\">";
-
-                                    $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-
-                                    $('#resourceRelation_originationName_'+j+'_name_'+resourceRelationid).val(originationNames[j]);
-                                    $('#resourceRelation_originationName_'+j+'_operation_'+resourceRelationid).val('insert');
-                                    // NOT copying origination name IDs and Versions, since they should be copied into this resource relation.
-
-
-                                }
-                                var tmpHtml = "<p class=\"form-control-static\">"+originationNames.join("<br/>")+"</p>";
-                                $('#resourceRelation_originationNames_'+resourceRelationid).before(tmpHtml);
-                            }
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
                             makeEditable("resourceRelation", resourceRelationid);
                             resourceRelationid = resourceRelationid + 1;
+                            $("#resourceCreatePane").modal("hide");
                             $('#resource-create-box').html("");
                             return true;
-                        }
+                        });
                         return false;
                     });
                 }

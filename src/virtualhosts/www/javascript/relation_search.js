@@ -75,6 +75,7 @@ function setRelationSearchPosition(start) {
 
  function searchResource() {
      resourceResults = null;
+     $("#resource-results-box").html("");
      $.post("?command=resource_search", $("#resource_search_form").serialize(), function (data) {
 
          var html = "";

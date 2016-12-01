@@ -963,6 +963,53 @@ class WebUIExecutor {
     }
 
     /**
+     * Save Resource
+     *
+     * Maps the resoource given on input to a Resource object, passes that to the server with an
+     * update_resource call.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveResource(&$input) {
+        $mapper = new \snac\client\webui\util\ResourcePostMapper();
+
+        // Get the resource object
+        $resource = $mapper->serializeToResource($input);
+
+        $this->logger->addDebug("writing resource", $constellation->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_resource");
+
+        // Send the query to the server
+        $request["resource"] = $resource->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            // Get the server's response constellation
+            if (isset($serverResponse["resource"])) {
+                $this->logger->addDebug("server's response written resource", $serverResponse["resource"]);
+                $resource = new \snac\data\Resource($serverResponse["resource"]);
+
+                $response["resource"] = $resource->toArray();
+            }
+        }
+
+        return $response;
+    }
+
+    /**
      * Save Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an

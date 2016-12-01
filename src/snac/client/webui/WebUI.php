@@ -384,6 +384,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "save_resource":
+                $response = $executor->saveResource($this->input);
+                break;
+
             case "delete":
                 $response = $executor->deleteConstellation($this->input);
                 // if deleted by constellationid parameter, then send them to the dashboard.
