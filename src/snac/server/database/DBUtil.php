@@ -2943,6 +2943,9 @@ class DBUtil
      */
     private function populateResourceRelation($vhInfo, $cObj)
     {
+
+        $repoCache = array();
+
         // Select Resource Relation is smart enough to also grab the Resource information.  This saves
         // much computation time in pulling the resources individually (or even caching them separately)
         // NOTE: It does NOT grab origination names or languages for the Resource.
@@ -2955,20 +2958,27 @@ class DBUtil
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
             
-            //$rrObj->setResource($this->populateResource($oneRes["resource_id"], $oneRes["resource_version"]));
-            $rObj = new \snac\data\Resource();
-            $rObj->setDocumentType($this->populateTerm($oneRes['document_type']));
-            //$rObj->setEntryType($oneRes['entry_type']);
-            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
-            $rObj->setLink($oneRes['href']);
-            $rObj->setSource($oneRes['object_xml_wrap']);
-            $rObj->setTitle($oneRes['title']);
-            $rObj->setExtent($oneRes['extent']);
-            $rObj->setAbstract($oneRes['abstract']);
-            $rObj->setRepository($this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
-            $rObj->setDBInfo($oneRes['resource_version'], $oneRes['resource_id']);
-            
-            $rrObj->setResource($rObj); 
+            if (isset($oneRes['resource_id']) && $oneRes['resource_id'] !== null && $oneRes['resource_id'] !== '') {
+                //$rrObj->setResource($this->populateResource($oneRes["resource_id"], $oneRes["resource_version"]));
+                $rObj = new \snac\data\Resource();
+                $rObj->setDocumentType($this->populateTerm($oneRes['document_type']));
+                //$rObj->setEntryType($oneRes['entry_type']);
+                /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
+                $rObj->setLink($oneRes['href']);
+                $rObj->setSource($oneRes['object_xml_wrap']);
+                $rObj->setTitle($oneRes['title']);
+                $rObj->setExtent($oneRes['extent']);
+                $rObj->setAbstract($oneRes['abstract']);
+                if (isset($oneRes['repo_ic_id']) && $oneRes['repo_ic_id'] !== null && $oneRes['repo_ic_id'] !== '') {
+                    if (!isset($repoCache[$oneRes['repo_ic_id']])) {
+                        $repoCache[$oneRes['repo_ic_id']] = $this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY);
+                    }
+                    $rObj->setRepository($repoCache[$oneRes['repo_ic_id']]);
+                }
+                $rObj->setDBInfo($oneRes['resource_version'], $oneRes['resource_id']);
+                
+                $rrObj->setResource($rObj);
+            } 
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
             $cObj->addResourceRelation($rrObj);
         }
