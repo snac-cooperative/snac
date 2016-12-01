@@ -504,7 +504,7 @@ body {
                <div class="others">
                   <h3>Actions:</h3>
                   <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-info" data-toggle="modal" data-target="#collection_locations" onClick="displayHoldingsMap();"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
+                        <a href="#" class="list-group-item list-group-item-info disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                         <a class="list-group-item list-group-item-success"
                            href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
                       {% if user.email and permissions.Edit %}
@@ -667,8 +667,14 @@ body {
                                             var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
                                             {% endif %}
                                             {% endfor %}
-                                            }, 200);
+                                            }, 400);
                                     }
+                                    $(document).ready(function() {
+                                        if ($('#displayHoldingsMap').exists()){
+                                            $('#displayHoldingsMap').removeClass('disabled');
+                                            $('#displayHoldingsMap').click(displayHoldingsMap);
+                                        }
+                                    });
                                   </script>
                                   {% for location in data.holdings %}
                                     <div>{{location.name}}</div>
