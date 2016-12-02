@@ -502,79 +502,56 @@ body {
                   </div>
                </div>
                <div class="others">
-                  <h3>Actions:</h3>
-                  <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-info disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
-                        <a class="list-group-item list-group-item-success"
-                           href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
-                      {% if user.email and permissions.Edit %}
-                        {% if data.status == 'editable' %}
-                        <a class="list-group-item list-group-item-info"
-                           href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
-                        {% else %}
-                        <a class="list-group-item list-group-item-danger disabled"
-                           href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
-                        {% endif %}
-                      {% endif %}
-                  </div>
-                  <h4>Export as</h4>
-                  <div class="list-group">
-                      <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Constellation JSON <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span></a>
-                      <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
+                   <div class="panel panel-info" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Constellation Options</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <h5>Visualizations</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
+                                <a class="list-group-item list-group-item-warning"
+                                   href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                          </div>
+                          <h5>Export As</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                          </div>
+                      </div>
                   </div>
 
-                  {% if debug %}
-                  <h3>Debug:</h3>
-                  <div class="list-group">
 
-                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
-                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                  {% if user.email and (permissions.Edit or debug) %}
+                   <div class="panel panel-warning" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Actions</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                           {% if user.email and permissions.Edit %}
+                          <h5>Constellation Actions</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                {% if data.status == 'editable' %}
+                                <a class="list-group-item list-group-item-info"
+                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                {% else %}
+                                <a class="list-group-item list-group-item-danger disabled"
+                                   href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                {% endif %}
+                          </div>
+                          {% endif %}
+                          {% if debug %}
+                          <h5>Debug Actions</h3>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                          {% endif %}
 
+                          </div>
+                      </div>
                   </div>
-
-                    <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
-                        <div class="modal-dialog" role="document" style="width:90%;">
-                            <div class="modal-content">
-                                <div class="modal-header primary">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <pre>{{debug.constellationSource}}
-                                    </pre>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
-                        <div class="modal-dialog" role="document" style="width:90%;">
-                            <div class="modal-content">
-                                <div class="modal-header primary">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <pre>{{debug.serverResponse}}
-                                    </pre>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                   {% endif %}
 
                   <h3>Subjects:</h3>
-                  <!--
-                  <div class="alert alert-info">not available for this record</div>
-                  -->
-
                   {% if data.subjects|length > 0 %}
                     <ul>
                     <!-- {% for subject in data.subjects %} -->
@@ -586,17 +563,6 @@ body {
                   {% endif %}
 
                   <h3>Occupations:</h3>
-                  <!--
-                  <ul>
-                     <li>
-                        <a href="/snac/search?sectionType=cpfdescription&amp;f1-occupation=Cabinet officers">
-                           Cabinet officers.
-
-                        </a>
-                     </li>
-                  </ul>
-                  -->
-
                   {% if data.occupations|length > 0 %}
                     <ul>
                     <!-- {% for occupation in data.occupations %} -->
@@ -607,7 +573,7 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
-               </div>
+              </div> <!-- end of others -->
                <div>
                   <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
                        aria-hidden="true">
@@ -619,9 +585,6 @@ body {
                               <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
                            </div>
                            <div title="alternative forms of name" class="extra-names modal-body">
-                              <!--
-                              <div>Fairchild, Charles Stebbins, 1842-1924</div>
-                              -->
                               {% for nameEntry in data.nameEntries %}
                                 <div>{{nameEntry.original}}</div>
                               {% endfor %}
@@ -642,12 +605,6 @@ body {
                               <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
                            </div>
                            <div class="modal-body">
-                               <!--
-                              <div>
-                                 Manuscript Division Library of
-                                             Congress
-                              </div>
-                               -->
                               {% if data.holdings|length > 0 %}
                                   <div class="geoplace-map" id="holdingsMap">
                                   </div>
@@ -693,6 +650,27 @@ body {
             </div>
          </div>
       </div>
+    
+      {% if debug %}
+    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+        <div class="modal-dialog" role="document" style="width:90%;">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                </div>
+                <div class="modal-body">
+                    <pre>{{debug.serverResponse}}
+                    </pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 
     </body>
     </html>

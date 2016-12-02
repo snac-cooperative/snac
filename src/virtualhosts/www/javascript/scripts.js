@@ -48,3 +48,15 @@ function openGeoPlaceViewer(id) {
 }
 
 
+// Load tooltips
+$(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+})
+
+// Load popovers
+$(function () {
+    $('[data-toggle="popover"]').popover({
+        trigger: 'hover',
+    container: 'body'
+    })
+})
