@@ -246,6 +246,10 @@ td.rotate > div > span {
     margin-bottom: 15px;
 }
 
+.form-group .well p, .form-group p.form-control-static {
+    word-wrap: break-word;
+}
+
 /* Use the following to make other colors of list items */
 .list-group-item-download {
     color: #7a3583;
