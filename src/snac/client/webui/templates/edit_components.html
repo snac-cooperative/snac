@@ -562,12 +562,12 @@
                         <label for="resource_repo_{{ i }}" class="control-label col-xs-4" data-content="{{X.resourceRepository.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.resourceRepository.display }}
                         </label>
-                        <div class="col-xs-6" id="text_resource_repo_{{i}}">
+                        <div class="col-xs-8" id="text_resource_repo_{{i}}">
                             <input id="resource_repo_{{i}}" name="resource_repo_{{i}}" type="hidden" class="form-control" value="{{ resource.repoIcId }}"/>
                             <p class="form-control-static" id="resource_repoText_{{i}}">{{ resource.repoIcId }}</p>
                         </div>
-                        <div class="col-xs-2">
-                            <a href="?command=search" target="_blank" class="btn btn-primary">Search</a>
+                        <div class="col-xs-8">
+                            <a href="?command=search" target="_blank">Open a SNAC Search Window</a>
                         </div>
                     </div>
                 </div>

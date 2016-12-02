@@ -281,7 +281,7 @@
         "tooltip" : "The resource information"
     },
     "resourceRepository" : {
-        "display" : "Repository ID",
+        "display" : "Repository (SNAC ID)",
         "tooltip" : "The numeric Identity Constellation ID (in SNAC) for the holding repository"
     },
     "resourceText" : {
