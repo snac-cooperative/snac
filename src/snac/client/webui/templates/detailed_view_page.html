@@ -433,6 +433,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 </div>
                                 <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
                             </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-3" data-content="{{X.constellationid.tooltip}}" data-toggle="popover" data-placement="top">
+                                    {{ X.constellationid.display }}
+                                </label>
+                                <div class="col-xs-9">
+                                    <p class="form-control-static">{{ data.id }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

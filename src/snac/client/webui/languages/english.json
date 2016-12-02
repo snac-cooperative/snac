@@ -40,6 +40,10 @@
         "display" : "Permalink",
         "tooltip" : "The permanent identifier for this Constellation"
     },
+    "constellationid" : {
+        "display" : "SNAC ID",
+        "tooltip" : "The permanent numeric SNAC identifier for this Constellation"
+    },
 
     "_comment" : "%%% Global pieces",
 

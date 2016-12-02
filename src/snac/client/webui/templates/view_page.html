@@ -130,7 +130,7 @@ body {
             <div>
                <div class="biog">
                   <div class="facts">
-                     <div class="life" data-xsl="life">
+                     <div class="life">
                             <dt>Dates:</dt>
                             <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
                             <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
@@ -551,7 +551,20 @@ body {
                   </div>
                   {% endif %}
 
-                  <h3>Subjects:</h3>
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <h3 class="panel-title">Constellation Information</h3>
+                      </div>
+                      <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <dt><strong>Permalink:</strong></dt>
+                          <dd>{{data.ark}}</dd>
+                          <dt><strong>SNAC ID:</strong></dt>
+                          <dd>{{data.id}}</dd>
+                      </div>
+
+                  </div>
+
+                  <h4>Subjects:</h4>
                   {% if data.subjects|length > 0 %}
                     <ul>
                     <!-- {% for subject in data.subjects %} -->
@@ -562,7 +575,7 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
-                  <h3>Occupations:</h3>
+                  <h4>Occupations:</h4>
                   {% if data.occupations|length > 0 %}
                     <ul>
                     <!-- {% for occupation in data.occupations %} -->
