@@ -1645,7 +1645,9 @@ $(document).ready(function() {
                         } else if (rid == 'new') {
                             // Close this modal and open the new modal
                             $("#resourceSearchPane").modal("hide");
-                            $("#resourceCreatePane").modal("show");
+                            // Set a 500ms timeout to give the hidden search pane time to fully close
+
+                            setTimeout(function() {$("#resourceCreatePane").modal("show");}, 500);
 
                             // Grab the empty template and replace
                             var text = $('#resource_template').clone();
