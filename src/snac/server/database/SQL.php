@@ -1194,13 +1194,15 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
         $queryString = sprintf(
             'select aa.version, aa.id as ic_id
-            from version_history as aa,
-            (select max(bb.version) as version,bb.id from version_history as bb group by bb.id) as cc
-            where
-            aa.id=cc.id and
-            aa.version=cc.version and
-            aa.status = $1
-            order by aa.version desc %s %s', $limitStr, $offsetStr);
+                from version_history as aa,
+                    (select max(version) as version, id from version_history
+                    where id in (select distinct id from version_history where status=$1)
+                    group by id) as cc
+                where
+                    aa.id=cc.id and
+                    aa.version=cc.version and
+                    aa.status = $1
+                order by aa.version desc %s %s', $limitStr, $offsetStr);
 
         $result = $this->sdb->query($queryString,
                                     array($status));
