@@ -555,7 +555,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                 <form class="form-horizontal" id="resource_search_form" onsubmit="return false;">
                     <div class="modal-body">
 	                    <input type="hidden" id="resource-search-count" name="count" value="10">
-                        <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource" and click "Continue."</p>
+                        <p>Type or paste the unique URL for the resource in the box below.  If we have a cached copy of the resource, select the version you want to reference by using the radio button to the left, then click "Continue."  If the resource you are looking for is not found, choose "Create New Resource."</p>
                         <div class="input-group">
 	                        <input type="text" class="form-control"
 	                            placeholder="Resource URL or Title..." id="resource-searchbox" name="term">
@@ -566,6 +566,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 	                    <div id="resource-results-box">
 	                    </div>
+                        <div style="text-align: center; margin-top: 10px;">
+                            <p>OR</p>
+                            <button type="button" class="btn btn-success" id="btn_open_create_resource" data-dismiss="modal">Create New Resource</button>
+                        </div>
                     </div>
                 </form>
             </div>

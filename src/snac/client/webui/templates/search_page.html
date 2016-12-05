@@ -65,7 +65,11 @@ $('.selectpicker').selectpicker();
     <div class="row">
         <div class="col-md-12 search-results">
             {% if data.term %}
-                <p class="search-info">Found {{data.total}} results in {{data.timing}} ms</p>
+                <p class="search-info">Found {{data.total}} results in {{data.timing}} ms.
+                {% if data.total >= (data.count * data.pagination) %}
+                Showing up to {{data.count * data.pagination}} of the total results.
+                {% endif %}
+                </p>
                 {% for result in data.results %}
                     <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">

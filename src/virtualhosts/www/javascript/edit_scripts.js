@@ -1642,34 +1642,39 @@ $(document).ready(function() {
                             resourceRelationid = resourceRelationid + 1;
                             $("#resource-results-box").html("");
                             return true;
-                        } else if (rid == 'new') {
-                            // Close this modal and open the new modal
-                            $("#resourceSearchPane").modal("hide");
-                            // Set a 500ms timeout to give the hidden search pane time to fully close
-
-                            setTimeout(function() {$("#resourceCreatePane").modal("show");}, 500);
-
-                            // Grab the empty template and replace
-                            var text = $('#resource_template').clone();
-                            var html = text.html().replace(/ZZ/g, 0);
-                            $('#resource-create-box').html(html);
-                            if ($("#resource-searchbox").val().indexOf("http:") == -1)
-                                $("#resource_title_0").val($("#resource-searchbox").val());
-                            else
-                                $("#resource_link_0").val($("#resource-searchbox").val());
-
-                            // Make the new resource editable
-                            turnOnButtons("resource", 0);
-                            turnOnTooltips("resource", 0);
-                            makeEditable("resource", 0);
-
-                            // Remove the search results from the other modal
-                            $("#resource-results-box").html("");
-                            return false;
-                        }
+                        } 
                         return false;
                     });
                 }
+
+                if ($('#btn_open_create_resource').exists()){
+                    $('#btn_open_create_resource').click(function(){
+                        // Close this modal and open the new modal
+                        $("#resourceSearchPane").modal("hide");
+                        
+                        // Set a 500ms timeout to give the hidden search pane time to fully close
+                        setTimeout(function() {$("#resourceCreatePane").modal("show");}, 500);
+
+                        // Grab the empty template and replace
+                        var text = $('#resource_template').clone();
+                        var html = text.html().replace(/ZZ/g, 0);
+                        $('#resource-create-box').html(html);
+                        if ($("#resource-searchbox").val().indexOf("http:") == -1)
+                            $("#resource_title_0").val($("#resource-searchbox").val());
+                        else
+                            $("#resource_link_0").val($("#resource-searchbox").val());
+
+                        // Make the new resource editable
+                        turnOnButtons("resource", 0);
+                        turnOnTooltips("resource", 0);
+                        makeEditable("resource", 0);
+
+                        // Remove the search results from the other modal
+                        $("#resource-results-box").html("");
+                        return false;
+                    });
+                }
+
                 if ($('#btn_create_resource').exists()){
                     $('#btn_create_resource').click(function(){
                         $.post("?command=save_resource", $("#resource_create_form").serialize(), function (data) {

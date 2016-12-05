@@ -75,7 +75,7 @@ function setRelationSearchPosition(start) {
 
  function searchResource() {
      resourceResults = null;
-     $("#resource-results-box").html("");
+     $("#resource-results-box").html("<p style='text-align: center'>Loading...</p>");
      $.post("?command=resource_search", $("#resource_search_form").serialize(), function (data) {
 
          var html = "";
@@ -84,6 +84,8 @@ function setRelationSearchPosition(start) {
 
              // save them globally for the continue script
              resourceResults = data.results;
+
+             html += "<p class='search-info'>Showing " + data.results.length + " of " + data.total + " results.</p>"; 
 
              // Put the results onto the page
              for (var key in data.results) {
@@ -114,11 +116,14 @@ function setRelationSearchPosition(start) {
          } else {
              html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
          }
+         
+         /*
          html += "<div class='list-group-item list-group-item-warning'><div class='row'>";
          html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='new'></div>";
          html += "<div class='col-xs-10'>Create New Resource";
          html += "</div></div>";
          html += "</div>";
+         */
 
          // Have pagination (total number of pages) and page (current page number) in data
          // ... use them to help stepping through the search for multiple pages.
