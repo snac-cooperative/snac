@@ -207,6 +207,9 @@ body {
                                     <li>
                                        <a href="#referencedIn" data-toggle="tab">referenced in</a>
                                     </li>
+                                    <li>
+                                       <a href="#other" data-toggle="tab">other</a>
+                                    </li>
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="creatorOf">
@@ -222,7 +225,7 @@ body {
                                         {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
                                                 <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
-                                                <div></div>
+                                                <div>{{relation.role.term}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -240,7 +243,25 @@ body {
                                         {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
                                                 <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
-                                                <div></div>
+                                                <div>{{relation.role.term}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="tab-pane list" id="other">
+                                       <!--
+                                          <div class="related">
+                                          <a href="http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=hou01429">Autograph File, F, 1447-1994.</a>
+                                          <div>
+                                             <repository xmlns="urn:isbn:1-931666-22-9">Houghton Library, Harvard College Library, Harvard University</repository>
+                                          </div>
+                                       </div>
+                                       -->
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related">
+                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
+                                                <div>{{relation.role.term}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -276,9 +297,10 @@ body {
                               -->
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
-                                            <div class="related">
+                                            <div class="related" style="margin-top: 5px;">
                                                 <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.resource.title}}</a>
-                                                <span class="arcrole">{{relation.role.term}}</span>
+                                                <!--<span class="arcrole">{{relation.role.term}}</span>-->
+                                                <div>{{relation.role.term}}</div>
                                                 <div></div>
                                             </div>
                                         {% endif %}
