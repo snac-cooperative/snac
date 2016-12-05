@@ -399,18 +399,22 @@ class WebUIExecutor {
             $serverResponse["needs_review"] = $needsReview["results"];
 
 
-        $recentConstellations = $this->connect->query(array(
+        $recentQuery = $this->connect->query(array(
                 "command"=>"recently_published"
-        ))["constellation"];
+            ));
 
-        $recents = array();
-        foreach ($recentConstellations as $constellationArray) {
-            $constellation = new \snac\data\Constellation($constellationArray);
-            array_push($recents, array(
-                    "id"=>$constellation->getID(),
-                    "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+        if (isset($recentQuery["constellation"]) && $recentQuery["constellation"] != null) {
+            $recentConstellations = $recentQuery["constellation"];
+
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(),
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            $serverResponse["recents"] = $recents;
         }
-        $serverResponse["recents"] = $recents;
 
         $display->setData($serverResponse);
     }

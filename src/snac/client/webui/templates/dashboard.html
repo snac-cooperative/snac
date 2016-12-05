@@ -32,6 +32,16 @@ $('.selectpicker').selectpicker();
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/dashboard.js{{control.noCache}}"></script>
 <script src="javascript/dashboard_search.js{{control.noCache}}"></script>
+<script>
+// Inline script to help out the pop-up menu for constellations
+
+var permissions = {
+    {% for permission, value in permissions %}
+        {{permission}}: {{value}},
+    {% endfor %}    
+    FakeHolder: false
+};
+</script>
 
 </head>
 <body role="document">
