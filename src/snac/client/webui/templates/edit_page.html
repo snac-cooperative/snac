@@ -2,9 +2,9 @@
 <html>
 <head>
 {% if data.id %}
-    <title>SNAC Editing: {{data.nameEntries.0.original}}</title>
+    <title>{{data.nameEntries.0.original}} - Editing - Social Networks and Archival Context</title>
 {% else %}
-    <title>SNAC Editing: New Constellation</title>
+    <title>New Constellation - Editing - Social Networks and Archival Context</title>
 {% endif %}
 
 <!-- JQuery -->
@@ -351,7 +351,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                     </div>
 
-                    {% if debug %}
+                    {% if false %}
                     <div class="panel panel-danger">
                         <div class="panel-heading">
                             <h3 class="panel-title">Debugging</h3>

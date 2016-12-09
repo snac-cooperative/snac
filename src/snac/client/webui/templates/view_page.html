@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Prototype : Viewing {{data.nameEntries.0.original}}</title>
+<title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -562,13 +562,13 @@ body {
                                 {% endif %}
                           </div>
                           {% endif %}
-                          {% if debug %}
+                          {% if false %}
                           <h5>Debug Actions</h3>
                           <div class="list-group" style="margin-bottom: 0px;">
                               <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
-                          {% endif %}
 
                           </div>
+                          {% endif %}
                       </div>
                   </div>
                   {% endif %}
@@ -686,7 +686,7 @@ body {
          </div>
       </div>
     
-      {% if debug %}
+      {% if false %}
     <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
         <div class="modal-dialog" role="document" style="width:90%;">
             <div class="modal-content">
