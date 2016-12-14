@@ -479,48 +479,6 @@ body {
                            </div>
                         </div>
                      </div>
-
-                     <h3>Related names in Original
-                        <abbr class="initialism">SNAC</abbr>
-                     </h3>
-
-                        {% set numRels = 0 %}
-                        {% for relation in data.relations %}
-                        {% if not relation.targetConstellation %}
-                            {% set numRels = numRels + 1 %}
-                        {% endif %}
-                        {% endfor %}
-
-                     <div class="panel panel-default" data-xsl="relatedOldSNAC">
-                        <div class="panel-heading">
-                           <h4>
-                              <a data-toggle="collapse" data-parent="#relations" href="#relatedOldSNAC">
-                                 <span class="icon-ind"></span> Relations
-                                 <span class="badge pull-right">{{numRels}}</span>
-                              </a>
-                           </h4>
-                        </div>
-                        <div id="relatedOldSNAC" class="panel-collapse collapse">
-                           <div class="panel-body">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
-                              {% for relation in data.relations %}
-                              {% if not relation.targetConstellation %}
-                              <div class="person">
-                                 <a href="{{relation.targetArkID}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
-                        </div>
-                     </div>
                   </div>
                </div>
                <div class="others">
