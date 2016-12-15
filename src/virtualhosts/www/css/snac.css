@@ -180,6 +180,14 @@ h1 {
     float:left;
 }
 
+.relation-icon {
+    font-size: 32px;
+}
+
+.relation-icon-caption {
+    font-size: 10px;
+}
+
 .rotated-header {
     /* Safari */
     -webkit-transform: rotate(-90deg);

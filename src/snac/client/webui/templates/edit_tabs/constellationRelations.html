@@ -12,7 +12,7 @@
 
 {% set i = 0 %}
 {% for relation in data.relations %}
-    {{ components.displayConstellationRelation(X, true, true, relation, i) }}
+    {{ components.displayConstellationRelation(X, true, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
     {% set i = i + 1 %}
 {% endfor %}
 <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>

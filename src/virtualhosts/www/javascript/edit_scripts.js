@@ -503,6 +503,25 @@ function subMakeEditable(short, i) {
           }
     });
 
+    // Make the relation pictures update appropriately
+    if (short == 'constellationRelation') {
+        // make the role dropdown affect the picture
+        $('#'+short+'_type_id_'+i).change(function() {
+            updatePictureArrow(short, i, 
+                $('#'+short+'_type_id_'+i+' option:selected').text());
+        });
+        
+    }
+    if (short == 'resourceRelation') {
+        // make the role dropdown affect the picture
+        $('#'+short+'_role_id_'+i).change(function() {
+            updatePictureArrow(short, i, 
+                $('#'+short+'_role_id_'+i+' option:selected').text());
+        });
+    }
+
+    
+
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
     	$("#" + short + "_operation_" + i).val("update");
@@ -1343,6 +1362,26 @@ function turnOnTooltipsForTab(part='') {
     })
 
 }
+
+function updatePictureArrow(shortName, i, newValue) {
+    $('#'+shortName+'_relationPictureArrow_'+i).text(newValue);
+}
+
+function updatePictureTitle(shortName, i, newValue) {
+    $('#'+shortName+'_relationPictureTitle_'+i).text(newValue);
+}
+
+function updatePictureIcon(shortName, i, entityType) {
+    var html = "";
+    if (entityType == 'person')
+        html = '<i class="fa fa-user" aria-hidden="true"></i><br/>';
+    else if (entityType == 'corporateBody')
+        html = '<i class="fa fa-building" aria-hidden="true"></i><br/>';
+    else if (entityType == 'family')
+        html = '<i class="fa fa-users" aria-hidden="true"></i><br/>';
+    $('#'+shortName+'_relationPictureIcon_'+i).html(html);
+}
+
 /**
  * Things to do when the page finishes loading
  */
@@ -1627,8 +1666,10 @@ $(document).ready(function() {
 
                             if (typeof resourceResults[rid].link !== 'undefined')
                                 $('#resourceRelation_linkText_'+resourceRelationid).html(resourceResults[rid].link + " <a class='label label-info' target='_blank' href='"+resourceResults[rid].link+"'>View</a>");
-                            if (typeof resourceResults[rid].title !== 'undefined')
+                            if (typeof resourceResults[rid].title !== 'undefined') {
                                 $('#resourceRelation_titleText_'+resourceRelationid).text(resourceResults[rid].title);
+                                updatePictureTitle('resourceRelation', resourceRelationid, resourceResults[rid].title);
+                            }
                             if (typeof resourceResults[rid].abstract !== 'undefined')
                                 $('#resourceRelation_abstractText_'+resourceRelationid).text(resourceResults[rid].abstract);
                             if (typeof resourceResults[rid].extent !== 'undefined')
@@ -1690,14 +1731,18 @@ $(document).ready(function() {
 
                             if (typeof data.resource.link !== 'undefined')
                                 $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
-                            if (typeof data.resource.title !== 'undefined')
+                            if (typeof data.resource.title !== 'undefined') {
                                 $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
+                                updatePictureTitle('resourceRelation', resourceRelationid, data.resource.title);
+                            }
                             if (typeof data.resource.abstract !== 'undefined')
                                 $('#resourceRelation_abstractText_'+resourceRelationid).text(data.resource.abstract);
                             if (typeof data.resource.extent !== 'undefined')
                                 $('#resourceRelation_extentText_'+resourceRelationid).text(data.resource.extent);
                             if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
+
+                            
 
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
@@ -1747,6 +1792,9 @@ $(document).ready(function() {
                             $('#constellationRelation_content_'+constellationRelationid).val($('#relationChoice_nameEntry_'+cid).val());
                             $('#constellationRelation_targetArkID_'+constellationRelationid).val($('#relationChoice_arkID_'+cid).val());
                             $('#constellationRelation_targetEntityType_'+constellationRelationid).val($('#relationChoice_entityType_'+cid).val());
+
+                            updatePictureIcon('constellationRelation', constellationRelationid, $('#relationChoice_entityTypeText_'+cid).val());
+                            updatePictureTitle('constellationRelation', constellationRelationid, $('#relationChoice_nameEntry_'+cid).val());
 
                             $('#constellationRelation_contentText_'+constellationRelationid).text($('#relationChoice_nameEntry_'+cid).val());
                             $('#constellationRelation_targetArkIDText_'+constellationRelationid).text($('#relationChoice_arkID_'+cid).val());

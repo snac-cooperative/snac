@@ -27,6 +27,7 @@ function setRelationSearchPosition(start) {
                          arkID = data.results[key].ark;
                      html += "<input type='hidden' id='relationChoice_arkID_"+data.results[key].id+"' value='"+arkID+"'/>";
                      html += "<input type='hidden' id='relationChoice_entityType_"+data.results[key].id+"' value='"+data.results[key].entityType.id+"'/>";
+                     html += "<input type='hidden' id='relationChoice_entityTypeText_"+data.results[key].id+"' value='"+data.results[key].entityType.term+"'/>";
                      html += "</div></div>";
                  }
              } else {
