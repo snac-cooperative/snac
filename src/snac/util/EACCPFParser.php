@@ -61,6 +61,11 @@ class EACCPFParser {
     private $vocabulary;
 
     /**
+     * @var \Monolog\Logger $logger Logger for this server
+     */
+    private $logger = null;
+
+    /**
      * Constructor. This reads all the vocab from the database, and therefore takes a second or two. You
      * probably do not want multiple instances of this parser. Just create one instance and used it as a
      * static class.
@@ -72,6 +77,12 @@ class EACCPFParser {
      *
      */
     public function __construct() {
+        global $log;
+
+        // create a log channel
+        $this->logger = new \Monolog\Logger('EACCPFParser');
+        $this->logger->pushHandler($log);
+
         $this->vocabulary = null;
     }
 
@@ -147,13 +158,37 @@ class EACCPFParser {
         if ($this->vocabulary == null)
             $this->instantiateVocabulary();
 
+        // Clean Up the Term String first
+        $fixed = trim($termString);
+        $fixed = str_replace(array("\r\n", "\r", "\n"), "", $fixed);
+        $fixed = preg_replace('/\s+/', " ", $fixed);
+
+        // Fix the entity type's capitalization!
+        if ($vocab === 'entity_type') {
+            $lookup = strtolower($fixed);
+            switch($lookup) {
+                case 'family':
+                    $fixed = 'family';
+                    break;
+                case 'corporatebody':
+                    $fixed = 'corporateBody';
+                    break;
+                case 'person':
+                    $fixed = 'person';
+                    break;
+            }
+        }
+
+
         $term = null;
         if ($this->vocabulary != null) {
-            $term = $this->vocabulary->getTermByValue($termString, $vocab);
+            $term = $this->vocabulary->getTermByValue($fixed, $vocab);
         } else {
             $term = new \snac\data\Term();
-            $term->setTerm($termString);
+            $term->setTerm($fixed);
         }
+        if ($term === null)
+            $this->logger->warn("Could not find term for $vocab: $fixed");
         return $term;
     }
 
@@ -780,8 +815,13 @@ class EACCPFParser {
                                     $identity->addSubject($subject);
                                     break;
                                 case "http://viaf.org/viaf/terms#nationalityOfEntity":
-                                    //TODO Sometimes nationality has non-standard placeEntry with only country code
+                                    // Get the nationality "text" from the body of the tag
                                     $term = $this->getTerm((string) $subTag, "nationality");
+                                    // If there is a countryCode attribute, prefer that OVER the body of the tag! (Per Daniel's request 12/15/2016)
+                                    $nationalityAtts = $this->getAttributes($subTag);
+                                    if (isset($nationalityAtts["countryCode"])) {
+                                        $term = $this->getTerm((string) $nationalityAtts["countryCode"], "nationality");
+                                    }
                                     $nationality = new \snac\data\Nationality();
                                     $nationality->setTerm($term);
                                     $nationality->setOperation($this->operation);
@@ -1218,6 +1258,7 @@ class EACCPFParser {
                                 }
                                 break;
                             case "resourceRelation":
+                                break; //TODO: Right now, let's ignore resource relations
                                 $relation = new \snac\data\ResourceRelation();
                                 $relation->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
                                 $relation->setLink($ratts['href']);
