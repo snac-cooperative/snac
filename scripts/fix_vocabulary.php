@@ -53,7 +53,7 @@ if (is_dir($argv[1])) {
     while (($row = $db->fetchRow($res)) != null) {
         $icIDs[$row["ic_id"]] = true;
     }
-    $res = $db->query("select distinct ic_id from nationality where term_id is null order by ic_id asc;", array());
+    $res = $db->query("select distinct ic_id from nationality order by ic_id asc;", array());
     while (($row = $db->fetchRow($res)) != null) {
         $icIDs[$row["ic_id"]] = true;
     }
@@ -195,16 +195,12 @@ if (is_dir($argv[1])) {
         }
 
         // Nationalities
-        $nationalitys = array();
         $nationalityUse = array();
         $nationalityUpdate = array();
 
+        // All nationalities will be updated!
         foreach ($read->getNationalities() as $nationality) {
-            if ($nationality->getTerm() === null) {
-                array_push($nationalityUse, array("id"=>$nationality->getID(), "version"=>$nationality->getVersion()));
-            } else {
-                array_push($nationalitys, array("id"=>$nationality->getTerm()->getID(), "value"=>$nationality->getTerm()->getTerm()));
-            }
+            array_push($nationalityUse, array("id"=>$nationality->getID(), "version"=>$nationality->getVersion()));
         }
 
         foreach ($constellation->getNationalities() as $nationality) {
@@ -213,19 +209,10 @@ if (is_dir($argv[1])) {
                 continue;
             }
             $found = false;
-            foreach ($nationalitys as $search) {
-                if ($nationality->getTerm()->getTerm() === $search["value"]) {
-                    if ($nationality->getTerm()->getID() !== $search["id"])
-                        echo "WARN:  values match but ids don't, ignoring: {$search["value"]}\n";
-                
-                    $found = true;
-                    break;
-                }
-            }
             if (!$found) {
                 $toupdate = array_pop($nationalityUse);
                 if ($toupdate === null || $toupdate === false) {
-                    die("ERROR: no additional nationalitys to pull from!\n");
+                    die("ERROR: no additional nationalities to pull from!\n");
                 }
                 array_push($nationalityUpdate, array_merge($toupdate, array("term_id" => $nationality->getTerm()->getID())));
             }
