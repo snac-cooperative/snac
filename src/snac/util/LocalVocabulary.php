@@ -107,4 +107,30 @@ class LocalVocabulary implements \snac\util\Vocabulary {
     public function getGeoTermByURI($uri) {
         return $this->db->getPlaceByURI($uri);
     }
+
+    /**
+     * Get a Resource by Resource object
+     *
+     * @param \snac\data\Resource $resource The resource to search
+     * @return \snac\data\Resource|null The resource object found in the database
+     */
+    public function getResource($resource) {
+        // First try to search resources for the link.  If it exists, then use that
+        // resource.  (Only the first one will be chosen).
+        if ($resource->getLink() !== null && $resource->getLink() !== "") {
+            $searchResults = $this->db->searchResources($resource->getLink());
+            if (!empty($searchResults) && isset($searchResults[0]))
+                return $searchResults[0];
+        }
+        // If there was no link or searching the link didn't work, then try searching
+        // the title.  This still returns only the first entry, if it exists
+        $searchResults = $this->db->searchResources($resource->getTitle());
+        if (!empty($searchResults) && isset($searchResults[0]))
+            return $searchResults[0];
+
+        // TODO: Future versions should create a resource if one does not exist! For now,
+        // we'll return the created one without an ID/Version
+        return $resource;
+    }
+
 }

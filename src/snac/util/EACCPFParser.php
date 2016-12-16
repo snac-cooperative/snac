@@ -1258,19 +1258,22 @@ class EACCPFParser {
                                 }
                                 break;
                             case "resourceRelation":
-                                break; //TODO: Right now, let's ignore resource relations
                                 $relation = new \snac\data\ResourceRelation();
-                                $relation->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
-                                $relation->setLink($ratts['href']);
-                                $relation->setLinkType($this->getTerm($this->getValue($ratts['type']), "document_type"));
+                                $resource = new \snac\data\Resource();
+                                $resource->setDocumentType($this->getTerm($this->getValue($ratts["role"]), "document_type"));
+                                $resource->setLink($ratts['href']);
+                                $resource->setLinkType($this->getTerm($this->getValue($ratts['type']), "document_type"));
                                 $relation->setRole($this->getTerm($this->getValue($ratts['arcrole']), "document_role"));
                                 foreach ($this->getChildren($rel) as $relItem) {
                                     switch ($relItem->getName()) {
                                     case "relationEntry":
                                         $relation->setContent((string) $relItem);
+                                        // Set the title of the resource to the <relationEntry> text.  This may be overwritten
+                                        // when the resource is searched by looking up its URL.
+                                        $resource->setTitle((string) $relItem);
                                         $relAtts = $this->getAttributes($relItem);
                                         if (isset($relAtts["localType"])) {
-                                            $relation->setRelationEntryType($this->getTerm($this->getValue($relAtts["localType"]), "relation_type"));
+                                            $resource->setEntryType($this->getTerm($this->getValue($relAtts["localType"]), "relation_type"));
                                             unset($relAtts["localType"]);
                                         }
                                         $this->markUnknownAtt(
@@ -1282,7 +1285,8 @@ class EACCPFParser {
                                             ), $relAtts);
                                         break;
                                     case "objectXMLWrap":
-                                        $relation->setSource($relItem->asXML());
+                                        // TODO: Another future improvement would be to parse the ObjectXMLWrap if it is a <did>
+                                        $resource->setSource($relItem->asXML());
                                         $this->markUnknownAtt(
                                             array (
                                                 $node->getName(),
@@ -1313,6 +1317,9 @@ class EACCPFParser {
                                             ));
                                     }
                                 }
+                                // Look up the resource, then add it to the relation
+                                $resource = $this->vocabulary->getResource($resource);
+                                $relation->addResource($resource);
                                 $relation->setOperation($this->operation);
                                 $identity->addResourceRelation($relation);
                                 break;
