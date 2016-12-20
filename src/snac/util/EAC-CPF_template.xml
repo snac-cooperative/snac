@@ -190,7 +190,14 @@
                 with no value, as Jing validation will fail. I guess empty value would be empty p tags.
 
                 #}
-                {% if data.dates.0.note %}
+
+                {% set notes = 0 %}
+                {% for date in data.dates %}
+                    {% if date.note %}
+                        {% set notes = notes + 1 %}
+                    {% endif %}
+                {% endfor %}
+                {% if notes > 0 %}
                 <descriptiveNote>
                     {% for date in data.dates %}
                     {{ date.note|raw }}
