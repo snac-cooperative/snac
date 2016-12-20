@@ -132,7 +132,7 @@ class EACCPFParser {
         try {
             return $this->parse(file_get_contents($filename));
         } catch (\Exception $e) {
-            throw new \snac\exceptions\SNACParserException($e->getMessage());
+            throw new \snac\exceptions\SNACParserException($e);
         }
     }
 
@@ -1319,7 +1319,7 @@ class EACCPFParser {
                                 }
                                 // Look up the resource, then add it to the relation
                                 $resource = $this->vocabulary->getResource($resource);
-                                $relation->addResource($resource);
+                                $relation->setResource($resource);
                                 $relation->setOperation($this->operation);
                                 $identity->addResourceRelation($relation);
                                 break;

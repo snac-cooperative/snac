@@ -32,6 +32,11 @@ class LocalVocabulary implements \snac\util\Vocabulary {
     private $db = null;
 
     /**
+     * @var \snac\server\ServerExecutor Server executor that can make calls to database utils
+     */
+    private $serverExecutor = null;
+
+    /**
      * Constructor
      *
      * Loads all the vocabulary from the database, then organizes it by type
@@ -51,6 +56,8 @@ class LocalVocabulary implements \snac\util\Vocabulary {
                     "uri"=>$v["uri"],
                     "description"=>$v["description"]));
         }
+
+        $this->serverExecutor = new \snac\server\ServerExecutor();
     }
 
 
@@ -118,18 +125,25 @@ class LocalVocabulary implements \snac\util\Vocabulary {
         // First try to search resources for the link.  If it exists, then use that
         // resource.  (Only the first one will be chosen).
         if ($resource->getLink() !== null && $resource->getLink() !== "") {
-            $searchResults = $this->db->searchResources($resource->getLink());
-            if (!empty($searchResults) && isset($searchResults[0]))
-                return $searchResults[0];
+            $query = array("term" => $resource->getLink());
+            $searchResults = $this->serverExecutor->searchResources($query);
+            if (isset($searchResults["results"]) && !empty($searchResults["results"]) && isset($searchResults["results"][0]))
+                return new \snac\data\Resource($searchResults["results"][0]);
         }
         // If there was no link or searching the link didn't work, then try searching
         // the title.  This still returns only the first entry, if it exists
-        $searchResults = $this->db->searchResources($resource->getTitle());
-        if (!empty($searchResults) && isset($searchResults[0]))
-            return $searchResults[0];
+        $query = array("term" => $resource->getTitle());
+        $searchResults = $this->serverExecutor->searchResources($query);
+        if (isset($searchResults["results"]) && !empty($searchResults["results"]) && isset($searchResults["results"][0]))
+            return new \snac\data\Resource($searchResults["results"][0]);
 
-        // TODO: Future versions should create a resource if one does not exist! For now,
-        // we'll return the created one without an ID/Version
+        // Create a resource if one does not exist!
+        $query = array("resource" => $resource->toArray());
+        $result = $this->serverExecutor->writeResource($query);
+        if (isset($result["resource"]))
+            return new \snac\data\Resource($result["resource"]);
+
+        // If something went wrong in creating a resource, then just return the one we had without an ID/version
         return $resource;
     }
 
