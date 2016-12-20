@@ -111,11 +111,26 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
         $cpfXML = $eSerializer->serialize($fromDB);
         $secondCon = $eParser->parse($cpfXML);
 
+        $fromDates = $fromDB->getDateList();
+        $secondDates = $secondCon->getDateList();
+
+        $fromNote = "";
+        foreach ($fromDates as $k => $date) {
+            $fromNote .= $date->getNote();
+            $fromDates[$k]->setNote(null);
+        }
+        $secondNote = "";
+        foreach ($secondDates as $k => $date) {
+            $secondNote .= $date->getNote();
+            $secondDates[$k]->setNote(null);
+        }
+        $this->assertEquals($fromNote, $secondNote, "The combined notes from before and after serialization were not equal");
+
+        $fromDB->setDateList($fromDates);
+        $secondCon->setDateList($secondDates);
+
         $this->assertTrue($fromDB->equals($secondCon, false), "Constellation read from DB is not the same as the one re-serialized");
         $this->assertTrue($secondCon->equals($fromDB, false), "Constellation re-serialized is not the same as the one read from the DB");
-
-        $this->assertTrue($cObj->equals($secondCon, false), "Constellation parsed is not the same as the one serialized from the database");
-        $this->assertTrue($secondCon->equals($cObj, false), "Constellation serialized from db is not the same as the one originally parsed");
 
         // Be nice and "delete" the evidence
         $this->dbu->writeConstellationStatus($this->user, $retObj->getID(), "deleted");
