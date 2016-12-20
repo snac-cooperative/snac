@@ -344,6 +344,29 @@ if ($response == "yes" && \snac\Config::$USE_ELASTIC_SEARCH) {
         } catch (\Exception $e) {
             echo "   - could not delete search index. It did not exist.\n";
         }
+        try {
+            $params = array("index" => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX);
+            $response = $eSearch->indices()->delete($params);
+            echo "   - deleted resource search index\n";
+        } catch (\Exception $e) {
+            echo "   - could not delete resource search index. It did not exist.\n";
+        }
+        try {
+            $params = array("index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX, "body" => ["type" => [\snac\Config::$ELASTIC_SEARCH_BASE_TYPE, "type" => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE]]);
+            $response = $eSearch->indices()->create($params);
+            echo "   - created search index\n";
+        } catch (\Exception $e) {
+            echo $e;
+            echo "   - could not create search index.\n";
+        }
+        try {
+            $params = array("index" => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX, "body" => ["type" => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE]);
+            $response = $eSearch->indices()->create($params);
+            echo "   - created resource search index\n";
+        } catch (\Exception $e) {
+            echo $e;
+            echo "   - could not create resource search index.\n";
+        }
         echo "  Successfully emptied the Elastic Search Indices.\n\n";
     } else {
         echo "  ERR: Unable to connect or delete Elastic Search index.\n";

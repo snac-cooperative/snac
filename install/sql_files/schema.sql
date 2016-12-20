@@ -98,6 +98,9 @@ drop table if exists place;
 drop table if exists geoplace;
 drop table if exists address_line;
 drop table if exists unassigned_arks;
+drop table if exists resource_cache; 
+drop table if exists resource_language; 
+drop table if exists resource_origination_name;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -107,6 +110,8 @@ drop sequence if exists version_history_id_seq;
 -- drop type if exists icstatus;
 
 drop sequence if exists id_seq;
+drop sequence if exists "resource_id_seq";
+drop sequence if exists "resource_version_id_seq";
 
 --
 -- Sequences
@@ -127,6 +132,10 @@ CREATE SEQUENCE "id_seq";
 -- CREATE SEQUENCE "vocabulary_id_seq";
 
 CREATE SEQUENCE "version_history_id_seq";
+
+
+CREATE SEQUENCE "resource_id_seq";
+CREATE SEQUENCE "resource_version_id_seq";
 
 --
 -- Utility and meta-data tables
@@ -755,52 +764,67 @@ create table related_resource (
 
     -- information about the resource
     relation_entry      text, -- relationEntry — “shortcut” description of this resource
-    title               text, -- resource title, from EAD/MODS
-    abstract            text, -- resource abstract, from EAD/MODS
-    extent              text, -- resource extent, from EAD and from original MARC
-    href                text, -- @xlink:href, URL link to the resource
-    repo_ic_id          int,  -- holding repository ic_id, fk to other constellation ic_id
-                              -- has name, address, and location information of the holding institution
-    role                int,  -- @xlink:role, fk to vocabulary.id, type document_type, e.g. ArchivalResource
-                              -- to  be deprecated
-    type                int,  -- @xlink:type, fk to vocabulary.id type source_type, always "simple"?
-                              -- to be deprecated
-    relation_type       text, -- @resourceRelationType, only from AnF, maybe put in a second table
-    relation_entry_type text, -- relationEntry@localType, AnF, always "archival"?
-                              -- to be deprecated
-    object_xml_wrap     text, -- contains more information about the resource (title, extent, etc)
-                              -- to be deprecated
-
                               -- other useful information
+    resource_id         int,
+    resource_version    int,
+    
     descriptive_note    text,
     primary key(id, version)
 );
 
 create unique index related_resource_idx1 on related_resource(id,ic_id,version);
+create index related_resource_idx2 on related_resource(ic_id,version);
+create index related_resource_idx3 on related_resource(resource_id, resource_version);
 
--- 
--- This is origination name aka originationName aka creator.
--- No need for field role aka roleTerm since all these names are creators. The term "origination" seems to be from EAD.
---
--- http://id.loc.gov/vocabulary/relators/cre
---
--- This table can be updated via the web UI, so it needs the id,version,ic_id. Name is simply a string and we
--- will not require names to be SNAC identities at this time. Later we will link these names to constellations
--- via field name_ic_id.
--- 
-create table related_resource_origination_name (
-    id         int default nextval('id_seq'),
-    is_deleted boolean default false,
-    version    int not null,
-    ic_id      int not null,                          
-    name_ic_id int,                            -- ic_id of this creator, eventually filled in by humans
-                                               -- reserved for future use
-    name       text,                           -- name of creator of the related resource
-    fk_id      int,                            -- fk to related_resource.id
-    fk_table   text default 'related_resource' -- related table name
+-- Resources are cached directly, but also versioned
+create table resource_cache (
+        id         int default nextval('resource_id_seq'), 
+        version    int default nextval('resource_version_id_seq'),
+        is_deleted boolean default false,
+        href       text,
+        type       int,
+        entry_type int,
+        title      text,
+        abstract   text,
+        extent     text,
+        repo_ic_id int,
+        object_xml_wrap text,
+        primary key (id, version)
+        );
+
+create index resource_idx1 on resource_cache(href);
+create index resource_idx2 on resource_cache(id, version, is_deleted);
+create index resource_idx3 on resource_cache(repo_ic_id);
+
+-- Languages relating to resources are stored identically to but separately
+-- from languages for constellations.  They have their own versioning based on
+-- resource_version!
+create table resource_language (
+        id                int default nextval('resource_id_seq'),
+        version           int not null,
+        resource_id       int not null,
+        is_deleted        boolean default false,
+        language_id       int,  -- fk to vocabulary
+        script_id         int,  -- fk to vocabulary
+        vocabulary_source text,
+        note              text,
+        primary           key(id, version)
+        );
+
+create unique index resource_language_idx1 on resource_language(id,resource_id,version);
+create index resource_language_idx2 on resource_language(language_id, script_id);
+
+-- Origination names are now part of resources
+create table resource_origination_name (
+    id           int default nextval('resource_id_seq'),
+    is_deleted   boolean default false,
+    version      int not null,
+    resource_id  int not null,                          
+    name_ic_id   int,                            -- ic_id of this creator
+    name         text                            -- name of creator
 );
 
-create unique index rron_idx1 on related_resource_origination_name(id,ic_id,version);
+create unique index resource_origination_name_idx1 on resource_origination_name(id,resource_id,version);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
 --
@@ -984,7 +1008,6 @@ create index subject_idx2 on subject (ic_id, version);
 create index scm_idx1 on scm (id, version, ic_id);
 create index source_idx3 on source (ic_id, version);
 create index related_identity_idx2 on related_identity (ic_id, version);
-create index related_resource_idx2 on related_resource (ic_id, version);
 create index name_component_idx2 on name_component (name_id, version);
 create index name_contributor_idx3 on name_contributor (name_id, version);
 create index name_contributor_idx4 on name_contributor (ic_id, version);
