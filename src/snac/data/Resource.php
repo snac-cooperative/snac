@@ -567,11 +567,16 @@ class Resource extends AbstractData {
             return false;
         if ($this->getExtent() != $other->getExtent())
             return false;
+
+        // Equals cannot check the Origination Names and Languages, since some times
+        // for performance reasons we do not grab them.
+        /**
         if (!$this->checkArrayEqual($this->getOriginationNames(), $other->getOriginationNames(), $strict)) {
             return false;
         }
         if (!$this->checkArrayEqual($this->getLanguages(), $other->getLanguages(), $strict))
             return false;
+        **/
 
         if ($this->getSource() != $other->getSource())
             return false;
