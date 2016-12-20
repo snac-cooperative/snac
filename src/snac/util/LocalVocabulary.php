@@ -138,6 +138,7 @@ class LocalVocabulary implements \snac\util\Vocabulary {
             return new \snac\data\Resource($searchResults["results"][0]);
 
         // Create a resource if one does not exist!
+        $resource->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
         $query = array("resource" => $resource->toArray());
         $result = $this->serverExecutor->writeResource($query);
         if (isset($result["resource"]))

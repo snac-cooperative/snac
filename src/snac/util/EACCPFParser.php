@@ -653,15 +653,7 @@ class EACCPFParser {
                                          *
                                          * $identity->setExistDatesNote((string) $dates);
                                          *
-                                         * $dates is an array SimpleXMLElement[], which is being typecast to a
-                                         * string. Whatever it does, we try to do the same thing with the new
-                                         * code.
-                                         *
-                                         * The original setExistDatesNote() from Constellation.php did this:
-                                         *
-                                         * $this->existDatesNote = $note;
-                                         *
-                                         * The original code clearly assumes only one date. Lets go with
+                                         * Lets go with
                                          * adding a note to the first date in the $identity Constellation
                                          * object.
                                          */
@@ -678,10 +670,7 @@ class EACCPFParser {
                                         }
                                         else
                                         {
-                                            $message = sprintf("Warning: exists date note, but no exists date: %s\n", $this->arkID);
-                                            $stderr = fopen('php://stderr', 'w');
-                                            fwrite($stderr,"  $message\n");
-                                            fclose($stderr);
+                                            $this->logger->addDebug("Warning: exists date note, but no exists date: {$this->arkID}\n");
                                         }
                                         $this->markUnknownAtt(
                                             array (
