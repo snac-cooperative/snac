@@ -4958,15 +4958,22 @@ class SQL
      * Search Resources
      *
      * @param string $query The string to search through the vocabulary
-     *
+     * @param boolean $urlOnly optional Whether to only search the URL
      * @return string[][] Returns a list of lists.
      */
-    public function searchResources($query)
+    public function searchResources($query, $urlOnly = false)
     {
         $queryStr =
                   'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
                   from resource_cache
-                  where href ilike $1 or title ilike $1 order by title asc';
+                  where href = $1 or title ilike $1 order by title asc';
+        if ($urlOnly) {
+            $queryStr =
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  from resource_cache
+                  where href = $1 order by title asc';
+        }
+    
         $result = $this->sdb->query($queryStr, array("%$query%"));
 
         $all = array();

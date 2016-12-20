@@ -3769,12 +3769,12 @@ class DBUtil
      * Searches the resources and returns an array of Resource objects.
      *
      * @param string $query search string
-     *
+     * @param boolean $urlOnly optional Whether to only search on URL
      * @return \snac\data\Resource list of results
      */
-    public function searchResources($query) {
+    public function searchResources($query, $urlOnly = false) {
 
-        $results = $this->sql->searchResources($query);
+        $results = $this->sql->searchResources($query, $urlOnly);
 
         $return = array();
         foreach ($results as $result) {
