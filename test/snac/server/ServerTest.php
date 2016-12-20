@@ -27,7 +27,7 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     public function setUp() {
         $this->user = new \snac\data\User();
         
-        $this->user->setUserName("system@localhost");
+        $this->user->setUserName("testing@localhost");
         $this->user->generateTemporarySession(1);
     }
 

@@ -322,21 +322,6 @@
                 </descriptiveNote>
             </resourceRelation>
             <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
-                <relationEntry>Avtobiografii︠a︡ ; Zametki o shtate Virginii︠a︡</relationEntry>
-            </resourceRelation>
-            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
-                <relationEntry>An act for establishing religious freedom, passed in the Assembly of Virginia in the beginning of the year 1786</relationEntry>
-            </resourceRelation>
-            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
-                <relationEntry>17 February to 30 April 1801</relationEntry>
-            </resourceRelation>
-            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
-                <relationEntry>議会慣例要錄</relationEntry>
-            </resourceRelation>
-            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
-                <relationEntry>الديمقراطية الثورية : كيف بنيت امريكا : جمهورية الحرية</relationEntry>
-            </resourceRelation>
-            <resourceRelation xlink:arcrole="http://socialarchive.iath.virginia.edu/control/term#creatorOf" xlink:role="http://socialarchive.iath.virginia.edu/control/term#BibliographicResource" xlink:type="simple">
                 <relationEntry>Houdon in America; a collection of documents in the Jefferson papers in the Library of Congress</relationEntry>
             </resourceRelation>
         </relations>

@@ -30,9 +30,10 @@ class EACCPFParserTest extends \PHPUnit_Framework_TestCase {
             $parser->parseFile("Not-a-valid-filename");
         } catch (\snac\exceptions\SNACParserException $e) {
             // Catching this exception passes
-            $this->assertEquals(
+            $this->assertStringStartsWith(
                 "file_get_contents(Not-a-valid-filename): failed to open stream: No such file or directory", 
-                $e->getMessage());
+                $e->getMessage(),
+                "The wrong exception was encountered in the code, but it still correctly throw the SNACParserException");
         } catch (\Exception $e) {
             $this->fail("Parser threw the wrong exception");
         }
@@ -136,5 +137,15 @@ class TestVocabulary implements \snac\util\Vocabulary {
         $geoterm = new \snac\data\GeoTerm();
         $geoterm->setURI($uri);
         return $geoterm;
+    }
+    
+    /**
+     * Get a Resource by Resource object
+     *
+     * @param \snac\data\Resource $resource The resource to search
+     * @return \snac\data\Resource|null The resource object found in the database
+     */
+    public function getResource($resource) {
+        return $resource;
     }
 }
