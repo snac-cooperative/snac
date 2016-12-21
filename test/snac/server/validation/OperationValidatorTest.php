@@ -26,7 +26,10 @@ class OperationValidatorTest extends \PHPUnit_Framework_TestCase {
      * @var \snac\server\validation\ValidationEngine The validation engine
      */
     private $ve;
-    
+
+    /**
+     * Setup function
+     */    
     public function setUp() {
         $this->ve = new ValidationEngine();
         $operationValidator = new OperationValidator();

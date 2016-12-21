@@ -61,9 +61,7 @@ class AbstractGrouping implements \Serializable {
     /**
      * Constructor
      *
-     * @param string $label optional Label string
-     *
-     * @param string $description optional Description string
+     * @param string[] $data optional An associative array representation of this object to create
      */
     public function __construct($data=null)
     {

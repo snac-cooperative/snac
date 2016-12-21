@@ -108,6 +108,9 @@ class TestVocabulary implements \snac\util\Vocabulary {
     /**
      * {@inheritDoc}
      * @see \snac\util\Vocabulary::getTermByValue()
+     *
+     * @param string $value The value to look up
+     * @param string $type The type of the vocabulary
      */
     public function getTermByValue($value, $type) {
         if ($value == null || $value == "")
@@ -122,6 +125,9 @@ class TestVocabulary implements \snac\util\Vocabulary {
     /**
      * {@inheritDoc}
      * @see \snac\util\Vocabulary::getTermByID()
+     *
+     * @param int $id The term id
+     * @param string $type The type of the vocabulary
      */
     public function getTermByID($id, $type) {
         if ($id == null || $id == "")
@@ -132,7 +138,13 @@ class TestVocabulary implements \snac\util\Vocabulary {
         $term->setURI($type);
         return $term;
     }
-    
+
+    /**
+     * {@inheritDoc}
+     * @see \snac\util\Vocabulary::getGeoTermByURI()
+     *
+     * @param string $uri The URI to look up
+     */
     public function getGeoTermByURI($uri) {
         $geoterm = new \snac\data\GeoTerm();
         $geoterm->setURI($uri);

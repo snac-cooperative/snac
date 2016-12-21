@@ -1113,11 +1113,7 @@ class DBUtil
      * following that.
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
-     *
-     * @param integer $tid Table id, aka row id akd object id
-     *
-     * @param integer $version Constellation version number
-     *
+     * @param \snac\data\AbstractData $cObj The object to add the SCMs to
      * @param string $fkTable Name of the related table aka foreign table aka
      */
     private function populateMeta($vhInfo, $cObj, $fkTable)
@@ -2675,20 +2671,12 @@ class DBUtil
     }
 
     /**
-     * Save the resource relation origination name
+     * Save the resource origination name
      *
-     * RRON is a many-to-one relationship back to related_resource.
+     * Save all the origination names (if they have insert or update operation) from the given
+     * resource.
      *
-     * $rron is a RROriginationName object. It has fields for operation, ic_id, version, and so on and thus
-     * supports full insert/update/delete.
-     *
-     * @param integer[] $vhInfo list with keys version, ic_id.
-     *
-     * @param \snac\data\Resource $resource Resource object
-     *
-     * @param string $fkTable Name of the related table. Always 'related_resource' for RRON.
-     *
-     * @param integer $fkID Foreign key to the related_resource.id field.
+     * @param \snac\data\Resource $resource The resource object with origination names to save
      */
     private function saveOriginationNames($resource) {
         foreach ($resource->getOriginationNames() as $ron) {
@@ -2711,17 +2699,10 @@ class DBUtil
     }
 
     /**
-     * Populate the resource relation origination name
+     * Populate the resource origination names
      *
-     * ResourceRelation (aka related_resource) has a one-to-many relation to origination name
-     *
-     * Do not need an arg for table name, because rron only has a relation to 'related_resource'. Other
-     * back-related data (such as language) are very generic, and thus need args for fkID and fkTable.
-     *
-     * Like all populate* functions, this modifies the $rrelObj by calling one its setters, in this case
-     * addRelatedResourceOriginationName().
-     *
-     * @param integer[] $vhInfo list with keys version, ic_id.
+     * Like all populate* functions, this modifies the $rObj by calling one its setters, in this case
+     * addOriginationName().
      *
      * @param \snac\data\Resource $rObj A Resource object
      */
@@ -2985,6 +2966,16 @@ class DBUtil
         }
     }
 
+    /**
+     * Populate Resource
+     *
+     * The private method that reads the Resource from the database with the given id and version numbers.
+     *
+     * @param int $id ID of the resource to read
+     * @param int $version Version number of the resource to read
+     *
+     * @return \snac\data\Resource|null The resource found, or null if it doesn't exist
+     */
     private function populateResource($id, $version)
     {
         $rRows = $this->sql->selectResource($id, $version);
@@ -3003,13 +2994,21 @@ class DBUtil
             $rObj->setDBInfo($oneRes['version'], $oneRes['id']);
             $this->populateOriginationNames($rObj);
             $this->populateResourceLanguages($rObj);
-            // TODO: Populate Languages from the Resource_Language table
-            //$this->populateLanguage($vhInfo, $rObj, $rObj->getID(), 'resource_cache');
             return $rObj;
         }
         return null;
     }
 
+    /**
+     * Read Resource
+     *
+     * Reads the current version of a resource out of the database, based on the given ID.  If an optional version is
+     * supplied, then that version of the resource, if it exists, will be read.
+     * 
+     * @param int $id The resource ID to read
+     * @param int $version optional The optional version number.  Without it, the current version will be read
+     * @return \snac\data\Resource|null The resource for the given ID or null if none found
+     */
     public function readResource($id, $version=null) {
         if (! $version)
         {
@@ -3679,7 +3678,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo Array with keys 'version', 'ic_id' for this constellation.
      *
-     * @param \snac\data\SNACControlMetadata[] $metaObjList List of SNAC control meta data
+     * @param \snac\data\AbstractData $gObj The data object with SCMs
      *
      * @param string $fkTable Name of the table to which this meta data relates
      *

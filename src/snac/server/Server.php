@@ -88,12 +88,10 @@ class Server implements \snac\interfaces\ServerInterface {
     public function run() {
 
         $this->logger->addDebug("Server starting to handle request", array("input" => $this->input));
-        // TODO: Simple plumbing that needs to be rewritten with the Workflow engine
 
         if ($this->input == null || empty($this->input)) {
             throw new \snac\exceptions\SNACInputException("No input given");
         }
-
 
         $db = new \snac\server\database\DBUtil();
 
@@ -318,7 +316,6 @@ class Server implements \snac\interfaces\ServerInterface {
      * @return string server response appropriately encoded
      */
     public function getResponse() {
-        // TODO: Fill in body
         $this->response["timing"] =round((microtime(true) - $this->timing) * 1000, 2);
         return json_encode($this->response, JSON_PRETTY_PRINT);
     }

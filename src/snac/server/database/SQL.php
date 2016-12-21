@@ -427,10 +427,6 @@ class SQL
      * Clear all user sessions
      *
      * @param integer $appUserID The user id
-     *
-     * @param string $accessToken A session token
-     *
-     * @return boolean true for active, false for inactive or not found.
      */
     public function deleteAllSession($appUserID)
     {
@@ -501,9 +497,7 @@ class SQL
      * the same email address. This simply returns the first appuser record found. See the commentary with
      * function readUser() in DBUser.php
      *
-     * Field password is not returned.
-     *
-     * @param string $userName User name, a unique string, probably the user email
+     * @param string $email Email to look up for the associated User
      *
      * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar,
      * avatar_small, avatar_large, affiliation. Or false is returned.
@@ -703,7 +697,8 @@ class SQL
      * The "id not in..." prevents adding the same role twice.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param string $roleLable A role label
+     * @param string $roleLabel A role label
+     * @return boolean True if successful, false otherwise.
      */
     public function insertRoleByLabel($uid, $roleLabel)
     {
@@ -873,13 +868,12 @@ class SQL
      *
      * Get all fields of a single role. Also, get a list of related pids, returning it as a simple array.
      *
-     * This is probably called from DBUser populateRole() and nowhere else.
-     *
      * If we really always (and only?) call selectRolePrivilegeList() from here, and nowhere else, could we do
      * a join and gain some efficiency? Calling code would have to be modified.
      *
-     * @return string[] Return list with keys same as field names. Also includes key 'pid_list' which is a
-     * list of related privilege ids.
+     * @param int $rid Role ID to look up
+     * @return string[] Return associative array of role information. Also includes key 'pid_list' which is a
+     * list of privilege ids for the given role.
      */
     public function selectRole($rid)
     {
@@ -1662,9 +1656,9 @@ class SQL
      * Get a new version but keeping the existing ic_id. This also uses DatabaseConnector->query() in an
      * attempt to be more efficient, or perhaps just less verbose.
      *
-     * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
+     * @param integer $appUserID Foreign key to appuser.id, the current user's appuser id value.
      *
-     * @param integer $role Foreign key to role.id, the role id value of the current user.
+     * @param integer $roleID Foreign key to role.id, the role id value of the current user.
      *
      * @param string $status Status value from the enum icstatus. Using an enum from the db is a bit obscure
      * to all the php code, so maybe best to move icstatus to some util class and have a method to handle
@@ -1707,7 +1701,7 @@ class SQL
      * @param integer $id Record id. If null a new one will be minted.
      * @param integer $isRange Boolean if this is a date range
      * @param string $fromDate The from date
-     * @param string $fromType, Type of from date, fk to vocabulary.id
+     * @param string $fromType Type of from date, fk to vocabulary.id
      * @param integer $fromBC Boolean if this is a BC date
      * @param string $fromNotBefore Not before this date
      * @param string $fromNotAfter Not after this date
@@ -1926,26 +1920,16 @@ class SQL
      * Insert into place_link.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $id The id
-     *
+     * @param integer $id The id (if null, one will be created)
      * @param string $confirmed Boolean confirmed by human
-     *
      * @param string $original The original string
-     *
      * @param string $geo_place_id The geo_place_id
-     *
      * @param integer $typeID Vocabulary ID of the place@localType
-     *
      * @param integer $roleID Vocabulary ID of the role
-     *
      * @param string $note A note
-     *
      * @param float $score The geoname matching score
-     *
-     * @param string $fk_id The fk_id of the related table.
-     *
      * @param string $fk_table The fk_table name
+     * @param string $fk_id The fk_id of the related table.
      *
      * @return integer $id The id of what we (might) have inserted.
      *
@@ -2337,7 +2321,7 @@ class SQL
      *
      * @param string $original The original name string
      *
-     * @param float $preference_score The preference score for ranking this as the preferred name. This
+     * @param float $preferenceScore The preference score for ranking this as the preferred name. This
      * concept may not work in a culturally diverse environment
      *
      * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
@@ -3211,7 +3195,7 @@ class SQL
      *
      * @param string $targetArkID The ARK of the related entity
      *
-     * @param string $targetEntityType The entity type of the target relation (aka the other entity aka the related entity)
+     * @param string $targetEntityTypeID The entity type of the target relation (aka the other entity aka the related entity)
      *
      * @param integer $type A foreign key id of entityType, traditionally the xlink:arcrole of the relation
      * (aka relation type, a controlled vocabulary)
@@ -3278,15 +3262,12 @@ class SQL
      * to sql fields. Note keys in $argList have a fixed order.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType aka xlink:role
-     * @param integer $entryType Vocab id value of entry type aka relationEntry@localType
-     * @param string $href A URI  aka xlink:href
+     * @param int $resourceID The resource ID for this relation
+     * @param int $resourceVersion The version of the resource
      * @param integer $arcRole Vocabulary id value of the arc role aka xlink:arcrole
      * @param string $relationEntry Often the name of the relation aka relationEntry
-     * @param string $objectXMLWrap Optional extra data, often an XML fragment aka objectXMLWrap
      * @param string $note A note aka descriptiveNote
-     * @param integer $id The database record id
+     * @param integer $id The database record id (if null, one will be created
      *
      * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
      *
@@ -3326,6 +3307,13 @@ class SQL
     }
 
 
+    /**
+     * Get Next Resource ID
+     *
+     * Gets the next resource id number from the resource_id sequence
+     *
+     * @return int next resource id number
+     */
     private function selectResourceID()
     {
         $result = $this->sdb->query('select nextval(\'resource_id_seq\') as id',array());
@@ -3333,6 +3321,13 @@ class SQL
         return $row['id'];
     }
 
+    /**
+     * Get Next Resource Version Number
+     *
+     * Gets the next version number from the resource_version sequence
+     *
+     * @return int next resource version number
+     */
     private function selectResourceVersion()
     {
         $result = $this->sdb->query('select nextval(\'resource_version_id_seq\') as id',array());
@@ -3420,6 +3415,20 @@ class SQL
         return array($resourceID, $resourceVersion);
     }
 
+    /**
+     * Insert Resource Language
+     *
+     * Insert (updated or new) version of the given language for a resource
+     *
+     * @param int $resourceID The resource ID
+     * @param int $resourceVersion The resource version
+     * @param int $id The id for this language (if null, one will be generated)
+     * @param int $languageID The language ID from the vocabulary table
+     * @param int $scriptID The script ID from the vocabulary table
+     * @param string $vocabularySource The source for this vocab term
+     * @param string $note The descriptive note for this language
+     * @return int The ID for the language just written
+     */
     public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
     {
         if (! $id)
@@ -3446,14 +3455,16 @@ class SQL
 
 
     /**
-     * Insert into table related_resource_origination_name
+     * Insert into table resource_origination_name
      *
-     * Use data from php RROriginationName object. It is assumed that the calling code in DBUtils knows the php
-     * to sql fields.
+     * Write the given name into the origination name table for the resource (id, version)
      *
-     * @param string[] $vhInfo associative list with keys: version, ic_id
-
-     * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
+     * @param int $resourceID The resource ID
+     * @param int $resourceVersion The resource version
+     * @param int $id The id of this origination name (if null, one will be generated)
+     * @param string $name The origination name
+     *
+     * @return integer $id The record id, which might be new if this is the first insert for this origination name.
      */
     public function insertOriginationName($resourceID, $resourceVersion,
                                $id,
@@ -3482,17 +3493,12 @@ class SQL
     }
 
     /**
-     * Select related resource origination name record
+     * Select resource origination name records
      *
-     * Where $vhInfo has keys 'version' and 'id'.
+     * Get all the origination name data for a given resource (id, version)
      *
-     * Note that the related table is always 'related_resource'. It could be left out of the query entirely.
-     *
-     * This SQL query is based on selectLanguage() which is also a foreign key back-relation to the related table.
-     *
-     * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $fkID Foreign key to getID() of the ResourceRelation object.
+     * @param int $resourceID The ID of the resource
+     * @param int $version The version of the resource
      *
      * @return string[][] Return a list of lists. Inner list keys: id, version, name
      */
@@ -3789,12 +3795,8 @@ class SQL
      * Insert legalStatus.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $termID Vocabulary foreign key for the term.
-     *
      * @param integer $id Record id from this object and table.
-     *
-     * @return no return value.
+     * @param integer $termID Vocabulary foreign key for the term.
      *
      */
     public function insertLegalStatus($vhInfo, $id, $termID)
@@ -3971,20 +3973,6 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $rid = $row['id'];
-             * $dateList = $this->selectDate($rid, $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
-             *     // Prine says: "Stop wishing for bad luck and knocking on wood"
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -4043,19 +4031,6 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $relationId = $row['id'];
-             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     //TODO Throw warning or log
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -4097,19 +4072,6 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $relationId = $row['id'];
-             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     //TODO Throw warning or log
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -4157,8 +4119,17 @@ class SQL
     }
 
 
-   public function selectResource($id, $version)
-   {
+    /**
+     * Select Resource
+     *
+     * Gets the resource data out of the database for the given id and version.
+     *
+     * @param int $id Resource ID
+     * @param int $version Resource version
+     * @return string[] Associative array of resource data
+     */
+    public function selectResource($id, $version)
+    {
        $qq = 'select_resource';
        $this->sdb->prepare($qq,
                            'select
@@ -4213,18 +4184,6 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $dateList = $this->selectDate($row['id'], $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     // TODO: Throw a warning or log
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);

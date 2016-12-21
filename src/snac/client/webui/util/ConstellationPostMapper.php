@@ -764,7 +764,6 @@ class ConstellationPostMapper {
 
             // Right now, we're going to say this is okay because should a source have
             // other sources listed in their metadata?
-            // TODO: Do sources have sources as part of their SCM?
             $source->setAllSNACControlMetadata($this->parseSCM($data, "source", $k));
 
             $this->addToMapping("source", $k, $data, $source);

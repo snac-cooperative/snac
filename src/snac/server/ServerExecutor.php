@@ -695,8 +695,6 @@ class ServerExecutor {
     public function groupInformation($input = null) {
         $response = array();
 
-        //TODO Try to get the group from DBUser
-
         $group = null;
         if (isset($input["group"])) {
             $group = new \snac\data\Group($input["group"]);
@@ -708,7 +706,6 @@ class ServerExecutor {
         }
         $response["group"] = $group->toArray();
 
-        //TODO Try to get the list of users for the group from DBUser
         $users = $this->uStore->listUsersInGroup($group);
         $response["users"] = array();
         foreach ($users as $user) {
@@ -862,6 +859,15 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Write Resource
+     *
+     * Writes the resource based on the input to the server.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function writeResource(&$input) {
         $response = array();
         if (isset($input["resource"])) {

@@ -67,8 +67,7 @@ class ResourceRelation extends AbstractData {
     /**
      * Constructor
      *
-     * Now that ResourceRelation has a property that is an array, we need a constructor that can initialize it.
-     *
+     * @param string[] $data optional An associative array representation of this object to create
      */
     public function __construct($data = null) {
         $this->setMaxDateCount(0);

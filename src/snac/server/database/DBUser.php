@@ -533,6 +533,7 @@ class DBUser
      *
      * Return a privilege object based on the $pid ID value
      *
+     * @param int $pid Privilege ID to look up
      * @return \snac\data\Privilege A privilege object.
      */
     private function populatePrivilege($pid)
@@ -587,7 +588,10 @@ class DBUser
      * Does user have a privilege
      *
      * Returns true if the privilege exists. Build a list of all the privs, then test the list for key
-     * existence.
+     * existence.  A User has a set of Privileges beased on their Roles
+     *
+     * @param \snac\data\User $user User object for which to check privileges
+     * @param \snac\data\Privilege $privilege Privilege to test against the user
      *
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
      */
@@ -610,6 +614,7 @@ class DBUser
      * Returns true if the privilege with $label exists. Build a list of all the privilege labels, then test
      * the list for key existence.
      *
+     * @param \snac\data\User $user User object for which to check privileges
      * @param string $label Symbolic label of a privilege.
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
      */
@@ -770,9 +775,9 @@ class DBUser
      * Insert update a privilege. If insert, call setID() with the returned ID. Return the privilege, which if
      * inserted, will have an ID.
      *
-     * @param \snac\data\Privilege $privilege, the privilege object
+     * @param \snac\data\Privilege $privilege the privilege object
      *
-     * @return \snac\data\Privilege Privilege object, with an ID.
+     * @return \snac\data\Privilege Privilege object with it's newly associated ID
      */
     public function writePrivilege($privilege)
     {
@@ -1079,11 +1084,12 @@ class DBUser
      *
      * Return a group object based on the $pid ID value
      *
+     * @param int $gid Group ID to look up
      * @return \snac\data\Group A group object.
      */
-    private function populateGroup($pid)
+    private function populateGroup($gid)
     {
-        $row = $this->sql->selectGroup($pid);
+        $row = $this->sql->selectGroup($gid);
         $groupObj = new \snac\data\Group();
         $groupObj->setID($row['id']);
         $groupObj->setLabel($row['label']);

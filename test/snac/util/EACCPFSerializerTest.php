@@ -75,6 +75,9 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
     public function setUp() {
     }
 
+    /**
+     * Test parsed constellation to serialize and parsed again
+     */
     public function testParsedConstellationConstellation() {
         $eParser = new \snac\util\EACCPFParser();
         $eSerializer = new \snac\util\EACCPFSerializer();
@@ -90,6 +93,9 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($thirdCon->equals($origCon), "The third parsed constellation is different than the original parsed constellation");
     }
 
+    /**
+     * Test a constellation parsed, written to the database, serialized and reparsed
+     */
     public function testConstellationDatabaseConstellation() {
         $eParser = new \snac\util\EACCPFParser();
         $eSerializer = new \snac\util\EACCPFSerializer();

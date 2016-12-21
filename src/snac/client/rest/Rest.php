@@ -113,7 +113,6 @@ class Rest implements \snac\interfaces\ServerInterface {
      * @return string server response appropriately encoded
      */
     public function getResponse() {
-        // TODO: Fill in body
         return $this->response;
     }
 }

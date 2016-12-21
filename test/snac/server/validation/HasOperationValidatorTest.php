@@ -27,6 +27,10 @@ class HasOperationValidatorTest extends \PHPUnit_Framework_TestCase {
      */
     private $ve;
     
+
+    /**
+     * Setup function
+     */    
     public function setUp() {
         $this->ve = new ValidationEngine();
         $hasOperationValidator = new HasOperationValidator();

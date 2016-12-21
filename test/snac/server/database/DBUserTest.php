@@ -523,6 +523,9 @@ class DBUserTest extends \PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * Test adding and removing a user
+     */
     public function testAutoUser()
     {
         /*
@@ -560,15 +563,6 @@ class DBUserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($csaReturn->getToken()['access_token'], 'foo');
         $this->assertTrue($this->dbu->sessionActive($csaReturn));
 
-        /*
-         * We don't have default role, but if we did this would verify that we got the default role of Public
-         * HRT.
-         *
-         * false == null so we only check for != null
-         * We don't current have a role for public hrt.
-         * $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
-         */
-
         $goodUserID = $csaReturn->getUserID();
         /*
          * Test userExists() with the ficticious user id.
@@ -591,9 +585,11 @@ class DBUserTest extends \PHPUnit_Framework_TestCase
          * When things are normally successful, we might want to clean up.
          */
         $this->dbu->eraseUser($cleanUpUser);
-
     }
 
+    /**
+     * Test reading and writing an institution
+     */
     public function testInstitution()
     {
         $firstObj = new \snac\data\Constellation();

@@ -19,11 +19,22 @@ use function GuzzleHttp\json_decode;
  *
  */
 class ServerTest extends \PHPUnit_Framework_TestCase {
-    
+
+    /**
+     * @var \snac\data\User The User object
+     */
     private $user = null;
-    
+
+    /**
+     * @var \snac\data\Constellation Constellation object
+     */
     private $constellation = null;
-    
+
+    /**
+     * Setup function
+     *
+     * Creates the User object with testing@localhost and generates a temporary session
+     */
     public function setUp() {
         $this->user = new \snac\data\User();
         
@@ -73,6 +84,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
+    /**
+     * Tests the vocabulary query
+     */
     public function testVocabulary() {
         $server = new Server( array(
            "command" => "vocabulary",
@@ -95,6 +109,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     
 
 
+    /**
+     * Tests that the server can start a session
+     */
     public function testStartSession() {
         $server = new Server( array(
                 "command" => "start_session"
@@ -122,6 +139,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     }
     
 
+    /**
+     * Tests that the server can end a session
+     */
     public function testEndSession() {
         $server = new Server( array(
                 "command" => "end_session"
@@ -149,6 +169,9 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     }
     
 
+    /**
+     * Tests getting user information from the server
+     */
     public function testUserInformation() {
         $server = new Server( array(
                 "command" => "user_information"
@@ -177,7 +200,10 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
         $this->assertArrayHasKey("editing_lock", $response);
     
     }
-    
+
+    /**
+     * Test inserting a constellation by the server
+     */
     public function testInsertConstellation() {
         $parser = new \snac\util\EACCPFParser();
         $parser->setConstellationOperation(\snac\data\AbstractData::$OPERATION_INSERT);
@@ -227,6 +253,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     
     
     /**
+     * Test Reading a constellation from the server
+     * @param \snac\data\Constellation $c The Constellation object from testInsertConstellation
      * @depends testInsertConstellation
      */
     public function testReadConstellation(\snac\data\Constellation $c) {
@@ -255,6 +283,8 @@ class ServerTest extends \PHPUnit_Framework_TestCase {
     }
     
     /**
+     * Test editing and updating a constellation by the server
+     * @param \snac\data\Constellation $constellation The Constellation object from testReadConstellation
      * @depends testReadConstellation
      */
     public function testEditUpdateConstellation(\snac\data\Constellation $constellation) {

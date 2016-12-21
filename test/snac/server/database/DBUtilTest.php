@@ -257,6 +257,7 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $objList = $this->dbu->listConstellationsWithStatusForAny('published', 10, 10);
         $this->assertTrue(count($objList)==10);
     }
+
     /**
      * Update contributor
      *
@@ -419,6 +420,9 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
     }
 
 
+    /**
+     * Test date ranges work with parsed CPF
+     */
     public function testFullCPFDateIsRange()
     {
         $eParser = new \snac\util\EACCPFParser();
@@ -843,7 +847,7 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         }
     }
 
-    /*
+    /**
      * Make sure that table vocabulary has many entries. The real number is probably far larger than 100k, but
      * at least 100k means that someone tried to init the table.
      */
@@ -859,14 +863,7 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($numRows > 100000);
     }
 
-
-    public function testDBUtilAll()
-    {
-        $this->assertNotNull($this->dbu);
-        $this->tba = true; // testDBUtilAll has run.
-    }
-
-    /*
+    /**
      * Can we get a random Constellation?
      * Can we reverse the order of keys in $vhInfo?
      * Can we get 100 constellations from the db?
@@ -969,7 +966,7 @@ class DBUtilTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($origNCount == count($modObj->getNameEntries()));
     }
 
-    /*
+    /**
      * Parse a file, and write to the db.
      * Get the just-inserted constellation back from the db.
      * Verify versoin and id of constellation read from db.
