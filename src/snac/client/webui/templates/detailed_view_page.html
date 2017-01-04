@@ -106,7 +106,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                         </div>
                                     </div>
                                 </div>
-                                {{ widgets.scmModal(X, false, false, 'constellation', '1', 'Basic Info', "Constellation", data) }}
+                                {{ widgets.scmModal(X, false, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
                             </div>
                         </div>
 
@@ -116,7 +116,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, false, true, nameEntry, i) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -134,7 +134,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for gender in data.genders %}
-                            {{ components.displayGender(X, false, false, gender, i) }}
+                            {{ components.displayGender(X, false, true, gender, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -149,7 +149,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for exist in data.dates %}
-                            {{ components.displayExist(X, false, false, exist, i) }}
+                            {{ components.displayExist(X, false, true, exist, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -160,7 +160,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for biogHist in data.biogHists %}
-                                {{ components.displayBiogHist(X, false, false, biogHist, i) }}
+                                {{ components.displayBiogHist(X, false, true, biogHist, i) }}
                                 {% set i = i + 1 %}
                             {% endfor %}
 
@@ -173,7 +173,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, false, false, other, i) }}
+                            {{ components.displaySameAs(X, false, true, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
@@ -188,7 +188,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for other in data.entityIDs %}
-                            {{ components.displayEntityID(X, false, false, other, i) }}
+                            {{ components.displayEntityID(X, false, true, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_entityID_i' style='display:none;'>{{i}}</span>
@@ -201,7 +201,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                            {{ components.displaySource(X, false, false, source, i) }}
+                            {{ components.displaySource(X, false, true, source, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_source_i' style='display:none;'>{{i}}</span>
@@ -215,7 +215,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, false, false, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+                            {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
@@ -228,7 +228,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, false, false, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+                            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
@@ -242,7 +242,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, false, false, language, i) }}
+                            {{ components.displayLanguageUsed(X, false, true, language, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_language_i' style='display:none;'>{{i}}</span>
@@ -255,7 +255,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, false, false, subject, i) }}
+                            {{ components.displaySubject(X, false, true, subject, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_subject_i' style='display:none;'>{{i}}</span>
@@ -268,7 +268,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, false, false, nationality, i) }}
+                                {{ components.displayNationality(X, false, true, nationality, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_nationality_i' style='display:none;'>{{i}}</span>
@@ -279,7 +279,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                                {{ components.displayFunction(X, false, false, function, i) }}
+                                {{ components.displayFunction(X, false, true, function, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_function_i' style='display:none;'>{{i}}</span>
@@ -292,7 +292,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, false, false, occupation, i) }}
+                                {{ components.displayOccupation(X, false, true, occupation, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_occupation_i' style='display:none;'>{{i}}</span>
@@ -305,7 +305,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, false, false, legalStatus, i) }}
+                                {{ components.displayLegalStatus(X, false, true, legalStatus, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
@@ -318,7 +318,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                                {{ components.displayPlace(X, false, false, place, i) }}
+                                {{ components.displayPlace(X, false, true, place, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_place_i' style='display:none;'>{{i}}</span>
@@ -331,7 +331,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, false, false, conventionDeclaration, i) }}
+                                {{ components.displayConventionDeclaration(X, false, true, conventionDeclaration, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
@@ -343,7 +343,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, false, false, generalContext, i) }}
+                                {{ components.displayGeneralContext(X, false, true, generalContext, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
@@ -355,7 +355,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, false, false, structureOrGenealogy, i) }}
+                                {{ components.displayStructureOrGenealogy(X, false, true, structureOrGenealogy, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
@@ -366,7 +366,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, false, false, mandate, i) }}
+                                {{ components.displayMandate(X, false, true, mandate, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_mandate_i' style='display:none;'>{{i}}</span>
