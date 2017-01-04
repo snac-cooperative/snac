@@ -2926,7 +2926,10 @@ class DBUtil
     private function populateResourceRelation($vhInfo, $cObj)
     {
 
-        $repoCache = array();
+        $rrCache = array();
+        $rCache = array();
+
+        $this->logger->addDebug("Reading resource and resource relation information");
 
         // Select Resource Relation is smart enough to also grab the Resource information.  This saves
         // much computation time in pulling the resources individually (or even caching them separately)
@@ -2958,12 +2961,47 @@ class DBUtil
                     $rObj->setRepository($repoCache[$oneRes['repo_ic_id']]);
                 }
                 $rObj->setDBInfo($oneRes['resource_version'], $oneRes['resource_id']);
-                
-                $rrObj->setResource($rObj);
+                $rCache[$rObj->getID()] = $rObj;
+
             } 
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
+            $rrCache[$rrObj->getID()] = array("object" => $rrObj, "resource_id" => $rObj->getID());
+        }
+        
+        $this->logger->addDebug("Reading resource language information");
+
+        // Right now, this will use the Resource Language view that only pulls back the current published versions.
+        // TODO: This should change
+        $languages = $this->sql->selectResourceLanguagesByList(array_keys($rCache));
+        foreach ($languages as $item)
+        {
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $rCache[$item["resource_id"]]->addLanguage($newObj);
+        }
+        $this->logger->addDebug("Reading resource origination name information");
+        $gRows = $this->sql->selectOriginationNamesByList(array_keys($rCache));
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\OriginationName();
+            $gObj->setName($rec['name']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $rCache[$rec["resource_id"]]->addOriginationName($gObj);
+        }
+
+        $this->logger->addDebug("Finished reading resource information, adding to Constellation object");
+
+        foreach ($rrCache as $rr) {
+            $rrObj = $rr["object"];
+            $rrObj->setResource($rCache[$rr["resource_id"]]);
             $cObj->addResourceRelation($rrObj);
         }
+
+        $this->logger->addDebug("Finished reading resources from the database");
     }
 
     /**

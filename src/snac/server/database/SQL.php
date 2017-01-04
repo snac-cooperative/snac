@@ -2792,6 +2792,42 @@ class SQL
     }
 
     /**
+     * Get laguages for list of resources 
+     *
+     * Returns the list of all languages for a given array of resource ids.
+     *
+     * @param int[] $resourceIDs The resource IDs to grab
+     * @return string[] An array of arrays of language data from the database
+     */
+    public function selectResourceLanguagesByList($resourceIDs)
+    {
+        if (count($resourceIDs) === 0)
+            return array();
+
+        $countList = array();
+        for ($i = 1; $i <= count($resourceIDs); $i++) {
+            $countList[$i] = '$'.$i;
+        }
+        $resourceIDList = implode(",", $countList);
+        $qq = 'select_resource_language';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from resource_language as aa
+        where aa.resource_id in ('.$resourceIDList.') and  not aa.is_deleted ';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, $resourceIDs);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
      * Select All Languages for Resource
      * @param  int $rid     Resource ID to look up
      * @param  int $version Version number for the resource
@@ -3490,6 +3526,48 @@ class SQL
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return $id;
+    }
+
+    /**
+     * Select resource origination name records by list
+     *
+     * Get all the origination name data for a given list of resources
+     *
+     * TODO: This should take into account versioning
+     *
+     * @param int[] $resourceIDs The list of resource ids
+     *
+     * @return string[][] Return a list of lists. Inner list keys: id, version, name
+     */
+    public function selectOriginationNamesByList($resourceIDs)
+    {
+        if (count($resourceIDs) === 0)
+            return array();
+        
+        $countList = array();
+        for ($i = 1; $i <= count($resourceIDs); $i++) {
+            $countList[$i] = '$'.$i;
+        }
+        $resourceIDList = implode(",", $countList);
+
+
+        $qq = 'select_resource_origination_name';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.name
+        from resource_origination_name as aa
+        where aa.resource_id in ('.$resourceIDList.') and not aa.is_deleted';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq,
+                                      $resourceIDs);
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
     }
 
     /**
