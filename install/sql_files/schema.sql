@@ -813,6 +813,7 @@ create table resource_language (
 
 create unique index resource_language_idx1 on resource_language(id,resource_id,version);
 create index resource_language_idx2 on resource_language(language_id, script_id);
+create index resource_language_idx3 on resource_language (resource_id, is_deleted);
 
 -- Origination names are now part of resources
 create table resource_origination_name (
@@ -825,6 +826,7 @@ create table resource_origination_name (
 );
 
 create unique index resource_origination_name_idx1 on resource_origination_name(id,resource_id,version);
+create index resource_origination_name_idx2 on resource_origination_name (resource_id, is_deleted);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
 --
