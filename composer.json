@@ -7,7 +7,8 @@
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "~2.0@beta",
         "snac/ark-manager": "*",
-        "snac/eac-validator": "*"
+        "snac/eac-validator": "*",
+        "graphaware/neo4j-php-client": "^4.0"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",
