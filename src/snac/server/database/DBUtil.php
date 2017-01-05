@@ -2935,6 +2935,7 @@ class DBUtil
         // much computation time in pulling the resources individually (or even caching them separately)
         // NOTE: It does NOT grab origination names or languages for the Resource.
         $rrRows = $this->sql->selectResourceRelation($vhInfo);
+        $this->logger->addDebug("Done reading resource and resource relation information: now parsing through");
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
