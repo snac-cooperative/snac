@@ -199,4 +199,16 @@ class Config {
      */
     public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
 
+    /**
+     * @var boolean Whether or not to have the server attempt to use Neo4J
+     */
+    public static $USE_NEO4J = true;
+
+    /**
+     * @var string Neo4J Bolt URL
+     */
+    public static $NEO4J_BOLT_URI = "bolt://user:password@localhost:7687";
+    
+    
+
 }
