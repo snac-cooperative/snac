@@ -205,17 +205,13 @@ class ConstellationPostMapper {
 
             $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
+            // If there is a citation ID, then create a dummy source for it.
             if (isset($scm["citation"]) && isset($scm["citation"]["id"]) && $scm["citation"]["id"] != "") {
-                foreach ($this->constellation->getSources() as $source) {
-                    if ($source->getID() == $scm["citation"]["id"]) {
-                        $scmObject->setCitation($source);
-                        break;
-                    }
-                }
+                $tmpSource = new \snac\data\Source();
+                $tmpSource->setID($scm["citation"]["id"]);
+                $scmObject->setCitation($tmpSource);
             }
 
-            // short, i, post data, php object
-            // need:
             $this->addToMapping("scm_".$short, $j . "_". $i, $scm, $scmObject);
 
             array_push($scmArray, $scmObject);
