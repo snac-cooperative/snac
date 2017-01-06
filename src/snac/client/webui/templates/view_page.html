@@ -497,8 +497,8 @@ body {
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'family' %}
                                             <div class="family">
+                                                <span class="arcrole">{{relation.type.term}}</span> 
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                                <span class="arcrole">{{relation.type.term}}</span>
                                                 <div></div>
                                             </div>
                                         {% endif %}
@@ -553,8 +553,8 @@ body {
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'corporateBody' %}
                                             <div class="corporateBody">
-                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <div></div>
                                             </div>
                                         {% endif %}
