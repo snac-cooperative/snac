@@ -107,6 +107,10 @@ body {
 {{ topNavigation(X, user, permissions) }}
 
 
+      <!-- Constellation Data -->
+      <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+      <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+
       <div class="main_content">
          <div id="identity">
             <div class="name">
@@ -492,7 +496,7 @@ body {
                               -->
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'family' %}
-                                            <div class="person">
+                                            <div class="family">
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <span class="arcrole">{{relation.type.term}}</span>
                                                 <div></div>
@@ -548,7 +552,7 @@ body {
                                     <div class="tab-pane active list" id="relatedOrganizationsDirect">
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'corporateBody' %}
-                                            <div class="person">
+                                            <div class="corporateBody">
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <span class="arcrole">{{relation.type.term}}</span>
                                                 <div></div>

@@ -1,5 +1,6 @@
 // Global map
 var geoMapView = null;
+var impliedRelationsLoaded = false;
 
 /**
  * Open the GeoPlace display
@@ -47,6 +48,65 @@ function openGeoPlaceViewer(id) {
     return false;
 }
 
+$(document).ready(function() {
+// Check that we're on the view page to add these:
+if ($('#relatedPeopleImpliedLoad').exists()){
+    var loadFunction = function() {
+        // don't load a second time
+        if (impliedRelationsLoaded)
+            return;
+        impliedRelationsLoaded = true;
+
+        var loadingHTML = "<div class=\"text-center\">" +
+                        "<p><i class=\"fa fa-spinner fa-pulse fa-3x fa-fw\"></i></p>" +
+                        "<p>Loading ...</p>" +
+                        "</div>";
+        // Replace the HTML with the loading symbol
+        $('#relatedPeopleImplied').html(loadingHTML);
+        $('#relatedFamiliesImplied').html(loadingHTML);
+        $('#relatedOrganizationsImplied').html(loadingHTML);
+
+        $.get("?command=relations&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+            var peopleHTML = "";
+            var familiesHTML = "";
+            var organizationsHTML = "";
+            if (data.in) {
+                for (var key in data.in) {
+                    if (data.in[key].constellation.entityType.term == "person") {
+                            peopleHTML += "<div class=\"person\">" +
+                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                data.in[key].constellation.nameEntries[0].original + "</a> " +
+                                " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
+                                "<div></div>" +
+                            "</div>";
+                    } else if (data.in[key].constellation.entityType.term == "corporateBody") {
+                            organizationsHTML += "<div class=\"corporateBody\">" +
+                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                data.in[key].constellation.nameEntries[0].original + "</a> " +
+                                " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
+                                "<div></div>" +
+                            "</div>";
+                    } else if (data.in[key].constellation.entityType.term == "family") {
+                            familiesHTML += "<div class=\"family\">" +
+                                "<a href=\"?command=view&constellationid=" + data.in[key].constellation.id + "\">" +
+                                data.in[key].constellation.nameEntries[0].original + "</a> " +
+                                " <span class=\"arcrole\">" + data.in[key].relation.type.term + "</span>" +
+                                "<div></div>" +
+                            "</div>";
+                    }
+                }
+            }
+            $('#relatedPeopleImplied').html(peopleHTML);
+            $('#relatedFamiliesImplied').html(familiesHTML);
+            $('#relatedOrganizationsImplied').html(organizationsHTML);
+        });
+        return false;
+
+    };
+    $('#relatedPeopleImpliedLoad').click(loadFunction);
+    $('#relatedFamiliesImpliedLoad').click(loadFunction);
+    $('#relatedOrganizationsImpliedLoad').click(loadFunction);
+}
 
 // Load tooltips
 $(function () {
@@ -60,3 +120,4 @@ $(function () {
     container: 'body'
     })
 })
+});
