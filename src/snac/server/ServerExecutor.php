@@ -1759,16 +1759,19 @@ class ServerExecutor {
         } else {
             // If not using Neo4J, then we must ask DBUtil to get the information from Postgres.
             $return = array("in" => array(), "out" => array());
+            $this->logger->addDebug("Getting In Edges from Postgres");
             $results = $this->cStore->listConstellationInEdges($constellation);
             foreach ($results as $result) {
                 array_push($return["in"], array("constellation" => $result["constellation"]->toArray(),
                                                 "relation" => $result["relation"]->toArray()));
             }
 
+            $this->logger->addDebug("Reading full constellation for out edges");
             $fullConstellation = $this->cStore->readPublishedConstellationByID($constellation->getID(),
                                         \snac\server\database\DBUtil::$READ_MICRO_SUMMARY
                                         | \snac\server\database\DBUtil::$READ_RELATIONS);
 
+            $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
                 array_push($return["out"], array(
                     "constellation" => $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
@@ -1777,7 +1780,7 @@ class ServerExecutor {
                 ));
             }
 
-            $this->logger->addDebug("Created postgres constellation relations response to the user", $return);
+            $this->logger->addDebug("Created postgres constellation relations response to the user");
 
             $response = $return;
             $response["result"] = "success";
