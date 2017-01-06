@@ -65,12 +65,12 @@ class DBUtil
      *
      * Note: this does not include the maintenance history by default
      */
-    public static $FULL_CONSTELLATION = 63;
+    public static $FULL_CONSTELLATION = 511; // all up to maintenance history 
 
     /**
      * @var int Flag to read the entire constellation except relations
      */
-    public static $READ_ALL_BUT_RELATIONS = 31;
+    public static $READ_ALL_BUT_RELATIONS = 415; // 31 + 128 + 256 (up to relations + scm + place)
 
     /**
      * @var int Flag to read the nrd, name entries and biog hist only
@@ -90,7 +90,7 @@ class DBUtil
     /**
      * @var int Flag to read the Holding Institution level of information
      */
-    public static $READ_REPOSITORY_SUMMARY = 67;
+    public static $READ_REPOSITORY_SUMMARY = 259; // 1 + 2 + 256 (nrd + pref name + places)
 
     /**
      * @var int Flag to read the NRD
@@ -123,14 +123,25 @@ class DBUtil
     public static $READ_RELATIONS = 32;
 
     /**
+     * @var int Flag to read relations
+     */
+    public static $READ_RESOURCE_RELATIONS = 64;
+
+    /**
      * @var int Flag to read the maintenance history and other maintenance info
      */
-    public static $READ_MAINTENANCE_INFORMATION = 128;
+    public static $READ_MAINTENANCE_INFORMATION = 512;
+
+    /**
+     * @var int Flag to read the maintenance history and other maintenance info
+     */
+    public static $READ_SCM_METADATA = 128;
 
     /**
      * @var int Flag to read the places only (used for holding institutions)
      */
-    public static $READ_PLACE_INFORMATION = 64;
+    public static $READ_PLACE_INFORMATION = 256;
+
 
 
 
@@ -781,11 +792,16 @@ class DBUtil
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-
-        // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
-        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS | DBUtil::$READ_RELATIONS)) != 0) {
+        
+        // IF the user wants metadata, then populate the cache for it
+        if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
             $this->logger->addDebug("Populating Caches: Meta");
             $this->populateMetaCache($vhInfo);
+        }
+
+
+        // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
+        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS)) != 0) {
             $this->logger->addDebug("Populating Caches: Date");
             $this->populateDateCache($vhInfo);
             $this->logger->addDebug("Populating Caches: Name");
@@ -853,6 +869,10 @@ class DBUtil
         if (($flags & DBUtil::$READ_RELATIONS) != 0) {
             $this->logger->addDebug("The user wants relations");
             $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+        }
+
+        if (($flags & DBUtil::$READ_RESOURCE_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants resource relations");
             $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
         }
 
