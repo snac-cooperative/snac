@@ -4099,7 +4099,7 @@ class SQL
                             inner join
                                 (select id, max(version) as version from related_identity where version<=$1 and ic_id=$2 group by id) as bb
                                 on aa.id=bb.id and aa.version=bb.version
-                            where not aa.is_deleted
+                            where not aa.is_deleted order by aa.relation_entry asc
 
                             ');
 

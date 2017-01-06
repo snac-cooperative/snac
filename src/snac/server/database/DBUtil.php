@@ -3800,6 +3800,13 @@ class DBUtil
             }
         }
 
+
+        // Sort the in edges by preferred name
+        usort($results,
+                function ($a, $b) {
+                    return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
+                });
+
         return $results;
     }
 
