@@ -2943,7 +2943,7 @@ class DBUtil
             $rrObj->setContent($oneRes['relation_entry']);
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
-            
+
             if (isset($oneRes['resource_id']) && $oneRes['resource_id'] !== null && $oneRes['resource_id'] !== '') {
                 //$rrObj->setResource($this->populateResource($oneRes["resource_id"], $oneRes["resource_version"]));
                 $rObj = new \snac\data\Resource();
@@ -2964,11 +2964,11 @@ class DBUtil
                 $rObj->setDBInfo($oneRes['resource_version'], $oneRes['resource_id']);
                 $rCache[$rObj->getID()] = $rObj;
 
-            } 
+            }
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
             $rrCache[$rrObj->getID()] = array("object" => $rrObj, "resource_id" => $rObj->getID());
         }
-        
+
         $this->logger->addDebug("Reading resource language information");
 
         // Right now, this will use the Resource Language view that only pulls back the current published versions.
@@ -3043,7 +3043,7 @@ class DBUtil
      *
      * Reads the current version of a resource out of the database, based on the given ID.  If an optional version is
      * supplied, then that version of the resource, if it exists, will be read.
-     * 
+     *
      * @param int $id The resource ID to read
      * @param int $version optional The optional version number.  Without it, the current version will be read
      * @return \snac\data\Resource|null The resource for the given ID or null if none found
@@ -3758,6 +3758,49 @@ class DBUtil
              * separately.
              */
         }
+    }
+
+
+    /**
+     * List In Edges for Constellation
+     *
+     * Lists the Constellations with constellation relations pointing TO the given Constellation.
+     *
+     * @param  \snac\data\Constellation $constellation The Constellation to search
+     * @return mixed[] Associative array of ["constellation"=> micro Constellation, "relation" => Relation ]
+     */
+    public function listConstellationInEdges(&$constellation) {
+        $results = array();
+
+        if ($constellation === null) {
+            return $results;
+        }
+
+        // This constitutes some cheating:  We will ask for a list of IC_IDs (regardless of version) that
+        // point in to this constellation, then go through and check each one by hand to see if they
+        // currently still point to this constellation.  This allows us to take advantage of the structure
+        // of the database as well as its indices.
+        $icids = $this->sql->selectUnversionedConstellationIDsForRelationTarget($constellation->getID());
+
+
+        foreach ($icids as $inEdge) {
+            $inC = $this->readPublishedConstellationByID($inEdge["ic_id"], DBUtil::$READ_MICRO_SUMMARY|DBUtil::$READ_RELATIONS);
+            $inR = null;
+            foreach ($inC->getRelations() as $rel) {
+                if ($rel->getTargetConstellation() !== null && $rel->getTargetConstellation() == $constellation->getID()) {
+                    $inR = $rel;
+                    break;
+                }
+            }
+
+            if ($inR !== null) {
+                $inC->emptyRelations();
+                $inC->emptyResourceRelations();
+                array_push($results, array("constellation" => $inC, "relation" => $inR));
+            }
+        }
+
+        return $results;
     }
 
 

@@ -2792,7 +2792,7 @@ class SQL
     }
 
     /**
-     * Get laguages for list of resources 
+     * Get laguages for list of resources
      *
      * Returns the list of all languages for a given array of resource ids.
      *
@@ -3375,7 +3375,7 @@ class SQL
      * Current resource version by ID
      *
      * The max, that is: current version for ID regardless of status. This will return max for deleted as
-     * well as all other status values.      
+     * well as all other status values.
      * @param integer $id The resource ID
      *
      * @return integer Latest version number from resource.version
@@ -3543,7 +3543,7 @@ class SQL
     {
         if (count($resourceIDs) === 0)
             return array();
-        
+
         $countList = array();
         for ($i = 1; $i <= count($resourceIDs); $i++) {
             $countList[$i] = '$'.$i;
@@ -4157,6 +4157,34 @@ class SQL
     }
 
     /**
+     * Select Related ICIDs for this target ignoring version
+     *
+     * Ignores the version, but quickly grabs all ICIDs that may still point at
+     * the given target ICID.
+     * @param  int $icid The target ICID to search
+     * @return int[]       The list of ICIDs that may still point to this target
+     */
+    public function selectUnversionedConstellationIDsForRelationTarget($icid) {
+        $qq = 'selectrelatedicids';
+        $this->sdb->prepare($qq,
+                            'select aa.ic_id
+                            from related_identity as aa
+                            where not aa.is_deleted and
+                            aa.related_id = $1');
+
+        $result = $this->sdb->execute($qq,
+                                      array($icid));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+
+    }
+
+    /**
      * select related resource records
      *
      * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a php
@@ -4181,7 +4209,7 @@ class SQL
                         (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
                     where not aa.is_deleted and
                     aa.id=bb.id
-                    and aa.version=bb.version) rr 
+                    and aa.version=bb.version) rr
                 left join resource_cache r on rr.resource_id = r.id and rr.resource_version = r.version');
 
         $result = $this->sdb->execute($qq,
@@ -5010,7 +5038,7 @@ class SQL
                   from resource_cache
                   where href = $1 order by title asc';
         }
-    
+
         $result = $this->sdb->query($queryStr, array("%$query%"));
 
         $all = array();

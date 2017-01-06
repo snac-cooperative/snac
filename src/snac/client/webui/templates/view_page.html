@@ -411,6 +411,17 @@ body {
                         </div>
                         <div id="relatedPeople" class="panel-collapse collapse">
                            <div class="panel-body">
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedPeopleDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedPeopleImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedPeopleDirect">
                               <!--
                               <div class="person">
                                  <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
@@ -418,15 +429,27 @@ body {
                                  <div></div>
                               </div>
                               -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'person' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'person' %}
+                                            <div class="person">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                   <div class="tab-pane list" id="relatedPeopleImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedPeopleImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
+
+                                   </div>
+                               </div>
+                           </div>
                            </div>
                         </div>
                      </div>
@@ -449,6 +472,17 @@ body {
                         </div>
                         <div id="relatedFamilies" class="panel-collapse collapse">
                            <div class="panel-body">
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedFamiliesDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedFamiliesImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedFamiliesDirect">
                               <!--
                               <div class="person">
                                  <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
@@ -456,16 +490,30 @@ body {
                                  <div></div>
                               </div>
                               -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'family' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'family' %}
+                                            <div class="person">
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                   <div class="tab-pane list" id="relatedFamiliesImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedFamiliesImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
+
+                                   </div>
+
+                                </div>
+                            </div>
+                        </div>
                         </div>
                      </div>
 
@@ -487,23 +535,42 @@ body {
                         </div>
                         <div id="relatedOrganizations" class="panel-collapse collapse">
                            <div class="panel-body">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'corporateBody' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedOrganizationsDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedOrganizationsImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedOrganizationsDirect">
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                                            <div class="person">
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                   <div class="tab-pane list" id="relatedOrganizationsImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedOrganizationsImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
+
+                                   </div>
+
+
+                                </div>
+                            </div>
+                            </div>
                         </div>
                      </div>
                   </div>
@@ -670,7 +737,7 @@ body {
             </div>
          </div>
       </div>
-    
+
       {% if false %}
     <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
         <div class="modal-dialog" role="document" style="width:90%;">

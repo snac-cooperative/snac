@@ -109,7 +109,7 @@ class WebUIExecutor {
             $this->logger->addDebug("Sending query to the server", $query);
             $serverResponse = $this->connect->query($query);
             $this->logger->addDebug("Received server response", array($serverResponse));
-            if (isset($serverResponse["constellation"])) 
+            if (isset($serverResponse["constellation"]))
                 $constellation = $serverResponse["constellation"];
         }
 
@@ -211,7 +211,7 @@ class WebUIExecutor {
     public function displaySearchPage(&$input, &$display) {
         if (!isset($input["term"]))
             $input["term"] = "";
-            
+
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
@@ -1509,8 +1509,8 @@ class WebUIExecutor {
      * Perform Name Search
      *
      * Perform a name search on the terms given on the input by requesting the results from the server and
-     * then returns the JSON-ready associative array of results.  
-     * 
+     * then returns the JSON-ready associative array of results.
+     *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
@@ -1527,6 +1527,23 @@ class WebUIExecutor {
             "count" => isset($input["count"]) ? $input["count"] : 10
         ));
 
+        return $serverResponse;
+
+    }
+
+    public function performRelationsQuery(&$input) {
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["command"] = "constellation_read_relations";
+
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
         return $serverResponse;
 
     }

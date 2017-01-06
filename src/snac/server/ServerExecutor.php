@@ -39,6 +39,11 @@ class ServerExecutor {
     private $elasticSearch = null;
 
     /**
+     * @var \snac\server\neo4j\Neo4JUtil Neo4J Utility class
+     */
+    private $neo4J = null;
+
+    /**
      * @var \snac\data\User Current user object
      */
     private $user = null;
@@ -69,6 +74,7 @@ class ServerExecutor {
         $this->cStore = new \snac\server\database\DBUtil();
         $this->uStore = new \snac\server\database\DBUser();
         $this->elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
+        $this->neo4J = new \snac\server\neo4j\Neo4JUtil();
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
@@ -531,7 +537,7 @@ class ServerExecutor {
                 $response["results"] = array();
                 foreach ($results as $result)
                     array_push(
-                        $response["results"], 
+                        $response["results"],
                         $this->cStore->readResource($result["id"])->toArray());
             }
         }
@@ -1146,7 +1152,7 @@ class ServerExecutor {
                     ($currentStatus == 'currently editing' || $currentStatus == 'locked editing')) {
                         $inList = true;
                     }
-                
+
                 $result = false;
 
                 // If this constellation is the correct version, and the user was editing it, then publish it
@@ -1350,13 +1356,17 @@ class ServerExecutor {
      *
      * @param string[] $input Input array from the Server object
      * @param boolean $includeMaintenanceHistory optional True will include maintenance history, false (default) will not
+     * @param boolean $flags optional Flags to set for the read.  If left at 0, the full constellation will be read.
      * @throws \snac\exceptions\SNACInputException
      * @return null|\snac\data\Constellation The constellation object (or null)
      */
-    public function readConstellationFromDatabase(&$input,  $includeMaintenanceHistory=false) {
+    public function readConstellationFromDatabase(&$input,  $includeMaintenanceHistory=false, $flags = 0) {
         $constellation = null;
-
         $readFlags = \snac\server\database\DBUtil::$FULL_CONSTELLATION;
+
+        if ($flags !== 0)
+            $readFlags = $flags;
+
         if ($includeMaintenanceHistory) {
             $readFlags = $readFlags | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION;
         }
@@ -1688,6 +1698,91 @@ class ServerExecutor {
 
         return $response;
 
+    }
+
+    /**
+     * Read Relations for Constellation
+     *
+     * Reads the relations for the constellation (both in-edges and out-edges).  Returns the two
+     * lists in the response.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     * @throws \snac\exceptions\SNACInputException
+     */
+    public function readConstellationRelations(&$input) {
+        $response = array();
+
+        $constellation = $this->readConstellationFromDatabase($input, false, \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
+
+        if ($constellation === null) {
+            throw new \snac\exceptions\SNACInputException("Constellation not found");
+        }
+
+        if (\snac\Config::$USE_NEO4J) {
+            // If using Neo4J, then ask Neo4J.  It will be a faster response time.
+            $return = array("in" => array(), "out" => array());
+
+            $results = $this->neo4J->listConstellationInEdges($constellation);
+            foreach ($results as $i => $val) {
+                // optionally, we could call readConstellation for a fuller constellation
+                $related = new \snac\data\Constellation();
+                //$related->setID($val["_source"]["id"]);
+                //$related->setArkID($val["_source"]["arkID"]);
+                $relatedName = new \snac\data\NameEntry();
+                //$relatedName->setOriginal($val["_source"]["nameEntry"]);
+                $related->addNameEntry($relatedName);
+                // TODO: put in the relationship pointing back to the queried constellation for context
+                array_push($return["in"], $related->toArray());
+            }
+
+            // This makes less sense since they are available within the original constellation data.
+            // Leaving here for now
+            $results = $this->neo4J->listConstellationOutEdges($constellation);
+            foreach ($results as $i => $val) {
+                // optionally, we could call readConstellation for a fuller constellation
+                $related = new \snac\data\Constellation();
+                //$related->setID($val["_source"]["id"]);
+                //$related->setArkID($val["_source"]["arkID"]);
+                $relatedName = new \snac\data\NameEntry();
+                //$relatedName->setOriginal($val["_source"]["nameEntry"]);
+                $related->addNameEntry($relatedName);
+                // TODO: put in the relationships pointing from the queried constellation for context
+                array_push($return["out"], $related->toArray());
+            }
+
+            $this->logger->addDebug("Created neo4J constellation relations response to the user", $return);
+
+            // Send the response back to the web client
+            $response = $return;
+            $response["result"] = "success";
+        } else {
+            // If not using Neo4J, then we must ask DBUtil to get the information from Postgres.
+            $return = array("in" => array(), "out" => array());
+            $results = $this->cStore->listConstellationInEdges($constellation);
+            foreach ($results as $result) {
+                array_push($return["in"], array("constellation" => $result["constellation"]->toArray(),
+                                                "relation" => $result["relation"]->toArray()));
+            }
+
+            $fullConstellation = $this->cStore->readPublishedConstellationByID($constellation->getID(),
+                                        \snac\server\database\DBUtil::$READ_MICRO_SUMMARY
+                                        | \snac\server\database\DBUtil::$READ_RELATIONS);
+
+            foreach ($fullConstellation->getRelations() as $rel) {
+                array_push($return["out"], array(
+                    "constellation" => $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
+                                                    \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
+                    "relation" => $rel->toArray()
+                ));
+            }
+
+            $this->logger->addDebug("Created postgres constellation relations response to the user", $return);
+
+            $response = $return;
+            $response["result"] = "success";
+        }
+        return $response;
     }
 
     /**

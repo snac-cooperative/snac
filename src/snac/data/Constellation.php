@@ -1351,6 +1351,16 @@ class Constellation extends AbstractData {
         array_push($this->relations, $relation);
     }
 
+    /**
+     * Empty Constellation Relations
+     *
+     * Drops all constellation relations for this constellation
+     * 
+     */
+    public function emptyRelations() {
+        $this->relations = array();
+    }
+
 
     /**
      * Add relation to a resource
@@ -1360,6 +1370,16 @@ class Constellation extends AbstractData {
     public function addResourceRelation($relation) {
 
         array_push($this->resourceRelations, $relation);
+    }
+
+    /**
+     * Empty Resource Relations
+     *
+     * Drop all resource relations for this constellation.
+     *
+     */
+    public function emptyResourceRelations() {
+        $this->resourceRelations = array();
     }
 
     /**

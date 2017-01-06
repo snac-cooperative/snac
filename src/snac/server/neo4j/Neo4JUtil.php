@@ -82,7 +82,7 @@ class Neo4JUtil {
     public function writeConstellation(&$constellation) {
 
         if ($this->connector != null) {
-            /** Write at least 
+            /** Write at least
                     'nameEntry' => $constellation->getPreferredNameEntry()->getOriginal(),
                     'entityType' => $constellation->getEntityType()->getTerm(),
                     'arkID' => $constellation->getArk(),
@@ -90,8 +90,8 @@ class Neo4JUtil {
                     'degree' => (int) count($constellation->getRelations()), // In Neo4J already by nature of graph database
                     'resources' => (int) count($constellation->getResourceRelations()) // In Neo4J already if we include resources
                     **/
-            
-            /** May want to include the other name entries as part of the node **/             
+
+            /** May want to include the other name entries as part of the node **/
             $this->logger->addDebug("Updated neo4j with constellation data");
         }
     }
@@ -112,8 +112,36 @@ class Neo4JUtil {
     }
 
     /**
-     * Write or Update Resource Node 
-     *     
+     * List in-edges for constellation
+     *
+     * Lists the Constellation-Constellation relationships that point into the given constellation
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return string[]                 The list of results
+     */
+    public function listConstellationInEdges(&$constellation) {
+        $results = array();
+
+        return $results;
+    }
+
+    /**
+     * List out-edges for constellation
+     *
+     * Lists the Constellation-Constellation relationships that point out of the given constellation
+     *
+     * @param  \snac\data\Constellation $constellation Constellation to search
+     * @return string[]                 The list of results
+     */
+    public function listConstellationOutEdges(&$constellation) {
+        $results = array();
+
+        return $results;
+    }
+
+    /**
+     * Write or Update Resource Node
+     *
      * Writes the given resource to a resource node in Neo4J.  If it already exists, the node will be
      * updated. If not, it is inserted.
      *
@@ -122,7 +150,7 @@ class Neo4JUtil {
     public function writeResource(&$resource) {
 
         if ($this->connector != null) {
-            
+
             /** Want to write at least:
                     'id' => (int) $resource->getID(),
                     'title' => $resource->getTitle(),
@@ -132,7 +160,7 @@ class Neo4JUtil {
                     'type_id' => (int) $resource->getDocumentType()->getID(),
                     'timestamp' => date('c')
                     **/
-            
+
             $this->logger->addDebug("Updated resource in neo4j");
         }
     }
