@@ -507,20 +507,20 @@ function subMakeEditable(short, i) {
     if (short == 'constellationRelation') {
         // make the role dropdown affect the picture
         $('#'+short+'_type_id_'+i).change(function() {
-            updatePictureArrow(short, i, 
+            updatePictureArrow(short, i,
                 $('#'+short+'_type_id_'+i+' option:selected').text());
         });
-        
+
     }
     if (short == 'resourceRelation') {
         // make the role dropdown affect the picture
         $('#'+short+'_role_id_'+i).change(function() {
-            updatePictureArrow(short, i, 
+            updatePictureArrow(short, i,
                 $('#'+short+'_role_id_'+i+' option:selected').text());
         });
     }
 
-    
+
 
     // Set this data's operation value appropriately
     if ($("#" + short + "_id_" + i).val() != "")
@@ -1012,15 +1012,66 @@ function newNameEntryComponent(i) {
 
 function updateNameEntryHeading(i) {
     var text = "";
+    var components = [];
 
     $("#nameEntry_panel_"+i+" div[id^='nameEntry_component_']").each(function() {
         var obj = $(this);
         if (!obj.hasClass("deleted-component") && obj.attr('id').endsWith("_panel_" + i)
                 && !obj.attr('id').endsWith("ZZ")) {
             var j = obj.attr('id').replace("nameEntry_component_", "").replace("_panel_"+i, "");
-            text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
+            var type = $("#nameEntry_component_"+j+"_type_id_"+i+" option:selected").text();
+            var partText = $("#nameEntry_component_"+j+"_text_"+i).val();
+
+            components.push([type, partText]);
+            //text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
         }
     });
+
+    // update the components
+    components.forEach(function(component, i) {
+        var type = component[0];
+        var partText = component[1];
+        switch (type) {
+            case "RomanNumeral":
+                partText = partText.toUpperCase() + ",";
+                break;
+            case "Surname":
+            case "Forename":
+                // if the surname or forename are followed by a roman numeral, then don't put a comma after them
+                if (i < components.length - 1 && components[i+1][0] == 'RomanNumeral') {
+                    break;
+                }
+            case "NameAddition":
+            case "Date":
+                partText = partText + ",";
+                break;
+            case "NameExpansion":
+                partText = "(" + partText + ")";
+                break;
+        }
+        components[i][1] = partText;
+    });
+
+    // assemble the name
+    components.forEach(function(component) {
+        text += component[1] + " ";
+    });
+
+    // Clean the name based on Tom's notes
+
+    // remove leading and trailing spaces
+    text = text.trim();
+    // remove trailing "," if one exists
+    if (text.endsWith(",")) {
+        text = text.substring(0, text.length - 1);
+    }
+    text = text.trim();
+    // combine multiple spaces
+    text = text.replace(/\s+/g, " ");
+    // replace a ", (..)" with just a " (..)"
+    text = text.replace(", (", " (");
+
+
 
     $("#nameEntry_heading_"+i).text(text.trim());
     $("#nameEntry_original_"+i).val(text.trim());
@@ -1683,7 +1734,7 @@ $(document).ready(function() {
                             resourceRelationid = resourceRelationid + 1;
                             $("#resource-results-box").html("");
                             return true;
-                        } 
+                        }
                         return false;
                     });
                 }
@@ -1692,7 +1743,7 @@ $(document).ready(function() {
                     $('#btn_open_create_resource').click(function(){
                         // Close this modal and open the new modal
                         $("#resourceSearchPane").modal("hide");
-                        
+
                         // Set a 500ms timeout to give the hidden search pane time to fully close
                         setTimeout(function() {$("#resourceCreatePane").modal("show");}, 500);
 
@@ -1742,7 +1793,7 @@ $(document).ready(function() {
                             if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
                                 $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
-                            
+
 
                             turnOnButtons("resourceRelation", resourceRelationid);
                             turnOnTooltips("resourceRelation", resourceRelationid);
