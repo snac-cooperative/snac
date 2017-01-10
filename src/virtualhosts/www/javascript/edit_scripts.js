@@ -1023,12 +1023,11 @@ function updateNameEntryHeading(i) {
             var partText = $("#nameEntry_component_"+j+"_text_"+i).val();
 
             components.push([type, partText]);
-            //text += $("#nameEntry_component_"+j+"_text_"+i).val() + " ";
         }
     });
 
-
-    text = combineNameHeading(components, false);
+    var entityType = $("#entityType option:selected").text();
+    text = combineNameHeading(components, entityType);
 
 
     $("#nameEntry_heading_"+i).text(text.trim());
