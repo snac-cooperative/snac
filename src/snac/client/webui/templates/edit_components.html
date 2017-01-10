@@ -99,19 +99,15 @@
                 <input id="nameEntry_version_{{i}}" name="nameEntry_version_{{i}}" type="hidden" value="{{ nameEntry.version }}"/>
                 <input id="nameEntry_operation_{{i}}" name="nameEntry_operation_{{i}}" type="hidden" value="{{ nameEntry.operation }}"/>
                 <div class="form-group">
-                    <label for="nameEntry_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.nameHeading.tooltip}}" data-toggle="popover" data-placement="top">
-                        {{ X.nameHeading.display }}
-                    </label>
-                    <div class="col-xs-8">
-                        <p class="form-control-static" id="nameEntry_heading_{{i}}">{{nameEntry.original}} </p>
+                    <div class="col-xs-12">
+                        <h4 class="text-center" id="nameEntry_heading_{{i}}">{{nameEntry.original}}</h4>
                         <input id="nameEntry_original_{{i}}" name="nameEntry_original_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.original }}" readonly/>
+                        <p class="caption text-center" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">Computed Name Heading</p>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="control-label col-xs-4" data-content="{{X.nameComponents.tooltip}}" data-toggle="popover" data-placement="top">
-                        {{ X.nameComponents.display }}
-                    </label>
-                    <div class="col-xs-8 well well-sm" id="nameEntry_reorderable_{{i}}">
+                    <div class="col-xs-12 well well-sm" id="nameEntry_reorderable_{{i}}">
+                        <p style="font-weight: bold;" class="text-center">Name Components</p>
                         {% set j = 0 %}
                         {% for component in nameEntry.components %}
                             {{ components.displayComponent(X, inEdit, showSubElements, component, i, j) }}
@@ -194,7 +190,7 @@
                     <div class="input-group select2-bootstrap-append">
                         <span class="input-group-addon move-handle sizing-addon3 snac-hidden"><i class="fa fa-bars" aria-hidden="true"></i>
                         </span>
-                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 50%">
+                        <div id="select_nameEntry_component_{{j}}_type_{{i}}" style="width: 30%">
                             <input id="nameEntry_component_{{j}}_type_id_{{i}}"
                                 name="nameEntry_component_{{j}}_type_id_{{i}}"
                                 type="hidden" class="form-control"
@@ -211,9 +207,9 @@
                                 type="hidden" class="form-control" value="0"/>
                             <input id="nameEntry_component_{{j}}_type_placeholder_{{i}}"
                                 type="hidden" value="Part"/>
-                            <p class="form-control-static">{{ component.type.term }}</p>
+                            <p class="form-control-static name-component-type">{{ component.type.term }} :</p>
                         </div>
-                        <div id="text_nameEntry_component_{{j}}_text_{{i}}" style="width: 50%; clear: none; float: left;">
+                        <div id="text_nameEntry_component_{{j}}_text_{{i}}" style="width: 70%; clear: none; float: left;">
                         <!--<input type="text" name="nameEntry_component_{{j}}_text_{{i}}" id="nameEntry_component_{{j}}_text_{{i}}"
                             class="form-control" style="width: 50%" onKeyUp="updateNameEntryHeading({{i}})"
                             value="{{ component.text  }}" readOnly>-->

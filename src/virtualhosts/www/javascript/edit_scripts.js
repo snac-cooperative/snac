@@ -375,6 +375,13 @@ function selectToText(shortName, idStr) {
             var vocabtype = $("#"+shortName+"_"+name+"_vocabtype_"+idStr).val();
             var minlength = $("#"+shortName+"_"+name+"_minlength_"+idStr).val();
 
+            var additionalStyle = "";
+            var postText = "";
+            if (vocabtype == "name_component") {
+                additionalStyle = "name-component-type";
+                postText = " :";
+            }
+
             cont.html("<input type=\"hidden\" id=\""+shortName+"_"+name+"_id_"+idStr+"\" " +
                     "name=\""+shortName+"_"+name+"_id_"+idStr+"\" value=\""+id+"\"/>" +
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_term_"+idStr+"\" " +
@@ -383,7 +390,7 @@ function selectToText(shortName, idStr) {
                         "name=\""+shortName+"_"+name+"_vocabtype_"+idStr+"\" value=\""+vocabtype+"\"/>" +
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>" +
-                        "<p class=\"form-control-static\">"+term+"</p>");
+                        "<p class=\"form-control-static "+additionalStyle+"\">"+term+postText+"</p>");
 
         }
     });

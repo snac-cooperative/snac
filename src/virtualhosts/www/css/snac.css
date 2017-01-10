@@ -94,7 +94,11 @@ h1 {
 .control-label-subtext {
     font-size: 12px;
     font-weight: normal;
-}.
+}
+
+.name-component-type {
+    text-align: right!important;
+}
 
 .tab-pane {
 
