@@ -63,10 +63,10 @@ var permissions = {
             <!-- Left column -->
             <h3>Getting Started</h3>
 
-            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The first column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The second column gives quick access to view the most recently published Constellations on the SNAC prototype.</p>
+            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  This column shows the most recently published Constellations across SNAC.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column gives quick access to searching and other functionality depending on your permission level.</p>
             <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
 
-
+            <!--
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
@@ -75,6 +75,20 @@ var permissions = {
                     <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
                     <div class="list-group">
                         <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+            -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">View Recently Published</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
+                    <div class="list-group">
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -219,20 +233,6 @@ var permissions = {
                     <div class="list-group">
                         {% for link in data.needs_review %}
                         <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">View Recently Published</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
-                    <div class="list-group">
-                        {% for recent in data.recents %}
-                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>
