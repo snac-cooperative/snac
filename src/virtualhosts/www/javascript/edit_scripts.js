@@ -1027,55 +1027,14 @@ function updateNameEntryHeading(i) {
         }
     });
 
-    // update the components
-    components.forEach(function(component, i) {
-        var type = component[0];
-        var partText = component[1];
-        switch (type) {
-            case "RomanNumeral":
-                partText = partText.toUpperCase() + ",";
-                break;
-            case "Surname":
-            case "Forename":
-                // if the surname or forename are followed by a roman numeral, then don't put a comma after them
-                if (i < components.length - 1 && components[i+1][0] == 'RomanNumeral') {
-                    break;
-                }
-            case "NameAddition":
-            case "Date":
-                partText = partText + ",";
-                break;
-            case "NameExpansion":
-                partText = "(" + partText + ")";
-                break;
-        }
-        components[i][1] = partText;
-    });
 
-    // assemble the name
-    components.forEach(function(component) {
-        text += component[1] + " ";
-    });
-
-    // Clean the name based on Tom's notes
-
-    // remove leading and trailing spaces
-    text = text.trim();
-    // remove trailing "," if one exists
-    if (text.endsWith(",")) {
-        text = text.substring(0, text.length - 1);
-    }
-    text = text.trim();
-    // combine multiple spaces
-    text = text.replace(/\s+/g, " ");
-    // replace a ", (..)" with just a " (..)"
-    text = text.replace(", (", " (");
-
+    text = combineNameHeading(components, false);
 
 
     $("#nameEntry_heading_"+i).text(text.trim());
     $("#nameEntry_original_"+i).val(text.trim());
 }
+
 
 /**
  * Create a new Name Entry Contributor object on page
