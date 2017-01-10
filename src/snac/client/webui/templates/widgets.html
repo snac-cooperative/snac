@@ -1,13 +1,13 @@
 {% macro optionsListWithDate(X, inEdit, showSubElements, short, i) %}
 <div class="col-xs-2">
-    <div class="list-group">
+    <div class="list-group snac-options-list">
         {% if showSubElements %}
-        <a href="#" id="{{short}}_datebutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_date_modal_{{i}}" onClick="event.preventDefault();"><span class="fa fa-calendar" aria-hidden="true"></span> {{ X.date.display }}</a>
-        <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
+        <a href="#" id="{{short}}_datebutton_{{i}}" class="list-group-item list-group-item-warning" data-toggle="modal" data-target="#{{short}}_date_modal_{{i}}" onClick="event.preventDefault();"><span class="fa fa-2x fa-calendar" aria-hidden="true"></span><br>{{ X.date.display }}</a>
+        <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pagelines" aria-hidden="true"></span><br>{{ X.scm.display }}</a>
         {% endif %}
         {% if inEdit %}
-            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pencil-square-o" aria-hidden="true"></span><br>{{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-2x fa-trash-o" aria-hidden="true"></span><br>{{ X.trash.display }}</a>
         {% endif %}
     </div>
 </div>
@@ -16,13 +16,13 @@
 {% macro optionsList(X, inEdit, showSubElements, short, i) %}
     {% if showSubElements or inEdit %}
         <div class="col-xs-2">
-            <div class="list-group">
+            <div class="list-group snac-options-list">
                 {% if showSubElements %}
-                <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-pagelines" aria-hidden="true"></span> {{ X.scm.display }}</a>
+                <a href="#" id="{{short}}_scmbutton_{{i}}" class="list-group-item list-group-item-success" data-toggle="modal" data-target="#{{short}}_scm_modal_{{i}}" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pagelines" aria-hidden="true"></span><br>{{ X.scm.display }}</a>
                 {% endif %}
                 {% if inEdit %}
-                    <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-                    <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+                    <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pencil-square-o" aria-hidden="true"></span><br>{{ X.edit.display }}</a>
+                    <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-2x fa-trash-o" aria-hidden="true"></span><br>{{ X.trash.display }}</a>
                 {% endif %}
             </div>
         </div>
@@ -60,9 +60,9 @@
 {% macro subOptionsList(X, inEdit, showSubElements, short, i) %}
     {% if inEdit %}
     <div class="col-xs-2">
-        <div class="list-group">
-            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> {{ X.edit.display }}</a>
-            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-trash-o" aria-hidden="true"></span> {{ X.trash.display }}</a>
+        <div class="list-group snac-options-list">
+            <a href="#" id="{{short}}_editbutton_{{i}}" class="list-group-item list-group-item-info" onClick="event.preventDefault();"><span  class="fa fa-2x fa-pencil-square-o" aria-hidden="true"></span><br>{{ X.edit.display }}</a>
+            <a href="#" id="{{short}}_deletebutton_{{i}}" class="list-group-item list-group-item-danger" onClick="event.preventDefault();"><span class="fa fa-2x fa-trash-o" aria-hidden="true"></span><br>{{ X.trash.display }}</a>
         </div>
     </div>
     {% endif %}

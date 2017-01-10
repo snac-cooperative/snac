@@ -415,7 +415,7 @@ function makeEditable(short, i) {
         setDeleted(short, i);
 
     $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("list-group-item-warning");
-    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-undo\"></span> Undo");
+    $("#" + short + "_editbutton_" + i).html("<span class=\"fa fa-2x fa-undo\"></span><br>Undo");
     $("#" + short + "_editbutton_" + i).off('click').on("click", function() {
     	undoEdit(short, i);
     });
@@ -637,7 +637,7 @@ function makeUneditable(shortName, i) {
 
     // restore the edit button
     $("#" + shortName + "_editbutton_" + i).addClass("list-group-item-info").removeClass("list-group-item-warning");
-    $("#" + shortName + "_editbutton_" + i).html("<span class=\"fa fa-pencil-square-o\"></span> Edit");
+    $("#" + shortName + "_editbutton_" + i).html("<span class=\"fa fa-2x fa-pencil-square-o\"></span><br>Edit");
     $("#" + shortName + "_editbutton_" + i).off('click').on("click", function() {
     	makeEditable(shortName, i);
     });
@@ -754,7 +754,7 @@ function setDeleted(short, i) {
     if ($("#" + short + "_operation_" + i).val() != "delete") {
     	// set deleted
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-danger").addClass("list-group-item-warning");
-        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-undo\"></span> Undo");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-2x fa-undo\"></span><br>Undo");
 
         // disable edit button
         $("#" + short + "_editbutton_" + i).removeClass("list-group-item-info").addClass("disabled");
@@ -771,7 +771,7 @@ function setDeleted(short, i) {
     } else {
     	// set undelete
         $("#" + short + "_deletebutton_" + i).removeClass("list-group-item-warning").addClass("list-group-item-danger");
-        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-trash-o\"></span> Trash");
+        $("#" + short + "_deletebutton_" + i).html("<span class=\"fa fa-2x fa-trash-o\"></span><br>Trash");
 
         // restore edit button
         $("#" + short + "_editbutton_" + i).addClass("list-group-item-info").removeClass("disabled");
