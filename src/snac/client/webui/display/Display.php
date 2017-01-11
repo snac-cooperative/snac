@@ -154,12 +154,20 @@ class Display {
             $this->data["X"] = $this->language;
         }
 
+        $this->data["control"] = array();
+
+        if (isset(\snac\Config::$INTERFACE_VERSION)) {
+            if (\snac\Config::$INTERFACE_VERSION === "development")
+                $this->data["control"]["interfaceVersion"] = "development";
+            if (\snac\Config::$INTERFACE_VERSION === "demo")
+                $this->data["control"]["interfaceVersion"] = "demo";
+
+        }
+
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
-            $this->data["control"] = array (
-                "noCache" => "?_=".`git rev-parse HEAD` 
-            );
+            $this->data["control"]["noCache"] = "?_=".`git rev-parse HEAD`;
         }
 
         $loader = new \Twig_Loader_Filesystem(\snac\Config::$TEMPLATE_DIR);

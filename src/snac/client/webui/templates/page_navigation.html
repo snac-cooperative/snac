@@ -1,4 +1,4 @@
-{% macro topNavigation(X, user, permissions) %}
+{% macro topNavigation(X, user, permissions, control) %}
 <nav class="navbar navbar-inverse navbar-fixed-top">
     <div class="container">
         <div class="navbar-header">
@@ -53,4 +53,9 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
+    {% if control.interfaceVersion == "development" %}
+    <p class="snac-system-notice">This is the <b>development version</b>.  Edits made to these Constellations will not be permanent.</p>
+    {% elseif control.interfaceVersion == "demo" %}
+    <p class="snac-system-notice">This is the <b>demo version</b>.  Edits made to these Constellations will not be permanent.</p>
+    {% endif %}
 {% endmacro %}

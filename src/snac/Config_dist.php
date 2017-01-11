@@ -34,6 +34,11 @@ class Config {
     public static $SITE_OFFLINE = false;
 
     /**
+     * @var string The interface version: "development", "demo", or "production"
+     */
+    public static $INTERFACE_VERSION = "production";
+
+    /**
      * @var boolean Whether the system is in DEBUG mode
      */
     public static $DEBUG_MODE = true;
