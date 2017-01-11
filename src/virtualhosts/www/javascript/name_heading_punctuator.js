@@ -19,13 +19,13 @@ function combineNameHeading(components, entityType) {
             var type = component[0];
             var partText = component[1];
             switch (type) {
-                case "RomanNumeral":
+                case "Numeration":
                     partText = partText + ",";
                     break;
                 case "Surname":
                 case "Forename":
                     // if the surname or forename are followed by a roman numeral, then don't put a comma after them
-                    if (i < components.length - 1 && components[i+1][0] == 'RomanNumeral') {
+                    if (i < components.length - 1 && components[i+1][0] == 'Numeration') {
                         break;
                     }
                 case "NameAddition":
