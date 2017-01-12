@@ -317,9 +317,9 @@ body {
                      <div class="panel panel-default" data-xsl="linkedData">
                         <div class="panel-heading">
                            <h4>
-                            {% set numRels = 2 %}
+                            {% set numRels = 0 %}
                             {% for relation in data.otherRecordIDs %}
-                            {% if relation.type.term == 'sameAs' or relation.type.term == 'viafID' %}
+                            {% if relation.type.term == 'sameAs' %}
                                 {% set numRels = numRels + 1 %}
                             {% endif %}
                             {% endfor %}
