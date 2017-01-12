@@ -175,7 +175,7 @@ body {
                   {% if data.biogHists.0.text %}
                     {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
                   {% else %}
-                    <div class="alert alert-info">not available for this record</div>
+                    <div class="alert alert-info" style="clear: both;">not available for this record</div>
                   {% endif %}
                   </div>
                   <br clear="both"></br>
