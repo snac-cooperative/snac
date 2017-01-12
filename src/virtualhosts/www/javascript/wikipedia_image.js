@@ -1,3 +1,17 @@
+/**
+ * Wikipedia Image Gatherer
+ *
+ * Code that connects to wikimedia commons and gathers image information for the given Constellation,
+ * if that constellation has an image in wikipedia.
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
+// This list of licenses was modified from the license list provided by:
+// https://github.com/wmde/Lizenzhinweisgenerator/blob/master/js/app/LICENCES.js
 var wikipediaLicenses = [
      ['cc-by-sa-4.0', 'CC BY-SA 4.0', 'https://creativecommons.org/licenses/by-sa/4.0/legalcode'],
      ['cc-by-sa-3.0', 'CC BY-SA 3.0', 'https://creativecommons.org/licenses/by-sa/3.0/legalcode'],
@@ -15,7 +29,7 @@ var wikipediaLicenses = [
 
 $(document).ready(function() {
     // Check that we're on the view page
-    if ($('#wikipediaImage').exists()){
+    if ($('#wikipediaImage').exists() && $('#hasWikipediaLink').exists()){
         var shortArk = $('#ark').val().replace("http://n2t.net/ark:/99166/", "");
         var query = "SELECT ?_image WHERE {" +
             "?q wdt:P3430 \""+ shortArk +"\"." +
@@ -75,9 +89,13 @@ $(document).ready(function() {
                                                 if (realLicense == null) {
                                                     for (var i = 0; i < wikipediaLicenses.length; i++) {
                                                         if (license.toLowerCase().indexOf(wikipediaLicenses[i][0]) !== -1) {
-                                                            realLicense = "<a href=\""+
-                                                                wikipediaLicenses[i][2]+"\">"+
-                                                                wikipediaLicenses[i][1]+"</a>";
+                                                            if (wikipediaLicenses[i][2] == null) {
+                                                                realLicense = wikipediaLicenses[i][1];
+                                                            } else {
+                                                                realLicense = "<a href=\""+
+                                                                    wikipediaLicenses[i][2]+"\">"+
+                                                                    wikipediaLicenses[i][1]+"</a>";
+                                                            }
                                                             break;
                                                         }
                                                     }

@@ -365,6 +365,9 @@ body {
                                                      <div class="sprite-icons-wikipedia"></div>
                                                      <a href="{{sameas.uri}}">Wikipedia</a>
                                                   </div>
+                                                  <!-- For the sake of Wikipedia, we will only ask for a wikipedia image
+                                                       if the Constellation has a wikipedia link from us. -->
+                                                   <input id="hasWikipediaLink" type="hidden" value="true"/>
                                                 {% elseif 'loc.gov/authorities' in sameas.uri %}
                                                    <div>
                                                      <div class="sprite-icons-idlocgov"></div>
