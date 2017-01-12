@@ -385,11 +385,6 @@ body {
                                                         <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
                                                     </div>
                                                 {% endif %}
-                                            {% elseif sameas.type.term == 'viafID' %}
-                                               <div>
-                                                 <div class="sprite-icons-viaf"></div>
-                                                 <a href="http://viaf.org/viaf/{{sameas.uri}}">Virtual International Authority File</a>
-                                              </div>
                                             {% endif %}
                                         {% endfor %}
                            </div>
