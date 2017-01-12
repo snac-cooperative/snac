@@ -204,10 +204,11 @@ class DBUser
      * part of a user object. We could add an optional arg, but for now, call writePassword()
      *
      * @param \snac\data\User $user A user object.
+     * @param boolean $saveRole optionsl If true, save the roles of this user
      *
      * @return \snac\data\User Return the cloned User with the userID set (and all other fields populated)
      */
-    public function createUser($user)
+    public function createUser($user, $saveRole=false)
     {
         if (! $this->userExists($user))
         {
@@ -226,6 +227,22 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
+            
+            /*
+             * Admins can run this on behalf of another user. It requires authorization to save roles and save
+             * groups.
+             */
+            if ($saveRole) {
+
+                // go through the original passed-in user and add their roles to the system
+                foreach($user->getRoleList() as $role) {
+                    // This method will munge the list of roles attached to the user (Side-effect-full)
+                    $this->addRoleToUser($newUser, $role);
+                }
+
+                // read the full user back out to return
+                $newUser = $this->readUser($newUser);
+            }
             // $this->addDefaultRole($newUser);
             return $newUser;
         }

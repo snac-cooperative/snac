@@ -333,7 +333,7 @@ class ServerExecutor {
                     $response["error"] = "Could not save the user";
                 }
             } else {
-                $updated = $this->uStore->createUser($updated);
+                $updated = $this->uStore->createUser($updated, true);
                 if ($updated !== false)
                     $success = true;
                 else
