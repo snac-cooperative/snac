@@ -65,6 +65,7 @@
 <script src="javascript/save_actions.js{{control.noCache}}"></script>
 <script src="javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
 
 <style>
 body {
@@ -110,6 +111,7 @@ body {
       <!-- Constellation Data -->
       <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+      <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
 
       <div class="main_content">
          <div id="identity">
@@ -167,7 +169,7 @@ body {
                      </div>
                   </div>
                   <h2>Biographical notes:</h2>
-                  <div class="wikipedia_thumbnail" data-xsl="wikipedia_thumbnail">
+                  <div class="wikipedia_thumbnail" id="wikipediaImage">
                   </div>
                   <div class="biogHist">
                   {% if data.biogHists.0.text %}
@@ -497,7 +499,7 @@ body {
                                         {% for relation in data.relations %}
                                         {% if relation.targetEntityType.term == 'family' %}
                                             <div class="family">
-                                                <span class="arcrole">{{relation.type.term}}</span> 
+                                                <span class="arcrole">{{relation.type.term}}</span>
                                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                                 <div></div>
                                             </div>
