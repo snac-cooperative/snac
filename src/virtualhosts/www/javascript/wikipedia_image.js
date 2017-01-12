@@ -65,23 +65,21 @@ $(document).ready(function() {
                                 var page = info.query.pages[key];
                                 if (page.revisions && page.revisions[0]["*"]) {
                                     wikidata = page.revisions[0]["*"];
-                                    var wikiRegEx = /.*Author=(.*)\n.*int:license-header}} ==(.*).*/g;
-                                    var myArray = wikiRegEx.exec(wikidata);
                                     // We have the metadata
-                                    var split1 = wikidata.split("|Author=");
+                                    var split1 = wikidata.split(/[Aa]uthor=/);
                                     if (split1[1]) {
                                         var split2 = split1[1].split("\n");
                                         var authors = split2[0].replace("[[", "").replace("]]", "").trim().split("|");
                                         authors.forEach(function(authorTmp) {
                                             var author = authorTmp.replace("{{", "").replace("}}", "").trim();
-                                            if (realAuthor == null && author.startsWith("creator:")) {
+                                            if (realAuthor == null && !author.startsWith("User:")) {
                                                 realAuthor = author.replace("creator:", "");
                                             } else if (realAuthor == null && author.startsWith("User:")) {
                                                 realAuthor = "<a href=\"https://commons.wikimedia.org/wiki/\"" +
                                                 author +">" + author.replace("User:", "") + "</a>";
                                             }
                                         });
-                                        var split3 = split1[1].split("license-header}} ==");
+                                        var split3 = split1[1].split(/license-header}}\s*==/);
                                         if (split3[1]) {
                                             var split4 = split3[1].trim().split("\n");
                                             var licenses = split4[0].replace("{{", "").replace("}}", "").trim().split("|");
