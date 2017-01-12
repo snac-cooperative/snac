@@ -1,4 +1,15 @@
 /**
+ * Name Entry / Name Heading Punctuator
+ *
+ * Contains code that combines name components into nameEntry strings with punctuation
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
+/**
  * Combine Name Heading components
  *
  * Uses implied rules from Daniel's document at https://docs.google.com/document/d/1Ld02svYzeOY0tlpWZ4zsdS0ylirZD-xH5cAzckf776w

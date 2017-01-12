@@ -3,7 +3,6 @@
  *
  * Contains code that handles what happens in the admin GUI
  *
- *
  * @author Robbie Hott
  * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
@@ -47,9 +46,9 @@ function unlockConstellation(id, version) {
             setTimeout(function(){
                 $('#status-message').slideUp();
             }, 3000);
-           
-            $("#button_"+id).addClass("disabled").removeClass("btn-warning").addClass("btn-default"); 
-            $("#status_"+id).text("Checked out (not editing)"); 
+
+            $("#button_"+id).addClass("disabled").removeClass("btn-warning").addClass("btn-default");
+            $("#status_"+id).text("Checked out (not editing)");
         }
     });
 }
@@ -60,9 +59,9 @@ function doReassignConstellation() {
 
     if (typeof $('input[name=reassignTo]:checked') == 'undefined')
         return false;
-    
+
     var toUserID = $('input[name=reassignTo]:checked').val();
-    
+
     if (typeof toUserID == 'undefined')
         return false;
 
@@ -84,7 +83,7 @@ function doReassignConstellation() {
 }
 
 function reassignConstellation(id, version) {
-    
+
     $("#usersPaneContent").html("<p class='text-center'>Loading...</p>");
     $("#usersPane").modal();
 

@@ -1,3 +1,14 @@
+/**
+ * Relation Searching
+ *
+ * Contains code that handles searching relations (Constellation and Resource)
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
 var resourceResults = null;
 
 function setRelationSearchPosition(start) {
@@ -86,20 +97,20 @@ function setRelationSearchPosition(start) {
              // save them globally for the continue script
              resourceResults = data.results;
 
-             html += "<p class='search-info'>Showing " + data.results.length + " of " + data.total + " results.</p>"; 
+             html += "<p class='search-info'>Showing " + data.results.length + " of " + data.total + " results.</p>";
 
              // Put the results onto the page
              for (var key in data.results) {
                  //html += "<div class='input-group'><span class='input-group-addon'><input type='radio'></span><p class='form-static'>Blah</p><span class='input-group-button'><button class='btn btn-default' type='button'>View</button></span></div>";
                  html += "<div class='list-group-item'><div class='row'>";
                  html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='"+key+"'></div><div class='col-xs-10'>";
-     
-                 if (typeof data.results[key].title !== 'undefined') { 
+
+                 if (typeof data.results[key].title !== 'undefined') {
                      html += "<h4 class='list-group-item-heading'>"+data.results[key].title+"</h4>";
                      html += "<p class='list-group-item-text'>";
-                     if (typeof data.results[key].abstract !== 'undefined')  
+                     if (typeof data.results[key].abstract !== 'undefined')
                          html += data.results[key].abstract+"<br>";
-                     if (typeof data.results[key].link !== 'undefined')  
+                     if (typeof data.results[key].link !== 'undefined')
                          html += data.results[key].link + " <a class='label label-info' target='_blank' href='"+data.results[key].link+"'>View</a>";
                      html += "</p>";
                  } else if (typeof data.results[key].link !== 'undefined') {
@@ -110,14 +121,14 @@ function setRelationSearchPosition(start) {
                  } else {
                      html += "<h4 class='list-group-item-heading'>Ill-formed resource</h4>";
                  }
-                 html += "</div>"; 
+                 html += "</div>";
                  html += "</div></div>";
              } // end for
 
          } else {
              html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
          }
-         
+
          /*
          html += "<div class='list-group-item list-group-item-warning'><div class='row'>";
          html += "<div class='col-xs-1'><input type='radio' name='resourceChoice' id='resourceChoice' value='new'></div>";
@@ -145,7 +156,7 @@ function setRelationSearchPosition(start) {
       var $target = $(this);
       timeoutID = setTimeout(function() { setRelationSearchPosition(0); searchAndUpdate(); }, 500);
     });
-    
+
     $('#resource-searchbutton').click(function(){
         searchResource();
     });

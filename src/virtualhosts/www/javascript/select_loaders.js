@@ -1,4 +1,16 @@
 /**
+ * Select Box Loaders
+ *
+ * Functions that can be used to replace select boxes on the edit page with
+ * pretty-formatted versions using JQuery and Select2
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
+/**
  * Replace a select that is linked to a Vocabulary search
  *
  * Replaces the select with a select2 object capable of making AJAX queries
