@@ -4162,12 +4162,12 @@ class SQL
      * Ignores the version, but quickly grabs all ICIDs that may still point at
      * the given target ICID.
      * @param  int $icid The target ICID to search
-     * @return int[]       The list of ICIDs that may still point to this target
+     * @return int[][]       Associative array of [ic_id, id] constituting (ICID, resourceRelationID) pairs that may still point to this target
      */
     public function selectUnversionedConstellationIDsForRelationTarget($icid) {
         $qq = 'selectrelatedicids';
         $this->sdb->prepare($qq,
-                            'select aa.ic_id
+                            'select aa.ic_id, aa.id
                             from related_identity as aa
                             where not aa.is_deleted and
                             aa.related_id = $1');

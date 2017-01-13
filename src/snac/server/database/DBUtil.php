@@ -3796,18 +3796,19 @@ class DBUtil
             return $results;
         }
 
-        // This constitutes some cheating:  We will ask for a list of IC_IDs (regardless of version) that
+        // This constitutes some cheating:  We will ask for a list of [IC_ID,relation_id]s (regardless of version) that
         // point in to this constellation, then go through and check each one by hand to see if they
         // currently still point to this constellation.  This allows us to take advantage of the structure
         // of the database as well as its indices.
-        $icids = $this->sql->selectUnversionedConstellationIDsForRelationTarget($constellation->getID());
+        $edgeList = $this->sql->selectUnversionedConstellationIDsForRelationTarget($constellation->getID());
 
 
-        foreach ($icids as $inEdge) {
+        foreach ($edgeList as $inEdge) {
             $inC = $this->readPublishedConstellationByID($inEdge["ic_id"], DBUtil::$READ_MICRO_SUMMARY|DBUtil::$READ_RELATIONS);
             $inR = null;
             foreach ($inC->getRelations() as $rel) {
-                if ($rel->getTargetConstellation() !== null && $rel->getTargetConstellation() == $constellation->getID()) {
+                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null 
+                        && $rel->getTargetConstellation() == $constellation->getID()) {
                     $inR = $rel;
                     break;
                 }
