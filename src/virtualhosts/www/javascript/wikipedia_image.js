@@ -9,6 +9,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+jQuery.fn.exists = function(){return this.length>0;}
 
 // This list of licenses was modified from the license list provided by:
 // https://github.com/wmde/Lizenzhinweisgenerator/blob/master/js/app/LICENCES.js

@@ -9,6 +9,8 @@
  *            the Regents of the University of California
  */
 
+jQuery.fn.exists = function(){return this.length>0;}
+
 // Global map
 var geoMapView = null;
 var impliedRelationsLoaded = false;
