@@ -130,6 +130,27 @@ body {
                         {% endif %}
                      </div>
                      <div>
+                         {# This should eventually be pulled from the maybe same table #}
+                         {% set numRels = 0 %}
+                         {% for relation in data.relations %}
+                            {% if relation.type.term == 'mayBeSameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                         {% endfor %}
+
+                         {% if numRels > 0 %}
+                         <div data-xsl="maybeSame">
+                           <label>Maybe same as:</label>
+                            {% for relation in data.relations %}
+                                {% if relation.type.term == 'mayBeSameAs' %}
+                                <div>
+                                   <a href="{{relation.targetArkID}}">{{relation.content}}</a>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                         </div>
+                        {% endif %}
+
                         <div data-xsl="authoritySource">
                            <label>Authority Source:</label>
                            <!-- TEMPLATE_SOURCE  -->
