@@ -308,6 +308,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "relations":
                 $response = $executor->performRelationsQuery($this->input);
                 break;
+            case "maybesame":
+                $response = $executor->displayMaybeSameListPage($this->input, $display);
+                break;
 
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);

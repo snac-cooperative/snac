@@ -5454,4 +5454,31 @@ class SQL
         }
         return $all;
     }
+
+    /**
+     * List MaybeSameIDs
+     *
+     * Gets a list of ICIDs that may be the same as the given parameter.
+     *
+     * @param  integer $icid IC ID for which to search
+     * @return integer[]       List of ICIDs listed to be maybe the same
+     */
+    public function listMaybeSameIDsFor($icid) {
+        $result = $this->sdb->query(
+            'select ic_id1, ic_id2 from maybe_same where ic_id1=$1 or ic_id2=$1;',
+            array($icid));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            // Assign the ids as keys as well as values to ensure no duplicates
+            if ($row['ic_id1'] == $icid) {
+                $all[$row['ic_id2']] = $row['ic_id2'];
+            } else {
+                $all[$row['ic_id1']] = $row['ic_id1'];
+            }
+        }
+        return $all;
+    }
+
 }

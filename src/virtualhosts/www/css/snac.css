@@ -354,6 +354,38 @@ button.list-group-item-review.active:focus {
     border-color: #AE5A0B;
 }
 
+.list-group-item-merge {
+    color: #AB307C;
+    background-color: #F3E0EF;
+}
+a.list-group-item-merge,
+button.list-group-item-merge {
+    color: #AB307C;
+}
+a.list-group-item-merge .list-group-item-heading,
+button.list-group-item-merge .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-merge:hover,
+button.list-group-item-merge:hover,
+a.list-group-item-merge:focus,
+button.list-group-item-merge:focus {
+    color: #AB307C;
+    background-color: #EBCDE1;
+}
+a.list-group-item-merge.active,
+button.list-group-item-merge.active,
+a.list-group-item-merge.active:hover,
+button.list-group-item-merge.active:hover,
+a.list-group-item-merge.active:focus,
+button.list-group-item-merge.active:focus {
+    color: #fff;
+    background-color: #AB307C;
+    border-color: #AB307C;
+}
+
+
+
 /* Use the following to define new panel styles */
 .panel-review {
     border-color: #FBDECE;

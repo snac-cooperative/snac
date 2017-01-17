@@ -308,6 +308,45 @@ class WebUIExecutor {
         }
     }
 
+
+    /**
+     * Display MaybeSame List Page
+     *
+     * Fills the display object with the maybe-same list page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge buttons.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMaybeSameListPage(&$input, &$display) {
+
+        $query = array(
+            "command" => "constellation_list_maybesame",
+            "constellationid" => $input["constellationid"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("maybesame_list_page");
+            $displayData = array(
+                "constellation" => $serverResponse["constellation"],
+                "mergeable" => $serverResponse["mergeable"]
+            );
+            if (isset($serverResponse["maybe_same"])) {
+                $displayData["maybeSameList"] = $serverResponse["maybe_same"];
+            }
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $display->setData($displayData);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+
     /**
      * Start SNAC Session
      *

@@ -1468,7 +1468,7 @@ class ServerExecutor {
                 // If the current status is published OR the user has that constellation locked editing (checked out to them),
                 // OR the constellation needs review and the user has permission to review (TODO)
                 // then the user is allowed to edit.
-                if ( $status == "published" || $inList || ($status == "needs review" && 1)) {
+                if ( $status == "published" || $inList || ($status == "needs review" && $this->hasPermission("Change Locks"))) {
                     // Can edit this!
 
                     // lock the constellation to the user as currently editing
@@ -1566,6 +1566,60 @@ class ServerExecutor {
             }
         } else {
             $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * List MaybeSames for Constellation
+     *
+     * This method looks up the constellation and any maybeSame relations (possible merges) for the constellation.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
+    public function listMaybeSameConstellations(&$input) {
+        $this->logger->addDebug("Listing MaybeSame For Constellation");
+        $response = array();
+
+        if (isset($input["constellationid"])) {
+            // Editing the given constellation id by reading the database
+
+            try {
+                // Read the constellation
+                $this->logger->addDebug("Reading constellation from the database");
+
+                $cId = $input["constellationid"];
+                $status = $this->cStore->readConstellationStatus($cId);
+
+
+                // Right now, only published constellations can be merged, so that we can keep a "clean" history
+                if ( $status == "published" ) {
+                    $response["mergeable"] = true;
+                } else {
+                    $response["mergeable"] = false;
+                }
+
+                // read the constellation into response
+                $constellation = $this->cStore->readConstellation($cId, null, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                $this->logger->addDebug("Finished reading constellation from the database");
+                $response["constellation"] = $constellation->toArray();
+
+                $maybeSame = $this->cStore->listMaybeSameConstellations($cId,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+                $response["maybe_same"] = array();
+                foreach ($maybeSame as $key => $ms) {
+                    $response["maybe_same"][$key] = array(
+                        "constellation" => $ms->toArray(),
+                        "mergeable" => $this->cStore->readConstellationStatus($ms->getID()) == "published"
+                    );
+                }
+
+            } catch (\Exception $e) {
+                // Leaving a catch block for logging purposes
+                throw $e;
+            }
         }
         return $response;
     }

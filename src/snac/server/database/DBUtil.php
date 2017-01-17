@@ -65,7 +65,7 @@ class DBUtil
      *
      * Note: this does not include the maintenance history by default
      */
-    public static $FULL_CONSTELLATION = 511; // all up to maintenance history 
+    public static $FULL_CONSTELLATION = 511; // all up to maintenance history
 
     /**
      * @var int Flag to read the entire constellation except relations
@@ -792,7 +792,7 @@ class DBUtil
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        
+
         // IF the user wants metadata, then populate the cache for it
         if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
             $this->logger->addDebug("Populating Caches: Meta");
@@ -3780,6 +3780,27 @@ class DBUtil
         }
     }
 
+    /**
+     * List maybe-same constellations
+     *
+     * Gets a list of constellations that may be the same as the search
+     *
+     * @param  int  $icid  Identity Constellation ID for which to get maybe same
+     * @param  integer $flags Read flags for the read call (default is FULL_CONSTELLATION)
+     * @return \snac\data\Constellation[]         List of maybesame constellations
+     */
+    public function listMaybeSameConstellations($icid, $flags=0) {
+        $response = array();
+
+        $icids = $this->sql->listMaybeSameIDsFor($icid);
+
+        foreach ($icids as $maybeSame) {
+            array_push($response, $this->readPublishedConstellationByID($maybeSame, $flags));
+        }
+
+        return $response;
+    }
+
 
     /**
      * List In Edges for Constellation
@@ -3807,7 +3828,7 @@ class DBUtil
             $inC = $this->readPublishedConstellationByID($inEdge["ic_id"], DBUtil::$READ_MICRO_SUMMARY|DBUtil::$READ_RELATIONS);
             $inR = null;
             foreach ($inC->getRelations() as $rel) {
-                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null 
+                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null
                         && $rel->getTargetConstellation() == $constellation->getID()) {
                     $inR = $rel;
                     break;
