@@ -50,6 +50,7 @@
 <!-- SNAC Javascript -->
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
+<script src="javascript/search.js{{control.noCache}}"></script>
 
 <style>
 body {
@@ -94,8 +95,9 @@ body {
 
          .thumbnail {
          display: inline-block;
-         margin:  .5em;
-         padding:  0;
+         margin:  0px;
+         margin-bottom: 0.5em;
+         padding:  0px;
          width:100%;
          }
 
@@ -149,6 +151,24 @@ body {
 {{ topNavigation(X, user, permissions, control) }}
 <div class="container snac" role="main">
     <h1>Social Networks and Archival Context</h1>
+
+    		<form class="form-horizontal" id="search_form" method="GET" action="?">
+    			<div class="well well-lg text-center">
+                        <input type="hidden" id="count" name="count" value="10">
+                        <input type="hidden" id="start" name="start" value="0">
+    					<div class="input-group">
+    						<input type="text" class="form-control"
+    							placeholder="Search for..." id="searchbox" name="term">
+    							<span class="input-group-btn">
+    							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+    						    </span>
+    					</div>
+
+    					<div id="search-results-box">
+    					</div>
+    			</div>
+    		</form>
+            <script src="javascript/search.js{{control.noCache}}"></script>
 
     <div class="row">
         <div class="col-md-12">
