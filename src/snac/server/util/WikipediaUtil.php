@@ -153,8 +153,8 @@ class WikipediaUtil {
                     $authors = explode("|", $authorStr);
                     foreach ($authors as $author) {
                         $tmpAuthor = trim(str_replace(array("{{","}}", "creator:", "Creator:"), "", $author));
-                        if (!isset($metadata["author"]) && stristr($tmpAuthor, "flickr")) {
-                            preg_match_all('/\[(.*?) (.*?)\](.*)/', $tmpAuthor, $matches);
+                        $matchingURLFormat = preg_match_all('/\[(.*?) (.*?)\](.*)/', $tmpAuthor, $matches);
+                        if (!isset($metadata["author"]) && $matchingURLFormat !== false && $matchingURLFormat > 0) {
                             $metadata["author"] = array ();
                             if (isset($matches[1]) && isset($matches[1][0]))
                                 $metadata["author"]["url"] = $matches[1][0];
@@ -165,7 +165,7 @@ class WikipediaUtil {
                             $metadata["author"] = array("name" => $tmpAuthor);
                         } else if (!isset($metadata["author"])) {
                             $metadata["author"] = array(
-                                "name" => str_ireplace("User:", "", $tmpAuthor),
+                                "name" => str_ireplace(array(":en:User:", "User:"), "", $tmpAuthor),
                                 "url" => "https://commons.wikimedia.org/wiki/" . $tmpAuthor
                             );
                         }
