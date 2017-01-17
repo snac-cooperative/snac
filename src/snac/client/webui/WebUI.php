@@ -441,7 +441,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
-                $executor->displayLandingPage($display);
+                // $executor->displayLandingPage($display);
+                // The grid page is the "new" landing page
+                $executor->displayGridPage($display);
                 break;
         }
 
