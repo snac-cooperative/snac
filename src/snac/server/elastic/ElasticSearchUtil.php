@@ -166,6 +166,46 @@ class ElasticSearchUtil {
         return $results["hits"]["hits"];
     }
 
+
+
+    /**
+     * List Random with Image
+     *
+     * List random entries from the given Elastic Search index and type that have images
+     *
+     * @param string $index The elastic search index
+     * @param string $type The elastic search index type
+     * @param boolean $withImage optional Whether or not to require images
+     * @return string[] List of recently updated records in the elastic search index
+     */
+    public function listRandomConstellations($index, $type, $withImage=true) {
+        $imagePart = '"match": {"hasImage": true}';
+        if ($withImage === false)
+            $imagePart = '"match_all" : {}';
+
+        $json = '{"query": {
+                    "function_score" : {
+                        "query" : { '.$imagePart.' },
+                        "random_score" : {}
+                    }
+                },
+                "size" : 30
+            }';
+
+        $params = [
+            'index' => $index,
+            'type' => $type,
+            'body' => $json
+
+        ];
+        
+        $this->logger->addDebug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->addDebug("Completed Elastic Search", $results);
+
+        return $results["hits"]["hits"];
+    }
+
     /**
      * Search SNAC Main Index
      *
