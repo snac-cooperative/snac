@@ -186,9 +186,9 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
     // When adding to the main index, also ask Wikipedia for the image if they have one and add it.
     $hasImage = false;
     $imgURL = null;
-    $imgCaption = null;
+    $imgMeta = null;
     if (isset($wikiURLs[$icid])) {
-        list($hasImage, $imgURL, $imgCaption) = $wikiUtil->getWikiImage($ark);
+        list($hasImage, $imgURL, $imgMeta) = $wikiUtil->getWikiImage($ark);
     }
 
     if ($eSearch != null) {
@@ -207,7 +207,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                             'resources' => $resources,
                             'hasImage' => $hasImage,
                             'imageURL' => $imgURL,
-                            'imageCaption' => $imgCaption,
+                            'imageMeta' => $imgMeta,
                             'timestamp' => date("c")
                     ]
             ];
@@ -235,7 +235,7 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                 'resources' => $resources,
                 'hasImage' => $hasImage,
                 'imageURL' => $imgURL,
-                'imageCaption' => $imgCaption,
+                'imageMeta' => $imgMeta,
                 'timestamp' => date("c")
             ];
             $primaryCount++;

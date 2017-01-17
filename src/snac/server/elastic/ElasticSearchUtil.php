@@ -65,7 +65,7 @@ class ElasticSearchUtil {
 
             // Check wikipedia for an image to cache
             $wiki = \snac\server\util\WikipediaUtil();
-            list($hasImage, $imgURL, $imgCaption) = $wiki->getWikiImage($constellation->getArk());
+            list($hasImage, $imgURL, $imgMeta) = $wiki->getWikiImage($constellation->getArk());
 
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
@@ -80,7 +80,7 @@ class ElasticSearchUtil {
                     'resources' => (int) count($constellation->getResourceRelations()),
                     'hasImage' => $hasImage,
                     'imageURL' => $imgURL,
-                    'imageCaption' => $imgCaption,
+                    'imageMeta' => $imgMeta,
                     'timestamp' => date('c')
                 ]
             ];
@@ -198,7 +198,7 @@ class ElasticSearchUtil {
             'body' => $json
 
         ];
-        
+
         $this->logger->addDebug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
         $this->logger->addDebug("Completed Elastic Search", $results);

@@ -28,26 +28,108 @@ class Image extends AbstractData {
     protected $url;
 
     /**
-     * var string Citation HTML
+     * var string information
      */
-    protected $citation;
+    protected $info;
 
     /**
-     * Get the citation of this object
-     *
-     *  @return string citation of this object
+     * var string information url
      */
-    public function getCitation() {
-        return $this->citation;
+    protected $infoURL;
+
+    /**
+     * var string author
+     */
+    protected $author;
+
+    /**
+     * var string author's URl
+     */
+    protected $authorURL;
+
+    /**
+     * var string license
+     */
+    protected $license;
+
+    /**
+     * var string license's URl
+     */
+    protected $licenseURL;
+
+    /**
+     * Get the author of this object
+     *
+     *  @return string author of this object
+     */
+    public function getAuthor() {
+        return $this->author;
     }
 
     /**
-     * Set the citation of this object
+     * Set the author of this object
      *
-     * @param string $citation citation this object
+     * @param string $author author this object
      */
-    public function setCitation($citation) {
-        $this->citation = $citation;
+    public function setAuthor($author) {
+        $this->author = $author;
+    }
+
+
+    /**
+     * Get the authorURL of this object
+     *
+     *  @return string authorURL of this object
+     */
+    public function getAuthorURL() {
+        return $this->authorURL;
+    }
+
+    /**
+     * Set the authorURL of this object
+     *
+     * @param string $authorURL authorURL this object
+     */
+    public function setAuthorURL($authorURL) {
+        $this->authorURL = $authorURL;
+    }
+
+
+    /**
+     * Get the license of this object
+     *
+     *  @return string license of this object
+     */
+    public function getLicense() {
+        return $this->license;
+    }
+
+    /**
+     * Set the license of this object
+     *
+     * @param string $license license this object
+     */
+    public function setLicense($license) {
+        $this->license = $license;
+    }
+
+
+    /**
+     * Get the licenseURL of this object
+     *
+     *  @return string licenseURL of this object
+     */
+    public function getLicenseURL() {
+        return $this->licenseURL;
+    }
+
+    /**
+     * Set the licenseURL of this object
+     *
+     * @param string $licenseURL licenseURL this object
+     */
+    public function setLicenseURL($licenseURL) {
+        $this->licenseURL = $licenseURL;
     }
 
     /**
@@ -67,6 +149,43 @@ class Image extends AbstractData {
     public function setURL($url) {
         $this->url = $url;
     }
+
+    /**
+     * Get the info url of this object
+     *
+     *  @return string info url of this object
+     */
+    public function getInfoURL() {
+        return $this->infoURL;
+    }
+
+    /**
+     * Set the info url of this object
+     *
+     * @param string $url info url this object
+     */
+    public function setInfoURL($url) {
+        $this->infoURL = $url;
+    }
+
+    /**
+     * Get the info of this object
+     *
+     *  @return string info of this object
+     */
+    public function getInfo() {
+        return $this->info;
+    }
+
+    /**
+     * Set the info of this object
+     *
+     * @param string $info info this object
+     */
+    public function setInfo($info) {
+        $this->info = $info;
+    }
+
     /**
      * Required method to convert this term structure to an array
      *
@@ -77,7 +196,12 @@ class Image extends AbstractData {
         $return = array(
             'dataType' => "Image",
             'url' => $this->getURL(),
-            'citation' => $this->getCitation()
+            'infoURL' => $this->getInfoURL(),
+            'info' => $this->getInfo(),
+            'author' => $this->getAuthor(),
+            'authorURL' => $this->getAuthorURL(),
+            'license' => $this->getLicense(),
+            'licenseURL' => $this->getLicenseURL()
         );
 
         $return = array_merge($return, parent::toArray($shorten));
@@ -109,12 +233,41 @@ class Image extends AbstractData {
 
         parent::fromArray($data);
 
-        unset($this->citation);
-        if (isset($data["citation"]))
-            $this->citation = $data["citation"];
+        unset($this->author);
+        if (isset($data["author"]))
+            $this->author = $data["author"];
         else
-            $this->citation = null;
+            $this->author = null;
 
+        unset($this->authorURL);
+        if (isset($data["authorURL"]))
+            $this->authorURL = $data["authorURL"];
+        else
+            $this->authorURL = null;
+
+        unset($this->license);
+        if (isset($data["license"]))
+            $this->license = $data["license"];
+        else
+            $this->license = null;
+
+        unset($this->licenseURL);
+        if (isset($data["licenseURL"]))
+            $this->licenseURL = $data["licenseURL"];
+        else
+            $this->licenseURL = null;
+
+        unset($this->info);
+        if (isset($data["info"]))
+            $this->info = $data["info"];
+        else
+            $this->info = null;
+
+        unset($this->infoURL);
+        if (isset($data["infoURL"]))
+            $this->infoURL = $data["infoURL"];
+        else
+            $this->infoURL = null;
 
         unset($this->url);
         if (isset($data["url"]))
@@ -144,7 +297,22 @@ class Image extends AbstractData {
         if ($this->getURL() != $other->getURL())
             return false;
 
-        if ($this->getCitation() != $other->getCitation())
+        if ($this->getInfo() != $other->getInfo())
+            return false;
+
+        if ($this->getInfoURL() != $other->getInfoURL())
+            return false;
+
+        if ($this->getAuthor() != $other->getAuthor())
+            return false;
+
+        if ($this->getAuthorURL() != $other->getAuthorURL())
+            return false;
+
+        if ($this->getLicense() != $other->getLicense())
+            return false;
+
+        if ($this->getLicenseURL() != $other->getLicenseURL())
             return false;
 
         return true;

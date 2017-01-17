@@ -162,7 +162,23 @@ body {
                                 <img src="{{constellation.images.0.url}}?width=300"
                                 alt="[thumbnail]"></img>
                             </a>
-                            <div>{{constellation.images.0.citation|replace({'<span':'<p', '</span>':'</p>', '<br>':''})|raw}}</div>
+                            <div>
+                                <p class="wikipedia-caption">
+                                    <a href="{{constellation.images.0.infoURL}}">{{constellation.images.0.info}}</a>
+                                </p>
+                                <p class="wikipedia-byline">
+                                    {% if constellation.images.0.author %}
+                                        <a href="{{constellation.images.0.authorURL|default(constellation.images.0.infoURL)}}">
+                                            {{constellation.images.0.author}}</a> -
+                                    {% endif %}
+                                    {% if constellation.images.0.license %}
+                                        <a href="{{constellation.images.0.licenseURL|default(constellation.images.0.infoURL)}}">
+                                            {{constellation.images.0.license}}</a>
+                                    {% endif %}
+                                </p>
+
+
+                            {{constellation.images.0.citation|replace({'<span':'<p', '</span>':'</p>', '<br>':''})|raw}}</div>
                         </div>
                         <div class="caption">
                             <!--<div class="text-muted">4 related collections</div>-->

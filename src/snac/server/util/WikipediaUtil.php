@@ -45,11 +45,11 @@ class WikipediaUtil {
      * Get Image Info from Wikipedia
      *
      * Given an ark, this function queries wikidata and wikimedia commons for the image URL and image
-     * metadata (author and license).  It returns an array of (hasImage:bool, imgURL:string, imgCaption:string)
+     * metadata (author and license).  It returns an array of (hasImage:bool, imgURL:string, imgMeta:string[])
      * that is NOT associative.
      *
      * @param  string $ark  ARK id for the constellation to query
-     * @return mixed[]      The array of information about the image [hasImage, url, caption]
+     * @return mixed[]      The array of information about the image [hasImage, url, metadata]
      */
     function getWikiImage($ark) {
 
@@ -68,7 +68,7 @@ class WikipediaUtil {
              ['pd', 'Public Domain', null]];
 
         $imgURL = null;
-        $imgCite = null;
+        $metadata = null;
         $shortArk = str_replace("http://n2t.net/ark:/99166/", "", $ark);
 
         $query = "SELECT ?_image WHERE {" .
@@ -104,7 +104,10 @@ class WikipediaUtil {
         }
         $imgFileName = $parts[1];
 
-        $imgCite = "<span class='wikipedia-caption'><a href=\"https://commons.wikimedia.org/wiki/File:".$imgFileName."\">Image from Wikimedia Commons</a></span>";
+        $metadata = array(
+            "infoURL" => "https://commons.wikimedia.org/wiki/File:".$imgFileName,
+            "info" => "Image from Wikimedia Commons"
+        );
 
 
         // Ask wikimedia commons for the image information
@@ -119,7 +122,7 @@ class WikipediaUtil {
         curl_close($ch);
 
         if ($response === null) {
-            return array(true, $imgURL, $imgCite);
+            return array(true, $imgURL, $metadata);
         }
 
         $imgdata = json_decode($response, true);
@@ -142,22 +145,29 @@ class WikipediaUtil {
                         $licenseStr = $matches[1][0];
 
                     if ($authorStr === null || $licenseStr === null) {
-                        return array(true, $imgURL, $imgCite);
+                        return array(true, $imgURL, $metadata);
                     }
-
-                    $realAuthor = null;
-                    $realLicense = null;
 
                     // Clean out the author and license strings
                     $authorStr = trim(str_replace(array("[[","]]"), "", $authorStr));
                     $authors = explode("|", $authorStr);
                     foreach ($authors as $author) {
-                        $tmpAuthor = trim(str_replace(array("{{","}}", "creator:"), "", $author));
-                        if ($realAuthor === null && stristr($tmpAuthor, "user:") === false) {
-                            $realAuthor = $tmpAuthor;
-                        } else if ($realAuthor === null) {
-                            $realAuthor = "<a href=\"https://commons.wikimedia.org/wiki/\"" .
-                            $tmpAuthor .">" . str_ireplace("User:", "", $tmpAuthor) . "</a>";
+                        $tmpAuthor = trim(str_replace(array("{{","}}", "creator:", "Creator:"), "", $author));
+                        if (!isset($metadata["author"]) && stristr($tmpAuthor, "flickr")) {
+                            preg_match_all('/\[(.*?) (.*?)\](.*)/', $tmpAuthor, $matches);
+                            $metadata["author"] = array ();
+                            if (isset($matches[1]) && isset($matches[1][0]))
+                                $metadata["author"]["url"] = $matches[1][0];
+                            if (isset($matches[2]) && isset($matches[2][0]))
+                                $metadata["author"]["name"] = $matches[2][0];
+
+                        } else if (!isset($metadata["author"]) && stristr($tmpAuthor, "user:") === false) {
+                            $metadata["author"] = array("name" => $tmpAuthor);
+                        } else if (!isset($metadata["author"])) {
+                            $metadata["author"] = array(
+                                "name" => str_ireplace("User:", "", $tmpAuthor),
+                                "url" => "https://commons.wikimedia.org/wiki/" . $tmpAuthor
+                            );
                         }
                     }
 
@@ -165,22 +175,20 @@ class WikipediaUtil {
                         if (stristr($licenseStr, $license[0]) !== false) {
                             // The license type was found in the license string
                             if ($license[2] === null) {
-                                $realLicense = $license[1];
+                                $metadata["license"] = array(
+                                    "name" => $license[1]
+                                );
                             } else {
-                                $realLicense = "<a href=\"".
-                                    $license[2]."\">".
-                                    $license[1]."</a>";
+                                $metadata["license"] = array(
+                                    "name" => $license[1],
+                                    "url" => $license[2]
+                                );
                             }
                             break;
                         }
                     }
 
-                    if ($realAuthor === null || $realLicense === null) {
-                        return array(true, $imgURL, $imgCite);
-                    }
-
-                    $imgCite .= "<br><span class='wikipedia-byline'>" . $realAuthor . " - " . $realLicense . "</span>";
-                    return array(true, $imgURL, $imgCite);
+                    return array(true, $imgURL, $metadata);
                 }
             }
         }
