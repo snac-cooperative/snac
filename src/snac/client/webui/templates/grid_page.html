@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Explore - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- SNAC HRT Template code -->
+<link href="css/hrt/hrt.css"
+            media="all"
+            rel="stylesheet"
+            type="text/css"></link>
+<link href="http://bioghist.s3-website-us-east-1.amazonaws.com/build/stylesheets/grunticon/icons.data.svg.css" rel="stylesheet">
+<script data-xsl-asset="javascripts/modernizr.js"
+        src="http://bioghist.s3-website-us-east-1.amazonaws.com/build/javascripts/modernizr.js"
+        charset="utf-8"
+        type="text/javascript"></script>
+<style>
+   .icon-ind, .icon-fam, .icon-org          { margin-left: 2px; }
+   .icon-ind.x2, .icon-fam.x2, .icon-org.x2 { margin-top:  5px; }
+   .sprite-icons-worldcat, .sprite-icons-wikipedia, .sprite-icons-archivegrid,
+   .sprite-icons-viaf, .sprite-icons-dpla, .sprite-icons-idlocgov
+   { float: left;
+   margin-right: 0.33em; }
+</style>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
+
+<style>
+body {
+    padding-top: 70px;
+    padding-bottom: 30px;
+}
+
+.theme-dropdown .dropdown-menu {
+    position: static;
+    display: block;
+    margin-bottom: 20px;
+}
+
+.snac > p > .btn {
+    margin: 5px 0;
+}
+
+.snac .navbar .container {
+    width: auto;
+}
+.tab-pane {
+
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+    border-radius: 0px 0px 5px 5px;
+    padding: 10px;
+}
+
+.nav-tabs {
+    margin-bottom: 0;
+}
+
+         .list-comments {
+         column-width: 15em;
+         -moz-column-width: 15em;
+         -webkit-column-width: 15em;
+         column-gap: .5em;
+         -moz-column-gap: .5em;
+         -webkit-column-gap: .5em;
+         }
+
+         .thumbnail {
+         display: inline-block;
+         margin:  .5em;
+         padding:  0;
+         width:100%;
+         }
+
+         .wikipedia_thumbnail {
+             width: 100%;
+             border: 0px;
+             padding: 0px;
+         }
+
+         .wikipedia_thumbnail img {
+             width: 100%;
+             border: 0px;
+             padding: 0px;
+         }
+
+         .wikipedia_thumbnail div {
+             width: 100%;
+             padding: 3px;
+             margin: 0px;
+             left: 0px;
+             bottom: 0px;
+         }
+          .wikipedia_thumbnail div a:hover {
+              color: #ffffff;
+          }
+
+         .wikipedia_thumbnail .wikipedia-caption {
+             font-size: 12px;
+             margin-top: 0px;
+             margin-bottom: 3px;
+         }
+
+         .wikipedia_thumbnail .wikipedia-byline {
+             font-size: 9px;
+             margin-top: 0px;
+             margin-bottom: 3px;
+         }
+
+         .thumbnail img:hover {
+         opacity: 0.66;
+         filter: alpha(opacity=66);
+         }
+
+</style>
+
+
+</head>
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+<div class="container snac" role="main">
+    <h1>Social Networks and Archival Context</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <div class="azgrid" style="position: relative; height: 100%">
+                <div class="row list-comments">
+                    {% for constellation in data.constellation %}
+                    <div class="thumbnail">
+                        <div style="float: none;" class="wikipedia_thumbnail">
+                            <a href="?command=view&constellationid={{constellation.id}}">
+                                <img src="{{constellation.images.0.url}}?width=300"
+                                alt="[thumbnail]"></img>
+                            </a>
+                            <div>{{constellation.images.0.citation|replace({'<span':'<p', '</span>':'</p>', '<br>':''})|raw}}</div>
+                        </div>
+                        <div class="caption">
+                            <!--<div class="text-muted">4 related collections</div>-->
+                            <h4>
+                                <a href="?command=view&constellationid={{constellation.id}}">{{constellation.nameEntries.0.original}}</a>
+                            </h4>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

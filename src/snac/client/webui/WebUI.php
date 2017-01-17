@@ -121,7 +121,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "vocabulary",
                 "search",
                 "quicksearch",
-                "relations"
+                "relations",
+                "explore"
         );
 
 
@@ -325,6 +326,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 } else {
                     return;
                 }
+            case "explore":
+                $executor->displayGridPage($display);
+                break;
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":

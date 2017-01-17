@@ -375,6 +375,29 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Grid Page
+     *
+     * Fills the display object with the explore grid.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayGridPage(&$display) {
+        $display->setTemplate("grid_page");
+
+        $randomQuery = $this->connect->query(array(
+                "command"=>"random_constellations",
+                "images" => true
+            ));
+
+        if (isset($randomQuery["constellation"]) && $randomQuery["constellation"] != null) {
+            $randomConstellations = $randomQuery["constellation"];
+        }
+
+        $display->setData($randomQuery);
+    }
+
+
+    /**
      * Display Dashboard Page
      *
      * Fills the display object with the dashboard for the given user.
