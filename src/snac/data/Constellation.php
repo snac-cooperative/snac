@@ -319,6 +319,13 @@ class Constellation extends AbstractData {
     private $status = null;
 
     /**
+     * Images for this constellation
+     *
+     * @var \snac\data\Image[] Images
+     */
+    private $images = null;
+
+    /**
      * Constructor for the class.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
@@ -352,6 +359,7 @@ class Constellation extends AbstractData {
             $this->structureOrGenealogies = array();
             $this->mandates = array();
             $this->entityIDs = array();
+            $this->images = array();
         }
         // always call the parent constructor
         parent::__construct($data);
@@ -763,6 +771,17 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get images
+     *
+     * Returns the list of images associated with this Constellation
+     *
+     * @return \snac\data\Image[] List of Image objects
+     */
+    public function getImages() {
+        return $this->images;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -796,7 +815,8 @@ class Constellation extends AbstractData {
             "genders" => array(),
             "generalContexts" => array(),
             "structureOrGenealogies" => array(),
-            "mandates" => array()
+            "mandates" => array(),
+            "images" => array()
         );
 
         foreach ($this->mandates as $i => $v)
@@ -858,6 +878,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->subjects as $i => $v)
             $return["subjects"][$i] = $v->toArray($shorten);
+
+        foreach ($this->images as $i => $v)
+            $return["images"][$i] = $v->toArray($shorten);
 
         $return = array_merge($return, parent::toArray($shorten));
 
@@ -1072,6 +1095,14 @@ class Constellation extends AbstractData {
             foreach ($data["places"] as $i => $entry)
                 if ($entry != null)
                     $this->places[$i] = new Place($entry);
+        }
+
+        unset($this->images);
+        $this->images = array();
+        if (isset($data["images"])) {
+            foreach ($data["images"] as $i => $entry)
+                if ($entry != null)
+                    $this->images[$i] = new Image($entry);
         }
 
         return true;
@@ -1355,7 +1386,7 @@ class Constellation extends AbstractData {
      * Empty Constellation Relations
      *
      * Drops all constellation relations for this constellation
-     * 
+     *
      */
     public function emptyRelations() {
         $this->relations = array();
@@ -1439,6 +1470,16 @@ class Constellation extends AbstractData {
         $this->status = $status;
     }
 
+
+    /**
+     * Add an image
+     *
+     * @param \snac\data\Image $image Image to set
+     */
+    public function addImage($image) {
+        array_push($this->images, $image);
+    }
+
     /**
      *
      * {@inheritDoc}
@@ -1465,14 +1506,16 @@ class Constellation extends AbstractData {
             return false;
 
         /**
-         * Currently, we are not checking the maintenance events for equality
-            if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
-                return false;
-            if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
-                 ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
-                return false;
-            if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
-                return false;
+         * Currently, we are not checking the maintenance events or images for equality
+        *    if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
+        *        return false;
+        *    if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
+        *         ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
+        *        return false;
+        *    if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
+        *        return false;
+        *    if (!$this->checkArrayEqual($this->getImages(), $other->getImages(), $strict))
+        *        return false;
         **/
 
         if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
