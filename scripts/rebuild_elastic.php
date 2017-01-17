@@ -26,6 +26,9 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 // SNAC Postgres DB Connector
 $db = new \snac\server\database\DatabaseConnector();
 
+// SNAC Wiki Util
+$wikiUtil = new \snac\server\util\WikipediaUtil();
+
 // ElasticSearch Handler
 $eSearch = null;
 
@@ -49,7 +52,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     } catch (\Exception $e) {
         echo "   - could not delete search index. It did not exist.\n";
     }
-    
+
     $counts = array();
 
     echo "Querying the relation degrees from the database.\n";
@@ -78,6 +81,19 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     {
         $counts[$c["ic_id"]]["resources"] = $c["degree"];
     }
+
+
+    $wikiURLs = array();
+
+    echo "Querying wikipedia URLs from the database.\n";
+
+    $wikiQuery = $db->query("select distinct ic_id, uri from
+                otherid where uri ilike '%wikipedia%'", array());
+    while($w = $db->fetchrow($wikiQuery))
+    {
+        $wikiURLs[$w["ic_id"]] = $w["uri"];
+    }
+
 
     $previousICID = -1;
 
@@ -115,7 +131,7 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
                 (select id, version from version_history where status in ('published', 'deleted')) bb
                 group by id order by id asc) mv,
             vocabulary etv,
-            nrd n 
+            nrd n
         where
             v.id = mv.id and
             v.version = mv.version and
@@ -163,8 +179,18 @@ if (\snac\Config::$USE_ELASTIC_SEARCH) {
     echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
 }
 
+
 function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
-    global $eSearch, $primaryBody, $primaryStart, $primaryCount;
+    global $eSearch, $primaryBody, $primaryStart, $primaryCount, $wikiURLs, $wikiUtil;
+
+    // When adding to the main index, also ask Wikipedia for the image if they have one and add it.
+    $hasImage = false;
+    $imgURL = null;
+    $imgCaption = null;
+    if (isset($wikiURLs[$icid])) {
+        list($hasImage, $imgURL, $imgCaption) = $wikiUtil->getWikiImage($ark);
+    }
+
     if ($eSearch != null) {
         // do one first to get the index going
         if (!$primaryStart) {
@@ -179,6 +205,9 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                             'id' => $icid,
                             'degree' => $degree,
                             'resources' => $resources,
+                            'hasImage' => $hasImage,
+                            'imageURL' => $imgURL,
+                            'imageCaption' => $imgCaption,
                             'timestamp' => date("c")
                     ]
             ];
@@ -204,6 +233,9 @@ function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
                 'id' => $icid,
                 'degree' => $degree,
                 'resources' => $resources,
+                'hasImage' => $hasImage,
+                'imageURL' => $imgURL,
+                'imageCaption' => $imgCaption,
                 'timestamp' => date("c")
             ];
             $primaryCount++;

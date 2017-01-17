@@ -62,6 +62,11 @@ class ElasticSearchUtil {
     public function writeToNameIndices(&$constellation) {
 
         if ($this->connector != null) {
+
+            // Check wikipedia for an image to cache
+            $wiki = \snac\server\util\WikipediaUtil();
+            list($hasImage, $imgURL, $imgCaption) = $wiki->getWikiImage($constellation->getArk());
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -73,6 +78,9 @@ class ElasticSearchUtil {
                     'id' => (int) $constellation->getID(),
                     'degree' => (int) count($constellation->getRelations()),
                     'resources' => (int) count($constellation->getResourceRelations()),
+                    'hasImage' => $hasImage,
+                    'imageURL' => $imgURL,
+                    'imageCaption' => $imgCaption,
                     'timestamp' => date('c')
                 ]
             ];
@@ -268,10 +276,10 @@ class ElasticSearchUtil {
                             'field_value_factor' => [
                                 'field' => 'resources',
                                 'modifier' => 'log1p',
-                                'factor' => 1.5 
+                                'factor' => 1.5
                             ],
                             'boost_mode' => "multiply",
-                            'max_boost' => 3 
+                            'max_boost' => 3
                         ]
                     ],
                     'from' => $start,
@@ -381,7 +389,7 @@ class ElasticSearchUtil {
                 'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
                 'body' => [
-                    /* This query uses a keyword search 
+                    /* This query uses a keyword search
                        'query' => [
                         'query_string' => [
                             'fields' => [
@@ -404,7 +412,7 @@ class ElasticSearchUtil {
                     ],
                     'from' => $start,
                     'size' => $count
-                    /* This query uses a full-phrase matching search 
+                    /* This query uses a full-phrase matching search
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [
