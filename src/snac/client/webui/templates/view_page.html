@@ -144,7 +144,7 @@ body {
                             {% for relation in data.relations %}
                                 {% if relation.type.term == 'mayBeSameAs' %}
                                 <div>
-                                   <a href="{{relation.targetArkID}}">{{relation.content}}</a>
+                                   <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                 </div>
                                 {% endif %}
                             {% endfor %}
@@ -235,8 +235,8 @@ body {
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
-                                                <div>{{relation.role.term}}</div>
+                                                <a href="{{relation.resource.link}}">{{relation.content}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -253,8 +253,8 @@ body {
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
-                                                <div>{{relation.role.term}}</div>
+                                                <a href="{{relation.resource.link}}">{{relation.content}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -271,8 +271,9 @@ body {
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.resource.link}}">{{relation.resource.title}}</a>
+                                                <a href="{{relation.resource.link}}">{{relation.content}}</a>
                                                 <div>{{relation.role.term}}</div>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -309,7 +310,7 @@ body {
                                         {% for relation in data.resourceRelations %}
                                         {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             <div class="related" style="margin-top: 5px;">
-                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.resource.title}}</a>
+                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content}}</a>
                                                 <!--<span class="arcrole">{{relation.role.term}}</span>-->
                                                 <div>{{relation.role.term}}</div>
                                                 <div></div>

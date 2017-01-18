@@ -62,6 +62,11 @@ class ElasticSearchUtil {
     public function writeToNameIndices(&$constellation) {
 
         if ($this->connector != null) {
+
+            // Check wikipedia for an image to cache
+            $wiki = new \snac\server\util\WikipediaUtil();
+            list($hasImage, $imgURL, $imgMeta) = $wiki->getWikiImage($constellation->getArk());
+
             $params = [
                 'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
@@ -73,6 +78,9 @@ class ElasticSearchUtil {
                     'id' => (int) $constellation->getID(),
                     'degree' => (int) count($constellation->getRelations()),
                     'resources' => (int) count($constellation->getResourceRelations()),
+                    'hasImage' => $hasImage,
+                    'imageURL' => $imgURL,
+                    'imageMeta' => $imgMeta,
                     'timestamp' => date('c')
                 ]
             ];
@@ -151,6 +159,46 @@ class ElasticSearchUtil {
                 ]
             ]
         ];
+        $this->logger->addDebug("Defined parameters for search", $params);
+        $results = $this->connector->search($params);
+        $this->logger->addDebug("Completed Elastic Search", $results);
+
+        return $results["hits"]["hits"];
+    }
+
+
+
+    /**
+     * List Random with Image
+     *
+     * List random entries from the given Elastic Search index and type that have images
+     *
+     * @param string $index The elastic search index
+     * @param string $type The elastic search index type
+     * @param boolean $withImage optional Whether or not to require images
+     * @return string[] List of recently updated records in the elastic search index
+     */
+    public function listRandomConstellations($index, $type, $withImage=true) {
+        $imagePart = '"match": {"hasImage": true}';
+        if ($withImage === false)
+            $imagePart = '"match_all" : {}';
+
+        $json = '{"query": {
+                    "function_score" : {
+                        "query" : { '.$imagePart.' },
+                        "random_score" : {}
+                    }
+                },
+                "size" : 30
+            }';
+
+        $params = [
+            'index' => $index,
+            'type' => $type,
+            'body' => $json
+
+        ];
+
         $this->logger->addDebug("Defined parameters for search", $params);
         $results = $this->connector->search($params);
         $this->logger->addDebug("Completed Elastic Search", $results);
@@ -268,10 +316,10 @@ class ElasticSearchUtil {
                             'field_value_factor' => [
                                 'field' => 'resources',
                                 'modifier' => 'log1p',
-                                'factor' => 1.5 
+                                'factor' => 1.5
                             ],
                             'boost_mode' => "multiply",
-                            'max_boost' => 3 
+                            'max_boost' => 3
                         ]
                     ],
                     'from' => $start,
@@ -381,7 +429,7 @@ class ElasticSearchUtil {
                 'index' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_INDEX,
                 'type' => \snac\Config::$ELASTIC_SEARCH_RESOURCE_TYPE,
                 'body' => [
-                    /* This query uses a keyword search 
+                    /* This query uses a keyword search
                        'query' => [
                         'query_string' => [
                             'fields' => [
@@ -404,7 +452,7 @@ class ElasticSearchUtil {
                     ],
                     'from' => $start,
                     'size' => $count
-                    /* This query uses a full-phrase matching search 
+                    /* This query uses a full-phrase matching search
                     'query' => [
                         'match_phrase_prefix' => [
                             'nameEntry' => [

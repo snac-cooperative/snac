@@ -1843,6 +1843,80 @@ class ServerExecutor {
     }
 
     /**
+     * Get Random Constellations
+     *
+     * Uses Elastic Search to get a random collection of published Constellations.  Then, takes the ES results and
+     * looks them up in our database to get summary constellations for each of the most recently published versions.
+     * Puts them as a list on the response for the client.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getRandomConstellations(&$input) {
+        $response = array();
+
+        $withImages = false;
+        if (isset($input["images"]) && $input["images"] == true) {
+            $withImages = true;
+        }
+
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+
+            $results = $this->elasticSearch->listRandomConstellations(
+                        \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                        \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                        $withImages);
+
+            $return = array();
+            foreach ($results as $i => $val) {
+                $related = new \snac\data\Constellation();
+                $related->setID($val["_source"]["id"]);
+                $related->setArkID($val["_source"]["arkID"]);
+                $relatedName = new \snac\data\NameEntry();
+                $relatedName->setOriginal($val["_source"]["nameEntry"]);
+                $related->addNameEntry($relatedName);
+                if ($withImages && $val["_source"]["hasImage"]) {
+                    $image = new \snac\data\Image();
+                    $image->setURL($val["_source"]["imageURL"]);
+                    if (isset($val["_source"]["imageMeta"]) && $val["_source"]["imageMeta"] !== null) {
+                        $meta = $val["_source"]["imageMeta"];
+                        if (isset($meta["infoURL"])) {
+                            $image->setInfoURL($meta["infoURL"]);
+                        }
+                        if (isset($meta["info"])) {
+                            $image->setInfo($meta["info"]);
+                        }
+                        if (isset($meta["author"]) && isset($meta["author"]["name"])) {
+                            $image->setAuthor($meta["author"]["name"]);
+                        }
+                        if (isset($meta["author"]) && isset($meta["author"]["url"])) {
+                            $image->setAuthorURL($meta["author"]["url"]);
+                        }
+                        if (isset($meta["license"]) && isset($meta["license"]["name"])) {
+                            $image->setLicense($meta["license"]["name"]);
+                        }
+                        if (isset($meta["license"]) && isset($meta["license"]["url"])) {
+                            $image->setLicenseURL($meta["license"]["url"]);
+                        }
+
+                    }
+                    $related->addImage($image);
+                }
+                array_push($return, $related->toArray());
+            }
+
+            $this->logger->addDebug("Created search response to the user", $return);
+
+            // Send the response back to the web client
+            $response["constellation"] = $return;
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "Not Using ElasticSearch";
+        }
+        return $response;
+    }
+
+    /**
      * Get Recently Published
      *
      * Uses Elastic Search to get the most recently published Constellations.  Then, takes the ES results and
