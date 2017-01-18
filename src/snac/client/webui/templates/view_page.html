@@ -144,7 +144,7 @@ body {
                             {% for relation in data.relations %}
                                 {% if relation.type.term == 'mayBeSameAs' %}
                                 <div>
-                                   <a href="{{relation.targetArkID}}">{{relation.content}}</a>
+                                   <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
                                 </div>
                                 {% endif %}
                             {% endfor %}
