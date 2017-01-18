@@ -64,7 +64,7 @@ class ElasticSearchUtil {
         if ($this->connector != null) {
 
             // Check wikipedia for an image to cache
-            $wiki = \snac\server\util\WikipediaUtil();
+            $wiki = new \snac\server\util\WikipediaUtil();
             list($hasImage, $imgURL, $imgMeta) = $wiki->getWikiImage($constellation->getArk());
 
             $params = [
