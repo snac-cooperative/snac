@@ -29,12 +29,12 @@ body {
 
 
 .navbar-demo-version {
-    /*background-image: -webkit-linear-gradient(top,#481F7D 0,#3D1970 100%);
+    background-image: -webkit-linear-gradient(top,#481F7D 0,#3D1970 100%);
     background-image: -o-linear-gradient(top,#481F7D 0,#3D1970 100%);
     background-image: -webkit-gradient(linear,left top,left bottom,from(#481F7D),to(#3D1970));
     background-image: linear-gradient(to bottom,#481F7D 0,#3D1970 100%);
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff481F7D', endColorstr='#ff3D1970', GradientType=0);
-    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);*/
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 
 
