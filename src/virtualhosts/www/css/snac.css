@@ -292,6 +292,10 @@ td.rotate > div > span {
     word-wrap: break-word;
 }
 
+.btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {
+    text-decoration: none;
+}
+
 /* Use the following to make other colors of list items */
 .list-group-item-download {
     color: #7a3583;
