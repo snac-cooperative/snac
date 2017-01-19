@@ -1010,9 +1010,17 @@ class ServerExecutor {
 
                 // If this constellation is in the list of currently editing for the user OR the user has change locks permission, then unlock it
                 if ($current->getVersion() == $constellation->getVersion() && ($inList || $this->hasPermission("Change Locks"))) {
-                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "locked editing",
-                            "User finished editing constellation");
 
+                    $result = false;
+                    if ($this->cStore->readConstellationStatus($constellation->getID(), -1) === "published") {
+                        $this->logger->addDebug("re-publishing to unlock constellation");
+                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                        "published", "Republish: User canceled edit without making changes");
+                        $this->updateIndexesAfterPublish($constellation->getID());
+                    } else {
+                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                        "locked editing", "User finished editing constellation");
+                    }
 
                     if (isset($result) && $result !== false) {
                         $this->logger->addDebug("successfully unlocked constellation");
@@ -1157,11 +1165,7 @@ class ServerExecutor {
 
                 // If this constellation is the correct version, and the user was editing it, then publish it
                 if ($current->getVersion() == $constellation->getVersion() && $inList) {
-                    if ($current->getArk() != null) {
-                        // If the constellation already has an ARK, then just update the status
-                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
-                                                                        "published", "User published constellation");
-                    } else {
+                    if ($current->getArk() === null) {
                         // We must mint an ark
                         $arkManager = new \ark\ArkManager();
 
@@ -1186,9 +1190,10 @@ class ServerExecutor {
                             unset($written);
                         }
                         $constellation->setArkID($newArk);
-                        $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
-                                                                        "published", "User published constellation");
                     }
+
+                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                                                    "published", "User published constellation");
                 }
 
                 if (isset($result) && $result !== false) {
@@ -1198,11 +1203,7 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
 
-                    // Read in the constellation from the database to update elastic search
-                    //      currently, we only need the summary for the name entries
-                    $published = $this->cStore->readPublishedConstellationByID($constellation->getID(), DBUtil::$READ_ALL_NAMES);
-
-                    $this->elasticSearch->writeToNameIndices($published);
+                    $this->updateIndexesAfterPublish($constellation->getID());
                 } else {
                     $this->logger->addDebug("could not publish the constellation");
                     $response["result"] = "failure";
@@ -1220,6 +1221,27 @@ class ServerExecutor {
         }
         return $response;
 
+    }
+
+    /**
+     * Update Indexes after a publish
+     *
+     * Updates the extra indexes.  After a constellation has been published, this should be called
+     * to update the status of the constellation in the various indices (Elastic Search, Neo4J).
+     *
+     * @param  integer $icid Identity Constellation id to index
+     */
+    protected function updateIndexesAfterPublish($icid) {
+        $this->logger->addDebug("Updating indexes after publish");
+        // Read in the constellation from the database to update elastic search
+        //      currently, we need NRD, names, relations and resource relations (for counts)
+        $published = $this->cStore->readPublishedConstellationByID($icid,
+            DBUtil::$READ_NRD |
+            DBUtil::$READ_ALL_NAMES |
+            DBUtil::$READ_RELATIONS |
+            DBUtil::$READ_RESOURCE_RELATIONS);
+
+        $this->elasticSearch->writeToNameIndices($published);
     }
 
     /**
