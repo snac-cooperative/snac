@@ -85,6 +85,7 @@ body {
             </div>
 
             <input type="hidden" id="userid" name="userid" value="{{data.user.userid}}"/>
+            {% set currentUser = (data.user.userid == user.userid) %}
 
             <div class="form-horizontal">
 
@@ -170,7 +171,7 @@ body {
                             {% endfor %}
                             <div class="checkbox">
                                 <label>
-                                    <input type="checkbox" value="{{role.id}}" name="role_{{i}}" id="role_{{i}}" data-toggle="toggle" {{checked}}>
+                                    <input type="checkbox" value="{{role.id}}" name="role_{{i}}" id="role_{{i}}" data-toggle="toggle" {{checked}} {{currentUser ? 'disabled'}}>
                                     {{role.label}}
                                 </label>
                                 <p class="subtext">{{role.description}}</p>
@@ -186,7 +187,7 @@ body {
                         <div class="checkbox">
                             <label>
                                 <input type="checkbox" value="active" name="active" id="active"
-                                    data-toggle="toggle" data-on="Active" data-off="Inactive" {{ data.user.active ? 'checked' : '' }}>
+                                    data-toggle="toggle" data-on="Active" data-off="Inactive" {{ data.user.active ? 'checked' : '' }}  {{currentUser ? 'disabled'}}>
 
                             </label>
                             <p class="subtext">This user is able to log in.</p>
