@@ -698,13 +698,26 @@ class DBUtil
      * private if some broader public function takes over its purpose.
      *
      * @param integer $mainID Constellation ID
+     * @param integer $version optional The version number or if null or omitted,
+     *                         go up to the most recent version.
      *
-     * @return integer[] List of version integers.
+     * @return integer[] List of version integers ordered by version number.
      *
      */
-    public function allVersion($mainID)
+    public function listAllVersions($mainID, $version=null)
     {
-        return null;
+        $fromVersion = $version;
+        if (!$version || !is_int($version)) {
+            $fromVersion = $this->sql->selectCurrentVersion($mainID);
+        }
+
+        $vhInfo = array ("ic_id" => $mainID, "version" => $fromVersion);
+        $history = $this->sql->selectVersionHistory($vhInfo, true);
+        $versions = array();
+        foreach ($history as $h) {
+            array_push($versions, $h["version"]);
+        }
+        return $versions;
     }
 
 
@@ -3209,29 +3222,39 @@ class DBUtil
      * Read the status of a constellation.
      *
      * Read the status of a constellation, with optional version. If version is not supplied, then the most
-     * recent version is used.
+     * recent version is used.  If the version number is negative, then it will read the status of that many
+     * versions back in the history.  For example, "-1" will read the previous version, "-2" will read two versions
+     * back, etc.
      *
      * @param integer $mainID The constellation ID
      *
-     * @param integer $version optional The version number or if empty, return the status for the most recent
-     * version.
+     * @param integer $version optional The version number, a relative number of versions prior (negative number),
+     * or if null or omitted, return the status for the most recent version.
      *
      * @return string status. Return the version_history.status value.
      */
     public function readConstellationStatus($mainID, $version=null)
     {
-        if (! $version)
-        {
-            $version = $this->sql->selectCurrentVersion($mainID);
+        $readVersion = false;
+        if (!$version || !is_int($version)) {
+            $readVersion = $this->sql->selectCurrentVersion($mainID);
+        } else if ($version >= 0) {
+            $readVersion = $version;
+        } else {
+            $versionList = $this->listAllVersions($mainID);
+            $this->logger->addDebug("The versions of this constelllation are ", $versionList);
+            if ((count($versionList) - 1 + $version) >= 0) {
+                $readVersion = $versionList[count($versionList) - 1 + $version];
+            }
         }
-        if ($version)
-        {
-            $status = $this->sql->selectStatus($mainID, $version);
-            if ($status)
-            {
+
+        if ($readVersion !== false) {
+            $status = $this->sql->selectStatus($mainID, $readVersion);
+            if ($status) {
                 return $status;
             }
         }
+
         return false;
     }
 

@@ -5422,7 +5422,7 @@ class SQL
     /**
      * Get publish version history info
      *
-     * Currently used only the EACCPFSerializer.php for maintenanceEvent data. Called via DBUtil->readVersionHistory().
+     * Currently used only the EACCPFSerializer.php for maintenanceEvent data.
      *
      * cpf.rng doesn't like milliseconds so create an ISO date without them. Note I have included the "T"
      * which has issues.
@@ -5436,14 +5436,19 @@ class SQL
      * Bad: 2016-07-28 16:30:16.18485 Good: 2016-07-28T16:30:16
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
+     * @param boolean $listAll optional If set to true, will list all the version history.  If not set, will only
+     * list publicly available history
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
-    public function selectVersionHistory($vhInfo) {
+    public function selectVersionHistory($vhInfo,$listAll = false) {
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\')';
+        if ($listAll === true)
+            $limitHistory = "";
         $result = $this->sdb->query(
             'select v.*, to_char(v.timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as update_date, a.username, a.fullname
             from version_history v, appuser a
             where v.user_id = a.id and v.id=$1 and v.version<=$2
-                and (v.status=\'published\' or v.status=\'ingest cpf\')
+                '.$limitHistory.'
             order by v.timestamp asc',
             array($vhInfo["ic_id"], $vhInfo["version"]));
         $usernames = "";
