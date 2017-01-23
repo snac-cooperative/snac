@@ -164,6 +164,11 @@ class Display {
 
         }
 
+        if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&
+            \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != null && \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID != "" ) {
+            $this->data["control"]["googleAnalyticsID"] = \snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID;
+        }
+
         // If the system is in DEBUG mode, then the display will disallow
         // caching of javascript.
         if (\snac\Config::$DEBUG_MODE == true) {
