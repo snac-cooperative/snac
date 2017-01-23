@@ -35,7 +35,7 @@ run_test:
 run_test_coverage:
   script:
     - vendor/bin/phpunit -v --coverage-html coverage/
-    - rsync -av coverage /projects/snac_server/doc/
+    - rsync -av coverage /lv2/snac/docs/
   stage: coverage
   only:
     - development
@@ -43,7 +43,7 @@ run_test_coverage:
 generate_docs:
   script:
     - vendor/bin/phpdoc -d src/ -d test/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
-    - rsync -av doc/ /projects/snac_server/doc/
+    - rsync -av doc/ /lv2/snac/docs/
   stage: documentation
   only:
     - development
