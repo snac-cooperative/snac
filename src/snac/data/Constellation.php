@@ -1560,5 +1560,175 @@ class Constellation extends AbstractData {
         return true;
     }
 
+    /**
+     * Is Constellation Empty
+     *
+     * Checkes whether this constellation is empty.
+     *
+     * @return boolean True if empty, false otherwise
+     */
+    public function isEmpty() {
+        $emptyConstellation = new \snac\data\Constellation();
+
+        return $this->equals($emptyConstellation, true);
+    }
+
+    /**
+     * Perform a diff
+     *
+     * Compares this constellation to the "other."  This method produces a "diff" of the Constellation,
+     * creating three new constellations.  First, it produces an intersection, which contains all bits
+     * that in both this and other (note first-level data must be the same -- it does not make sense to
+     * keep Name Components or SCMs that are the same without their containing NameEntry).  Second,
+     * the "this" and "other" return Constellations contain the parts of `$this` and `$other` that are NOT
+     * included in the intersection.  If any of the return constellations would be empty, they will be
+     * returned as `null` instead.
+     *
+     * This method does NOT diff maintenance history, maintenance status, or images.
+     *
+     * @param  \snac\data\Constellation $other Constellation object to diff
+     * @return \snac\data\Constellation[] Associative array of "intersection," "this," and "other" Constellations.
+     */
+    public function diff($other) {
+        $return = array (
+            "intersection" => null,
+            "this" => null,
+            "other" => null
+        );
+
+        if ($other == null || ! ($other instanceof \snac\data\Constellation)) {
+            $return["this"] = $this;
+            return $return;
+        }
+
+        $intersection = new \snac\data\Constellation();
+        $first = new \snac\data\Constellation();
+        $second = new \snac\data\Constellation();
+
+
+        if ($this->getArk() === $other->getArk()) {
+            $intersection->setArkID($this->getArk());
+        }
+
+        if ($this->getEntityType() != null && $this->getEntityType()->equals($other->getEntityType())) {
+            $intersection->setEntityType($this->getEntityType());
+        }
+
+        $result = $this->diffArray($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), true);
+        $intersection->otherRecordIDs = $result["intersection"];
+        $first->otherRecordIDs = $result["first"];
+        $second->otherRecordIDs = $result["second"];
+
+        $result = $this->diffArray($this->getEntityIDs(), $other->getEntityIDs(), true);
+        $intersection->entityIDs = $result["intersection"];
+        $first->entityIDs = $result["first"];
+        $second->entityIDs = $result["second"];
+
+        $result = $this->diffArray($this->getSources(), $other->getSources(), true);
+        $intersection->sources = $result["intersection"];
+        $first->sources = $result["first"];
+        $second->sources = $result["second"];
+
+        $result = $this->diffArray($this->getLegalStatuses(), $other->getLegalStatuses(), true);
+        $intersection->legalStatuses = $result["intersection"];
+        $first->legalStatuses = $result["first"];
+        $second->legalStatuses = $result["second"];
+
+        $result = $this->diffArray($this->getConventionDeclarations(), $other->getConventionDeclarations(), true);
+        $intersection->conventionDeclarations = $result["intersection"];
+        $first->conventionDeclarations = $result["first"];
+        $second->conventionDeclarations = $result["second"];
+
+        $result = $this->diffArray($this->getLanguagesUsed(), $other->getLanguagesUsed(), true);
+        $intersection->languagesUsed = $result["intersection"];
+        $first->languagesUsed = $result["first"];
+        $second->languagesUsed = $result["second"];
+
+        $result = $this->diffArray($this->getNameEntries(), $other->getNameEntries(), true);
+        $intersection->nameEntries = $result["intersection"];
+        $first->nameEntries = $result["first"];
+        $second->nameEntries = $result["second"];
+
+        $result = $this->diffArray($this->getOccupations(), $other->getOccupations(), true);
+        $intersection->occupations = $result["intersection"];
+        $first->occupations = $result["first"];
+        $second->occupations = $result["second"];
+
+        $result = $this->diffArray($this->getBiogHistList(), $other->getBiogHistList(), true);
+        $intersection->biogHists = $result["intersection"];
+        $first->biogHists = $result["first"];
+        $second->biogHists = $result["second"];
+
+        $result = $this->diffArray($this->getRelations(), $other->getRelations(), true);
+        $intersection->relations = $result["intersection"];
+        $first->relations = $result["first"];
+        $second->relations = $result["second"];
+
+        $result = $this->diffArray($this->getResourceRelations(), $other->getResourceRelations(), true);
+        $intersection->resourceRelations = $result["intersection"];
+        $first->resourceRelations = $result["first"];
+        $second->resourceRelations = $result["second"];
+
+        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), true);
+        $intersection->functions = $result["intersection"];
+        $first->functions = $result["first"];
+        $second->functions = $result["second"];
+
+        $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), true);
+        $intersection->places = $result["intersection"];
+        $first->places = $result["first"];
+        $second->places = $result["second"];
+
+        $result = $this->diffArray($this->getSubjects(), $other->getSubjects(), true);
+        $intersection->subjects = $result["intersection"];
+        $first->subjects = $result["first"];
+        $second->subjects = $result["second"];
+
+        $result = $this->diffArray($this->getNationalities(), $other->getNationalities(), true);
+        $intersection->nationalities = $result["intersection"];
+        $first->nationalities = $result["first"];
+        $second->nationalities = $result["second"];
+
+        $result = $this->diffArray($this->getGenders(), $other->getGenders(), true);
+        $intersection->genders = $result["intersection"];
+        $first->genders = $result["first"];
+        $second->genders = $result["second"];
+
+        $result = $this->diffArray($this->getGeneralContexts(), $other->getGeneralContexts(), true);
+        $intersection->generalContexts = $result["intersection"];
+        $first->generalContexts = $result["first"];
+        $second->generalContexts = $result["second"];
+
+        $result = $this->diffArray($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), true);
+        $intersection->structureOrGenealogies = $result["intersection"];
+        $first->structureOrGenealogies = $result["first"];
+        $second->structureOrGenealogies = $result["second"];
+
+        $result = $this->diffArray($this->getMandates(), $other->getMandates(), true);
+        $intersection->mandates = $result["intersection"];
+        $first->mandates = $result["first"];
+        $second->mandates = $result["second"];
+
+        if (!$intersection->isEmpty())
+            $return["intersection"] = $intersection;
+
+        if (!$first->isEmpty()) {
+            $first->setID($this->getID());
+            $first->setVersion($this->getVersion());
+            $first->setArkID($this->getArk());
+            $first->setEntityType($this->getEntityType());
+            $return["this"] = $first;
+        }
+
+        if (!$second->isEmpty()) {
+            $second->setID($other->getID());
+            $second->setVersion($other->getVersion());
+            $second->setArkID($other->getArk());
+            $second->setEntityType($other->getEntityType());
+            $return["other"] = $second;
+        }
+
+        return $return;
+    }
 
 }
