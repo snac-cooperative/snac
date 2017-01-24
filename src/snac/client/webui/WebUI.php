@@ -122,6 +122,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "quicksearch",
                 "relations",
+                "maybesame",
+                "diff",
                 "explore"
         );
 
