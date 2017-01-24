@@ -257,6 +257,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listMaybeSameConstellations($this->input);
                 break;
 
+            case "constellation_diff":
+                $this->response = $executor->diffConstellations($this->input);
+                break;
+
             case "constellation_merge":
                 if (!$executor->hasPermission("Edit")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");

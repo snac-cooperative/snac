@@ -314,6 +314,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "maybesame":
                 $response = $executor->displayMaybeSameListPage($this->input, $display);
                 break;
+            case "diff":
+                $response = $executor->displayMaybeSameDiffPage($this->input, $display);
+                break;
 
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);

@@ -42,7 +42,7 @@ $('.selectpicker').selectpicker();
 
 
 
-<div class="container snac" role="main">
+    <div class="container snac" role="main">
 
 
         <h1>Possible Matching Constellations</h1>
@@ -52,7 +52,7 @@ $('.selectpicker').selectpicker();
         <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
         <input id="ark" name="ark" type="hidden" value="{{ data.constellation.ark }}"/>
 
-		<div class="well well-lg">
+    	<div class="well well-lg">
             <h2>
               {% if data.constellation.entityType.term == 'person' %}
                <i class="fa fa-user" aria-hidden="true"></i>
@@ -71,36 +71,36 @@ $('.selectpicker').selectpicker();
             {% endif %}
 
             <p><a href="?command=view&constellationid={{data.constellation.id}}" class="btn btn-primary">View Constellation</a></p>
-		</div>
+    	</div>
 
-    <div class="row">
-        <div class="col-md-12 search-results">
-            {% if data.maybeSameList %}
-                <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
-                </p>
-                {% for maybeSame in data.maybeSameList %}
-                    <h4><a href="?command=view&constellationid={{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
-                    <p class="identity-info">
-                        <span>{{maybeSame.constellation.ark}}</span>
-                        <span>({{maybeSame.constellation.entityType.term}})</span>
+        <div class="row">
+            <div class="col-md-12 search-results">
+                {% if data.maybeSameList %}
+                    <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
                     </p>
-                    {% if maybeSame.constellation.biogHists.0.text %}
-                        <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0,500)}}...</p>
-                    {% else %}
-                        <p class="missing">No biographical history available for this identity.</p>
-                    {% endif %}
-                    <p style="margin-top: -20px;">
-                        <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-primary">View Constellation</a>
-                        <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-success">Compare</a>
-                        <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-danger">Merge</a>
-                    </p>
-                {% endfor %}
+                    {% for maybeSame in data.maybeSameList %}
+                        <h4><a href="?command=view&constellationid={{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
+                        <p class="identity-info">
+                            <span>{{maybeSame.constellation.ark}}</span>
+                            <span>({{maybeSame.constellation.entityType.term}})</span>
+                        </p>
+                        {% if maybeSame.constellation.biogHists.0.text %}
+                            <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                        {% else %}
+                            <p class="missing">No biographical history available for this identity.</p>
+                        {% endif %}
+                        <p style="margin-top: -20px;">
+                            <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-primary">View Constellation</a>
+                            <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-success">Compare</a>
+                            <a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-danger">Merge</a>
+                        </p>
+                    {% endfor %}
 
-            {% else %}
-                <p>No Constellations are listed as possible matches at this time.</p>
-            {% endif %}
+                {% else %}
+                    <p>No Constellations are listed as possible matches at this time.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
-</div>
 </body>
 </html>

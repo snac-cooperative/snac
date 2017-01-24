@@ -1,5 +1,9 @@
-{% macro displayEditTabs(X) %}
+{% macro displayEditTabs(X, vertical) %}
+    {% if vertical == true %}
+    <ul class="nav nav-pills nav-stacked" role="tablist">
+    {% else %}
     <ul class="nav nav-tabs" role="tablist">
+    {% endif %}
         <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Core Data</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">History <span class="caret"></span></a>

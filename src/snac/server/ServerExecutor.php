@@ -1592,6 +1592,64 @@ class ServerExecutor {
         return $response;
     }
 
+    public function diffConstellations(&$input) {
+        $response = array();
+        $this->logger->addDebug("Diffing constellations");
+
+        if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
+            // If two constellations were given
+            try {
+                // Read the constellation statuses
+                $this->logger->addDebug("Reading constellation statuses from the database");
+
+                $cId1 = $input["constellationid1"];
+                $status1 = $this->cStore->readConstellationStatus($cId1);
+
+                $cId2 = $input["constellationid2"];
+                $status2 = $this->cStore->readConstellationStatus($cId2);
+
+                // Right now, only published constellations can be merged, so that we can keep a "clean" history
+                if ($status1 == "published" && $status2 == "published") {
+                    $response["mergeable"] = true;
+                } else {
+                    $response["mergeable"] = false;
+                }
+                $this->logger->addDebug("Reading Constellations from the database");
+                $constellation1 = $this->cStore->readConstellation($cId1, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+                $constellation2 = $this->cStore->readConstellation($cId2, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+
+                $this->logger->addDebug("Starting Diff");
+                $diffParts = $constellation1->diff($constellation2);
+
+                $this->logger->addDebug("Finished Diff");
+
+                if ($diffParts["this"] !== null)
+                    $response["constellation1"] = $diffParts["this"]->toArray();
+                else
+                    $response["constellation1"] = null;
+
+                if ($diffParts["other"] !== null)
+                    $response["constellation2"] = $diffParts["other"]->toArray();
+                else
+                    $response["constellation2"] = null;
+
+                if ($diffParts["intersection"] !== null)
+                    $response["intersection"] = $diffParts["intersection"]->toArray();
+                else
+                    $response["intersection"] = null;
+
+            } catch (\Exception $e) {
+                // Leaving a catch block for logging purposes
+                throw $e;
+            }
+
+        } else {
+            throw new \snac\exceptions\SNACInputException("Diff requires two constellation IDs");
+        }
+
+        return $response;
+    }
+
     /**
      * List MaybeSames for Constellation
      *
@@ -1614,7 +1672,6 @@ class ServerExecutor {
 
                 $cId = $input["constellationid"];
                 $status = $this->cStore->readConstellationStatus($cId);
-
 
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
                 if ( $status == "published" ) {

@@ -346,6 +346,42 @@ class WebUIExecutor {
         }
     }
 
+    /**
+     * Display MaybeSame Diff Page
+     *
+     * Fills the display object with the maybe-same diff page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge functionality.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMaybeSameDiffPage(&$input, &$display) {
+
+        $query = array(
+            "command" => "constellation_diff",
+            "constellationid1" => $input["constellationid1"],
+            "constellationid2" => $input["constellationid2"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["intersection"])) {
+            $display->setTemplate("maybesame_diff_page");
+            $displayData = array(
+                "constellation1" => $serverResponse["constellation1"],
+                "constellation2" => $serverResponse["constellation2"],
+                "intersection" => $serverResponse["intersection"],
+                "mergeable" => $serverResponse["mergeable"]
+            );
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $display->setData($displayData);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
 
     /**
      * Start SNAC Session
