@@ -214,6 +214,11 @@ class Config {
      */
     public static $NEO4J_BOLT_URI = "bolt://user:password@localhost:7687";
     
+
+    /**
+     * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
+     */
+    public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
     
 
 }
