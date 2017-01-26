@@ -102,12 +102,21 @@ $('.selectpicker').selectpicker();
                 {{components.displayEditTabs(X, true)}}
             </div>
             <div class="col-md-9">
-                <div class="tab-content">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h4>{{ data.constellation1.nameEntries.0.original }}</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>BOTH</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <h4>{{ data.constellation2.nameEntries.0.original }}</h4>
+                    </div>
+                </div>
+                <div class="row tab-content">
                     <div class="tab-pane active" id="nameEntries">
-                        <h2>Core Data</h2>
 
                         <div class="col-md-4">
-                            <h3>A</h3>
                             <div>
                                 {% for nameEntry in data.constellation1.nameEntries %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
@@ -117,7 +126,7 @@ $('.selectpicker').selectpicker();
                                     </div>
                                     <script>
                                     $("#icon_{{i}}").popover({
-                                            title: '',
+                                            title: 'Name Entry',
                                             content : $("#nameEntry_datapart_{{i}}").html(),
                                             html: true,
                                             trigger: 'hover',
@@ -129,7 +138,6 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <h3>Both</h3>
                             <div>
                                 {% for nameEntry in data.intersection.nameEntries %}
                                     <div class="data-component data-component-intersection" id="icon_{{i}}">
@@ -150,7 +158,6 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <h3>B</h3>
                             <div>
                                 {% for nameEntry in data.constellation2.nameEntries %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
@@ -160,7 +167,7 @@ $('.selectpicker').selectpicker();
                                     </div>
                                     <script>
                                     $("#icon_{{i}}").popover({
-                                            title: '',
+                                            title: 'Name Entry',
                                             content : $("#nameEntry_datapart_{{i}}").html(),
                                             html: true,
                                             trigger: 'hover'
@@ -176,10 +183,8 @@ $('.selectpicker').selectpicker();
 
 
                     <div class="tab-pane" id="subjects">
-                        <h2>Subjects</h2>
 
                         <div class="col-md-4">
-                            <h3>A</h3>
                             <div>
                                 {% for subject in data.constellation1.subjects %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
@@ -201,7 +206,6 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <h3>Both</h3>
                             <div>
                                 {% for subject in data.intersection.subjects %}
                                     <div class="data-component data-component-intersection" id="icon_{{i}}">
@@ -222,7 +226,6 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <h3>B</h3>
                             <div>
                                 {% for subject in data.constellation2.subjects %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
