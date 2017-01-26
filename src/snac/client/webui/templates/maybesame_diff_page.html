@@ -65,6 +65,13 @@ $('.selectpicker').selectpicker();
         text-align: left;
     }
 
+    .popover .control-label {
+        min-height: 34px;
+        padding-top: 7px;
+        padding-bottom: 7px;
+        margin-bottom: 0;
+    }
+
 </style>
 </head>
 
@@ -99,7 +106,7 @@ $('.selectpicker').selectpicker();
                     <div class="tab-pane active" id="nameEntries">
                         <h2>Core Data</h2>
 
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <h3>A</h3>
                             <div>
                                 {% for nameEntry in data.constellation1.nameEntries %}
@@ -121,7 +128,7 @@ $('.selectpicker').selectpicker();
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <h3>Both</h3>
                             <div>
                                 {% for nameEntry in data.intersection.nameEntries %}
@@ -142,7 +149,7 @@ $('.selectpicker').selectpicker();
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <h3>B</h3>
                             <div>
                                 {% for nameEntry in data.constellation2.nameEntries %}
@@ -155,6 +162,78 @@ $('.selectpicker').selectpicker();
                                     $("#icon_{{i}}").popover({
                                             title: '',
                                             content : $("#nameEntry_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="tab-pane" id="subjects">
+                        <h2>Subjects</h2>
+
+                        <div class="col-md-4">
+                            <h3>A</h3>
+                            <div>
+                                {% for subject in data.constellation1.subjects %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: 'Subject',
+                                            content : $("#subject_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover',
+                                            container: 'body'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h3>Both</h3>
+                            <div>
+                                {% for subject in data.intersection.subjects %}
+                                    <div class="data-component data-component-intersection" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: 'Subject',
+                                            content : $("#subject_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h3>B</h3>
+                            <div>
+                                {% for subject in data.constellation2.subjects %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: 'Subject',
+                                            content : $("#subject_datapart_{{i}}").html(),
                                             html: true,
                                             trigger: 'hover'
                                         });
