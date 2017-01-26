@@ -59,6 +59,12 @@ $('.selectpicker').selectpicker();
         border-color: #233593;
     }
 
+    .popover {
+        max-width: none; /* Max Width of the popover (depending on the container!) */
+        width: 500px;
+        text-align: left;
+    }
+
 </style>
 </head>
 
@@ -68,6 +74,8 @@ $('.selectpicker').selectpicker();
 {% import 'edit_components.html' as components %}
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(X, user, permissions, control) }}
+
+{% set i = 0 %}
 
 
 
@@ -95,7 +103,21 @@ $('.selectpicker').selectpicker();
                             <h3>A</h3>
                             <div>
                                 {% for nameEntry in data.constellation1.nameEntries %}
-                                    <div class="data-component data-component-a"></div>
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: '',
+                                            content : $("#nameEntry_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover',
+                                            container: 'body'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -103,7 +125,20 @@ $('.selectpicker').selectpicker();
                             <h3>Both</h3>
                             <div>
                                 {% for nameEntry in data.intersection.nameEntries %}
-                                    <div class="data-component data-component-intersection"></div>
+                                    <div class="data-component data-component-intersection" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: 'Name Entry',
+                                            content : $("#nameEntry_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
@@ -111,7 +146,20 @@ $('.selectpicker').selectpicker();
                             <h3>B</h3>
                             <div>
                                 {% for nameEntry in data.constellation2.nameEntries %}
-                                    <div class="data-component data-component-b"></div>
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;">
+                                            {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
+                                        </div>
+                                    </div>
+                                    <script>
+                                    $("#icon_{{i}}").popover({
+                                            title: '',
+                                            content : $("#nameEntry_datapart_{{i}}").html(),
+                                            html: true,
+                                            trigger: 'hover'
+                                        });
+                                    </script>
+                                    {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
