@@ -288,11 +288,12 @@ class ElasticSearchUtil {
      * Searches the main names index for the query using number of related resources as a factor.  Allows for pagination by the start and count parameters.
      *
      * @param string $query The search query
+     * @param string $entityType optional The entity type to search for, or null
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexWithDegree($query, $start=0, $count=10) {
+    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10) {
         $this->logger->addDebug("Searching for a Constellation");
 
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
@@ -306,10 +307,14 @@ class ElasticSearchUtil {
                     'query' => [
                         'function_score' => [
                             'query' => [
-                                'match' => [
-                                    'nameEntry' => [
-                                        'query' => $query,
-                                        'operator' => 'and'
+                                'bool' => [
+                                    'must' => [
+                                        'match' => [
+                                            'nameEntry' => [
+                                                'query' => $query,
+                                                'operator' => 'and'
+                                            ]
+                                        ]
                                     ]
                                 ]
                             ],
@@ -326,6 +331,13 @@ class ElasticSearchUtil {
                     'size' => $count
                 ]
             ];
+            if ($entityType !== null) {
+                $params["body"]["query"]["function_score"]["query"]["bool"]["filter"] = [
+                        "term" => [
+                            'entityType' => strtolower($entityType) // strange elastic search behavior
+                        ]
+                ];
+            }
             $this->logger->addDebug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);

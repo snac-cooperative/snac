@@ -212,12 +212,16 @@ class WebUIExecutor {
         if (!isset($input["term"]))
             $input["term"] = "";
 
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
         $results = $this->performNameSearch($input);
-        $results["query"] = $input["term"];
         if (isset($results["results"])) {
+            $results["query"] = $input["term"];
+            $results["entityType"] = $input["entity_type"];
             $display->setTemplate("search_page");
             $display->setData($results);
         } else {
@@ -1546,6 +1550,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query(array(
             "command" => "search",
             "term" => $input["term"],
+            "entity_type" => $input["entity_type"],
             "start" => isset($input["start"]) ? $input["start"] : 0,
             "count" => isset($input["count"]) ? $input["count"] : 10
         ));

@@ -1942,8 +1942,12 @@ class ServerExecutor {
             return $response;
         }
 
+        if ($input["entity_type"] === "")
+            $input["entity_type"] = null;
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["start"], $input["count"]);
+            $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["entity_type"],
+                                                                        $input["start"], $input["count"]);
 
             $searchResults = array();
             // Update the ES search results to include information from the constellation
