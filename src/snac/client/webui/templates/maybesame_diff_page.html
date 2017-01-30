@@ -5,7 +5,8 @@
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
-<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<link href="//code.jquery.com/ui/1.11.1/themes/base/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<script type='text/javascript' src="//code.jquery.com/ui/1.11.1/jquery-ui.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -130,7 +131,8 @@ $('.selectpicker').selectpicker();
                                             content : $("#nameEntry_datapart_{{i}}").html(),
                                             html: true,
                                             trigger: 'hover',
-                                            container: 'body'
+                                            container: 'body',
+                                            placement: 'bottom'
                                         });
                                     </script>
                                     {% set i = i + 1 %}
@@ -150,7 +152,8 @@ $('.selectpicker').selectpicker();
                                             title: 'Name Entry',
                                             content : $("#nameEntry_datapart_{{i}}").html(),
                                             html: true,
-                                            trigger: 'hover'
+                                            trigger: 'hover',
+                                            placement: 'bottom'
                                         });
                                     </script>
                                     {% set i = i + 1 %}
@@ -170,7 +173,8 @@ $('.selectpicker').selectpicker();
                                             title: 'Name Entry',
                                             content : $("#nameEntry_datapart_{{i}}").html(),
                                             html: true,
-                                            trigger: 'hover'
+                                            trigger: 'hover',
+                                            placement: 'bottom'
                                         });
                                     </script>
                                     {% set i = i + 1 %}
@@ -185,7 +189,7 @@ $('.selectpicker').selectpicker();
                     <div class="tab-pane" id="subjects">
 
                         <div class="col-md-4">
-                            <div>
+                            <div id="subjects_1">
                                 {% for subject in data.constellation1.subjects %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
                                         <div style="display:none;">
@@ -198,7 +202,10 @@ $('.selectpicker').selectpicker();
                                             content : $("#subject_datapart_{{i}}").html(),
                                             html: true,
                                             trigger: 'hover',
-                                            container: 'body'
+                                            container: 'body',
+                                            placement: 'bottom'
+                                        }).draggable({
+                                        connectToSortable: "#subjects_both"
                                         });
                                     </script>
                                     {% set i = i + 1 %}
@@ -206,7 +213,7 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div>
+                            <div id="subjects_both">
                                 {% for subject in data.intersection.subjects %}
                                     <div class="data-component data-component-intersection" id="icon_{{i}}">
                                         <div style="display:none;">
@@ -218,7 +225,8 @@ $('.selectpicker').selectpicker();
                                             title: 'Subject',
                                             content : $("#subject_datapart_{{i}}").html(),
                                             html: true,
-                                            trigger: 'hover'
+                                            trigger: 'hover',
+                                            placement: 'bottom'
                                         });
                                     </script>
                                     {% set i = i + 1 %}
@@ -226,7 +234,7 @@ $('.selectpicker').selectpicker();
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div>
+                            <div id="subjects_2">
                                 {% for subject in data.constellation2.subjects %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
                                         <div style="display:none;">
@@ -238,14 +246,21 @@ $('.selectpicker').selectpicker();
                                             title: 'Subject',
                                             content : $("#subject_datapart_{{i}}").html(),
                                             html: true,
-                                            trigger: 'hover'
+                                            trigger: 'hover',
+                                            placement: 'bottom'
+                                        }).draggable({
+                                        connectToSortable: "#subjects_both"
                                         });
                                     </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-
+                        <script>
+                        $( "#subjects_both" ).sortable({
+                            revert: true
+                        });
+                        </script>
 
                     </div>
                 </div>
