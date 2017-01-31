@@ -417,7 +417,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
 
             case "quicksearch":
-                $response = $executor->performNameSearch($this->input);
+                $response = $executor->performNameSearch($this->input, true);
                 break;
 
             case "search":

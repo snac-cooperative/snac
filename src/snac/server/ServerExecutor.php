@@ -13,6 +13,7 @@
 namespace snac\server;
 
 use League\OAuth2\Client\Token\AccessToken;
+use PhpParser\Node\Stmt\Break_;
 use snac\server\database\DBUtil;
 /**
  * Server Executor Class
@@ -1945,9 +1946,25 @@ class ServerExecutor {
         if ($input["entity_type"] === "")
             $input["entity_type"] = null;
 
+        if (!isset($input["search_type"])) {
+            $input["search_type"] = "default";
+        }
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["entity_type"],
+            switch($input["search_type"]) {
+                case "autocomplete":
+                    $response = $this->elasticSearch->searchMainIndexAutocomplete($input["term"], $input["entity_type"],
                                                                         $input["start"], $input["count"]);
+                    break;
+                case "advanced":
+                    $response = $this->elasticSearch->searchMainIndexAdvanced($input["term"], $input["entity_type"],
+                                                                        $input["start"], $input["count"]);
+                    break;
+                default:
+                    $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["entity_type"],
+                                                                            $input["start"], $input["count"]);
+            }
+
 
             $searchResults = array();
             // Update the ES search results to include information from the constellation
@@ -1958,6 +1975,7 @@ class ServerExecutor {
             $response["results"] = $searchResults;
             $response["count"] = $input["count"];
             $response["term"] = $input["term"];
+            $response["search_type"] = $input["search_type"];
 
             // Limit the search results, if specified in the configuration
             if (isset(\snac\Config::$MAX_SEARCH_RESULT_PAGES) &&
