@@ -116,15 +116,15 @@
                 {% if data.pagination > 1 %}
                     <nav class="text-center"><ul class='pagination'>
                         {% if data.page != 0 %}
-                        <li><a href='?command=search&count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
+                        <li><a href='?command=search&count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
                         {% endif %}
 
                         {% for i in 1..data.pagination %}
-                        <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}">{{i}}</a></li>
+                        <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}">{{i}}</a></li>
                         {% endfor %}
 
                         {% if data.page != data.pagination - 1 %}
-                        <li><a href='?command=search&count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
+                        <li><a href='?command=search&count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
                         {% endif %}
                     </ul></nav>
                 {% endif %}
