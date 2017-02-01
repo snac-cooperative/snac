@@ -227,7 +227,7 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
-            
+
             /*
              * Admins can run this on behalf of another user. It requires authorization to save roles and save
              * groups.
@@ -1289,4 +1289,60 @@ class DBUser
     {
         $this->sql->deleteInstitution($institutionObj->getID());
     }
+
+
+
+
+    public function getMessageByID($id) {
+        $data = $this->sql->selectMessageByID($id);
+        if (empty($data)) {
+            return false;
+        }
+
+        return $this->populateMessage($data);
+    }
+
+    public function writeMessage($message) {
+
+    }
+
+    /**
+     * List Messages to the given user
+     *
+     * @param  \snac\data\User  $user        User in the To field
+     * @param  boolean $subjectOnly Whether or not to only return the subjects
+     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
+     * @return \snac\data\Message[]               List of messages
+     */
+    public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false) {
+        $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly);
+        $messages = array();
+        foreach ($messageData as $message) {
+            array_push($messages, $this->populateMessage($message, !$subjectOnly));
+        }
+        return $messages;
+    }
+
+    public function populateMessage($data, $includeBodyContent=true) {
+        if ($data == null)
+            return null;
+
+        $message = new \snac\data\Message();
+        $message->setID($data["id"]);
+        $message->setRead($this->db->pgToBool($data["read"]));
+        $message->setToUser($this->readUser(new \snac\data\User(array("userid"=>$data["to_user"]))));
+        if ($data["from_user"] != null)
+            $message->setFromUser($this->readUser(new \snac\data\User(array("userid"=>$data["from_user"]))));
+        else
+            $message->setFromString($data["from_string"]);
+        $message->setSubject($data["subject"]);
+
+        if ($includeBodyContent) {
+            $message->setBody($data["body"]);
+            $message->setAttachmentContent($data["attachment_content"]);
+            $message->setAttachmentFilename($data["attachment_filename"]);
+        }
+        return $message;
+    }
+
 }

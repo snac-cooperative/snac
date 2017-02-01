@@ -38,7 +38,7 @@ $('.selectpicker').selectpicker();
 var permissions = {
     {% for permission, value in permissions %}
         {{permission}}: {{value}},
-    {% endfor %}    
+    {% endfor %}
     FakeHolder: false
 };
 </script>
@@ -78,7 +78,23 @@ var permissions = {
                     </div>
                 </div>
             </div>
+
             -->
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">View Messages</h3>
+                </div>
+                <div class="panel-body">
+                    <p>You have the following messages:</p>
+                    <div class="list-group">
+                        {% for message in data.messages %}
+                        <a href="?command=message_view&messageid={{message.id}}" class="list-group-item">{{message.subject}}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>

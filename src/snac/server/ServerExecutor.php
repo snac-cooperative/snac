@@ -633,6 +633,14 @@ class ServerExecutor {
             array_push($response["groups"], $group->toArray());
         }
 
+        /*
+         * Get the list of Messages for the user
+         */
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesToUser($user, true);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
 
         /*
          * Get the list of Constellations locked or checked out to the user

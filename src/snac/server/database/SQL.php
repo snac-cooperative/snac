@@ -5451,12 +5451,51 @@ class SQL
                 '.$limitHistory.'
             order by v.timestamp asc',
             array($vhInfo["ic_id"], $vhInfo["version"]));
-        $usernames = "";
+
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
+    }
+
+    public function selectMessageByID($id) {
+        $result = $this->sdb->query(
+            'select m.* from messages m where m.id = $1',
+            array());
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return $all[0];
+
+        return array();
+
+    }
+
+    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
+        $searchUser = 'to_user';
+        if (!$toUser) {
+            $searchUser = 'from_user';
+        }
+        $readFilter = '';
+        if ($unreadOnly) {
+            $readFilter = 'and not read';
+        }
+        $result = $this->sdb->query(
+            'select m.* from messages m where '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+
     }
 }
