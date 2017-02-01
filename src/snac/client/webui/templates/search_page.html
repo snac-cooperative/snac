@@ -79,10 +79,10 @@
                             <dl>
                                 <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>
                                 <dt>+</dt> <dd>Search must include the following term (AND operation). Ex: <em>Washington +George</em> will find George Washingtons.</dd>
-                                <dt>-</dt> <dd>Search may not include the following term.  Ex: <em>Washington -George</em> will find Washingtons not named George.</dd>
                                 <dt>|</dt> <dd>Search may include either of the terms (OR operation). Ex: <em>Washington |George</em> will find either Georges OR Washingtons.</dd>
                                 <dt>" "</dt> <dd>Wrap a phrase with quotes to search the exact phrase.</dd>
                                 <dt>( )</dt> <dd>Add preferred clauses with parentheses. Ex: <em>(Washington + George) | (Jefferson + Thomas)</em> will find either George Washingtons or Thomas Jeffersons, but not George Jeffersons.</dd>
+                                <dt>-</dt> <dd>Search must not include the connected term.  Ex: <em>Washington -George</em> will find Washingtons not named George.</dd>
                                 <dt>~N</dt> <dd>Edit distance search. Finds names similar to the one typed. A larger number <strong>N</strong> will produce "fuzzier" results.  Ex: <em>Wash~1</em> will find <em>Wash, Hash, Wast, Mash,</em> etc.</dd>
                             </dl>
 
