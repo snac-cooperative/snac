@@ -1154,7 +1154,13 @@ class ServerExecutor {
 
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
-                list($currentStatus, $currentUserID, $currentNote) = $this->cStore->readConstellationUserStatus($constellation->getID());
+                $info = $this->cStore->readConstellationUserStatus($constellation->getID());
+                if ($info === null) {
+                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
+                }
+                $currentStatus = $info["status"];
+                $currentUserID = $info["userid"];
+                $currentNote = $info["note"];
 
                 $inList = false;
                 if ($currentUserID == $this->user->getUserID() &&
