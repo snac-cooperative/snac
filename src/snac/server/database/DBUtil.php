@@ -65,7 +65,7 @@ class DBUtil
      *
      * Note: this does not include the maintenance history by default
      */
-    public static $FULL_CONSTELLATION = 511; // all up to maintenance history 
+    public static $FULL_CONSTELLATION = 511; // all up to maintenance history
 
     /**
      * @var int Flag to read the entire constellation except relations
@@ -805,7 +805,7 @@ class DBUtil
 
         // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        
+
         // IF the user wants metadata, then populate the cache for it
         if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
             $this->logger->addDebug("Populating Caches: Meta");
@@ -3280,7 +3280,7 @@ class DBUtil
             $note   = $this->sql->selectCurrentNoteForConstellation($mainID, $version);
             if ($status && $userid)
             {
-                return array($status, $userid, $note);
+                return array("status"=>$status, "userid"=>$userid, "note"=>$note);
             }
         }
         return false;
@@ -3830,7 +3830,7 @@ class DBUtil
             $inC = $this->readPublishedConstellationByID($inEdge["ic_id"], DBUtil::$READ_MICRO_SUMMARY|DBUtil::$READ_RELATIONS);
             $inR = null;
             foreach ($inC->getRelations() as $rel) {
-                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null 
+                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null
                         && $rel->getTargetConstellation() == $constellation->getID()) {
                     $inR = $rel;
                     break;

@@ -1471,7 +1471,16 @@ class ServerExecutor {
                 $this->logger->addDebug("Reading constellation from the database");
 
                 $cId = $input["constellationid"];
-                $status = $this->cStore->readConstellationStatus($cId);
+                $info = $this->cStore->readConstellationUserStatus($cId);
+                if (!is_array($info)) {
+                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version");
+                }
+
+                $status = $info["status"];
+
+                if ($info["userid"] === $this->user->getUserID() && $status === "currently editing") {
+                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window");
+                }
 
                 // Should check the list of constellations for the user and only allow editing a "locked editing" constellation
                 // if that constellation is attached to that user.  So, need to loop through the constellations for that user
@@ -1509,7 +1518,7 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user or window.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.");
                 }
 
 

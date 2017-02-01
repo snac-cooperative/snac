@@ -720,6 +720,22 @@ class WebUIExecutor {
         return false;
     }
 
+
+    /**
+    * Display the Concurrent Edit Error Page
+    *
+    * Helper function to draw the concurrent edit error page.
+    *
+    * @param  string $command The resource that the user was trying to access
+    * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+    * @return boolean False, since an error occurred to get here
+    */
+    public function displayConcurrentEditErrorPage($command, &$display) {
+        $display->setTemplate("concurrent_edit_error");
+        $display->setData(array("command" => $command));
+        return false;
+    }
+
     /**
      * Draw the Error Page
      *
@@ -734,6 +750,8 @@ class WebUIExecutor {
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
                 return $this->displayPermissionDeniedPage(null, $display);
+            } else if ($serverResponse["error"]["type"] == "Concurrent Edit Error") {
+                return $this->displayConcurrentEditErrorPage(null, $display);
             }
             $display->setTemplate("error_page");
             $display->setData($serverResponse["error"]);
