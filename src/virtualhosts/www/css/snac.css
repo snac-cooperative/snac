@@ -8,6 +8,7 @@ body {
     padding-top: 70px;
     padding-bottom: 30px;
 }
+
 .navbar-inverse {
     background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
     background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
