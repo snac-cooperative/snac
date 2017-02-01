@@ -52,6 +52,8 @@
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
 <script src="javascript/search.js{{control.noCache}}"></script>
+<script src="javascript/html2canvas.js{{control.noCache}}"></script>
+
 
 <style>
 body {
@@ -218,5 +220,17 @@ body {
     </div>
 
 </div>
+<button id="takeScreenshot">SNAP</button>
+
+<script>
+$("#takeScreenshot").click( function() {
+    html2canvas(document.body, {
+      onrendered: function(canvas) {
+        document.body.appendChild(canvas);
+      }
+    });
+});
+</script>
+
 </body>
 </html>
