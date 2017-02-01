@@ -1548,6 +1548,9 @@ class WebUIExecutor {
             return array ("total" => 0, "results" => array());
         }
 
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
         $query = array(
             "command" => "search",
             "term" => $input["term"],
