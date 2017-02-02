@@ -650,6 +650,35 @@ class ServerExecutor {
         return $response;
     }
 
+
+    public function sendFeedback(&$input) {
+        if (!isset($input["message"])) {
+            throw new \snac\exceptions\SNACInputException("No feedback message given to send");
+        }
+        $response = array();
+
+        $message = new \snac\data\Message($input["message"]);
+
+        if ($message->getFromUser() === null && $message->getFromString() === null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.");
+        } else if ($message->getFromUser()->getUserID() !== $this->user->getUserID()) {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send feedback as another user.");
+        }
+        $tmpUser = new \snac\data\User();
+        $tmpUser->setUserName("jh2jf@virginia.edu");
+        $toUser = $this->uStore->readUser($tmpUser);
+        if ($toUser === false) {
+            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+        }
+        $message->setToUser($toUser);
+
+        // Send the message
+        $this->uStore->writeMessage($message);
+
+        $response["result"] = "success";
+        return $response;
+    }
+
     /**
      * Get User Information
      *

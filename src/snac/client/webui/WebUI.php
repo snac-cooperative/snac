@@ -122,7 +122,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "quicksearch",
                 "relations",
-                "explore"
+                "explore",
+                "feedback"
         );
 
 
@@ -339,6 +340,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "message_send":
                 $response = $executor->sendMessage($this->input);
+                break;
+            case "feedback":
+                $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
             // Administrator command (the sub method handles admin commands)

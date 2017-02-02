@@ -543,6 +543,33 @@ class WebUIExecutor {
         return $serverResponse;
     }
 
+    public function sendFeedbackMessage(&$input) {
+        $response = array();
+        if (isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            if (isset($this->user) && $this->user !== null) {
+                $message->setFromUser($this->user);
+            } else {
+                // set this message from the IP address:
+                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+            }
+
+            $ask = array("command"=>"send_feedback",
+                        "message"=>$message->toArray());
+            $serverResponse = $this->connect->query($ask);
+
+            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                $response["result"] = "error";
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "error";
+        }
+        return $response;
+    }
 
 
     public function sendMessage(&$input) {

@@ -156,6 +156,10 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->sendMessage($this->input);
                 break;
 
+            case "send_feedback":
+                $this->response = $executor->sendFeedback($this->input);
+                break;
+
             case "admin_users":
                 if (!$executor->hasPermission("Modify Users"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to modify users.");

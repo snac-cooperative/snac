@@ -143,6 +143,12 @@ class Display {
         $this->language = json_decode(file_get_contents(\snac\Config::$TEMPLATE_LANGUAGE_DIR ."/$language.json"), true);
     }
 
+    private function cleanString($string) {
+        $outStr = mb_convert_encoding($string, 'UTF-8', 'UTF-8');
+        $outStr = htmlentities($outStr, ENT_QUOTES, 'UTF-8');
+        return $outStr;
+    }
+
     /**
      * Generate the page to return
      *
@@ -156,12 +162,15 @@ class Display {
 
         $this->data["control"] = array();
 
+        // Put some PHP variables into the control section
+        $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+        $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
+
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
                 $this->data["control"]["interfaceVersion"] = "development";
             if (\snac\Config::$INTERFACE_VERSION === "demo")
                 $this->data["control"]["interfaceVersion"] = "demo";
-
         }
 
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&
