@@ -110,7 +110,11 @@ function cancelMessage() {
 
 $(document).ready(function() {
     // Load the table into a datatable
-    $('.table').DataTable();
+    $('.table').DataTable( {
+        "language": {
+            "emptyTable":     "No Messages Available"
+        }
+    });
 
     $("#message_list tbody").delegate("tr", "click", function() {
         var messageID = $("td:first input.messageid", this).val();
