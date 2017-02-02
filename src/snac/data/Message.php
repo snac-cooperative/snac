@@ -292,7 +292,7 @@ class Message implements \Serializable {
             "subject" => $this->subject,
             "body" => $this->body,
             "timestamp" => $this->timestamp,
-            "read = false" => $this->read,
+            "read" => $this->read,
             "attachmentContent" => $this->attachmentContent,
             "attachmentFilename" => $this->attachmentFilename
         );

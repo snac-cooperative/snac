@@ -525,6 +525,66 @@ class WebUIExecutor {
         return $filename;
     }
 
+    public function displayMessageListPage(&$display) {
+        $ask = array("command"=>"user_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $display->setData($serverResponse);
+        $display->setTemplate("message_list");
+    }
+
+    public function readMessage(&$input) {
+        $ask = array("command"=>"read_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+
+
+    public function sendMessage(&$input) {
+        $response = array();
+        if (isset($input["to_user"]) && isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $toUsers = explode(",", $input["to_user"]);
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            $message->setFromUser($this->user);
+
+            $errors = array();
+
+            foreach ($toUsers as $toUserName) {
+                $toUser = new \snac\data\User();
+                $toUser->setUserName(trim($toUserName));
+                $message->setToUser($toUser);
+
+                $ask = array("command"=>"send_message",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    array_push($errors, trim($toUserName));
+                }
+            }
+
+            if (!empty($errors)) {
+                $response["message"] = "Could not send to: " . implode(", ", $errors) . ".";
+            }
+
+            if (count($errors) < count($toUsers)) {
+                $response["result"] = "success";
+            }
+        } else {
+            $response["result"] = "error";
+        }
+
+        return $response;
+    }
+
     /**
      * Handle Administrative tasks
      *

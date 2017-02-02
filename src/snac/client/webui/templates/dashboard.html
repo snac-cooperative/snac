@@ -80,20 +80,13 @@ var permissions = {
             </div>
 
             -->
-
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">View Messages</h3>
-                </div>
-                <div class="panel-body">
-                    <p>You have the following messages:</p>
-                    <div class="list-group">
-                        {% for message in data.messages %}
-                        <a href="?command=message_view&messageid={{message.id}}" class="list-group-item">{{message.subject}}</a>
-                        {% endfor %}
-                    </div>
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
                 </div>
             </div>
+            {% endif %}
 
             <div class="panel panel-info">
                 <div class="panel-heading">

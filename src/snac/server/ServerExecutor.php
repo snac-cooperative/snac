@@ -588,6 +588,68 @@ class ServerExecutor {
         return $response;
     }
 
+    public function userMessages($input = null) {
+        /*
+         * Get the list of Messages for the user
+         */
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesToUser($this->user, false);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
+        $response["result"] = "success";
+        return $response;
+    }
+
+    public function readMessage(&$input) {
+        if (!isset($input["messageid"])) {
+            throw new \snac\exceptions\SNACInputException("No message ID given to read");
+        }
+        $response = array();
+
+        $message = $this->uStore->getMessageByID($input["messageid"]);
+
+        if ($message === false) {
+            throw new \snac\exceptions\SNACInputException("Message does not exist");
+        }
+
+        if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
+            ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
+                $response["message"] = $message->toArray();
+        } else {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to read the message.");
+        }
+
+        $response["result"] = "success";
+        return $response;
+
+    }
+
+    public function sendMessage(&$input) {
+        if (!isset($input["message"])) {
+            throw new \snac\exceptions\SNACInputException("No message given to send");
+        }
+        $response = array();
+
+        $message = new \snac\data\Message($input["message"]);
+
+        if ($message->getFromUser() === null || $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send messages as another user.");
+        }
+        $toUser = $this->uStore->readUser($message->getToUser());
+        if ($toUser === false) {
+            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+        }
+
+        $message->setToUser($toUser);
+
+        // Send the message
+        $this->uStore->writeMessage($message);
+
+        $response["result"] = "success";
+        return $response;
+    }
+
     /**
      * Get User Information
      *
@@ -637,7 +699,7 @@ class ServerExecutor {
          * Get the list of Messages for the user
          */
         $response["messages"] = array();
-        $messages = $this->uStore->listMessagesToUser($user, true);
+        $messages = $this->uStore->listMessagesToUser($user, true, true);
         foreach ($messages as $message) {
             array_push($response["messages"], $message->toArray());
         }

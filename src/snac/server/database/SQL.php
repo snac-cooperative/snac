@@ -5462,8 +5462,8 @@ class SQL
 
     public function selectMessageByID($id) {
         $result = $this->sdb->query(
-            'select m.* from messages m where m.id = $1',
-            array());
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where m.id = $1',
+            array($id));
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
@@ -5477,6 +5477,33 @@ class SQL
 
     }
 
+    public function markMessageReadByID($id) {
+        $result = $this->sdb->query(
+            'update messages set read = TRUE where id = $1',
+            array($id));
+    }
+
+    public function insertMessage($toUser,
+                                    $fromUser,
+                                    $fromString,
+                                    $subject,
+                                    $body,
+                                    $attachmentContent,
+                                    $attachmentFilename) {
+
+        try {
+            $this->sdb->prepare("insert_message",'insert into messages
+                    (to_user, from_user, from_string, subject, body, attachment_content, attachment_filename)
+                    values ($1, $2, $3, $4, $5, $6, $7);');
+
+            $this->sdb->execute("insert_message",
+                array($toUser, $fromUser, $fromString, $subject, $body, $attachmentContent, $attachmentFilename));
+        } catch (\snac\exceptions\SNACDatabaseException $e) {
+            return false;
+        }
+        return true;
+    }
+
     public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
         $searchUser = 'to_user';
         if (!$toUser) {
@@ -5487,7 +5514,7 @@ class SQL
             $readFilter = 'and not read';
         }
         $result = $this->sdb->query(
-            'select m.* from messages m where '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
         $all = array();

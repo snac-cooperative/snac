@@ -1292,18 +1292,41 @@ class DBUser
 
 
 
-
+    /**
+     * Get Message by ID
+     *
+     * Reads a message from the database by ID
+     *
+     * @param  int $id ID of the message to read
+     * @return \snac\data\Message     Message (or false)
+     */
     public function getMessageByID($id) {
         $data = $this->sql->selectMessageByID($id);
         if (empty($data)) {
             return false;
         }
 
-        return $this->populateMessage($data);
+        $message = $this->populateMessage($data);
+        if (!$message->isRead()) {
+            $this->sql->markMessageReadByID($id);
+        }
+
+        return $message;
     }
 
+    /**
+     * Write Message
+     *
+     * Writes a message into the system.  This is effectively sending a message.
+     *
+     * @param  \snac\data\Message $message Message to write
+     * @return boolean          True if sent successfully, false otherwise
+     */
     public function writeMessage($message) {
-
+        return $this->sql->insertMessage($message->getToUser()->getUserID(),
+            $message->getFromUser()->getUserID(), $message->getFromString(),
+            $message->getSubject(), $message->getBody(), $message->getAttachmentContent(),
+            $message->getattachmentFilename());
     }
 
     /**
@@ -1323,6 +1346,15 @@ class DBUser
         return $messages;
     }
 
+    /**
+     * Populate a Message Data Object
+     *
+     * Given a data array, it fills in a message object.
+     *
+     * @param  string[]  $data               Data array from SQL call
+     * @param  boolean $includeBodyContent Whether or not to include the body content
+     * @return \snac\data\Message                      Message object
+     */
     public function populateMessage($data, $includeBodyContent=true) {
         if ($data == null)
             return null;
@@ -1336,12 +1368,14 @@ class DBUser
         else
             $message->setFromString($data["from_string"]);
         $message->setSubject($data["subject"]);
+        $message->setTimestamp($data["sent_date"]);
 
         if ($includeBodyContent) {
             $message->setBody($data["body"]);
             $message->setAttachmentContent($data["attachment_content"]);
             $message->setAttachmentFilename($data["attachment_filename"]);
         }
+
         return $message;
     }
 
