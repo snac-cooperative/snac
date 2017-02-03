@@ -658,11 +658,16 @@ class ServerExecutor {
         $response = array();
 
         $message = new \snac\data\Message($input["message"]);
+        $this->logger->addDebug("Message received", $message->toArray());
 
         if ($message->getFromUser() === null && $message->getFromString() === null) {
             throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.");
-        } else if ($message->getFromUser()->getUserID() !== $this->user->getUserID()) {
+        } else if ($message->getFromUser() !== null && $this->user !== null && $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
             throw new \snac\exceptions\SNACPermissionException("User does not have permission to send feedback as another user.");
+        } else if ($message->getFromUser() === null && $this->user !== null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be anonymous if the user is logged in.");
+        } else if ($message->getFromUser() !== null && $this->user === null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.");
         }
         $tmpUser = new \snac\data\User();
         $tmpUser->setUserName("jh2jf@virginia.edu");
