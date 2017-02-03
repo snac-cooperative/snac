@@ -1323,8 +1323,11 @@ class DBUser
      * @return boolean          True if sent successfully, false otherwise
      */
     public function writeMessage($message) {
+        $fromUser = null;
+        if ($message->getFromUser() !== null)
+            $fromUser = $message->getFromUser()->getUserID();
         return $this->sql->insertMessage($message->getToUser()->getUserID(),
-            $message->getFromUser()->getUserID(), $message->getFromString(),
+            $fromUser, $message->getFromString(),
             $message->getSubject(), $message->getBody(), $message->getAttachmentContent(),
             $message->getattachmentFilename());
     }
