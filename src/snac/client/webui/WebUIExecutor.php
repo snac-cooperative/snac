@@ -436,6 +436,7 @@ class WebUIExecutor {
         // If just previewing, then all the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
         $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
 
 
         // Get the constellation object
