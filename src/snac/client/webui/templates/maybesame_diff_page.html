@@ -31,6 +31,7 @@ $('.selectpicker').selectpicker();
 
 <!-- SNAC includes -->
 <script src="javascript/search.js{{control.noCache}}"></script>
+<script src="javascript/merge_scripts.js{{control.noCache}}"></script>
 
 <style>
     .tab-pane {
@@ -50,14 +51,26 @@ $('.selectpicker').selectpicker();
         border-color: #8C2121;
     }
 
-    .data-component-intersection {
+    .data-component-a.data-component-selected {
+        background-color: #8C2121;
+    }
+
+    .data-component-both {
         background-color: #A056BD;
         border-color: #6D248A;
+    }
+
+    .data-component-both.data-component-selected {
+        background-color: #6D248A;
     }
 
     .data-component-b {
         background-color: #5B6ECF;
         border-color: #233593;
+    }
+
+    .data-component-b.data-component-selected {
+        background-color: #233593;
     }
 
     .popover {
@@ -73,6 +86,83 @@ $('.selectpicker').selectpicker();
         margin-bottom: 0;
     }
 
+
+    .popover .form-group {
+        display: inline-block;
+        width: 100%;
+    }
+
+    .diff-content-panel {
+        min-height: 1500px;
+        border-color: #888;
+    }
+
+    .merge-panel {
+        background-color: #ddd;
+    }
+
+    .preview-left {
+        padding: 0px 0px 0px 5px;
+    }
+
+    .preview-right {
+        padding: 0px 5px 0px 0px;
+    }
+
+    .preview-middle {
+        padding: 0px;
+    }
+
+    .preview .panel-body {
+        padding: 0px;
+        background-color: #eee;
+    }
+
+    .preview .col-xs-10 {
+        width: 100%;
+        margin: 0px;
+        padding: 2px;
+    }
+
+    .preview .col-xs-2 {
+        display: none;
+    }
+
+    .preview .form-group {
+        display: inline-block;
+        width: 100%;
+    }
+
+    .move-button-div-left {
+        padding: 0px 5px 0px 0px;
+    }
+
+
+    .move-button-div-right {
+        padding: 0px 0px 0px 5px;
+    }
+
+
+    .move-button-div-disabled {
+        display: none;
+    }
+
+    .move-button {
+        padding: 5px;
+        height: 100px;
+    }
+
+
+    .split-button {
+        padding: 5px;
+        height: 100px;
+    }
+
+    .vcenter {
+        display: inline-block;
+        vertical-align: middle;
+        float: none;
+    }
 </style>
 </head>
 
@@ -99,84 +189,111 @@ $('.selectpicker').selectpicker();
 
 
         <div class="row">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 {{components.displayEditTabs(X, true)}}
+
+                <div class="panel panel-default" style="margin-top: 30px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Actions</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>You may perform the following actions on this comparison</p>
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-success" id="preview_button"><span class='glyphicon glyphicon-eye-open'></span> Preview</a>
+                            <a href="#" class="list-group-item list-group-item-danger" id="merge_button"><span class="glyphicon glyphicon-random"></span> Merge</a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-9">
+            <div class="col-md-10">
                 <div class="row">
                     <div class="col-md-4">
-                        <h4>{{ data.constellation1.nameEntries.0.original }}</h4>
+                        <h4 class="text-center">{{ data.constellation1.nameEntries.0.original }}</h4>
                     </div>
                     <div class="col-md-4">
-                        <h4>BOTH</h4>
+                        <h4 class="text-center">BOTH</h4>
+                        <div class="content-both" style="display: none;">
+                            <input type="hidden" id="entityType" name="entityType" value="{{data.intersection.entityType.id}}">
+                        </div>
                     </div>
                     <div class="col-md-4">
-                        <h4>{{ data.constellation2.nameEntries.0.original }}</h4>
+                        <h4 class="text-center">{{ data.constellation2.nameEntries.0.original }}</h4>
                     </div>
                 </div>
                 <div class="row tab-content">
                     <div class="tab-pane active" id="nameEntries">
 
-                        <div class="col-md-4">
-                            <div>
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
                                 {% for nameEntry in data.constellation1.nameEntries %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
                                         </div>
-                                    </div>
-                                    <script>
-                                    $("#icon_{{i}}").popover({
+                                        <script>
+                                        pieceCache[{{i}}] = {
                                             title: 'Name Entry',
-                                            content : $("#nameEntry_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            container: 'body',
-                                            placement: 'bottom'
-                                        });
-                                    </script>
+                                            identifier: "#nameEntry_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
                                 {% for nameEntry in data.intersection.nameEntries %}
-                                    <div class="data-component data-component-intersection" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
                                         </div>
-                                    </div>
-                                    <script>
-                                    $("#icon_{{i}}").popover({
+                                        <script>
+                                        pieceCache[{{i}}] = {
                                             title: 'Name Entry',
-                                            content : $("#nameEntry_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            placement: 'bottom'
-                                        });
-                                    </script>
+                                            identifier: "#nameEntry_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
                                 {% for nameEntry in data.constellation2.nameEntries %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
                                         </div>
-                                    </div>
-                                    <script>
-                                    $("#icon_{{i}}").popover({
+                                        <script>
+                                        pieceCache[{{i}}] = {
                                             title: 'Name Entry',
-                                            content : $("#nameEntry_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            placement: 'bottom'
-                                        });
-                                    </script>
+                                            identifier: "#nameEntry_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
@@ -192,21 +309,15 @@ $('.selectpicker').selectpicker();
                             <div id="subjects_1">
                                 {% for subject in data.constellation1.subjects %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displaySubject(X, false, false, subject, i) }}
                                         </div>
                                     </div>
                                     <script>
-                                    $("#icon_{{i}}").popover({
-                                            title: 'Subject',
-                                            content : $("#subject_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            container: 'body',
-                                            placement: 'bottom'
-                                        }).draggable({
-                                        connectToSortable: "#subjects_both"
-                                        });
+                                    pieceCache[{{i}}] = {
+                                        title: 'Subject',
+                                        identifier: "#subject_datapart_{{i}}"
+                                    };
                                     </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
@@ -216,18 +327,15 @@ $('.selectpicker').selectpicker();
                             <div id="subjects_both">
                                 {% for subject in data.intersection.subjects %}
                                     <div class="data-component data-component-intersection" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displaySubject(X, false, false, subject, i) }}
                                         </div>
                                     </div>
                                     <script>
-                                    $("#icon_{{i}}").popover({
-                                            title: 'Subject',
-                                            content : $("#subject_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            placement: 'bottom'
-                                        });
+                                    pieceCache[{{i}}] = {
+                                        title: 'Subject',
+                                        identifier: "#subject_datapart_{{i}}"
+                                    };
                                     </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
@@ -237,20 +345,15 @@ $('.selectpicker').selectpicker();
                             <div id="subjects_2">
                                 {% for subject in data.constellation2.subjects %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
-                                        <div style="display:none;">
+                                        <div style="display:none;" id="data_{{i}}">
                                             {{ components.displaySubject(X, false, false, subject, i) }}
                                         </div>
                                     </div>
                                     <script>
-                                    $("#icon_{{i}}").popover({
-                                            title: 'Subject',
-                                            content : $("#subject_datapart_{{i}}").html(),
-                                            html: true,
-                                            trigger: 'hover',
-                                            placement: 'bottom'
-                                        }).draggable({
-                                        connectToSortable: "#subjects_both"
-                                        });
+                                    pieceCache[{{i}}] = {
+                                        title: 'Subject',
+                                        identifier: "#subject_datapart_{{i}}"
+                                    };
                                     </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
@@ -263,9 +366,93 @@ $('.selectpicker').selectpicker();
                         </script>
 
                     </div>
+
+
+                    <div class="tab-pane" id="resourceRelations">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for resourceRelation in data.constellation1.resourceRelations %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation1.entityType.term, data.constellation1.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Resource Relation',
+                                            identifier: "#resourceRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for nameEntry in data.intersection.resourceRelations %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, data.intersection.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Resource Relation',
+                                            identifier: "#resourceRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for resourceRelation in data.constellation2.resourceRelations %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.constellation2.entityType.term, data.constellation2.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Resource Relation',
+                                            identifier: "#resourceRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+
+
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+    <form id="merged_identity">
+    </form>
 </body>
 </html>

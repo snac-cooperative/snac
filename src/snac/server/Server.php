@@ -301,6 +301,9 @@ class Server implements \snac\interfaces\ServerInterface {
                 //    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
                 $this->response = $executor->writeResource($this->input);
                 break;
+            case "read_resource":
+                $this->response = $executor->readResource($this->input);
+                break;
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
                 break;

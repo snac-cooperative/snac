@@ -142,4 +142,23 @@ class ServerConnect {
 
         return null;
     }
+
+    public function lookupResource($id, $version=null) {
+        $request = array ();
+        $request["command"] = "read_resource";
+        $request["resourceid"] = $id;
+        $request["version"] = $version;
+
+        $response = $this->query($request);
+
+        if (isset($response["resource"])) {
+            $resource = new \snac\data\Resource($response["resource"]);
+            return $resource;
+        }
+
+        $resource = new \snac\data\Resource();
+        $resource->setID($id);
+        $resource->setVersion($version);
+        return $resource;
+    }
 }

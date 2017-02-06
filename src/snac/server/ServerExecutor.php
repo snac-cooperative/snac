@@ -546,6 +546,28 @@ class ServerExecutor {
         return $response;
     }
 
+    public function readResource(&$input) {
+        $response = array();
+        $resource = null;
+
+        try {
+            if (!isset($input["resourceid"])) {
+                throw new \snac\exceptions\SNACInputException("No resource to read");
+            }
+            $id = $input["resourceid"];
+            $version = null;
+            if (isset($input["version"]))
+                $version = $input["version"];
+            $resource = $this->cStore->readResource($id, $version);
+
+            $response["resource"] = $resource->toArray();
+            $this->logger->addDebug("Serialized resource for output to client");
+        } catch (Exception $e) {
+            $response["error"] = $e;
+        }
+        return $response;
+    }
+
     /**
     * List the SNAC roles
     *

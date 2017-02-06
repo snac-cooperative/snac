@@ -388,6 +388,8 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
+
+                    {% if not data.preview %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>
@@ -419,6 +421,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                               </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">Identity Constellation Identifier(s)</h3>

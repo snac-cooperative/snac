@@ -435,17 +435,21 @@ class WebUIExecutor {
 
         // If just previewing, then all the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+
 
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            $display->setTemplate("view_page");
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+            //TODO if an additional variable is set, then show the detailed view page instead
+            $display->setTemplate("detailed_view_page");
+
+            if (\snac\Config::$DEBUG_MODE === true) {
+                $display->addDebugData("constellationSource", $constellation->toJSON());
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
+            $display->setData(array_merge($constellation->toArray(), array("preview" => true)));
         }
     }
 
