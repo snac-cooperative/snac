@@ -212,12 +212,17 @@ class WebUIExecutor {
         if (!isset($input["term"]))
             $input["term"] = "";
 
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
         if (isset($input["q"])) {
             $input["term"] = $input["q"];
         }
         $results = $this->performNameSearch($input);
-        $results["query"] = $input["term"];
         if (isset($results["results"])) {
+            $results["query"] = $input["term"];
+            $results["entityType"] = $input["entity_type"];
+            $results["searchType"] = $results["search_type"];
             $display->setTemplate("search_page");
             $display->setData($results);
         } else {
@@ -795,6 +800,22 @@ class WebUIExecutor {
         return false;
     }
 
+
+    /**
+    * Display the Concurrent Edit Error Page
+    *
+    * Helper function to draw the concurrent edit error page.
+    *
+    * @param  string $command The resource that the user was trying to access
+    * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+    * @return boolean False, since an error occurred to get here
+    */
+    public function displayConcurrentEditErrorPage($command, &$display) {
+        $display->setTemplate("concurrent_edit_error");
+        $display->setData(array("command" => $command));
+        return false;
+    }
+
     /**
      * Draw the Error Page
      *
@@ -809,6 +830,8 @@ class WebUIExecutor {
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
                 return $this->displayPermissionDeniedPage(null, $display);
+            } else if ($serverResponse["error"]["type"] == "Concurrent Edit Error") {
+                return $this->displayConcurrentEditErrorPage(null, $display);
             }
             $display->setTemplate("error_page");
             $display->setData($serverResponse["error"]);
@@ -1615,20 +1638,33 @@ class WebUIExecutor {
      * then returns the JSON-ready associative array of results.
      *
      * @param string[] $input Post/Get inputs from the webui
+     * @param boolean $autocomplete optional Whether to do a search using autocomplete or not (default false)
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function performNameSearch(&$input) {
+    public function performNameSearch(&$input, $autocomplete=false) {
         if (!isset($input["term"])) {
             return array ("total" => 0, "results" => array());
         }
 
-        // Query the server for the elastic search results
-        $serverResponse = $this->connect->query(array(
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
+        $query = array(
             "command" => "search",
             "term" => $input["term"],
+            "entity_type" => $input["entity_type"],
             "start" => isset($input["start"]) ? $input["start"] : 0,
             "count" => isset($input["count"]) ? $input["count"] : 10
-        ));
+        );
+
+        if ($autocomplete) {
+            $query["search_type"] = "autocomplete";
+        } else if (isset($input["search_type"]) && $input["search_type"] === "advanced") {
+            $query["search_type"] = "advanced";
+        }
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query($query);
 
         return $serverResponse;
 

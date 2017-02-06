@@ -3280,7 +3280,7 @@ class DBUtil
             $note   = $this->sql->selectCurrentNoteForConstellation($mainID, $version);
             if ($status && $userid)
             {
-                return array($status, $userid, $note);
+                return array("status"=>$status, "userid"=>$userid, "note"=>$note);
             }
         }
         return false;

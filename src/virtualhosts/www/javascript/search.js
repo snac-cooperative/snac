@@ -11,53 +11,45 @@
 
 jQuery.fn.exists = function(){return this.length>0;}
 
-
-/**
- * Set the search position (page number)
- * @param int start The starting position
- */
-function setSearchPosition(start) {
-    $('#start').val(start);
-}
-
-/**
- * Search with AJAX and update the display of search results
- *
- * @return boolean false to play nice with the browser
- */
-function searchAndUpdate() {
-    if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
-        $("#search-results-box").html("");
-    } else {
-        $.post("?command=quicksearch", $("#search_form").serialize(), function (data) {
-            //var previewWindow = window.open("", "Preview");
-            //previewWindow.document.write(data);
-
-            var html = "";
-            html += "<div class='list-group text-left' style='margin-bottom:0px'>";
-            if (data.results.length > 0) {
-                for (var key in data.results) {
-                    html += "<a href='?command=search&q="+data.results[key].nameEntries[0].original+"' class='list-group-item'>"+data.results[key].nameEntries[0].original+"</a>";
-                }
-            }
-            html += "</div>";
-
-            $("#search-results-box").html(html);
-        });
-    }
-    return false;
-}
-
-
 /**
  * Only load this script once the document is fully loaded
  */
 $(document).ready(function() {
     var timeoutID = null;
 
-    $('#searchbox').keyup(function() {
-        clearTimeout(timeoutID);
-        var $target = $(this);
-        timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500);
+    $('select').each(function() {
+        $(this).select2({
+            minimumResultsForSearch: Infinity,
+            allowClear: false,
+            theme: 'bootstrap'
+        });
     });
+
+    $('#searchbox').autocomplete({
+        minLength: 4,
+        source: function(request, callback) {
+            $.post("?command=quicksearch", $("#search_form").serialize(), function (data) {
+                var results = [];
+                if (data.results.length > 0) {
+                    for (var key in data.results) {
+                        results[key] = data.results[key].nameEntries[0].original;
+                    }
+                }
+                callback(results);
+            });
+        }
+    });
+
+    /**
+     * If an advanced search button exists, then have it toggle the advanced search information box
+     */
+    if ($("#advanced").exists()) {
+        $("#advanced").on("change", function() {
+            if ( this.checked) {
+                $("#advancedSearchText").collapse("show");
+            } else {
+                $("#advancedSearchText").collapse("hide");
+            }
+        });
+    }
 });
