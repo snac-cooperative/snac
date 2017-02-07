@@ -124,8 +124,16 @@ $('.selectpicker').selectpicker();
         padding: 2px;
     }
 
-    .preview .col-xs-2 {
+    .preview .data-element-options, .preview .col-xs-2 {
         display: none;
+    }
+
+    .preview .form-control-static {
+        padding-top: 0px;
+    }
+
+    .control-label {
+        text-align: right;
     }
 
     .preview .form-group {
@@ -221,6 +229,8 @@ $('.selectpicker').selectpicker();
                     </div>
                 </div>
                 <div class="row tab-content">
+
+                    <!-- BEGIN nameEntries Pane -->
                     <div class="tab-pane active" id="nameEntries">
 
                         <div class="col-md-4 panel panel-body diff-content-panel content-a">
@@ -298,76 +308,496 @@ $('.selectpicker').selectpicker();
                                 {% endfor %}
                             </div>
                         </div>
-
-
                     </div>
+                    <!-- END nameEntries Pane -->
 
+                    <!-- BEGIN genders Pane -->
+                    <div class="tab-pane" id="genders">
 
-                    <div class="tab-pane" id="subjects">
-
-                        <div class="col-md-4">
-                            <div id="subjects_1">
-                                {% for subject in data.constellation1.subjects %}
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for gender in data.constellation1.genders %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
-                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                            {{ components.displayGender(X, false, false, gender, i) }}
                                         </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Gender',
+                                            identifier: "#gender_datapart_{{i}}"
+                                        };
+                                        </script>
                                     </div>
-                                    <script>
-                                    pieceCache[{{i}}] = {
-                                        title: 'Subject',
-                                        identifier: "#subject_datapart_{{i}}"
-                                    };
-                                    </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div id="subjects_both">
-                                {% for subject in data.intersection.subjects %}
-                                    <div class="data-component data-component-intersection" id="icon_{{i}}">
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for gender in data.intersection.genders %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
-                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                            {{ components.displayGender(X, false, false, gender, i) }}
                                         </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Gender',
+                                            identifier: "#gender_datapart_{{i}}"
+                                        };
+                                        </script>
                                     </div>
-                                    <script>
-                                    pieceCache[{{i}}] = {
-                                        title: 'Subject',
-                                        identifier: "#subject_datapart_{{i}}"
-                                    };
-                                    </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-                        <div class="col-md-4">
-                            <div id="subjects_2">
-                                {% for subject in data.constellation2.subjects %}
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for gender in data.constellation2.genders %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
-                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                            {{ components.displayGender(X, false, false, gender, i) }}
                                         </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Gender',
+                                            identifier: "#gender_datapart_{{i}}"
+                                        };
+                                        </script>
                                     </div>
-                                    <script>
-                                    pieceCache[{{i}}] = {
-                                        title: 'Subject',
-                                        identifier: "#subject_datapart_{{i}}"
-                                    };
-                                    </script>
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
                         </div>
-                        <script>
-                        $( "#subjects_both" ).sortable({
-                            revert: true
-                        });
-                        </script>
-
                     </div>
+                    <!-- END genders Pane -->
 
+                    <!-- BEGIN dates Pane -->
+                    <div class="tab-pane" id="dates">
 
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for exist in data.constellation1.dates %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayExist(X, false, false, exist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Exist Date',
+                                            identifier: "#exist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for exist in data.intersection.dates %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayExist(X, false, false, exist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Exist Date',
+                                            identifier: "#exist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for exist in data.constellation2.dates %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayExist(X, false, false, exist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Exist Date',
+                                            identifier: "#exist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END dates Pane -->
+
+                    <!-- BEGIN biogHists Pane -->
+                    <div class="tab-pane" id="biogHists">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for biogHist in data.constellation1.biogHists %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayBiogHist(X, false, false, biogHist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Biographical History',
+                                            identifier: "#biogHist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for biogHist in data.intersection.biogHists %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayBiogHist(X, false, false, biogHist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Biographical History',
+                                            identifier: "#biogHist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for biogHist in data.constellation2.biogHists %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayBiogHist(X, false, false, biogHist, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Biographical History',
+                                            identifier: "#biogHist_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END biogHists Pane -->
+
+                    <!-- BEGIN otherRecordIDs Pane -->
+                    <div class="tab-pane" id="sameAs">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for sameAs in data.constellation1.otherRecordIDs %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySameAs(X, false, false, sameAs, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'External CPF Relation (Same As)',
+                                            identifier: "#sameAs_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for sameAs in data.intersection.otherRecordIDs %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySameAs(X, false, false, sameAs, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'External CPF Relation (Same As)',
+                                            identifier: "#sameAs_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for sameAs in data.constellation2.otherRecordIDs %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySameAs(X, false, false, sameAs, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'External CPF Relation (Same As)',
+                                            identifier: "#sameAs_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END otherRecordIDs Pane -->
+
+                    <!-- BEGIN entityIDs Pane -->
+                    <div class="tab-pane" id="entityID">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for entityID in data.constellation1.entityIDs %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayEntityID(X, false, false, entityID, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Other Entity ID (Same As)',
+                                            identifier: "#entityID_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for entityID in data.intersection.entityIDs %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayEntityID(X, false, false, entityID, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Other Entity ID (Same As)',
+                                            identifier: "#entityID_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for entityID in data.constellation2.entityIDs %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayEntityID(X, false, false, entityID, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Other Entity ID (Same As)',
+                                            identifier: "#entityID_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END entityIDs Pane -->
+
+                    <!-- BEGIN sources Pane -->
+                    <div class="tab-pane" id="sources">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for source in data.constellation1.sources %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySource(X, false, false, source, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Source',
+                                            identifier: "#source_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for source in data.intersection.sources %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySource(X, false, false, source, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Source',
+                                            identifier: "#source_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for source in data.constellation2.sources %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySource(X, false, false, source, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Source',
+                                            identifier: "#source_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END sources Pane -->
+
+                    <!-- BEGIN resourceRelations Pane -->
                     <div class="tab-pane" id="resourceRelations">
 
                         <div class="col-md-4 panel panel-body diff-content-panel content-a">
@@ -445,9 +875,981 @@ $('.selectpicker').selectpicker();
                                 {% endfor %}
                             </div>
                         </div>
-
-
                     </div>
+                    <!-- END resourceRelations Pane -->
+
+                    <!-- BEGIN constellationRelations Pane -->
+                    <div class="tab-pane" id="constellationRelations">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for constellationRelation in data.constellation1.constellationRelations %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.constellation1.entityType.term, data.constellation1.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Internal CPF Relation',
+                                            identifier: "#constellationRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for constellationRelation in data.intersection.constellationRelations %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.intersection.entityType.term, data.intersection.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Internal CPF Relation',
+                                            identifier: "#constellationRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for constellationRelation in data.constellation2.constellationRelations %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.constellation2.entityType.term, data.constellation2.nameEntries.0.original) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Internal CPF Relation',
+                                            identifier: "#constellationRelation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END constellationRelations Pane -->
+
+                    <!-- BEGIN languagesUsed Pane -->
+                    <div class="tab-pane" id="languagesUsed">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for language in data.constellation1.languagesUsed %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLanguageUsed(X, false, false, language, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Language Used',
+                                            identifier: "#language_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for language in data.intersection.languagesUsed %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLanguageUsed(X, false, false, language, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Language Used',
+                                            identifier: "#language_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for language in data.constellation2.languagesUsed %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLanguageUsed(X, false, false, language, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Language Used',
+                                            identifier: "#language_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END languagesUsed Pane -->
+
+                    <!-- BEGIN subjects Pane -->
+                    <div class="tab-pane" id="subjects">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for subject in data.constellation1.subjects %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Subject',
+                                            identifier: "#subject_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for subject in data.intersection.subjects %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Subject',
+                                            identifier: "#subject_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for subject in data.constellation2.subjects %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displaySubject(X, false, false, subject, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Subject',
+                                            identifier: "#subject_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END subjects Pane -->
+
+                    <!-- BEGIN nationalities Pane -->
+                    <div class="tab-pane" id="nationalities">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for nationality in data.constellation1.nationalities %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayNationality(X, false, false, nationality, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Nationality',
+                                            identifier: "#nationality_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for nationality in data.intersection.nationalities %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayNationality(X, false, false, nationality, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Nationality',
+                                            identifier: "#nationality_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for nationality in data.constellation2.nationalities %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayNationality(X, false, false, nationality, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Nationality',
+                                            identifier: "#nationality_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END nationalities Pane -->
+
+                    <!-- BEGIN functions Pane -->
+                    <div class="tab-pane" id="functions">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for function in data.constellation1.functions %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayFunction(X, false, false, function, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Function',
+                                            identifier: "#function_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for function in data.intersection.functions %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayFunction(X, false, false, function, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Function',
+                                            identifier: "#function_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for function in data.constellation2.functions %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayFunction(X, false, false, function, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Function',
+                                            identifier: "#function_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END functions Pane -->
+
+                    <!-- BEGIN occupations Pane -->
+                    <div class="tab-pane" id="occupations">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for occupation in data.constellation1.occupations %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayOccupation(X, false, false, occupation, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Occupation',
+                                            identifier: "#occupation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for occupation in data.intersection.occupations %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayOccupation(X, false, false, occupation, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Occupation',
+                                            identifier: "#occupation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for occupation in data.constellation2.occupations %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayOccupation(X, false, false, occupation, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Occupation',
+                                            identifier: "#occupation_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END occupations Pane -->
+
+                    <!-- BEGIN legalStatuses Pane -->
+                    <div class="tab-pane" id="legalStatuses">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for legalStatus in data.constellation1.legalStatuses %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLegalStatus(X, false, false, legalStatus, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Legal Status',
+                                            identifier: "#legalStatus_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for legalStatus in data.intersection.legalStatuses %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLegalStatus(X, false, false, legalStatus, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Legal Status',
+                                            identifier: "#legalStatus_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for legalStatus in data.constellation2.legalStatuses %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayLegalStatus(X, false, false, legalStatus, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Legal Status',
+                                            identifier: "#legalStatus_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END legalStatuses Pane -->
+
+                    <!-- BEGIN places Pane -->
+                    <div class="tab-pane" id="places">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for place in data.constellation1.places %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayPlace(X, false, false, place, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Place',
+                                            identifier: "#place_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for place in data.intersection.places %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayPlace(X, false, false, place, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Place',
+                                            identifier: "#place_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for place in data.constellation2.places %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayPlace(X, false, false, place, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Place',
+                                            identifier: "#place_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END places Pane -->
+
+                    <!-- BEGIN conventionDeclarations Pane -->
+                    <div class="tab-pane" id="conventionDeclarations">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for conventionDeclaration in data.constellation1.conventionDeclarations %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConventionDeclaration(X, false, false, conventionDeclaration, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Convention Declaration',
+                                            identifier: "#conventionDeclaration_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for conventionDeclaration in data.intersection.conventionDeclarations %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConventionDeclaration(X, false, false, conventionDeclaration, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Convention Declaration',
+                                            identifier: "#conventionDeclaration_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for conventionDeclaration in data.constellation2.conventionDeclarations %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayConventionDeclaration(X, false, false, conventionDeclaration, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Convention Declaration',
+                                            identifier: "#conventionDeclaration_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END conventionDeclarations Pane -->
+
+                    <!-- BEGIN generalContexts Pane -->
+                    <div class="tab-pane" id="generalContexts">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for generalContext in data.constellation1.generalContexts %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayGeneralContext(X, false, false, generalContext, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'General Context',
+                                            identifier: "#generalContext_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for generalContext in data.intersection.generalContexts %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayGeneralContext(X, false, false, generalContext, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'General Context',
+                                            identifier: "#generalContext_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for generalContext in data.constellation2.generalContexts %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayGeneralContext(X, false, false, generalContext, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'General Context',
+                                            identifier: "#generalContext_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END generalContexts Pane -->
+
+                    <!-- BEGIN structureOrGenealogies Pane -->
+                    <div class="tab-pane" id="structureOrGenealogies">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for structureOrGenealogy in data.constellation1.structureOrGenealogies %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayStructureOrGenealogy(X, false, false, structureOrGenealogy, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Structure or Genealogy',
+                                            identifier: "#structureOrGenealogy_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for structureOrGenealogy in data.intersection.structureOrGenealogies %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayStructureOrGenealogy(X, false, false, structureOrGenealogy, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Structure or Genealogy',
+                                            identifier: "#structureOrGenealogy_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for structureOrGenealogy in data.constellation2.structureOrGenealogies %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayStructureOrGenealogy(X, false, false, structureOrGenealogy, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Structure or Genealogy',
+                                            identifier: "#structureOrGenealogy_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END structureOrGenealogies Pane -->
+
+                    <!-- BEGIN mandates Pane -->
+                    <div class="tab-pane" id="mandates">
+
+                        <div class="col-md-4 panel panel-body diff-content-panel content-a">
+                            <div class="row">
+                                <div class="col-sm-11 preview preview-left"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for mandate in data.constellation1.mandates %}
+                                    <div class="data-component data-component-a" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayMandate(X, false, false, mandate, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Mandate',
+                                            identifier: "#mandate_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-left" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-10 preview preview-middle"></div>
+                                <div class="col-sm-1 move-button-div move-button-div-left move-button-div-disabled">
+                                    <button class="btn btn-primary split-button split-button-right" title="Move this element">&gt;</button>
+                                </div>
+                            </div>
+                            <div class="data-components">
+                                {% for mandate in data.intersection.mandates %}
+                                    <div class="data-component  data-component-both" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayMandate(X, false, false, mandate, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Mandate',
+                                            identifier: "#mandate_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4 panel panel-body diff-content-panel  content-b">
+                            <div class="row">
+                                <div class="col-sm-1 move-button-div move-button-div-right move-button-div-disabled">
+                                    <button class="btn btn-primary move-button" title="Move this element">&lt;</button>
+                                </div>
+                                <div class="col-sm-11 preview preview-right"></div>
+                            </div>
+                            <div class="data-components">
+                                {% for mandate in data.constellation2.mandates %}
+                                    <div class="data-component data-component-b" id="icon_{{i}}">
+                                        <div style="display:none;" id="data_{{i}}">
+                                            {{ components.displayMandate(X, false, false, mandate, i) }}
+                                        </div>
+                                        <script>
+                                        pieceCache[{{i}}] = {
+                                            title: 'Mandate',
+                                            identifier: "#mandate_datapart_{{i}}"
+                                        };
+                                        </script>
+                                    </div>
+                                    {% set i = i + 1 %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- END mandates Pane -->
+
                 </div>
             </div>
         </div>
