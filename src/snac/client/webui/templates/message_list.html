@@ -41,23 +41,33 @@ $('.selectpicker').selectpicker();
 
 
 <script>
+var currentMessage = null;
 
 function showMessage(messageID) {
     $.get("?command=message_read&messageid="+messageID, null, function (data) {
         if (data.result == "success") {
             var messageDate = new Date(data.message.timestamp);
+            data.message.timestamp = messageDate.toLocaleString();
+
+            var messageBody = "This message has no content";
+            if (typeof data.message.body !== 'undefined')
+                messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
 
             var text = $('#message_template').clone();
             var html = text.html().replace(/MESSAGE_SUBJECT/g, data.message.subject)
-                                .replace(/MESSAGE_BODY/g, data.message.body)
-                                .replace(/MESSAGE_TIMESTAMP/g, messageDate.toLocaleString());
+                                .replace(/MESSAGE_BODY/g, messageBody)
+                                .replace(/MESSAGE_TIMESTAMP/g, data.message.timestamp);
             if (data.message.fromString) {
                 html = html.replace(/MESSAGE_FROM/g, data.message.fromString);
             } else {
-                html = html.replace(/MESSAGE_FROM/g, data.message.fromUser.fullName);
+                html = html.replace(/MESSAGE_FROM/g, data.message.fromUser.fullName + " ("
+                                        + data.message.fromUser.userName +")");
             }
-
+            currentMessage = data.message;
             $('#message_view_pane').html(html);
+
+            $("#reply_message").removeAttr("disabled").removeClass("disabled");
+            $("#forward_message").removeAttr("disabled").removeClass("disabled");
         }
     });
 }
@@ -98,6 +108,42 @@ function sendMessage() {
     });
 }
 
+function replyMessage() {
+    // Set up the new message box
+    $("#to_user").val(currentMessage.fromUser.userName);
+
+    var subject = "RE: " + currentMessage.subject;
+    if (currentMessage.subject.substring(0, 3) === "RE:")
+        subject = currentMessage.subject;
+
+    $("#subject").val(subject);
+    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+                                + currentMessage.fromUser.fullName
+                                + " (" + currentMessage.fromUser.userName + ")"
+                                + " wrote:\n\n" + currentMessage.body);
+
+    // Open the new message modal window
+    $("#new_message_pane").modal("show");
+}
+
+function forwardMessage() {
+    // Set up the new message box
+
+    var subject = "FW: " + currentMessage.subject;
+    if (currentMessage.subject.substring(0, 3) === "FW:")
+        subject = currentMessage.subject;
+
+
+    $("#subject").val(subject);
+    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+                                + currentMessage.fromUser.fullName
+                                + " (" + currentMessage.fromUser.userName + ")"
+                                + " wrote:\n\n" + currentMessage.body);
+
+    // Open the new message modal window
+    $("#new_message_pane").modal("show");
+}
+
 function cancelMessage() {
     // Hide the modal window
     $("#new_message_pane").modal("hide");
@@ -126,6 +172,8 @@ $(document).ready(function() {
 
     $("#send_message").click(sendMessage);
     $("#cancel_message").click(cancelMessage);
+    $("#reply_message").click(replyMessage);
+    $("#forward_message").click(forwardMessage);
 
 });
 </script>
@@ -192,10 +240,10 @@ $(document).ready(function() {
                     </div>
 
                     <div class="btn-group" role="group" aria-label="Actions" style="margin-bottom: 15px;">
-                        <button type="button" class="btn btn-default disabled" disabled>
+                        <button type="button" id="reply_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-reply" aria-hidden="true"></i> Reply
                         </button>
-                        <button type="button" class="btn btn-default disabled" disabled>
+                        <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-share" aria-hidden="true"></i> Forward
                         </button>
                         <button type="button" class="btn btn-default disabled" disabled>
