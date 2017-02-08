@@ -34,6 +34,28 @@ $(document).ready(function() {
         return false;
     });
 
+
+    $("#merge_button").click(function() {
+        var form = $("#merged_identity");
+        // empty out the form
+        form.html("");
+
+        // for each "both" pane, copy it into the form and then submit the form!
+        $(".content-both").each(function() {
+            var copy = $(this).html();
+            form.append(copy);
+        });
+
+        // Put the other constellation data into the form
+        var copy = $("#constellation_data").html();
+        form.append(copy);
+
+        form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
+        form.submit();
+
+        return false;
+    });
+
     pieceCache.forEach(function(piece, i) {
         $("#icon_" + i).popover({
                 title: piece.title,

@@ -221,7 +221,9 @@ class DBUtil
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
                                 'currently editing' => 1,
-                                'ingest cpf' => 1);
+                                'ingest cpf' => 1,
+                                'maybe same' => 1,
+                                'tombstone' => 1);
 
     /**
      * Check status values

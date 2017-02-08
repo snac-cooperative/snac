@@ -317,6 +317,20 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "diff":
                 $response = $executor->displayMaybeSameDiffPage($this->input, $display);
                 break;
+            case "diff_merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
+                } else {
+                    $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
+                }
+                break;
+            case "merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->displayMergedPage($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
 
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);

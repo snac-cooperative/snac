@@ -92,7 +92,9 @@ $('.selectpicker').selectpicker();
                         <p style="margin-top: -20px;">
                             <a href="?command=view&constellationid={{maybeSame.constellation.id}}" class="btn-sm btn-primary">View Constellation</a>
                             <a href="?command=diff&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
-                            <!--<a href="?command=view&constellationid={{data.constellation.id}}" class="btn-sm btn-danger">Merge</a>-->
+                            {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                            <a href="?command=diff_merge&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
+                            {% endif %}
                         </p>
                     {% endfor %}
 

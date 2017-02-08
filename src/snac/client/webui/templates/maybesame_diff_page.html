@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Maybe-Same - Social Networks and Archival Context</title>
+<title>Compare Constellations - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -160,16 +160,30 @@ $('.selectpicker').selectpicker();
         height: 100px;
     }
 
+    .content-a, .content-b, .content-both {
+        padding-top: 0px;
+    }
+
+    .data-components {
+        margin-top: 15px;
+    }
+
+    /* {% if not data.mergeable %} */
+    .move-button-div,
+    .move-button-div-left,
+    .move-button-div-right {
+        display: none;
+        padding: 0px;
+    }
+    .preview {
+        width: 100%;
+        padding: 0px;
+    }
+    /* {% endif %} */
 
     .split-button {
         padding: 5px;
         height: 100px;
-    }
-
-    .vcenter {
-        display: inline-block;
-        vertical-align: middle;
-        float: none;
     }
 </style>
 </head>
@@ -187,19 +201,18 @@ $('.selectpicker').selectpicker();
 
     <div class="container snac" role="main">
 
+        {% if data.mergeable %}
+            <h1>Merge Constellations</h1>
+        {% else %}
+            <h1>Compare Constellations</h1>
+        {% endif %}
 
-        <h1>Compare Constellations</h1>
-
-        <!-- Constellation Data -->
-        <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
-        <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
-        <input id="ark" name="ark" type="hidden" value="{{ data.constellation.ark }}"/>
 
 
         <div class="row">
             <div class="col-md-2">
                 {{components.displayEditTabs(X, true)}}
-
+                {% if data.mergeable %}
                 <div class="panel panel-default" style="margin-top: 30px;">
                     <div class="panel-heading">
                         <h3 class="panel-title">Actions</h3>
@@ -212,6 +225,7 @@ $('.selectpicker').selectpicker();
                         </div>
                     </div>
                 </div>
+                {% endif %}
             </div>
             <div class="col-md-10">
                 <div class="row">
@@ -1854,7 +1868,16 @@ $('.selectpicker').selectpicker();
             </div>
         </div>
     </div>
-    <form id="merged_identity">
-    </form>
+    <div style="display: none">
+        <form id="merged_identity">
+        </form>
+    </div>
+    <div style="display: none">
+        <div id="constellation_data">
+                <!-- Constellation Data -->
+                <input id="constellationid1" name="constellationid1" type="hidden" value="{{ data.constellation1.id }}"/>
+                <input id="constellationid2" name="constellationid2" type="hidden" value="{{ data.constellation2.id }}"/>
+        </div>
+    </div>
 </body>
 </html>

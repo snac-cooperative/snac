@@ -351,6 +351,43 @@ class WebUIExecutor {
         }
     }
 
+    public function displayMergedPage(&$input, &$display) {
+        // If just previewing, then all the information should come VIA post to build the preview
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
+
+        // Serialize constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        if ($constellation != null && isset($input["constellationid1"]) && isset($input["constellationid2"])) {
+            // Ask the server to do the merge
+            $query = [
+                "command" => "constellation_merge",
+                "constellationid1" => $input["constellationid1"],
+                "constellationid2" => $input["constellationid2"],
+                "constellation" => $constellation->toArray()
+            ];
+            $this->logger->addDebug("Asking server to do the merge");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("detailed_view_page");
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($serverResponse["constellation"]);
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
+        }
+
+    }
+
     /**
      * Display MaybeSame Diff Page
      *
@@ -359,11 +396,16 @@ class WebUIExecutor {
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param boolean $forMerge optional Whether or not this display should include merging, default is false
      */
-    public function displayMaybeSameDiffPage(&$input, &$display) {
+    public function displayMaybeSameDiffPage(&$input, &$display, $forMerge=false) {
+
+        $command = "constellation_diff";
+        if ($forMerge)
+            $command = "constellation_diff_merge";
 
         $query = array(
-            "command" => "constellation_diff",
+            "command" => $command,
             "constellationid1" => $input["constellationid1"],
             "constellationid2" => $input["constellationid2"]
         );
@@ -371,17 +413,26 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response", array($serverResponse));
         if (isset($serverResponse["intersection"])) {
-            $display->setTemplate("maybesame_diff_page");
-            $displayData = array(
-                "constellation1" => $serverResponse["constellation1"],
-                "constellation2" => $serverResponse["constellation2"],
-                "intersection" => $serverResponse["intersection"],
-                "mergeable" => $serverResponse["mergeable"]
-            );
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            if ($forMerge === false || ($forMerge === true && $serverResponse["mergeable"] === true)) {
+                // Can only merge if the webUI has requested diff to merge (forMerge) and
+                // the server says these two are mergeable
+                $mergeable = $forMerge && $serverResponse["mergeable"];
+
+                $display->setTemplate("maybesame_diff_page");
+                $displayData = array(
+                    "constellation1" => $serverResponse["constellation1"],
+                    "constellation2" => $serverResponse["constellation2"],
+                    "intersection" => $serverResponse["intersection"],
+                    "mergeable" => $mergeable
+                );
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $display->setData($displayData);
+            } else {
+                // We were able to do the diff, the user wanted to merge, but the server told us we couldn't merge
+                $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
             }
-            $display->setData($displayData);
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
@@ -437,7 +488,6 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayPreviewPage(&$input, &$display) {
-
         // If just previewing, then all the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
         $mapper->allowTermLookup();
