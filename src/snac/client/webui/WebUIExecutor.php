@@ -352,7 +352,7 @@ class WebUIExecutor {
     }
 
     public function displayMergedPage(&$input, &$display) {
-        // If just previewing, then all the information should come VIA post to build the preview
+        // All the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
         $mapper->allowTermLookup();
         $mapper->mapAsNewConstellation();

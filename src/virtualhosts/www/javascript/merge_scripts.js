@@ -136,4 +136,30 @@ $(document).ready(function() {
             });
         });
     });
+
+    $(".move-all-button").each(function() {
+        var button = $(this);
+        button.on("click", function() {
+            var button = $(this);
+            button.closest(".diff-content-panel").find(".data-component").each(function() {
+                var both = $(this).closest(".tab-pane").find(".merge-panel").find(".data-components");
+                var copy = $(this).detach();
+                copy.appendTo(both);
+            });
+            
+            $(".data-component").each(function() {
+                $(this).removeClass("data-component-selected").removeClass("disabled");
+                $(this).popover('enable');
+            });
+
+            $(".preview").each(function() {
+                $(this).html("");
+            })
+            $(".move-button-div").each(function() {
+                $(this).addClass("move-button-div-disabled");
+            })
+
+            $(this).closest(".diff-content-panel").find(".move-button").off("click");
+        })
+    });
 });

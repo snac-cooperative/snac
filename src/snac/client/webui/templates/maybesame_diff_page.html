@@ -185,6 +185,10 @@ $('.selectpicker').selectpicker();
         padding: 5px;
         height: 100px;
     }
+
+    .move-all-button-div {
+        margin-top: 40px;
+    }
 </style>
 </head>
 
@@ -270,6 +274,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.nameEntries|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -321,6 +330,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.nameEntries|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END nameEntries Pane -->
@@ -351,6 +365,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.genders|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -402,6 +421,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.genders|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END genders Pane -->
@@ -432,6 +456,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.dates|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -483,6 +512,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.dates|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END dates Pane -->
@@ -513,6 +547,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.biogHists|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -564,6 +603,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.biogHists|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END biogHists Pane -->
@@ -594,6 +638,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.otherRecordIDs|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -645,6 +694,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.otherRecordIDs|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END otherRecordIDs Pane -->
@@ -675,6 +729,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.entityIDs|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -726,6 +785,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.entityIDs|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END entityIDs Pane -->
@@ -756,6 +820,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.sources|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -807,6 +876,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.sources|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END sources Pane -->
@@ -837,6 +911,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.resourceRelations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -849,10 +928,10 @@ $('.selectpicker').selectpicker();
                                 </div>
                             </div>
                             <div class="data-components">
-                                {% for nameEntry in data.intersection.resourceRelations %}
+                                {% for resourceRelation in data.intersection.resourceRelations %}
                                     <div class="data-component  data-component-both" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
-                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, data.intersection.nameEntries.0.original) }}
+                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, 'BOTH') }}
                                         </div>
                                         <script>
                                         pieceCache[{{i}}] = {
@@ -888,6 +967,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.resourceRelations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END resourceRelations Pane -->
@@ -903,7 +987,7 @@ $('.selectpicker').selectpicker();
                                 </div>
                             </div>
                             <div class="data-components">
-                                {% for constellationRelation in data.constellation1.constellationRelations %}
+                                {% for constellationRelation in data.constellation1.relations %}
                                     <div class="data-component data-component-a" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.constellation1.entityType.term, data.constellation1.nameEntries.0.original) }}
@@ -918,6 +1002,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.relations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -930,7 +1019,7 @@ $('.selectpicker').selectpicker();
                                 </div>
                             </div>
                             <div class="data-components">
-                                {% for constellationRelation in data.intersection.constellationRelations %}
+                                {% for constellationRelation in data.intersection.relations %}
                                     <div class="data-component  data-component-both" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.intersection.entityType.term, data.intersection.nameEntries.0.original) }}
@@ -954,7 +1043,7 @@ $('.selectpicker').selectpicker();
                                 <div class="col-sm-11 preview preview-right"></div>
                             </div>
                             <div class="data-components">
-                                {% for constellationRelation in data.constellation2.constellationRelations %}
+                                {% for constellationRelation in data.constellation2.relations %}
                                     <div class="data-component data-component-b" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
                                             {{ components.displayConstellationRelation(X, false, false, constellationRelation, i, data.constellation2.entityType.term, data.constellation2.nameEntries.0.original) }}
@@ -969,6 +1058,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.relations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END constellationRelations Pane -->
@@ -999,6 +1093,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.languagesUsed|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1050,6 +1149,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.languagesUsed|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END languagesUsed Pane -->
@@ -1080,6 +1184,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.subjects|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1131,6 +1240,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.subjects|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END subjects Pane -->
@@ -1161,6 +1275,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.nationalities|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1212,6 +1331,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.nationalities|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END nationalities Pane -->
@@ -1242,6 +1366,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.functions|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1293,6 +1422,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.functions|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END functions Pane -->
@@ -1323,6 +1457,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.occupations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1374,6 +1513,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.occupations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END occupations Pane -->
@@ -1404,6 +1548,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.legalStatuses|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1455,6 +1604,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.legalStatuses|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END legalStatuses Pane -->
@@ -1485,6 +1639,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.places|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1536,6 +1695,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.places|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END places Pane -->
@@ -1566,6 +1730,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.conventionDeclarations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1617,6 +1786,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.conventionDeclarations|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END conventionDeclarations Pane -->
@@ -1647,6 +1821,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.generalContexts|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1698,6 +1877,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.generalContexts|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END generalContexts Pane -->
@@ -1728,6 +1912,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.structureOrGenealogies|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1779,6 +1968,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.structureOrGenealogies|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END structureOrGenealogies Pane -->
@@ -1809,6 +2003,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation1.mandates|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">move all &gt;</button>
+                                </div>
+                            {% endif %}
                         </div>
                         <div class="col-md-4 panel panel-body diff-content-panel merge-panel content-both">
                             <div class="row">
@@ -1860,6 +2059,11 @@ $('.selectpicker').selectpicker();
                                     {% set i = i + 1 %}
                                 {% endfor %}
                             </div>
+                            {% if data.mergeable and data.constellation2.mandates|length > 0 %}
+                                <div class="row text-center move-all-button-div">
+                                    <button class="btn btn-success move-all-button" title="Move all elements">&lt; move all</button>
+                                </div>
+                            {% endif %}
                         </div>
                     </div>
                     <!-- END mandates Pane -->

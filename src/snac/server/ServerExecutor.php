@@ -1760,6 +1760,14 @@ class ServerExecutor {
                 // Create a version of the constellation with only Sources (for initialize step)
                 $sourceConstellation = new \snac\data\Constellation();
                 $sourceConstellation->setAllSources($constellation->getSources());
+                $sourceConstellation->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+                // We need an entity type, so if one is not set, we'll use the first one for now
+                if ($sourceConstellation->getEntityType() === null) {
+                    $sourceConstellation->setEntityType($constellation1->getEntityType());
+                }
+
+                $this->logger->addDebug("Writing initial sources-level constellation", $sourceConstellation->toArray());
 
                 // Write the copy of the constellation with only Source objects
                 $sourceConstellation = $this->cStore->writeConstellation($this->user, $sourceConstellation, "Loading Source objects", 'initialize');

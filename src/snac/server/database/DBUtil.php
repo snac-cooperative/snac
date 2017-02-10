@@ -3412,15 +3412,15 @@ class DBUtil
      * modified to include id and version, or false if not successful.
      *
      */
-    public function writeConstellation($user, $argObj, $note, $statusArg='locked editing')
+    public function writeConstellation($user, $argObj, $note, $statusArg=null)
     {
         /*
          * We can initialize $status to either $defaultStatus or $statusArg. I'm not sure it makes much
          * difference. We do use $defaultStatus later to set the status after creating a version_history
          * record for 'ingest cpf'.
          */
-        $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
-        $status = $defaultStatus;
+        $defaultStatus = 'locked editing';
+        $status = $statusArg;
         if ($user == null || $user->getUserID() == null) {
             $this->logDebug("dbutil user or userid is null");
             return false;
@@ -3435,7 +3435,8 @@ class DBUtil
              * Update uses the existing constellation ID.
              */
             $mainID = $cObj->getID();
-            $status = $this->readConstellationStatus($mainID);
+            if ($status === null)
+                $status = $this->readConstellationStatus($mainID);
         }
         elseif ($op == \snac\data\AbstractData::$OPERATION_DELETE)
         {
@@ -3468,7 +3469,8 @@ class DBUtil
                  *
                  * A new constellation must have operation insert, and is handled above.
                  */
-                $status = $this->readConstellationStatus($mainID);
+                if ($status === null)
+                    $status = $this->readConstellationStatus($mainID);
             }
             else
             {
@@ -3525,9 +3527,14 @@ class DBUtil
             $maintNote = $this->maintenanceNote($cObj);
             $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $statusArg, $maintNote);
             $mainID = $vhInfoIngest['ic_id'];
-            $status = $defaultStatus;
-            $cObj->setStatus($status);
+            $status = $defaultStatus; // set status default (locked editing)
         }
+
+        // If the status is null, we should set it to default before writing
+        if ($status === null)
+            $status = $defaultStatus;
+        // Set the status inside the constellation
+        $cObj->setStatus($status);
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
         $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
