@@ -36,6 +36,8 @@ $(document).ready(function() {
 
 
     $("#merge_button").click(function() {
+        $("#please_wait_modal").modal("show");
+
         var form = $("#merged_identity");
         // empty out the form
         form.html("");
@@ -146,7 +148,7 @@ $(document).ready(function() {
                 var copy = $(this).detach();
                 copy.appendTo(both);
             });
-            
+
             $(".data-component").each(function() {
                 $(this).removeClass("data-component-selected").removeClass("disabled");
                 $(this).popover('enable');
