@@ -282,50 +282,193 @@ class ElasticSearchUtil {
         );
     }
 
+
+    /**
+     * Autocomplete Search SNAC Main Index
+     *
+     * Searches the main names index for the query using number of related resources as a factor, while also using the
+     * Elastic Search simple_query_string query that allows for wildcard, missing, and edit distance queries.  This provides
+     * an autocomplete-like response by appending the wildcard "*" to the end of the search string.
+     *
+     * Allows for pagination by the start and count parameters.
+     *
+     * @param string $query The search query
+     * @param string $entityType optional The entity type to search for, or null
+     * @param integer $start optional The result index to start from (default 0)
+     * @param integer $count optional The number of results to return from the start (default 10)
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
+     */
+    public function searchMainIndexAutocomplete($query, $entityType=null, $start=0, $count=10) {
+
+        $searchBody = [
+            /* This query uses a full-word matching search */
+            'query' => [
+                'function_score' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                               'simple_query_string' => [
+                                   'fields' => ['nameEntry'],
+                                   'query' => $query .'*',
+                                   'default_operator' => 'and'
+                               ]
+                            ]
+                        ]
+                    ],
+                    'field_value_factor' => [
+                        'field' => 'resources',
+                        'modifier' => 'log1p',
+                        'factor' => 1.5
+                    ],
+                    'boost_mode' => "multiply",
+                    'max_boost' => 3
+                ]
+            ]
+        ];
+        if ($entityType !== null) {
+            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
+                    "term" => [
+                        'entityType' => strtolower($entityType) // strange elastic search behavior
+                    ]
+            ];
+        }
+
+
+
+        return $this->elasticSearchQuery($searchBody, $start, $count);
+
+    }
+
+    /**
+     * Advanced Search SNAC Main Index
+     *
+     * Searches the main names index for the query using number of related resources as a factor, while also using the
+     * Elastic Search simple_query_string query that allows for wildcard, missing, and edit distance queries.  
+     * Allows for pagination by the start and count parameters.
+     *
+     * @param string $query The search query
+     * @param string $entityType optional The entity type to search for, or null
+     * @param integer $start optional The result index to start from (default 0)
+     * @param integer $count optional The number of results to return from the start (default 10)
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
+     */
+    public function searchMainIndexAdvanced($query, $entityType=null, $start=0, $count=10) {
+
+        $searchBody = [
+            /* This query uses a full-word matching search */
+            'query' => [
+                'function_score' => [
+                    'query' => [
+                        'bool' => [
+                            'must' => [
+                               'simple_query_string' => [
+                                   'fields' => ['nameEntry'],
+                                   'query' => $query,
+                                   'default_operator' => 'and'
+                               ]
+                            ]
+                        ]
+                    ],
+                    'field_value_factor' => [
+                        'field' => 'resources',
+                        'modifier' => 'log1p',
+                        'factor' => 1.5
+                    ],
+                    'boost_mode' => "multiply",
+                    'max_boost' => 3
+                ]
+            ]
+        ];
+        if ($entityType !== null) {
+            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
+                    "term" => [
+                        'entityType' => strtolower($entityType) // strange elastic search behavior
+                    ]
+            ];
+        }
+
+
+        return $this->elasticSearchQuery($searchBody, $start, $count);
+    }
+
     /**
      * Search SNAC Main Index with Resource Degree
      *
      * Searches the main names index for the query using number of related resources as a factor.  Allows for pagination by the start and count parameters.
      *
      * @param string $query The search query
+     * @param string $entityType optional The entity type to search for, or null
      * @param integer $start optional The result index to start from (default 0)
      * @param integer $count optional The number of results to return from the start (default 10)
      * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
      */
-    public function searchMainIndexWithDegree($query, $start=0, $count=10) {
-        $this->logger->addDebug("Searching for a Constellation");
+    public function searchMainIndexWithDegree($query, $entityType=null, $start=0, $count=10) {
 
-        if (\snac\Config::$USE_ELASTIC_SEARCH) {
-
-            $params = [
-                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                'body' => [
-
-                    /* This query uses a full-word matching search */
+        $searchBody = [
+            /* This query uses a full-word matching search */
+            'query' => [
+                'function_score' => [
                     'query' => [
-                        'function_score' => [
-                            'query' => [
+                        'bool' => [
+                            'must' => [
                                 'match' => [
                                     'nameEntry' => [
                                         'query' => $query,
                                         'operator' => 'and'
                                     ]
                                 ]
-                            ],
-                            'field_value_factor' => [
-                                'field' => 'resources',
-                                'modifier' => 'log1p',
-                                'factor' => 1.5
-                            ],
-                            'boost_mode' => "multiply",
-                            'max_boost' => 3
+                            ]
                         ]
                     ],
-                    'from' => $start,
-                    'size' => $count
+                    'field_value_factor' => [
+                        'field' => 'resources',
+                        'modifier' => 'log1p',
+                        'factor' => 1.5
+                    ],
+                    'boost_mode' => "multiply",
+                    'max_boost' => 3
                 ]
+            ]
+        ];
+        if ($entityType !== null) {
+            $searchBody["query"]["function_score"]["query"]["bool"]["filter"] = [
+                    "term" => [
+                        'entityType' => strtolower($entityType) // strange elastic search behavior
+                    ]
             ];
+        }
+
+        return $this->elasticSearchQuery($searchBody, $start, $count);
+
+    }
+
+    /**
+     * Search Elastic Search with Query
+     *      
+     * Searches the main names index for the given query body.  This is a helper function to condense the codebase. 
+     *
+     * @param string[] $searchBody Associative array of the Elastic Search query body
+     * @param integer $start optional The result index to start from (default 0)
+     * @param integer $count optional The number of results to return from the start (default 10)
+     * @return string[] Results from Elastic Search: total, results list, pagination (num pages), page (current page)
+     */
+    private function elasticSearchQuery($searchBody, $start=0, $count=10) {
+        $this->logger->addDebug("Searching for a Constellation");
+
+        if (\snac\Config::$USE_ELASTIC_SEARCH) {
+
+            $body = $searchBody;
+            $body["from"] = $start;
+            $body["size"] = $count;
+
+            $params = [
+                'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
+                'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
+                'body' => $body,
+                'from' => $start,
+                'size' => $count
+            ];
+
             $this->logger->addDebug("Defined parameters for search", $params);
 
             $results = $this->connector->search($params);

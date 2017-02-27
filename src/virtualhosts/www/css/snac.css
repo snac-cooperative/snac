@@ -8,6 +8,7 @@ body {
     padding-top: 70px;
     padding-bottom: 30px;
 }
+
 .navbar-inverse {
     background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
     background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
@@ -290,6 +291,49 @@ td.rotate > div > span {
 
 .form-group .well p, .form-group p.form-control-static {
     word-wrap: break-word;
+}
+
+/* Advanced Search Information */
+#advancedSearchText dl {
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+#advancedSearchText dl dt {
+    min-width: 25px;
+    display: inline-block;
+}
+
+#advancedSearchText dl dd:after {
+    display: block;
+    content: "";
+}
+
+#advancedSearchText dd {
+    display: inline;
+}
+
+
+
+/* override JQuery Ui for autocomplete */
+.ui-widget {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.ui-menu .ui-menu-item {
+    padding: 4px;
+    margin: 2px;
+}
+
+.ui-state-focus, .ui-widget-content .ui-state-focus {
+    background: #337ab7;
+    border: 0px;
+    color: #fff;
+}
+
+.ui-autocomplete, .ui-widget-content {
+    margin-left: 0px;
 }
 
 /* Use the following to make other colors of list items */

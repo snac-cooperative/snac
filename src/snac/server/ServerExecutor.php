@@ -13,6 +13,7 @@
 namespace snac\server;
 
 use League\OAuth2\Client\Token\AccessToken;
+use PhpParser\Node\Stmt\Break_;
 use snac\server\database\DBUtil;
 /**
  * Server Executor Class
@@ -1153,7 +1154,13 @@ class ServerExecutor {
 
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
 
-                list($currentStatus, $currentUserID, $currentNote) = $this->cStore->readConstellationUserStatus($constellation->getID());
+                $info = $this->cStore->readConstellationUserStatus($constellation->getID());
+                if ($info === null) {
+                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
+                }
+                $currentStatus = $info["status"];
+                $currentUserID = $info["userid"];
+                $currentNote = $info["note"];
 
                 $inList = false;
                 if ($currentUserID == $this->user->getUserID() &&
@@ -1470,7 +1477,16 @@ class ServerExecutor {
                 $this->logger->addDebug("Reading constellation from the database");
 
                 $cId = $input["constellationid"];
-                $status = $this->cStore->readConstellationStatus($cId);
+                $info = $this->cStore->readConstellationUserStatus($cId);
+                if (!is_array($info)) {
+                    throw new \snac\exceptions\SNACInputException("Constellation does not have a current version");
+                }
+
+                $status = $info["status"];
+
+                if ($info["userid"] === $this->user->getUserID() && $status === "currently editing") {
+                    throw new \snac\exceptions\SNACConcurrentEditException("Constellation currently opened in another window");
+                }
 
                 // Should check the list of constellations for the user and only allow editing a "locked editing" constellation
                 // if that constellation is attached to that user.  So, need to loop through the constellations for that user
@@ -1508,7 +1524,7 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $this->logger->addDebug("Serialized constellation for output to client");
                 } else {
-                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user or window.");
+                    throw new \snac\exceptions\SNACPermissionException("Constellation is currently locked to another user.");
                 }
 
 
@@ -1942,8 +1958,28 @@ class ServerExecutor {
             return $response;
         }
 
+        if ($input["entity_type"] === "")
+            $input["entity_type"] = null;
+
+        if (!isset($input["search_type"])) {
+            $input["search_type"] = "default";
+        }
+
         if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["start"], $input["count"]);
+            switch($input["search_type"]) {
+                case "autocomplete":
+                    $response = $this->elasticSearch->searchMainIndexAutocomplete($input["term"], $input["entity_type"],
+                                                                        $input["start"], $input["count"]);
+                    break;
+                case "advanced":
+                    $response = $this->elasticSearch->searchMainIndexAdvanced($input["term"], $input["entity_type"],
+                                                                        $input["start"], $input["count"]);
+                    break;
+                default:
+                    $response = $this->elasticSearch->searchMainIndexWithDegree($input["term"], $input["entity_type"],
+                                                                            $input["start"], $input["count"]);
+            }
+
 
             $searchResults = array();
             // Update the ES search results to include information from the constellation
@@ -1954,6 +1990,7 @@ class ServerExecutor {
             $response["results"] = $searchResults;
             $response["count"] = $input["count"];
             $response["term"] = $input["term"];
+            $response["search_type"] = $input["search_type"];
 
             // Limit the search results, if specified in the configuration
             if (isset(\snac\Config::$MAX_SEARCH_RESULT_PAGES) &&
