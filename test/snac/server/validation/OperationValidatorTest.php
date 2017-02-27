@@ -19,7 +19,7 @@ use \snac\server\validation\validators\OperationValidator;
  * @author Robbie Hott
  *
  */
-class OperationValidatorTest extends \PHPUnit_Framework_TestCase {
+class OperationValidatorTest extends \PHPUnit\Framework\TestCase {
     
     /**
      * 

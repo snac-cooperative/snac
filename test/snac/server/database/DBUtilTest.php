@@ -19,7 +19,7 @@ use \snac\server\database\DBUtil as DBUtil;
  * @author Tom Laudeman
  *
  */
-class DBUtilTest extends \PHPUnit_Framework_TestCase {
+class DBUtilTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * DBUtil object for this class
