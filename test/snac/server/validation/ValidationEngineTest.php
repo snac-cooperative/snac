@@ -18,7 +18,7 @@ use \snac\server\validation\ValidationEngine as ValidationEngine;
  * @author Robbie Hott
  *
  */
-class ValidationEngineTest extends \PHPUnit_Framework_TestCase {
+class ValidationEngineTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * Test adding a null validator

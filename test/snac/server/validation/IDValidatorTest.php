@@ -19,7 +19,7 @@ use snac\server\validation\validators\IDValidator;
  * @author Robbie Hott
  *
  */
-class IDValidatorTest extends \PHPUnit_Framework_TestCase {
+class IDValidatorTest extends \PHPUnit\Framework\TestCase {
     
     /**
      * 
