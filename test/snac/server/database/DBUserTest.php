@@ -18,7 +18,7 @@ namespace test\snac\server\database;
  * @author Tom Laudeman
  *
  */
-class DBUserTest extends \PHPUnit_Framework_TestCase
+class DBUserTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Monolog\Logger $logger the logger for this server

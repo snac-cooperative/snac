@@ -121,9 +121,15 @@ body {
                <div class="biog">
                   <div class="facts">
                      <div class="life">
+                        {% if data.dates %}
                             <dt>Dates:</dt>
-                            <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
-                            <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
+                            {% for date in data.dates %}
+                                <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
+                                {% if date.toDate %}
+                                    <dd>{{date.toType.term}} {{date.toDate}}</dd>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                         {% if data.genders.0.term.term %}
                             <dt>Gender:</dt>
                             <dd>{{data.genders.0.term.term}}</dd>
@@ -159,7 +165,7 @@ body {
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
                            {% for nat in data.nationalities %}
-                                {{ nat.term.term }},
+                               {{ nat.term.term }}{{loop.last ? '' : ','}}
                            {% endfor %}
                         </div>
                         {% endif %}
@@ -167,7 +173,8 @@ body {
                         <div data-xsl="language">
                            <label>Language: </label>
                             {% for lang in data.languagesUsed %}
-                                {{ lang.language.description }},
+                                {{ lang.language.description }}{{loop.last ? '' : ','}}
+
                             {% endfor %}
                         </div>
                         {% endif %}

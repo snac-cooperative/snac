@@ -18,7 +18,7 @@ use function GuzzleHttp\json_decode;
  * @author Robbie Hott
  *
  */
-class ServerTest extends \PHPUnit_Framework_TestCase {
+class ServerTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * @var \snac\data\User The User object

@@ -1737,6 +1737,18 @@ $(document).ready(function() {
                         turnOnTooltips("resource", 0);
                         makeEditable("resource", 0);
 
+                        // Turn on validation
+                        $("#resource_create_form").validate({
+                            rules: {
+                                resource_documentType_id_0: "required",
+                                resource_title_0: "required"
+                            },
+                            errorPlacement: function(error, element) {
+                                error.appendTo( element.parent() );
+                            }
+                            
+                        });
+
                         // Remove the search results from the other modal
                         $("#resource-results-box").html("");
                         return false;
@@ -1745,40 +1757,42 @@ $(document).ready(function() {
 
                 if ($('#btn_create_resource').exists()){
                     $('#btn_create_resource').click(function(){
-                        $.post("?command=save_resource", $("#resource_create_form").serialize(), function (data) {
-                            somethingHasBeenEdited = true;
-                            var text = $('#resourceRelation_template').clone();
-                            var html = text.html().replace(/ZZ/g, resourceRelationid);
-                            $('#add_resourceRelation_div').after(html);
+                        if ($("#resource_create_form").valid()) {
+                            $.post("?command=save_resource", $("#resource_create_form").serialize(), function (data) {
+                                somethingHasBeenEdited = true;
+                                var text = $('#resourceRelation_template').clone();
+                                var html = text.html().replace(/ZZ/g, resourceRelationid);
+                                $('#add_resourceRelation_div').after(html);
 
-                            if (typeof data.resource.id !== 'undefined')
-                                $('#resourceRelation_resourceid_'+resourceRelationid).val(data.resource.id);
-                            if (typeof data.resource.version !== 'undefined')
-                                $('#resourceRelation_resourceversion_'+resourceRelationid).val(data.resource.version);
+                                if (typeof data.resource.id !== 'undefined')
+                                    $('#resourceRelation_resourceid_'+resourceRelationid).val(data.resource.id);
+                                if (typeof data.resource.version !== 'undefined')
+                                    $('#resourceRelation_resourceversion_'+resourceRelationid).val(data.resource.version);
 
-                            if (typeof data.resource.link !== 'undefined')
-                                $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
-                            if (typeof data.resource.title !== 'undefined') {
-                                $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
-                                updatePictureTitle('resourceRelation', resourceRelationid, data.resource.title);
-                            }
-                            if (typeof data.resource.abstract !== 'undefined')
-                                $('#resourceRelation_abstractText_'+resourceRelationid).text(data.resource.abstract);
-                            if (typeof data.resource.extent !== 'undefined')
-                                $('#resourceRelation_extentText_'+resourceRelationid).text(data.resource.extent);
-                            if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
-                                $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
+                                if (typeof data.resource.link !== 'undefined')
+                                    $('#resourceRelation_linkText_'+resourceRelationid).html(data.resource.link + " <a class='label label-info' target='_blank' href='"+data.resource.link+"'>View</a>");
+                                if (typeof data.resource.title !== 'undefined') {
+                                    $('#resourceRelation_titleText_'+resourceRelationid).text(data.resource.title);
+                                    updatePictureTitle('resourceRelation', resourceRelationid, data.resource.title);
+                                }
+                                if (typeof data.resource.abstract !== 'undefined')
+                                    $('#resourceRelation_abstractText_'+resourceRelationid).text(data.resource.abstract);
+                                if (typeof data.resource.extent !== 'undefined')
+                                    $('#resourceRelation_extentText_'+resourceRelationid).text(data.resource.extent);
+                                if (typeof data.resource.documentType !== 'undefined' && typeof data.resource.documentType.term !== 'undefined')
+                                    $('#resourceRelation_documentTypeText_'+resourceRelationid).text(data.resource.documentType.term);
 
 
 
-                            turnOnButtons("resourceRelation", resourceRelationid);
-                            turnOnTooltips("resourceRelation", resourceRelationid);
-                            makeEditable("resourceRelation", resourceRelationid);
-                            resourceRelationid = resourceRelationid + 1;
-                            $("#resourceCreatePane").modal("hide");
-                            $('#resource-create-box').html("");
-                            return true;
-                        });
+                                turnOnButtons("resourceRelation", resourceRelationid);
+                                turnOnTooltips("resourceRelation", resourceRelationid);
+                                makeEditable("resourceRelation", resourceRelationid);
+                                resourceRelationid = resourceRelationid + 1;
+                                $("#resourceCreatePane").modal("hide");
+                                $('#resource-create-box').html("");
+                                return true;
+                            });
+                        }
                         return false;
                     });
                 }

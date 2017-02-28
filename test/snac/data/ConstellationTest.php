@@ -18,7 +18,7 @@ namespace test\snac\data;
  * @author Robbie Hott
  *
  */
-class ConstellationTest extends \PHPUnit_Framework_TestCase {
+class ConstellationTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * Test that trying to read garbage instead of JSON results in not importing any data

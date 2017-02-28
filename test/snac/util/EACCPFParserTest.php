@@ -18,7 +18,7 @@ namespace test\snac\util;
  * @author Robbie Hott
  *
  */
-class EACCPFParserTest extends \PHPUnit_Framework_TestCase {
+class EACCPFParserTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * Test that giving the parser a bad filename will throw the right exception. 
