@@ -1281,6 +1281,65 @@ class SQL
         return $row['current_ic_id'];
     }
 
+    /**
+     * Update the constellation lookup table
+     *
+     * Updates the mappings for icid/ark to current icid/ark by modifiying the current values.  If
+     * the given icid and ark are not in the table, this method adds them first.  It never deletes,
+     * since it must keep track of every icid/ark assigned by the system.
+     *
+     * @param int $icid The ICID to re-map
+     * @param string $ark The Ark ID to re-map
+     * @param int $currentICID The updated ICID to use instead of $icid
+     * @param string $currentArk The updated Ark ID to use instead of $ark
+     */
+    public function updateConstellationLookup($icid, $ark, $currentICID, $currentArk) {
+        $result = $this->sdb->query('select ic_id from constellation_lookup where ic_id = $1;', array($icid));
+        if ($this->sdb->fetchrow($result) === false) {
+            $result = $this->sdb->query('insert into constellation_lookup
+                (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                array($icid, $ark, $currentICID, $currentArk));
+        }
+        
+        $result = $this->sdb->query('update constellation_lookup
+            set current_ic_id = $3, current_ark_id = $4 where
+            current_ic_id = $1 and current_ark_id = $2;',
+            array($icid, $ark, $currentICID, $currentArk));
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Updates the maybe same table to point any maybesame references from icid to currentICID.
+     * After doing an update, it will remove any self-referencing maybesames.
+     *
+     * @param int $icid The icid to re-map in the maybe same table
+     * @param int $currentICID The updated ICID to use instead of $icid
+     */
+    public function updateMaybeSameLinks($icid, $currentICID) {
+        $result = $this->sdb->query('update maybe_same
+            set ic_id1 = $2 where ic_id1 = $1;',
+            array($icid, $currentICID));
+        $result = $this->sdb->query('update maybe_same
+            set ic_id2 = $2 where ic_id2 = $1;',
+            array($icid, $currentICID));
+
+        // Remove any self-referencing links
+        $result = $this->sdb->query('delete from maybe_same where ic_id1 = ic_id2;', array());
+    }
+
+    /**
+     * Remove MaybeSame Links
+     *
+     * Removes the maybe same links between the two ic_ids given.
+     *
+     * @param int $icid1 One ICID
+     * @param int $icid2 Another ICID
+     */
+    public function removeMaybeSameLink($icid1, $icid2) {
+        $result = $this->sdb->query('delete from maybe_same where (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);', 
+            array($icid1, $icid2));
+    }
 
     /**
      * Select records from table source by foreign key

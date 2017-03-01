@@ -3363,6 +3363,72 @@ class DBUtil
         return false;
     }
 
+    /**
+     * Update Constellation Lookup
+     *
+     * Update the lookup table so that queries to the oldConstellation will be automatically redirected
+     * to read the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation $newConstellation The constellation to return when querying for oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateConstellationLookup(&$oldConstellation, &$newConstellation) {
+        if ($oldConstellation === null || $newConstellation === null)
+            return false;
+    
+        if ($oldConstellation->getID() === null || $oldConstellation->getArk() === null ||
+            $newConstellation->getID() === null || $newConstellation->getArk() === null)
+            return false;
+        
+        $this->sql->updateConstellationLookup($oldConstellation->getID(), $oldConstellation->getArk(),
+            $newConstellation->getID(), $newConstellation->getArk());
+
+        return true;
+    }
+
+    /**
+     * Remove MaybeSame Link
+     *
+     * Removes maybe_same links between the two constellations given as parameters.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @return boolean true on success, false otherwise
+     */
+    public function removeMaybeSameLink(&$constellation1, &$constellation2) {
+        if ($constellation1 === null || $constellation2 === null)
+            return false;
+    
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+        
+        $this->sql->removeMaybeSameLink($constellation1->getID(), $constellation2->getID());
+
+        return true;
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Update the maybe_same table so that maybesame links to the oldConstellation will be automatically redirected
+     * to point to the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation $newConstellation The constellation to replace oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateMaybeSameLinks(&$oldConstellation, &$newConstellation) {
+        if ($oldConstellation === null || $newConstellation === null)
+            return false;
+    
+        if ($oldConstellation->getID() === null || $newConstellation->getID() === null)
+            return false;
+        
+        $this->sql->updateMaybeSameLinks($oldConstellation->getID(), $newConstellation->getID());
+
+        return true;
+    }
 
     /**
      * Write a constellation to the database.

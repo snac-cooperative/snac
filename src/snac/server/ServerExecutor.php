@@ -1225,6 +1225,16 @@ class ServerExecutor {
 
     }
 
+    /**
+     * Publish Functionality
+     *
+     * This method actually does the publishing of a constellation.  If the constellation does not
+     * have an ARK, it is assigned one (temporary or permanent depending on the SANDBOX_MODE config
+     * variable.  It then updates the status to published.
+     *
+     * @param \snac\data\Constellation $constellation The constellation to publish
+     * @return integer|boolean Returns the new version number on success or false on failure.
+     */
     protected function corePublish(&$constellation) {
         if ($constellation->getArk() === null) {
             // We must mint an ark
@@ -1252,6 +1262,9 @@ class ServerExecutor {
             }
             $constellation->setArkID($newArk);
         }
+
+        // If this is published, then it should point to itself in the lookup table.
+        $this->cStore->updateConstellationLookup($constellation, $constellation);
 
         return $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                                         "published", "User published constellation");
@@ -1848,10 +1861,14 @@ class ServerExecutor {
                 $this->elasticSearch->deleteFromNameIndices($constellation2);
 
                 // Update the references in the maybesame table
-                // 1. remove any that are constellationid1-constellationid2 or vice versa
-                // 2. any that point to (or from) constellationid1 should point to the new id
-                // 3. any that point to (or from) constellationid2 should point to the new id
-                // TODO
+                $this->cStore->removeMaybeSameLink($constellation1, $constellation2);
+                $this->cStore->updateMaybeSameLinks($constellation1, $written);
+                $this->cStore->updateMaybeSameLinks($constellation2, $written);
+
+                // Update the constellation lookup table
+                $this->cStore->updateConstellationLookup($constellation1, $written);
+                $this->cStore->updateConstellationLookup($constellation2, $written);
+                // Note: corePublish() will update the lookup for written->written
 
                 // Merge completed successfully!
                 $response["result"] = "success";
