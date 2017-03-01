@@ -1240,35 +1240,45 @@ class SQL
     }
 
     /**
-     * select mainID by arkID
+     * select Current IC_ID by arkID
      *
-     * nrd.ic_id is the constellation id.
-     *
-     * Do not use nrd.id. The row identifier for nrd is nrd.ic_id. Do not join to table nrd. If you need to
-     * join to the constellation use version_history.id. They are both the same, but nrd is a data table,
-     * and version_history is the "root" of the constellation.
-     *
-     * Constellation->getID() gets the ic_id aka constellation id aka nrd.ic_id aka
-     * version_history.id.
-     *
-     * non-constellation->getID() gets the row id. Non-constellation objects get the ic_id from the
-     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
-     * (again) caused confusion in the SQL below (now fixed).
+     * Returns the current IC ic_id (main_id in Tom's code) for the given Ark ID.  If the constellation pointed
+     * to by the ARK was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
      *
      * @param string $arkID The ARK id of a constellation
-     *
      * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
      */
-    public function selectMainID($arkID)
+    public function selectCurrentMainIDForArk($arkID)
     {
         $result = $this->sdb->query(
-            'select nrd.ic_id
-            from nrd
+            'select current_ic_id
+            from constellation_lookup
             where
-            nrd.ark_id=$1',
+            ark_id=$1',
             array($arkID));
         $row = $this->sdb->fetchrow($result);
-        return $row['ic_id'];
+        return $row['current_ic_id'];
+    }
+
+    /**
+     * select Current IC_ID by IC_ID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given ic_id.  If the constellation pointed
+     * to by the given ic_id was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     *
+     * @param integer $icid The Constellation ID of the IC to lookup
+     * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
+     */
+    public function selectCurrentMainIDForID($icid)
+    {
+        $result = $this->sdb->query(
+            'select current_ic_id
+            from constellation_lookup
+            where
+            ic_id=$1',
+            array($icid));
+        $row = $this->sdb->fetchrow($result);
+        return $row['current_ic_id'];
     }
 
 

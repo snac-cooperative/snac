@@ -475,7 +475,7 @@ class DBUtil
      */
     public function readPublishedConstellationByARK($arkID, $flags=0)
     {
-        $mainID = $this->sql->selectMainID($arkID);
+        $mainID = $this->sql->selectCurrentMainIDForArk($arkID);
         if ($mainID)
         {
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
@@ -514,11 +514,17 @@ class DBUtil
         if ($mainID == null || $mainID == '') {
             return false;
         }
-        $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
-        if ($version)
-        {
-            $cObj = $this->readConstellation($mainID, $version, $flags);
-            return $cObj;
+
+        // Redirection, in case this ID was merged into another.  Worst case, currentID = mainID.
+        $currentID = $this->sql->selectCurrentMainIDForID($mainID);
+        
+        if ($currentID) {
+            $version = $this->sql->selectCurrentVersionByStatus($currentID, 'published');
+            if ($version)
+            {
+                $cObj = $this->readConstellation($currentID, $version, $flags);
+                return $cObj;
+            }
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
         // force asking for a published constellation. Returning false means the request didn't work.
