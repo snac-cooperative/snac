@@ -1483,19 +1483,8 @@ class ServerExecutor {
 
         if (isset($input["arkid"])) {
             // Editing the given ark id by reading querying the current HRT
+            throw new \snac\exceptions\SNACInputException("Please provide a Constellation ID for editing.  Arks are not supported.");
 
-            // split on ark:/
-            $tmp = explode("ark:/", $input["arkid"]);
-            if (isset($tmp[1])) {
-                $pieces = explode("/", $tmp[1]);
-                if (count($pieces) == 2) {
-                    $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
-                    // Create new parser for this file and parse it
-                    $parser = new \snac\util\EACCPFParser();
-                    $id = $parser->parseFile($filename);
-                    $response["constellation"] = $id->toArray();
-                }
-            }
         } else if (isset($input["constellationid"])) {
             // Editing the given constellation id by reading the database
 
