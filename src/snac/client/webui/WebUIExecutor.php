@@ -351,7 +351,7 @@ class WebUIExecutor {
         }
     }
 
-    public function displayMergedPage(&$input, &$display) {
+    public function processMerge(&$input, &$display) {
         // All the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
         $mapper->allowTermLookup();
@@ -498,7 +498,7 @@ class WebUIExecutor {
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            //TODO if an additional variable is set, then show the detailed view page instead
+            //TODO if an additional variable is set, then show the normal view page instead
             $display->setTemplate("detailed_view_page");
 
             if (\snac\Config::$DEBUG_MODE === true) {
