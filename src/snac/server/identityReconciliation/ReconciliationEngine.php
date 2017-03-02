@@ -2,7 +2,7 @@
 /**
  * Identity Reconciliation Engine  File
  *
- * Contains the main identity reconciliation engine code 
+ * Contains the main identity reconciliation engine code
  *
  * License:
  *
@@ -34,8 +34,8 @@ class ReconciliationEngine {
     /**
      * @var array Array of tests to perform on the string.  These will have a listing in
      * the battery of tests.  A user may chose a list of tests, a preset list,
-     * or write their own. 
-     */ 
+     * or write their own.
+     */
     private $tests;
 
     /**
@@ -82,7 +82,7 @@ class ReconciliationEngine {
     public function addStage($stage) {
         // Load the class as a reflection
         $class = new \ReflectionClass("\\snac\\server\\identityReconciliation\\stages\\".$stage);
-        
+
         if (func_num_args() < 2) {
             // If only one argument, then create with no params
             array_push($this->tests, $class->newInstance());
@@ -96,7 +96,7 @@ class ReconciliationEngine {
             // Instantiate and add the class with the args
             array_push($this->tests, $class->newInstanceArgs($args));
         }
-            
+
     }
 
     /**
@@ -104,9 +104,9 @@ class ReconciliationEngine {
      *
      * This function does the reconciliation and returns the top identity from
      * the engine.  Other top identities and their corresponding score vectors
-     * may be obtained by other functions within this class.  
-     * @param \snac\data\Constellation $identity The constellation to be searched. This identity 
-     * must be in the proper form 
+     * may be obtained by other functions within this class.
+     * @param \snac\data\Constellation $identity The constellation to be searched. This identity
+     * must be in the proper form
      * @return identity The top identity by the reconciliation
      * engine
      */
@@ -156,7 +156,7 @@ class ReconciliationEngine {
      * @return array The result vector for the top result
      */
     public function topVector() {
-        if (count($this->results) > 0) 
+        if (count($this->results) > 0)
             return $this->results[0]->getVector();
         else
             return null;
@@ -170,7 +170,7 @@ class ReconciliationEngine {
      * @return float The numerical value for the top result
      */
     public function topValue() {
-        if ($this->topVector() != null) 
+        if ($this->topVector() != null)
             return $this->results[0]->getStrength();
         else
             return 0;
@@ -201,7 +201,7 @@ class ReconciliationEngine {
         foreach ($this->rawResults as $test => $resList) {
             foreach ($resList as $res) {
                 $k = null;
-                
+
                 if ($res->getIdentity() == null) {
                     // If the identity is null, this should apply to all results
                     $all[$test] = $res->getStrength();
@@ -226,7 +226,7 @@ class ReconciliationEngine {
         }
 
         // Push the results on the result array
-        foreach ($tmp as $res) 
+        foreach ($tmp as $res)
             array_push($this->results, $res);
     }
 
@@ -247,7 +247,7 @@ class ReconciliationEngine {
     public function getResults() {
         return array_splice($this->results,0,$this->numResults);
     }
-    
+
     /**
      * Reverse sort of results
      *
@@ -266,7 +266,3 @@ class ReconciliationEngine {
      }
 
 }
-
-
-
-?>

@@ -112,6 +112,10 @@ abstract class Elastic implements Stage {
             $id->setArkID($hit["_source"]["arkID"]);
             $id->setID($hit["_source"]["id"]);
 
+            $entityType = new \snac\data\Term();
+            $entityType->setTerm($hit["_source"]["entityType"]);
+            $id->setEntityType($entityType);
+
             $result = new \snac\data\ReconciliationResult();
             $result->setIdentity($id);
             $result->setStrength($hit["_score"]);

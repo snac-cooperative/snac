@@ -13,7 +13,6 @@ stages:
   - database
   - test
   - documentation
-  - coverage
   - deploy
 
 update_database:
@@ -29,14 +28,13 @@ run_test:
     - vendor/bin/phpunit --coverage-text --colors=never
   stage: test
   only:
-    - development
     - master
 
 run_test_coverage:
   script:
-    - vendor/bin/phpunit -v --coverage-html coverage/
+    - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text 
     - rsync -av coverage /lv2/snac/docs/
-  stage: coverage
+  stage: test
   only:
     - development
 

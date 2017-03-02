@@ -2366,6 +2366,7 @@ class ServerExecutor {
         $engine->addStage("OriginalLength");
         $engine->addStage("MultiStage", "ElasticNameOnly", "OriginalLengthDifference");
         $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
+        $engine->addStage("MultiStage", "ElasticNameOnly", "EntityTypeFilter");
 
         // Run the reconciliation engine against this identity
         $constellation = new \snac\data\Constellation($input["constellation"]);
