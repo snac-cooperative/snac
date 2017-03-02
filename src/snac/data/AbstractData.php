@@ -259,7 +259,7 @@ abstract class AbstractData implements \Serializable {
                 array_push($return["second"], $odata);
             }
         }
-        
+
         return $return;
 
     }
@@ -451,6 +451,29 @@ abstract class AbstractData implements \Serializable {
         if (isset($this->snacControlMetadata))
             return $this->snacControlMetadata;
         return null;
+    }
+
+    /**
+     * Update SCM Citations
+     *
+     * Goes through the SCMs attached to this data object and updates any with citation
+     * oldSource to use citation newSource instead.
+     *
+     * @param  \snac\data\Source $oldSource Source to replace
+     * @param  \snac\data\Source $newSource Source to replace with
+     */
+    public function updateSCMCitation($oldSource, $newSource) {
+        if ($oldSource === null || $newSource === null) {
+            return;
+        }
+
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                if ($scm->getCitation() !== null && $scm->getCitation()->getID() == $oldSource->getID()) {
+                    $scm->setCitation($newSource);
+                }
+            }
+        }
     }
 
     /**

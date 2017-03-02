@@ -1574,6 +1574,77 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Update All SCM Citations
+     *
+     * This method goes through each section of the constellation, looking for SCMs and
+     * updating their citations.  If the SCM points to oldSource, this method will update
+     * it to point to newSource.
+     *
+     * @param  \snac\data\Source $oldSource Source to replace
+     * @param  \snac\data\Source $newSource Source to replace with
+     */
+    public function updateAllSCMCitations($oldSource, $newSource) {
+        parent::updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->mandates as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->structureOrGenealogies as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->generalContexts as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->biogHists as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->conventionDeclarations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nationalities as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->otherRecordIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->entityIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->languagesUsed as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->legalStatuses as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->sources as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->genders as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nameEntries as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->occupations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->relations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->resourceRelations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->functions as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->places as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->subjects as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+    }
+
+    /**
      * Perform a diff
      *
      * Compares this constellation to the "other."  This method produces a "diff" of the Constellation,

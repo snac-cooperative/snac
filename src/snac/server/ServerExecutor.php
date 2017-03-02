@@ -1806,7 +1806,13 @@ class ServerExecutor {
                 }
 
                 // Update all the SCMs across the Constellation
-                // TODO
+                // TODO We want to make sure all sources are available to the mapping.  We may want to just combine
+                // all sources on merge and not let the user choose.
+                // That could be done in the merge page, where they are automatically put in the both column without a way
+                // to separate them.
+                foreach ($originalSources as $original) {
+                    $constellation->updateAllSCMCitations($original, $sourceMap[$original->getID()]);
+                }
 
                 // Write the new constellation in full
                 $mergeNoteArray = [
