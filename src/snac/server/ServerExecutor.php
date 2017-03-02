@@ -1799,6 +1799,12 @@ class ServerExecutor {
                     }
                 }
 
+                // Merge the biogHists down into one
+                $combinedBiogHist = new \snac\data\BiogHist();
+                foreach ($constellation->getBiogHistList() as $biogHist) {
+                    $combinedBiogHist->append($biogHist);
+                }
+
                 // Update all the SCMs across the Constellation
                 // TODO
 
