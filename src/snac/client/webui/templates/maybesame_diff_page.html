@@ -19,12 +19,14 @@
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
 
+
 <!-- Helper Scripts -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 <script language="javascript">
 $('.selectpicker').selectpicker();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
@@ -225,7 +227,9 @@ $('.selectpicker').selectpicker();
                         <p>You may perform the following actions on this comparison</p>
                         <div class="list-group">
                             <a href="#" class="list-group-item list-group-item-success" id="preview_button"><span class='glyphicon glyphicon-eye-open'></span> Preview</a>
+                            <a href="#" class="list-group-item list-group-item-success" id="hrt_preview_button"><span class='glyphicon glyphicon-eye-open'></span> HRT Preview</a>
                             <a href="#" class="list-group-item list-group-item-danger" id="merge_button"><span class="glyphicon glyphicon-random"></span> Merge</a>
+                            <a href="#" class="list-group-item list-group-item-danger" id="automated_merge_button"><span class="glyphicon glyphicon-random"></span> Auto Merge</a>
                         </div>
                     </div>
                 </div>

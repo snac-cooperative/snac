@@ -35,25 +35,126 @@ $(document).ready(function() {
     });
 
 
-    $("#merge_button").click(function() {
-        $("#please_wait_modal").modal("show");
+    $("#hrt_preview_button").click(function() {
+        bootbox.confirm({
+            title: "HRT Preview Notice",
+            message: "The HRT does not evidence all portions of the Identity Constellation.  Some data, such as places, sources, SCMs, and more, are not currently visible on the HRT.  This preview should only be used for aesthetic purposes.  Use the main \"Preview\" button to see the full potential-merged Constellation.",
+            buttons: {
+                cancel: {
+                    label: '<i class="fa fa-times"></i> Cancel'
+                },
+                confirm: {
+                    label: '<i class="fa fa-check"></i> Preview Anyway'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    var form = $("#merged_identity");
+                    // empty out the form
+                    form.html("");
 
-        var form = $("#merged_identity");
-        // empty out the form
-        form.html("");
+                    // for each "both" pane, copy it into the form and then submit the form!
+                    $(".content-both").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
 
-        // for each "both" pane, copy it into the form and then submit the form!
-        $(".content-both").each(function() {
-            var copy = $(this).html();
-            form.append(copy);
+                    form.attr('action', '?command=preview&view=hrt').attr('method', 'post').attr('target', '_blank');
+                    form.submit();
+                }
+            }
         });
 
-        // Put the other constellation data into the form
-        var copy = $("#constellation_data").html();
-        form.append(copy);
+        return false;
+    });
 
-        form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
-        form.submit();
+
+    $("#merge_button").click(function() {
+        bootbox.confirm({
+            title: "Merge Constellation",
+            message: "A new \"merged\" Constellation will be created from the elements in the \"Merge Area\" sections.  Any elements not moved to those sections will not be considered as part of the \"merged\" Constellation and will be tombstoned with the original Constellations.  This operation can not be undone.  Are you sure you want to continue?",
+            buttons: {
+                cancel: {
+                    label: '<i class="fa fa-times"></i> Cancel'
+                },
+                confirm: {
+                    label: '<i class="fa fa-check"></i> Confirm'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    $("#please_wait_modal").modal("show");
+
+                    var form = $("#merged_identity");
+                    // empty out the form
+                    form.html("");
+
+                    // for each "both" pane, copy it into the form and then submit the form!
+                    $(".content-both").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
+
+                    // Put the other constellation data into the form
+                    var copy = $("#constellation_data").html();
+                    form.append(copy);
+
+                    form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
+                    form.submit();
+                }
+            }
+        });
+
+        return false;
+    });
+
+
+    $("#automated_merge_button").click(function() {
+
+        bootbox.confirm({
+            title: "Automatic Merge",
+            message: "This action automatically combines all data elements from both Constellations to create a merged version.  This operation cannot be undone.  Are you sure you want to continue?",
+            buttons: {
+                cancel: {
+                    label: '<i class="fa fa-times"></i> Cancel'
+                },
+                confirm: {
+                    label: '<i class="fa fa-check"></i> Confirm'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    $("#please_wait_modal").modal("show");
+
+                    var form = $("#merged_identity");
+                    // empty out the form
+                    form.html("");
+
+                    // for all data panes (both, a, and b), copy all data into the form and then submit the form!
+                    $(".content-both").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
+                    $(".content-a").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
+                    $(".content-b").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
+
+                    // Put the other constellation data into the form
+                    var copy = $("#constellation_data").html();
+                    form.append(copy);
+
+                    form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
+                    form.submit();
+                }
+            }
+        });
+
+
 
         return false;
     });
