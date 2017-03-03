@@ -72,9 +72,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <form class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
-               {% if data.preview %}
-               <div class="pull-right"><h2><span class='glyphicon glyphicon-eye-open'></span> Preview</h2></div>
-               {% endif %}
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
@@ -389,7 +386,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
 
-                    {% if not data.preview %}
+                    {% if data.preview %}
+                    <div class="alert alert-success">
+                        <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                        <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                    </div>
+                    {% else %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>

@@ -121,9 +121,7 @@ body {
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
 
-               {% if data.preview %}
-               <h3 style="padding-left: 30px; display: inline; color: #3c763d;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
-               {% endif %}
+
             </div>
             <div>
                <div class="biog">
@@ -601,6 +599,12 @@ body {
                   </div>
                </div>
                <div class="others">
+                   {% if data.preview %}
+                   <div class="alert alert-success" style="margin-top: 15px;">
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                       <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                   </div>
+                   {% else %}
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Constellation Options</h3>
@@ -623,9 +627,10 @@ body {
                           </div>
                       </div>
                   </div>
+                    {% endif %}
 
 
-                  {% if user.email and (permissions.Edit or debug) %}
+                  {% if user.email and (permissions.Edit or debug) and not data.preview %}
                    <div class="panel panel-warning" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Actions</h3>
