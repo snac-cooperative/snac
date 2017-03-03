@@ -240,6 +240,7 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayViewPage(&$input, &$display) {
+        $message = null;
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("view_page");
@@ -271,12 +272,18 @@ class WebUIExecutor {
                 return $a["name"] <=> $b["name"];
             });
 
+            // Check for a redirect
+            if ($serverResponse["result"] == "success-notice") {
+                $message = $serverResponse["message"];
+            }
+
             $this->logger->addDebug("Setting constellation data into the page template");
 
             $display->setData(array_merge(
                 $constellation,
                 array(
                     "preview"=> (isset($input["preview"])) ? true : false,
+                    "message" => $message,
                     "holdings" => $holdings)
                 )
             );

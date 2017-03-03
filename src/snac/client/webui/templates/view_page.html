@@ -92,12 +92,20 @@ body {
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
       <!-- Constellation Data -->
       <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
 
       <div class="main_content">
+          {% if data.message %}
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Notice:</strong> Please update your bookmarks.  The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+              </div>
+          {% endif %}
+
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">

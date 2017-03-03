@@ -1405,11 +1405,27 @@ class ServerExecutor {
             if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                 $constellation->setStatus("editable");
             }
+
+            $response["result"] = "success";
+            if ((isset($input["arkid"]) && $input["arkid"] != $constellation->getArk()) ||
+                (isset($input["constellationid"]) && $input["constellationid"] != $constellation->getID())) {
+
+                $response["result"] = "success-notice";
+                $response["message"] = [
+                    "text" => "Please update your cache, the Constellation you requested has been merged into "
+                    . $constellation->getArk() . ".",
+                    "info" => [
+                        "type" => "merged",
+                        "redirect" => $constellation->getArk()
+                    ]
+                ];
+            }
             $this->logger->addDebug("Finished checking constellation status against the user");
             $response["constellation"] = $constellation->toArray();
             $this->logger->addDebug("Serialized constellation for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
+            $response["result"] = "failure";
         }
         return $response;
 
