@@ -339,16 +339,16 @@ class Constellation extends AbstractData {
         $this->setMaxDateCount(\snac\Config::$MAX_LIST_SIZE);
         if ($data == null) {
             $this->entityType = null;
-            $this->otherRecordIDs = array ();
-            $this->sources = array ();
-            $this->maintenanceEvents = array ();
-            $this->nameEntries = array ();
-            $this->biogHists = array ();
-            $this->occupations = array ();
-            $this->relations = array ();
-            $this->resourceRelations = array ();
-            $this->functions = array ();
-            $this->places = array ();
+            $this->otherRecordIDs = array();
+            $this->sources = array();
+            $this->maintenanceEvents = array();
+            $this->nameEntries = array();
+            $this->biogHists = array();
+            $this->occupations = array();
+            $this->relations = array();
+            $this->resourceRelations = array();
+            $this->functions = array();
+            $this->places = array();
             $this->subjects = array();
             $this->legalStatuses = array();
             $this->genders = array();
@@ -1278,6 +1278,13 @@ class Constellation extends AbstractData {
     public function addBiogHist($biog) {
 
         array_push($this->biogHists, $biog);
+    }
+
+    /**
+     * Remove all BiogHist entries
+     */
+    public function removeAllBiogHists() {
+        $this->biogHists = array();
     }
 
     /**

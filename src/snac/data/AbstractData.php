@@ -462,8 +462,8 @@ abstract class AbstractData implements \Serializable {
      * @param  \snac\data\Source $oldSource Source to replace
      * @param  \snac\data\Source $newSource Source to replace with
      */
-    public function updateSCMCitation($oldSource, $newSource) {
-        if ($oldSource === null || $newSource === null) {
+    public function updateSCMCitation($oldSource, $newSource=null) {
+        if ($oldSource === null) {
             return;
         }
 
