@@ -498,8 +498,10 @@ class WebUIExecutor {
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            //TODO if an additional variable is set, then show the normal view page instead
             $display->setTemplate("detailed_view_page");
+            if (isset($input["view"]) && $input["view"] == "hrt") {
+                $display->setTemplate("view_page");
+            }
 
             if (\snac\Config::$DEBUG_MODE === true) {
                 $display->addDebugData("constellationSource", $constellation->toJSON());
