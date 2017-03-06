@@ -1817,6 +1817,7 @@ class ServerExecutor {
 
                 // Merge the biogHists down into one
                 $combinedBiogHist = new \snac\data\BiogHist();
+                $combinedBiogHist->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
                 foreach ($constellation->getBiogHistList() as $biogHist) {
                     $combinedBiogHist->append($biogHist);
                 }
@@ -1846,6 +1847,7 @@ class ServerExecutor {
                 ];
                 $mergeNote = json_encode($mergeNoteArray, JSON_PRETTY_PRINT);
                 $written = $this->cStore->writeConstellation($this->user, $constellation, $mergeNote, 'merge split');
+                $this->logger->addDebug("Wrote the merged constellation", $constellation->toArray());
                 if ($written === false) {
                     throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation in full");
                 }
