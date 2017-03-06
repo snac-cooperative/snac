@@ -46,6 +46,7 @@ $('.selectpicker').selectpicker();
         height: 25px;
         display: inline-block;
         margin: 2px;
+        cursor: pointer;
     }
 
     .data-component-a {
@@ -209,8 +210,15 @@ $('.selectpicker').selectpicker();
 
         {% if data.mergeable %}
             <h1>Merge Constellations</h1>
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Instructions: </span> The first column shows data points from <em>{{ data.constellation1.nameEntries.0.original }}</em> in red.  The third column shows data points from <em>{{ data.constellation2.nameEntries.0.original }}</em> in blue.  Any data points shared by both Constellations will appear automatically in the "Merge Area" column as purple boxes.  Click a data component and use the arrow buttons to move it into the gray "Merge Area" to include that component in the merge.</p>
+                <p>When you have added all data points into the center column, for each data category, use the "Preview" button to see your merge and the "Merge" button to perform the merge.  A merge <span style="font-weight: bold;">can not</span> be undone.  Any data element not moved to the "Merge Area" will be tombstoned with the original Constellations and not carried forth to the merged identity.</p>
+            </div>
         {% else %}
             <h1>Compare Constellations</h1>
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Information: </span> The first column shows data points from <em>{{ data.constellation1.nameEntries.0.original }}</em> in red.  The third column shows data points from <em>{{ data.constellation2.nameEntries.0.original }}</em> in blue.  Any data they share in common is displayed as purple boxes in the middle "BOTH" column.</p>
+            </div>
         {% endif %}
 
 
@@ -227,9 +235,12 @@ $('.selectpicker').selectpicker();
                         <p>You may perform the following actions on this comparison</p>
                         <div class="list-group">
                             <a href="#" class="list-group-item list-group-item-success" id="preview_button"><span class='glyphicon glyphicon-eye-open'></span> Preview</a>
-                            <a href="#" class="list-group-item list-group-item-success" id="hrt_preview_button"><span class='glyphicon glyphicon-eye-open'></span> HRT Preview</a>
-                            <a href="#" class="list-group-item list-group-item-danger" id="merge_button"><span class="glyphicon glyphicon-random"></span> Merge</a>
-                            <a href="#" class="list-group-item list-group-item-danger" id="automated_merge_button"><span class="glyphicon glyphicon-random"></span> Auto Merge</a>
+                            <a href="#" class="list-group-item list-group-item-warning" id="hrt_preview_button"><span class='glyphicon glyphicon-eye-close'></span> HRT Preview</a>
+                            <a href="#" class="list-group-item list-group-item-info" id="merge_button"><span class="glyphicon glyphicon-random"></span> Merge</a>
+                            <a href="#" class="list-group-item list-group-item-merge" id="automated_merge_button"><span class="glyphicon glyphicon-play-circle"></span> Auto Merge</a>
+                        </div>
+                        <div class="list-group">
+                            <a href="#" class="list-group-item list-group-item-danger" id="cancel_button"><span class="glyphicon glyphicon-remove-sign"></span> Cancel</a>
                         </div>
                     </div>
                 </div>
