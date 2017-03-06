@@ -385,6 +385,10 @@ class WebUIExecutor {
                     $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
+
+                // Since this was just merged, it is currently editable
+                $serverResponse["constellation"]["status"] = "editable";
+
                 $this->logger->addDebug("Setting constellation data into the page template");
                 $display->setData($serverResponse["constellation"]);
             } else {
@@ -393,6 +397,38 @@ class WebUIExecutor {
             }
         }
 
+    }
+
+    public function cancelMerge(&$input) {
+        $request1 = array (
+            "constellationid" => $input["constellationid1"],
+            "version" => $input["version1"]
+        );
+        $response1 = $this->unlockConstellation($request1);
+
+        $request2 = array (
+            "constellationid" => $input["constellationid2"],
+            "version" => $input["version2"]
+        );
+        $response2 = $this->unlockConstellation($request2);
+
+        $response = array();
+
+        $response["server_debug"] = array();
+        $response["server_debug"]["unlock1"] = $response1;
+        $response["server_debug"]["unlock2"] = $response2;
+        if (isset($response1["error"]))
+            $response["error"] = $response1["error"];
+        if (isset($response2["error"]))
+            $response["error"] = $response2["error"];
+
+        if (!isset($response1["error"]) && !isset($response2["error"])) {
+            // successfully unlocked both constellations
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        return $response;
     }
 
     /**

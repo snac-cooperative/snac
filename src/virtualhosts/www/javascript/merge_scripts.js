@@ -34,6 +34,45 @@ $(document).ready(function() {
         return false;
     });
 
+    $("#cancel_button").click(function() {
+        bootbox.confirm({
+            title: "Cancel",
+            message: "Any changes you've made will be lost.  Are you sure you want to cancel?",
+            buttons: {
+                cancel: {
+                    label: '<i class="fa fa-times"></i> Continue Working'
+                },
+                confirm: {
+                    label: '<i class="fa fa-check"></i> Cancel Merge'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+                    var form = $("#merged_identity");
+                    // empty out the form
+                    form.html("");
+
+                    // for each "both" pane, copy it into the form and then submit the form!
+                    $("#constellation_data").each(function() {
+                        var copy = $(this).html();
+                        form.append(copy);
+                    });
+
+                    $.post("?command=merge_cancel", $("#merged_identity").serialize(), function (data) {
+                        // Check the return value from the ajax. If success, then alert the
+                        // user and make appropriate updates.
+                        if (data.result == "success") {
+                            parent.history.back();
+                        } else {
+                            // Display an error
+                        }
+                    });
+                }
+            }
+        });
+
+        return false;
+    });
 
     $("#hrt_preview_button").click(function() {
         bootbox.confirm({
