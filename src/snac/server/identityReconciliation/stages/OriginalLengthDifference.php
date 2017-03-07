@@ -49,7 +49,7 @@ class OriginalLengthDifference implements helpers\Stage {
      * `result = -1 * ln( abs( len(search) - len(other) ) )`
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
-     * @param \snac\data\Constellation[] $list A list of constellation to evaluate against.  This
+     * @param \snac\data\ReconciliationResult[] $list A list of results to evaluate against.  This
      * may be null.
      * @return array An array of results.  On error, it must at least
      * return an empty array. It may not return null.

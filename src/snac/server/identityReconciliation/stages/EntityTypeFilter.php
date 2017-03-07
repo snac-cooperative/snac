@@ -72,7 +72,7 @@ class EntityTypeFilter implements helpers\Stage {
             $strength = 0;
 
             if ($search->getEntityType() !== null && $search->getEntityType()->getTerm() !== null) {
-                if ($search->getEntityType()->getTerm() != $res->getEntityType()->getTerm()) {
+                if ($search->getEntityType()->getTerm() != $res->getIdentity()->getEntityType()->getTerm()) {
                     $strength = $this->discount;
                 }
             }

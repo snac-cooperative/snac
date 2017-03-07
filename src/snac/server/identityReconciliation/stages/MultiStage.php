@@ -78,7 +78,7 @@ class MultiStage implements helpers\Stage {
      * the list.
      *
      * @param \snac\data\Constellation $search The constellation to be evaluated.
-     * @param \snac\data\ReconiciliationResult[] $list A list of results to evaluate against.  This
+     * @param \snac\data\ReconciliationResult[] $list A list of results to evaluate against.  This
      * may be null.  
      * @return array An array of results from the final stage that has been
      * run or an empty array.
