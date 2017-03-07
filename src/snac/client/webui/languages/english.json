@@ -285,8 +285,8 @@
         "tooltip" : "The numeric Identity Constellation ID (in SNAC) for the holding repository"
     },
     "resourceText" : {
-        "display" : "Relation Text",
-        "tooltip" : "The human-readable text that appears in a relation entry"
+        "display" : "Relation Entry",
+        "tooltip" : "The text that appears in relationEntry and acts as a display title"
     },
     "resourceRole" : {
         "display" : "Role",
