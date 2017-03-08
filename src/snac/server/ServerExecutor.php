@@ -2033,10 +2033,16 @@ class ServerExecutor {
         $engine->addStage("ElasticOriginalNameEntry");
         $engine->addStage("ElasticNameOnly");
         $engine->addStage("ElasticSeventyFive");
-        $engine->addStage("OriginalLength");
-        $engine->addStage("MultiStage", "ElasticNameOnly", "OriginalLengthDifference");
         $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
-        $engine->addStage("MultiStage", "ElasticNameOnly", "EntityTypeFilter");
+
+        // Add post-processing stages
+        $engine->addPostProcessingStage("OriginalLength");
+        $engine->addPostProcessingStage("EntityTypeFilter");
+
+        // The original-length-difference stage skewed the results beyond recognition.  It should
+        // be re-considered before being included in the reconciliation process.  A lighter weighting
+        // could make it beneficial.
+        // $engine->addPostProcessingStage("OriginalLengthDifference");
 
         // Run the reconciliation engine against this identity
         $constellation = new \snac\data\Constellation($input["constellation"]);

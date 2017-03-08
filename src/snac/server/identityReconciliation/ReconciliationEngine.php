@@ -39,6 +39,13 @@ class ReconciliationEngine {
     private $tests;
 
     /**
+     * @var stages\helpers\Stage[] Array of post-processing stages to apply to results after
+     * the initial set of stages have been run.  This would ideally add additional "filtering"
+     * scores onto the original collated result set.
+     */
+    private $postProcessingTests;
+
+    /**
      * @var \snac\data\ReconciliationResult[] Full test results per id
      */
     private $results;
@@ -61,6 +68,7 @@ class ReconciliationEngine {
         $this->raw_results = array();
         $this->tests = array();
         $this->results = array();
+        $this->postProcessingTests = array();
         $this->weight = new weights\StaticWeight();
         return;
     }
@@ -99,6 +107,34 @@ class ReconciliationEngine {
 
     }
 
+
+    /**
+     * Add post-processing stage
+     *
+     * Adds a stage to the list of stages to run
+     *
+     * @param string $stage name of the stage to include
+     */
+    public function addPostProcessingStage($stage) {
+        // Load the class as a reflection
+        $class = new \ReflectionClass("\\snac\\server\\identityReconciliation\\stages\\".$stage);
+
+        if (func_num_args() < 2) {
+            // If only one argument, then create with no params
+            array_push($this->postProcessingTests, $class->newInstance());
+        } else {
+            // If more than one argument, the rest are parameters to the constructor
+            $args = func_get_args();
+
+            // Remove the class name off the list
+            array_shift($args);
+
+            // Instantiate and add the class with the args
+            array_push($this->postProcessingTests, $class->newInstanceArgs($args));
+        }
+
+    }
+
     /**
      * Main reconciliation function
      *
@@ -122,6 +158,16 @@ class ReconciliationEngine {
         }
 
         // Fix up the results by organizing them by name, then by test
+        $this->collateResults();
+
+        // Run post-processing tests over all the testing results that apply additional filter scores
+        unset($this->rawResults);
+        $this->rawResults = array();
+        foreach ($this->postProcessingTests as $test) {
+            $this->rawResults[$test->getName()] = $test->run($identity, $this->results);
+        }
+
+        // Re-collate the post-processing tests inso the main result list
         $this->collateResults();
 
         // Generate all the scores
@@ -196,7 +242,6 @@ class ReconciliationEngine {
      * them per-id.
      */
     public function collateResults() {
-        $tmp = array();
         $all = array();
         foreach ($this->rawResults as $test => $resList) {
             foreach ($resList as $res) {
@@ -209,25 +254,21 @@ class ReconciliationEngine {
                     // Get Unique ID for this identity
                     $k = $res->getIdentity()->getArkID();
                     // Create entry in the array if it doesn't exist
-                    if (!array_key_exists($k, $tmp)) {
-                        $tmp[$k] = new \snac\data\ReconciliationResult();
-                        $tmp[$k]->setIdentity($res->getIdentity());
+                    if (!array_key_exists($k, $this->results)) {
+                        $this->results[$k] = new \snac\data\ReconciliationResult();
+                        $this->results[$k]->setIdentity($res->getIdentity());
                     }
                     // Store the strength value in the vector
-                    $tmp[$k]->setScore($test, $res->getStrength());
-                    $tmp[$k]->setMultipleProperties($res->getAllProperties());
+                    $this->results[$k]->setScore($test, $res->getStrength());
+                    $this->results[$k]->setMultipleProperties($res->getAllProperties());
                 }
             }
         }
         // Add any global results to every id's vector
-        foreach ($tmp as $k => $v) {
+        foreach ($this->results as &$v) {
             foreach ($all as $test => $result)
-                $tmp[$k]->setScore($test, $result);
+                $v->setScore($test, $result);
         }
-
-        // Push the results on the result array
-        foreach ($tmp as $res)
-            array_push($this->results, $res);
     }
 
     /**
