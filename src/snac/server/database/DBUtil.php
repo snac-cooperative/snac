@@ -720,6 +720,34 @@ class DBUtil
         return $versions;
     }
 
+    public function listVersionHistory($mainID, $version=null, $publicOnly=true) {
+        $fromVersion = $version;
+        if (!$version || !is_int($version)) {
+            $fromVersion = $this->sql->selectCurrentVersion($mainID);
+        }
+
+        $vhInfo = array ("ic_id" => $mainID, "version" => $fromVersion);
+
+        $history = $this->sql->selectVersionHistory($vhInfo, !$publicOnly);
+
+        $result = array();
+
+        //TODO Eventually this should be changed to an object
+        foreach ($history as $h) {
+            $event = [
+                'date' => $h['update_date'],
+                'userName' => $h['username'],
+                'fullName' => $h['fullname'],
+                'version' => $h['version'],
+                'status' => $h['status'],
+                'note' => $h['note']
+            ];
+            if ($publicOnly === false || ($publicOnly === true && $event['status'] != 'ingest cpf'))
+                array_push($result, $event);
+        }
+        return $result;
+    }
+
 
     /**
      * Safely call object getID method
