@@ -124,7 +124,7 @@ class ServerConnect {
      *
      * Custom Query to lookup a vocabulary term by ID
      *
-     * @param int The ID to look up in the database
+     * @param int $id The ID to look up in the database
      * @return \snac\data\Term The term found
      */
     public function lookupTerm($id) {
@@ -143,6 +143,15 @@ class ServerConnect {
         return null;
     }
 
+    /**
+     * Lookup Resource Object
+     *
+     * Custom Query to lookup a resource object by ID (and possibly version)
+     *
+     * @param int $id The resource ID to read
+     * @param int $version optional the version of the resource to use (default is most recent)
+     * @return \snac\data\Resource Resource object from the server or empty resource (with id/version) if not found
+     */ 
     public function lookupResource($id, $version=null) {
         $request = array ();
         $request["command"] = "read_resource";

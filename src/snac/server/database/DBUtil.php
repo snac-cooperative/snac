@@ -12,6 +12,8 @@
 
 namespace snac\server\database;
 use \snac\server\validation\ValidationEngine as ValidationEngine;
+use Behat\Behat\Definition\Call\Given;
+use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
 use snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 
@@ -455,7 +457,9 @@ class DBUtil
     /**
      * Read published by ARK
      *
-     * Read a published constellation by ARK from the database.
+     * Read a published constellation by ARK from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
@@ -475,9 +479,10 @@ class DBUtil
      */
     public function readPublishedConstellationByARK($arkID, $flags=0)
     {
-        $mainID = $this->sql->selectCurrentMainIDForArk($arkID);
-        if ($mainID)
+        $mainIDs = $this->sql->selectCurrentMainIDsForArk($arkID);
+        if ($mainIDs != null && count($mainIDs) == 1)
         {
+            $mainID = $mainIDs[0];
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
             if ($version)
             {
@@ -488,11 +493,44 @@ class DBUtil
         return false;
     }
 
+    /**
+     * Get Current ICIDs for Ark
+     *
+     * Returns the list of ICIDs for the given Ark.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the Ark's creation and the current
+     * published versions.
+     *
+     * @param string $arkID The ark id to look up
+     * @return int[] An array of ICIDs deemed current for this ark
+     */
+    public function getCurrentIDsForARK($arkID) {
+        return $this->sql->selectCurrentMainIDsForArk($arkID);
+    }
+
+
+    /**
+     * Get Current ICIDs for ICID
+     *
+     * Returns the list of ICIDs for the given ICID.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the IC's original creation and the current
+     * published versions.
+     *
+     * @param int $icid The ICID to look up
+     * @return int[] An array of ICIDs deemed current for this ICID
+     */
+    public function getCurrentIDsForID($icid) {
+        return $this->sql->selectCurrentMainIDsForID($icid);
+    }
+
 
     /**
      * Read published by ID
      *
-     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.
+     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
@@ -516,9 +554,10 @@ class DBUtil
         }
 
         // Redirection, in case this ID was merged into another.  Worst case, currentID = mainID.
-        $currentID = $this->sql->selectCurrentMainIDForID($mainID);
-        
-        if ($currentID) {
+        $currentIDs = $this->sql->selectCurrentMainIDsForID($mainID);
+
+        if ($currentIDs != null && count($currentIDs) == 1) {
+            $currentID = $currentIDs[0];
             $version = $this->sql->selectCurrentVersionByStatus($currentID, 'published');
             if ($version)
             {
@@ -3370,19 +3409,29 @@ class DBUtil
      * to read the newConstellation.
      *
      * @param \snac\data\Constellation $oldConstellation The constellation to redirect
-     * @param \snac\data\Constellation $newConstellation The constellation to return when querying for oldConstellation
+     * @param \snac\data\Constellation[] $newConstellations The constellations to return when querying for oldConstellation
      * @return boolean true on success, false otherwise
      */
-    public function updateConstellationLookup(&$oldConstellation, &$newConstellation) {
-        if ($oldConstellation === null || $newConstellation === null)
+    public function updateConstellationLookup(&$oldConstellation, &$newConstellations) {
+        // Check input for valid values
+        if ($oldConstellation === null || $newConstellations === null
+                || !is_array($newConstellations) || empty($newConstellations))
             return false;
-    
-        if ($oldConstellation->getID() === null || $oldConstellation->getArk() === null ||
-            $newConstellation->getID() === null || $newConstellation->getArk() === null)
+        if ($oldConstellation->getID() === null || $oldConstellation->getArk() === null)
             return false;
-        
+        foreach ($newConstellations as $newConstellation) {
+            if ($newConstellation->getID() === null || $newConstellation->getArk() === null)
+                return false;
+        }
+
+        // Build the argument array for lookups
+        $newLookups = array();
+        foreach ($newConstellations as $newConstellation) {
+            $newLookups[$newConstellation->getID()] = $newConstellation->getArk();
+        }
+
         $this->sql->updateConstellationLookup($oldConstellation->getID(), $oldConstellation->getArk(),
-            $newConstellation->getID(), $newConstellation->getArk());
+            $newLookups);
 
         return true;
     }
@@ -3399,10 +3448,10 @@ class DBUtil
     public function removeMaybeSameLink(&$constellation1, &$constellation2) {
         if ($constellation1 === null || $constellation2 === null)
             return false;
-    
+
         if ($constellation1->getID() === null || $constellation2->getID() === null)
             return false;
-        
+
         $this->sql->removeMaybeSameLink($constellation1->getID(), $constellation2->getID());
 
         return true;
@@ -3421,10 +3470,10 @@ class DBUtil
     public function updateMaybeSameLinks(&$oldConstellation, &$newConstellation) {
         if ($oldConstellation === null || $newConstellation === null)
             return false;
-    
+
         if ($oldConstellation->getID() === null || $newConstellation->getID() === null)
             return false;
-        
+
         $this->sql->updateMaybeSameLinks($oldConstellation->getID(), $newConstellation->getID());
 
         return true;

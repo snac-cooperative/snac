@@ -50,10 +50,13 @@ class ConstellationPostMapper {
     private $lookupTerms = false;
 
     /**
-    * @var \snac\client\util\ServerConnect Whether or not to look up Term values in the database
-    */
+     * @var \snac\client\util\ServerConnect Whether or not to look up Term values in the database
+     */
     private $lookupTermsConnector = null;
 
+    /**
+     * @var boolean $mapAsNew Whether or not to map the POST values to a new Constellation object
+     */
     private $mapAsNew = false;
 
     /**
@@ -96,10 +99,24 @@ class ConstellationPostMapper {
         $this->lookupTermsConnector = null;
     }
 
+    /**
+     * Map to new Constellation
+     *
+     * Call this method to have the CPM map the Post data to a Constellation object
+     * without keeping IDs or version numbers.  It will also set all data element's
+     * operation as "insert".  This effectively will map it as a new Constellation for
+     * having the server write it as new.
+     */
     public function mapAsNewConstellation() {
         $this->mapAsNew = true;
     }
 
+    /**
+     * Map to Constellation with IDs
+     *
+     * Call this method to have the CPM map the Post data to a Constellation object
+     * while keeping the IDs and version numbers intact.
+     */
     public function mapWithIDs() {
         $this->mapAsNew = false;
     }
