@@ -1381,7 +1381,7 @@ class SQL
             // Remove any of the old redirects that are no longer active.
             foreach ($toDelete as $row) {
                 $result = $this->sdb->query('delete from constellation_lookup
-                    where current_ic_id = $3, current_ark_id = $4 where
+                    where current_ic_id = $3 and current_ark_id = $4 and
                     current_ic_id = $1 and current_ark_id = $2;',
                     $row);
             }

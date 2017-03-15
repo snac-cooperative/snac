@@ -1273,7 +1273,8 @@ class ServerExecutor {
         }
 
         // If this is published, then it should point to itself in the lookup table.
-        $this->cStore->updateConstellationLookup($constellation, array($constellation));
+        $selfDirect = array($constellation);
+        $this->cStore->updateConstellationLookup($constellation, $selfDirect);
 
         return $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
                                                         "published", "User published constellation");
@@ -1991,8 +1992,9 @@ class ServerExecutor {
                 $this->cStore->updateMaybeSameLinks($constellation2, $written);
 
                 // Update the constellation lookup table
-                $this->cStore->updateConstellationLookup($constellation1, array($written));
-                $this->cStore->updateConstellationLookup($constellation2, array($written));
+                $redirectWritten = array($written);
+                $this->cStore->updateConstellationLookup($constellation1, $redirectWritten);
+                $this->cStore->updateConstellationLookup($constellation2, $redirectWritten);
                 // Note: corePublish() will update the lookup for written->written
 
                 // Merge completed successfully!
