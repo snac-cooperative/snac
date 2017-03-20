@@ -193,6 +193,18 @@ $('.selectpicker').selectpicker();
         margin-top: 40px;
     }
 </style>
+
+<script language="javascript">
+$(document).ready(function() {
+    $('.components-menu a.list-group-item').on('click',function(){
+      $("#tabtitletext").text(($(this).find(".component-title")).text());
+      //var previous = $(this).closest(".list-group").find(".active");
+      //previous.removeClass('active'); // previous list-item
+      //$(e.target).addClass('active'); // activated list-item
+    });
+});
+</script>
+
 </head>
 
 <body role="document">
@@ -224,8 +236,166 @@ $('.selectpicker').selectpicker();
 
 
         <div class="row">
-            <div class="col-md-2">
-                {{components.displayEditTabs(X, true)}}
+            <div class="col-md-2" style="padding-top: 115px;">
+                <div class="list-group components-menu">
+                    <a class="list-group-item" href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.nameEntries|length) + (data.constellation2.nameEntries|length) + (intersection.nameEntries|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.nameEntries|length) + (data.constellation2.nameEntries|length) + (intersection.nameEntries|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Core Data</span>
+                    </a>
+                </div>
+                <div class="list-group components-menu">
+                    <span class="list-group-item list-group-item-info">History</span>
+                    <a class="list-group-item" href="#biogHists" id="biogHiststab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.biogHists|length) + (data.constellation2.biogHists|length) + (intersection.biogHists|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.biogHists|length) + (data.constellation2.biogHists|length) + (intersection.biogHists|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>BiogHist</span></a>
+                    <a class="list-group-item" href="#dates" id="existstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.dates|length) + (data.constellation2.dates|length) + (intersection.dates|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.dates|length) + (data.constellation2.dates|length) + (intersection.dates|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Exist Dates</span></a>
+                    <a class="list-group-item" href="#places" id="placestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.places|length) + (data.constellation2.places|length) + (intersection.places|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.places|length) + (data.constellation2.places|length) + (intersection.places|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Places</span></a>
+                    <a class="list-group-item" href="#generalContexts" id="generalContextstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.generalContexts|length) + (data.constellation2.generalContexts|length) + (intersection.generalContexts|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.generalContexts|length) + (data.constellation2.generalContexts|length) + (intersection.generalContexts|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>General Contexts</span></a>
+                    <a class="list-group-item" href="#structureOrGenealogies" id="structureOrGenealogiestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.structureOrGenealogies|length) + (data.constellation2.structureOrGenealogies|length) + (intersection.structureOrGenealogies|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.structureOrGenealogies|length) + (data.constellation2.structureOrGenealogies|length) + (intersection.structureOrGenealogies|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Structure or Genealogies</span></a>
+                </div>
+                <div class="list-group components-menu">
+                        <span class="list-group-item list-group-item-info">Demographics</span>
+                    <a class="list-group-item" href="#genders" id="genderstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.genders|length) + (data.constellation2.genders|length) + (intersection.genders|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.genders|length) + (data.constellation2.genders|length) + (intersection.genders|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Genders</span></a>
+                    <a class="list-group-item" href="#nationalities" id="nationalitiestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.nationalities|length) + (data.constellation2.nationalities|length) + (intersection.nationalities|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.nationalities|length) + (data.constellation2.nationalities|length) + (intersection.nationalities|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Nationalities</span></a>
+                    <a class="list-group-item" href="#languagesUsed" id="languagesUsedtab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.languagesUsed|length) + (data.constellation2.languagesUsed|length) + (intersection.languagesUsed|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.languagesUsed|length) + (data.constellation2.languagesUsed|length) + (intersection.languagesUsed|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Languages Used</span></a>
+                    <a class="list-group-item" href="#occupations" id="occupationstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.occupations|length) + (data.constellation2.occupations|length) + (intersection.occupations|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.occupations|length) + (data.constellation2.occupations|length) + (intersection.occupations|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Occupations</span></a>
+                    <a class="list-group-item" href="#subjects" id="subjectstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Subjects</span></a>
+                </div>
+                <div class="list-group components-menu">
+                    <span class="list-group-item list-group-item-info">Relations</span>
+                    <a class="list-group-item" href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Resource Relations</span></a>
+                    <a class="list-group-item" href="#constellationRelations" id="constellationRelationstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Internal CPF Relations</span></a>
+                    <a class="list-group-item" href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.sameAs|length) + (data.constellation2.sameAs|length) + (intersection.sameAs|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.sameAs|length) + (data.constellation2.sameAs|length) + (intersection.sameAs|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>External CPF (Same As)</span></a>
+                    <a class="list-group-item" href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Other Entity IDs (Same As)</span></a>
+                </div>
+                <div class="list-group components-menu">
+                    <span class="list-group-item list-group-item-info">Corporate Descriptions</span>
+                    <a class="list-group-item" href="#functions" id="functionstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Functions</span></a>
+                    <a class="list-group-item" href="#legalStatuses" id="legalStatusestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Legal Statuses</span></a>
+                    <a class="list-group-item" href="#mandates" id="mandatestab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Mandates</span></a>
+                </div>
+                <div class="list-group components-menu">
+                    <span class="list-group-item list-group-item-info">Control</span>
+                    <a class="list-group-item" href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">
+                        {% if ((data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Sources</span></a>
+                    <a class="list-group-item" href="#conventionDeclarations" id="conventionDeclarationstab" role="tab" data-toggle="tab">
+                        {% if ((data.constellation1.conventionDeclarations|length) + (data.constellation2.conventionDeclarations|length) + (intersection.conventionDeclarations|length)) > 0 %}
+                        <span class="badge">
+                            {{(data.constellation1.conventionDeclarations|length) + (data.constellation2.conventionDeclarations|length) + (intersection.conventionDeclarations|length)}}
+                        </span>
+                        {% endif %}
+                        <span class='component-title'>Convention Declarations</span></a>
+                </div>
+
                 {% if data.mergeable %}
                 <div class="panel panel-default" style="margin-top: 30px;">
                     <div class="panel-heading">
@@ -247,6 +417,10 @@ $('.selectpicker').selectpicker();
                 {% endif %}
             </div>
             <div class="col-md-10">
+                <div class="row" id="tabtitle">
+                    <h2 id="tabtitletext" class="text-center">Core Data</h2>
+                </div>
+
                 <div class="row">
                     <div class="col-md-4">
                         <h4 class="text-center">{{ data.constellation1.nameEntries.0.original }}</h4>
