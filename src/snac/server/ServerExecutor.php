@@ -1711,7 +1711,7 @@ class ServerExecutor {
     }
 
     /**
-     * Compute Constellation Diff 
+     * Compute Constellation Diff
      *
      * Given two Constellation IDs in the input, this method reads the current version of both constellations
      * out of the database.  If they are both published, a diff of the Constellations are computed.  All data
@@ -1721,7 +1721,7 @@ class ServerExecutor {
      *
      * If the optional parameter `$startMerge` is set to true (default is false), then this method will try to
      * check out both constellations to the current user.  User permissions to actually be able to check out the
-     * Constellations is checked in the Server main code. 
+     * Constellations is checked in the Server main code.
      *
      * @param string[] $input Input array from the Server object
      * @param boolean $startMerge optional If true, will try to check out the constellations to the user to start a merge.
@@ -1919,7 +1919,8 @@ class ServerExecutor {
                 $constellation->addBiogHist($combinedBiogHist);
 
                 // Update all the SCMs across the Constellation
-                // Note: If the new one didn't make it into the merge, the citation link will be dropped
+                // Note: If the Source in the citation didn't make it into the new merged Constellation,
+                //       the citation link will be dropped
                 foreach ($originalSources as $original) {
                     $newSource = null;
                     if (isset($sourceMap[$original->getID()]))
@@ -1992,10 +1993,10 @@ class ServerExecutor {
                 $this->cStore->updateMaybeSameLinks($constellation2, $written);
 
                 // Update the constellation lookup table
+                // Note: corePublish() will update the lookup for written->written
                 $redirectWritten = array($written);
                 $this->cStore->updateConstellationLookup($constellation1, $redirectWritten);
                 $this->cStore->updateConstellationLookup($constellation2, $redirectWritten);
-                // Note: corePublish() will update the lookup for written->written
 
                 // Merge completed successfully!
                 $response["result"] = "success";
@@ -2214,7 +2215,7 @@ class ServerExecutor {
         if ($constellations === null || count($constellations) > 1) {
             throw new \snac\exceptions\SNACInputException("Constellation not found");
         }
-        
+
         // Use the first entry in the list
         $constellation = $constellations[0];
 
