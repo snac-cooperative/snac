@@ -92,12 +92,20 @@ body {
 {{ topNavigation(X, user, permissions, control) }}
 
 
+
       <!-- Constellation Data -->
       <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
       <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
       <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
 
       <div class="main_content">
+          {% if data.message %}
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Notice:</strong> Please update your bookmarks.  The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+              </div>
+          {% endif %}
+
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">
@@ -113,9 +121,7 @@ body {
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
 
-               {% if data.preview %}
-               <h3 style="padding-left: 30px; display: inline; color: #3c763d;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
-               {% endif %}
+
             </div>
             <div>
                <div class="biog">
@@ -593,6 +599,12 @@ body {
                   </div>
                </div>
                <div class="others">
+                   {% if data.preview %}
+                   <div class="alert alert-success" style="margin-top: 15px;">
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                       <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                   </div>
+                   {% else %}
                    <div class="panel panel-info" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Constellation Options</h3>
@@ -603,6 +615,10 @@ body {
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                                 <a class="list-group-item list-group-item-warning"
                                    href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
+                                       <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="View other Constellations which may be the same as this one." data-toggle="popover" data-placement="top"></span></a>
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
@@ -611,9 +627,10 @@ body {
                           </div>
                       </div>
                   </div>
+                    {% endif %}
 
 
-                  {% if user.email and (permissions.Edit or debug) %}
+                  {% if user.email and (permissions.Edit or debug) and not data.preview %}
                    <div class="panel panel-warning" style="margin-top: 15px;">
                        <div class="panel-heading">
                            <h3 class="panel-title">Actions</h3>
@@ -629,6 +646,7 @@ body {
                                 <a class="list-group-item list-group-item-danger disabled"
                                    href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
                                 {% endif %}
+
                           </div>
                           {% endif %}
                           {% if false %}

@@ -13,7 +13,6 @@
 namespace snac\server;
 
 use League\OAuth2\Client\Token\AccessToken;
-use PhpParser\Node\Stmt\Break_;
 use snac\server\database\DBUtil;
 /**
  * Server Executor Class
@@ -544,6 +543,38 @@ class ServerExecutor {
         }
 
         $this->logger->addDebug("Returning the following resource search results", $response);
+        return $response;
+    }
+
+    /**
+     * Read Resource
+     *
+     * Given a resource id in the input, returns the resource object in the
+     * response to the user.  If there is an error, it will add that.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function readResource(&$input) {
+        $response = array();
+        $resource = null;
+
+        try {
+            if (!isset($input["resourceid"])) {
+                throw new \snac\exceptions\SNACInputException("No resource to read");
+            }
+            $id = $input["resourceid"];
+            $version = null;
+            if (isset($input["version"]))
+                $version = $input["version"];
+            $resource = $this->cStore->readResource($id, $version);
+
+            $response["resource"] = $resource->toArray();
+            $this->logger->addDebug("Serialized resource for output to client");
+        } catch (Exception $e) {
+            $response["error"] = $e;
+        }
         return $response;
     }
 
@@ -1172,41 +1203,14 @@ class ServerExecutor {
 
                 // If this constellation is the correct version, and the user was editing it, then publish it
                 if ($current->getVersion() == $constellation->getVersion() && $inList) {
-                    if ($current->getArk() === null) {
-                        // We must mint an ark
-                        $arkManager = new \ark\ArkManager();
-
-                        $newArk = null;
-                        // Mint a temporary ark if we are in testing mode, else mint real ark
-                        if (\snac\Config::$SANDBOX_MODE) {
-                            $newArk = $arkManager->mintTemporaryArk();
-                        } else {
-                            $newArk = $arkManager->mintArk();
-                        }
-                        $microConstellation = new \snac\data\Constellation();
-                        $microConstellation->setID($current->getID());
-                        $microConstellation->setVersion($current->getVersion());
-                        $microConstellation->setArkID($newArk);
-                        $microConstellation->setEntityType($current->getEntityType());
-                        $microConstellation->setOperation(\snac\data\Constellation::$OPERATION_UPDATE);
-
-                        $written = $this->cStore->writeConstellation($this->user, $microConstellation,
-                        "System assigning new ARK to constellation", "locked editing");
-                        if ($written !== false && $written != null) {
-                            $result = $written->getVersion();
-                            unset($written);
-                        }
-                        $constellation->setArkID($newArk);
-                    }
-
-                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
-                                                                    "published", "User published constellation");
+                    $result = $this->corePublish($current);
                 }
 
                 if (isset($result) && $result !== false) {
                     $this->logger->addDebug("successfully published constellation");
                     // Return the passed-in constellation from the user, with the new version number
                     $constellation->setVersion($result);
+                    $constellation->setArkID($current->getArk()); // corePublish updates current's ARK
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
 
@@ -1228,6 +1232,52 @@ class ServerExecutor {
         }
         return $response;
 
+    }
+
+    /**
+     * Publish Functionality
+     *
+     * This method actually does the publishing of a constellation.  If the constellation does not
+     * have an ARK, it is assigned one (temporary or permanent depending on the SANDBOX_MODE config
+     * variable.  It then updates the status to published.
+     *
+     * @param \snac\data\Constellation $constellation The constellation to publish
+     * @return integer|boolean Returns the new version number on success or false on failure.
+     */
+    protected function corePublish(&$constellation) {
+        if ($constellation->getArk() === null) {
+            // We must mint an ark
+            $arkManager = new \ark\ArkManager();
+
+            $newArk = null;
+            // Mint a temporary ark if we are in testing mode, else mint real ark
+            if (\snac\Config::$SANDBOX_MODE) {
+                $newArk = $arkManager->mintTemporaryArk();
+            } else {
+                $newArk = $arkManager->mintArk();
+            }
+            $microConstellation = new \snac\data\Constellation();
+            $microConstellation->setID($constellation->getID());
+            $microConstellation->setVersion($constellation->getVersion());
+            $microConstellation->setArkID($newArk);
+            $microConstellation->setEntityType($constellation->getEntityType());
+            $microConstellation->setOperation(\snac\data\Constellation::$OPERATION_UPDATE);
+
+            $written = $this->cStore->writeConstellation($this->user, $microConstellation,
+            "System assigning new ARK to constellation", "locked editing");
+            if ($written !== false && $written != null) {
+                $result = $written->getVersion();
+                unset($written);
+            }
+            $constellation->setArkID($newArk);
+        }
+
+        // If this is published, then it should point to itself in the lookup table.
+        $selfDirect = array($constellation);
+        $this->cStore->updateConstellationLookup($constellation, $selfDirect);
+
+        return $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                                        "published", "User published constellation");
     }
 
     /**
@@ -1347,29 +1397,65 @@ class ServerExecutor {
         $constellation = null;
 
         try {
-            $constellation = $this->readConstellationFromDatabase($input);
+            $constellations = $this->readConstellationFromDatabase($input);
+            if ($constellations === null) {
+                throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+            } else if (count($constellations) > 1) {
+                // Send back multiple constellations
+                $response["constellation"] = array();
+                foreach ($constellations as $constellation) {
+                    array_push($response["constellation"], $constellation->toArray());
+                }
+                $response["result"] = "success-notice";
+                $response["message"] = [
+                    "text" => "Please update your cache, the Constellation you requested has been split.",
+                    "info" => [
+                        "type" => "split"
+                    ]
+                ];
+            } else {
+                // Normal condition (one constellation)
 
-            // Get the list of constellations locked editing for this user
-            $inList = false;
-            if ($this->user != null) {
-                $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
-                if ($editable !== false) {
-                    foreach ($editable as $cEdit) {
-                        if ($cEdit->getID() == $constellation->getID()) {
-                            $inList = true;
-                            break;
+                $constellation = $constellations[0];
+
+                // Get the list of constellations locked editing for this user
+                $inList = false;
+                if ($this->user != null) {
+                    $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
+                    if ($editable !== false) {
+                        foreach ($editable as $cEdit) {
+                            if ($cEdit->getID() == $constellation->getID()) {
+                                $inList = true;
+                                break;
+                            }
                         }
                     }
                 }
+                if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
+                    $constellation->setStatus("editable");
+                }
+
+                $response["result"] = "success";
+                if ((isset($input["arkid"]) && $input["arkid"] != $constellation->getArk()) ||
+                    (isset($input["constellationid"]) && $input["constellationid"] != $constellation->getID())) {
+
+                    $response["result"] = "success-notice";
+                    $response["message"] = [
+                        "text" => "Please update your cache, the Constellation you requested has been merged into "
+                        . $constellation->getArk() . ".",
+                        "info" => [
+                            "type" => "merged",
+                            "redirect" => $constellation->getArk()
+                        ]
+                    ];
+                }
+                $this->logger->addDebug("Finished checking constellation status against the user");
+                $response["constellation"] = $constellation->toArray();
             }
-            if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
-                $constellation->setStatus("editable");
-            }
-            $this->logger->addDebug("Finished checking constellation status against the user");
-            $response["constellation"] = $constellation->toArray();
             $this->logger->addDebug("Serialized constellation for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
+            $response["result"] = "failure";
         }
         return $response;
 
@@ -1387,7 +1473,7 @@ class ServerExecutor {
      * @param boolean $includeMaintenanceHistory optional True will include maintenance history, false (default) will not
      * @param boolean $flags optional Flags to set for the read.  If left at 0, the full constellation will be read.
      * @throws \snac\exceptions\SNACInputException
-     * @return null|\snac\data\Constellation The constellation object (or null)
+     * @return null|\snac\data\Constellation[] A list of constellation objects (or null)
      */
     public function readConstellationFromDatabase(&$input,  $includeMaintenanceHistory=false, $flags = 0) {
         $constellation = null;
@@ -1400,41 +1486,68 @@ class ServerExecutor {
             $readFlags = $readFlags | \snac\server\database\DBUtil::$READ_MAINTENANCE_INFORMATION;
         }
 
-        $this->logger->addDebug("Reading constellation from the database, flags=$readFlags");
+        $this->logger->addDebug("Getting the current ICIDs for the requested constellation");
+
+        $constellations = array();
+        $icids = array();
+
         if (isset($input["arkid"])) {
-            // Reading the given ark id
-            $constellation = $this->cStore->readPublishedConstellationByARK(
-                    $input["arkid"],
-                    $readFlags
-                );
-            if ($constellation === false) {
+            // get icids for the given ark id
+            $icids = $this->cStore->getCurrentIDsForARK($input["arkid"]);
+            if (empty($icids)) {
                 // This means that the Constellation doesn't have a published version!
                 throw new \snac\exceptions\SNACInputException("Constellation with ark " .
                         $input["arkid"] . " does not have a published version.");
             }
 
         } else if (isset($input["constellationid"])) {
-            // Reading the given constellation id by reading the database
-                // Read the constellation
             if (isset($input["version"])) {
+                // if asking for a specific version, then just try to read this
+                // id and version number.
+
+                $this->logger->addDebug("Reading specific constellation from the database, flags=$readFlags");
                 $constellation = $this->cStore->readConstellation(
                         $input["constellationid"],
                         $input["version"],
                         $readFlags);
-            } else {
-                $constellation = $this->cStore->readPublishedConstellationByID(
-                        $input["constellationid"],
-                        $readFlags);
                 if ($constellation === false) {
-                    // This means that the Constellation doesn't have a published version!
                     throw new \snac\exceptions\SNACInputException("Constellation with id " .
-                            $input["constellationid"] . " does not have a published version.");
+                            $input["constellationid"] . " does not have version" .
+                            $input["version"] . ".");
                 }
+                $this->logger->addDebug("Finished reading constellation from the database");
+                return array($constellation);
+
+            }
+
+            $icids = $this->cStore->getCurrentIDsForID($input["constellationid"]);
+            if (empty($icids)) {
+                // This means that the Constellation doesn't have a published version!
+                throw new \snac\exceptions\SNACInputException("Constellation with id " .
+                        $input["constellationid"] . " does not have a published version.");
+            }
+
+        }
+
+
+        $this->logger->addDebug("Reading constellation(s) from the database, flags=$readFlags");
+
+        // If we have gotten here, we have a list of icids to read.  It is probably just one,
+        // but may be multiple.
+        foreach ($icids as $icid) {
+            $constellation = $this->cStore->readPublishedConstellationByID($icid, $readFlags);
+            if ($constellation !== false) {
+                array_push($constellations, $constellation);
             }
         }
+
+        if (count($constellations) == 0) {
+            throw new \snac\exceptions\SNACInputException("Constellation does not exist.");
+        }
+
         $this->logger->addDebug("Finished reading constellation from the database");
 
-        return $constellation;
+        return $constellations;
 
     }
 
@@ -1456,19 +1569,8 @@ class ServerExecutor {
 
         if (isset($input["arkid"])) {
             // Editing the given ark id by reading querying the current HRT
+            throw new \snac\exceptions\SNACInputException("Please provide a Constellation ID for editing.  Arks are not supported.");
 
-            // split on ark:/
-            $tmp = explode("ark:/", $input["arkid"]);
-            if (isset($tmp[1])) {
-                $pieces = explode("/", $tmp[1]);
-                if (count($pieces) == 2) {
-                    $filename = "http://socialarchive.iath.virginia.edu/snac/data/".$pieces[0]."-".$pieces[1].".xml";
-                    // Create new parser for this file and parse it
-                    $parser = new \snac\util\EACCPFParser();
-                    $id = $parser->parseFile($filename);
-                    $response["constellation"] = $id->toArray();
-                }
-            }
         } else if (isset($input["constellationid"])) {
             // Editing the given constellation id by reading the database
 
@@ -1506,7 +1608,7 @@ class ServerExecutor {
                 // If the current status is published OR the user has that constellation locked editing (checked out to them),
                 // OR the constellation needs review and the user has permission to review (TODO)
                 // then the user is allowed to edit.
-                if ( $status == "published" || $inList || ($status == "needs review" && 1)) {
+                if ( $status == "published" || $inList || ($status == "needs review" && $this->hasPermission("Change Locks"))) {
                     // Can edit this!
 
                     // lock the constellation to the user as currently editing
@@ -1609,6 +1711,362 @@ class ServerExecutor {
     }
 
     /**
+     * Compute Constellation Diff
+     *
+     * Given two Constellation IDs in the input, this method reads the current version of both constellations
+     * out of the database.  If they are both published, a diff of the Constellations are computed.  All data
+     * components unique to Constellation 1 are returned in the "this" object; all data components unique to
+     * Constellation 2 are returned in the "other" object; and all data components shared by both Constellations
+     * are returned in the "intersection" object.
+     *
+     * If the optional parameter `$startMerge` is set to true (default is false), then this method will try to
+     * check out both constellations to the current user.  User permissions to actually be able to check out the
+     * Constellations is checked in the Server main code.
+     *
+     * @param string[] $input Input array from the Server object
+     * @param boolean $startMerge optional If true, will try to check out the constellations to the user to start a merge.
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACDatabaseException
+     * @return string[] The response to send to the client
+     */
+    public function diffConstellations(&$input, $startMerge=false) {
+        $response = array();
+        $this->logger->addDebug("Diffing constellations");
+
+        if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
+            // If two constellations were given
+            try {
+                // Read the constellation statuses
+                $this->logger->addDebug("Reading constellation statuses from the database");
+
+                $cId1 = $input["constellationid1"];
+                $status1 = $this->cStore->readConstellationStatus($cId1);
+
+                $cId2 = $input["constellationid2"];
+                $status2 = $this->cStore->readConstellationStatus($cId2);
+
+                // Right now, only published constellations can be merged, so that we can keep a "clean" history
+                if ($status1 == "published" && $status2 == "published") {
+                    $response["mergeable"] = true;
+
+                    // If they asked to start the merge, then check these constellations out to that user as
+                    // CURRENTLY EDITING.  This is the same level of modification as doing an edit, so we don't
+                    // want the user to be able to open them for editing unless they unlock them.
+                    if ($startMerge === true) {
+                        $this->logger->addDebug("User is requesting to diff the constellations for a merge");
+
+                        // lock the constellation to the user as currently editing
+                        $success1 = $this->cStore->writeConstellationStatus($this->user, $cId1, "currently editing");
+                        if ($success1 === false) {
+                            $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId1));
+                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId1 for Editing");
+                        }
+                        $success2 = $this->cStore->writeConstellationStatus($this->user, $cId2, "currently editing");
+                        if ($success2 === false) {
+                            $this->logger->addError("Writing Constellation Status failed", array("user"=>$this->user, "id"=>$cId2));
+
+                            // Must unlock the first constellation if the second one failed
+                            if ($success1 === true) {
+                                $this->logger->addDebug("re-publishing to unlock constellation");
+                                $result = $this->cStore->writeConstellationStatus($this->user, $cId1,
+                                                "published", "Republish: An error occurred when trying to merge");
+                                $this->updateIndexesAfterPublish($cId1);
+                            }
+
+                            throw new \snac\exceptions\SNACDatabaseException("Could not open the Constellation $cId2 for Editing");
+                        }
+                    }
+                } else {
+                    $response["mergeable"] = false;
+                }
+                $this->logger->addDebug("Reading Constellations from the database");
+                $constellation1 = $this->cStore->readConstellation($cId1, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+                $constellation2 = $this->cStore->readConstellation($cId2, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+
+                $this->logger->addDebug("Starting Diff");
+                $diffParts = $constellation1->diff($constellation2);
+
+                $this->logger->addDebug("Finished Diff");
+
+                if ($diffParts["this"] !== null)
+                    $response["constellation1"] = $diffParts["this"]->toArray();
+                else
+                    $response["constellation1"] = null;
+
+                if ($diffParts["other"] !== null)
+                    $response["constellation2"] = $diffParts["other"]->toArray();
+                else
+                    $response["constellation2"] = null;
+
+                if ($diffParts["intersection"] !== null)
+                    $response["intersection"] = $diffParts["intersection"]->toArray();
+                else
+                    $response["intersection"] = null;
+
+            } catch (\Exception $e) {
+                // Leaving a catch block for logging purposes
+                throw $e;
+            }
+
+        } else {
+            throw new \snac\exceptions\SNACInputException("Diff requires two constellation IDs");
+        }
+
+        return $response;
+    }
+
+    /**
+     * Merge Constellations
+     *
+     * Given a constellation object and two constellation ids, this method will create a new Constellation
+     * object and store it in the database (as the merged version of the two ids).  Then, it will tombstone
+     * the Constellations at each of those IDs and point them to the merged version.
+     *
+     * This is a very complex method that handles all parts of the merge.  It follows a strict order of
+     * operations to ensure that Source objects are copied to the new Constellation and that all SCM
+     * objects are updated with correct Source citation ids before writing the merged Constellation.  It then
+     * handles the writing/publishing and tombstoning so that the edit trail is appropriately stored.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACDatabaseException
+     * @return string[] The response to send to the client
+     */
+    function mergeConstellations(&$input) {
+        $response = array();
+        $this->logger->addDebug("Merging constellations");
+
+        if (isset($input["constellationid1"]) && isset($input["constellationid1"]) && isset($input["constellation"])) {
+
+            $cId1 = $input["constellationid1"];
+            $cId2 = $input["constellationid2"];
+
+            $constellation = new \snac\data\Constellation($input["constellation"]);
+            if ($constellation->isEmpty()) {
+                throw new \snac\exceptions\SNACInputException("Merged constellation is empty");
+            }
+
+            $info1 = $this->cStore->readConstellationUserStatus($cId1);
+            if (!is_array($info1)) {
+                throw new \snac\exceptions\SNACInputException("Constellation $cId1 does not have a current version");
+            }
+            $info2 = $this->cStore->readConstellationUserStatus($cId2);
+            if (!is_array($info2)) {
+                throw new \snac\exceptions\SNACInputException("Constellation $cId2 does not have a current version");
+            }
+
+            if ($this->user->getUserID() === $info1["userid"] && $this->user->getUserID() === $info2["userid"]) {
+                // We have two constellation ids that should be merged and the "merged" copy of the constellation
+                // ACTUALLY DOING THE MERGING STEPS IN THE SYSTEM
+
+                // Read parts of the to-merge constellations (need NRD and Sources and NameEntries)
+                $constellation1 = $this->cStore->readConstellation($cId1, null,
+                        \snac\server\database\DBUtil::$READ_NRD | \snac\server\database\DBUtil::$READ_OTHER_EXCEPT_RELATIONS
+                        | \snac\server\database\DBUtil::$READ_ALL_NAMES);
+                $constellation2 = $this->cStore->readConstellation($cId2, null,
+                        \snac\server\database\DBUtil::$READ_NRD | \snac\server\database\DBUtil::$READ_OTHER_EXCEPT_RELATIONS
+                        | \snac\server\database\DBUtil::$READ_ALL_NAMES);
+
+
+                // Create a version of the constellation with only Sources (for initialize step)
+                $sourceConstellation = new \snac\data\Constellation();
+                $sourceConstellation->setAllSources($constellation->getSources());
+                $sourceConstellation->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+                // We need an entity type, so if one is not set, we'll use the first one for now
+                if ($sourceConstellation->getEntityType() === null) {
+                    $sourceConstellation->setEntityType($constellation1->getEntityType());
+                }
+
+                $this->logger->addDebug("Writing initial sources-level constellation", $sourceConstellation->toArray());
+
+                // Write the copy of the constellation with only Source objects
+                $sourceConstellation = $this->cStore->writeConstellation($this->user, $sourceConstellation, "Loading Source objects", 'initialize');
+                if ($sourceConstellation === false) {
+                    throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation");
+                }
+
+                // Update the constellation with the new sources, keeping a mapping to the old sources
+                $constellation->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
+                $constellation->setID($sourceConstellation->getID());
+                $constellation->setVersion($sourceConstellation->getVersion());
+                $constellation->setAllSources(array()); // empty out the source list
+
+                $originalSources = array_merge($constellation1->getSources(), $constellation2->getSources());
+                $sourceMap = array();
+
+                foreach ($sourceConstellation->getSources() as $source) {
+                    $source->setOperation(null); // remove operations, just in case
+                    $constellation->addSource($source);
+
+                    // put it in the mapping by original ID (we should find it!)
+                    foreach ($originalSources as $original) {
+                        if ($source->equals($original, false)) { // don't check id, version, or operation
+                            $sourceMap[$original->getID()] = $source;
+                            break;
+                        }
+                    }
+                }
+
+                // Merge the biogHists down into one
+                $combinedBiogHist = new \snac\data\BiogHist();
+                $combinedBiogHist->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+                foreach ($constellation->getBiogHistList() as $biogHist) {
+                    $combinedBiogHist->append($biogHist);
+                }
+                $constellation->removeAllBiogHists();
+                $constellation->addBiogHist($combinedBiogHist);
+
+                // Update all the SCMs across the Constellation
+                // Note: If the Source in the citation didn't make it into the new merged Constellation,
+                //       the citation link will be dropped
+                foreach ($originalSources as $original) {
+                    $newSource = null;
+                    if (isset($sourceMap[$original->getID()]))
+                        $newSource = $sourceMap[$original->getID()];
+                    $constellation->updateAllSCMCitations($original, $newSource);
+                }
+
+                // Write the new constellation in full
+                $mergeNoteArray = [
+                    "action" => "merge",
+                    "icids" => [
+                        $constellation1->getID(),
+                        $constellation2->getID()
+                    ],
+                    "arks" => [
+                        $constellation1->getArk(),
+                        $constellation2->getArk()
+                    ]
+                ];
+                $mergeNote = json_encode($mergeNoteArray, JSON_PRETTY_PRINT);
+                $written = $this->cStore->writeConstellation($this->user, $constellation, $mergeNote, 'merge split');
+                $this->logger->addDebug("Wrote the merged constellation", $constellation->toArray());
+                if ($written === false) {
+                    throw new \snac\exceptions\SNACDatabaseException("Could not write the merged constellation in full");
+                }
+
+                // Publish the merged constellation and update the indexes
+                $result = $this->corePublish($written);
+                if (!isset($result) || $result === false) {
+                    $this->logger->addDebug("could not publish the constellation");
+                    throw new \snac\exceptions\SNACDatabaseException("Could not publish the merged constellation");
+                }
+                $this->logger->addDebug("successfully published constellation");
+                $this->updateIndexesAfterPublish($written->getID());
+
+                // Tombstone the other constellations and remove them from the indexes
+                $tombstoneNoteArray = [
+                    "action" => "merge",
+                    "icids" => [
+                        $written->getID()
+                    ],
+                    "arks" => [
+                        $written->getArk()
+                    ]
+                ];
+                $tombstoneNote = json_encode($tombstoneNoteArray, JSON_PRETTY_PRINT);
+                $success1 = $this->cStore->writeConstellationStatus($this->user, $constellation1->getID(),
+                                                                    "tombstone", $tombstoneNote);
+                if ($success1 === false) {
+                    $this->logger->addError("Writing Constellation Status failed",
+                        array("user"=>$this->user, "id"=>$constellation1->getID()));
+                    throw new \snac\exceptions\SNACDatabaseException("Could not tombstone Constellation " .
+                        $constellation1->getID());
+                }
+                $this->elasticSearch->deleteFromNameIndices($constellation1);
+
+                $success2 = $this->cStore->writeConstellationStatus($this->user, $constellation2->getID(),
+                                                                    "tombstone", $tombstoneNote);
+                if ($success2 === false) {
+                    $this->logger->addError("Writing Constellation Status failed",
+                        array("user"=>$this->user, "id"=>$constellation2->getID()));
+                    throw new \snac\exceptions\SNACDatabaseException("Could not tombstone Constellation " .
+                        $constellation2->getID());
+                }
+                $this->elasticSearch->deleteFromNameIndices($constellation2);
+
+                // Update the references in the maybesame table
+                $this->cStore->removeMaybeSameLink($constellation1, $constellation2);
+                $this->cStore->updateMaybeSameLinks($constellation1, $written);
+                $this->cStore->updateMaybeSameLinks($constellation2, $written);
+
+                // Update the constellation lookup table
+                // Note: corePublish() will update the lookup for written->written
+                $redirectWritten = array($written);
+                $this->cStore->updateConstellationLookup($constellation1, $redirectWritten);
+                $this->cStore->updateConstellationLookup($constellation2, $redirectWritten);
+
+                // Merge completed successfully!
+                $response["result"] = "success";
+                $response["constellation"] = $written->toArray();
+            } else {
+                throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them");
+            }
+
+
+        } else {
+            throw new \snac\exceptions\SNACInputException("Merge requires two constellation IDs and a merged constellation");
+        }
+
+        return $response;
+    }
+
+    /**
+     * List MaybeSames for Constellation
+     *
+     * This method looks up the constellation and any maybeSame relations (possible merges) for the constellation.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
+    public function listMaybeSameConstellations(&$input) {
+        $this->logger->addDebug("Listing MaybeSame For Constellation");
+        $response = array();
+
+        if (isset($input["constellationid"])) {
+            // Editing the given constellation id by reading the database
+
+            try {
+                // Read the constellation
+                $this->logger->addDebug("Reading constellation from the database");
+
+                $cId = $input["constellationid"];
+                $status = $this->cStore->readConstellationStatus($cId);
+
+                // Right now, only published constellations can be merged, so that we can keep a "clean" history
+                if ( $status == "published" ) {
+                    $response["mergeable"] = true;
+                } else {
+                    $response["mergeable"] = false;
+                }
+
+                // read the constellation into response
+                $constellation = $this->cStore->readConstellation($cId, null, \snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+                $this->logger->addDebug("Finished reading constellation from the database");
+                $response["constellation"] = $constellation->toArray();
+
+                $maybeSame = $this->cStore->listMaybeSameConstellations($cId,\snac\server\database\DBUtil::$READ_SHORT_SUMMARY);
+
+                $response["maybe_same"] = array();
+                foreach ($maybeSame as $key => $ms) {
+                    $response["maybe_same"][$key] = array(
+                        "constellation" => $ms->toArray(),
+                        "mergeable" => ($this->cStore->readConstellationStatus($ms->getID()) == "published")
+                    );
+                }
+
+            } catch (\Exception $e) {
+                // Leaving a catch block for logging purposes
+                throw $e;
+            }
+        }
+        return $response;
+    }
+
+    /**
      * Download/Serialize a Constellation
      *
      * This method handles the downloading of content in any type. Download tasks include serializing a
@@ -1624,10 +2082,11 @@ class ServerExecutor {
         }
 
 
-        $constellation = $this->readConstellationFromDatabase($input, true);
-        if ($constellation == null) {
+        $constellations = $this->readConstellationFromDatabase($input, true);
+        if ($constellations == null || count($constellations) > 1) {
             throw new \snac\exceptions\SNACInputException("Constellation does not exist");
         }
+        $constellation = $constellations[0];
         $response = null;
         switch($input["type"]) {
             case "constellation_json":
@@ -1751,11 +2210,14 @@ class ServerExecutor {
     public function readConstellationRelations(&$input) {
         $response = array();
 
-        $constellation = $this->readConstellationFromDatabase($input, false, \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
+        $constellations = $this->readConstellationFromDatabase($input, false, \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
 
-        if ($constellation === null) {
+        if ($constellations === null || count($constellations) > 1) {
             throw new \snac\exceptions\SNACInputException("Constellation not found");
         }
+
+        // Use the first entry in the list
+        $constellation = $constellations[0];
 
         if (\snac\Config::$USE_NEO4J) {
             // If using Neo4J, then ask Neo4J.  It will be a faster response time.

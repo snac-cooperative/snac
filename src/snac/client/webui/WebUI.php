@@ -122,6 +122,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "search",
                 "quicksearch",
                 "relations",
+                "maybesame",
+                "diff",
                 "explore"
         );
 
@@ -308,6 +310,33 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "relations":
                 $response = $executor->performRelationsQuery($this->input);
+                break;
+            case "maybesame":
+                $response = $executor->displayMaybeSameListPage($this->input, $display);
+                break;
+            case "diff":
+                $response = $executor->displayMaybeSameDiffPage($this->input, $display);
+                break;
+            case "diff_merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
+                } else {
+                    $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
+                }
+                break;
+            case "merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->processMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
+            case "merge_cancel":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->cancelMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
                 break;
 
             case "preview":

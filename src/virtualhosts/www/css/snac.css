@@ -293,6 +293,10 @@ td.rotate > div > span {
     word-wrap: break-word;
 }
 
+.btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {
+    text-decoration: none;
+}
+
 /* Advanced Search Information */
 #advancedSearchText dl {
     margin-left: 25px;
@@ -397,6 +401,38 @@ button.list-group-item-review.active:focus {
     background-color: #AE5A0B;
     border-color: #AE5A0B;
 }
+
+.list-group-item-merge {
+    color: #AB307C;
+    background-color: #F3E0EF;
+}
+a.list-group-item-merge,
+button.list-group-item-merge {
+    color: #AB307C;
+}
+a.list-group-item-merge .list-group-item-heading,
+button.list-group-item-merge .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-merge:hover,
+button.list-group-item-merge:hover,
+a.list-group-item-merge:focus,
+button.list-group-item-merge:focus {
+    color: #AB307C;
+    background-color: #EBCDE1;
+}
+a.list-group-item-merge.active,
+button.list-group-item-merge.active,
+a.list-group-item-merge.active:hover,
+button.list-group-item-merge.active:hover,
+a.list-group-item-merge.active:focus,
+button.list-group-item-merge.active:focus {
+    color: #fff;
+    background-color: #AB307C;
+    border-color: #AB307C;
+}
+
+
 
 /* Use the following to define new panel styles */
 .panel-review {

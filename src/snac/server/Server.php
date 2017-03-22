@@ -253,6 +253,28 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->readConstellationRelations($this->input);
                 break;
 
+            case "constellation_list_maybesame":
+                $this->response = $executor->listMaybeSameConstellations($this->input);
+                break;
+
+            case "constellation_diff":
+                $this->response = $executor->diffConstellations($this->input);
+                break;
+
+            case "constellation_diff_merge":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                }
+                $this->response = $executor->diffConstellations($this->input, true);
+                break;
+
+            case "constellation_merge":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                }
+                $this->response = $executor->mergeConstellations($this->input);
+                break;
+
             case "read":
                 $this->response = $executor->readConstellation($this->input);
                 break;
@@ -285,6 +307,9 @@ class Server implements \snac\interfaces\ServerInterface {
                 //if (!$executor->hasPermission("Edit") || !$executor->hasPermission("Create"))
                 //    throw new \snac\exceptions\SNACPermissionException("User not authorized to insert resources.");
                 $this->response = $executor->writeResource($this->input);
+                break;
+            case "read_resource":
+                $this->response = $executor->readResource($this->input);
                 break;
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);

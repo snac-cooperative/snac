@@ -12,6 +12,8 @@
 
 namespace snac\server\database;
 use \snac\server\validation\ValidationEngine as ValidationEngine;
+use Behat\Behat\Definition\Call\Given;
+use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
 use snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 
@@ -221,7 +223,9 @@ class DBUtil
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
                                 'currently editing' => 1,
-                                'ingest cpf' => 1);
+                                'ingest cpf' => 1,
+                                'maybe same' => 1,
+                                'tombstone' => 1);
 
     /**
      * Check status values
@@ -453,7 +457,9 @@ class DBUtil
     /**
      * Read published by ARK
      *
-     * Read a published constellation by ARK from the database.
+     * Read a published constellation by ARK from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
@@ -473,9 +479,10 @@ class DBUtil
      */
     public function readPublishedConstellationByARK($arkID, $flags=0)
     {
-        $mainID = $this->sql->selectMainID($arkID);
-        if ($mainID)
+        $mainIDs = $this->sql->selectCurrentMainIDsForArk($arkID);
+        if ($mainIDs != null && count($mainIDs) == 1)
         {
+            $mainID = $mainIDs[0];
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
             if ($version)
             {
@@ -486,11 +493,44 @@ class DBUtil
         return false;
     }
 
+    /**
+     * Get Current ICIDs for Ark
+     *
+     * Returns the list of ICIDs for the given Ark.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the Ark's creation and the current
+     * published versions.
+     *
+     * @param string $arkID The ark id to look up
+     * @return int[] An array of ICIDs deemed current for this ark
+     */
+    public function getCurrentIDsForARK($arkID) {
+        return $this->sql->selectCurrentMainIDsForArk($arkID);
+    }
+
+
+    /**
+     * Get Current ICIDs for ICID
+     *
+     * Returns the list of ICIDs for the given ICID.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the IC's original creation and the current
+     * published versions.
+     *
+     * @param int $icid The ICID to look up
+     * @return int[] An array of ICIDs deemed current for this ICID
+     */
+    public function getCurrentIDsForID($icid) {
+        return $this->sql->selectCurrentMainIDsForID($icid);
+    }
+
 
     /**
      * Read published by ID
      *
-     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.
+     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
      *
      * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
      * be ORed together.  Certain shortcut flags are available, such as:
@@ -512,11 +552,18 @@ class DBUtil
         if ($mainID == null || $mainID == '') {
             return false;
         }
-        $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
-        if ($version)
-        {
-            $cObj = $this->readConstellation($mainID, $version, $flags);
-            return $cObj;
+
+        // Redirection, in case this ID was merged into another.  Worst case, currentID = mainID.
+        $currentIDs = $this->sql->selectCurrentMainIDsForID($mainID);
+
+        if ($currentIDs != null && count($currentIDs) == 1) {
+            $currentID = $currentIDs[0];
+            $version = $this->sql->selectCurrentVersionByStatus($currentID, 'published');
+            if ($version)
+            {
+                $cObj = $this->readConstellation($currentID, $version, $flags);
+                return $cObj;
+            }
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
         // force asking for a published constellation. Returning false means the request didn't work.
@@ -3355,6 +3402,82 @@ class DBUtil
         return false;
     }
 
+    /**
+     * Update Constellation Lookup
+     *
+     * Update the lookup table so that queries to the oldConstellation will be automatically redirected
+     * to read the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation[] $newConstellations The constellations to return when querying for oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateConstellationLookup(&$oldConstellation, &$newConstellations) {
+        // Check input for valid values
+        if ($oldConstellation === null || $newConstellations === null
+                || !is_array($newConstellations) || empty($newConstellations))
+            return false;
+        if ($oldConstellation->getID() === null || $oldConstellation->getArk() === null)
+            return false;
+        foreach ($newConstellations as $newConstellation) {
+            if ($newConstellation->getID() === null || $newConstellation->getArk() === null)
+                return false;
+        }
+
+        // Build the argument array for lookups
+        $newLookups = array();
+        foreach ($newConstellations as $newConstellation) {
+            $newLookups[$newConstellation->getID()] = $newConstellation->getArk();
+        }
+
+        $this->sql->updateConstellationLookup($oldConstellation->getID(), $oldConstellation->getArk(),
+            $newLookups);
+
+        return true;
+    }
+
+    /**
+     * Remove MaybeSame Link
+     *
+     * Removes maybe_same links between the two constellations given as parameters.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @return boolean true on success, false otherwise
+     */
+    public function removeMaybeSameLink(&$constellation1, &$constellation2) {
+        if ($constellation1 === null || $constellation2 === null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->removeMaybeSameLink($constellation1->getID(), $constellation2->getID());
+
+        return true;
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Update the maybe_same table so that maybesame links to the oldConstellation will be automatically redirected
+     * to point to the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation $newConstellation The constellation to replace oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateMaybeSameLinks(&$oldConstellation, &$newConstellation) {
+        if ($oldConstellation === null || $newConstellation === null)
+            return false;
+
+        if ($oldConstellation->getID() === null || $newConstellation->getID() === null)
+            return false;
+
+        $this->sql->updateMaybeSameLinks($oldConstellation->getID(), $newConstellation->getID());
+
+        return true;
+    }
 
     /**
      * Write a constellation to the database.
@@ -3410,15 +3533,15 @@ class DBUtil
      * modified to include id and version, or false if not successful.
      *
      */
-    public function writeConstellation($user, $argObj, $note, $statusArg='locked editing')
+    public function writeConstellation($user, $argObj, $note, $statusArg=null)
     {
         /*
          * We can initialize $status to either $defaultStatus or $statusArg. I'm not sure it makes much
          * difference. We do use $defaultStatus later to set the status after creating a version_history
          * record for 'ingest cpf'.
          */
-        $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
-        $status = $defaultStatus;
+        $defaultStatus = 'locked editing';
+        $status = $statusArg;
         if ($user == null || $user->getUserID() == null) {
             $this->logDebug("dbutil user or userid is null");
             return false;
@@ -3433,7 +3556,8 @@ class DBUtil
              * Update uses the existing constellation ID.
              */
             $mainID = $cObj->getID();
-            $status = $this->readConstellationStatus($mainID);
+            if ($status === null)
+                $status = $this->readConstellationStatus($mainID);
         }
         elseif ($op == \snac\data\AbstractData::$OPERATION_DELETE)
         {
@@ -3466,7 +3590,8 @@ class DBUtil
                  *
                  * A new constellation must have operation insert, and is handled above.
                  */
-                $status = $this->readConstellationStatus($mainID);
+                if ($status === null)
+                    $status = $this->readConstellationStatus($mainID);
             }
             else
             {
@@ -3523,9 +3648,14 @@ class DBUtil
             $maintNote = $this->maintenanceNote($cObj);
             $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $statusArg, $maintNote);
             $mainID = $vhInfoIngest['ic_id'];
-            $status = $defaultStatus;
-            $cObj->setStatus($status);
+            $status = $defaultStatus; // set status default (locked editing)
         }
+
+        // If the status is null, we should set it to default before writing
+        if ($status === null)
+            $status = $defaultStatus;
+        // Set the status inside the constellation
+        $cObj->setStatus($status);
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
         $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
@@ -3801,6 +3931,27 @@ class DBUtil
              * separately.
              */
         }
+    }
+
+    /**
+     * List maybe-same constellations
+     *
+     * Gets a list of constellations that may be the same as the search
+     *
+     * @param  int  $icid  Identity Constellation ID for which to get maybe same
+     * @param  integer $flags Read flags for the read call (default is FULL_CONSTELLATION)
+     * @return \snac\data\Constellation[]         List of maybesame constellations
+     */
+    public function listMaybeSameConstellations($icid, $flags=0) {
+        $response = array();
+
+        $icids = $this->sql->listMaybeSameIDsFor($icid);
+
+        foreach ($icids as $maybeSame) {
+            array_push($response, $this->readPublishedConstellationByID($maybeSame, $flags));
+        }
+
+        return $response;
     }
 
 
