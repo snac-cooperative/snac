@@ -229,7 +229,7 @@ $(document).ready(function() {
         {% else %}
             <h1>Compare Constellations</h1>
             <div class="well well-lg">
-                <p><span style="font-weight: bold;">Information: </span> The first column shows data points from <em>{{ data.constellation1.nameEntries.0.original }}</em> in red.  The third column shows data points from <em>{{ data.constellation2.nameEntries.0.original }}</em> in blue.  Any data they share in common is displayed as purple boxes in the middle "BOTH" column.</p>
+                <p><span style="font-weight: bold;">Information: </span> The first column shows data points from <em>{{ data.constellation1.nameEntries.0.original }}</em> in red.  The third column shows data points from <em>{{ data.constellation2.nameEntries.0.original }}</em> in blue.  Any data they share in common is displayed as purple boxes in the middle "Shared" column.</p>
             </div>
         {% endif %}
 
@@ -429,7 +429,7 @@ $(document).ready(function() {
                         {% if data.mergeable %}
                         <h4 class="text-center">Merge Area</h4>
                         {% else %}
-                        <h4 class="text-center">BOTH</h4>
+                        <h4 class="text-center">Shared</h4>
                         {% endif %}
                         <div class="content-both" style="display: none;">
                             <input type="hidden" id="entityType" name="entityType" value="{{data.intersection.entityType.id}}">
@@ -1160,7 +1160,7 @@ $(document).ready(function() {
                                 {% for resourceRelation in data.intersection.resourceRelations %}
                                     <div class="data-component  data-component-both" id="icon_{{i}}">
                                         <div style="display:none;" id="data_{{i}}">
-                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, 'BOTH') }}
+                                            {{ components.displayResourceRelation(X, false, false, resourceRelation, i, data.intersection.entityType.term, 'both') }}
                                         </div>
                                         <script>
                                         pieceCache[{{i}}] = {
