@@ -3841,9 +3841,9 @@ class SQL
                             'select
                             aa.version, aa.ic_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select ic_id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by ic_id) as bb
+                            (select id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
-                            aa.ic_id=bb.ic_id
+                            aa.id=bb.id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
@@ -3881,7 +3881,7 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
                             from otherid as aa,
                             (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id = bb.id and
                             aa.version = bb.version order by id asc');
 
