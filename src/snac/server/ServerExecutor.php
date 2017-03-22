@@ -2087,6 +2087,33 @@ class ServerExecutor {
             throw new \snac\exceptions\SNACInputException("Constellation does not exist");
         }
         $constellation = $constellations[0];
+
+        // The downloaded version should include maybesame relations
+
+        // Get the mayBeSameAs term from the database so we can populate the maybe same links
+        $tmp = $this->cStore->searchVocabulary("relation_type", "mayBeSameAs");
+        $maybeSameType = new \snac\data\Term();
+        if (isset($tmp[0])) {
+            $maybeSameType = $this->cStore->populateTerm($tmp[0]["id"]);
+        } else {
+            $maybeSameType->setType("relation_type");
+            $maybeSameType->setTerm("mayBeSameAs");
+        }
+
+        // Add the maybe same constellations into the downloaded version as Constellation Relations
+        $maybesames = $this->cStore->listMaybeSameConstellations($constellation->getID(),\snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
+        foreach ($maybesames as $maybesame) {
+            $relation = new \snac\data\ConstellationRelation();
+            $relation->setSourceConstellation($constellation->getID());
+            $relation->setSourceArkID($constellation->getArk());
+            $relation->setTargetConstellation($maybesame->getID());
+            $relation->setTargetArkID($maybesame->getArk());
+            $relation->setTargetEntityType($maybesame->getEntityType());
+            $relation->setContent($maybesame->getPreferredNameEntry()->getOriginal());
+            $relation->setType($maybeSameType);
+            $constellation->addRelation($relation);
+        }
+
         $response = null;
         switch($input["type"]) {
             case "constellation_json":
