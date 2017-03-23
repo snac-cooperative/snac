@@ -192,6 +192,15 @@ $('.selectpicker').selectpicker();
     .move-all-button-div {
         margin-top: 40px;
     }
+
+    .list-group-super .list-group-item:last-child {
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 0px;
+    }
+    .list-group-sub .list-group-item:first-child {
+        border-top-right-radius: 0px;
+        border-top-left-radius: 0px;
+    }
 </style>
 
 <script language="javascript">
@@ -233,167 +242,254 @@ $(document).ready(function() {
             </div>
         {% endif %}
 
+        {% set nameCount = (data.constellation1.nameEntries|length) + (data.constellation2.nameEntries|length) + (intersection.nameEntries|length) %}
+        {% set biogHistCount = (data.constellation1.biogHists|length) + (data.constellation2.biogHists|length) + (intersection.biogHists|length) %}
+        {% set dateCount = (data.constellation1.dates|length) + (data.constellation2.dates|length) + (intersection.dates|length) %}
+        {% set placeCount = (data.constellation1.places|length) + (data.constellation2.places|length) + (intersection.places|length) %}
+        {% set gcCount = (data.constellation1.generalContexts|length) + (data.constellation2.generalContexts|length) + (intersection.generalContexts|length) %}
+        {% set sogCount = (data.constellation1.structureOrGenealogies|length) + (data.constellation2.structureOrGenealogies|length) + (intersection.structureOrGenealogies|length) %}
+        {% set genderCount = (data.constellation1.genders|length) + (data.constellation2.genders|length) + (intersection.genders|length) %}
+        {% set natCount = (data.constellation1.nationalities|length) + (data.constellation2.nationalities|length) + (intersection.nationalities|length) %}
+        {% set langCount = (data.constellation1.languagesUsed|length) + (data.constellation2.languagesUsed|length) + (intersection.languagesUsed|length) %}
+        {% set occCount = (data.constellation1.occupations|length) + (data.constellation2.occupations|length) + (intersection.occupations|length) %}
+        {% set subjectCount = (data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length) %}
+        {% set rrelCount = (data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length) %}
+        {% set crelCount = (data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length) %}
+        {% set sameasCount = (data.constellation1.sameAs|length) + (data.constellation2.sameAs|length) + (intersection.sameAs|length) %}
+        {% set entityidCount = (data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length) %}
+        {% set funCount = (data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length) %}
+        {% set lsCount = (data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length) %}
+        {% set mandateCount = (data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length) %}
+        {% set sourceCount = (data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length) %}
+        {% set cdCount = (data.constellation1.conventionDeclarations|length) + (data.constellation2.conventionDeclarations|length) + (intersection.conventionDeclarations|length) %}
 
+        {% set historyCount = biogHistCount + dateCount + placeCount + gcCount + sogCount %}
+        {% set demoCount = genderCount + natCount + langCount + occCount + subjectCount %}
+        {% set relCount = rrelCount + crelCount + sameasCount + entityidCount %}
+        {% set corpCount = funCount + lsCount + mandateCount %}
+        {% set controlCount = sourceCount + cdCount %}
 
         <div class="row">
             <div class="col-md-2" style="padding-top: 115px;">
                 <div class="list-group components-menu">
                     <a class="list-group-item" href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.nameEntries|length) + (data.constellation2.nameEntries|length) + (intersection.nameEntries|length)) > 0 %}
+                        {% if (nameCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.nameEntries|length) + (data.constellation2.nameEntries|length) + (intersection.nameEntries|length)}}
+                            {{nameCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Core Data</span>
                     </a>
                 </div>
                 <div class="list-group components-menu">
-                    <span class="list-group-item list-group-item-info">History</span>
-                    <a class="list-group-item" href="#biogHists" id="biogHiststab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.biogHists|length) + (data.constellation2.biogHists|length) + (intersection.biogHists|length)) > 0 %}
+                    <div class="list-group-super">
+                    <button class="list-group-item list-group-item-info" role="button" data-toggle="collapse"
+                        href="#collapseHistory" aria-expanded="false" aria-controls="collapseHistory">History
+                        <span class="caret"></span>
+                        {% if (historyCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.biogHists|length) + (data.constellation2.biogHists|length) + (intersection.biogHists|length)}}
+                            {{historyCount}}
+                        </span>
+                        {% endif %}
+                    </button>
+                    </div>
+                    <div id="collapseHistory" class="collapse list-group-sub">
+                    <a class="list-group-item" href="#biogHists" id="biogHiststab" role="tab" data-toggle="tab">
+                        {% if (biogHistCount) > 0 %}
+                        <span class="badge">
+                            {{biogHistCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>BiogHist</span></a>
                     <a class="list-group-item" href="#dates" id="existstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.dates|length) + (data.constellation2.dates|length) + (intersection.dates|length)) > 0 %}
+                        {% if (dateCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.dates|length) + (data.constellation2.dates|length) + (intersection.dates|length)}}
+                            {{dateCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Exist Dates</span></a>
                     <a class="list-group-item" href="#places" id="placestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.places|length) + (data.constellation2.places|length) + (intersection.places|length)) > 0 %}
+                        {% if (placeCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.places|length) + (data.constellation2.places|length) + (intersection.places|length)}}
+                            {{placeCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Places</span></a>
                     <a class="list-group-item" href="#generalContexts" id="generalContextstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.generalContexts|length) + (data.constellation2.generalContexts|length) + (intersection.generalContexts|length)) > 0 %}
+                        {% if (gcCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.generalContexts|length) + (data.constellation2.generalContexts|length) + (intersection.generalContexts|length)}}
+                            {{gcCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>General Contexts</span></a>
                     <a class="list-group-item" href="#structureOrGenealogies" id="structureOrGenealogiestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.structureOrGenealogies|length) + (data.constellation2.structureOrGenealogies|length) + (intersection.structureOrGenealogies|length)) > 0 %}
+                        {% if (sogCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.structureOrGenealogies|length) + (data.constellation2.structureOrGenealogies|length) + (intersection.structureOrGenealogies|length)}}
+                            {{sogCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Structure or Genealogies</span></a>
+                    </div>
                 </div>
                 <div class="list-group components-menu">
-                        <span class="list-group-item list-group-item-info">Demographics</span>
-                    <a class="list-group-item" href="#genders" id="genderstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.genders|length) + (data.constellation2.genders|length) + (intersection.genders|length)) > 0 %}
+                    <div class="list-group-super">
+                    <button class="list-group-item list-group-item-info" role="button" data-toggle="collapse"
+                        href="#collapseDemographics" aria-expanded="false" aria-controls="collapseDemographics">Demographics
+                        {% if (demoCount) > 0 %}
+                        <span class="caret"></span>
                         <span class="badge">
-                            {{(data.constellation1.genders|length) + (data.constellation2.genders|length) + (intersection.genders|length)}}
+                            {{demoCount}}
+                        </span>
+                        {% endif %}
+                    </button>
+                    </div>
+                    <div id="collapseDemographics" class="collapse list-group-sub">
+                    <a class="list-group-item" href="#genders" id="genderstab" role="tab" data-toggle="tab">
+                        {% if (genderCount) > 0 %}
+                        <span class="badge">
+                            {{genderCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Genders</span></a>
                     <a class="list-group-item" href="#nationalities" id="nationalitiestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.nationalities|length) + (data.constellation2.nationalities|length) + (intersection.nationalities|length)) > 0 %}
+                        {% if (natCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.nationalities|length) + (data.constellation2.nationalities|length) + (intersection.nationalities|length)}}
+                            {{natCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Nationalities</span></a>
                     <a class="list-group-item" href="#languagesUsed" id="languagesUsedtab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.languagesUsed|length) + (data.constellation2.languagesUsed|length) + (intersection.languagesUsed|length)) > 0 %}
+                        {% if (langCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.languagesUsed|length) + (data.constellation2.languagesUsed|length) + (intersection.languagesUsed|length)}}
+                            {{langCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Languages Used</span></a>
                     <a class="list-group-item" href="#occupations" id="occupationstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.occupations|length) + (data.constellation2.occupations|length) + (intersection.occupations|length)) > 0 %}
+                        {% if (occCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.occupations|length) + (data.constellation2.occupations|length) + (intersection.occupations|length)}}
+                            {{occCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Occupations</span></a>
                     <a class="list-group-item" href="#subjects" id="subjectstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length)) > 0 %}
+                        {% if (subjectCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.subjects|length) + (data.constellation2.subjects|length) + (intersection.subjects|length)}}
+                            {{subjectCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Subjects</span></a>
+                    </div>
                 </div>
                 <div class="list-group components-menu">
-                    <span class="list-group-item list-group-item-info">Relations</span>
-                    <a class="list-group-item" href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length)) > 0 %}
+                    <div class="list-group-super">
+                    <button class="list-group-item list-group-item-info" role="button" data-toggle="collapse"
+                        href="#collapseRelations" aria-expanded="false" aria-controls="collapseRelations">Relations
+                        {% if (relCount) > 0 %}
+                        <span class="caret"></span>
                         <span class="badge">
-                            {{(data.constellation1.resourceRelations|length) + (data.constellation2.resourceRelations|length) + (intersection.resourceRelations|length)}}
+                            {{relCount}}
+                        </span>
+                        {% endif %}
+                    </button>
+                    </div>
+                    <div id="collapseRelations" class="collapse list-group-sub">
+                    <a class="list-group-item" href="#resourceRelations" id="resourceRelationstab" role="tab" data-toggle="tab">
+                        {% if (rrelCount) > 0 %}
+                        <span class="badge">
+                            {{rrelCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Resource Relations</span></a>
                     <a class="list-group-item" href="#constellationRelations" id="constellationRelationstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length)) > 0 %}
+                        {% if (crelCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.relations|length) + (data.constellation2.relations|length) + (intersection.relations|length)}}
+                            {{crelCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Internal CPF Relations</span></a>
                     <a class="list-group-item" href="#sameAs" id="sameAstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.sameAs|length) + (data.constellation2.sameAs|length) + (intersection.sameAs|length)) > 0 %}
+                        {% if (sameasCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.sameAs|length) + (data.constellation2.sameAs|length) + (intersection.sameAs|length)}}
+                            {{sameasCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>External CPF (Same As)</span></a>
                     <a class="list-group-item" href="#entityID" id="entityIDtab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length)) > 0 %}
+                        {% if (entityidCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.entityIDs|length) + (data.constellation2.entityIDs|length) + (intersection.entityIDs|length)}}
+                            {{entityidCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Other Entity IDs (Same As)</span></a>
+                    </div>
                 </div>
                 <div class="list-group components-menu">
-                    <span class="list-group-item list-group-item-info">Corporate Descriptions</span>
-                    <a class="list-group-item" href="#functions" id="functionstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length)) > 0 %}
+                    <div class="list-group-super">
+                    <button class="list-group-item list-group-item-info" role="button" data-toggle="collapse"
+                        href="#collapseCorporateDescriptions" aria-expanded="false"
+                        aria-controls="collapseCorporateDescriptions">Corporate Descriptions
+                        {% if (corpCount) > 0 %}
+                        <span class="caret"></span>
                         <span class="badge">
-                            {{(data.constellation1.functions|length) + (data.constellation2.functions|length) + (intersection.functions|length)}}
+                            {{corpCount}}
+                        </span>
+                        {% endif %}
+                    </button>
+                    </div>
+                    <div id="collapseCorporateDescriptions" class="collapse list-group-sub">
+                    <a class="list-group-item" href="#functions" id="functionstab" role="tab" data-toggle="tab">
+                        {% if (funCount) > 0 %}
+                        <span class="badge">
+                            {{funCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Functions</span></a>
                     <a class="list-group-item" href="#legalStatuses" id="legalStatusestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length)) > 0 %}
+                        {% if (lsCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.legalStatuses|length) + (data.constellation2.legalStatuses|length) + (intersection.legalStatuses|length)}}
+                            {{lsCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Legal Statuses</span></a>
                     <a class="list-group-item" href="#mandates" id="mandatestab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length)) > 0 %}
+                        {% if (mandateCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.mandates|length) + (data.constellation2.mandates|length) + (intersection.mandates|length)}}
+                            {{mandateCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Mandates</span></a>
+                    </div>
                 </div>
                 <div class="list-group components-menu">
-                    <span class="list-group-item list-group-item-info">Control</span>
-                    <a class="list-group-item" href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">
-                        {% if ((data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length)) > 0 %}
+                    <div class="list-group-super">
+                    <button class="list-group-item list-group-item-info" role="button" data-toggle="collapse"
+                        href="#collapseControl" aria-expanded="false"
+                        aria-controls="collapseControl">Control
+                        {% if (controlCount) > 0 %}
+                        <span class="caret"></span>
                         <span class="badge">
-                            {{(data.constellation1.sources|length) + (data.constellation2.sources|length) + (intersection.sources|length)}}
+                            {{controlCount}}
+                        </span>
+                        {% endif %}
+                    </button>
+                    </div>
+                    <div id="collapseControl" class="collapse list-group-sub">
+                    <a class="list-group-item" href="#sources" id="sourcestab" role="tab" data-toggle="tab" id="sources-tab">
+                        {% if (sourceCount) > 0 %}
+                        <span class="badge">
+                            {{sourceCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Sources</span></a>
                     <a class="list-group-item" href="#conventionDeclarations" id="conventionDeclarationstab" role="tab" data-toggle="tab">
-                        {% if ((data.constellation1.conventionDeclarations|length) + (data.constellation2.conventionDeclarations|length) + (intersection.conventionDeclarations|length)) > 0 %}
+                        {% if (cdCount) > 0 %}
                         <span class="badge">
-                            {{(data.constellation1.conventionDeclarations|length) + (data.constellation2.conventionDeclarations|length) + (intersection.conventionDeclarations|length)}}
+                            {{cdCount}}
                         </span>
                         {% endif %}
                         <span class='component-title'>Convention Declarations</span></a>
+                    </div>
                 </div>
 
                 {% if data.mergeable %}
