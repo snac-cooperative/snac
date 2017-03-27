@@ -514,14 +514,16 @@ class WebUIExecutor {
             if ($forMerge === false || ($forMerge === true && $serverResponse["mergeable"] === true)) {
                 // Can only merge if the webUI has requested diff to merge (forMerge) and
                 // the server says these two are mergeable
-                $mergeable = $forMerge && $serverResponse["mergeable"];
+                $merging = $forMerge && $serverResponse["mergeable"];
+                $mergeable = $serverResponse["mergeable"];
 
                 $display->setTemplate("maybesame_diff_page");
                 $displayData = array(
                     "constellation1" => $serverResponse["constellation1"],
                     "constellation2" => $serverResponse["constellation2"],
                     "intersection" => $serverResponse["intersection"],
-                    "mergeable" => $mergeable
+                    "mergeable" => $mergeable,
+                    "merging" => $merging
                 );
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
@@ -1821,7 +1823,7 @@ class WebUIExecutor {
     }
 
     /**
-     * Query server for relations 
+     * Query server for relations
      *
      * Asks the server for the relations (in- and out-edges) for the given id or ark
      * in the user input.  Returns the Server response directly, used by Javascript

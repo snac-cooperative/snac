@@ -209,38 +209,57 @@ $(document).ready(function() {
         });
 
         $("#icon_" + i).on("click", function() {
-            $(".data-component").each(function() {
+            //$(".data-component").each(function() {
+            //    $(this).removeClass("data-component-selected").removeClass("disabled");
+            //    $(this).popover('enable');
+            //});
+            //$(".preview").each(function() {
+            //    $(this).html("");
+            //})
+            //$(".move-button-div").each(function() {
+            //    $(this).addClass("move-button-div-disabled");
+            //    $(this).find(".move-button").off("click");
+            //    $(this).find(".split-button").off("click");
+            //})
+
+
+            var obj = $(this);
+
+            obj.closest(".diff-content-panel").find(".data-component").each(function() {
                 $(this).removeClass("data-component-selected").removeClass("disabled");
                 $(this).popover('enable');
             });
-            $(".preview").each(function() {
-                $(this).html("");
-            })
-            $(".move-button-div").each(function() {
+
+            obj.closest(".diff-content-panel").find(".move-button-div").each(function() {
                 $(this).addClass("move-button-div-disabled");
                 $(this).find(".move-button").off("click");
                 $(this).find(".split-button").off("click");
             })
-            var obj = $(this);
+
             $(this).popover('disable');
             obj.addClass("data-component-selected").addClass("disabled");
 
-            obj.closest(".diff-content-panel").find(".preview").html($("#data_" + i).html());
+
+            var thisPreview = obj.closest(".diff-content-panel").find(".preview");
+            thisPreview.html($("#data_" + i).html());
             obj.closest(".diff-content-panel").find(".move-button-div").removeClass("move-button-div-disabled");
             obj.closest(".diff-content-panel").find(".move-button").on("click", function() {
+
+
+                $(this).closest(".diff-content-panel").find(".data-component").each(function() {
+                    $(this).removeClass("data-component-selected").removeClass("disabled");
+                    $(this).popover('enable');
+                });
+
+
                 var both = $("#icon_" + i).closest(".tab-pane").find(".merge-panel").find(".data-components");
                 var copy = $("#icon_" + i).detach();
                 copy.appendTo(both);
 
-
-                $(".data-component").each(function() {
-                    $(this).removeClass("data-component-selected").removeClass("disabled");
-                    $(this).popover('enable');
-                });
-                $(".preview").each(function() {
+                $(this).closest(".diff-content-panel").find(".preview").each(function() {
                     $(this).html("");
                 })
-                $(".move-button-div").each(function() {
+                $(this).closest(".diff-content-panel").find(".move-button-div").each(function() {
                     $(this).addClass("move-button-div-disabled");
                 })
 
@@ -257,21 +276,23 @@ $(document).ready(function() {
                     move = $("#icon_" + i).closest(".tab-pane").find(".content-b").find(".data-components");
 
                 if (move != null) {
-                    var copy = $("#icon_" + i).detach();
-                    copy.appendTo(move);
+                    $(this).closest(".diff-content-panel").find(".split-button").off("click");
 
-                    $(".data-component").each(function() {
+                    $(this).closest(".diff-content-panel").find(".data-component").each(function() {
                         $(this).removeClass("data-component-selected").removeClass("disabled");
                         $(this).popover('enable');
                     });
-                    $(".preview").each(function() {
+
+                    var copy = $("#icon_" + i).detach();
+                    copy.appendTo(move);
+
+                    $(this).closest(".diff-content-panel").find(".preview").each(function() {
                         $(this).html("");
-                    })
-                    $(".move-button-div").each(function() {
+                    });
+                    $(this).closest(".diff-content-panel").find(".move-button-div").each(function() {
                         $(this).addClass("move-button-div-disabled");
                     });
 
-                    $(this).closest(".diff-content-panel").find(".split-button").off("click");
 
                 }
 
