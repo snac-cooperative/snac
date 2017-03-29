@@ -742,9 +742,18 @@ class DBUtil
                 'status' => $h['status'],
                 'note' => $h['note']
             ];
-            if ($publicOnly === false || ($publicOnly === true && $event['status'] != 'ingest cpf'))
-                array_push($result, $event);
+            if ($event['status'] == 'ingest cpf') {
+                $event['data'] = json_decode($event['note'], true);
+                $event['note'] = "";
+            }
+            array_push($result, $event);
         }
+
+        // give the results back in reverse order
+        usort($result,
+            function ($a, $b) {
+                return $b['version'] <=> $a['version'];
+            });
         return $result;
     }
 

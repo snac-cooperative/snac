@@ -55,7 +55,7 @@ $(document).ready(function() {
     });
 
     // Load the table into a datatable
-    $('.table').DataTable();
+    $('.table').DataTable({ordering: false});
 });
 </script>
 </head>
@@ -84,20 +84,73 @@ $(document).ready(function() {
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>User</th>
+                        <th>Publication Date</th>
+                        <th>Publishing Account</th>
                         <th>Status</th>
                         <th>Note</th>
+                        <th>View</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {% set i = 0 %}
                     {% for history in data.history %}
                     <tr>
-                        <td><p><a href="?command=view&constellationid={{data.constellation.id}}&version={{history.version}}">{{ history.date }}</a></p></td>
+                        <td><p>{{ history.date|date('Y-m-d h:m:s a') }}</a></td>
                         <td><p>{{ history.fullName }}</p></td>
                         <td><p>{{ history.status }}</p></td>
-                        <td><p>{{ history.note }}</p></td>
+                        {% if history.data and history.status == 'ingest cpf' %}
+                            <td>
+                                <p>Initial ingest from EAC-CPF</p>
+                            </td>
+                        {% else %}
+                            <td><p>{{ history.note }}</p></td>
+                        {% endif %}
+                        <td>
+                            {% if history.data and history.status == 'ingest cpf' %}
+                                <p><a href="#" class='btn btn-sm btn-warning' data-toggle="modal" data-target="#modal{{i}}">Pre-Production Data</a></p>
+
+                                <div class="modal fade" id="modal{{i}}" tabindex="-1" role="dialog" aria-labelledby="AdditionalDetails">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                <h4 class="modal-title" id="modal{{i}}_label">Additional Details - {{history.date|date('Y-m-d h:m:s a')}}</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>This Constellation was ingested from EAC-CPF and contains the following additional historical control information.</p>
+                                                {% if history.data.maintenanceEvents %}
+                                                <h5 style="font-weight: bold;">Previous Maintenance Events</h5>
+                                                {% for event in history.data.maintenanceEvents %}
+                                                    <p style="margin-left: 20px;">{{event.eventDateTime}} - {{event.eventType.term}}<br>
+                                                        <em>{{event.agent}}</em><br>
+                                                        {{event.eventDescription}}
+                                                    </p>
+                                                {% endfor %}
+                                                {% endif %}
+                                                {% if history.data.otherRecordIDs %}
+                                                <h5 style="font-weight: bold;">Previous Merge Information</h5>
+                                                {% for otherid in history.data.otherRecordIDs %}
+                                                    <p style="margin-left: 20px;">{{otherid.uri}}<br>
+                                                        <em>{{otherid.type.term}}</em>
+                                                    </p>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p>
+                                    <a class='btn btn-sm btn-info' href="?command=view&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT</a>
+                                    <a  class='btn btn-sm btn-success' href="?command=details&constellationid={{data.constellation.id}}&version={{history.version}}"><span class="glyphicon glyphicon-tasks"></span> Details</a>
+                                </p>
+                            {% endif %}
+                        </p></td>
                     </tr>
+                    {% set i = i + 1 %}
                     {% endfor %}
                 </tbody>
             </table>
