@@ -313,6 +313,32 @@ class WebUIExecutor {
         }
     }
 
+    public function displayHistoryPage(&$input, &$display) {
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["command"] = "constellation_history";
+
+        $serverResponse = $this->connect->query($query);
+
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("history_page");
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData($serverResponse);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+
     /**
      * Start SNAC Session
      *

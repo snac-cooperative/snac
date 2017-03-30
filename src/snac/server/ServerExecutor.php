@@ -1375,6 +1375,28 @@ class ServerExecutor {
 
     }
 
+    public function getConstellationHistory(&$input) {
+        $this->logger->addDebug("Reading constellation history");
+        $reponse = array();
+        $constellation = null;
+
+        try {
+            // Read the constellation itself
+            $constellation = $this->readConstellationFromDatabase($input);
+            $response["constellation"] = $constellation->toArray();
+
+            // TODO: This should also change to going through objects and calling toArray()
+            $history = $this->cStore->listVersionHistory($constellation->getID(), $constellation->getVersion(), true);
+            $response["history"] = $history;
+
+            $this->logger->addDebug("Serialized constellation for output to client");
+        } catch (Exception $e) {
+            $response["error"] = $e;
+        }
+        return $response;
+
+    }
+
     /**
      * Read Constellation From Database
      *
