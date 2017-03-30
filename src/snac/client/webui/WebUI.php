@@ -93,21 +93,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $display = new display\Display();
         $display->setLanguage("english");
 
-        // Code to take the site down for maintenance
-        if (\snac\Config::$SITE_OFFLINE) {
-            $display->setTemplate("down_page");
-            array_push($this->responseHeaders, "Content-Type: text/html");
-            $this->response = $display->getDisplay();
-            return;
-        }
-        // End Code for maintenance
-
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
 
         // Create an empty list of permissions.
         $permissions = array();
-
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
@@ -119,12 +109,52 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "download",
                 "error",
                 "vocabulary",
-                "search",
                 "quicksearch",
                 "relations",
                 "explore",
                 "history"
         );
+
+        // These are read-only commands that are allowed in read-only mode
+        $readOnlyCommands = array(
+            "search",
+            "view",
+            "details",
+            "download",
+            "error",
+            "vocabulary",
+            "quicksearch",
+            "relations",
+            "explore",
+            "history"
+        );
+
+
+        // Code to take the site down for maintenance
+        if (\snac\Config::$SITE_OFFLINE) {
+            $display->setTemplate("down_page");
+            array_push($this->responseHeaders, "Content-Type: text/html");
+            $this->response = $display->getDisplay();
+            return;
+        }
+        // End Code for maintenance
+        // Code to take the site into read-only mode (destroys login session)
+        if (\snac\Config::$READ_ONLY) {
+            // Make sure there is no session to keep track of anymore
+            session_name("SNACWebUI");
+            session_start();
+            session_destroy();
+
+            // Overrule commands that are not read-only
+            if (!empty($this->input["command"]) &&
+                    !(in_array($this->input["command"], $readOnlyCommands))) {
+                $display->setTemplate("readonly_page");
+                array_push($this->responseHeaders, "Content-Type: text/html");
+                $this->response = $display->getDisplay();
+                return;
+            }
+        }
+        // End Code for maintenance
 
 
         // *****************************************
