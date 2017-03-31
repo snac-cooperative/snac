@@ -34,6 +34,11 @@ class Config {
     public static $SITE_OFFLINE = false;
 
     /**
+     * @var boolean Whether the system is in READONLY (Maintenance) mode.  This is a lighter lock than fully offline.
+     */
+    public static $READ_ONLY = false;
+
+    /**
      * @var string The interface version: "development", "demo", or "production"
      */
     public static $INTERFACE_VERSION = "production";
@@ -79,31 +84,31 @@ class Config {
      * @var string directory to write the log files. Must be / terminated.
      */
     public static $LOG_DIR = "";
-    
+
     /**
      *
      * @var string filename for the Server log
      */
     public static $SERVER_LOGFILE = "server.log";
-    
+
     /**
      *
      * @var string filename for the WebUI log
      */
     public static $WEBUI_LOGFILE = "webui.log";
-    
+
     /**
      *
      * @var string filename for the REST log
      */
     public static $REST_LOGFILE = "rest.log";
-    
+
     /**
      *
      * @var string filename for the UnitTesting log
      */
     public static $UNITTEST_LOGFILE = "unit_test.log";
-    
+
     /**
      * Whether or not the database is in testing mode. In testing mode,
      * database calls will only be logged and not committed to the database.
@@ -117,7 +122,7 @@ class Config {
      *  @var integer Default for offset in selectListByStatus() and selectEditList()
      */
     public static $SQL_OFFSET = 0;
-    
+
     /**
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
@@ -178,27 +183,27 @@ class Config {
      * @var string Elastic Search URL
      */
     public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
-    
+
     /**
      * @var string Main index for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_INDEX = "";
-    
+
     /**
      * @var string Main type for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_TYPE = "";
-    
+
     /**
      * @var string Search base for ALL of the snac name entries (and alternates)
      */
     public static $ELASTIC_SEARCH_ALL_TYPE = "";
-    
+
     /**
      * @var string Resource index for the resource search functionality of snac
      */
     public static $ELASTIC_SEARCH_RESOURCE_INDEX = "";
-    
+
     /**
      * @var string Resource type for the resource search functionality of snac
      */
@@ -213,12 +218,12 @@ class Config {
      * @var string Neo4J Bolt URL
      */
     public static $NEO4J_BOLT_URI = "bolt://user:password@localhost:7687";
-    
+
 
     /**
      * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
      */
     public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
-    
+
 
 }
