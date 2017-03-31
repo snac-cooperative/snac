@@ -1468,7 +1468,11 @@ class ServerExecutor {
 
         try {
             // Read the constellation itself
-            $constellation = $this->readConstellationFromDatabase($input);
+            $constellations = $this->readConstellationFromDatabase($input);
+            if ($constellations == null || count($constellations) > 1) {
+                throw new \snac\exceptions\SNACInputException("Constellation does not exist");
+            }
+            $constellation = $constellations[0];
             $response["constellation"] = $constellation->toArray();
 
             // TODO: This should also change to going through objects and calling toArray()
