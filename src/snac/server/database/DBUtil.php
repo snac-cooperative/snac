@@ -1898,7 +1898,7 @@ class DBUtil
         $type = null;
         $types = $this->searchVocabulary("source_type", "simple");
         if (count($types) == 1) {
-            $type = $this->populateTerm($types[0]["id"]);
+            $type = $types[0];
         }
 
         $tableName = 'source';
@@ -1979,7 +1979,7 @@ class DBUtil
             $type = null;
             $types = $this->searchVocabulary("source_type", "simple");
             if (count($types) == 1) {
-                $type = $this->populateTerm($types[0]["id"]);
+                $type = $types[0];
             }
             $newObj->setType($type);
 
@@ -2669,6 +2669,31 @@ class DBUtil
     }
 
     /**
+     * Write a Vocabulary Term
+     *
+     * Adds a new vocabulary term to the database and returns the full term with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\Term $term Vocabulary term to write
+     * @return \snac\data\Term|boolean       Term if succeeded, or false on failure
+     */
+    public function writeVocabularyTerm($term) {
+        if ($term == null || $term->getType() == null || $term->getType() == "" || $term->getTerm() == null || $term->getTerm() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\Term($term->toArray()); // deep copy
+
+        $id = $this->sql->insertVocabularyTerm($term->getType(), $term->getTerm(), $term->getURI(), $term->getDescription());
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
+    /**
      * Save Resource
      *
      * Save a resource
@@ -3197,19 +3222,19 @@ class DBUtil
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $revisedTerm = $this->populateTerm($searchResult[0]["id"]);
+        $revisedTerm = $searchResult[0];
 
         $searchResult = $this->searchVocabulary("agent_type", "human");
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $humanTerm = $this->populateTerm($searchResult[0]["id"]);
+        $humanTerm = $searchResult[0];
 
         $searchResult = $this->searchVocabulary("agent_type", "machine");
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $machineTerm = $this->populateTerm($searchResult[0]["id"]);
+        $machineTerm = $searchResult[0];
 
 
         // Fill in the Maintenance History Events
@@ -3979,20 +4004,37 @@ class DBUtil
      *
      * @return string[][] list of results
      */
-    public function searchVocabulary($type, $query, $entityTypeID=null) {
+    public function searchVocabulary($type, $query, $entityTypeID=null, $count=100) {
 
         if ($type == 'geo_place') {
             $results = $this->sql->searchPlaceVocabulary($query);
             $retVal = array();
-            foreach ($results as $res) {
-                $item = array();
-                $item["id"] = $res["id"];
-                $item["value"] = $res["name"] . " (" . $res["admin_code"] . ", " . $res["country_code"] . ")";
-                array_push($retVal, $item);
+            foreach ($results as $data) {
+                $place = new \snac\data\GeoTerm();
+                $place->setAdministrationCode($data["admin_code"]);
+                $place->setCountryCode($data["country_code"]);
+                $place->setID($data["id"]);
+                $place->setLatitude($data["latitude"]);
+                $place->setLongitude($data["longitude"]);
+                $place->setName($data["name"]);
+                $place->setURI($data["uri"]);
+
+                array_push($retVal, $place);
             }
             return $retVal;
         }
-        return $this->sql->searchVocabulary($type, $query, $entityTypeID);
+        $results = $this->sql->searchVocabulary($type, $query, $entityTypeID, $count);
+        $vocabList = array();
+        foreach ($results as $result) {
+            $term = new \snac\data\Term();
+            $term->setID($result["id"]);
+            $term->setURI($result["uri"]);
+            $term->setTerm($result["value"]);
+            $term->setType($result["type"]);
+            $term->setDescription($result["description"]);
+            array_push($vocabList, $term);
+        }
+        return $vocabList;
     }
 
     /**

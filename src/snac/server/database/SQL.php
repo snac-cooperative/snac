@@ -3344,6 +3344,32 @@ class SQL
 
 
     /**
+     * Insert a Controlled Vocabulary Term
+     *
+     * @param  String $type        Type of the term
+     * @param  String $term        Value of the Term
+     * @param  String $uri         The URI of the term
+     * @param  String $description Term description
+     * @return int|boolean              ID on success or false on failure
+     */
+    public function insertVocabularyTerm($type,
+                                   $term,
+                                   $uri,
+                                   $description)
+    {
+        $result = $this->sdb->query('insert into vocabulary (type, value, uri, description) values ($1, $2, $3, $4) returning *;',
+                                array($type, $term, $uri, $description));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+    /**
      * Get Next Resource ID
      *
      * Gets the next resource id number from the resource_id sequence
@@ -4953,7 +4979,7 @@ class SQL
      *
      * @return string[][] Returns a list of lists with keys id, value.
      */
-    public function searchVocabulary($term, $query, $entityTypeID)
+    public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
     {
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
@@ -4975,10 +5001,10 @@ class SQL
         if ($entityTypeID == null)
         {
             $queryStr =
-                      'select id,value
+                      'select id,value,type,uri,description
                       from vocabulary
-                      where type=$1 and value ilike $2 order by value asc limit 100';
-            $result = $this->sdb->query($queryStr, array($term, $likeStr));
+                      where type=$1 and value ilike $2 order by value asc limit $3';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr, $count));
         }
         else
         {

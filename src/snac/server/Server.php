@@ -126,6 +126,13 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->readVocabulary($this->input);
                 break;
 
+            // Vocabulary Updating
+            case "update_vocabulary":
+                if (!$executor->hasPermission("View Admin Dashboard"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify vocabulary.");
+                $this->response = $executor->updateVocabulary($this->input);
+                break;
+
             // Reconciliation Engine tasks
             case "reconcile":
                 $this->response = $executor->reconcileConstellation($this->input);
