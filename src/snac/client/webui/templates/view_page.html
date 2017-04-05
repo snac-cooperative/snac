@@ -734,8 +734,11 @@ body {
                                   </div>
                                   <script>
                                     var holdingsMapView = null;
+                                    var bounds = new L.LatLngBounds();
                                     function displayHoldingsMap() {
-                                        if (holdingsMapView != null) return;
+                                        if (holdingsMapView != null) {
+                                            return;
+                                        }
                                         // Add a slight delay to the map viewing so that the modal window has time to load
                                         setTimeout(function() {
                                             holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
@@ -743,11 +746,14 @@ body {
                                                 maxZoom: 19,
                                                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                             }).addTo(holdingsMapView);
+                                            var bounds = new L.LatLngBounds();
                                             {% for location in data.holdings %}
                                             {% if location.latitude and location.longitude %}
                                             var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            bounds.extend(marker.getLatLng());
                                             {% endif %}
                                             {% endfor %}
+                                            holdingsMapView.fitBounds(bounds);
                                             }, 400);
                                     }
                                     $(document).ready(function() {
