@@ -78,15 +78,13 @@ $(document).ready(function() {
         $('#searchbutton').click(function() {
             console.log($("#search_form").serialize());
             $.get("?command=vocabulary&format=term&count=1000", $("#search_form").serialize(), function (data) {
-                var results = [];
-                console.log($("#search_form").serialize());
-                console.log(data);
                 datatable.clear();
+                for (var i = 0; i < markers.length; i++) {
+                    placesMapView.removeLayer(markers[i]);
+                }
+                $("#resultCount").text("Found " + data.results.length + " results.");
                 if (data.results.length > 0) {
                     var list = "";
-                    for (var i = 0; i < markers.length; i++) {
-                        placesMapView.removeLayer(markers[i]);
-                    }
                     var bounds = new L.LatLngBounds();
                     for (var key in data.results) {
                         var result = data.results[key];
@@ -182,6 +180,7 @@ $(document).ready(function() {
             </ul>
             <div class="tab-content">
                 <div role="tabpanel" class="tab-pane active" id="mapView">
+                    <div class="text-center" id="resultCount">No points to display.</div>
                     <div class="geoplace-map" id="placesMap"></div>
                 </div>
                 <div role="tabpanel" class="tab-pane" id="listView">
