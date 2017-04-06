@@ -2078,4 +2078,15 @@ class ServerExecutor {
         }
         return array("reconciliation" => $results, "result" => 'success');
     }
+
+    public function generalReport(&$input) {
+        $reportEngine = new \snac\server\reporting\ReportingEngine();
+        $reportEngine->addReport("PublishesLastMonth");
+        $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
+
+        return array(
+            "reports" => $reportEngine->runReports(),
+            "result" => "success"
+        );
+    }
 }

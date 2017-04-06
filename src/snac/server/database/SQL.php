@@ -76,6 +76,19 @@ class SQL
         $this->enableLogging();
     }
 
+
+    /**
+     * Get the DB Connector object
+     *
+     * Utility function to return the Database connector for this SQL object.
+     *
+     * @return \snac\server\database\DatabaseConnector The database connector for this SQL object
+     */
+    public function connectorObj()
+    {
+        return $this->sdb;
+    }
+
     /**
      * Enable logging
      *

@@ -723,6 +723,19 @@ class WebUIExecutor {
             case "reassign_constellation":
                 return $this->reassignConstellation($input);
                 break;
+
+
+
+            case "report":
+                $ask = array("command"=>"report_general"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_general_page");
+                break;
+
             default:
                 $this->displayPermissionDeniedPage("Administrator", $display);
         }
