@@ -2081,6 +2081,7 @@ class ServerExecutor {
 
     public function generalReport(&$input) {
         $reportEngine = new \snac\server\reporting\ReportingEngine();
+        $reportEngine->addReport("NumConstellations");
         $reportEngine->addReport("PublishesLastMonth");
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
 
