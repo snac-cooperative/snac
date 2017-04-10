@@ -4027,11 +4027,16 @@ class DBUtil
         $vocabList = array();
         foreach ($results as $result) {
             $term = new \snac\data\Term();
-            $term->setID($result["id"]);
-            $term->setURI($result["uri"]);
-            $term->setTerm($result["value"]);
-            $term->setType($result["type"]);
-            $term->setDescription($result["description"]);
+            if (isset($result["id"]))
+                $term->setID($result["id"]);
+            if (isset($result["uri"]))
+                $term->setURI($result["uri"]);
+            if (isset($result["value"]))
+                $term->setTerm($result["value"]);
+            if (isset($result["type"]))
+                $term->setType($result["type"]);
+            if (isset($result["description"]))
+                $term->setDescription($result["description"]);
             array_push($vocabList, $term);
         }
         return $vocabList;

@@ -1819,6 +1819,9 @@ class WebUIExecutor {
                 // Send the query to the server
                 $serverResponse = $this->connect->query($request);
 
+                if (!isset($serverResponse["results"]))
+                    return $serverResponse;
+
                 if (isset($input["format"]) && $input["format"] == "term") {
                     // keep the results as normal Term elements
                 } else {
@@ -1853,7 +1856,7 @@ class WebUIExecutor {
                 return $serverResponse;
             }
         }
-
+       
         return array ();
     }
 
