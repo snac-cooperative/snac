@@ -57,6 +57,7 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
      */
     public function __construct()
     {
+        parent::__construct(); // Must call the parent constructor
         $this->dbu = new \snac\server\database\DBUtil();
         $dbuser = new \snac\server\database\DBUser();
         /*
