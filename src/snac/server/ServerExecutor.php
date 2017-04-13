@@ -536,12 +536,23 @@ class ServerExecutor {
     public function updateVocabulary(&$input) {
         $response = array();
         $success = false;
+        $term = null;
 
-        $term = new \snac\data\Term($input["term"]);
+        if (isset($input["type"]) && $input["type"] == "geo_term") {
+            $term = new \snac\data\GeoTerm($input["term"]);
+        } else {
+            $term = new \snac\data\Term($input["term"]);
+        }
 
         if ($term->getID() == null || $term->getID() == "") {
             // We are doing an insert
-            $writtenTerm = $this->cStore->writeVocabularyTerm($term);
+            $writtenTerm = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $writtenTerm = $this->cStore->writeGeoTerm($term);
+            } else {
+                $writtenTerm = $this->cStore->writeVocabularyTerm($term);
+            }
+
             if ($writtenTerm) {
                 $success = true;
                 $response["term"] = $writtenTerm->toArray();
@@ -550,7 +561,12 @@ class ServerExecutor {
             }
         } else {
             // Get the one out of the database
-            $current = $this->cStore->populateTerm($term->getID());
+            $current = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $current = $this->cStore->buildGeoTerm($term->getID());
+            } else {
+                $current = $this->cStore->populateTerm($term->getID());
+            }
 
             if ($current->getType() == $term->getType() && $term->getTerm() != null && $term->getTerm() != "") {
                 // The term didn't change type and does not have an empty term field, so update

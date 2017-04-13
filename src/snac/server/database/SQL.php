@@ -3369,6 +3369,36 @@ class SQL
         return false;
     }
 
+
+    /**
+     * Insert Controlled GeoTerm
+     * @param  string $name        Name of the place
+     * @param  string $uri         URI for the vocab term
+     * @param  string $latitude    Latitude
+     * @param  string $longitude   Longitude
+     * @param  string $adminCode   Administration Code (state)
+     * @param  string $countryCode Country Code
+     * @return int|bool              ID on success, false on failure
+     */
+    public function insertGeoTerm($name,
+                                   $uri,
+                                   $latitude,
+                                   $longitude,
+                                   $adminCode,
+                                   $countryCode)
+    {
+        $result = $this->sdb->query('insert into geo_place (name, uri, latitude, longitude, admin_code, country_code) values ($1, $2, $3, $4, $5, $6) returning *;',
+                                array($name, $uri, $latitude, $longitude, $adminCode, $countryCode));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
     /**
      * Get Next Resource ID
      *

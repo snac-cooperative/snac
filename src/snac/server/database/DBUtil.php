@@ -2693,6 +2693,38 @@ class DBUtil
         return $written;
     }
 
+
+    /**
+     * Write a Geo Term
+     *
+     * Adds a new geo term to the database and returns the full geoterm with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\GeoTerm $term Geoterm to write
+     * @return \snac\data\GeoTerm|boolean       GeoTerm if succeeded, or false on failure
+     */
+    public function writeGeoTerm($term) {
+        if ($term == null || $term->getName() == null || $term->getName() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\GeoTerm($term->toArray()); // deep copy
+
+        $id = $this->sql->insertGeoTerm( $term->getName(),
+                                            $term->getURI(),
+                                            $term->getLatitude(),
+                                            $term->getLongitude(),
+                                            $term->getAdministrationCode(),
+                                            $term->getCountryCode()
+                                        );
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
     /**
      * Save Resource
      *

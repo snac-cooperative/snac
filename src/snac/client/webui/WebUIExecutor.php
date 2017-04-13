@@ -769,6 +769,16 @@ class WebUIExecutor {
             case "add_term_post":
                 return $this->saveVocabularyTerm($input, $user);
                 break;
+            case "add_geoterm":
+                $display->setData(array(
+                    "title"=> "Add New Geopgraphic Vocabulary Term"
+                ));
+                $display->setTemplate("vocab_edit_geoterm");
+                break;
+            case "add_geoterm_post":
+                // maybe reuse the same save function?
+                return $this->saveVocabularyTerm($input, $user);
+                break;
             case "dashboard":
                 if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
                     $display->setTemplate("vocab_dashboard");
@@ -1856,7 +1866,7 @@ class WebUIExecutor {
                 return $serverResponse;
             }
         }
-       
+
         return array ();
     }
 
@@ -1874,12 +1884,29 @@ class WebUIExecutor {
         // Build a data structure to send to the server
         $request = array("command"=>"update_vocabulary");
 
-        $term = new \snac\data\Term();
-        $term->setType($input["type"]);
-        $term->setID($input["id"]);
-        $term->setURI($input["uri"]);
-        $term->setDescription($input["description"]);
-        $term->setTerm($input["term"]);
+        $term = null;
+
+        if ($input["type"] === "geo_term") {
+            // Geographic Term
+            $term = new \snac\data\GeoTerm();
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setName($input["name"]);
+            $term->setAdministrationCode($input["administrationCode"]);
+            $term->setCountryCode($input["countryCode"]);
+            $term->setLatitude($input["latitude"]);
+            $term->setLongitude($input["longitude"]);
+            $request["type"] = "geo_term";
+        } else {
+            // Standard Term object
+            $term = new \snac\data\Term();
+            $term->setType($input["type"]);
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setDescription($input["description"]);
+            $term->setTerm($input["term"]);
+            $request["type"] = "term";
+        }
 
         $request["term"] = $term->toArray();
 

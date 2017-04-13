@@ -61,6 +61,47 @@ $(document).ready(function() {
         });
     }
 
+    if($('#save_new_geovocab').exists()) {
+        $('#save_new_geovocab').click(function(){
+
+            // Open up the warning alert box and note that we are saving
+            $('#notification-message').html("<p>Saving Geographic Vocabulary Term... Please wait.</p>");
+            $('#notification-message').slideDown();
+
+
+            // Send the data back by AJAX call
+            $.post("?command=vocab_administrator&subcommand=add_geoterm_post", $("#new_term_form").serialize(), function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.result == "success") {
+                    // No longer in editing, save succeeded
+                    somethingHasBeenEdited = false;
+
+                    $('#notification-message').slideUp();
+
+                    console.log(data);
+
+                    $('#success-message').html("<p>Geographic vocabulary term successfully saved. Going to geoterm search.</p>");
+                    setTimeout(function(){
+                        $('#success-message').slideDown();
+                    }, 500);
+                    setTimeout(function(){
+
+                        // Go to dashboard
+                        window.location.href = "?command=vocab_administrator&subcommand=geosearch";
+
+                    }, 1500);
+
+                } else {
+                    $('#notification-message').slideUp();
+                    // Something went wrong in the ajax call. Show an error and don't go anywhere.
+                    displayErrorMessage(data.error,data);
+                }
+            });
+
+            return false;
+        });
+    }
+
     /**
      * The following apply to multiple pages
      */
