@@ -26,157 +26,126 @@ $log = new StreamHandler(\snac\Config::$LOG_DIR . \snac\Config::$SERVER_LOGFILE,
 // SNAC Postgres DB Connector
 $db = new \snac\server\database\DatabaseConnector();
 
-// SNAC Wiki Util
-$wikiUtil = new \snac\server\util\WikipediaUtil();
-
-// ElasticSearch Handler
-$eSearch = null;
-
 $primaryCount = 0;
-$secondaryCount = 0;
 $primaryStart = false;
-$secondaryStart = false;
 $primaryBody = array();
-$secondaryBody = array();
-if (\snac\Config::$USE_ELASTIC_SEARCH) {
-    $eSearch = Elasticsearch\ClientBuilder::create()
-        ->setHosts([\snac\Config::$ELASTIC_SEARCH_URI])
-        ->setRetries(0)
-        ->build();
 
-    echo "Trying to delete the Elastic Search Index: " . \snac\Config::$ELASTIC_SEARCH_BASE_INDEX . "\n";
-    try {
-        $params = array("index" => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX);
-        $response = $eSearch->indices()->delete($params);
-        echo "   - deleted search index\n";
-    } catch (\Exception $e) {
-        echo "   - could not delete search index. It did not exist.\n";
-    }
+$counts = array();
 
-    $counts = array();
+echo "Querying the relation degrees from the database.\n";
 
-    echo "Querying the relation degrees from the database.\n";
+$allRelCount = $db->query("select a.ic_id, count(*) as degree from
+            (select r.id, r.ic_id from
+                related_identity r,
+                (select distinct id, max(version) as version from related_identity group by id) a
+                where a.id = r.id and a.version = r.version and not r.is_deleted) a
+                group by ic_id", array());
+while($c = $db->fetchrow($allRelCount))
+{
+    $counts[$c["ic_id"]] = array();
+    $counts[$c["ic_id"]]["degree"] = $c["degree"];
+}
 
-    $allRelCount = $db->query("select a.ic_id, count(*) as degree from
-                (select r.id, r.ic_id from
-                    related_identity r,
-                    (select distinct id, max(version) as version from related_identity group by id) a
-                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
-                    group by ic_id", array());
-    while($c = $db->fetchrow($allRelCount))
-    {
-        $counts[$c["ic_id"]] = array();
-        $counts[$c["ic_id"]]["degree"] = $c["degree"];
-    }
+echo "Querying the resource relation degrees from the database.\n";
 
-    echo "Querying the resource relation degrees from the database.\n";
-
-    $allRelCount = $db->query("select a.ic_id, count(*) as degree from
-                (select r.id, r.ic_id from
-                    related_resource r,
-                    (select distinct id, max(version) as version from related_resource group by id) a
-                    where a.id = r.id and a.version = r.version and not r.is_deleted) a
-                    group by ic_id", array());
-    while($c = $db->fetchrow($allRelCount))
-    {
-        $counts[$c["ic_id"]]["resources"] = $c["degree"];
-    }
-
-
-    $wikiURLs = array();
-
-    echo "Querying wikipedia URLs from the database.\n";
-
-    $wikiQuery = $db->query("select distinct ic_id, uri from
-                otherid where uri ilike '%wikipedia%'", array());
-    while($w = $db->fetchrow($wikiQuery))
-    {
-        $wikiURLs[$w["ic_id"]] = $w["uri"];
-    }
-
-
-    $previousICID = -1;
-
-
-    echo "Querying the names from the database.\n";
-
-    $allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score, one.entity_type from
-        (select
-            aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
-        from
-            name as aa,
-            (select name.id,max(name.version) as version from name
-                left join (select v.id as ic_id, v.version, nrd.ark_id
-                        from version_history v
-                        left join (select bb.id, max(bb.version) as version from
-                        (select id, version from version_history where status in ('published', 'deleted')) bb
-                        group by id order by id asc) mv
-                        on v.id = mv.id and v.version = mv.version
-                        left join nrd on v.id = nrd.ic_id
-                        where
-                        v.status = 'published'
-                        order by v.id asc, v.version desc) vh
-                    on name.version<=vh.version and
-                    name.ic_id=vh.ic_id
-                group by name.id) as bb
-        where
-            aa.id = bb.id and
-            not aa.is_deleted and
-            aa.version = bb.version
-        order by ic_id asc, preference_score desc, id asc) two,
-        (select v.id as ic_id, v.version, n.ark_id, etv.value as entity_type
-        from
-            version_history v,
-            (select bb.id, max(bb.version) as version from
-                (select id, version from version_history where status in ('published', 'deleted')) bb
-                group by id order by id asc) mv,
-            vocabulary etv,
-            nrd n
-        where
-            v.id = mv.id and
-            v.version = mv.version and
-            v.status = 'published' and
-            v.id = n.ic_id and
-            n.ark_id is not null and
-            n.entity_type = etv.id) one
-    where
-        two.ic_id = one.ic_id
-    order by
-        one.ic_id asc, two.preference_score desc, two.id asc;", array());
-
-
-    echo "Updating the Elastic Search indices. This may take a while...\n";
-    while($name = $db->fetchrow($allNames))
-    {
-        // The data is ordered by ic_id and then preference score.  We will currently say the preferred name
-        // is the one with the highest preference score for each ic_id.  So, if we haven't ever seen this ic_id
-        // before, this is the preferred name entry for this ic.
-        if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["degree"])) {
-            $name["degree"] = (int) $counts[$name["ic_id"]]["degree"];
-        } else {
-            $name["degree"] = 0;
-        }
-        if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["resources"])) {
-            $name["resources"] = (int) $counts[$name["ic_id"]]["resources"];
-        } else {
-            $name["resources"] = 0;
-        }
-
-        if ($previousICID != $name["ic_id"]) {
-            indexMain($name["original"], $name["ark_id"], (int) $name["ic_id"], $name["entity_type"], $name["degree"], $name["resources"]);
-        }
-        $previousICID = $name["ic_id"];
-    }
-
-
-    echo "Done\n";
-} else {
-    echo "This version of SNAC does not currently use Elastic Search.  Please check your configuration file.\n";
+$allRelCount = $db->query("select a.ic_id, count(*) as degree from
+            (select r.id, r.ic_id from
+                related_resource r,
+                (select distinct id, max(version) as version from related_resource group by id) a
+                where a.id = r.id and a.version = r.version and not r.is_deleted) a
+                group by ic_id", array());
+while($c = $db->fetchrow($allRelCount))
+{
+    $counts[$c["ic_id"]]["resources"] = $c["degree"];
 }
 
 
+$previousICID = -1;
+
+
+echo "Querying the names from the database.\n";
+
+$allNames = $db->query("select one.ic_id, one.version, one.ark_id, two.id as name_id, two.original, two.preference_score, one.entity_type from
+    (select
+        aa.is_deleted,aa.id,aa.version, aa.ic_id, aa.original, aa.preference_score
+    from
+        name as aa,
+        (select name.id,max(name.version) as version from name
+            left join (select v.id as ic_id, v.version, nrd.ark_id
+                    from version_history v
+                    left join (select bb.id, max(bb.version) as version from
+                    (select id, version from version_history where status in ('published', 'deleted')) bb
+                    group by id order by id asc) mv
+                    on v.id = mv.id and v.version = mv.version
+                    left join nrd on v.id = nrd.ic_id
+                    where
+                    v.status = 'published'
+                    order by v.id asc, v.version desc) vh
+                on name.version<=vh.version and
+                name.ic_id=vh.ic_id
+            group by name.id) as bb
+    where
+        aa.id = bb.id and
+        not aa.is_deleted and
+        aa.version = bb.version
+    order by ic_id asc, preference_score desc, id asc) two,
+    (select v.id as ic_id, v.version, n.ark_id, etv.value as entity_type
+    from
+        version_history v,
+        (select bb.id, max(bb.version) as version from
+            (select id, version from version_history where status in ('published', 'deleted')) bb
+            group by id order by id asc) mv,
+        vocabulary etv,
+        nrd n
+    where
+        v.id = mv.id and
+        v.version = mv.version and
+        v.status = 'published' and
+        v.id = n.ic_id and
+        n.ark_id is not null and
+        n.entity_type = etv.id) one
+where
+    two.ic_id = one.ic_id
+order by
+    one.ic_id asc, two.preference_score desc, two.id asc;", array());
+
+
+
+$db->prepare("insert_index", "insert into name_index (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources) values
+                ($1, $2, $3, $4, lower($4), $5, $6);");
+
+echo "Updating the Postgres name indices. This may take a while...\n";
+while($name = $db->fetchrow($allNames))
+{
+    // The data is ordered by ic_id and then preference score.  We will currently say the preferred name
+    // is the one with the highest preference score for each ic_id.  So, if we haven't ever seen this ic_id
+    // before, this is the preferred name entry for this ic.
+    if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["degree"])) {
+        $name["degree"] = (int) $counts[$name["ic_id"]]["degree"];
+    } else {
+        $name["degree"] = 0;
+    }
+    if (isset($counts[$name["ic_id"]]) && isset($counts[$name["ic_id"]]["resources"])) {
+        $name["resources"] = (int) $counts[$name["ic_id"]]["resources"];
+    } else {
+        $name["resources"] = 0;
+    }
+
+    if ($previousICID != $name["ic_id"]) {
+        indexMain($name["original"], $name["ark_id"], (int) $name["ic_id"], $name["entity_type"], $name["degree"], $name["resources"]);
+    }
+    $previousICID = $name["ic_id"];
+}
+
+
+echo "Done\n";
+
+
 function indexMain($nameText, $ark, $icid, $entityType, $degree, $resources) {
+    global $db;
     // Insert into the Postgres Index
+
+    $db->execute("insert_index", array($icid, $ark, $entityType, $nameText, $degree, $resources));
 }
 
 
