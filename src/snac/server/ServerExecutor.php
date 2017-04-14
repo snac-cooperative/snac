@@ -2187,7 +2187,7 @@ class ServerExecutor {
         $tmp = $this->cStore->searchVocabulary("relation_type", "mayBeSameAs");
         $maybeSameType = new \snac\data\Term();
         if (isset($tmp[0])) {
-            $maybeSameType = $this->cStore->populateTerm($tmp[0]["id"]);
+            $maybeSameType = $tmp[0];
         } else {
             $maybeSameType->setType("relation_type");
             $maybeSameType->setTerm("mayBeSameAs");
