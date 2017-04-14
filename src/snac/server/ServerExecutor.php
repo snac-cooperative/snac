@@ -1962,6 +1962,29 @@ class ServerExecutor {
         return $response;
     }
 
+    public function browseConstellations(&$input) {
+        $response = array();
+
+        $term = "";
+        $position = "after";
+        if (isset($input["term"]) && $input["term"] != "") {
+            $term = $input["term"];
+            // only update the position if the term is not null
+            if (isset($input["position"]) && ($input["position"] == "middle" || $input["position"] == "before"))
+                $position = $input["position"];
+        }
+        $entityType = null;
+        if (isset($input["entityType"]))
+            $entitytype = $input["entityType"];
+
+        $results = $this->cStore->browseNameIndex($term, $position, $entityType);
+
+        $response["results"] = $results;
+        $response["result"] = "success";
+
+        return $response;
+    }
+    
     /**
      * Search For Constellation
      *

@@ -5049,6 +5049,27 @@ class SQL
         return $all;
     }
 
+    public function browseNameIndex($query, $position, $entityType)
+    {
+        
+        $queryStr =
+            "select * from (select * from name_index where name_entry_lower >= lower($1) order by name_entry_lower asc limit 20) a union all (select * from name_index where name_entry_lower < lower($1) order by name_entry_lower desc limit 20) order by name_entry asc;";
+
+        if ($position == "after")
+            $queryStr = "select * from (select * from name_index where name_entry_lower >= lower($1) order by name_entry_lower asc limit 40) a order by name_entry asc;";
+        if ($position == "before")
+            $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) order by name_entry_lower desc limit 40) a order by name_entry asc;";
+
+        $result = $this->sdb->query($queryStr, array($query));
+
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+    
     /**
      * Temporary function to brute force order name components.
      *

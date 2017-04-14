@@ -199,6 +199,44 @@ class WebUIExecutor {
         $this->logger->addDebug("Received server response");
         return $serverResponse;
     }
+    
+    /**
+     * Display Browse Page
+     *
+     * Loads the browse page into the display.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayBrowsePage(&$display) {
+        $display->setTemplate("browse_page");
+    }
+
+    public function performBrowseSearch(&$input) {
+        $term = "";
+        $position = "middle";
+        $entity_type = "";
+
+        if (isset($input["entity_type"]))
+            $entity_type = $input["entity_type"];
+        if (isset($input["position"]))
+            $position = $input["position"];
+        if (isset($input["term"]))
+            $term = $input["term"];
+
+        $query = array(
+            "command" => "browse",
+            "term" => $term,
+            "entity_type" => $entity_type,
+            "position" => $position
+        );
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query($query);
+
+        return $serverResponse;
+
+    }
+
 
     /**
     * Display Search Page

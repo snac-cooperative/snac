@@ -3964,6 +3964,11 @@ class DBUtil
         return $return;
 
     }
+    
+    public function browseNameIndex($query, $position, $entityType=null) {
+
+        return $this->sql->browseNameIndex($query, $position, $entityType);
+    }
 
     /**
      * Search Vocabulary
