@@ -5049,18 +5049,51 @@ class SQL
         return $all;
     }
 
-    public function browseNameIndex($query, $position, $entityType)
+    public function browseNameIndex($query, $position, $entityType, $icid)
     {
-        
-        $queryStr =
-            "select * from (select * from name_index where name_entry_lower >= lower($1) order by name_entry_lower asc limit 20) a union all (select * from name_index where name_entry_lower < lower($1) order by name_entry_lower desc limit 20) order by name_entry asc;";
+        $entityQuery = "";
+        if ($entityType != null && $entityType != "") {
+            // Do this for safety concerns with SQL injections...
+            switch ($entityType) {
+                case "person":
+                    $entityQuery = "and entity_type = 'person'";
+                    break;
+                case "corporateBody":
+                    $entityQuery = "and entity_type = 'corporateBody'";
+                    break;
+                case "family":
+                    $entityQuery = "and entity_type = 'family'";
+                    break;
+            }
+        }
 
-        if ($position == "after")
-            $queryStr = "select * from (select * from name_index where name_entry_lower >= lower($1) order by name_entry_lower asc limit 40) a order by name_entry asc;";
-        if ($position == "before")
-            $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) order by name_entry_lower desc limit 40) a order by name_entry asc;";
+        $icidQuery = "";
+        if ($icid != 0) {
 
-        $result = $this->sdb->query($queryStr, array($query));
+        }
+
+        $result = null;
+
+        if ($position == "after") {
+            $queryStr = "select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id >= $2) $entityQuery order by name_entry_lower, ic_id asc limit 20) a union all (select * from name_index where name_entry_lower > lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $result = $this->sdb->query($queryStr, array($query, $icid));
+        } else if ($position == "before") {
+            if ($icid !== 0) {
+                // query using the ICID as well
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id <= $2) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $result = $this->sdb->query($queryStr, array($query, $icid));
+            } else {
+                // query without the ICID, since it is meaningless
+                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry, ic_id asc;";
+                $result = $this->sdb->query($queryStr, array($query));
+            }
+        } else {
+            $queryStr =
+                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry, ic_id asc;";
+
+            $result = $this->sdb->query($queryStr, array($query));
+        }
+
 
         $all = array();
         while($row = $this->sdb->fetchrow($result))
@@ -5069,7 +5102,7 @@ class SQL
         }
         return $all;
     }
-    
+
     /**
      * Temporary function to brute force order name components.
      *

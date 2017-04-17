@@ -3964,10 +3964,10 @@ class DBUtil
         return $return;
 
     }
-    
-    public function browseNameIndex($query, $position, $entityType=null) {
 
-        return $this->sql->browseNameIndex($query, $position, $entityType);
+    public function browseNameIndex($query, $position, $entityType=null, $icid=0) {
+
+        return $this->sql->browseNameIndex($query, $position, $entityType, $icid);
     }
 
     /**

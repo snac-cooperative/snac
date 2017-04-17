@@ -1974,17 +1974,20 @@ class ServerExecutor {
                 $position = $input["position"];
         }
         $entityType = null;
-        if (isset($input["entityType"]))
-            $entitytype = $input["entityType"];
+        if (isset($input["entity_type"]))
+            $entityType = $input["entity_type"];
+        $icid = 0;
+        if (isset($input["icid"]))
+            $icid = $input["icid"];
 
-        $results = $this->cStore->browseNameIndex($term, $position, $entityType);
+        $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
 
         $response["results"] = $results;
         $response["result"] = "success";
 
         return $response;
     }
-    
+
     /**
      * Search For Constellation
      *

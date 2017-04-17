@@ -112,7 +112,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "quicksearch",
                 "relations",
                 "explore",
-                "history"
+                "history",
+                "browse","browse_data"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -468,7 +469,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "browse_data":
                 $response = $executor->performBrowseSearch($this->input);
                 break;
-                
+
             // Error command
             case "error":
                 $error = array("error" => array(

@@ -199,7 +199,7 @@ class WebUIExecutor {
         $this->logger->addDebug("Received server response");
         return $serverResponse;
     }
-    
+
     /**
      * Display Browse Page
      *
@@ -214,20 +214,24 @@ class WebUIExecutor {
     public function performBrowseSearch(&$input) {
         $term = "";
         $position = "middle";
-        $entity_type = "";
+        $entityType = "";
+        $icid = 0;
 
         if (isset($input["entity_type"]))
-            $entity_type = $input["entity_type"];
+            $entityType = $input["entity_type"];
         if (isset($input["position"]))
             $position = $input["position"];
         if (isset($input["term"]))
             $term = $input["term"];
+        if (isset($input["ic_id"]))
+            $icid = $input["ic_id"];
 
         $query = array(
             "command" => "browse",
             "term" => $term,
-            "entity_type" => $entity_type,
-            "position" => $position
+            "entity_type" => $entityType,
+            "position" => $position,
+            "icid" => $icid
         );
 
         // Query the server for the elastic search results
