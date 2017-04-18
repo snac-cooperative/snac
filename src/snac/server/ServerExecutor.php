@@ -1248,7 +1248,14 @@ class ServerExecutor {
             DBUtil::$READ_RELATIONS |
             DBUtil::$READ_RESOURCE_RELATIONS);
 
+        // Update the Elastic Search Indices
         $this->elasticSearch->writeToNameIndices($published);
+
+        // Update the Postgres Indices
+        $this->cStore->updateNameIndex($published);
+
+        // Update the Neo4J Indices
+        // TODO
     }
 
     /**
@@ -1305,8 +1312,14 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
 
-
+                    // Delete from Elastic Search Indices
                     $this->elasticSearch->deleteFromNameIndices($constellation);
+
+                    // Delete from Postgres Indices
+                    $this->cStore->deleteFromNameIndex($constellation);
+                    
+                    // Delete from Neo4J Indices
+                    // TODO
 
                 } else {
                     $this->logger->addDebug("could not delete the constellation");

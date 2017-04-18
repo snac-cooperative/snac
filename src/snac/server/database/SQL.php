@@ -5049,6 +5049,18 @@ class SQL
         return $all;
     }
 
+    /**
+     * Browse Name Index
+     *
+     * This function contains the SQL code required to browse through the name index in postgres
+     * in (mostly) alphabetical order.
+     *
+     * @param string $query The string to search for
+     * @param string $position The position of the search term in the results: before, middle, after
+     * @param string $entityType The string representation of entity type: person, corporateBody, family
+     * @param int    $icid The identity constellation ID to break ties on sorting (or 0 if ignored)
+     * @return string[] List of name index results in raw format
+     */
     public function browseNameIndex($query, $position, $entityType, $icid)
     {
         $entityQuery = "";
@@ -5067,20 +5079,15 @@ class SQL
             }
         }
 
-        $icidQuery = "";
-        if ($icid != 0) {
-
-        }
-
         $result = null;
 
         if ($position == "after") {
-            $queryStr = "select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id >= $2) $entityQuery order by name_entry_lower, ic_id asc limit 20) a union all (select * from name_index where name_entry_lower > lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $queryStr = "select * from (select * from name_index where (name_entry = $1 and ic_id >= $2) $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) a union all (select * from name_index where name_entry > $1 $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
             $result = $this->sdb->query($queryStr, array($query, $icid));
         } else if ($position == "before") {
             if ($icid !== 0) {
                 // query using the ICID as well
-                $queryStr = "select * from (select * from (select * from name_index where (name_entry_lower = lower($1) and ic_id <= $2) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry = $1 and ic_id <= $2) $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) a union all (select * from name_index where name_entry < $1 $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
                 $result = $this->sdb->query($queryStr, array($query, $icid));
             } else {
                 // query without the ICID, since it is meaningless
@@ -5096,12 +5103,88 @@ class SQL
 
 
         $all = array();
-        while($row = $this->sdb->fetchrow($result))
+        while($row = $this->sdb->fetchRow($result))
         {
             array_push($all, $row);
         }
         return $all;
     }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param string $nameEntry The name entry to include in the index
+     * @param int $icid The ICID for this constellation
+     * @param string $ark The ARK ID for this constellation
+     * @param string $entityType The string representation of the entity type
+     * @param int $degree The degree of the constellation (number of out-edges to other constellations in snac)
+     * @param int $resources The number of resource relations for the constellation
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex($nameEntry, $icid, $ark, $entityType, $degree, $resources) {
+        // First query to see if the name is already in the index.  If so, then do an update.  Else, this is an insert.
+        $resultTest = $this->sdb->query("select * from name_index where ic_id = $1;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($resultTest))
+        {
+            array_push($check, $row);
+        }
+
+        if (empty($check)) {
+            // Doing an insert, since nothing found
+            $result = $this->sdb->query("insert into name_index 
+                                            (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
+                                            ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        } else {
+            // Doing an update, since ic_id was found
+            $result = $this->sdb->query("update name_index set 
+                                            (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
+                                            ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        }
+        return false;
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param int $icid The ICID of the constellation to remove
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex($icid) {
+        $result = $this->sdb->query("delete from name_index where ic_id = $1 returning *;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($check, $row);
+        }
+
+        if (!empty($check)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Temporary function to brute force order name components.
