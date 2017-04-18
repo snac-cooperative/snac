@@ -448,14 +448,15 @@ class ServerExecutor {
      */
     public function endSession() {
         $response = array();
-
         if ($this->user != null) {
+            $this->logger->addDebug("Ending Session for user", $this->user->toArray());
             $this->uStore->removeSession($this->user);
             $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
         }
+        $this->logger->addDebug("User Session ended");
 
         return $response;
     }
@@ -2080,14 +2081,23 @@ class ServerExecutor {
     }
 
     public function generalReport(&$input) {
+        $report = $this->cStore->readReport("General Report");
+
+        return array("result" => "success", 
+                     "reports" => json_decode($report["report"], true),
+                     "timestamp" => $report["timestamp"]);
+    }
+
+    public function generateGeneralReport(&$input) {
         $reportEngine = new \snac\server\reporting\ReportingEngine();
-        $reportEngine->addReport("NumConstellations");
+        //$reportEngine->addReport("NumConstellations");
         $reportEngine->addReport("PublishesLastMonth");
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
 
-        return array(
-            "reports" => $reportEngine->runReports(),
-            "result" => "success"
-        );
+        $report = json_encode($reportEngine->runReports(), JSON_PRETTY_PRINT);
+
+        $this->cStore->storeReport("General Report", $report, $this->user);
+
+        return array("result" => "success");
     }
 }

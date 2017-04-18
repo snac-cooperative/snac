@@ -71,7 +71,7 @@ body {
 
 
 <div class="container snac" role="main">
-    <h1>Administrator: Report</h1>
+    <h1>Administrator: General Report</h1>
 
     <ol class="breadcrumb">
         <li><a href="?command=administrator&subcommand=dashboard">Administrator</a></li>
@@ -107,6 +107,7 @@ body {
                     </div>
                 </div>
             {% endfor %}
+            <p>Report last generated {{data.timestamp|date('Y-m-d h:i:sa')}}.</p>
 
         </div>
     </div>

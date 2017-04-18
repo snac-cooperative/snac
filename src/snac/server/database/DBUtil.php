@@ -4259,4 +4259,18 @@ class DBUtil
         return $newVersion;
     }
 
+    public function storeReport($reportName, $report, $user) {
+        $userid = $user->getUserID();
+        $affiliationid = null;
+        if ($user->getAffiliation())
+            $affiliationid = $user->getAffiliation()->getID();
+
+        $this->sql->insertReport($reportName, $report, $userid, $affiliationid);
+    }
+
+    public function readReport($reportName, $timestamp = null) {
+        $reportData = $this->sql->selectReportByTime($reportName, $timestamp);
+
+        return $reportData;
+    }
 }

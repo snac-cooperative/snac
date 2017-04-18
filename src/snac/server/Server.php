@@ -138,6 +138,7 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "end_session":
                 $this->response = $executor->endSession();
+                break;
 
             // User Management
             case "user_information":
@@ -298,6 +299,10 @@ class Server implements \snac\interfaces\ServerInterface {
             case "report_general":
                 $this->response = $executor->generalReport($this->input);
                 break;
+            case "report_general_generate":
+                $this->response = $executor->generateGeneralReport($this->input);
+                break;
+
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);

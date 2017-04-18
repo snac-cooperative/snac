@@ -5472,4 +5472,25 @@ class SQL
         }
         return $all;
     }
+
+    public function insertReport($name, $report, $userid, $affiliationid) {
+        $this->sdb->query('insert into reports (name, report, user_id, affiliation_id) values
+                            ($1, $2, $3, $4)', array($name, $report, $userid, $affiliationid));
+    }
+
+    public function selectReportByTime($name, $timestamp = null) {
+        $result = null;
+        if ($timestamp == null) {
+            $result = $this->sdb->query("select * from reports where name = $1 order by timestamp desc limit 1",
+                                        array($name));
+        } else {
+            $result = $this->sdb->query("select * from reports where name = $1 and timestamp = $2",
+                                        array($name, $timestamp));
+        }
+
+        if (!$result)
+            return false;
+
+        return $this->sdb->fetchrow($result);
+    }
 }
