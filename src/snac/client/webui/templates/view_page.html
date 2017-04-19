@@ -628,8 +628,20 @@ body {
                                 <a class="list-group-item list-group-item-info"
                                    href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 {% else %}
-                                <a class="list-group-item list-group-item-danger disabled"
-                                   href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#">
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            <div class="list-group" style="margin-bottom: 0px;">
+                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                           </div>
                           {% endif %}
