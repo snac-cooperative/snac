@@ -248,6 +248,10 @@ class WebUIExecutor {
 
                 $display->setTemplate("view_page");
                 $constellation = $serverResponse["constellation"];
+                $editingUser = null;
+                if (isset($serverResponse["editing_user"]))
+                    $editingUser = $serverResponse["editing_user"];
+
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
@@ -287,7 +291,8 @@ class WebUIExecutor {
                     array(
                         "preview"=> (isset($input["preview"])) ? true : false,
                         "message" => $message,
-                        "holdings" => $holdings)
+                        "holdings" => $holdings,
+                        "editingUser" => $editingUser)
                     )
                 );
             } else {
