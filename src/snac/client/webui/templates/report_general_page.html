@@ -103,6 +103,29 @@ body {
                                     y: y }], {
                                     margin: { t: 0 } } );
                             </script>
+                        {% elseif report.type == "numerical" %}
+                            <div id="report{{i}}">
+                                <h3 class="text-center">{{report.result.value|number_format}}</h3>
+                            </div>
+                        {% elseif report.type == "list" %}
+                            <div id="report{{i}}">
+                                <div class="form-horizontal">
+                                {% for x,y in report.result %}
+                                    <div class="form-group">
+                                        <label class="control-label col-xs-6">{{x}}</label>
+                                        <div class="col-xs-6">
+                                            <p class="form-control-static">
+                                            {% if y matches '/^\\d+$/' %}
+                                                {{y|number_format}}
+                                            {% else %}
+                                                {{y}}
+                                            {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                </div>
+                            </div>
                         {% endif %}
                     </div>
                 </div>
