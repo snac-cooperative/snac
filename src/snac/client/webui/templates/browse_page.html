@@ -146,7 +146,7 @@ $(document).ready(function() {
                                 <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
                             </select>
     						<input type="text" class="form-control" style="width: 82%;"
-    							placeholder="Search for..." id="searchbox" name="term" value="">
+    							placeholder="Browse to..." id="searchbox" name="term" value="">
     							<span class="input-group-btn">
     							     <button class="btn btn-default" id="searchbutton">Search</button>
     						    </span>
@@ -170,12 +170,12 @@ $(document).ready(function() {
                     </tbody>
                 </table>
             </div>
-            <div class="row">
+            <div class="row" style="margin-top: 5px;">
                 <div class="col-sm-6">
-                    <button class="btn btn-default" id="prevbutton">Previous</button>
+                    <button class="btn btn-default" id="prevbutton"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</button>
                 </div>
                 <div class="col-sm-6 text-right">
-                    <button class="btn btn-default" id="nextbutton">Next</button>
+                    <button class="btn btn-default" id="nextbutton">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
                 </div>
             </div>
         </div>
