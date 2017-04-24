@@ -34,8 +34,15 @@ $('.selectpicker').selectpicker();
 
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+
 <!-- SNAC Styles -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+
 
 <!-- SNAC Javascript -->
 <script src="javascript/admin.js{{control.noCache}}"></script>
@@ -69,6 +76,8 @@ body {
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(X, user, permissions, control) }}
 
+{% set i = 0 %}
+
 
 <div class="container snac" role="main">
     <h1>Administrator: General Report</h1>
@@ -79,31 +88,16 @@ body {
     </ol>
 
     <div class="row">
-        <div class="col-md-12">
-
-            {% for i,report in data.reports %}
+        <div class="col-md-4">
+            {% for report in data.reports %}
+                {% if (report.type == "list" and report.result|length < 5) or report.type == "numerical" %}
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">{{report.title}}</h3>
                     </div>
                     <div class="panel-body">
                         <p>{{report.description}}</p>
-                        {% if report.type == "series" %}
-                            <div id="report{{i}}">
-                            </div>
-                            <script>
-                                var x = new Array();
-                                var y = new Array();
-                                {% for x,y in report.result %}
-                                    x.push("{{x}}");
-                                    y.push({{y}});
-                                {% endfor %}
-                                Plotly.plot( "report{{i}}", [{
-                                    x: x,
-                                    y: y }], {
-                                    margin: { t: 0 } } );
-                            </script>
-                        {% elseif report.type == "numerical" %}
+                        {% if report.type == "numerical" %}
                             <div id="report{{i}}">
                                 <h3 class="text-center">{{report.result.value|number_format}}</h3>
                             </div>
@@ -129,9 +123,77 @@ body {
                         {% endif %}
                     </div>
                 </div>
+                {% endif %}
+                {% set i = i + 1 %}
             {% endfor %}
-            <p>Report last generated {{data.timestamp|date('Y-m-d h:i:sa')}}.</p>
+        </div>
+        <div class="col-md-8">
 
+            {% for report in data.reports %}
+                {% if report.type == "series" or (report.type == "list" and report.result|length >= 5) %}
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{{report.title}}</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>{{report.description}}</p>
+                        {% if report.type == "series" %}
+                            <div id="report{{i}}">
+                            </div>
+                            <script>
+                                var x = new Array();
+                                var y = new Array();
+                                {% for x,y in report.result %}
+                                    x.push("{{x}}");
+                                    y.push({{y}});
+                                {% endfor %}
+                                Plotly.plot( "report{{i}}", [{
+                                    x: x,
+                                    y: y }], {
+                                    margin: { t: 0 } } );
+                            </script>
+                        {% elseif report.type == "list" %}
+                            <table id="reportTable{{i}}">
+                                <thead>
+                                    <tr>
+                                        <th>Key</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for x,y in report.result %}
+                                    <tr>
+                                        <td>{{x}}</td>
+                                        <td>
+                                            {% if y matches '/^\\d+$/' %}
+                                                {{y|number_format}}
+                                            {% else %}
+                                                {{y}}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                            <script>
+                            $(document).ready(function() {
+                                var datatable = $('#reportTable{{i}}').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
+                                console.log(datatable);
+                            });
+                            </script>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% set i = i + 1 %}
+            {% endfor %}
+        </div>
+
+
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <p>Report last generated {{data.timestamp|date('Y-m-d h:i:sa')}}.</p>
         </div>
     </div>
 </div>

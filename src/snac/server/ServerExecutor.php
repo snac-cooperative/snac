@@ -2093,6 +2093,7 @@ class ServerExecutor {
         $reportEngine->addReport("NumConstellations");
         $reportEngine->addReport("NumConstellationsByType");
         $reportEngine->addReport("PublishesLastMonth");
+        $reportEngine->addReport("TopHoldingInstitutions");
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
 
         $report = json_encode($reportEngine->runReports(), JSON_PRETTY_PRINT);

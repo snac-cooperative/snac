@@ -19,9 +19,9 @@ namespace snac\server\reporting\reports;
  */
 class NumConstellationsByType extends helpers\Report {
 
-    protected $name = "Number of Constellations by Type";
+    protected $name = "Number of Identity Constellations by Type";
 
-    protected $description = "The number of Constellations of each entity type";
+    protected $description = "The number of Identity Constellations of each entity type";
 
     protected $type = "list";
 

@@ -19,9 +19,9 @@ namespace snac\server\reporting\reports;
  */
 class NumConstellations extends helpers\Report {
 
-    protected $name = "Number of Constellations";
+    protected $name = "Number of Identity Constellations";
 
-    protected $description = "The number of Constellations in SNAC.";
+    protected $description = "The number of Identity Constellations in SNAC.";
 
     protected $type = "numerical";
 
