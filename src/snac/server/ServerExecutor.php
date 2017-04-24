@@ -1833,11 +1833,14 @@ class ServerExecutor {
 
             $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
-                array_push($return["out"], array(
-                    "constellation" => $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
-                                                    \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
-                    "relation" => $rel->toArray()
-                ));
+                $target = $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
+                                                \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray();
+                if ($target) {
+                    array_push($return["out"], array(
+                        "constellation" => $target->toArray(),
+                        "relation" => $rel->toArray()
+                    ));
+                }
             }
 
             $this->logger->addDebug("Created postgres constellation relations response to the user");
