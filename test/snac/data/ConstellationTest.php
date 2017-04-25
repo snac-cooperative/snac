@@ -70,11 +70,9 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
          * mv new_constellation_test.json test/snac/data/json/constellation_test.json
          */
 
-        /*
-         * $cfile = fopen('new_constellation_test.json', 'w');
-         * fwrite($cfile, $identity->toJSON(false));
-         * fclose($cfile);
-         */
+         //$cfile = fopen('new_constellation_test.json', 'w');
+         //fwrite($cfile, $identity->toJSON(false));
+         //fclose($cfile); 
 
         $this->assertEquals($jsonIn, $identity->toJSON(false));
     }

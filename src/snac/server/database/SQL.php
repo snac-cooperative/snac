@@ -4374,7 +4374,7 @@ class SQL
     public function selectUnversionedConstellationIDsForRelationTarget($icid) {
         $qq = 'selectrelatedicids';
         $this->sdb->prepare($qq,
-                            'select aa.ic_id, aa.id
+                            'select distinct aa.ic_id, aa.id
                             from related_identity as aa
                             where not aa.is_deleted and
                             aa.related_id = $1');
