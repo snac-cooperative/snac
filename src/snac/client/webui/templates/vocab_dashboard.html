@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Admin Dashboard</title>
+<title>SNAC Vocabulary Dashboard</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -42,10 +42,10 @@ $('.selectpicker').selectpicker();
 
 <div class="container snac" role="main">
 
-    <h1>Administrator Dashboard</h1>
+    <h1>Vocabulary Dashboard</h1>
 
     <ol class="breadcrumb">
-        <li>Administrator</a></li>
+        <li>Vocabulary Dashboard</a></li>
     </ol>
 
 
@@ -59,7 +59,7 @@ $('.selectpicker').selectpicker();
             <!-- Left column -->
             <h3>Overview</h3>
 
-            <p>Welcome to the Administrator's dashboard.  The first column provides access to administrative settings and user accounts.  The second column gives quick access to reports on the system.</p>
+            <p>Welcome to the Vocabulary Administrator's dashboard.</p>
             <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
 
 
@@ -80,61 +80,53 @@ $('.selectpicker').selectpicker();
             {% if permissions.AddUsers or permissions.ModifyUsers or permissions.AssignRoles %}
             <div class="panel panel-info">
                 <div class="panel-heading">
-                    <h3 class="panel-title">User Management</h3>
+                    <h3 class="panel-title">Vocabulary Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer user accounts.</p>
+                    <p>Use the following links to administer controlled vocabularies.</p>
                     <div class="list-group">
                         {% if permissions.AddUsers %}
-                        <a href="?command=administrator&subcommand=add_user" class="list-group-item"><i class="fa fa-user-plus fa-fw" aria-hidden="true"></i> New User</a>
+                        <a href="?command=vocab_administrator&subcommand=add_term" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Vocabulary Term</a>
                         {% endif %}
 
                         {% if permissions.ModifyUsers or permissions.AssignRoles %}
-                        <a href="?command=administrator&subcommand=users" class="list-group-item"><i class="fa fa-user fa-fw" aria-hidden="true"></i> User Accounts</a>
+                        <a href="?command=vocab_administrator&subcommand=search" class="list-group-item"><i class="fa fa-list-alt fa-fw" aria-hidden="true"></i> Search Vocabularies</a>
                         {% endif %}
                     </div>
                 </div>
             </div>
             {% endif %}
             {% if permissions.ManageGroups %}
-            <div class="panel panel-info">
+            <div class="panel panel-warning">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Group Management</h3>
+                    <h3 class="panel-title">Geographic Vocabulary Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Use the following links to administer group accounts.</p>
+                    <p>Use the following links to administer geographic vocabulary terms.</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=add_group" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Group</a>
-                        <a href="?command=administrator&subcommand=groups" class="list-group-item"><i class="fa fa-users fa-fw" aria-hidden="true"></i> Manage Groups</a>
+                        <a href="?command=vocab_administrator&subcommand=add_geoterm" class="list-group-item"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Geographic Term</a>
+                        <a href="?command=vocab_administrator&subcommand=geosearch" class="list-group-item"><i class="fa fa-globe fa-fw" aria-hidden="true"></i> Search Geographic Terms</a>
                     </div>
                 </div>
             </div>
             {% endif %}
-            <div class="panel panel-danger">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Role Management</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Use the following links to administer roles and permissions.</p>
-                    <div class="list-group">
-                        <a href="?command=administrator&subcommand=roles" class="list-group-item"><i class="fa fa-shield fa-fw" aria-hidden="true"></i> Manage Roles</a>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="col-md-4">
             <!-- Right column -->
-            <div class="panel panel-warning">
+            {% if permissions.ManageGroups %}
+            <div class="panel panel-danger">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Reports</h3>
+                    <h3 class="panel-title">Resource Cache Management</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Run one of the following reports over SNAC</p>
+                    <p>Use the following links to administer the resource cache.</p>
                     <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                        <a href="?command=vocab_administrator&subcommand=add_resource" class="list-group-item disabled"><i class="fa fa-plus fa-fw" aria-hidden="true"></i> New Resource</a>
+                        <a href="?command=vocab_administrator&subcommand=resources" class="list-group-item disabled"><i class="fa fa-book fa-fw" aria-hidden="true"></i> Manage Resources</a>
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
