@@ -369,9 +369,9 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         foreach($entList as $ent)
         {
             // Only one record will match.
-            if ($ent['value'] == 'person')
+            if ($ent->getTerm() == 'person')
             {
-                $personID = $ent['id'];
+                $personID = $ent->getID();
             }
         }
 
@@ -381,11 +381,9 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         foreach($svList as $svocab)
         {
             // Only one record will match.
-            if ($svocab['value'] == 'Surname')
+            if ($svocab->getTerm() == 'Surname')
             {
-                $ctObj->setID($svocab['id']);
-                $ctObj->setType('name_component');
-                $ctObj->setTerm($svocab['value']);
+                $ctObj = $svocab;
             }
         }
 
@@ -546,13 +544,12 @@ class DBUtilTest extends \PHPUnit\Framework\TestCase {
         {
             throw new \snac\exceptions\SNACException("Did not get exactly 1 result for 'entity_type' and 'family'.");
         }
-        if ($vocabList[0]['value'] != 'family')
+        if ($vocabList[0]->getTerm() != 'family')
         {
             throw new \snac\exceptions\SNACException("Did not get expected 'family' as value.");
         }
 
-        $readObj->getEntityType()->setID($vocabList[0]['id']);
-        $readObj->getEntityType()->setTerm('family');
+        $readObj->setEntityType($vocabList[0]);
         $readObj->setOperation(\snac\data\AbstractData::$OPERATION_UPDATE);
         $xObj = $this->dbu->writeConstellation($this->user,
                                                $readObj,
