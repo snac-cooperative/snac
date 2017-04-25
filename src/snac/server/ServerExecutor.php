@@ -1834,7 +1834,7 @@ class ServerExecutor {
             $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
                 $target = $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
-                                                \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray();
+                                                \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
                 if ($target) {
                     array_push($return["out"], array(
                         "constellation" => $target->toArray(),
