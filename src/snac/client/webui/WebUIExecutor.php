@@ -303,15 +303,23 @@ class WebUIExecutor {
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
+            $editingUser = null;
+            if (isset($serverResponse["editing_user"]))
+                $editingUser = $serverResponse["editing_user"];
+            
             $display->setTemplate("detailed_view_page");
+            
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData(array_merge($constellation,
-            array("preview"=> (isset($input["preview"])) ? true : false)));
+            $display->setData(array_merge(
+                $constellation,
+                array("preview"=> (isset($input["preview"])) ? true : false,
+                    "editingUser" => $editingUser)
+            ));
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
