@@ -629,7 +629,7 @@ body {
                                    href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 {% else %}
                                     <a class="list-group-item list-group-item-danger disabled"
-                                       href="#">
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
                                         <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
                                     </a>
                                     {% if data.editingUser %}
