@@ -1431,6 +1431,13 @@ class ServerExecutor {
             }
             if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                 $constellation->setStatus("editable");
+            } else if ($this->hasPermission("Change Locks")) {
+                $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
+                $editingUser = new \snac\data\User();
+                $editingUser->setUserID($userStatus["userid"]);
+                $editingUser = $this->uStore->readUser($editingUser);
+                if ($editingUser)
+                    $response["editing_user"] = $editingUser->toArray();
             }
             $this->logger->addDebug("Finished checking constellation status against the user");
             $response["constellation"] = $constellation->toArray();
