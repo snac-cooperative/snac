@@ -286,6 +286,10 @@ class WebUIExecutor {
         if (isset($serverResponse["constellation"])) {
             $display->setTemplate("view_page");
             $constellation = $serverResponse["constellation"];
+            $editingUser = null;
+            if (isset($serverResponse["editing_user"]))
+                $editingUser = $serverResponse["editing_user"];
+
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
@@ -319,7 +323,8 @@ class WebUIExecutor {
                 $constellation,
                 array(
                     "preview"=> (isset($input["preview"])) ? true : false,
-                    "holdings" => $holdings)
+                    "holdings" => $holdings,
+                    "editingUser" => $editingUser)
                 )
             );
         } else {
@@ -340,15 +345,23 @@ class WebUIExecutor {
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
+            $editingUser = null;
+            if (isset($serverResponse["editing_user"]))
+                $editingUser = $serverResponse["editing_user"];
+            
             $display->setTemplate("detailed_view_page");
+            
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData(array_merge($constellation,
-            array("preview"=> (isset($input["preview"])) ? true : false)));
+            $display->setData(array_merge(
+                $constellation,
+                array("preview"=> (isset($input["preview"])) ? true : false,
+                    "editingUser" => $editingUser)
+            ));
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
@@ -772,6 +785,70 @@ class WebUIExecutor {
         return false;
     }
 
+    /**
+     * Handle Vocabulary Administrative tasks
+     *
+     * Fills the display object with the requested vocab admin page for the given user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function handleVocabAdministrator(&$input, &$display, &$user) {
+
+        if (!isset($input["subcommand"])) {
+            $input["subcommand"] = "dashboard";
+        }
+
+        switch ($input["subcommand"]) {
+            case "search":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_search");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Search", $display);
+                }
+                break;
+            case "geosearch":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_geosearch");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Search", $display);
+                }
+                break;
+            case "add_term":
+                $display->setData(array(
+                    "title"=> "Add New Vocabulary Term"
+                ));
+                $display->setTemplate("vocab_edit_term");
+                break;
+            case "add_term_post":
+                return $this->saveVocabularyTerm($input, $user);
+                break;
+            case "add_geoterm":
+                $display->setData(array(
+                    "title"=> "Add New Geopgraphic Vocabulary Term"
+                ));
+                $display->setTemplate("vocab_edit_geoterm");
+                break;
+            case "add_geoterm_post":
+                // maybe reuse the same save function?
+                return $this->saveVocabularyTerm($input, $user);
+                break;
+            case "dashboard":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_dashboard");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            default:
+                $this->displayPermissionDeniedPage("Vocabulary Administrator", $display);
+        }
+
+        return false;
+    }
+
+
 
     /**
     * Display the Permission Denied Page
@@ -886,102 +963,102 @@ class WebUIExecutor {
         $display->setTemplate("landing_page");
     }
 
-        /**
-         * Save User Profile
-         *
-         * Asks the server to update the profile of the user.
-         *
-         * @param string[] $input Post/Get inputs from the webui
-         * @param \snac\data\User $user The current user object
-         * @return string[] The web ui's response to the client (array ready for json_encode)
-         */
-        public function saveProfile(&$input, &$user) {
+    /**
+     * Save User Profile
+     *
+     * Asks the server to update the profile of the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveProfile(&$input, &$user) {
 
-            $tmpUser = new \snac\data\User();
-            $groups = null;
-            // Not editing the current user
-            if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
-                if (isset($input["userid"]) && $input["userid"] != "")
-                    $tmpUser->setUserID($input["userid"]);
+        $tmpUser = new \snac\data\User();
+        $groups = null;
+        // Not editing the current user
+        if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+            if (isset($input["userid"]) && $input["userid"] != "")
+                $tmpUser->setUserID($input["userid"]);
 
-                $tmpUser->setUserName($input["userName"]);
-                $tmpUser->setEmail($input["userName"]);
-                if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
-                    $tmpAffil = new \snac\data\Constellation();
-                    $tmpAffil->setID($input["affiliationid"]);
-                    $tmpUser->setAffiliation($tmpAffil);
-                }
-                if (isset($input["active"]) && $input["active"] == "active")
-                    $tmpUser->setUserActive(true);
-
-                // If not editing the current user, then we can update their groups
-                $groups = array();
-                foreach ($input as $key => $value) {
-                    if (strstr($key, "groupid_")) {
-                        $groupAdd = new \snac\data\Group();
-                        $groupAdd->setID($value);
-                        array_push($groups, $groupAdd->toArray());
-                    }
-                }
-
-
-            } else {
-                $tmpUser = new \snac\data\User($user->toArray());
+            $tmpUser->setUserName($input["userName"]);
+            $tmpUser->setEmail($input["userName"]);
+            if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
+                $tmpAffil = new \snac\data\Constellation();
+                $tmpAffil->setID($input["affiliationid"]);
+                $tmpUser->setAffiliation($tmpAffil);
             }
+            if (isset($input["active"]) && $input["active"] == "active")
+                $tmpUser->setUserActive(true);
 
-            $tmpUser->setFirstName($input["firstName"]);
-            $tmpUser->setLastName($input["lastName"]);
-            $tmpUser->setWorkPhone($input["workPhone"]);
-            $tmpUser->setWorkEmail($input["workEmail"]);
-            $tmpUser->setFullName($input["fullName"]);
-
+            // If not editing the current user, then we can update their groups
+            $groups = array();
             foreach ($input as $key => $value) {
-                if (substr($key, 0, 5) == "role_") {
-                    $role = new \snac\data\Role();
-                    $role->setID($value);
-                    $tmpUser->addRole($role);
+                if (strstr($key, "groupid_")) {
+                    $groupAdd = new \snac\data\Group();
+                    $groupAdd->setID($value);
+                    array_push($groups, $groupAdd->toArray());
                 }
             }
 
-            $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
 
-            // Build a data structure to send to the server
-            $request = array("command"=>"update_user");
-
-            // Send the query to the server
-            $request["user_update"] = $tmpUser->toArray();
-
-            // Send the groups if we're doing an update
-            if ($groups != null)
-                $request["groups_update"] = $groups;
-
-            $serverResponse = $this->connect->query($request);
-
-            $response = array();
-            $response["server_debug"] = $serverResponse;
-
-            if (!is_array($serverResponse)) {
-                $this->logger->addDebug("server's response: $serverResponse");
-            } else {
-                if (isset($serverResponse["result"]))
-                    $response["result"] = $serverResponse["result"];
-                if (isset($serverResponse["error"])) {
-                    $response["error"] = $serverResponse["error"];
-                }
-                if (isset($serverResponse["user_update"])) {
-                    $response["user_update"] = $serverResponse["user_update"];
-                }
-            }
-
-            // If success AND we were updating the current user, then update the session tokens
-            if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
-                $user = $tmpUser;
-                $_SESSION["snac_user"] = serialize($user);
-                $response["user"] = $serverResponse["user_update"];
-            }
-
-            return $response;
+        } else {
+            $tmpUser = new \snac\data\User($user->toArray());
         }
+
+        $tmpUser->setFirstName($input["firstName"]);
+        $tmpUser->setLastName($input["lastName"]);
+        $tmpUser->setWorkPhone($input["workPhone"]);
+        $tmpUser->setWorkEmail($input["workEmail"]);
+        $tmpUser->setFullName($input["fullName"]);
+
+        foreach ($input as $key => $value) {
+            if (substr($key, 0, 5) == "role_") {
+                $role = new \snac\data\Role();
+                $role->setID($value);
+                $tmpUser->addRole($role);
+            }
+        }
+
+        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_user");
+
+        // Send the query to the server
+        $request["user_update"] = $tmpUser->toArray();
+
+        // Send the groups if we're doing an update
+        if ($groups != null)
+            $request["groups_update"] = $groups;
+
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            if (isset($serverResponse["user_update"])) {
+                $response["user_update"] = $serverResponse["user_update"];
+            }
+        }
+
+        // If success AND we were updating the current user, then update the session tokens
+        if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
+            $user = $tmpUser;
+            $_SESSION["snac_user"] = serialize($user);
+            $response["user"] = $serverResponse["user_update"];
+        }
+
+        return $response;
+    }
 
     /**
      * Save Group Information
@@ -1801,12 +1878,43 @@ class WebUIExecutor {
                 if (isset($input["q"]))
                     $queryString = $input["q"];
                 $request["query_string"] = $queryString;
+                if (isset($input["count"]))
+                    $request["count"] = $input["count"];
 
                 // Send the query to the server
                 $serverResponse = $this->connect->query($request);
 
-                foreach ($serverResponse["results"] as $k => $v)
-                    $serverResponse["results"][$k]["text"] = $v["value"];
+                if (!isset($serverResponse["results"]))
+                    return $serverResponse;
+
+                if (isset($input["format"]) && $input["format"] == "term") {
+                    // keep the results as normal Term elements
+                } else {
+                    $results = $serverResponse["results"];
+                    $serverResponse["results"] = array();
+
+                    foreach ($results as $k => $v) {
+                        $serverResponse["results"][$k]["id"] = $v["id"];
+
+                        if (isset($v["name"])) {
+                            // This is a geoplace term
+                            $addendum = "";
+                            if ($v["administrationCode"] != null && $v["countryCode"] != null) {
+                                $addendum = " (".$v["administrationCode"] . ", " . $v["countryCode"].")";
+                            } else if ($v["administrationCode"] != null) {
+                                $addendum = "(".$v["administrationCode"].")";
+                            } else if ($v["countryCode"] != null) {
+                                $addendum = "(".$v["countryCode"].")";
+                            }
+                            $serverResponse["results"][$k]["value"] = $v["name"] . $addendum;
+                        } else {
+                            // This is a controlled vocab term
+                            $serverResponse["results"][$k]["value"] = $v["term"];
+                        }
+
+                        $serverResponse["results"][$k]["text"] = $serverResponse["results"][$k]["value"];
+                    }
+                }
 
                 $this->logger->addDebug("Sending response back to client", $serverResponse);
                     // Send the response back to the web client
@@ -1815,6 +1923,65 @@ class WebUIExecutor {
         }
 
         return array ();
+    }
+
+    /**
+     * Save Vocabulary Term
+     *
+     * Asks the server to update the controlled vocabulary term.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveVocabularyTerm(&$input, &$user) {
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_vocabulary");
+
+        $term = null;
+
+        if ($input["type"] === "geo_term") {
+            // Geographic Term
+            $term = new \snac\data\GeoTerm();
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setName($input["name"]);
+            $term->setAdministrationCode($input["administrationCode"]);
+            $term->setCountryCode($input["countryCode"]);
+            $term->setLatitude($input["latitude"]);
+            $term->setLongitude($input["longitude"]);
+            $request["type"] = "geo_term";
+        } else {
+            // Standard Term object
+            $term = new \snac\data\Term();
+            $term->setType($input["type"]);
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setDescription($input["description"]);
+            $term->setTerm($input["term"]);
+            $request["type"] = "term";
+        }
+
+        $request["term"] = $term->toArray();
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+        }
+
+        return $response;
     }
 
     /**

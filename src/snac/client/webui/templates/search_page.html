@@ -13,7 +13,7 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
@@ -68,13 +68,31 @@
 							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
 						    </span>
 					</div>
-                    <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
-                        <label>
-                            <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
-                            <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
-                        </label>
+                    <div class="row">
+                        <div class="col-xs-6 text-left">
+                            <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
+                                <label>
+                                    <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
+                                    <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <div id="otherOptions" class="text-right" style="margin-top: 15px;">
+                                <span style="padding-right: 5px; font-weight: normal;">Show</span>
+                                <select id="count" name="count">
+                                    <option value="10" {{data.count == 10 ? 'selected'}}>10</option>
+                                    <option value="25" {{data.count == 25 ? 'selected'}}>25</option>
+                                    <option value="50" {{data.count == 50 ? 'selected'}}>50</option>
+                                    <option value="100" {{data.count == 100 ? 'selected'}}>100</option>
+                                </select>
+                                <span style="padding-left: 5px; font-weight: normal;">per page</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
 
-                        <div id="advancedSearchText" class="collapse {{ data.searchType == 'advanced' ? 'in'}}">
+                        <div id="advancedSearchText" class="text-left collapse {{ data.searchType == 'advanced' ? 'in'}}">
                             <h4>The following commands may be used for advanced searching</h4>
                             <dl>
                                 <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>

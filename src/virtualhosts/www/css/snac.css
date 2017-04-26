@@ -461,6 +461,11 @@ button.list-group-item-review.active:focus {
     font-size: 55px;
 }
 
+/* Fix the width of font-awesome icons so their text aligns nicely beside them */
+.fa {
+    width: 1.2em;
+}
+
 @media (min-width: 992px) {
     .affix {
         position: fixed;

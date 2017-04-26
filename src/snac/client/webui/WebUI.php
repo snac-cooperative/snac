@@ -370,6 +370,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->handleAdministrator($this->input, $display, $user);
                 break;
 
+            // Vocab administrator command (the sub method handles commands)
+            case "vocab_administrator":
+                $response = $executor->handleVocabAdministrator($this->input, $display, $user);
+                break;
+
             // Modification commands that return JSON
             case "update_profile":
                 $response = $executor->saveProfile($this->input, $user);

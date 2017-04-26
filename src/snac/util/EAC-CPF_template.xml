@@ -222,7 +222,11 @@
             {% endfor %}
             {% for subject in data.subjects %}
             <localDescription localType="http://socialarchive.iath.virginia.edu/control/term#AssociatedSubject">
+                {% if subject.term.uri %}
+                <term vocabularySource="{{subject.term.uri}}">{{ subject.term.term }}</term>
+                {% else %}
                 <term>{{ subject.term.term }}</term>
+                {% endif %}
             </localDescription>
             {% endfor %}
             {% for place in data.places %}
