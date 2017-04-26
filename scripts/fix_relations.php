@@ -60,8 +60,8 @@ while ($res = $db->fetchRow($result)) {
     }
 }
 
-echo json_encode($data, JSON_PRETTY_PRINT) . "\n";
-echo json_encode($duplicates, JSON_PRETTY_PRINT) . "\n";
+//echo json_encode($data, JSON_PRETTY_PRINT) . "\n";
+//echo json_encode($duplicates, JSON_PRETTY_PRINT) . "\n";
 
 $updateQ = "update related_identity set (related_id, related_ark, role) = ($1, $2, $3) where id = $4 and version = $5 and related_id is null;";
 $db->prepare("update_relations", $updateQ);
@@ -73,3 +73,8 @@ foreach ($data as $id => $part) {
     }
 }
 
+echo "\n\n";
+
+foreach ($duplicates as $dup) {
+    echo "Duplicate ({$dup["id"]}): \"{$dup["relation_entry"]}\" matches \"{$dup["name_heading"]}\" ({$dup["ic_id"]})\n";
+}
