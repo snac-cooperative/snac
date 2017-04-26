@@ -5648,7 +5648,7 @@ class SQL
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
     public function selectVersionHistory($vhInfo,$listAll = false) {
-        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstoned\' or v.status=\'ingest cpf\')';
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\')';
         if ($listAll === true)
             $limitHistory = "";
         $result = $this->sdb->query(
