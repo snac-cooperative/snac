@@ -33,6 +33,7 @@ $('.selectpicker').selectpicker();
 
 <!-- SNAC includes -->
 <script src="javascript/search.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/merge_scripts.js{{control.noCache}}"></script>
 
 <style>
@@ -315,6 +316,10 @@ $(document).ready(function() {
                     {% elseif data.mergeable and user.email and permissions.Publish %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">
                         <a href="?command=diff_merge&constellationid1={{data.constellation1.id}}&constellationid2={{data.constellation2.id}}" class="btn btn-info" title="Switch this compare view into merging mode."><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</a>
+                    </div>
+                    {% elseif user.email and permissions.Publish %}
+                    <div class="btn-group" role="group" aria-label="Merge Actions">
+                        <span href="#" class="btn btn-info disabled" title="Notification" data-content="One or both Constellations are currently locked, so merging is not available at this time." data-toggle="popover" data-placement="top"><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</span>
                     </div>
                     {% endif %}
                 </div>
