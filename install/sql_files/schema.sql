@@ -1003,6 +1003,40 @@ create table unassigned_arks (
            ark text
 );
 
+-- Postgres Name Index (for Browsing support)
+drop table if exists name_index;
+create table name_index (
+    name_entry       text,
+    name_entry_lower text, -- lower-cased version of the name entry
+    ark              text,
+    ic_id            int,  -- ic_id in snac
+    degree           int,  -- number of connections in snac
+    resources        int,  -- number of resources in snac
+    entity_type      text,
+    timestamp        timestamp default(now()));
+
+create unique index name_index_pk on name_index(ic_id);
+create index name_index_idx1 on name_index(name_entry_lower);
+create index name_index_idx2 on name_index(name_entry);
+create index name_index_idx3 on name_index(name_entry_lower, entity_type);
+create index name_index_idx4 on name_index(name_entry_lower, ic_id);
+create index name_index_idx5 on name_index(name_entry, ic_id);
+
+-- Report Storage and indices
+drop table if exists reports;
+drop sequence if exists report_id_seq;
+create sequence report_id_seq;
+create table reports (
+    id               int primary key default nextval('report_id_seq'),
+    name             text,
+    report           text,
+    user_id          int,  -- fk to appuser table, user that queried report
+    affiliation_id   int,  -- fk to the institution that queried the report (usually icid from user's affiliation)
+    timestamp        timestamp default(now()));
+create index reports_idx1 on reports (timestamp);
+create index reports_idx2 on reports (name, timestamp);
+create index reports_idx3 on reports (user_id, affiliation_id);
+
 -- Long list of indices that are useful in querying the database
 
 create index otherid_idx1 on otherid (ic_id, version);
