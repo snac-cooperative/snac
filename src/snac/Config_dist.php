@@ -111,7 +111,7 @@ class Config {
 
     /**
      *
-     * @var string filename for the WebUI log
+     * @var string filename for the CRON log
      */
     public static $CRON_LOGFILE = "cron.log";
 
