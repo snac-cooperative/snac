@@ -55,6 +55,7 @@ class EACCPFSerializerTest extends \PHPUnit\Framework\TestCase {
     public function __construct()
     {
         global $log;
+        parent::__construct(); // Must call the parent constructor
         // create a log channel
         $this->logger = new \Monolog\Logger('EACCPFSerializer');
         $this->logger->pushHandler($log);

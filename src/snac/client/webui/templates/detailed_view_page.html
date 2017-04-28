@@ -38,7 +38,7 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -409,6 +409,16 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     {% else %}
                                         <a class="list-group-item list-group-item-danger disabled"
                                             href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                        {% if data.editingUser %}
+                                            <div class="list-group-item">
+                                                <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                                <div class="list-group" style="margin-bottom: 0px;">
+                                                    <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                        <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                               </div>

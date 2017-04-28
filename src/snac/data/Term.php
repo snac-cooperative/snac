@@ -227,6 +227,7 @@ class Term {
             'id' => $this->getID(),
             'term' => $this->getTerm(),
             'uri' => $this->getURI(),
+            'type' => $this->getType(),
             'description' => $this->getDescription()
         );
        
@@ -268,6 +269,12 @@ class Term {
             $this->uri = $data["uri"];
         else
             $this->uri = null;
+
+        unset($this->type);
+        if (isset($data["type"]))
+            $this->type = $data["type"];
+        else
+            $this->type = null;
 
         unset($this->description);
         if (isset($data["description"]))

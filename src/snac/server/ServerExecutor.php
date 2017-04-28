@@ -507,12 +507,79 @@ class ServerExecutor {
         } else {
             switch ($input["type"]) {
                 default:
-                    $response["results"] = $this->cStore->searchVocabulary(
+                    $response["results"] = array();
+                    $count = 100;
+                    if (isset($input["count"]))
+                        $count = $input["count"];
+                    $results = $this->cStore->searchVocabulary(
                         $input["type"],
                         $input["query_string"],
-                        $input["entity_type"]);
+                        $input["entity_type"],
+                        $count);
+                    foreach ($results as $result)
+                        array_push($response["results"], $result->toArray(false));
                     break;
             }
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * Update the Controlled Vocabulary
+     *
+     * Calls saveUser to save the user information to the database.  Then returns the user object.
+     *
+     * @param string[]|null $input The input from the client
+     * @return string[] The response to send to the client
+     */
+    public function updateVocabulary(&$input) {
+        $response = array();
+        $success = false;
+        $term = null;
+
+        if (isset($input["type"]) && $input["type"] == "geo_term") {
+            $term = new \snac\data\GeoTerm($input["term"]);
+        } else {
+            $term = new \snac\data\Term($input["term"]);
+        }
+
+        if ($term->getID() == null || $term->getID() == "") {
+            // We are doing an insert
+            $writtenTerm = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $writtenTerm = $this->cStore->writeGeoTerm($term);
+            } else {
+                $writtenTerm = $this->cStore->writeVocabularyTerm($term);
+            }
+
+            if ($writtenTerm) {
+                $success = true;
+                $response["term"] = $writtenTerm->toArray();
+            } else {
+                $response["error"] = "Term could not be written";
+            }
+        } else {
+            // Get the one out of the database
+            $current = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $current = $this->cStore->buildGeoTerm($term->getID());
+            } else {
+                $current = $this->cStore->populateTerm($term->getID());
+            }
+
+            if ($current->getType() == $term->getType() && $term->getTerm() != null && $term->getTerm() != "") {
+                // The term didn't change type and does not have an empty term field, so update
+                throw new \snac\exceptions\SNACPermissionException("Currently the system is not allowing updating terms.");
+            }
+            $response["error"] = "The term to update was not found in the database.";
+        }
+
+        if ($success === true) {
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
         }
 
         return $response;
@@ -1365,6 +1432,13 @@ class ServerExecutor {
             }
             if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                 $constellation->setStatus("editable");
+            } else if ($this->hasPermission("Change Locks")) {
+                $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
+                $editingUser = new \snac\data\User();
+                $editingUser->setUserID($userStatus["userid"]);
+                $editingUser = $this->uStore->readUser($editingUser);
+                if ($editingUser)
+                    $response["editing_user"] = $editingUser->toArray();
             }
             $this->logger->addDebug("Finished checking constellation status against the user");
             $response["constellation"] = $constellation->toArray();
@@ -1844,11 +1918,14 @@ class ServerExecutor {
 
             $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
-                array_push($return["out"], array(
-                    "constellation" => $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
-                                                    \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
-                    "relation" => $rel->toArray()
-                ));
+                $target = $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
+                                                \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
+                if ($target) {
+                    array_push($return["out"], array(
+                        "constellation" => $target->toArray(),
+                        "relation" => $rel->toArray()
+                    ));
+                }
             }
 
             $this->logger->addDebug("Created postgres constellation relations response to the user");

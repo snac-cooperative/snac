@@ -25,462 +25,2216 @@
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "VIAF",
-                    "id": null,
-                    "version": null,
+                    "id": "26350711",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "howard",
-                    "id": null,
-                    "version": null,
+                    "id": "26350712",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "uct",
-                    "id": null,
-                    "version": null,
+                    "id": "26350713",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "aps",
-                    "id": null,
-                    "version": null,
+                    "id": "26350714",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "colu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350715",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "inu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350716",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "uchic",
-                    "id": null,
-                    "version": null,
+                    "id": "26350717",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "nwda",
-                    "id": null,
-                    "version": null,
+                    "id": "26350718",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "vah",
-                    "id": null,
-                    "version": null,
+                    "id": "26350719",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "taro",
-                    "id": null,
-                    "version": null,
+                    "id": "26350720",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "LC",
-                    "id": null,
-                    "version": null,
+                    "id": "26350721",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "rutu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350722",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "pu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350723",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "ncsu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350724",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "nyu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350725",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "NLA",
-                    "id": null,
-                    "version": null,
+                    "id": "26350726",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "unc",
-                    "id": null,
-                    "version": null,
+                    "id": "26350727",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "WorldCat",
-                    "id": null,
-                    "version": null,
+                    "id": "26350728",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "nara",
-                    "id": null,
-                    "version": null,
+                    "id": "26350729",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "crnlu",
-                    "id": null,
-                    "version": null,
+                    "id": "26350730",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "uut",
-                    "id": null,
-                    "version": null,
+                    "id": "26350731",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "yale",
-                    "id": null,
-                    "version": null,
+                    "id": "26350732",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "cjh",
-                    "id": null,
-                    "version": null,
+                    "id": "26350733",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "nypl",
-                    "id": null,
-                    "version": null,
+                    "id": "26350734",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "oac",
-                    "id": null,
-                    "version": null,
+                    "id": "26350735",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "lc",
-                    "id": null,
-                    "version": null,
+                    "id": "26350736",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "umi",
-                    "id": null,
-                    "version": null,
+                    "id": "26350737",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "LAC",
-                    "id": null,
-                    "version": null,
+                    "id": "26350738",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "harvard",
-                    "id": null,
-                    "version": null,
+                    "id": "26350739",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 },
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "14846",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": "name_type",
                         "description": null
                     },
                     "rule": null,
                     "name": "pacscl",
-                    "id": null,
-                    "version": null,
+                    "id": "26350740",
+                    "version": "3849170",
                     "operation": null,
                     "dates": []
                 }
             ],
-            "components": [],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, 1743-1826.",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350710",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
             "language": null,
-            "id": null,
-            "version": null,
+            "id": "26350709",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, Pres. U.S., 1743-1826",
+            "preferenceScore": "3",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "aps",
+                    "id": "26350743",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350744",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "harvard",
+                    "id": "26350745",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350746",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "uks",
+                    "id": "26350747",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, Pres. U.S., 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350742",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350741",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u05d2'\u05e4\u05e8\u05e1\u05d5\u05df, \u05ea\u05d5\u05de\u05e1, 1743-1826",
+            "preferenceScore": "2",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350750",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u05d2'\u05e4\u05e8\u05e1\u05d5\u05df, \u05ea\u05d5\u05de\u05e1, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350749",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350748",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas",
+            "preferenceScore": "2",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350753",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350752",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350751",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, President, 1743-1826",
+            "preferenceScore": "1",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "cjh",
+                    "id": "26350756",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, President, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350755",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350754",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, 1743-1826. Notes on the State of Virginia.",
+            "preferenceScore": "1",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "WorldCat",
+                    "id": "26350759",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, 1743-1826. Notes on the State of Virginia.",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350758",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350757",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas (American statesman, architect, and draftsman, 1743-1826)",
+            "preferenceScore": "1",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350762",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas (American statesman, architect, and draftsman, 1743-1826)",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350761",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350760",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, President, U.S., 1743-1826.",
+            "preferenceScore": "1",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "cjh",
+                    "id": "26350765",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, President, U.S., 1743-1826.",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350764",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350763",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c \u062a\u0648\u0645\u0627\u0633\u060c 1743-1826",
+            "preferenceScore": "1",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7658",
+                        "term": "authorizedForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350768",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c \u062a\u0648\u0645\u0627\u0633\u060c 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350767",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350766",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Thomas, Pres. U.S.",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350771",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Thomas, Pres. U.S.",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350770",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350769",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jiefeixun 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350774",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jiefeixun 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350773",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350772",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Chieh-fei-hs\u00fcn 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350777",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350778",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Chieh-fei-hs\u00fcn 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350776",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350775",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Thomas Jefferson",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350781",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Thomas Jefferson",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350780",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350779",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u062c\u064a\u0641\u0631\u0633\u0646\u060c \u062a\u0648\u0645\u0627\u0633\u060c 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350784",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u062c\u064a\u0641\u0631\u0633\u0646\u060c \u062a\u0648\u0645\u0627\u0633\u060c 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350783",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350782",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u200f\u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c \u062a\u0648\u0645\u0627\u0633",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350787",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u200f\u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c \u062a\u0648\u0645\u0627\u0633",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350786",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350785",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "J\u012bfirs\u016bn, T\u016bm\u0101s 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350790",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "J\u012bfirs\u016bn, T\u016bm\u0101s 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350789",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350788",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u30b8\u30a7\u30d5\u30a1\u30eb\u30bd\u30f3",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350793",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u30b8\u30a7\u30d5\u30a1\u30eb\u30bd\u30f3",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350792",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350791",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u6770\u4f5b\u900a, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350796",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u6770\u4f5b\u900a, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350795",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350794",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Dzhefferson, Tomas 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350799",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                },
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350800",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Dzhefferson, Tomas 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350798",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350797",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jifirsun, Tumas, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350803",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jifirsun, Tumas, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350802",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350801",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jepharsan, Th\u0101mas 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350806",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jepharsan, Th\u0101mas 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350805",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350804",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u0414\u0436\u0435\u0444\u0444\u0435\u0440\u0441\u043e\u043d, \u0422\u043e\u043c\u0430\u0441, 1743-1826.",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350809",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u0414\u0436\u0435\u0444\u0444\u0435\u0440\u0441\u043e\u043d, \u0422\u043e\u043c\u0430\u0441, 1743-1826.",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350808",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350807",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Th 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350812",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Th 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350811",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350810",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u906e\u767a\u723e\u905c",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350815",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u906e\u767a\u723e\u905c",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350814",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350813",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u30b8\u30a7\u30d5\u30a1\u30bd\u30f3, T",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350818",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u30b8\u30a7\u30d5\u30a1\u30bd\u30f3, T",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350817",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350816",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Chieh-fei-hsu\u0308n, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350821",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Chieh-fei-hsu\u0308n, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350820",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350819",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "\u062a\u0648\u0645\u0627\u0633 \u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350824",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "\u062a\u0648\u0645\u0627\u0633 \u062c\u064a\u0641\u0631\u0633\u0648\u0646\u060c 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350823",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350822",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350827",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350826",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350825",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jefferson, Th. 1743-1826 (Thomas),",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350830",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jefferson, Th. 1743-1826 (Thomas),",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350829",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350828",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jiefoxun 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350833",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jiefoxun 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350832",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350831",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jepharsan, Thamas, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350836",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jepharsan, Thamas, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350835",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350834",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Zh\u012bfirs\u016bn, T\u016bm\u0101s 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350839",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Zh\u012bfirs\u016bn, T\u016bm\u0101s 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350838",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350837",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Ji\u0304firsu\u0304n, Tu\u0304ma\u0304s, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350842",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Ji\u0304firsu\u0304n, Tu\u0304ma\u0304s, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350841",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350840",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Jepharsan, Tha\u0304mas, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350845",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Jepharsan, Tha\u0304mas, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350844",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350843",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Zhi\u0304firsu\u0304n, Tu\u0304ma\u0304s, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "VIAF",
+                    "id": "26350848",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Zhi\u0304firsu\u0304n, Tu\u0304ma\u0304s, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350847",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350846",
+            "version": "3849170",
+            "operation": null,
+            "dates": []
+        },
+        {
+            "dataType": "NameEntry",
+            "original": "Zhifirsun, Tumas, 1743-1826",
+            "preferenceScore": "0",
+            "contributors": [
+                {
+                    "dataType": "Contributor",
+                    "type": {
+                        "id": "7657",
+                        "term": "alternativeForm",
+                        "uri": null,
+                        "type": "name_type",
+                        "description": null
+                    },
+                    "rule": null,
+                    "name": "nara",
+                    "id": "26350851",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "components": [
+                {
+                    "dataType": "NameComponent",
+                    "text": "Zhifirsun, Tumas, 1743-1826",
+                    "order": "0",
+                    "type": {
+                        "id": "400228",
+                        "term": "Name",
+                        "uri": null,
+                        "type": "name_component",
+                        "description": null
+                    },
+                    "id": "26350850",
+                    "version": "3849170",
+                    "operation": null,
+                    "dates": []
+                }
+            ],
+            "language": null,
+            "id": "26350849",
+            "version": "3849170",
             "operation": null,
             "dates": []
         }
     ],
+    "preferredNameEntry": null,
     "occupations": [],
     "biogHists": [],
     "relations": [],
