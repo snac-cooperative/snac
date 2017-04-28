@@ -110,6 +110,12 @@ class Config {
     public static $UNITTEST_LOGFILE = "unit_test.log";
 
     /**
+     *
+     * @var string filename for the WebUI log
+     */
+    public static $CRON_LOGFILE = "cron.log";
+
+    /**
      * Whether or not the database is in testing mode. In testing mode,
      * database calls will only be logged and not committed to the database.
      *

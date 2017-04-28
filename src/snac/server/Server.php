@@ -145,6 +145,7 @@ class Server implements \snac\interfaces\ServerInterface {
 
             case "end_session":
                 $this->response = $executor->endSession();
+                break;
 
             // User Management
             case "user_information":
@@ -325,6 +326,19 @@ class Server implements \snac\interfaces\ServerInterface {
             case "resource_search":
                 $this->response = $executor->searchResources($this->input);
                 break;
+
+            // Reporting
+            case "report":
+                if (!$executor->hasPermission("View Reports"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.");
+                $this->response = $executor->readReport($this->input);
+                break;
+            case "report_generate":
+                if (!$executor->hasPermission("Generate Reports"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to generate reports.");
+                $this->response = $executor->generateReport($this->input);
+                break;
+
 
             default:
                 throw new \snac\exceptions\SNACUnknownCommandException("Command: " . $this->input["command"]);

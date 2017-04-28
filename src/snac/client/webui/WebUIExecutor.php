@@ -368,7 +368,6 @@ class WebUIExecutor {
         }
     }
 
-
     /**
      * Display MaybeSame List Page
      *
@@ -406,6 +405,14 @@ class WebUIExecutor {
         }
     }
     
+    /**
+     * Display Constellation History Page
+     *
+     * Loads the version history page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function displayHistoryPage(&$input, &$display) {
         $query = array();
         if (isset($input["constellationid"]))
@@ -967,6 +974,32 @@ class WebUIExecutor {
             case "reassign_constellation":
                 return $this->reassignConstellation($input);
                 break;
+
+
+            case "report_general":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "general"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_general_page");
+                break;
+
+            case "report_holdings":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "holdings"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_list_page");
+                break;
+
             default:
                 $this->displayPermissionDeniedPage("Administrator", $display);
         }
