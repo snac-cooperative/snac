@@ -156,8 +156,8 @@ body {
                             <table id="reportTable{{i}}">
                                 <thead>
                                     <tr>
-                                        <th>Key</th>
-                                        <th>Value</th>
+                                        <th>{{ report.headings.key ? report.headings.key : "Key" }}</th>
+                                        <th>{{ report.headings.value ? report.headings.value : "Value" }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

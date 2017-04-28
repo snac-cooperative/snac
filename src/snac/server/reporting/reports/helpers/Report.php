@@ -42,6 +42,11 @@ abstract class Report {
     protected $type;
 
     /**
+     * @var string[] The headings used in the report, if necessary
+     */
+    protected $headings;
+
+    /**
      * Performs the report, using the given connection object to interact with
      * the database(s) and returns the results of the report.  The results are
      * always returned as an associative array.
@@ -76,6 +81,15 @@ abstract class Report {
      */
     public function getDescription() {
         return $this->description;
+    }
+
+    /**
+     * Returns the headings of this report
+     *
+     * @return string[] The headings of this report
+     */
+    public function getHeadings() {
+        return $this->headings;
     }
 
 

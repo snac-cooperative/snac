@@ -720,6 +720,19 @@ class DBUtil
         return $versions;
     }
 
+    /**
+     * List the Version History Information
+     *
+     * Gets the version history information of the given Constellation ID (mainID).  If
+     * given a version, it only returns the history up to that version number, else it will
+     * return all the history.  If the publicOnly flag is set to true, it only returns
+     * the history at publicly-viewable points, i.e. Ingest CPF, Publish, Delete, Tombstone.
+     *
+     * @param int $mainID The Constellation ID to list
+     * @param int $version optional The latest version of the history to return (else returns all)
+     * @param boolean $publicOnly optional Only return the publicly available versionings (default true)
+     * @return string[] Version History information for the Constellation
+     */ 
     public function listVersionHistory($mainID, $version=null, $publicOnly=true) {
         $fromVersion = $version;
         if (!$version || !is_int($version)) {
@@ -4259,6 +4272,15 @@ class DBUtil
         return $newVersion;
     }
 
+    /**
+     * Store Report
+     *
+     * Stores the given report in the database.
+     *
+     * @param string $reportName The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param \snac\data\User $user The user who requested the report
+     */
     public function storeReport($reportName, $report, $user) {
         $userid = $user->getUserID();
         $affiliationid = null;
@@ -4268,6 +4290,16 @@ class DBUtil
         $this->sql->insertReport($reportName, $report, $userid, $affiliationid);
     }
 
+    /**
+     * Read Report
+     *
+     * Reads a report from the database by the given name.  If given a timestamp,
+     * this method will try to read a copy of the report for that timestamp. Else,
+     * it will return the latest report by that name.
+     *
+     * @param string $reportName The name of the report
+     * @param string $timestamp optional The timestamp of the report requsted.
+     */
     public function readReport($reportName, $timestamp = null) {
         $reportData = $this->sql->selectReportByTime($reportName, $timestamp);
 

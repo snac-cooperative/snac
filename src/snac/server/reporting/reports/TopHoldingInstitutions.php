@@ -19,11 +19,26 @@ namespace snac\server\reporting\reports;
  */
 class TopHoldingInstitutions extends helpers\Report {
 
+    /**
+     * The name of this report
+     * @var string The name of this report
+     */
     protected $name = "Top Holding Institutions";
 
+    /**
+     * @var string The description of this report
+     */
     protected $description = "Holding institutions that have repositories pointing to the most Identity Constellations in SNAC.";
 
+    /**
+     * @var string The type of the report data (series, text, numeric)
+     */
     protected $type = "list";
+
+    /**
+     * @var string[] The headings used in the report, if necessary
+     */
+    protected $headings = ["key" => "Holding Repository", "value" => "Identity Constellations"];
 
     /**
      * Run report

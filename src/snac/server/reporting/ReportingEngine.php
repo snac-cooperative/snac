@@ -52,6 +52,14 @@ class ReportingEngine {
         return;
     }
 
+    /**
+     * Set Postgres Connector
+     *
+     * A method to pass a postgres connector to the reporting engine for use in 
+     * analyzing the data.
+     *
+     * @param \snac\server\database\DatabaseConnector The connector to the postgres database
+     */
     public function setPostgresConnector($connector) {
         $this->postgres = $connector;
     }
@@ -96,6 +104,8 @@ class ReportingEngine {
                     "type" => $report->getType(),
                     "description" => $report->getDescription(),
                     "result" => $result);
+                if ($report->getHeadings() !== null)
+                    $results[$report->getName()]["headings"] = $report->getHeadings();
             }
         }
 

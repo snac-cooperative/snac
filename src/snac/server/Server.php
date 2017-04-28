@@ -296,11 +296,15 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             // Reporting
-            case "report_general":
-                $this->response = $executor->generalReport($this->input);
+            case "report":
+                if (!$executor->hasPermission("View Reports"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view reports.");
+                $this->response = $executor->readReport($this->input);
                 break;
-            case "report_general_generate":
-                $this->response = $executor->generateGeneralReport($this->input);
+            case "report_generate":
+                if (!$executor->hasPermission("Generate Reports"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to generate reports.");
+                $this->response = $executor->generateReport($this->input);
                 break;
 
 

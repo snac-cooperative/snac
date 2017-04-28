@@ -1376,6 +1376,16 @@ class ServerExecutor {
 
     }
 
+    /**
+     * Get Constellation History
+     *
+     * Gets the version history information for the constellation defined on input, up to
+     * the given version (or public version).  Only returns the publicly-available versions
+     * of the constellation, such as published, tombstoned, deleted, or ingest cpf.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
     public function getConstellationHistory(&$input) {
         $this->logger->addDebug("Reading constellation history");
         $reponse = array();
@@ -2080,25 +2090,66 @@ class ServerExecutor {
         return array("reconciliation" => $results, "result" => 'success');
     }
 
-    public function generalReport(&$input) {
-        $report = $this->cStore->readReport("General Report");
-
-        return array("result" => "success", 
-                     "reports" => json_decode($report["report"], true),
-                     "timestamp" => $report["timestamp"]);
+    /**
+     * Read Report
+     *
+     * Reads the report the user requested from the database and returns it to the user.  If
+     * the report doesn't exist, this method will return a failing result.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function readReport(&$input) {
+        $reportName = "General Report";
+        switch ($input["type"]) {
+            case "holdings":
+                $reportName = "Holdings";
+                break;
+            case "general":
+            default:
+                break;
+        }
+        $report = $this->cStore->readReport($reportName);
+        
+        if ($report && $report != null && !empty($report))
+            return array("result" => "success", 
+                         "reports" => json_decode($report["report"], true),
+                         "timestamp" => $report["timestamp"]);
+        
+        return array("result" => "failure");
     }
-
-    public function generateGeneralReport(&$input) {
+    
+    /**
+     * Generate Report
+     *
+     * Generates the report asked for by the user, then stores it in the database for
+     * later consumption.  A success/failure notice is returned to the user.  The user should
+     * call readReport() to get the report back for viewing.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function generateReport(&$input) {
         $reportEngine = new \snac\server\reporting\ReportingEngine();
-        $reportEngine->addReport("NumConstellations");
-        $reportEngine->addReport("NumConstellationsByType");
-        $reportEngine->addReport("PublishesLastMonth");
-        $reportEngine->addReport("TopHoldingInstitutions");
+        $reportName = "General Report";
+        switch ($input["type"]) {
+            case "holdings":
+                $reportName = "Holdings";
+                $reportEngine->addReport("AllHoldingInstitutions");
+                break;
+            case "general":
+            default:
+                $reportEngine->addReport("NumConstellations");
+                $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("PublishesLastMonth");
+                $reportEngine->addReport("TopHoldingInstitutions");
+                break;
+        }
         $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
 
         $report = json_encode($reportEngine->runReports(), JSON_PRETTY_PRINT);
 
-        $this->cStore->storeReport("General Report", $report, $this->user);
+        $this->cStore->storeReport($reportName, $report, $this->user);
 
         return array("result" => "success");
     }

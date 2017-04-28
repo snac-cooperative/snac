@@ -5473,11 +5473,31 @@ class SQL
         return $all;
     }
 
+    /**
+     * Insert Report
+     *
+     * Inserts the report into the database.
+     *
+     * @param string $name The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param int $userid The userid that requested the report
+     * @param int $affiliationid The affiliation of the user that requested the report
+     */
     public function insertReport($name, $report, $userid, $affiliationid) {
         $this->sdb->query('insert into reports (name, report, user_id, affiliation_id) values
                             ($1, $2, $3, $4)', array($name, $report, $userid, $affiliationid));
     }
 
+    /**
+     * Select Report By Time
+     *
+     * Reads the report from the database with the given name for the given timestamp.  By default,
+     * this method will read the latest report by that name.
+     *
+     * @param string $name The name of the report to read
+     * @param string $timestamp optional The timestamp for the report to read
+     * @return string[] The report data from the database
+     */
     public function selectReportByTime($name, $timestamp = null) {
         $result = null;
         if ($timestamp == null) {

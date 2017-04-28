@@ -19,10 +19,20 @@ namespace snac\server\reporting\reports;
  */
 class PublishesLastMonth extends helpers\Report {
 
+    /**
+     * The name of this report
+     * @var string The name of this report
+     */
     protected $name = "Publishes Last Month";
 
+    /**
+     * @var string The description of this report
+     */
     protected $description = "The number of publish, deleted, tombstoned, or embargoed events per day for the last month.";
 
+    /**
+     * @var string The type of the report data (series, text, numeric)
+     */
     protected $type = "series";
 
     /**

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Admin Dashboard</title>
+<title>Admin Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -129,9 +129,13 @@ $('.selectpicker').selectpicker();
                     <h3 class="panel-title">Reports</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Run one of the following reports over SNAC</p>
+                    <p>Reports generated weekly</p>
                     <div class="list-group">
-                        <a href="?command=administrator&subcommand=report" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                        <a href="?command=administrator&subcommand=report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                    </div>
+                    <p>Reports generated monthly</p>
+                    <div class="list-group">
+                        <a href="?command=administrator&subcommand=report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
                     </div>
                 </div>
             </div>
