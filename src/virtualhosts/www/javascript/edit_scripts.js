@@ -407,6 +407,9 @@ function selectToText(shortName, idStr) {
     });
 }
 
+
+var geoPlaceLoadResults = null;
+
 function textToGeoPlaceSelect(shortName, idStr) {
     $("#"+shortName+"_datapart_" + idStr + " div[id^='selectGeo_"+shortName+"']").each(function() {
         var cont = $(this);
@@ -585,6 +588,10 @@ function subMakeEditable(short, i) {
     }
     // Places should update the place heading
     if (short == 'place') {
+        // If there is a value pre-set, then automatically confirm and update
+        if ($('#'+short+'_geoplace_id_'+i).val() != null && $('#'+short+'_geoplace_id_'+i).val() != "") {
+            updatePlaceHeading(short, i, $('#'+short+'_geoplace_id_'+i).val());
+        }
         // make the role dropdown affect the picture
         $('#'+short+'_geoplace_id_'+i).change(function() {
             updatePlaceHeading(short, i,
@@ -1465,9 +1472,28 @@ function updatePictureIcon(shortName, i, entityType) {
 }
 
 
+var geoPlaceLoadResults = null;
+
+function loadGeoPlaceResultCache() {
+    $("input[id^='place_geoplace_id_']").each(function() {
+        var obj = $(this);
+        // Query for term by ajax
+        if (obj.val() != null && obj.val() != "") {
+            $.get("?command=vocabulary&type=geoPlace&subcommand=read&id="+obj.val(), null, function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.term) {
+                    if (!geoPlaceLoadResults)
+                        geoPlaceLoadResults = new Array();
+                    geoPlaceLoadResults.push(data.term);
+                }
+            });
+        }
+    });
+}
+
 function updatePlaceHeading(shortName, i, newValue) {
     var place = null;
-    if (!geoPlaceSearchResults) {
+    if (!geoPlaceSearchResults && !geoPlaceLoadResults) {
         $('#'+shortName+'_confirmed_'+i).val("false");
         $('#'+shortName+'_geoterm_text_'+i).html("<em>Unconfirmed</em>");
         $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
@@ -1479,10 +1505,19 @@ function updatePlaceHeading(shortName, i, newValue) {
         return;
     }
 
-    geoPlaceSearchResults.forEach(function(result) {
-        if (result.id == newValue)
-            place = result;
-    });
+    if (geoPlaceSearchResults) {
+        geoPlaceSearchResults.forEach(function(result) {
+            if (result.id == newValue)
+                place = result;
+        });
+    }
+
+    if (!place && geoPlaceLoadResults) {
+        geoPlaceLoadResults.forEach(function(result) {
+            if (result.id == newValue)
+                place = result;
+        });
+    }
 
     if (!place) {
         $('#'+shortName+'_confirmed_'+i).val("false");
@@ -1517,6 +1552,8 @@ function updatePlaceHeading(shortName, i, newValue) {
  */
 $(document).ready(function() {
 
+    // Load the place cache, if needed
+    loadGeoPlaceResultCache();
 
     // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
     // to be true...
@@ -2196,6 +2233,9 @@ $(document).ready(function() {
             $.get("?command=edit_part&part=places&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
                 placeOpen = true;
                 $('#places').html(data);
+                
+                // Load the place cache, if needed
+                loadGeoPlaceResultCache();
 
                 turnOnEditDeleteButtons("places");
 

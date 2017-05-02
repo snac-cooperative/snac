@@ -1055,25 +1055,37 @@
 
                             {% if place.confirmed and place.geoplace.id %}
                                 <h4 class="text-center" id="place_geoterm_text_{{i}}">{{place.geoplace.name}}</h4>
-                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</p>
+                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</p>
                                 <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="true"/>
                             {% else %}
                                 {% if place.original and place.original != "" %}
                                 <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>Unconfirmed</em></h4>
-                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">{{place.original and place.original != "" ? "Recorded as:"}} {{place.original}}</p>
+                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">{{place.original and place.original != "" ? "Recorded as:"}} {{place.original}}</p>
                                 {% else %}
                                 <h4 class="text-center" id="place_geoterm_text_{{i}}">--</h4>
-                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">GeoPlace term not specified</p>
+                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">GeoPlace term not specified</p>
                                 {% endif %}
                                 <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="false"/>
                             {% endif %}
+
+                            {% if place.geoplace.id and not place.confirmed %}
+                                <p class="caption text-center" id="place_geoterm_matchconfidence_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">Possibly:
+                                {{ place.geoplace.name }}
+                                {% if place.geoplace.administrationCode or place.geoplace.countryCode %}
+                                    ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})
+                                {% endif %}
+                                -- {{place.score}}% confidence
+                                </p>
+
+                            {% endif %}
+
                         </div>
                         <div class="col-xs-3">
                             <div class="list-group snac-options-list">
-                            {% if place.geoplace.id %}
-                                <a class="list-group-item list-group-item-download" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View Map</a>
+                            {% if place.geoplace.id and place.confirmed %}
+                                <a class="list-group-item list-group-item-download" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
                             {% else %}
-                                <a class="list-group-item list-group-item-download disabled" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View Map</a>
+                                <a class="list-group-item list-group-item-download disabled" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
                             {% endif %}
                             </div>
                         </div>
@@ -1084,8 +1096,6 @@
                         <div class="col-xs-12" id="selectGeo_place_geoplace_{{i}}">
                             <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
                             <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
-                            <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
-                            <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="2"/>
                         </div>
                     </div>
 
