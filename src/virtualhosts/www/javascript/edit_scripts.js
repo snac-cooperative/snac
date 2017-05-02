@@ -407,6 +407,51 @@ function selectToText(shortName, idStr) {
     });
 }
 
+function textToGeoPlaceSelect(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='selectGeo_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("selectGeo_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
+            var placeholder = "Select Geo Place Term";
+
+            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' data-placeholder='"+placeholder+"'>"+
+                    "<option></option>"+
+                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "</select>");
+
+            geovocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
+
+        }
+    });
+}
+
+function geoPlaceSelectToText(shortName, idStr) {
+    $("div[id^='selectGeo_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("selectGeo_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_id_"+idStr+ " option:selected").text();
+
+            cont.html("<input type=\"hidden\" id=\""+shortName+"_"+name+"_id_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_id_"+idStr+"\" value=\""+id+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_term_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_term_"+idStr+"\" value=\""+term+"\"/>");
+
+        }
+    });
+}
+
 /**
  * Make a data object editable
  *
@@ -497,6 +542,7 @@ function subMakeEditable(short, i) {
 
     if (!sawSelect) {
         textToSelect(short, i);
+        textToGeoPlaceSelect(short, i);
         textToDate(short, i);
     }
 
@@ -535,6 +581,14 @@ function subMakeEditable(short, i) {
         $('#'+short+'_role_id_'+i).change(function() {
             updatePictureArrow(short, i,
                 $('#'+short+'_role_id_'+i+' option:selected').text());
+        });
+    }
+    // Places should update the place heading
+    if (short == 'place') {
+        // make the role dropdown affect the picture
+        $('#'+short+'_geoplace_id_'+i).change(function() {
+            updatePlaceHeading(short, i,
+                $('#'+short+'_geoplace_id_'+i).val());
         });
     }
 
@@ -611,6 +665,7 @@ function subMakeUneditable(shortName, i) {
     // If a select box was seen, undo it
     if (sawSelect) {
         selectToText(shortName, i);
+        geoPlaceSelectToText(shortName, i);
         dateToText(shortName,i);
     }
 
@@ -1409,6 +1464,54 @@ function updatePictureIcon(shortName, i, entityType) {
     $('#'+shortName+'_relationPictureIcon_'+i).html(html);
 }
 
+
+function updatePlaceHeading(shortName, i, newValue) {
+    var place = null;
+    if (!geoPlaceSearchResults) {
+        $('#'+shortName+'_confirmed_'+i).val("false");
+        $('#'+shortName+'_geoterm_text_'+i).html("<em>Unconfirmed</em>");
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+        if ($('#'+shortName+'_original_'+i).val() != "")
+            $('#'+shortName+'_geoterm_caption_'+i).text("Recorded as: " + $('#'+shortName+'_original_'+i).val());
+        else
+            $('#'+shortName+'_geoterm_caption_'+i).text();
+        return;
+    }
+
+    geoPlaceSearchResults.forEach(function(result) {
+        if (result.id == newValue)
+            place = result;
+    });
+
+    if (!place) {
+        $('#'+shortName+'_confirmed_'+i).val("false");
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).off("click");
+        if ($('#'+shortName+'_original_'+i).val() != "") {
+            $('#'+shortName+'_geoterm_text_'+i).html("<em>Unconfirmed</em>");
+            $('#'+shortName+'_geoterm_caption_'+i).text("Recorded as: " + $('#'+shortName+'_original_'+i).val());
+        } else {
+            $('#'+shortName+'_geoterm_text_'+i).text("--");
+            $('#'+shortName+'_geoterm_caption_'+i).text("GeoPlace term not specified");
+        }
+        return;
+    }
+    $('#'+shortName+'_confirmed_'+i).val("true");
+    $('#'+shortName+'_geoterm_text_'+i).text(place.name);
+    $('#'+shortName+'_geoterm_caption_'+i).text(place.administrationCode + ", " + place.countryCode);
+    if (place.latitude && place.longitude) {
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+        $('#'+shortName+"_geoterm_maplink_"+i).on("click", function() {openGeoPlaceViewer(place.id); return false;});
+        $('#'+shortName+"_geoterm_maplink_"+i).removeClass("disabled");
+    } else {
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+    }
+
+
+}
+
 /**
  * Things to do when the page finishes loading
  */
@@ -1746,7 +1849,7 @@ $(document).ready(function() {
                             errorPlacement: function(error, element) {
                                 error.appendTo( element.parent() );
                             }
-                            
+
                         });
 
                         // Remove the search results from the other modal
