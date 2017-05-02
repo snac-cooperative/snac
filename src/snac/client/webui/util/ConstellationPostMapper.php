@@ -1285,6 +1285,13 @@ class ConstellationPostMapper {
 
             $place->setRole($this->parseTerm($data["role"]));
 
+            if (isset($data["geoplaceSuggested"]) && $data["geoplaceSuggested"] != null && isset($data["geoplaceSuggested"]["id"])
+                    && $data["geoplaceSuggested"]["id"] != null && $data["geoplaceSuggested"]["id"] != "") {
+                $geoterm = new \snac\data\GeoTerm();
+                $geoterm->setID($data["geoplaceSuggested"]["id"]);
+                $place->setGeoTerm($geoterm);
+            }
+
             if (isset($data["geoplace"]) && $data["geoplace"] != null && isset($data["geoplace"]["id"])
                     && $data["geoplace"]["id"] != null && $data["geoplace"]["id"] != "") {
                 $geoterm = new \snac\data\GeoTerm();
