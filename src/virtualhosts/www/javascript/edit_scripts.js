@@ -423,9 +423,17 @@ function textToGeoPlaceSelect(shortName, idStr) {
             var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
             var placeholder = "Select Geo Place Term";
 
+            var confirmed = $("#"+shortName+"_confirmed_" + idStr).val() == "true" ? true : false;
+            var firstOptionSelect = "";
+            var secondOptionSelect = " selected";
+            if (!confirmed) {
+                firstOptionSelect = " selected";
+                secondOptionSelect = "";
+            }
+
             cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' data-placeholder='"+placeholder+"'>"+
-                    "<option></option>"+
-                    "<option value=\""+id+"\" selected>"+term+"</option>"+
+                    "<option"+firstOptionSelect+"></option>"+
+                    "<option value=\""+id+"\""+secondOptionSelect+">"+term+"</option>"+
                     "</select>");
 
             geovocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
@@ -512,12 +520,18 @@ function subMakeEditable(short, i) {
 
     var idstr = "_" + i;
 
+    // Enable buttons
     $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("disabled").removeClass("snac-hidden");
         }
     });
+    // Enable buttons
+    $("#"+short+"_datapart_" + i + " a.label").each(function() {
+        $(this).removeClass("snac-hidden");
+    });
+
     // Turn on CodeMirror Editors
     $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
@@ -656,6 +670,11 @@ function subMakeUneditable(shortName, i) {
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.attr("disabled", "true").addClass("snac-hidden");
         }
+    });
+
+    // Disable buttons
+    $("#"+shortName+"_datapart_" + i + " a.label").each(function() {
+        $(this).addClass("snac-hidden");
     });
 
 
@@ -1491,6 +1510,15 @@ function loadGeoPlaceResultCache() {
     });
 }
 
+function chooseSuggestedGeoPlace(selectID, idStr, value) {
+    // idStr == id number on the page
+    var obj = $("#"+selectID);
+    obj.select2('destroy');
+    obj.val(value);
+    geovocab_select_replace(obj, "_"+idStr);
+    updatePlaceHeading("place", idStr, value);
+}
+
 function updatePlaceHeading(shortName, i, newValue) {
     var place = null;
     if (!geoPlaceSearchResults && !geoPlaceLoadResults) {
@@ -2233,7 +2261,7 @@ $(document).ready(function() {
             $.get("?command=edit_part&part=places&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
                 placeOpen = true;
                 $('#places').html(data);
-                
+
                 // Load the place cache, if needed
                 loadGeoPlaceResultCache();
 

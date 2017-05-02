@@ -1067,16 +1067,19 @@
                                 {% endif %}
                                 <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="false"/>
                             {% endif %}
-
-                            {% if place.geoplace.id and not place.confirmed %}
-                                <p class="caption text-center" id="place_geoterm_matchconfidence_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">Possibly:
-                                {{ place.geoplace.name }}
-                                {% if place.geoplace.administrationCode or place.geoplace.countryCode %}
-                                    ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})
+                            {% if inEdit %}
+                                {% if place.geoplace.id and not place.confirmed %}
+                                    <input id="place_geoplaceSuggested_id_{{i}}" name="place_geoplaceSuggested_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                                    <p class="caption text-center" id="place_geoterm_matchconfidence_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">Possibly:
+                                    {{ place.geoplace.name }}
+                                    {% if place.geoplace.administrationCode or place.geoplace.countryCode %}
+                                        ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})
+                                    {% endif %}
+                                    -- {{(place.score * 100)|round(1, 'floor')}}% confidence
+                                    <a class="label label-info snac-hidden" onclick="chooseSuggestedGeoPlace('place_geoplace_id_{{i}}', {{i}}, '{{place.geoplace.id}}')">
+                                        choose</a>
+                                    </p>
                                 {% endif %}
-                                -- {{place.score}}% confidence
-                                </p>
-
                             {% endif %}
 
                         </div>
@@ -1095,7 +1098,7 @@
                     <div class="form-group">
                         <div class="col-xs-12" id="selectGeo_place_geoplace_{{i}}">
                             <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
-                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
+                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }} ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})"/>
                         </div>
                     </div>
 
