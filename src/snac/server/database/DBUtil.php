@@ -4035,6 +4035,11 @@ class DBUtil
 
     }
 
+    public function browseNameIndex($query, $position, $entityType=null, $icid=0) {
+
+        return $this->sql->browseNameIndex($query, $position, $entityType, $icid);
+    }
+
     /**
      * Search Vocabulary
      *
@@ -4383,5 +4388,36 @@ class DBUtil
         $reportData = $this->sql->selectReportByTime($reportName, $timestamp);
 
         return $reportData;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to include in the name index 
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex(&$constellation) {
+        return $this->sql->updateNameIndex($constellation->getPreferredNameEntry()->getOriginal(),
+                                        $constellation->getID(),
+                                        $constellation->getArk(),
+                                        $constellation->getEntityType()->getTerm(),
+                                        count($constellation->getRelations()),
+                                        count($constellation->getResourceRelations()));
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to delete from the name index 
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex(&$constellation) {
+        return $this->sql->deleteFromNameIndex($constellation->getID());
     }
 }
