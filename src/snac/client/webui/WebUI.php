@@ -112,8 +112,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "quicksearch",
                 "relations",
                 "explore",
-                "history",
-                "browse","browse_data"
+                "history"
         );
 
         // These are read-only commands that are allowed in read-only mode
