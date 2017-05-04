@@ -407,6 +407,62 @@ function selectToText(shortName, idStr) {
     });
 }
 
+
+var geoPlaceLoadResults = null;
+
+function textToGeoPlaceSelect(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='selectGeo_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("selectGeo_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_term_"+idStr).val();
+            var placeholder = "Select Geo Place Term";
+
+            var confirmed = $("#"+shortName+"_confirmed_" + idStr).val() == "true" ? true : false;
+            var firstOptionSelect = "";
+            var secondOptionSelect = " selected";
+            if (!confirmed) {
+                firstOptionSelect = " selected";
+                secondOptionSelect = "";
+            }
+
+            cont.html("<select id='"+shortName+"_"+name+"_id_"+idStr+"' name='"+shortName+"_"+name+"_id_"+idStr+"' class='form-control' data-placeholder='"+placeholder+"'>"+
+                    "<option"+firstOptionSelect+"></option>"+
+                    "<option value=\""+id+"\""+secondOptionSelect+">"+term+"</option>"+
+                    "</select>");
+
+            geovocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
+
+        }
+    });
+}
+
+function geoPlaceSelectToText(shortName, idStr) {
+    $("div[id^='selectGeo_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace("selectGeo_", "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var id = $("#"+shortName+"_"+name+"_id_"+idStr).val();
+            var term = $("#"+shortName+"_"+name+"_id_"+idStr+ " option:selected").text();
+
+            cont.html("<input type=\"hidden\" id=\""+shortName+"_"+name+"_id_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_id_"+idStr+"\" value=\""+id+"\"/>" +
+                    "<input type=\"hidden\" id=\""+shortName+"_"+name+"_term_"+idStr+"\" " +
+                    "name=\""+shortName+"_"+name+"_term_"+idStr+"\" value=\""+term+"\"/>");
+
+        }
+    });
+}
+
 /**
  * Make a data object editable
  *
@@ -464,12 +520,18 @@ function subMakeEditable(short, i) {
 
     var idstr = "_" + i;
 
+    // Enable buttons
     $("#"+short+"_datapart_" + i + " button[id^='"+short+"_']").each(function() {
         var obj = $(this);
         if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
             obj.removeAttr("disabled").removeClass("snac-hidden");
         }
     });
+    // Enable buttons
+    $("#"+short+"_datapart_" + i + " a.label").each(function() {
+        $(this).removeClass("snac-hidden");
+    });
+
     // Turn on CodeMirror Editors
     $("#"+short+"_datapart_" + i + " textarea[id^='"+short+"_']").each(function() {
         var obj = $(this);
@@ -497,6 +559,7 @@ function subMakeEditable(short, i) {
 
     if (!sawSelect) {
         textToSelect(short, i);
+        textToGeoPlaceSelect(short, i);
         textToDate(short, i);
     }
 
@@ -535,6 +598,18 @@ function subMakeEditable(short, i) {
         $('#'+short+'_role_id_'+i).change(function() {
             updatePictureArrow(short, i,
                 $('#'+short+'_role_id_'+i+' option:selected').text());
+        });
+    }
+    // Places should update the place heading
+    if (short == 'place') {
+        // If there is a value pre-set, then automatically confirm and update
+        if ($('#'+short+'_geoplace_id_'+i).val() != null && $('#'+short+'_geoplace_id_'+i).val() != "") {
+            updatePlaceHeading(short, i, $('#'+short+'_geoplace_id_'+i).val());
+        }
+        // make the role dropdown affect the picture
+        $('#'+short+'_geoplace_id_'+i).change(function() {
+            updatePlaceHeading(short, i,
+                $('#'+short+'_geoplace_id_'+i).val());
         });
     }
 
@@ -597,6 +672,11 @@ function subMakeUneditable(shortName, i) {
         }
     });
 
+    // Disable buttons
+    $("#"+shortName+"_datapart_" + i + " a.label").each(function() {
+        $(this).addClass("snac-hidden");
+    });
+
 
     inputToText(shortName, i);
     textAreaToText(shortName, i);
@@ -611,6 +691,7 @@ function subMakeUneditable(shortName, i) {
     // If a select box was seen, undo it
     if (sawSelect) {
         selectToText(shortName, i);
+        geoPlaceSelectToText(shortName, i);
         dateToText(shortName,i);
     }
 
@@ -1409,11 +1490,98 @@ function updatePictureIcon(shortName, i, entityType) {
     $('#'+shortName+'_relationPictureIcon_'+i).html(html);
 }
 
+
+var geoPlaceLoadResults = null;
+
+function loadGeoPlaceResultCache() {
+    $("input[id^='place_geoplace_id_']").each(function() {
+        var obj = $(this);
+        // Query for term by ajax
+        if (obj.val() != null && obj.val() != "") {
+            $.get("?command=vocabulary&type=geoPlace&subcommand=read&id="+obj.val(), null, function (data) {
+                // Check the return value from the ajax. If success, then go to dashboard
+                if (data.term) {
+                    if (!geoPlaceLoadResults)
+                        geoPlaceLoadResults = new Array();
+                    geoPlaceLoadResults.push(data.term);
+                }
+            });
+        }
+    });
+}
+
+function chooseSuggestedGeoPlace(selectID, idStr, value) {
+    // idStr == id number on the page
+    var obj = $("#"+selectID);
+    obj.select2('destroy');
+    obj.val(value);
+    geovocab_select_replace(obj, "_"+idStr);
+    updatePlaceHeading("place", idStr, value);
+}
+
+function updatePlaceHeading(shortName, i, newValue) {
+    var place = null;
+    if (!geoPlaceSearchResults && !geoPlaceLoadResults) {
+        $('#'+shortName+'_confirmed_'+i).val("false");
+        $('#'+shortName+'_geoterm_text_'+i).html("<em>Unconfirmed</em>");
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+        if ($('#'+shortName+'_original_'+i).val() != "")
+            $('#'+shortName+'_geoterm_caption_'+i).text("Recorded as: " + $('#'+shortName+'_original_'+i).val());
+        else
+            $('#'+shortName+'_geoterm_caption_'+i).text();
+        return;
+    }
+
+    if (geoPlaceSearchResults) {
+        geoPlaceSearchResults.forEach(function(result) {
+            if (result.id == newValue)
+                place = result;
+        });
+    }
+
+    if (!place && geoPlaceLoadResults) {
+        geoPlaceLoadResults.forEach(function(result) {
+            if (result.id == newValue)
+                place = result;
+        });
+    }
+
+    if (!place) {
+        $('#'+shortName+'_confirmed_'+i).val("false");
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).off("click");
+        if ($('#'+shortName+'_original_'+i).val() != "") {
+            $('#'+shortName+'_geoterm_text_'+i).html("<em>Unconfirmed</em>");
+            $('#'+shortName+'_geoterm_caption_'+i).text("Recorded as: " + $('#'+shortName+'_original_'+i).val());
+        } else {
+            $('#'+shortName+'_geoterm_text_'+i).text("--");
+            $('#'+shortName+'_geoterm_caption_'+i).text("GeoPlace term not specified");
+        }
+        return;
+    }
+    $('#'+shortName+'_confirmed_'+i).val("true");
+    $('#'+shortName+'_geoterm_text_'+i).text(place.name);
+    $('#'+shortName+'_geoterm_caption_'+i).text(place.administrationCode + ", " + place.countryCode);
+    if (place.latitude && place.longitude) {
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+        $('#'+shortName+"_geoterm_maplink_"+i).on("click", function() {openGeoPlaceViewer(place.id); return false;});
+        $('#'+shortName+"_geoterm_maplink_"+i).removeClass("disabled");
+    } else {
+        $('#'+shortName+"_geoterm_maplink_"+i).addClass("disabled");
+        $('#'+shortName+"_geoterm_maplink_"+i).prop('onclick',null).off("click");
+    }
+
+
+}
+
 /**
  * Things to do when the page finishes loading
  */
 $(document).ready(function() {
 
+    // Load the place cache, if needed
+    loadGeoPlaceResultCache();
 
     // If the constellation is in "insert" mode, then we should automatically set "somethingHasBeenEdited"
     // to be true...
@@ -1746,7 +1914,7 @@ $(document).ready(function() {
                             errorPlacement: function(error, element) {
                                 error.appendTo( element.parent() );
                             }
-                            
+
                         });
 
                         // Remove the search results from the other modal
@@ -2093,6 +2261,9 @@ $(document).ready(function() {
             $.get("?command=edit_part&part=places&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
                 placeOpen = true;
                 $('#places').html(data);
+
+                // Load the place cache, if needed
+                loadGeoPlaceResultCache();
 
                 turnOnEditDeleteButtons("places");
 
