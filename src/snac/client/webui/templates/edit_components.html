@@ -1059,11 +1059,16 @@
                                 <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="true"/>
                             {% else %}
                                 {% if place.original and place.original != "" %}
-                                <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>Unconfirmed</em></h4>
-                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">{{place.original and place.original != "" ? "Recorded as:"}} {{place.original}}</p>
+                                    {% if inEdit %}
+                                        <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>Unconfirmed</em></h4>
+                                        <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">Recorded as: {{place.original}}</p>
+                                    {% else %}
+                                        <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>{{place.original}}</em></h4>
+                                        <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">as recorded</p>
+                                    {% endif %}
                                 {% else %}
-                                <h4 class="text-center" id="place_geoterm_text_{{i}}">--</h4>
-                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">GeoPlace term not specified</p>
+                                    <h4 class="text-center" id="place_geoterm_text_{{i}}">--</h4>
+                                    <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">GeoPlace term not specified</p>
                                 {% endif %}
                                 <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="false"/>
                             {% endif %}
