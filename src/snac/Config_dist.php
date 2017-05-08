@@ -62,6 +62,18 @@ class Config {
      *
      * @var string URL of the back-end server
      */
+    public static $WEBUI_URL = "http://localhost/www/";
+
+    /**
+     *
+     * @var string URL of the back-end server
+     */
+    public static $OPENREFINE_URL = "http://localhost/openrefine/";
+
+    /**
+     *
+     * @var string URL of the back-end server
+     */
     public static $INTERNAL_SERVERURL = "http://localhost:82";
 
     /**
