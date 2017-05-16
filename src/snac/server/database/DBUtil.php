@@ -12,6 +12,8 @@
 
 namespace snac\server\database;
 use \snac\server\validation\ValidationEngine as ValidationEngine;
+use Behat\Behat\Definition\Call\Given;
+use phpDocumentor\Plugin\Scrybe\Converter\Metadata\TableOfContents\BaseEntry;
 use snac\server\validation\validators\IDValidator;
 use \snac\server\validation\validators\HasOperationValidator;
 
@@ -51,10 +53,105 @@ use \snac\server\validation\validators\HasOperationValidator;
  */
 class DBUtil
 {
+
+    /*
+     * The following are constants that are used when reading a constellation.  They should be ORed together.
+     *
+     * EX: FULL_CONSTELLATION = READ_NRD | READ_PREFERRED_NAME | READ_ALL_NAMES | READ_BIOGHIST | READ_ALL_BUT_RELATIONS | READ_RELATIONS
+     * EX2: summary1 = READ_NRD | READ_PREFERRED_NAME | READ_ALL_NAMES
+     *
+     */
+
+    /**
+     * @var int Flag to read the entire constellation
+     *
+     * Note: this does not include the maintenance history by default
+     */
+    public static $FULL_CONSTELLATION = 511; // all up to maintenance history
+
+    /**
+     * @var int Flag to read the entire constellation except relations
+     */
+    public static $READ_ALL_BUT_RELATIONS = 415; // 31 + 128 + 256 (up to relations + scm + place)
+
+    /**
+     * @var int Flag to read the nrd, name entries and biog hist only
+     */
+    public static $READ_FULL_SUMMARY = 15;
+
+    /**
+     * @var int Flag to read the nrd, preferred name entry, and biog hist only
+     */
+    public static $READ_SHORT_SUMMARY = 11;
+
+    /**
+     * @var int Flag to read the nrd and first (referred) name entry only
+     */
+    public static $READ_MICRO_SUMMARY = 3;
+
+    /**
+     * @var int Flag to read the Holding Institution level of information
+     */
+    public static $READ_REPOSITORY_SUMMARY = 259; // 1 + 2 + 256 (nrd + pref name + places)
+
+    /**
+     * @var int Flag to read the NRD
+     */
+    public static $READ_NRD = 1;
+
+    /**
+     * @var int Flag to read the Preferred Name entry (first one)
+     */
+    public static $READ_PREFERRED_NAME = 2;
+
+    /**
+     * @var int Flag to read all names (including the preferred name entry)
+     */
+    public static $READ_ALL_NAMES = 4;
+
+    /**
+     * @var int Flag to read the biog hist
+     */
+    public static $READ_BIOGHIST = 8;
+
+    /**
+     * @var int Flag to read other data (not nrd, biogHist or names) except relations
+     */
+    public static $READ_OTHER_EXCEPT_RELATIONS = 16;
+
+    /**
+     * @var int Flag to read relations
+     */
+    public static $READ_RELATIONS = 32;
+
+    /**
+     * @var int Flag to read relations
+     */
+    public static $READ_RESOURCE_RELATIONS = 64;
+
+    /**
+     * @var int Flag to read the maintenance history and other maintenance info
+     */
+    public static $READ_MAINTENANCE_INFORMATION = 512;
+
+    /**
+     * @var int Flag to read the maintenance history and other maintenance info
+     */
+    public static $READ_SCM_METADATA = 128;
+
+    /**
+     * @var int Flag to read the places only (used for holding institutions)
+     */
+    public static $READ_PLACE_INFORMATION = 256;
+
+
+
+
+
     /**
      * SQL object
      *
-     * @var \snac\server\database\SQL low-level SQL class
+     * @var \snac\server\database\SQL $sql low-level SQL class
      */
     private $sql = null;
 
@@ -71,6 +168,24 @@ class DBUtil
      * @var \snac\server\database\DatabaseConnector object.
      */
     private $db = null;
+
+    /**
+     * Term Cache
+     *
+     * Cache of term objects to use when filling out structures so we don't have to repeat lookups
+     *
+     * @var \snac\data\Term[] Array of term objects indexed by termID
+     */
+    private $termCache = null;
+
+    /**
+     * Constellation Cache
+     *
+     * Cache of constellation pieces to use when filling out structures so we don't have to repeat lookups
+     *
+     * @var mixed[] Associative array of arrays of objects indexed by their ids
+     */
+    private $dataCache = null;
 
     /**
      * Constellation status
@@ -108,7 +223,9 @@ class DBUtil
                                 'bulk ingest' => 1,
                                 'deleted' =>1,
                                 'currently editing' => 1,
-                                'ingest cpf' => 1);
+                                'ingest cpf' => 1,
+                                'maybe same' => 1,
+                                'tombstone' => 1);
 
     /**
      * Check status values
@@ -195,10 +312,16 @@ class DBUtil
                                  'snac\data\Place' => 'place_link',
                                  'snac\data\ConstellationRelation' => 'related_identity',
                                  'snac\data\ResourceRelation' => 'related_resource',
+                                 'snac\data\OriginationName' => 'resource_origination_name',
                                  'snac\data\SNACControlMetadata' => 'scm',
                                  'snac\data\StructureOrGenealogy' => 'structure_genealogy',
                                  'snac\data\Source' => 'source',
                                  'snac\data\Subject' => 'subject');
+
+        // Term Cache
+        $this->termCache = array();
+
+        $this->enableLogging();
     }
 
     /**
@@ -334,52 +457,117 @@ class DBUtil
     /**
      * Read published by ARK
      *
-     * Read a published constellation by ARK from the database.
+     * Read a published constellation by ARK from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
+     *
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     *
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param string $arkID An ARK
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation|boolean A PHP constellation object or false if none found.
      *
      */
-    public function readPublishedConstellationByARK($arkID, $summary=false)
+    public function readPublishedConstellationByARK($arkID, $flags=0)
     {
-        $mainID = $this->sql->selectMainID($arkID);
-        if ($mainID)
+        $mainIDs = $this->sql->selectCurrentMainIDsForArk($arkID);
+        if ($mainIDs != null && count($mainIDs) == 1)
         {
+            $mainID = $mainIDs[0];
             $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
             if ($version)
             {
-                $cObj = $this->readConstellation($mainID, $version, $summary);
+                $cObj = $this->readConstellation($mainID, $version, $flags);
                 return $cObj;
             }
         }
         return false;
     }
 
+    /**
+     * Get Current ICIDs for Ark
+     *
+     * Returns the list of ICIDs for the given Ark.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the Ark's creation and the current
+     * published versions.
+     *
+     * @param string $arkID The ark id to look up
+     * @return int[] An array of ICIDs deemed current for this ark
+     */
+    public function getCurrentIDsForARK($arkID) {
+        return $this->sql->selectCurrentMainIDsForArk($arkID);
+    }
+
+
+    /**
+     * Get Current ICIDs for ICID
+     *
+     * Returns the list of ICIDs for the given ICID.  Most of the time, this will be 
+     * only one ICID, however some will return multiple ICIDs.  Multiple IDs will only
+     * be returned if there was a split between the IC's original creation and the current
+     * published versions.
+     *
+     * @param int $icid The ICID to look up
+     * @return int[] An array of ICIDs deemed current for this ICID
+     */
+    public function getCurrentIDsForID($icid) {
+        return $this->sql->selectCurrentMainIDsForID($icid);
+    }
+
 
     /**
      * Read published by ID
      *
-     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.
+     * Read a published constellation by constellation ID (aka ic_id, mainID) from the database.  If the constellation has ever been
+     * split, it will return false.  This method will only return a constellation if the Ark given
+     * only references one published constellation.
+     *
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
+     *
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param integer $mainID A constellation id
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation A PHP constellation object.
      */
-    public function readPublishedConstellationByID($mainID, $summary=false)
+    public function readPublishedConstellationByID($mainID, $flags=0)
     {
-        $version = $this->sql->selectCurrentVersionByStatus($mainID, 'published');
-        if ($version)
-        {
-            $cObj = $this->readConstellation($mainID, $version, $summary);
-            return $cObj;
+        if ($mainID == null || $mainID == '') {
+            return false;
+        }
+
+        // Redirection, in case this ID was merged into another.  Worst case, currentID = mainID.
+        $currentIDs = $this->sql->selectCurrentMainIDsForID($mainID);
+
+        if ($currentIDs != null && count($currentIDs) == 1) {
+            $currentID = $currentIDs[0];
+            $version = $this->sql->selectCurrentVersionByStatus($currentID, 'published');
+            if ($version)
+            {
+                $cObj = $this->readConstellation($currentID, $version, $flags);
+                return $cObj;
+            }
         }
         // Need to throw an exception as well? Or do we? It is possible that higher level code is rather brute
         // force asking for a published constellation. Returning false means the request didn't work.
-        $this->enableLogging();
-        $this->logDebug(sprintf("Warning: cannot get constellation id: $mainID (This is expected for test testFullCPFWithEditList)"));
+        $this->logDebug("Warning: cannot get constellation id: $mainID");
         return false;
     }
 
@@ -475,13 +663,14 @@ class DBUtil
         {
             $offset = \snac\Config::$SQL_OFFSET;
         }
+
         $infoList = $this->sql->selectEditList($user->getUserID(), $status, $limit, $offset);
         if ($infoList)
         {
             $constellationList = array();
             foreach ($infoList as $idVer)
             {
-                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], true);
+                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], DBUtil::$READ_NRD | DBUtil::$READ_PREFERRED_NAME);
                 array_push($constellationList, $cObj);
             }
             return $constellationList;
@@ -541,7 +730,7 @@ class DBUtil
             $constellationList = array();
             foreach ($infoList as $idVer)
             {
-                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], true);
+                $cObj = $this->readConstellation($idVer['ic_id'], $idVer['version'], DBUtil::$READ_NRD | DBUtil::$READ_PREFERRED_NAME);
                 array_push($constellationList, $cObj);
             }
             return $constellationList;
@@ -556,13 +745,76 @@ class DBUtil
      * private if some broader public function takes over its purpose.
      *
      * @param integer $mainID Constellation ID
+     * @param integer $version optional The version number or if null or omitted,
+     *                         go up to the most recent version.
      *
-     * @return integer[] List of version integers.
+     * @return integer[] List of version integers ordered by version number.
      *
      */
-    public function allVersion($mainID)
+    public function listAllVersions($mainID, $version=null)
     {
-        return null;
+        $fromVersion = $version;
+        if (!$version || !is_int($version)) {
+            $fromVersion = $this->sql->selectCurrentVersion($mainID);
+        }
+
+        $vhInfo = array ("ic_id" => $mainID, "version" => $fromVersion);
+        $history = $this->sql->selectVersionHistory($vhInfo, true);
+        $versions = array();
+        foreach ($history as $h) {
+            array_push($versions, $h["version"]);
+        }
+        return $versions;
+    }
+
+    /**
+     * List the Version History Information
+     *
+     * Gets the version history information of the given Constellation ID (mainID).  If
+     * given a version, it only returns the history up to that version number, else it will
+     * return all the history.  If the publicOnly flag is set to true, it only returns
+     * the history at publicly-viewable points, i.e. Ingest CPF, Publish, Delete, Tombstone.
+     *
+     * @param int $mainID The Constellation ID to list
+     * @param int $version optional The latest version of the history to return (else returns all)
+     * @param boolean $publicOnly optional Only return the publicly available versionings (default true)
+     * @return string[] Version History information for the Constellation
+     */ 
+    public function listVersionHistory($mainID, $version=null, $publicOnly=true) {
+        $fromVersion = $version;
+        if (!$version || !is_int($version)) {
+            $fromVersion = $this->sql->selectCurrentVersion($mainID);
+        }
+
+        $vhInfo = array ("ic_id" => $mainID, "version" => $fromVersion);
+
+        $history = $this->sql->selectVersionHistory($vhInfo, !$publicOnly);
+
+        $result = array();
+
+        //TODO Eventually this should be changed to an object
+        foreach ($history as $h) {
+            $event = [
+                'date' => $h['update_date'],
+                'userName' => $h['username'],
+                'fullName' => $h['fullname'],
+                'version' => $h['version'],
+                'status' => $h['status'],
+                'note' => $h['note']
+            ];
+            if ($event['status'] == 'ingest cpf') {
+                $event['data'] = json_decode($event['note'], true);
+                $event['note'] = "";
+            }
+            array_push($result, $event);
+        }
+
+        // give the results back in reverse order
+        usort($result,
+            function ($a, $b) {
+                return $b['version'] <=> $a['version'];
+            });
+        return $result;
     }
 
 
@@ -609,77 +861,140 @@ class DBUtil
     }
 
     /**
-     * Fill in a constellation.
+     * Fill a constellation object from the database
      *
-     * Call all necessary functions to essentially traverse the constellation, getting all data from the
-     * database.
+     * Given the id and version number for the Constellation to read, this function does the work of getting
+     * that information from the database and populating a Constellation object.  It understands the flags
+     * available to read partial constellations, fills out the parts of the constellation requested, and
+     * returns the constellation.  This does no checking on the id and version number passed, so if they
+     * are not valid, this method will return an empty constellation object.
      *
-     * Calling overview: readConstellation() calls selectConstellation() which calls many populate*() functions each of
-     * which call one or more select*() SQL functions.
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
      *
-     * This function serves two purposes. First, it simplfies the API so that all outside code sees
-     * something high level. Second, it wraps all the mid-level functions that know something about structure
-     * of objects. Each populate*() function knows how to populate its own object. selectConstellation() only
-     * knows the list of populate*() functions to call. By factoring the code to have 4 levels of functions,
-     * we avoid massive copy/paste. Each of the 4 levels does some bookkeeping appropriate to its level, so
-     * this architecture is not merely to make the code more legible.
-     *
-     * Must call populateNrd() first so that constellation version and id are set.  Most functions use the
-     * $vhInfo arg, but populateDate(), populateConstellationSource(), and populateLanguage() rely on the
-     * internals of the constellation object.
-     *
-     * We always need nrd data for ARK and entity type, and we always need the name. The constellation
-     * object has mainID and version. That is enough data to render the user interface.
-     *
-     * Use readConstellation() as the public API. This is private.
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param integer[] $vhInfo An associative list with keys 'version', 'ic_id'. Values are integers.
-     * @param boolean $summary optional Optional arg if true then return summary constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation A PHP constellation object.
      *
      */
-    private function selectConstellation($vhInfo, $summary=false)
+    private function selectConstellation($vhInfo, $flags=0)
     {
+        // Update the flags, if needed, to be the full constellation
+        if ($flags == 0)
+            $flags = DBUtil::$FULL_CONSTELLATION;
+
+        // empty data cache
+        $this->dataCache = array();
+
         $tableName = 'version_history';
         $cObj = new \snac\data\Constellation();
+
+        // Log what completeness of constellation we're getting
+        $this->logger->addDebug("The flags are set at " . $flags);
+
+        // Always populating the NRD information
         $this->populateNrd($vhInfo, $cObj);
-        $this->populateNameEntry($vhInfo, $cObj);
-        /*
-         * If any true value in $summary, only return a summary (partial) constellation constising of data
-         * from nrd and name_entry. Yes, we are returning from the middle of the function when doing a
-         * summary.
-         */
-        if ($summary)
-        {
-            return $cObj;
+
+        // IF the user wants metadata, then populate the cache for it
+        if (($flags & (DBUtil::$READ_SCM_METADATA)) != 0) {
+            $this->logger->addDebug("Populating Caches: Meta");
+            $this->populateMetaCache($vhInfo);
         }
-        /*
-         * Constellation SCM aka populateMeta() call moved here from populateNrd() because it is *not* the scm
-         * for table nrd.
-         */
-        $this->populateMeta($vhInfo, $cObj, $tableName);
-        $this->populateBiogHist($vhInfo, $cObj);
-        $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
-        $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
-        $this->populateConventionDeclaration($vhInfo, $cObj);
-        $this->populateFunction($vhInfo, $cObj);
-        $this->populateGender($vhInfo, $cObj);
-        $this->populateGeneralContext($vhInfo, $cObj);
-        $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
-        $this->populateLegalStatus($vhInfo, $cObj);
-        $this->populateMandate($vhInfo, $cObj);
-        $this->populateNationality($vhInfo, $cObj);
-        $this->populateOccupation($vhInfo, $cObj);
-        $this->populateOtherRecordID($vhInfo, $cObj);
-        $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
-        $this->populateStructureOrGenealogy($vhInfo, $cObj);
-        $this->populateSubject($vhInfo, $cObj);
-        $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
-        $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
-        /*
-         * todo: maintenanceEvents and maintenanceStatus added to version history and managed from there.
-         */
+
+
+        // If getting more than a "summary," then populate the caches.  If not, then we can ignore them
+        if (($flags & (DBUtil::$READ_OTHER_EXCEPT_RELATIONS)) != 0) {
+            $this->logger->addDebug("Populating Caches: Date");
+            $this->populateDateCache($vhInfo);
+            $this->logger->addDebug("Populating Caches: Name");
+            $this->populateNameCache($vhInfo);
+            $this->logger->addDebug("Populating Caches: Language");
+            $this->populateLanguageCache($vhInfo);
+        }
+
+        // If the caller has requested any names, then we should pull them out
+        if (($flags & (DBUtil::$READ_ALL_NAMES | DBUtil::$READ_PREFERRED_NAME)) != 0) {
+            $this->logger->addDebug("The user wants name(s)");
+            $getAllNames = false;
+            if (($flags & DBUtil::$READ_ALL_NAMES) != 0)
+                $getAllNames = true;
+            $this->populateNameEntry($vhInfo, $cObj, $getAllNames);
+        }
+
+        if (($flags & (DBUtil::$READ_BIOGHIST)) != 0) {
+            $this->logger->addDebug("The user wants BiogHist");
+            $this->populateBiogHist($vhInfo, $cObj);
+        }
+
+        if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0 ||
+            ($flags & DBUtil::$READ_PLACE_INFORMATION) != 0) {
+            $this->logger->addDebug("The user wants place information");
+            $this->populatePlace($vhInfo, $cObj, $cObj->getID(), 'version_history'); // Constellation->getID() returns ic_id aka nrd.ic_id
+        }
+
+        if (($flags & DBUtil::$READ_OTHER_EXCEPT_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants data except relations");
+            $this->logger->addDebug("  Meta");
+            $this->populateMeta($vhInfo, $cObj, $tableName);
+            $this->logger->addDebug("  Dates");
+            $this->populateDate($vhInfo, $cObj, $tableName); // "Constellation Date" in SQL these dates are linked to table nrd.
+            $this->logger->addDebug("  Source");
+            $this->populateSourceConstellation($vhInfo, $cObj); // "Constellation Source" in the order of statements here
+            $this->logger->addDebug("  CD");
+            $this->populateConventionDeclaration($vhInfo, $cObj);
+            $this->logger->addDebug("  Function");
+            $this->populateFunction($vhInfo, $cObj);
+            $this->logger->addDebug("  Gender");
+            $this->populateGender($vhInfo, $cObj);
+            $this->logger->addDebug("  General Context");
+            $this->populateGeneralContext($vhInfo, $cObj);
+            $this->logger->addDebug("  Languages");
+            $this->populateLanguage($vhInfo, $cObj, $cObj->getID(), $tableName); // Constellation->getID() returns ic_id aka nrd.ic_id
+            $this->logger->addDebug("  Legal Status");
+            $this->populateLegalStatus($vhInfo, $cObj);
+            $this->logger->addDebug("  Mandate");
+            $this->populateMandate($vhInfo, $cObj);
+            $this->logger->addDebug("  Nationality");
+            $this->populateNationality($vhInfo, $cObj);
+            $this->logger->addDebug("  Occupation");
+            $this->populateOccupation($vhInfo, $cObj);
+            $this->logger->addDebug("  OtherRecordID");
+            $this->populateOtherRecordID($vhInfo, $cObj);
+            $this->logger->addDebug("  EntityID");
+            $this->populateEntityID($vhInfo, $cObj);
+            $this->logger->addDebug("  SoG");
+            $this->populateStructureOrGenealogy($vhInfo, $cObj);
+            $this->logger->addDebug("  Subject");
+            $this->populateSubject($vhInfo, $cObj);
+        }
+
+        if (($flags & DBUtil::$READ_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants relations");
+            $this->populateRelation($vhInfo, $cObj); // aka cpfRelation
+        }
+
+        if (($flags & DBUtil::$READ_RESOURCE_RELATIONS) != 0) {
+            $this->logger->addDebug("The user wants resource relations");
+            $this->populateResourceRelation($vhInfo, $cObj); // resourceRelation
+        }
+
+        // If the user requested maintenance history be added to the constellation, then add it.
+        if (($flags & DBUtil::$READ_MAINTENANCE_INFORMATION) != 0) {
+            $this->logger->addDebug("The user wants maintenance info");
+            $this->populateMaintenanceInformation($vhInfo, $cObj);
+
+            $cObj->setMaintenanceAgency("SNAC: Social Networks and Archival Context");
+            $cObj->setMaintenanceStatus(new \snac\data\Term(array("term"=>"revised")));
+        }
+
         return $cObj;
     } // end selectConstellation
 
@@ -751,6 +1066,31 @@ class DBUtil
     }
 
     /**
+    * Populate EntityID
+    *
+    * Populate the EntityID object(s), and add it/them to an existing Constellation object.
+    *
+    * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
+    *
+    * @param \snac\data\Constellation $cObj object, passed by reference, and changed in place
+    *
+    */
+    private function populateEntityID($vhInfo, $cObj)
+    {
+        $oridRows = $this->sql->selectEntityID($vhInfo);
+        foreach ($oridRows as $rec)
+        {
+            $gObj = new \snac\data\EntityId();
+            $gObj->setText($rec['text']); // the text of this sameAs or otherRecordID
+            $gObj->setURI($rec['uri']); // the URI of this sameAs or otherRecordID
+            $gObj->setType($this->populateTerm($rec['type'])); // \snac\data\Term Type of this sameAs or otherRecordID
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $this->populateMeta($vhInfo, $gObj, 'entityid');
+            $cObj->addEntityID($gObj);
+        }
+    }
+
+    /**
      * Populate Place object
      *
      * Build class Place objects for this constellation, selecting from the database. Place gets data from
@@ -816,39 +1156,58 @@ class DBUtil
              * A whole raft of place related properties have been moved from Place to GeoTerm.
              */
             $this->populateDate($vhInfo, $gObj, $tableName);
+
+            /*
+             * Address
+             */
+            $addressRows = $this->sql->selectAddress($gObj->getID(), $vhInfo['version']);
+            foreach ($addressRows as $addr)
+            {
+                /*
+                 * | class         | json key        | php property                        | getter     | setter      | SQL field   |
+                 * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
+                 * | AddressLine   | "text"          | $this->text                         | getText()  | setText()   | value       |
+                 * | AddressLine   | "order"         | $this->order                        | getOrder() | setOrder()  | order       |
+                 * | AddressLine   | "type"          | $this->type                         | getType()  | setType()   | label       |
+                 * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
+                 */
+                $aObj = new \snac\data\AddressLine();
+                $aObj->setText($addr['value']);
+                $aObj->setOrder($addr['line_order']);
+                $aObj->setType($this->populateTerm($addr['label']));
+                $aObj->setDBInfo($addr['version'], $addr['id']);
+                $gObj->addAddressLine($aObj);
+            }
             $cObj->addPlace($gObj);
         }
     }
 
     /**
-     * Populate the SNACControlMetadata (SCM)
+     * Populate the meta cache
      *
-     * Read the SCM from the database and add it to the object in $cObj.
+     * Gets all the SCMs associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
      *
-     * Don't be confused by setSource() that uses a Source object and setSource() that uses a
-     * SNACControlMetadata object.
-     *
-     * The convention for related things like date, place, and meta is args ($id, $version) so we're
-     * following that.
-     *
-     * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
-     *
-     * @param integer $tid Table id, aka row id akd object id
-     *
-     * @param integer $version Constellation version number
-     *
-     * @param string $fkTable Name of the related table aka foreign table aka
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
      */
-    private function populateMeta($vhInfo, $cObj, $fkTable)
+    private function populateMetaCache($vhInfo)
     {
+        $this->dataCache["meta"] = array();
+
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          * I'm pretty sure that first arg is an $fkID.
          */
-        if ( $recList = $this->sql->selectMeta($cObj->getID(), $vhInfo['version'], $fkTable))
+        if ( $recList = $this->sql->selectAllMetaForConstellation($vhInfo['ic_id'], $vhInfo['version']))
         {
             foreach($recList as $rec)
             {
+                if (!isset($this->dataCache["meta"][$rec['fk_table']]))
+                    $this->dataCache["meta"][$rec['fk_table']] = array();
+
+                if (!isset($this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']]))
+                    $this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']] = array();
+
                 $gObj = new \snac\data\SNACControlMetadata();
                 $gObj->setSubCitation($rec['sub_citation']);
                 $gObj->setSourceData($rec['source_data']);
@@ -866,6 +1225,38 @@ class DBUtil
                  * populateSourceByID().
                  */
                 $this->populateSourceByID($vhInfo, $gObj, $rec['citation_id']);
+                array_push($this->dataCache["meta"][$rec['fk_table']][$rec['fk_id']], $gObj);
+            }
+        }
+    }
+
+
+    /**
+     * Populate the SNACControlMetadata (SCM)
+     *
+     * Read the SCM from the database and add it to the object in $cObj.
+     *
+     * Don't be confused by setSource() that uses a Source object and setSource() that uses a
+     * SNACControlMetadata object.
+     *
+     * The convention for related things like date, place, and meta is args ($id, $version) so we're
+     * following that.
+     *
+     * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
+     * @param \snac\data\AbstractData $cObj The object to add the SCMs to
+     * @param string $fkTable Name of the related table aka foreign table aka
+     */
+    private function populateMeta($vhInfo, $cObj, $fkTable)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
+         * I'm pretty sure that first arg is an $fkID.
+         */
+        if ( isset($this->dataCache["meta"][$fkTable]) &&
+             isset($this->dataCache["meta"][$fkTable][$cObj->getID()]) )
+        {
+            foreach($this->dataCache["meta"][$fkTable][$cObj->getID()] as $gObj)
+            {
                 $cObj->addSNACControlMetadata($gObj);
             }
         }
@@ -918,15 +1309,73 @@ class DBUtil
         /*
          * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
          */
-        $gRows = $this->sql->selectSubject($vhInfo);
+        $gRows = $this->sql->selectSubjectWithTerms($vhInfo);
         foreach ($gRows as $rec)
         {
             $gObj = new \snac\data\Subject();
-            $gObj->setTerm($this->populateTerm($rec['term_id']));
+
+            if ($rec['term_id'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($rec['term_id']);
+                $tmpTerm->setTerm($rec['term_value']);
+                $tmpTerm->setType($rec['term_type']);
+                $tmpTerm->setURI($rec['term_uri']);
+                $tmpTerm->setDescription($rec['term_description']);
+                $gObj->setTerm($tmpTerm);
+            }
+
             $gObj->setDBInfo($rec['version'], $rec['id']);
             $this->populateMeta($vhInfo, $gObj, 'subject');
             $cObj->addSubject($gObj);
         }
+    }
+
+
+    /**
+    * Populate the name cache
+    *
+    * Gets all the name components and name contributors for the given constellation and stores
+    * them in a cache for later use
+    *
+    * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+    */
+    private function populateNameCache($vhInfo) {
+        $this->dataCache["name_entries"] = array();
+
+        // Start with name components
+        $componentRows = $this->sql->selectAllNameComponentsForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+        // aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+        foreach ($componentRows as $component) {
+            $cpObj = new \snac\data\NameComponent();
+            $cpObj->setText($component['nc_value']);
+            $cpObj->setOrder($component['c_order']);
+            $cpObj->setType($this->populateTerm($component['nc_label']));
+            $cpObj->setDBInfo($component['version'], $component['id']);
+            if (!isset($this->dataCache["name_entries"][$component["name_id"]]))
+                $this->dataCache["name_entries"][$component["name_id"]] = array();
+            if (!isset($this->dataCache["name_entries"][$component["name_id"]]["components"]))
+                $this->dataCache["name_entries"][$component["name_id"]]["components"] = array();
+            array_push($this->dataCache["name_entries"][$component["name_id"]]["components"], $cpObj);
+        }
+
+        // Then do name contributors
+        $contributorRows = $this->sql->selectAllNameContributorsForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($contributorRows as $contributor) {
+            $ctObj = new \snac\data\Contributor();
+            $ctObj->setType($this->populateTerm($contributor['name_type']));
+            $ctObj->setRule($this->populateTerm($contributor['rule']));
+            $ctObj->setName($contributor['short_name']);
+            $ctObj->setDBInfo($contributor['version'], $contributor['id']);
+
+            if (!isset($this->dataCache["name_entries"][$contributor["name_id"]]))
+                $this->dataCache["name_entries"][$contributor["name_id"]] = array();
+            if (!isset($this->dataCache["name_entries"][$contributor["name_id"]]["contributors"]))
+                $this->dataCache["name_entries"][$contributor["name_id"]]["contributors"] = array();
+            array_push($this->dataCache["name_entries"][$contributor["name_id"]]["contributors"], $ctObj);
+        }
+
+
     }
 
 
@@ -954,10 +1403,10 @@ class DBUtil
      * |                                  |                            |
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
-     * @param $cObj \snac\data\Constellation object, passed by reference, and changed in place
-     *
+     * @param \snac\data\Constellation $cObj Constellation to populate
+     * @param boolean $getAll optional Whether to read all names (true, default) or only one (false)
      */
-    private function populateNameEntry($vhInfo, $cObj)
+    private function populateNameEntry($vhInfo, $cObj, $getAll=true)
     {
         $tableName = 'name';
         $neRows = $this->sql->selectName($vhInfo);
@@ -967,49 +1416,80 @@ class DBUtil
             $neObj->setOriginal($oneName['original']);
             $neObj->setPreferenceScore($oneName['preference_score']);
             $neObj->setDBInfo($oneName['version'], $oneName['id']);
-            /*
-             * Contributor
-             *
-             * This line works because $oneName['id'] == $neObj->getID() after calling setDBInfo(). Both are
-             * record id, not constellation id. Both are non-null when reading from the database.
-             */
-            $cRows = $this->sql->selectContributor($neObj->getID(), $vhInfo['version']);
-            foreach ($cRows as $contrib)
-            {
-                $ctObj = new \snac\data\Contributor();
-                $ctObj->setType($this->populateTerm($contrib['name_type']));
-                $ctObj->setRule($this->populateTerm($contrib['rule']));
-                $ctObj->setName($contrib['short_name']);
-                $ctObj->setDBInfo($contrib['version'], $contrib['id']);
-                $neObj->addContributor($ctObj);
+
+            // For now, only get the parts if the user requests all names
+            if ($getAll && isset($this->dataCache["name_entries"]) &&
+                isset($this->dataCache["name_entries"][$neObj->getID()])) {
+                /*
+                 * Contributor
+                 */
+               if (isset($this->dataCache["name_entries"][$neObj->getID()]["contributors"])) {
+                   foreach ($this->dataCache["name_entries"][$neObj->getID()]["contributors"] as $contributor) {
+                       $neObj->addContributor($contributor);
+                   }
+               }
+
+                /*
+                 * Component
+                 */
+                if (isset($this->dataCache["name_entries"][$neObj->getID()]["components"])) {
+                    foreach ($this->dataCache["name_entries"][$neObj->getID()]["components"] as $component) {
+                        $neObj->addComponent($component);
+                    }
+                }
             }
 
-            /*
-             * Component
-             */
-            $componentRows = $this->sql->selectComponent($neObj->getID(), $vhInfo['version']);
-            foreach ($componentRows as $cp)
-            {
-                /*
-                 * | class         | json key        | php property                        | getter     | setter      | SQL field   |
-                 * |---------------+-----------------+-------------------------------------+------------+-------------+-------------|
-                 * | NameComponent | "text"          | $this->text                         | getText()  | setText()   | nc_value    |
-                 * | NameComponent | "order"         | $this->order                        | getOrder() | setOrder()  | c_order     |
-                 * | NameComponent | "type"          | $this->type                         | getType()  | setType()   | nc_label    |
-                 * | AbstractData  | 'id', 'version' | $this->getID(), $this->getVersion() |            | setDBInfo() | version, id |
-                 */
-                $cpObj = new \snac\data\NameComponent();
-                $cpObj->setText($cp['nc_value']);
-                $cpObj->setOrder($cp['c_order']);
-                $cpObj->setType($this->populateTerm($cp['nc_label']));
-                $cpObj->setDBInfo($cp['version'], $cp['id']);
-                $neObj->addComponent($cpObj);
-            }
             $this->populateMeta($vhInfo, $neObj, $tableName);
             $this->populateLanguage($vhInfo, $neObj, $oneName['id'], $tableName);
             $this->populateDate($vhInfo, $neObj, $tableName);
+
             $cObj->addNameEntry($neObj);
+
+            // If the user only asked for one name entry (not all), then return after adding the first one.
+            if ($getAll == false) {
+                return;
+            }
         }
+    }
+
+
+    /**
+     * Populate the date cache
+     *
+     * Gets all the dates associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
+     *
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+     */
+    private function populateDateCache($vhInfo) {
+        $this->dataCache["dates"] = array();
+
+        $dateRows = $this->sql->selectAllDatesForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($dateRows as $singleDate)
+        {
+            if (!isset($this->dataCache["dates"][$singleDate['fk_table']]))
+                $this->dataCache["dates"][$singleDate['fk_table']] = array();
+            if (!isset($this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']]))
+                $this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']] = array();
+            $dateObj = new \snac\data\SNACDate();
+            $dateObj->setRange($this->db->pgToBool($singleDate['is_range']));
+            $dateObj->setFromDate($singleDate['from_original'],
+                                  $singleDate['from_date'],
+                                  $this->populateTerm($singleDate['from_type']));
+            $dateObj->setFromBC($this->db->pgToBool($singleDate['from_bc']));
+            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
+            $dateObj->setToDate($singleDate['to_original'],
+                                $singleDate['to_date'],
+                                $this->populateTerm($singleDate['to_type']));
+            $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
+            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
+            $dateObj->setNote($singleDate['descriptive_note']);
+            $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
+            $this->populateMeta($vhInfo, $dateObj, 'date_range');
+            array_push($this->dataCache["dates"][$singleDate['fk_table']][$singleDate['fk_id']], $dateObj);
+        }
+
     }
 
     /**
@@ -1024,7 +1504,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo associative list with keys 'version', 'ic_id'.
      *
-     * @param object $cObj \snac\data\Constellation object or other object with related date.
+     * @param object $cObj \snac\data\AbtractData object with related date.
      *
      * @param string $fkTable The related table name.
      */
@@ -1044,27 +1524,13 @@ class DBUtil
         {
             $breakAfterOne = true;
         }
-        $dateRows = $this->sql->selectDate($cObj->getID(), $vhInfo['version'], $fkTable);
 
-        foreach ($dateRows as $singleDate)
+        if (!isset($this->dataCache["dates"][$fkTable][$cObj->getID()]))
+            return;
+
+        foreach ($this->dataCache["dates"][$fkTable][$cObj->getID()] as $singleDate)
         {
-            $dateObj = new \snac\data\SNACDate();
-            $dateObj->setRange($this->db->pgToBool($singleDate['is_range']));
-            $dateObj->setFromDate($singleDate['from_original'],
-                                  $singleDate['from_date'],
-                                  $this->populateTerm($singleDate['from_type']));
-            $dateObj->setFromBC($this->db->pgToBool($singleDate['from_bc']));
-            $dateObj->setFromDateRange($singleDate['from_not_before'], $singleDate['from_not_after']);
-            $dateObj->setToDate($singleDate['to_original'],
-                                $singleDate['to_date'],
-                                $this->populateTerm($singleDate['to_type']));
-            $dateObj->setToBC($this->db->pgToBool($singleDate['to_bc']));
-            $dateObj->setToDateRange($singleDate['to_not_before'], $singleDate['to_not_after']);
-            $dateObj->setNote($singleDate['descriptive_note']);
-            $dateObj->setDBInfo($singleDate['version'], $singleDate['id']);
-            $this->populateMeta($vhInfo, $dateObj, 'date_range');
-
-            $cObj->addDate($dateObj);
+            $cObj->addDate($singleDate);
             if ($breakAfterOne)
             {
                 break;
@@ -1091,6 +1557,10 @@ class DBUtil
      */
     public function populateTerm($termID)
     {
+        // If in the cache, then don't re-query
+        if (isset($this->termCache[$termID]))
+            return $this->termCache[$termID];
+
         $row = $this->sql->selectTerm($termID);
         if ($row == null || empty($row))
             return null;
@@ -1100,10 +1570,36 @@ class DBUtil
         $newObj->setTerm($row['value']);
         $newObj->setURI($row['uri']);
         $newObj->setDescription($row['description']);
+
+        // Save this to the cache
+        $this->termCache[$termID] = $newObj;
         /*
          * Class Term has no SNACControlMetadata
          */
         return $newObj;
+    }
+
+    /**
+     * Build the Term Cache
+     *
+     * This function builds an entire copy of the term cache in memory.  It is too big to fit in memory, and therefore should
+     * not be used.
+     *
+     * @deprecated
+     */
+    public function buildTermCache() {
+        $vocab = $this->getAllVocabulary();
+        // Fix up the vocabulary into a nested array
+        foreach($vocab as $v) {
+            $newObj = new \snac\data\Term();
+            $newObj->setID($v['id']);
+            $newObj->setType($v['type']); // Was setDataType() but this is a vocaulary type. See Term.php.
+            $newObj->setTerm($v['value']);
+            $newObj->setURI($v['uri']);
+            $newObj->setDescription($v['description']);
+            // Save this to the cache
+            $this->termCache[$v["id"]] = $newObj;
+        }
     }
 
     /**
@@ -1356,6 +1852,38 @@ class DBUtil
     }
 
     /**
+     * Populate the language cache
+     *
+     * Gets all the languages associated with the queried constellation and stores them in a cache for use
+     * when populating the various constellation pieces
+     *
+     * @param string[] $vhInfo Associative array of version information including 'ic_id' and 'version'
+     */
+    private function populateLanguageCache($vhInfo) {
+        $this->dataCache["languages"] = array();
+
+        $languageRows = $this->sql->selectAllLanguagesForConstellation($vhInfo["ic_id"], $vhInfo['version']);
+
+        foreach ($languageRows as $item)
+        {
+            if (!isset($this->dataCache["languages"][$item['fk_table']]))
+                $this->dataCache["languages"][$item['fk_table']] = array();
+            if (!isset($this->dataCache["languages"][$item['fk_table']][$item['fk_id']]))
+                $this->dataCache["languages"][$item['fk_table']][$item['fk_id']] = array();
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $this->populateMeta($vhInfo, $newObj, 'language');
+            array_push($this->dataCache["languages"][$item['fk_table']][$item['fk_id']], $newObj);
+        }
+
+    }
+
+
+    /**
      * Select language from the database, create a language object, add the language to the object referenced
      * by $cObj.
      *
@@ -1369,40 +1897,32 @@ class DBUtil
      * @param object $cObj An object. May be: \snac\data\Constellation, snac\data\SNACControlMetadata,
      * snac\data\Source, snac\data\BiogHist. Passed by reference, and changed in place
      *
+     * @param integer $fkID ID of the entry from the related table.
      * @param string $fkTable Table name of the related table.
      *
      */
     private function populateLanguage($vhInfo, $cObj, $fkID, $fkTable)
     {
-        /*
-         * This reflects reality table.id=language.fk_id. Do not use the $cObj->getID(). The calling code
-         * knows which ID to use. In one case the calling code does pass $cObj->getID() for $fkID, but we
-         * can't know that down here, so we must use the $fkID param.
-         */
-        $rows = $this->sql->selectLanguage($fkID, $vhInfo['version'], $fkTable);
-
-        foreach ($rows as $item)
+        if ( isset($this->dataCache["languages"][$fkTable]) &&
+             isset($this->dataCache["languages"][$fkTable][$cObj->getID()]) )
         {
-            $newObj = new \snac\data\Language();
-            $newObj->setLanguage($this->populateTerm($item['language_id']));
-            $newObj->setScript($this->populateTerm($item['script_id']));
-            $newObj->setVocabularySource($item['vocabulary_source']);
-            $newObj->setNote($item['note']);
-            $newObj->setDBInfo($item['version'], $item['id']);
-            $this->populateMeta($vhInfo, $newObj, 'language');
-            $class = get_class($cObj);
-            /*
-             * Class specific method for setting/adding a language.
-             */
-            if ($class == 'snac\data\SNACControlMetadata' ||
-                $class == 'snac\data\Source' ||
-                $class == 'snac\data\BiogHist')
+            foreach($this->dataCache["languages"][$fkTable][$cObj->getID()] as $gObj)
             {
-                $cObj->setLanguage($newObj);
-            }
-            else if ($class == 'snac\data\Constellation')
-            {
-                $cObj->addLanguage($newObj);
+                $class = get_class($cObj);
+                /*
+                 * Class specific method for setting/adding a language.
+                 */
+                if ($class == 'snac\data\SNACControlMetadata' ||
+                    $class == 'snac\data\Source' ||
+                    $class == 'snac\data\BiogHist' ||
+                    $class == 'snac\data\NameEntry')
+                {
+                    $cObj->setLanguage($gObj);
+                }
+                else if ($class == 'snac\data\Constellation')
+                {
+                    $cObj->addLanguage($gObj);
+                }
             }
         }
     }
@@ -1434,12 +1954,34 @@ class DBUtil
      */
     private function populateSourceConstellation($vhInfo, $cObj)
     {
-        // Constellation version aka version_history.id is always the "newest". See note above.
-        $rows = $this->sql->selectSourceIDList($cObj->getID(), $vhInfo['version']);
+        // Set the type to "simple", the default required by Daniel
+        $type = null;
+        $types = $this->searchVocabulary("source_type", "simple");
+        if (count($types) == 1) {
+            $type = $types[0];
+        }
 
+        $tableName = 'source';
+        // Constellation version aka version_history.id is always the "newest". See note above.
+        $rows = $this->sql->selectSourceList($cObj->getID(), $vhInfo['version']);
         foreach ($rows as $rec)
         {
-            $this->populateSourceByID($vhInfo, $cObj, $rec['id']);
+            $newObj = new \snac\data\Source();
+            $newObj->setDisplayName($rec['display_name']);
+            $newObj->setText($rec['text']);
+            $newObj->setNote($rec['note']);
+            $newObj->setURI($rec['uri']);
+            $newObj->setDBInfo($rec['version'], $rec['id']);
+
+            $newObj->setType($type);
+
+            $this->populateMeta($vhInfo, $newObj, $tableName);
+            /*
+             * setLanguage() is a Language object.
+             */
+            $this->populateLanguage($vhInfo, $newObj, $rec['id'], $tableName);
+
+            $cObj->addSource($newObj);
         }
     }
 
@@ -1497,7 +2039,7 @@ class DBUtil
             $type = null;
             $types = $this->searchVocabulary("source_type", "simple");
             if (count($types) == 1) {
-                $type = $this->populateTerm($types[0]["id"]);
+                $type = $types[0];
             }
             $newObj->setType($type);
 
@@ -1521,7 +2063,6 @@ class DBUtil
             else
             {
                 $msg = sprintf("Cannot add Source to class: %s\n", $class);
-                $this->enableLogging();
                 $this->logDebug($msg);
                 throw new \snac\exceptions\SNACDatabaseException($msg);
             }
@@ -1859,6 +2400,36 @@ class DBUtil
         }
     }
 
+
+    /**
+    * Save entityID
+    *
+    * Entity id can be found in the EntityId class.
+    *
+    * @param integer[] $vhInfo list with keys version, ic_id.
+    *
+    * @param \snac\data\Constellation $cObj Constellation object
+    */
+    private function saveEntityID($vhInfo, $cObj)
+    {
+        foreach ($cObj->getEntityIDs() as $otherID)
+        {
+            $rid = $otherID->getID();
+            if ($this->prepOperation($vhInfo, $otherID))
+            {
+                $rid = $this->sql->insertEntityID($vhInfo,
+                    $otherID->getID(),
+                    $otherID->getText(),
+                    $this->thingID($otherID->getType()),
+                    $otherID->getURI());
+                    $otherID->setID($rid);
+                    $otherID->setVersion($vhInfo['version']);
+            }
+            $this->saveMeta($vhInfo, $otherID, 'entityid', $rid);
+        }
+    }
+
+
     /**
      * Save Source of constellation
      *
@@ -1868,7 +2439,7 @@ class DBUtil
      */
     private function saveConstellationSource($vhInfo, $cObj)
     {
-        
+
         throw new \snac\exceptions\SNACDatabaseException("DBUtil saveConstellationSource() no longer used. See saveSource()");
         return;
         foreach ($cObj->getSources() as $fdata)
@@ -2036,7 +2607,9 @@ class DBUtil
     /**
      * Save Relation aka  ConstellationRelation
      *
-     * "ConstellationRelation" has had many names: cpfRelation related_resource, relation,
+     * This is cpfRelation aka a relation to a constellation (as opposed to a relation to archival material).
+     *
+     * "ConstellationRelation" has had many names: cpfRelation relation,
      * related_identity. We're attempting to make that more consistent, although the class is
      * ConstellationRelation and the SQL table is related_identity.
      *
@@ -2109,6 +2682,9 @@ class DBUtil
     /**
      * Save resourceRelation
      *
+     * This is resourceRelation aka related_resource which is a related archival material (as opposed to a
+     * relation to another constellation).
+     *
      * ignored: $this->linkType, @xlink:type always 'simple', vocab source_type, .type
      *
      * | placeholder | php                 | what, CPF                                        | sql                  |
@@ -2139,18 +2715,196 @@ class DBUtil
             if ($this->prepOperation($vhInfo, $fdata))
             {
                 $rid = $this->sql->insertResourceRelation($vhInfo,
-                                                          $this->thingID($fdata->getDocumentType()), // xlink:role
-                                                          $this->thingID($fdata->getEntryType()), // relationEntry@localType
-                                                          $fdata->getLink(), // xlink:href
+                                                          $fdata->getResource()->getID(),
+                                                          $fdata->getResource()->getVersion(),
                                                           $this->thingID($fdata->getRole()), // xlink:arcrole
                                                           $fdata->getContent(), // relationEntry
-                                                          $fdata->getSource(), // objectXMLWrap
                                                           $fdata->getNote(), // descriptiveNote
                                                           $fdata->getID());
                 $fdata->setID($rid);
                 $fdata->setVersion($vhInfo['version']);
             }
             $this->saveMeta($vhInfo, $fdata, 'related_resource', $rid);
+        }
+    }
+
+    /**
+     * Write a Vocabulary Term
+     *
+     * Adds a new vocabulary term to the database and returns the full term with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\Term $term Vocabulary term to write
+     * @return \snac\data\Term|boolean       Term if succeeded, or false on failure
+     */
+    public function writeVocabularyTerm($term) {
+        if ($term == null || $term->getType() == null || $term->getType() == "" || $term->getTerm() == null || $term->getTerm() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\Term($term->toArray()); // deep copy
+
+        $id = $this->sql->insertVocabularyTerm($term->getType(), $term->getTerm(), $term->getURI(), $term->getDescription());
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
+
+    /**
+     * Write a Geo Term
+     *
+     * Adds a new geo term to the database and returns the full geoterm with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\GeoTerm $term Geoterm to write
+     * @return \snac\data\GeoTerm|boolean       GeoTerm if succeeded, or false on failure
+     */
+    public function writeGeoTerm($term) {
+        if ($term == null || $term->getName() == null || $term->getName() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\GeoTerm($term->toArray()); // deep copy
+
+        $id = $this->sql->insertGeoTerm( $term->getName(),
+                                            $term->getURI(),
+                                            $term->getLatitude(),
+                                            $term->getLongitude(),
+                                            $term->getAdministrationCode(),
+                                            $term->getCountryCode()
+                                        );
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
+    /**
+     * Save Resource
+     *
+     * Save a resource
+     *
+     * @param  \snac\data\Resource $resource Resource object to save
+     * @return \snac\data\Resource|boolean           The resource object saved with ID and version or false if not written
+     */
+    public function writeResource($resource)
+    {
+        $op = $resource->getOperation();
+        if ($op == \snac\data\AbstractData::$OPERATION_INSERT)
+        {
+            /*
+             * Right now, only do an insert. We need to add functionality to
+             * edit in the NEAR future
+             */
+            $rid = null;
+            $version = null;
+            $repoID = null;
+            if ($resource->getRepository() != null)
+                $repoID = $resource->getRepository()->getID();
+            list($rid, $version) = $this->sql->insertResource($rid,
+                                                      $version,
+                                                      $resource->getTitle(),
+                                                      $resource->getAbstract(),
+                                                      $resource->getExtent(),
+                                                      $repoID,
+                                                      $this->thingID($resource->getDocumentType()), // xlink:role
+                                                      $this->thingID($resource->getEntryType()), // relationEntry@localType
+                                                      $resource->getLink(), // xlink:href
+                                                      $resource->getSource()); // objectXMLWrap
+            $resource->setID($rid);
+            $resource->setVersion($version);
+            $this->saveOriginationNames($resource);
+            $this->saveResourceLanguages($resource);
+            // Return the full resource
+            return $this->populateResource($rid, $version);
+        }
+        return false;
+    }
+
+    /**
+     * Save Resource Languages
+     *
+     *
+     * @param  \snac\data\Resource $resource Resource with languages to save
+     * @return [type]           [description]
+     */
+    private function saveResourceLanguages($resource)
+    {
+        $langList = $resource->getLanguages();
+
+        foreach ($langList as $lang)
+        {
+
+            $rid = $lang->getID();
+            if ($lang->getOperation() == \snac\data\Language::$OPERATION_INSERT ||
+                $lang->getOperation() == \snac\data\Language::$OPERATION_UPDATE) {
+                    $rid = $this->sql->insertResourceLanguage($resource->getID(),
+                                                      $resource->getVersion(),
+                                                      $lang->getID(),
+                                                      $this->thingID($lang->getLanguage()),
+                                                      $this->thingID($lang->getScript()),
+                                                      $lang->getVocabularySource(),
+                                                      $lang->getNote());
+                    $lang->setID($rid);
+                    $lang->setVersion($resource->getVersion());
+            }
+        }
+    }
+
+    /**
+     * Save the resource origination name
+     *
+     * Save all the origination names (if they have insert or update operation) from the given
+     * resource.
+     *
+     * @param \snac\data\Resource $resource The resource object with origination names to save
+     */
+    private function saveOriginationNames($resource) {
+        foreach ($resource->getOriginationNames() as $ron) {
+            /*
+             * Other functions call getID() twice. Unclear if that is a feature or just an oversight.  Here I
+             * call getID before the if() statement to get what may (or may not) be a non-null record
+             * id. Inside the if I use the $rid variable.
+             */
+            $rid = $ron->getID();
+            if ($ron->getOperation() == \snac\data\OriginationName::$OPERATION_INSERT ||
+                $ron->getOperation() == \snac\data\OriginationName::$OPERATION_UPDATE) {
+                $rid = $this->sql->insertOriginationName($resource->getID(),
+                                              $resource->getVersion(),
+                                              $rid,
+                                              $ron->getName());
+                $ron->setID($rid);
+                $ron->setVersion($resource->getVersion());
+            }
+        }
+    }
+
+    /**
+     * Populate the resource origination names
+     *
+     * Like all populate* functions, this modifies the $rObj by calling one its setters, in this case
+     * addOriginationName().
+     *
+     * @param \snac\data\Resource $rObj A Resource object
+     */
+    private function populateOriginationNames($rObj)
+    {
+        /*
+         * $gRows where g is for generic. As in "a generic object". Make this as idiomatic as possible.
+         */
+        $gRows = $this->sql->selectOriginationNames($rObj->getID(), $rObj->getVersion());
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\OriginationName();
+            $gObj->setName($rec['name']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $rObj->addOriginationName($gObj);
         }
     }
 
@@ -2283,7 +3037,7 @@ class DBUtil
     private function populateRelation($vhInfo, $cObj)
     {
         $tableName = 'related_identity';
-        $relRows = $this->sql->selectRelation($vhInfo);
+        $relRows = $this->sql->selectRelationWithTerms($vhInfo);
         foreach ($relRows as $oneRel)
         {
             $relatedObj = new \snac\data\ConstellationRelation();
@@ -2291,10 +3045,38 @@ class DBUtil
             $relatedObj->setSourceArkID($cObj->getARK());
             $relatedObj->setTargetConstellation($oneRel['related_id']);
             $relatedObj->setTargetArkID($oneRel['related_ark']);
-            $relatedObj->setTargetEntityType($this->populateTerm($oneRel['role']));
-            $relatedObj->setType($this->populateTerm($oneRel['arcrole']));
+
+            if ($oneRel['role'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['role']);
+                $tmpTerm->setTerm($oneRel['role_value']);
+                $tmpTerm->setType($oneRel['role_type']);
+                $tmpTerm->setURI($oneRel['role_uri']);
+                $tmpTerm->setDescription($oneRel['role_description']);
+                $relatedObj->setTargetEntityType($tmpTerm);
+            }
+
+            if ($oneRel['arcrole'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['arcrole']);
+                $tmpTerm->setTerm($oneRel['arcrole_value']);
+                $tmpTerm->setType($oneRel['arcrole_type']);
+                $tmpTerm->setURI($oneRel['arcrole_uri']);
+                $tmpTerm->setDescription($oneRel['arcrole_description']);
+                $relatedObj->setType($tmpTerm);
+            }
+
             /* Not using setAltType(). It is never used. See ConstellationRelation.php */
-            $relatedObj->setCPFRelationType($this->populateTerm($oneRel['relation_type']));
+            if ($oneRel['relation_type'] != null) {
+                $tmpTerm = new \snac\data\Term();
+                $tmpTerm->setID($oneRel['relation_type']);
+                $tmpTerm->setTerm($oneRel['relation_type_value']);
+                $tmpTerm->setType($oneRel['relation_type_type']);
+                $tmpTerm->setURI($oneRel['relation_type_uri']);
+                $tmpTerm->setDescription($oneRel['relation_type_description']);
+                $relatedObj->setCPFRelationType($tmpTerm);
+            }
+
             $relatedObj->setContent($oneRel['relation_entry']);
             $relatedObj->setNote($oneRel['descriptive_note']);
             $relatedObj->setDBInfo($oneRel['version'], $oneRel['id']);
@@ -2330,21 +3112,157 @@ class DBUtil
      */
     private function populateResourceRelation($vhInfo, $cObj)
     {
+
+        $rrCache = array();
+        $rCache = array();
+
+        $this->logger->addDebug("Reading resource and resource relation information");
+
+        // Select Resource Relation is smart enough to also grab the Resource information.  This saves
+        // much computation time in pulling the resources individually (or even caching them separately)
+        // NOTE: It does NOT grab origination names or languages for the Resource.
         $rrRows = $this->sql->selectResourceRelation($vhInfo);
+        $this->logger->addDebug("Done reading resource and resource relation information: now parsing through");
         foreach ($rrRows as $oneRes)
         {
             $rrObj = new \snac\data\ResourceRelation();
-            $rrObj->setDocumentType($this->populateTerm($oneRes['role']));
-            $rrObj->setRelationEntryType($oneRes['relation_entry_type']);
-            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
-            $rrObj->setLink($oneRes['href']);
             $rrObj->setRole($this->populateTerm($oneRes['arcrole']));
             $rrObj->setContent($oneRes['relation_entry']);
-            $rrObj->setSource($oneRes['object_xml_wrap']);
             $rrObj->setNote($oneRes['descriptive_note']);
             $rrObj->setDBInfo($oneRes['version'], $oneRes['id']);
+
+            if (isset($oneRes['resource_id']) && $oneRes['resource_id'] !== null && $oneRes['resource_id'] !== '') {
+                //$rrObj->setResource($this->populateResource($oneRes["resource_id"], $oneRes["resource_version"]));
+                $rObj = new \snac\data\Resource();
+                $rObj->setDocumentType($this->populateTerm($oneRes['document_type']));
+                //$rObj->setEntryType($oneRes['entry_type']);
+                /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
+                $rObj->setLink($oneRes['href']);
+                $rObj->setSource($oneRes['object_xml_wrap']);
+                $rObj->setTitle($oneRes['title']);
+                $rObj->setExtent($oneRes['extent']);
+                $rObj->setAbstract($oneRes['abstract']);
+                if (isset($oneRes['repo_ic_id']) && $oneRes['repo_ic_id'] !== null && $oneRes['repo_ic_id'] !== '') {
+                    if (!isset($repoCache[$oneRes['repo_ic_id']])) {
+                        $repoCache[$oneRes['repo_ic_id']] = $this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY);
+                    }
+                    $rObj->setRepository($repoCache[$oneRes['repo_ic_id']]);
+                }
+                $rObj->setDBInfo($oneRes['resource_version'], $oneRes['resource_id']);
+                $rCache[$rObj->getID()] = $rObj;
+
+            }
             $this->populateMeta($vhInfo, $rrObj, 'related_resource' );
+            $rrCache[$rrObj->getID()] = array("object" => $rrObj, "resource_id" => $rObj->getID());
+        }
+
+        $this->logger->addDebug("Reading resource language information");
+
+        // Right now, this will use the Resource Language view that only pulls back the current published versions.
+        // TODO: This should change
+        $languages = $this->sql->selectResourceLanguagesByList(array_keys($rCache));
+        foreach ($languages as $item)
+        {
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $rCache[$item["resource_id"]]->addLanguage($newObj);
+        }
+        $this->logger->addDebug("Reading resource origination name information");
+        $gRows = $this->sql->selectOriginationNamesByList(array_keys($rCache));
+        foreach ($gRows as $rec)
+        {
+            $gObj = new \snac\data\OriginationName();
+            $gObj->setName($rec['name']);
+            $gObj->setDBInfo($rec['version'], $rec['id']);
+            $rCache[$rec["resource_id"]]->addOriginationName($gObj);
+        }
+
+        $this->logger->addDebug("Finished reading resource information, adding to Constellation object");
+
+        foreach ($rrCache as $rr) {
+            $rrObj = $rr["object"];
+            $rrObj->setResource($rCache[$rr["resource_id"]]);
             $cObj->addResourceRelation($rrObj);
+        }
+
+        $this->logger->addDebug("Finished reading resources from the database");
+    }
+
+    /**
+     * Populate Resource
+     *
+     * The private method that reads the Resource from the database with the given id and version numbers.
+     *
+     * @param int $id ID of the resource to read
+     * @param int $version Version number of the resource to read
+     *
+     * @return \snac\data\Resource|null The resource found, or null if it doesn't exist
+     */
+    private function populateResource($id, $version)
+    {
+        $rRows = $this->sql->selectResource($id, $version);
+        if (count($rRows) == 1) {
+            $oneRes = $rRows[0];
+            $rObj = new \snac\data\Resource();
+            $rObj->setDocumentType($this->populateTerm($oneRes['type']));
+            //$rObj->setEntryType($oneRes['entry_type']);
+            /* setLinkType() Not used. Always "simple" See ResourceRelation.php */
+            $rObj->setLink($oneRes['href']);
+            $rObj->setSource($oneRes['object_xml_wrap']);
+            $rObj->setTitle($oneRes['title']);
+            $rObj->setExtent($oneRes['extent']);
+            $rObj->setAbstract($oneRes['abstract']);
+            $rObj->setRepository($this->readPublishedConstellationByID($oneRes['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
+            $rObj->setDBInfo($oneRes['version'], $oneRes['id']);
+            $this->populateOriginationNames($rObj);
+            $this->populateResourceLanguages($rObj);
+            return $rObj;
+        }
+        return null;
+    }
+
+    /**
+     * Read Resource
+     *
+     * Reads the current version of a resource out of the database, based on the given ID.  If an optional version is
+     * supplied, then that version of the resource, if it exists, will be read.
+     *
+     * @param int $id The resource ID to read
+     * @param int $version optional The optional version number.  Without it, the current version will be read
+     * @return \snac\data\Resource|null The resource for the given ID or null if none found
+     */
+    public function readResource($id, $version=null) {
+        if (! $version)
+        {
+            $version = $this->sql->selectCurrentResourceVersion($id);
+        }
+
+        return $this->populateResource($id, $version);
+    }
+
+    /**
+     * Populate Resource's Languages
+     *
+     * Reads the resource's languages from the database and populates them into the resource object
+     *
+     * @param  \snac\data\Resource $rObj Resource object to populate
+     */
+    function populateResourceLanguages(&$rObj) {
+        $languageRows = $this->sql->selectAllLanguagesForResource($rObj->getID(), $rObj->getVersion());
+
+        foreach ($languageRows as $item)
+        {
+            $newObj = new \snac\data\Language();
+            $newObj->setLanguage($this->populateTerm($item['language_id']));
+            $newObj->setScript($this->populateTerm($item['script_id']));
+            $newObj->setVocabularySource($item['vocabulary_source']);
+            $newObj->setNote($item['note']);
+            $newObj->setDBInfo($item['version'], $item['id']);
+            $rObj->addLanguage($newObj);
         }
     }
 
@@ -2380,22 +3298,131 @@ class DBUtil
         }
     }
 
+    /**
+     * Populate Mainenance History
+     *
+     * Populates the Maintenance History of the given $cObj with the published version updates and adds
+     * the original maintenance stataus if the CPF was ingested.
+     *
+     * @param integer[] $vhInfo associative list with keys 'version' and 'ic_id'.
+     * @param \snac\data\Constellation $cObj Constellation passed by reference, and changed in place
+     */
+    public function populateMaintenanceInformation($vhInfo, &$cObj) {
+
+        // Need some terms
+        $searchResult = $this->searchVocabulary("event_type", "revised");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $revisedTerm = $searchResult[0];
+
+        $searchResult = $this->searchVocabulary("agent_type", "human");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $humanTerm = $searchResult[0];
+
+        $searchResult = $this->searchVocabulary("agent_type", "machine");
+        if (count($searchResult) != 1) {
+            return; // could not work with the vocabulary to put in maintenance information
+        }
+        $machineTerm = $searchResult[0];
+
+
+        // Fill in the Maintenance History Events
+        $history = $this->sql->selectVersionHistory($vhInfo);
+        foreach ($history as $event) {
+
+            // If the event was an ingest, then grab any pre-snac history and add it to the Constellation,
+            // then create an event in the constellation detailing the ingest step by the parser
+            if ($event["status"] == 'ingest cpf') {
+                // Put all the previous snac information in
+                $preSnac = json_decode($event["note"], true);
+                $this->logger->addDebug("Got the following pre-snac history", array($preSnac));
+                if (isset($preSnac["maintenanceEvents"])) {
+                    foreach ($preSnac["maintenanceEvents"] as $oldEvent) {
+                        $cObj->addMaintenanceEvent(new \snac\data\MaintenanceEvent($oldEvent));
+                    }
+                }
+
+                // Put in the ingest record from our database
+                $newEvent = new \snac\data\MaintenanceEvent();
+                $newEvent->setEventDateTime($event["update_date"]);
+                $newEvent->setStandardDateTime($event["update_date"]);
+                $newEvent->setAgentType($machineTerm);
+                $newEvent->setAgent("SNAC EAC-CPF Parser");
+                $newEvent->setEventDescription("Bulk ingest into SNAC Database");
+                $newEvent->setEventType($revisedTerm);
+                $cObj->addMaintenanceEvent($newEvent);
+
+            } else {
+                // If it was any other kind of revision, then just state which user made the change
+
+                $newEvent = new \snac\data\MaintenanceEvent();
+                $newEvent->setEventDateTime($event["update_date"]);
+                $newEvent->setStandardDateTime($event["update_date"]);
+                $newEvent->setAgentType($humanTerm);
+                $newEvent->setAgent($event["fullname"] . " (".$event["username"].")");
+                $newEvent->setEventDescription($event["note"]);
+                $newEvent->setEventType($revisedTerm);
+                $cObj->addMaintenanceEvent($newEvent);
+            }
+        }
+
+
+    }
 
     /**
      * Read the status of a constellation.
      *
      * Read the status of a constellation, with optional version. If version is not supplied, then the most
-     * recent version is used.
+     * recent version is used.  If the version number is negative, then it will read the status of that many
+     * versions back in the history.  For example, "-1" will read the previous version, "-2" will read two versions
+     * back, etc.
      *
      * @param integer $mainID The constellation ID
      *
-     * @param integer $version optional The version number or if empty, return the status for the most recent
-     * version.
+     * @param integer $version optional The version number, a relative number of versions prior (negative number),
+     * or if null or omitted, return the status for the most recent version.
      *
      * @return string status. Return the version_history.status value.
      */
     public function readConstellationStatus($mainID, $version=null)
     {
+        $readVersion = false;
+        if (!$version || !is_int($version)) {
+            $readVersion = $this->sql->selectCurrentVersion($mainID);
+        } else if ($version >= 0) {
+            $readVersion = $version;
+        } else {
+            $versionList = $this->listAllVersions($mainID);
+            $this->logger->addDebug("The versions of this constelllation are ", $versionList);
+            if ((count($versionList) - 1 + $version) >= 0) {
+                $readVersion = $versionList[count($versionList) - 1 + $version];
+            }
+        }
+
+        if ($readVersion !== false) {
+            $status = $this->sql->selectStatus($mainID, $readVersion);
+            if ($status) {
+                return $status;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Read Detailed Constellation Status
+     *
+     * Reads the status, user, and note for the given version of the constellation.  If there is no
+     * version given, it returns the values for the most recent version of the constellation.
+     *
+     * @param int $mainID Constellation ID
+     * @param int $version optional The version of the Constellation to read status
+     * @return string[] The status, userid, and note (in that order) for the constellation
+     */
+    public function readConstellationUserStatus($mainID, $version=null) {
         if (! $version)
         {
             $version = $this->sql->selectCurrentVersion($mainID);
@@ -2403,9 +3430,11 @@ class DBUtil
         if ($version)
         {
             $status = $this->sql->selectStatus($mainID, $version);
-            if ($status)
+            $userid = $this->sql->selectCurrentUserForConstellation($mainID, $version);
+            $note   = $this->sql->selectCurrentNoteForConstellation($mainID, $version);
+            if ($status && $userid)
             {
-                return $status;
+                return array("status"=>$status, "userid"=>$userid, "note"=>$note);
             }
         }
         return false;
@@ -2475,12 +3504,87 @@ class DBUtil
         }
         else
         {
-            $this->enableLogging();
             $this->logDebug("DBUtil.php Error: bad status $status\n");
         }
         return false;
     }
 
+    /**
+     * Update Constellation Lookup
+     *
+     * Update the lookup table so that queries to the oldConstellation will be automatically redirected
+     * to read the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation[] $newConstellations The constellations to return when querying for oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateConstellationLookup(&$oldConstellation, &$newConstellations) {
+        // Check input for valid values
+        if ($oldConstellation === null || $newConstellations === null
+                || !is_array($newConstellations) || empty($newConstellations))
+            return false;
+        if ($oldConstellation->getID() === null || $oldConstellation->getArk() === null)
+            return false;
+        foreach ($newConstellations as $newConstellation) {
+            if ($newConstellation->getID() === null || $newConstellation->getArk() === null)
+                return false;
+        }
+
+        // Build the argument array for lookups
+        $newLookups = array();
+        foreach ($newConstellations as $newConstellation) {
+            $newLookups[$newConstellation->getID()] = $newConstellation->getArk();
+        }
+
+        $this->sql->updateConstellationLookup($oldConstellation->getID(), $oldConstellation->getArk(),
+            $newLookups);
+
+        return true;
+    }
+
+    /**
+     * Remove MaybeSame Link
+     *
+     * Removes maybe_same links between the two constellations given as parameters.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @return boolean true on success, false otherwise
+     */
+    public function removeMaybeSameLink(&$constellation1, &$constellation2) {
+        if ($constellation1 === null || $constellation2 === null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->removeMaybeSameLink($constellation1->getID(), $constellation2->getID());
+
+        return true;
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Update the maybe_same table so that maybesame links to the oldConstellation will be automatically redirected
+     * to point to the newConstellation.
+     *
+     * @param \snac\data\Constellation $oldConstellation The constellation to redirect
+     * @param \snac\data\Constellation $newConstellation The constellation to replace oldConstellation
+     * @return boolean true on success, false otherwise
+     */
+    public function updateMaybeSameLinks(&$oldConstellation, &$newConstellation) {
+        if ($oldConstellation === null || $newConstellation === null)
+            return false;
+
+        if ($oldConstellation->getID() === null || $newConstellation->getID() === null)
+            return false;
+
+        $this->sql->updateMaybeSameLinks($oldConstellation->getID(), $newConstellation->getID());
+
+        return true;
+    }
 
     /**
      * Write a constellation to the database.
@@ -2536,17 +3640,16 @@ class DBUtil
      * modified to include id and version, or false if not successful.
      *
      */
-    public function writeConstellation($user, $argObj, $note, $statusArg='locked editing')
+    public function writeConstellation($user, $argObj, $note, $statusArg=null)
     {
         /*
          * We can initialize $status to either $defaultStatus or $statusArg. I'm not sure it makes much
          * difference. We do use $defaultStatus later to set the status after creating a version_history
          * record for 'ingest cpf'.
          */
-        $defaultStatus = 'locked editing'; // Don't change unless you understand how it is used below.
-        $status = $defaultStatus;
+        $defaultStatus = 'locked editing';
+        $status = $statusArg;
         if ($user == null || $user->getUserID() == null) {
-            $this->enableLogging();
             $this->logDebug("dbutil user or userid is null");
             return false;
         }
@@ -2560,7 +3663,8 @@ class DBUtil
              * Update uses the existing constellation ID.
              */
             $mainID = $cObj->getID();
-            $status = $this->readConstellationStatus($mainID);
+            if ($status === null)
+                $status = $this->readConstellationStatus($mainID);
         }
         elseif ($op == \snac\data\AbstractData::$OPERATION_DELETE)
         {
@@ -2593,7 +3697,8 @@ class DBUtil
                  *
                  * A new constellation must have operation insert, and is handled above.
                  */
-                $status = $this->readConstellationStatus($mainID);
+                if ($status === null)
+                    $status = $this->readConstellationStatus($mainID);
             }
             else
             {
@@ -2606,7 +3711,6 @@ class DBUtil
         else
         {
             $json = $cObj->toJSON();
-            $this->enableLogging();
             $opErrorMsg = sprintf("Error: Bad operation: $op\n%s", $json);
             $this->logDebug($opErrorMsg);
             throw new \snac\exceptions\SNACException($opErrorMsg);
@@ -2627,12 +3731,10 @@ class DBUtil
         if (!$ve->validateConstellation($cObj))
         {
             // problem
-            $this->enableLogging();
             $this->logDebug(sprintf("Error: Validation failed: %s", $ve->getErrors()));
         }
         if (! $status)
         {
-            $this->enableLogging();
             $msg = sprintf("Error: writeConstellation() cannot determine version status.\n");
             $msg .= sprintf("operation: %s mainID: %s\n",
                             $op, $mainID);
@@ -2653,9 +3755,14 @@ class DBUtil
             $maintNote = $this->maintenanceNote($cObj);
             $vhInfoIngest = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $statusArg, $maintNote);
             $mainID = $vhInfoIngest['ic_id'];
-            $status = $defaultStatus;
-            $cObj->setStatus($status);
+            $status = $defaultStatus; // set status default (locked editing)
         }
+
+        // If the status is null, we should set it to default before writing
+        if ($status === null)
+            $status = $defaultStatus;
+        // Set the status inside the constellation
+        $cObj->setStatus($status);
 
         // Right now, we're passing null as the role ID.  We may change this to a role from the user object
         $vhInfo = $this->sql->insertVersionHistory($mainID, $user->getUserID(), null, $status, $note);
@@ -2713,6 +3820,7 @@ class DBUtil
         $this->saveNrd($vhInfo, $cObj);
         $this->saveOccupation($vhInfo, $cObj);
         $this->saveOtherRecordID($vhInfo, $cObj);
+        $this->saveEntityID($vhInfo, $cObj);
         $this->savePlace($vhInfo, $cObj, 'version_history', $vhInfo['ic_id']);
         $this->saveStructureOrGenealogy($vhInfo, $cObj);
         $this->saveSubject($vhInfo, $cObj);
@@ -2725,25 +3833,27 @@ class DBUtil
      *
      * Read constellation ID $mainID from the database.
      *
-     * This the public exposed interface function to read constellation data from the db, and handles a bit of
-     * bookkeeping. It might be possible to move the logic here into selectConstellation(), but I can't see a
-     * compelling reason to do that. The word "select" is reserved for SQL functions, so selectConstellation()
-     * really should be renamed, and we really do not want a public API function with "select" in the name.
+     * Use the optional flags to get only a partial constellation.  The flags are a bit mask, and can
+     * be ORed together.  Certain shortcut flags are available, such as:
      *
-     * If we need to do any read related bookkeeping, do it here, and not in the lower level code.
+     * ```
+     * $FULL_CONSTELLATION = $READ_NRD | $READ_ALL_NAMES | $READ_BIOGHIST
+     *                       | $READ_BIOGHIST | $READ_RELATIONS
+     *                       | $READ_OTHER_EXCEPT_RELATIONS
+     * $READ_SHORT_SUMMARY = $READ_NRD | $READ_PREFERRED_NAME | $READ_BIOGHIST
+     * ```
      *
      * @param integer $mainID A constellation ID number
      *
      * @param integer $version optional An optional version number. When not supplied this function will look
      * up the most recent version, regardless of status.
      *
-     * @param boolean $summary Any true value means return a summary constellation. Defaults to false which is
-     * return the full constellation.
+     * @param int $flags optional Flags to indicate which parts of the constellation to read
      *
      * @return \snac\data\Constellation or boolean If successful, return a constellation, else if not successful return false.
      *
      */
-    public function readConstellation($mainID, $version=null, $summary=false)
+    public function readConstellation($mainID, $version=null, $flags=0)
     {
         if (! $mainID)
         {
@@ -2759,7 +3869,7 @@ class DBUtil
         }
         $vhInfo = array('version' => $version,
                         'ic_id' => $mainID);
-        $cObj = $this->selectConstellation($vhInfo, $summary);
+        $cObj = $this->selectConstellation($vhInfo, $flags);
         if ($cObj)
         {
             /*
@@ -2847,6 +3957,26 @@ class DBUtil
                         }
                     }
                 }
+                /*
+                 * Inline the code that would be saveAddress() because it is only used here.
+                 */
+                if ($addressList = $gObj->getAddress())
+                {
+                    foreach($addressList as $addr)
+                    {
+                        if ($this->prepOperation($vhInfo, $addr))
+                        {
+                            $rid = $this->sql->insertAddressLine($vhInfo,
+                                                               $addr->getID(),
+                                                               $pid,
+                                                               $addr->getText(),
+                                                               $this->thingID($addr->getType()),
+                                                               $addr->getOrder());
+                            $addr->setID($rid);
+                            $addr->setVersion($vhInfo['version']);
+                        }
+                    }
+                }
             }
         }
     }
@@ -2867,7 +3997,7 @@ class DBUtil
      *
      * @param integer[] $vhInfo Array with keys 'version', 'ic_id' for this constellation.
      *
-     * @param \snac\data\SNACControlMetadata[] $metaObjList List of SNAC control meta data
+     * @param \snac\data\AbstractData $gObj The data object with SCMs
      *
      * @param string $fkTable Name of the table to which this meta data relates
      *
@@ -2908,6 +4038,78 @@ class DBUtil
              * separately.
              */
         }
+    }
+
+    /**
+     * List maybe-same constellations
+     *
+     * Gets a list of constellations that may be the same as the search
+     *
+     * @param  int  $icid  Identity Constellation ID for which to get maybe same
+     * @param  integer $flags Read flags for the read call (default is FULL_CONSTELLATION)
+     * @return \snac\data\Constellation[]         List of maybesame constellations
+     */
+    public function listMaybeSameConstellations($icid, $flags=0) {
+        $response = array();
+
+        $icids = $this->sql->listMaybeSameIDsFor($icid);
+
+        foreach ($icids as $maybeSame) {
+            array_push($response, $this->readPublishedConstellationByID($maybeSame, $flags));
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * List In Edges for Constellation
+     *
+     * Lists the Constellations with constellation relations pointing TO the given Constellation.
+     *
+     * @param  \snac\data\Constellation $constellation The Constellation to search
+     * @return mixed[] Associative array of ["constellation"=> micro Constellation, "relation" => Relation ]
+     */
+    public function listConstellationInEdges(&$constellation) {
+        $results = array();
+
+        if ($constellation === null) {
+            return $results;
+        }
+
+        // This constitutes some cheating:  We will ask for a list of [IC_ID,relation_id]s (regardless of version) that
+        // point in to this constellation, then go through and check each one by hand to see if they
+        // currently still point to this constellation.  This allows us to take advantage of the structure
+        // of the database as well as its indices.
+        $edgeList = $this->sql->selectUnversionedConstellationIDsForRelationTarget($constellation->getID());
+
+
+        foreach ($edgeList as $inEdge) {
+            $inC = $this->readPublishedConstellationByID($inEdge["ic_id"], DBUtil::$READ_MICRO_SUMMARY|DBUtil::$READ_RELATIONS);
+            $inR = null;
+            foreach ($inC->getRelations() as $rel) {
+                if ($rel->getID() == $inEdge["id"] && $rel->getTargetConstellation() !== null
+                        && $rel->getTargetConstellation() == $constellation->getID()) {
+                    $inR = $rel;
+                    break;
+                }
+            }
+
+            if ($inR !== null) {
+                $inC->emptyRelations();
+                $inC->emptyResourceRelations();
+                array_push($results, array("constellation" => $inC, "relation" => $inR));
+            }
+        }
+
+
+        // Sort the in edges by preferred name
+        usort($results,
+                function ($a, $b) {
+                    return $a['constellation']->getPreferredNameEntry()->getOriginal() <=> $b['constellation']->getPreferredNameEntry()->getOriginal();
+                });
+
+        return $results;
     }
 
 
@@ -2952,6 +4154,44 @@ class DBUtil
     }
 
     /**
+     * Search Resources
+     *
+     * Searches the resources and returns an array of Resource objects.
+     *
+     * @param string $query search string
+     * @param boolean $urlOnly optional Whether to only search on URL
+     * @return \snac\data\Resource list of results
+     */
+    public function searchResources($query, $urlOnly = false) {
+
+        $results = $this->sql->searchResources($query, $urlOnly);
+
+        $return = array();
+        foreach ($results as $result) {
+            $resource = new \snac\data\Resource();
+            $resource->setID($result['id']);
+            $resource->setVersion($result['version']);
+            $resource->setDocumentType($this->populateTerm($result['type']));
+            $resource->setLink($result['href']);
+            $resource->setSource($result['object_xml_wrap']);
+            $resource->setTitle($result['title']);
+            $resource->setExtent($result['extent']);
+            $resource->setAbstract($result['abstract']);
+            $resource->setRepository($this->readPublishedConstellationByID($result['repo_ic_id'], DBUtil::$READ_REPOSITORY_SUMMARY));
+
+            array_push($return, $resource);
+        }
+
+        return $return;
+
+    }
+
+    public function browseNameIndex($query, $position, $entityType=null, $icid=0) {
+
+        return $this->sql->browseNameIndex($query, $position, $entityType, $icid);
+    }
+
+    /**
      * Search Vocabulary
      *
      * Searches the vocabulary and returns an array of id, value pairs.
@@ -2965,20 +4205,42 @@ class DBUtil
      *
      * @return string[][] list of results
      */
-    public function searchVocabulary($type, $query, $entityTypeID=null) {
+    public function searchVocabulary($type, $query, $entityTypeID=null, $count=100) {
 
         if ($type == 'geo_place') {
             $results = $this->sql->searchPlaceVocabulary($query);
             $retVal = array();
-            foreach ($results as $res) {
-                $item = array();
-                $item["id"] = $res["id"];
-                $item["value"] = $res["name"] . " (" . $res["admin_code"] . ", " . $res["country_code"] . ")";
-                array_push($retVal, $item);
+            foreach ($results as $data) {
+                $place = new \snac\data\GeoTerm();
+                $place->setAdministrationCode($data["admin_code"]);
+                $place->setCountryCode($data["country_code"]);
+                $place->setID($data["id"]);
+                $place->setLatitude($data["latitude"]);
+                $place->setLongitude($data["longitude"]);
+                $place->setName($data["name"]);
+                $place->setURI($data["uri"]);
+
+                array_push($retVal, $place);
             }
             return $retVal;
         }
-        return $this->sql->searchVocabulary($type, $query, $entityTypeID);
+        $results = $this->sql->searchVocabulary($type, $query, $entityTypeID, $count);
+        $vocabList = array();
+        foreach ($results as $result) {
+            $term = new \snac\data\Term();
+            if (isset($result["id"]))
+                $term->setID($result["id"]);
+            if (isset($result["uri"]))
+                $term->setURI($result["uri"]);
+            if (isset($result["value"]))
+                $term->setTerm($result["value"]);
+            if (isset($result["type"]))
+                $term->setType($result["type"]);
+            if (isset($result["description"]))
+                $term->setDescription($result["description"]);
+            array_push($vocabList, $term);
+        }
+        return $vocabList;
     }
 
     /**
@@ -3179,7 +4441,6 @@ class DBUtil
             $snCount = $this->sql->siblingNameCount($cObj->getID());
             if (($table == 'name') && ($snCount <= 1))
             {
-                $this->enableLogging();
                 $this->logDebug(sprintf("DBUtil.php Error: Cannot delete the only name for id: %s count: %s\n",
                                         $cObj->getID(),
                                         $this->sql->siblingNameCount($cObj->getID())));
@@ -3192,7 +4453,6 @@ class DBUtil
         else
         {
             // Warn the user and write into the log.
-            $this->enableLogging();
             $this->logDebug(sprintf("DBUtil.php Error: Cannot set deleted on class: %s table: $table json: %s\n",
                                     get_class($cObj),
                                     $cObj->toJSON()));
@@ -3205,7 +4465,7 @@ class DBUtil
      *
      * The code below fails to distinguish constellation from data, and instead does both things, which makes
      * no sense.
-     * 
+     *
      * This should do to separate things depending on what is being undeleted, but "what is being undeleted"
      * is not handled properly. Constellations are undeleted via writeConstellationStatus().
      *
@@ -3239,7 +4499,6 @@ class DBUtil
         if (! isset($this->canDelete[$table]))
         {
             // Warn the user and write into the log.
-            $this->enableLogging();
             $this->logDebug(sprintf("Cannot clear deleted on table: $table"));
             return null;
         }
@@ -3248,4 +4507,68 @@ class DBUtil
         return $newVersion;
     }
 
+    /**
+     * Store Report
+     *
+     * Stores the given report in the database.
+     *
+     * @param string $reportName The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param \snac\data\User $user The user who requested the report
+     */
+    public function storeReport($reportName, $report, $user) {
+        $userid = $user->getUserID();
+        $affiliationid = null;
+        if ($user->getAffiliation())
+            $affiliationid = $user->getAffiliation()->getID();
+
+        $this->sql->insertReport($reportName, $report, $userid, $affiliationid);
+    }
+
+    /**
+     * Read Report
+     *
+     * Reads a report from the database by the given name.  If given a timestamp,
+     * this method will try to read a copy of the report for that timestamp. Else,
+     * it will return the latest report by that name.
+     *
+     * @param string $reportName The name of the report
+     * @param string $timestamp optional The timestamp of the report requsted.
+     */
+    public function readReport($reportName, $timestamp = null) {
+        $reportData = $this->sql->selectReportByTime($reportName, $timestamp);
+
+        return $reportData;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to include in the name index 
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex(&$constellation) {
+        return $this->sql->updateNameIndex($constellation->getPreferredNameEntry()->getOriginal(),
+                                        $constellation->getID(),
+                                        $constellation->getArk(),
+                                        $constellation->getEntityType()->getTerm(),
+                                        count($constellation->getRelations()),
+                                        count($constellation->getResourceRelations()));
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to delete from the name index 
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex(&$constellation) {
+        return $this->sql->deleteFromNameIndex($constellation->getID());
+    }
 }

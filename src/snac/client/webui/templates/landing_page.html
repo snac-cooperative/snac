@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Prototype</title>
+<title>Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -12,7 +12,7 @@
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
@@ -29,23 +29,23 @@ $('.selectpicker').selectpicker();
 <script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC includes -->
-<script src="javascript/search.js"></script>
+<script src="javascript/search.js{{control.noCache}}"></script>
 </head>
 
 <body role="document">
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
 
-		<h1>SNAC Prototype</h1>
+		<h1>Social Networks and Archival Context</h1>
 
-		<form class="form-horizontal" id="search_form" onsubmit="return false;">
+		<form class="form-horizontal" id="search_form" method="GET" action="?">
 			<div class="well well-lg text-center">
                     <input type="hidden" id="count" name="count" value="10">
                     <input type="hidden" id="start" name="start" value="0">
@@ -53,7 +53,7 @@ $('.selectpicker').selectpicker();
 						<input type="text" class="form-control"
 							placeholder="Search for..." id="searchbox" name="term">
 							<span class="input-group-btn">
-							     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
 						    </span>
 					</div>
 
@@ -67,7 +67,7 @@ $('.selectpicker').selectpicker();
             <!-- Left column -->
             <h3>Getting Started</h3>
 
-            <p>Welcome to the SNAC Prototypical Prototype Interface.  This interface allows you to search, view, edit, create, and
+            <p>Welcome to the SNAC Prototype Interface.  This interface allows you to search, view, edit, create, and
             publish identity constellations in a prototype interface.  You may search and view constellations without logging in,
             but to make any changes to a constellation, you need an authorized Google account.  Click the "Login" link above to
             log in with Google and authorize the SNAC Prototype.</p>

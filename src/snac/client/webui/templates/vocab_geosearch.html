@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SNAC Vocabulary: Geographic Vocabulary Management</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
+
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/admin.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/relation_search.js{{control.noCache}}"></script>
+
+
+<script>
+
+$(document).ready(function() {
+
+    // Use select2 to display the select dropdowns
+    // rather than the HTML default
+
+        $('select').each(function() {
+            $(this).select2({
+                minimumResultsForSearch: Infinity,
+                allowClear: false,
+                theme: 'bootstrap'
+            });
+        });
+
+        // Load the table into a datatable
+        var datatable = $('.table').DataTable({ "searching" : false});
+
+        // Load the map
+        var placesMapView = null;
+        var markers = new Array();
+        placesMapView = L.map('placesMap').setView([0,0],2);//setView([35.092344, -39.023438], 2);
+        L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(placesMapView);
+
+        $('#searchbutton').click(function() {
+            console.log($("#search_form").serialize());
+            $.get("?command=vocabulary&format=term&count=1000", $("#search_form").serialize(), function (data) {
+                datatable.clear();
+                for (var i = 0; i < markers.length; i++) {
+                    placesMapView.removeLayer(markers[i]);
+                }
+                $("#resultCount").text("Found " + data.results.length + " results.");
+                if (data.results.length > 0) {
+                    var list = "";
+                    var bounds = new L.LatLngBounds();
+                    for (var key in data.results) {
+                        var result = data.results[key];
+                        var uri = result.uri;
+                        if (uri == null)
+                            uri = "";
+                        var administrationCode = result.administrationCode;
+                        if (administrationCode == null)
+                            administrationCode = "";
+                        var countryCode = result.countryCode;
+                        if (countryCode == null)
+                            countryCode = "";
+                        var latitude = result.latitude;
+                        if (latitude == null)
+                            latitude = "";
+                        var longitude = result.longitude;
+                        if (longitude == null)
+                            longitude = "";
+                        var row = new Array(result.name, uri, administrationCode, countryCode, latitude, longitude);
+                        datatable.row.add(row);
+
+                        if (latitude != "" && longitude != "") {
+                            var marker = L.marker([latitude, longitude]).addTo(placesMapView).bindPopup(result.name
+                                + "<br><a href=\""+uri+"\" target=\"_blank\">" + uri + "</a>");
+                            markers.push(marker);
+                            bounds.extend(marker.getLatLng());
+                        }
+                    }
+                }
+                datatable.draw();
+                placesMapView.fitBounds(bounds);
+            });
+            return false;
+        });
+
+});
+</script>
+
+<style>
+.geoplace-map {
+    margin: 25px;
+    border: 1px solid #000;
+    height: 500px;
+}
+
+.tab-pane {
+    min-height: 500px;
+}
+</style>
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <h1>Vocabulary: Geographic Vocabulary Management</h1>
+
+    <ol class="breadcrumb">
+        <li><a href="?command=vocab_administrator&subcommand=dashboard">Vocabulary</a></li>
+        <li>Geographic Vocabulary</li>
+    </ol>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Instructions: </span>Search for vocabulary to view what is currently available in the system.  Only the top 1000 results will be shown.</p>
+            </div>
+
+
+            <form class="form-horizontal" id="search_form" method="GET">
+    			<div class="well well-lg text-center">
+                    <input type="hidden" name="type" value="geo_place">
+					<div class="input-group">
+						<input type="text" class="form-control" style="width: 100%;"
+							placeholder="Search for..." id="searchbox" name="q" value="">
+						<span class="input-group-btn">
+						     <button class="btn btn-default" id="searchbutton">Search</button>
+					    </span>
+					</div>
+    			</div>
+    		</form>
+
+            <div class="text-center">
+                <a href="?command=vocab_administrator&subcommand=add_geoterm" class="btn btn-success">
+                    <span class="glyphicon glyphicon-plus"></span> Add New Geographic Vocabulary Term
+                </a>
+            </div>
+
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#mapView" aria-controls="mapView" role="tab" data-toggle="tab">Map View</a></li>
+                <li role="presentation"><a href="#listView" aria-controls="listView" role="tab" data-toggle="tab">List View</a></li>
+            </ul>
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="mapView">
+                    <div class="text-center" id="resultCount">No points to display.</div>
+                    <div class="geoplace-map" id="placesMap"></div>
+                </div>
+                <div role="tabpanel" class="tab-pane" id="listView">
+                    <div class="form-horizontal">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>URI</th>
+                                    <th>Admin Code</th>
+                                    <th>Country Code</th>
+                                    <th>Latitude</th>
+                                    <th>Longitude</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vocabList">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

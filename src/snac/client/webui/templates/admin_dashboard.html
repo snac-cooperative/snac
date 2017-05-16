@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Admin Dashboard</title>
+<title>Admin Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
@@ -24,20 +24,20 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js"></script>
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/dashboard.js"></script>
-<script src="javascript/search.js"></script>
+<script src="javascript/admin.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/dashboard.js{{control.noCache}}"></script>
+<script src="javascript/search.js{{control.noCache}}"></script>
 
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
@@ -129,9 +129,13 @@ $('.selectpicker').selectpicker();
                     <h3 class="panel-title">Reports</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Run one of the following reports over SNAC</p>
+                    <p>Reports generated weekly</p>
                     <div class="list-group">
-                        <a href="#" class="list-group-item disabled">Coming Soon</a>
+                        <a href="?command=administrator&subcommand=report_general" class="list-group-item"><i class="fa fa-bar-chart-o fa-fw" aria-hidden="true"></i> General Report</a>
+                    </div>
+                    <p>Reports generated monthly</p>
+                    <div class="list-group">
+                        <a href="?command=administrator&subcommand=report_holdings" class="list-group-item"><i class="fa fa-list fa-fw" aria-hidden="true"></i> Holding Institutions</a>
                     </div>
                 </div>
             </div>

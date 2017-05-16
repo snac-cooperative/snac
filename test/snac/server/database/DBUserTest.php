@@ -10,6 +10,7 @@
  * @copyright 2015 the Rector and Visitors of the University of Virginia, and
  *            the Regents of the University of California
  */
+namespace test\snac\server\database;
 
 /**
  * Database User test suite
@@ -17,7 +18,7 @@
  * @author Tom Laudeman
  *
  */
-class DBUserTest extends PHPUnit_Framework_TestCase
+class DBUserTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @var \Monolog\Logger $logger the logger for this server
@@ -94,7 +95,8 @@ class DBUserTest extends PHPUnit_Framework_TestCase
      */
     public function __construct()
     {
-        $this->dbu = new snac\server\database\DBUser();
+        parent::__construct(); // Must call the parent constructor
+        $this->dbu = new \snac\server\database\DBUser();
         $this->dbutil = new \snac\server\database\DBUtil();
 
         // Prototypeing..
@@ -243,7 +245,7 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * Hard code the ARK for UVa. This means that the UVa constellation must be in the database.
          * When second param is true, we get a summary constellation.
          */
-        $inst = $this->dbutil->readPublishedConstellationByArk('http://n2t.net/ark:/99166/w6xq0t7h', true);
+        $inst = $this->dbutil->readPublishedConstellationByArk('http://n2t.net/ark:/99166/w6xq0t7h', \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
         $userObj->setAffiliation($inst);
 
         $newUser = $this->dbu->createUser($userObj);
@@ -522,6 +524,9 @@ class DBUserTest extends PHPUnit_Framework_TestCase
 
     }
 
+    /**
+     * Test adding and removing a user
+     */
     public function testAutoUser()
     {
         /*
@@ -559,15 +564,6 @@ class DBUserTest extends PHPUnit_Framework_TestCase
         $this->assertEquals($csaReturn->getToken()['access_token'], 'foo');
         $this->assertTrue($this->dbu->sessionActive($csaReturn));
 
-        /*
-         * We don't have default role, but if we did this would verify that we got the default role of Public
-         * HRT.
-         *
-         * false == null so we only check for != null
-         * We don't current have a role for public hrt.
-         * $this->assertTrue($this->dbu->checkRoleByLabel($csaReturn, 'Public HRT') != null);
-         */
-
         $goodUserID = $csaReturn->getUserID();
         /*
          * Test userExists() with the ficticious user id.
@@ -590,9 +586,11 @@ class DBUserTest extends PHPUnit_Framework_TestCase
          * When things are normally successful, we might want to clean up.
          */
         $this->dbu->eraseUser($cleanUpUser);
-
     }
 
+    /**
+     * Test reading and writing an institution
+     */
     public function testInstitution()
     {
         $firstObj = new \snac\data\Constellation();

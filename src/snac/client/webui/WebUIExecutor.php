@@ -99,17 +99,29 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayEditPage(&$input, &$display) {
-
         $query = $input;
-        $this->logger->addDebug("Sending query to the server", $query);
-        $serverResponse = $this->connect->query($query);
-        $this->logger->addDebug("Received server response", array($serverResponse));
-        if (isset($serverResponse["constellation"])) {
-            $display->setTemplate("edit_page");
-            $constellation = $serverResponse["constellation"];
+        $constellation = null;
+        // If they are asking for a part and they haven't been given a constellation ID (new page), then let them through anyway
+        if ($input["command"] == "edit_part" && isset($input["part"]) && (!isset($input["constellationid"]) || $input["constellationid"] == '') ) {
+            $c = new \snac\data\Constellation();
+            $constellation = $c->toArray();
+        } else {
+            $this->logger->addDebug("Sending query to the server", $query);
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            if (isset($serverResponse["constellation"]))
+                $constellation = $serverResponse["constellation"];
+        }
+
+        if ($constellation != null) {
+            if ($input["command"] == "edit_part" && isset($input["part"]))
+                $display->setTemplate("edit_tabs/".$input["part"]);
+            else
+                $display->setTemplate("edit_page");
             if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+                if (isset($serverResponse))
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData($constellation);
@@ -163,17 +175,102 @@ class WebUIExecutor {
          $display->setData($constellation);
     }
 
+    /**
+     * Get Constellation
+     *
+     * Query the server to read a full Constellation object.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @return string[] The response from the server. It is a json_decode'ed response from curl.
+     */
     protected function getConstellation(&$input, &$display) {
         $query = array();
-        $query["constellationid"] = $input["constellationid"];
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
         if (isset($input["version"]))
             $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
         $query["command"] = "read";
 
         $this->logger->addDebug("Sending query to the server", $query);
         $serverResponse = $this->connect->query($query);
         $this->logger->addDebug("Received server response");
         return $serverResponse;
+    }
+
+    /**
+     * Display Browse Page
+     *
+     * Loads the browse page into the display.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayBrowsePage(&$display) {
+        $display->setTemplate("browse_page");
+    }
+
+    public function performBrowseSearch(&$input) {
+        $term = "";
+        $position = "middle";
+        $entityType = "";
+        $icid = 0;
+
+        if (isset($input["entity_type"]))
+            $entityType = $input["entity_type"];
+        if (isset($input["position"]))
+            $position = $input["position"];
+        if (isset($input["term"]))
+            $term = $input["term"];
+        if (isset($input["ic_id"]))
+            $icid = $input["ic_id"];
+
+        $query = array(
+            "command" => "browse",
+            "term" => $term,
+            "entity_type" => $entityType,
+            "position" => $position,
+            "icid" => $icid
+        );
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query($query);
+
+        return $serverResponse;
+
+    }
+
+
+    /**
+    * Display Search Page
+    *
+    * Loads the search page for a given query input into the display.
+    *
+    * @param string[] $input Post/Get inputs from the webui
+    * @param \snac\client\webui\display\Display $display The display object for page creation
+    */
+    public function displaySearchPage(&$input, &$display) {
+        if (!isset($input["term"]))
+            $input["term"] = "";
+
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
+        if (isset($input["q"])) {
+            $input["term"] = $input["q"];
+        }
+        $results = $this->performNameSearch($input);
+        if (isset($results["results"])) {
+            $results["query"] = $input["term"];
+            $results["entityType"] = $input["entity_type"];
+            $results["searchType"] = $results["search_type"];
+            $display->setTemplate("search_page");
+            $display->setData($results);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($results, $display);
+        }
     }
 
     /**
@@ -185,21 +282,97 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayViewPage(&$input, &$display) {
+        $message = null;
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
-            $display->setTemplate("view_page");
-            $constellation = $serverResponse["constellation"];
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            if (isset($serverResponse["constellation"]["dataType"])) {
+                // We have only ONE constellation, so display
+
+                $display->setTemplate("view_page");
+                $constellation = $serverResponse["constellation"];
+                $editingUser = null;
+                if (isset($serverResponse["editing_user"]))
+                    $editingUser = $serverResponse["editing_user"];
+
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+
+                $this->logger->addDebug("Getting Holding institution information from the resource relations");
+                $c = new \snac\data\Constellation($constellation);
+                $holdings = array();
+                foreach ($c->getResourceRelations() as $resourceRel) {
+                    if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                        $repo = $resourceRel->getResource()->getRepository();
+                        $holdings[$repo->getID()] = array(
+                            "name" => $repo->getPreferredNameEntry()->getOriginal()
+                        );
+                        foreach ($repo->getPlaces() as $place) {
+                            if ($place->getGeoTerm() != null) {
+                                $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                                $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                            }
+                        }
+                    }
+                }
+                // Sort the holding institutions alphabetically
+                usort($holdings, function($a, $b) {
+                    return $a["name"] <=> $b["name"];
+                });
+
+                // Check for a redirect
+                if ($serverResponse["result"] == "success-notice") {
+                    $message = $serverResponse["message"];
+                }
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+
+                $display->setData(array_merge(
+                    $constellation,
+                    array(
+                        "preview"=> (isset($input["preview"])) ? true : false,
+                        "message" => $message,
+                        "holdings" => $holdings,
+                        "editingUser" => $editingUser)
+                    )
+                );
+            } else {
+                // We have multiple constellations, so redirect to split page
+                $this->displaySplitChoicePage($serverResponse, $display);
             }
-            $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData(array_merge($constellation,
-            array("preview"=> (isset($input["preview"])) ? true : false)));
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
+    }
+
+    /**
+     * Display Split Choice Page
+     *
+     * Loads the display with the split choice page.  This page is used when there are multiple
+     * Constellations returned by the server for any given single id/ark.  The user in that case
+     * must choose which Constellation to view.
+     *
+     * @param string[] $serverResponse The server response (associative array) containing multiple constellations
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySplitChoicePage(&$serverResponse, &$display) {
+        $display->setTemplate("split_choice_page");
+
+        // Check for a mesage
+        if ($serverResponse["result"] == "success-notice") {
+            $message = $serverResponse["message"];
+        }
+
+        $this->logger->addDebug("Setting constellation data into the page template");
+
+        $display->setData(
+            array(
+                "constellations" => $serverResponse["constellation"],
+                "message" => $message
+            )
+        );
     }
 
 
@@ -214,17 +387,243 @@ class WebUIExecutor {
     public function displayDetailedViewPage(&$input, &$display) {
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
+            $editingUser = null;
+            if (isset($serverResponse["editing_user"]))
+                $editingUser = $serverResponse["editing_user"];
+            
             $display->setTemplate("detailed_view_page");
+            
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData(array_merge($constellation,
-            array("preview"=> (isset($input["preview"])) ? true : false)));
+            $display->setData(array_merge(
+                $constellation,
+                array("preview"=> (isset($input["preview"])) ? true : false,
+                    "editingUser" => $editingUser)
+            ));
         } else {
             $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+    /**
+     * Display MaybeSame List Page
+     *
+     * Fills the display object with the maybe-same list page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge buttons.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMaybeSameListPage(&$input, &$display) {
+
+        $query = array(
+            "command" => "constellation_list_maybesame",
+            "constellationid" => $input["constellationid"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("maybesame_list_page");
+            $displayData = array(
+                "constellation" => $serverResponse["constellation"],
+                "mergeable" => $serverResponse["mergeable"]
+            );
+            if (isset($serverResponse["maybe_same"])) {
+                $displayData["maybeSameList"] = $serverResponse["maybe_same"];
+            }
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $display->setData($displayData);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+    
+    /**
+     * Display Constellation History Page
+     *
+     * Loads the version history page for a given constellation input into the display.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayHistoryPage(&$input, &$display) {
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["command"] = "constellation_history";
+
+        $serverResponse = $this->connect->query($query);
+
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("history_page");
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $this->logger->addDebug("Setting constellation data into the page template");
+            $display->setData($serverResponse);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+
+    /**
+     * Process a Merge
+     *
+     * Takes the merged input data from the merge page, converts the merged Constellation into a
+     * Constellation object and asks the server to perform the merge.  If the merge is successful,
+     * this method will load the new (merged) Constellation into the detailed view template for
+     * display to the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function processMerge(&$input, &$display) {
+        // All the information should come VIA post to build the preview
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
+
+        // Serialize constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        if ($constellation != null && isset($input["constellationid1"]) && isset($input["constellationid2"])) {
+            // Ask the server to do the merge
+            $query = [
+                "command" => "constellation_merge",
+                "constellationids" => [
+                    $input["constellationid1"],
+                    $input["constellationid2"]
+                ],
+                "constellation" => $constellation->toArray()
+            ];
+            $this->logger->addDebug("Asking server to do the merge");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("detailed_view_page");
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+
+                // Since this was just merged, it is currently editable
+                $serverResponse["constellation"]["status"] = "editable";
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($serverResponse["constellation"]);
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
+        }
+
+    }
+
+    /**
+     * Cancel a merge
+     *
+     * Tries to cancel a merge by asking the server to unlock both of the Constellations
+     * originally locked for the merge.  If successful, then returns JSON response to the client.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function cancelMerge(&$input) {
+        $request1 = array (
+            "constellationid" => $input["constellationid1"],
+            "version" => $input["version1"]
+        );
+        $response1 = $this->unlockConstellation($request1);
+
+        $request2 = array (
+            "constellationid" => $input["constellationid2"],
+            "version" => $input["version2"]
+        );
+        $response2 = $this->unlockConstellation($request2);
+
+        $response = array();
+
+        $response["server_debug"] = array();
+        $response["server_debug"]["unlock1"] = $response1;
+        $response["server_debug"]["unlock2"] = $response2;
+        if (isset($response1["error"]))
+            $response["error"] = $response1["error"];
+        if (isset($response2["error"]))
+            $response["error"] = $response2["error"];
+
+        if (!isset($response1["error"]) && !isset($response2["error"])) {
+            // successfully unlocked both constellations
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * Display MaybeSame Diff Page
+     *
+     * Fills the display object with the maybe-same diff page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge functionality.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param boolean $forMerge optional Whether or not this display should include merging, default is false
+     */
+    public function displayMaybeSameDiffPage(&$input, &$display, $forMerge=false) {
+
+        $command = "constellation_diff";
+        if ($forMerge)
+            $command = "constellation_diff_merge";
+
+        $query = array(
+            "command" => $command,
+            "constellationid1" => $input["constellationid1"],
+            "constellationid2" => $input["constellationid2"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["intersection"])) {
+            if ($forMerge === false || ($forMerge === true && $serverResponse["mergeable"] === true)) {
+                // Can only merge if the webUI has requested diff to merge (forMerge) and
+                // the server says these two are mergeable
+                $merging = $forMerge && $serverResponse["mergeable"];
+                $mergeable = $serverResponse["mergeable"];
+
+                $display->setTemplate("maybesame_diff_page");
+                $displayData = array(
+                    "constellation1" => $serverResponse["constellation1"],
+                    "constellation2" => $serverResponse["constellation2"],
+                    "intersection" => $serverResponse["intersection"],
+                    "mergeable" => $mergeable,
+                    "merging" => $merging
+                );
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $display->setData($displayData);
+            } else {
+                // We were able to do the diff, the user wanted to merge, but the server told us we couldn't merge
+                $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+            }
+        } else {
+            $this->logger->addDebug("Error page being drawn - no intersection");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
@@ -278,22 +677,51 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayPreviewPage(&$input, &$display) {
-
         // If just previewing, then all the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
+
 
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            $display->setTemplate("view_page");
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+            $display->setTemplate("detailed_view_page");
+            if (isset($input["view"]) && $input["view"] == "hrt") {
+                $display->setTemplate("view_page");
+            }
+
+            if (\snac\Config::$DEBUG_MODE === true) {
+                $display->addDebugData("constellationSource", $constellation->toJSON());
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
+            $display->setData(array_merge($constellation->toArray(), array("preview" => true)));
         }
     }
+
+    /**
+     * Display Grid Page
+     *
+     * Fills the display object with the explore grid.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayGridPage(&$display) {
+        $display->setTemplate("grid_page");
+
+        $randomQuery = $this->connect->query(array(
+                "command"=>"random_constellations",
+                "images" => true
+            ));
+
+        if (isset($randomQuery["constellation"]) && $randomQuery["constellation"] != null) {
+            $randomConstellations = $randomQuery["constellation"];
+        }
+
+        $display->setData($randomQuery);
+    }
+
 
     /**
      * Display Dashboard Page
@@ -311,7 +739,7 @@ class WebUIExecutor {
         $serverResponse = $this->connect->query($ask);
         $this->logger->addDebug("Received server response", array($serverResponse));
         $this->logger->addDebug("Setting dashboard data into the page template");
-        
+
         $needsReview = $this->connect->query(array(
             "command"=>"list_constellations",
             "status"=>"needs review"
@@ -320,18 +748,22 @@ class WebUIExecutor {
             $serverResponse["needs_review"] = $needsReview["results"];
 
 
-        $recentConstellations = $this->connect->query(array(
+        $recentQuery = $this->connect->query(array(
                 "command"=>"recently_published"
-        ))["constellation"];
-        
-        $recents = array();
-        foreach ($recentConstellations as $constellationArray) {
-            $constellation = new \snac\data\Constellation($constellationArray);
-            array_push($recents, array(
-                    "id"=>$constellation->getID(),
-                    "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            ));
+
+        if (isset($recentQuery["constellation"]) && $recentQuery["constellation"] != null) {
+            $recentConstellations = $recentQuery["constellation"];
+
+            $recents = array();
+            foreach ($recentConstellations as $constellationArray) {
+                $constellation = new \snac\data\Constellation($constellationArray);
+                array_push($recents, array(
+                        "id"=>$constellation->getID(),
+                        "nameEntry"=>$constellation->getPreferredNameEntry()->getOriginal()));
+            }
+            $serverResponse["recents"] = $recents;
         }
-        $serverResponse["recents"] = $recents;
 
         $display->setData($serverResponse);
     }
@@ -339,7 +771,8 @@ class WebUIExecutor {
     /**
      * Handle download tasks
      *
-     * This method handles the downloading of content in any type.
+     * This method handles the downloading of content in any type. Download tasks include serializing a
+     * constellation as EAC-CPF XML, and downloading the XML (a string) as a file.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @param \snac\client\webui\display\Display $display The display object for page creation
@@ -351,34 +784,66 @@ class WebUIExecutor {
             return $this->drawErrorPage("Content Type not specified", $display);
         }
 
-        $response = null;
-        switch($input["type"]) {
-            case "constellation_json":
-                $serverResponse = $this->getConstellation($input, $display);
-                if (!isset($serverResponse["constellation"])) {
-                    return $this->drawErrorPage("Error getting constellation", $display);
-                }
-                array_push($headers, "Content-Type: text/json");
-                array_push($headers, 'Content-Disposition: attachment; filename="constellation.json"');
-                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
-                break;
-            case "eac-cpf":
-                $serverResponse = $this->getConstellation($input, $display);
-                if (!isset($serverResponse["constellation"])) {
-                    return $this->drawErrorPage("Error getting constellation", $display);
-                }
-                array_push($headers, "Content-Type: text/xml");
-                array_push($headers, 'Content-Disposition: attachment; filename="constellation.xml"');
-                // Call EAC-CPF serializer instead here
-                $response = json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT);
-                break;
-        }
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["type"] = $input["type"];
+        $query["command"] = "download_constellation";
 
-        if ($response == null)  {
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        /*
+            Ask server to "download_constellation" with the type parameter and constellationid, arkid, etc.
+
+            $input["type"]
+
+            Server will give the following response:
+
+            $response["file"] = array();
+            $response["file"]["mime-type"] = "text/json";
+            $response["file"]["filename"] = $this->arkToFilename($constellation->getArkID()).".json";
+            $response["file"]["content"] = base64_encode(json_encode($constellation, JSON_PRETTY_PRINT));
+        */
+
+
+        if (isset($serverResponse["file"])) {
+            array_push($headers, "Content-Type: " . $serverResponse["file"]["mime-type"]);
+            array_push($headers, 'Content-Disposition: inline; filename="'.$serverResponse["file"]["filename"].'"');
+            return base64_decode($serverResponse["file"]["content"]);
+        } else {
             $this->drawErrorPage("Download error occurred", $display);
         }
 
-        return $response;
+        return null;
+    }
+
+    /**
+     * Convert an ARK to Filename
+     *
+     * This method converts an ark with "ark:/" to a filename by stripping out everything up to and
+     * including "ark:/", then replacing any slashes in the remainder with a hyphens.  If the string does
+     * not include "ark:/", this method will just return the filename "constellation."
+     *
+     * This does not include the extension on the filename.
+     *
+     * @param string $ark The ark to convert
+     * @return string The filename based on the ark (without an extension)
+     */
+    public function arkToFilename($ark) {
+        $filename = "constellation";
+        if (!stristr($ark, 'ark:/'))
+            return $filename;
+
+        $pieces = explode("ark:/", $ark);
+        if (isset($pieces[1])) {
+            $filename = str_replace('/', "-", $pieces[1]);
+        }
+        return $filename;
     }
 
     /**
@@ -440,6 +905,25 @@ class WebUIExecutor {
                     "groups" => $userGroups
                 ));
                 $display->setTemplate("admin_edit_user");
+                break;
+            case "activity_user":
+                if (!isset($input["userid"])) {
+                    return $this->drawErrorPage("Missing UserID", $display);
+                }
+                $userEdit = new \snac\data\User();
+                $userEdit->setUserID($input["userid"]);
+                $ask = array("command"=>"edit_user",
+                    "user_edit" => $userEdit->toArray()
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $userEdit = $serverResponse["user"];
+                $userGroups = $serverResponse["groups"];
+
+                $serverResponse["title"] = "User Activity";
+                $display->setData($serverResponse);
+                $display->setTemplate("admin_user_activity");
                 break;
             case "edit_user_post":
                 return $this->saveProfile($input, $user);
@@ -526,12 +1010,110 @@ class WebUIExecutor {
                     $this->displayPermissionDeniedPage("Admin Dashboard", $display);
                 }
                 break;
+
+            case "unlock_constellation":
+                return $this->unlockConstellation($input);
+                break;
+
+            case "reassign_constellation":
+                return $this->reassignConstellation($input);
+                break;
+
+
+            case "report_general":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "general"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_general_page");
+                break;
+
+            case "report_holdings":
+                $ask = array(
+                    "command"=>"report",
+                    "type" => "holdings"
+                );
+                $serverResponse = $this->connect->query($ask);
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+                    return $this->drawErrorPage($serverResponse, $display);
+                $display->setData($serverResponse);
+                $display->setTemplate("report_list_page");
+                break;
+
             default:
                 $this->displayPermissionDeniedPage("Administrator", $display);
         }
 
         return false;
     }
+
+    /**
+     * Handle Vocabulary Administrative tasks
+     *
+     * Fills the display object with the requested vocab admin page for the given user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function handleVocabAdministrator(&$input, &$display, &$user) {
+
+        if (!isset($input["subcommand"])) {
+            $input["subcommand"] = "dashboard";
+        }
+
+        switch ($input["subcommand"]) {
+            case "search":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_search");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Search", $display);
+                }
+                break;
+            case "geosearch":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_geosearch");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Search", $display);
+                }
+                break;
+            case "add_term":
+                $display->setData(array(
+                    "title"=> "Add New Vocabulary Term"
+                ));
+                $display->setTemplate("vocab_edit_term");
+                break;
+            case "add_term_post":
+                return $this->saveVocabularyTerm($input, $user);
+                break;
+            case "add_geoterm":
+                $display->setData(array(
+                    "title"=> "Add New Geopgraphic Vocabulary Term"
+                ));
+                $display->setTemplate("vocab_edit_geoterm");
+                break;
+            case "add_geoterm_post":
+                // maybe reuse the same save function?
+                return $this->saveVocabularyTerm($input, $user);
+                break;
+            case "dashboard":
+                if (isset($this->permissions["ViewAdminDashboard"]) && $this->permissions["ViewAdminDashboard"]) {
+                    $display->setTemplate("vocab_dashboard");
+                } else {
+                    $this->displayPermissionDeniedPage("Vocabulary Dashboard", $display);
+                }
+                break;
+            default:
+                $this->displayPermissionDeniedPage("Vocabulary Administrator", $display);
+        }
+
+        return false;
+    }
+
 
 
     /**
@@ -549,6 +1131,22 @@ class WebUIExecutor {
         return false;
     }
 
+
+    /**
+    * Display the Concurrent Edit Error Page
+    *
+    * Helper function to draw the concurrent edit error page.
+    *
+    * @param  string $command The resource that the user was trying to access
+    * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
+    * @return boolean False, since an error occurred to get here
+    */
+    public function displayConcurrentEditErrorPage($command, &$display) {
+        $display->setTemplate("concurrent_edit_error");
+        $display->setData(array("command" => $command));
+        return false;
+    }
+
     /**
      * Draw the Error Page
      *
@@ -558,17 +1156,24 @@ class WebUIExecutor {
      * @param  \snac\client\webui\display\Display $display  The display object from the WebUI
      * @return boolean False, since an error occurred to get here
      */
-    public function drawErrorPage(&$serverResponse, &$display) {
+    public function drawErrorPage($serverResponse, &$display) {
+        $this->logger->addDebug("Drawing Error page", array($serverResponse));
         if (is_array($serverResponse) && isset($serverResponse["error"]) && isset($serverResponse["error"]["type"])) {
             if ($serverResponse["error"]["type"] == "Permission Error") {
                 return $this->displayPermissionDeniedPage(null, $display);
+            } else if ($serverResponse["error"]["type"] == "Concurrent Edit Error") {
+                return $this->displayConcurrentEditErrorPage(null, $display);
             }
             $display->setTemplate("error_page");
             $display->setData($serverResponse["error"]);
-            return false;
+        } else if (is_array($serverResponse)) {
+            $display->setTemplate("error_page");
+            $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
+        } else {
+            $this->logger->addDebug("Drawing the text version of the error page");
+            $display->setTemplate("error_page");
+            $display->setData(array("type" => "System Error", "message" => $serverResponse, "display" => "pre"));
         }
-        $display->setTemplate("error_page");
-        $display->setData(array("type" => "System Error", "message" => print_r($serverResponse, true), "display" => "pre"));
         return false;
     }
 
@@ -624,102 +1229,102 @@ class WebUIExecutor {
         $display->setTemplate("landing_page");
     }
 
-        /**
-         * Save User Profile
-         *
-         * Asks the server to update the profile of the user.
-         *
-         * @param string[] $input Post/Get inputs from the webui
-         * @param \snac\data\User $user The current user object
-         * @return string[] The web ui's response to the client (array ready for json_encode)
-         */
-        public function saveProfile(&$input, &$user) {
+    /**
+     * Save User Profile
+     *
+     * Asks the server to update the profile of the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveProfile(&$input, &$user) {
 
-            $tmpUser = new \snac\data\User();
-            $groups = null;
-            // Not editing the current user
-            if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
-                if (isset($input["userid"]) && $input["userid"] != "")
-                    $tmpUser->setUserID($input["userid"]);
+        $tmpUser = new \snac\data\User();
+        $groups = null;
+        // Not editing the current user
+        if (isset($input["userName"]) && $input["userName"] !== $user->getUserName()) {
+            if (isset($input["userid"]) && $input["userid"] != "")
+                $tmpUser->setUserID($input["userid"]);
 
-                $tmpUser->setUserName($input["userName"]);
-                $tmpUser->setEmail($input["userName"]);
-                if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
-                    $tmpAffil = new \snac\data\Constellation();
-                    $tmpAffil->setID($input["affiliationid"]);
-                    $tmpUser->setAffiliation($tmpAffil);
-                }
-                if (isset($input["active"]) && $input["active"] == "active")
-                    $tmpUser->setUserActive(true);
-
-                // If not editing the current user, then we can update their groups
-                $groups = array();
-                foreach ($input as $key => $value) {
-                    if (strstr($key, "groupid_")) {
-                        $groupAdd = new \snac\data\Group();
-                        $groupAdd->setID($value);
-                        array_push($groups, $groupAdd->toArray());
-                    }
-                }
-
-
-            } else {
-                $tmpUser = new \snac\data\User($user->toArray());
+            $tmpUser->setUserName($input["userName"]);
+            $tmpUser->setEmail($input["userName"]);
+            if (isset($input["affiliationid"]) && is_numeric($input["affiliationid"])) {
+                $tmpAffil = new \snac\data\Constellation();
+                $tmpAffil->setID($input["affiliationid"]);
+                $tmpUser->setAffiliation($tmpAffil);
             }
+            if (isset($input["active"]) && $input["active"] == "active")
+                $tmpUser->setUserActive(true);
 
-            $tmpUser->setFirstName($input["firstName"]);
-            $tmpUser->setLastName($input["lastName"]);
-            $tmpUser->setWorkPhone($input["workPhone"]);
-            $tmpUser->setWorkEmail($input["workEmail"]);
-            $tmpUser->setFullName($input["fullName"]);
-
+            // If not editing the current user, then we can update their groups
+            $groups = array();
             foreach ($input as $key => $value) {
-                if (substr($key, 0, 5) == "role_") {
-                    $role = new \snac\data\Role();
-                    $role->setID($value);
-                    $tmpUser->addRole($role);
+                if (strstr($key, "groupid_")) {
+                    $groupAdd = new \snac\data\Group();
+                    $groupAdd->setID($value);
+                    array_push($groups, $groupAdd->toArray());
                 }
             }
 
-            $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
 
-            // Build a data structure to send to the server
-            $request = array("command"=>"update_user");
-
-            // Send the query to the server
-            $request["user_update"] = $tmpUser->toArray();
-
-            // Send the groups if we're doing an update
-            if ($groups != null)
-                $request["groups_update"] = $groups;
-
-            $serverResponse = $this->connect->query($request);
-
-            $response = array();
-            $response["server_debug"] = $serverResponse;
-
-            if (!is_array($serverResponse)) {
-                $this->logger->addDebug("server's response: $serverResponse");
-            } else {
-                if (isset($serverResponse["result"]))
-                    $response["result"] = $serverResponse["result"];
-                if (isset($serverResponse["error"])) {
-                    $response["error"] = $serverResponse["error"];
-                }
-                if (isset($serverResponse["user_update"])) {
-                    $response["user_update"] = $serverResponse["user_update"];
-                }
-            }
-
-            // If success AND we were updating the current user, then update the session tokens
-            if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
-                $user = $tmpUser;
-                $_SESSION["snac_user"] = serialize($user);
-                $response["user"] = $serverResponse["user_update"];
-            }
-
-            return $response;
+        } else {
+            $tmpUser = new \snac\data\User($user->toArray());
         }
+
+        $tmpUser->setFirstName($input["firstName"]);
+        $tmpUser->setLastName($input["lastName"]);
+        $tmpUser->setWorkPhone($input["workPhone"]);
+        $tmpUser->setWorkEmail($input["workEmail"]);
+        $tmpUser->setFullName($input["fullName"]);
+
+        foreach ($input as $key => $value) {
+            if (substr($key, 0, 5) == "role_") {
+                $role = new \snac\data\Role();
+                $role->setID($value);
+                $tmpUser->addRole($role);
+            }
+        }
+
+        $this->logger->addDebug("Updated the User Object", $tmpUser->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_user");
+
+        // Send the query to the server
+        $request["user_update"] = $tmpUser->toArray();
+
+        // Send the groups if we're doing an update
+        if ($groups != null)
+            $request["groups_update"] = $groups;
+
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            if (isset($serverResponse["user_update"])) {
+                $response["user_update"] = $serverResponse["user_update"];
+            }
+        }
+
+        // If success AND we were updating the current user, then update the session tokens
+        if ($response["result"] == "success" && $tmpUser->getUserName() === $user->getUserName()) {
+            $user = $tmpUser;
+            $_SESSION["snac_user"] = serialize($user);
+            $response["user"] = $serverResponse["user_update"];
+        }
+
+        return $response;
+    }
 
     /**
      * Save Group Information
@@ -819,6 +1424,53 @@ class WebUIExecutor {
     }
 
     /**
+     * Save Resource
+     *
+     * Maps the resoource given on input to a Resource object, passes that to the server with an
+     * update_resource call.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveResource(&$input) {
+        $mapper = new \snac\client\webui\util\ResourcePostMapper();
+
+        // Get the resource object
+        $resource = $mapper->serializeToResource($input);
+
+        $this->logger->addDebug("writing resource", $resource->toArray());
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_resource");
+
+        // Send the query to the server
+        $request["resource"] = $resource->toArray();
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+            // Get the server's response constellation
+            if (isset($serverResponse["resource"])) {
+                $this->logger->addDebug("server's response written resource", $serverResponse["resource"]);
+                $resource = new \snac\data\Resource($serverResponse["resource"]);
+
+                $response["resource"] = $resource->toArray();
+            }
+        }
+
+        return $response;
+    }
+
+    /**
      * Save Constellation
      *
      * Maps the constellation given on input to a Constellation object, passes that to the server with an
@@ -865,6 +1517,7 @@ class WebUIExecutor {
                     $mapper->reconcile($updatedConstellation);
 
                     $response["updates"] = $mapper->getUpdates();
+                    $this->logger->addDebug("Requires the following UI updates", array($response["updates"]));
                 }
         }
 
@@ -1076,6 +1729,57 @@ class WebUIExecutor {
 
 
     /**
+     * Reassign Constellation
+     *
+     * Asks the server to reassign the input's constellation to a different user
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function reassignConstellation(&$input) {
+
+        $constellation = null;
+        if (isset($input["constellationid"]) && isset($input["version"])) {
+            $constellation = new \snac\data\Constellation();
+            $constellation->setID($input["constellationid"]);
+            $constellation->setVersion($input["version"]);
+        } else {
+            return array( "result" => "failure", "error" => "No constellation or version number");
+        }
+
+        $toUser = null;
+        if (isset($input["userid"])) {
+            $toUser = new \snac\data\User();
+            $toUser->setUserID($input["userid"]);
+        } else {
+            return array( "result" => "failure", "error" => "No user id given");
+        }
+
+        $this->logger->addDebug("reassigning constellation", $constellation->toArray());
+        $this->logger->addDebug("reassigning to user", $toUser->toArray());
+
+        // Build a data structure to send to the server
+        $request = array (
+            "command" => "reassign_constellation",
+            "constellation" => $constellation->toArray(),
+            "to_user" => $toUser->toArray()
+        );
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        $response = array ();
+        $response["server_debug"] = array ();
+        $response["server_debug"]["unlock"] = $serverResponse;
+        if (isset($serverResponse["result"]))
+            $response["result"] = $serverResponse["result"];
+        if (isset($serverResponse["error"]))
+            $response["error"] = $serverResponse["error"];
+
+        return $response;
+    }
+
+    /**
      * Unlock Constellation
      *
      * Asks the server to drop the input's constellation lock level from "currently editing" down to
@@ -1261,78 +1965,112 @@ class WebUIExecutor {
     /**
      * Perform Name Search
      *
-     * Connects to Elastic Search to perform a name search on the terms given on the input and
-     * then returns the JSON-ready associative array of results.  Eventually, this will need to be handled
-     * in the Server's code.
+     * Perform a name search on the terms given on the input by requesting the results from the server and
+     * then returns the JSON-ready associative array of results.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param boolean $autocomplete optional Whether to do a search using autocomplete or not (default false)
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function performNameSearch(&$input, $autocomplete=false) {
+        if (!isset($input["term"])) {
+            return array ("total" => 0, "results" => array());
+        }
+
+        if (!isset($input["entity_type"]))
+            $input["entity_type"] = "";
+
+        $query = array(
+            "command" => "search",
+            "term" => $input["term"],
+            "entity_type" => $input["entity_type"],
+            "start" => isset($input["start"]) ? $input["start"] : 0,
+            "count" => isset($input["count"]) ? $input["count"] : 10
+        );
+
+        if ($autocomplete) {
+            $query["search_type"] = "autocomplete";
+        } else if (isset($input["search_type"]) && $input["search_type"] === "advanced") {
+            $query["search_type"] = "advanced";
+        }
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query($query);
+
+        return $serverResponse;
+
+    }
+
+    /**
+     * Query server for relations
+     *
+     * Asks the server for the relations (in- and out-edges) for the given id or ark
+     * in the user input.  Returns the Server response directly, used by Javascript
+     * on the client.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
      */
-    public function performNameSearch(&$input) {
+    public function performRelationsQuery(&$input) {
+        $query = array();
+        if (isset($input["constellationid"]))
+            $query["constellationid"] = $input["constellationid"];
+        if (isset($input["version"]))
+            $query["version"] = $input["version"];
+        if (isset($input["arkid"]))
+            $query["arkid"] = $input["arkid"];
+        $query["command"] = "constellation_read_relations";
 
-        $this->logger->addDebug("Searching for a Constellation");
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response");
+        return $serverResponse;
 
-        $start = 0;
-        if (isset($input["start"]) && is_numeric($input["start"]))
-            $start = $input["start"];
+    }
 
-        $count = 10;
-        if (isset($input["count"]) && is_numeric($input["count"]))
-            $count = $input["count"];
-
-            // ElasticSearch Handler
-        $eSearch = null;
-        if (\snac\Config::$USE_ELASTIC_SEARCH) {
-            $this->logger->addDebug("Creating ElasticSearch Client");
-            $eSearch = \Elasticsearch\ClientBuilder::create()->setHosts([
-                    \snac\Config::$ELASTIC_SEARCH_URI
-            ])->setRetries(0)->build();
-
-            $params = [
-                    'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
-                    'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
-                    'body' => [
-                            'query' => [
-                                    'query_string' => [
-                                            'fields' => [
-                                                    "nameEntry"
-                                            ],
-                                            'query' => '*' . $input["term"] . '*'
-                                    ]
-                            ],
-                            'from' => $start,
-                            'size' => $count
-                    ]
-            ];
-            $this->logger->addDebug("Defined parameters for search", $params);
-
-            $results = $eSearch->search($params);
-
-            $this->logger->addDebug("Completed Elastic Search", $results);
-
-            $return = array ();
-            foreach ($results["hits"]["hits"] as $i => $val) {
-                array_push($return, $val["_source"]);
-            }
-
-            $response = array();
-            $response["total"] = $results["hits"]["total"];
-            $response["results"] = $return;
-
-            if ($response["total"] == 0 || $count == 0) {
-                $response["pagination"] = 0;
-                $response["page"] = 0;
-            } else {
-                $response["pagination"] = ceil($response["total"] / $count);
-                $response["page"] = floor($start / $count);
-            }
-            $this->logger->addDebug("Created search response to the user", $response);
-
-            return $response;
+    /**
+     * Perform Resource Search
+     *
+     * Requests the server to perform a search of resource URLs to display the results.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function performResourceSearch(&$input) {
+        if (!isset($input["term"])) {
+            return array ("total" => 0, "results" => array());
         }
-        return array (
-                    "notice" => "Not Using ElasticSearch"
-        );
+
+        // Query the server for the elastic search results
+        $serverResponse = $this->connect->query(array(
+            "command" => "resource_search",
+            "term" => $input["term"]
+        ));
+
+        return $serverResponse;
+
+    }
+
+    /**
+     * Read Vocabulary Term
+     *
+     * Asks the server for the controlled vocabulary term information.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The server's response with the vocabulary for the given term id
+     */
+    public function readVocabulary(&$input) {
+        if (!isset($input["type"]) || !isset($input["id"])) {
+            return array ("result" => "failure");
+        }
+
+        $serverResponse = $this->connect->query(array(
+            "command" => "read_vocabulary",
+            "type" => $input["type"],
+            "term_id" => $input["id"]
+        ));
+
+        return $serverResponse;
     }
 
     /**
@@ -1416,12 +2154,43 @@ class WebUIExecutor {
                 if (isset($input["q"]))
                     $queryString = $input["q"];
                 $request["query_string"] = $queryString;
+                if (isset($input["count"]))
+                    $request["count"] = $input["count"];
 
                 // Send the query to the server
                 $serverResponse = $this->connect->query($request);
 
-                foreach ($serverResponse["results"] as $k => $v)
-                    $serverResponse["results"][$k]["text"] = $v["value"];
+                if (!isset($serverResponse["results"]))
+                    return $serverResponse;
+
+                if (isset($input["format"]) && $input["format"] == "term") {
+                    // keep the results as normal Term elements
+                } else {
+                    $results = $serverResponse["results"];
+                    $serverResponse["results"] = array();
+
+                    foreach ($results as $k => $v) {
+                        $serverResponse["results"][$k]["id"] = $v["id"];
+
+                        if (isset($v["name"])) {
+                            // This is a geoplace term
+                            $addendum = "";
+                            if ($v["administrationCode"] != null && $v["countryCode"] != null) {
+                                $addendum = " (".$v["administrationCode"] . ", " . $v["countryCode"].")";
+                            } else if ($v["administrationCode"] != null) {
+                                $addendum = "(".$v["administrationCode"].")";
+                            } else if ($v["countryCode"] != null) {
+                                $addendum = "(".$v["countryCode"].")";
+                            }
+                            $serverResponse["results"][$k]["value"] = $v["name"] . $addendum;
+                        } else {
+                            // This is a controlled vocab term
+                            $serverResponse["results"][$k]["value"] = $v["term"];
+                        }
+
+                        $serverResponse["results"][$k]["text"] = $serverResponse["results"][$k]["value"];
+                    }
+                }
 
                 $this->logger->addDebug("Sending response back to client", $serverResponse);
                     // Send the response back to the web client
@@ -1430,6 +2199,65 @@ class WebUIExecutor {
         }
 
         return array ();
+    }
+
+    /**
+     * Save Vocabulary Term
+     *
+     * Asks the server to update the controlled vocabulary term.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\data\User $user The current user object
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function saveVocabularyTerm(&$input, &$user) {
+
+        // Build a data structure to send to the server
+        $request = array("command"=>"update_vocabulary");
+
+        $term = null;
+
+        if ($input["type"] === "geo_term") {
+            // Geographic Term
+            $term = new \snac\data\GeoTerm();
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setName($input["name"]);
+            $term->setAdministrationCode($input["administrationCode"]);
+            $term->setCountryCode($input["countryCode"]);
+            $term->setLatitude($input["latitude"]);
+            $term->setLongitude($input["longitude"]);
+            $request["type"] = "geo_term";
+        } else {
+            // Standard Term object
+            $term = new \snac\data\Term();
+            $term->setType($input["type"]);
+            $term->setID($input["id"]);
+            $term->setURI($input["uri"]);
+            $term->setDescription($input["description"]);
+            $term->setTerm($input["term"]);
+            $request["type"] = "term";
+        }
+
+        $request["term"] = $term->toArray();
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        $response = array();
+        $response["server_debug"] = $serverResponse;
+
+        if (!is_array($serverResponse)) {
+            $this->logger->addDebug("server's response: $serverResponse");
+        } else {
+            if (isset($serverResponse["result"]))
+                $response["result"] = $serverResponse["result"];
+            if (isset($serverResponse["error"])) {
+                $response["error"] = $serverResponse["error"];
+            }
+        }
+
+        return $response;
     }
 
     /**

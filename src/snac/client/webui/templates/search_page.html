@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Search - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC includes -->
+<script src="javascript/search.js{{control.noCache}}"></script>
+
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+
+		<h1>Search</h1>
+
+		<form class="form-horizontal" id="search_form" method="GET" action="?">
+			<div class="well well-lg text-center">
+                    <input type="hidden" id="count" name="count" value="10">
+                    <input type="hidden" id="start" name="start" value="0">
+					<div class="input-group select2-bootstrap-append">
+                        <select id="entityType" name="entity_type" style="width: 18%;">
+                            <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
+                            <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
+                            <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
+                            <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
+                        </select>
+						<input type="text" class="form-control" style="width: 82%;"
+							placeholder="Search for..." id="searchbox" name="term" value="{{data.query}}">
+							<span class="input-group-btn">
+							     <button class="btn btn-default" type="submit" id="searchbutton" name="command" value="search">Search</button>
+						    </span>
+					</div>
+                    <div class="row">
+                        <div class="col-xs-6 text-left">
+                            <div id="advancedSearch" class="text-left" style="margin-top: 15px;">
+                                <label>
+                                    <input type="checkbox" value="advanced" name="search_type" id="advanced" data-toggle="toggle" data-target="advancedSearchText" {{data.searchType == 'advanced' ? 'checked'}}>
+                                    <span style="padding-left: 10px; font-weight: normal;">Advanced Search</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-xs-6 text-right">
+                            <div id="otherOptions" class="text-right" style="margin-top: 15px;">
+                                <span style="padding-right: 5px; font-weight: normal;">Show</span>
+                                <select id="count" name="count" style="width: 70px;">
+                                    <option value="10" {{data.count == 10 ? 'selected'}}>10</option>
+                                    <option value="25" {{data.count == 25 ? 'selected'}}>25</option>
+                                    <option value="50" {{data.count == 50 ? 'selected'}}>50</option>
+                                    <option value="100" {{data.count == 100 ? 'selected'}}>100</option>
+                                </select>
+                                <span style="padding-left: 5px; font-weight: normal;">per page</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+
+                        <div id="advancedSearchText" class="text-left collapse {{ data.searchType == 'advanced' ? 'in'}}">
+                            <h4>The following commands may be used for advanced searching</h4>
+                            <dl>
+                                <dt>*</dt> <dd>Prefix search. Ex: <em>Wash*</em> will match anything starting with <em>Wash</em> including <em>Washington</em>.</dd>
+                                <dt>+</dt> <dd>Search must include the following term (AND operation). Ex: <em>Washington +George</em> will find George Washingtons.</dd>
+                                <dt>|</dt> <dd>Search may include either of the terms (OR operation). Ex: <em>Washington |George</em> will find either Georges OR Washingtons.</dd>
+                                <dt>" "</dt> <dd>Wrap a phrase with quotes to search the exact phrase.</dd>
+                                <dt>( )</dt> <dd>Add preferred clauses with parentheses. Ex: <em>(Washington + George) | (Jefferson + Thomas)</em> will find either George Washingtons or Thomas Jeffersons, but not George Jeffersons.</dd>
+                                <dt>-</dt> <dd>Search must not include the connected term.  Ex: <em>Washington -George</em> will find Washingtons not named George.</dd>
+                                <dt>~N</dt> <dd>Edit distance search. Finds names similar to the one typed. A larger number <strong>N</strong> will produce "fuzzier" results.  Ex: <em>Wash~1</em> will find <em>Wash, Hash, Wast, Mash,</em> etc.</dd>
+                            </dl>
+
+                        </div>
+
+                    </div>
+			</div>
+		</form>
+
+    <div class="row">
+        <div class="col-md-12 search-results">
+            {% if data.term %}
+                <p class="search-info">Found {{data.total}} results in {{data.timing}} ms.
+                {% if data.total >= (data.count * data.pagination) %}
+                Showing up to {{data.count * data.pagination}} of the total results.
+                {% endif %}
+                </p>
+                <form class="form-horizontal" id="compare_form" method="POST" action="?command=diff">
+                    <div id="compareBox" class="collapse">
+                    <div class="well well-sm">
+                        <input type="hidden" name="constellationid1" id="compare1">
+                        <input type="hidden" name="constellationid2" id="compare2">
+                            <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                            <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                    </div>
+                    </div>
+                </form>
+                {% for result in data.results %}
+                    <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
+                    <p class="identity-info">
+                        <span>{{result.ark}}</span>
+                        <span>({{result.entityType.term}})</span>
+                    </p>
+                    {% if result.biogHists.0.text %}
+                        <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                    {% else %}
+                        <p class="missing">No biographical history available for this identity.</p>
+                    {% endif %}
+                    <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
+                {% endfor %}
+
+
+
+                {% if data.pagination > 1 %}
+                    <nav class="text-center"><ul class='pagination'>
+                        {% if data.page != 0 %}
+                        <li><a href='?command=search&count={{data.count}}&start={{(data.page - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Previous'><span aria-hidden='true'>&lt;</span></a></li>
+                        {% endif %}
+
+                        {% for i in 1..data.pagination %}
+                        <li {{i-1 == data.page ? 'class="active"' }}><a href="?command=search&count={{data.count}}&start={{(i - 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}">{{i}}</a></li>
+                        {% endfor %}
+
+                        {% if data.page != data.pagination - 1 %}
+                        <li><a href='?command=search&count={{data.count}}&start={{(data.page + 1) * data.count}}&term={{data.term}}&search_type={{data.searchType}}' aria-label='Next'><span aria-hidden='true'>&gt;</span></a></li>
+                        {% endif %}
+                    </ul></nav>
+                {% endif %}
+            {% else %}
+                <p>Please use the search bar above to search.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

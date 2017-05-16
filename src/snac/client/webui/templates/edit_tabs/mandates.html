@@ -1,0 +1,18 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Mandates</h2>
+
+<div class="form-group" id="add_mandate_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_mandate"><span class="glyphicon glyphicon-plus"></span> Add New Mandate</button>
+    </div>
+</div>
+
+{% set i = 0 %}
+{% for mandate in data.mandates %}
+    {{ components.displayMandate(X, true, true, mandate, i) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_mandate_i' style='display:none;'>{{i}}</span>

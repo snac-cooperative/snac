@@ -6,7 +6,10 @@
         "league/oauth2-google": "^1.0",
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "~2.0@beta",
-        "phpmailer/phpmailer": "~5.2"
+        "phpmailer/phpmailer": "~5.2",
+        "snac/ark-manager": "*",
+        "snac/eac-validator": "*",
+        "graphaware/neo4j-php-client": "^4.0"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",
@@ -14,11 +17,22 @@
         "phpunit/php-invoker": "*",
         "phpunit/dbunit": ">=1.2",
         "phpunit/phpunit-selenium": ">=1.2",
-        "phpunit/phpunit-story": "*"
+        "behat/behat": "*"
     },
     "autoload": {
         "psr-4": {
             "snac\\": "src/snac/"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@gitlab.iath.virginia.edu:snac/ark-manager.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@gitlab.iath.virginia.edu:snac/eac-validator.git"
+        }
+
+    ]
 }

@@ -34,9 +34,24 @@ class Config {
     public static $SITE_OFFLINE = false;
 
     /**
+     * @var boolean Whether the system is in READONLY (Maintenance) mode.  This is a lighter lock than fully offline.
+     */
+    public static $READ_ONLY = false;
+
+    /**
+     * @var string The interface version: "development", "demo", or "production"
+     */
+    public static $INTERFACE_VERSION = "production";
+
+    /**
      * @var boolean Whether the system is in DEBUG mode
      */
     public static $DEBUG_MODE = true;
+
+    /**
+     * @var boolean Whether or not the system is in SANDBOX mode (generate temporary/fake arks)
+     */
+    public static $SANDBOX_MODE = true;
 
     /**
      * @var the full path of this project (to the root of the repository)
@@ -69,31 +84,37 @@ class Config {
      * @var string directory to write the log files. Must be / terminated.
      */
     public static $LOG_DIR = "";
-    
+
     /**
      *
      * @var string filename for the Server log
      */
     public static $SERVER_LOGFILE = "server.log";
-    
+
     /**
      *
      * @var string filename for the WebUI log
      */
     public static $WEBUI_LOGFILE = "webui.log";
-    
+
     /**
      *
      * @var string filename for the REST log
      */
     public static $REST_LOGFILE = "rest.log";
-    
+
     /**
      *
      * @var string filename for the UnitTesting log
      */
     public static $UNITTEST_LOGFILE = "unit_test.log";
-    
+
+    /**
+     *
+     * @var string filename for the CRON log
+     */
+    public static $CRON_LOGFILE = "cron.log";
+
     /**
      * Whether or not the database is in testing mode. In testing mode,
      * database calls will only be logged and not committed to the database.
@@ -107,11 +128,24 @@ class Config {
      *  @var integer Default for offset in selectListByStatus() and selectEditList()
      */
     public static $SQL_OFFSET = 0;
-    
+
     /**
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
+
+    /**
+     * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
+     *
+     * The relative path is probably: vendor/npm-asset/eac-validator/rng
+     */
+    public static $RNG_DIR = "full/path/to/src/snac/util";
+
+    /**
+     * @var string Location of the EAC-CFP XML Serializer template directory. This is the same directory as
+     * the serializer class.
+     */
+    public static $CPF_TEMPLATE_DIR = "full/path/to/src/snac/util";
 
     /**
      * @var string Location of the template directory
@@ -155,15 +189,47 @@ class Config {
      * @var string Elastic Search URL
      */
     public static $ELASTIC_SEARCH_URI = "http://localhost:9200";
-    
+
     /**
      * @var string Main index for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_INDEX = "";
-    
+
     /**
      * @var string Main type for the search functionality of snac
      */
     public static $ELASTIC_SEARCH_BASE_TYPE = "";
-    
+
+    /**
+     * @var string Search base for ALL of the snac name entries (and alternates)
+     */
+    public static $ELASTIC_SEARCH_ALL_TYPE = "";
+
+    /**
+     * @var string Resource index for the resource search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_RESOURCE_INDEX = "";
+
+    /**
+     * @var string Resource type for the resource search functionality of snac
+     */
+    public static $ELASTIC_SEARCH_RESOURCE_TYPE = "";
+
+    /**
+     * @var boolean Whether or not to have the server attempt to use Neo4J
+     */
+    public static $USE_NEO4J = true;
+
+    /**
+     * @var string Neo4J Bolt URL
+     */
+    public static $NEO4J_BOLT_URI = "bolt://user:password@localhost:7687";
+
+
+    /**
+     * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
+     */
+    public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
+
+
 }

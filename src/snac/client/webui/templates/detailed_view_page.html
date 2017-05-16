@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Prototype: {{data.nameEntries.0.original}}</title>
+<title>{{data.nameEntries.0.original}} - Details - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -38,20 +38,24 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/relation_search.js"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/relation_search.js{{control.noCache}}"></script>
 
 <script>
 $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 </script>
 
 <!-- SNAC Stylesheet -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 </head>
 <body role="document">
@@ -61,7 +65,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
@@ -79,48 +83,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="col-md-8">
 
                 <!-- Nav tabs -->
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="active"><a href="#nameEntries" role="tab" data-toggle="tab">Basic Info</a></li>
-                    <li><a href="#dates" role="tab" data-toggle="tab">Dates</a></li>
-                    <li><a href="#biogHists" role="tab" data-toggle="tab">BiogHist</a></li>
-                    <li><a href="#places" role="tab" data-toggle="tab">Places</a></li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Vocabs <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#genders" role="tab" data-toggle="tab">Genders</a></li>
-                        <li><a href="#nationalities" role="tab" data-toggle="tab">Nationalities</a></li>
-                        <li><a href="#languagesUsed" role="tab" data-toggle="tab">Languages Used</a></li>
-                        <li><a href="#subjects" role="tab" data-toggle="tab">Subjects</a></li>
-                        <li><a href="#occupations" role="tab" data-toggle="tab">Occupations</a></li>
-                        <li><a href="#functions" role="tab" data-toggle="tab">Functions</a></li>
-                        <li><a href="#legalStatuses" role="tab" data-toggle="tab">Legal Statuses</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Relations <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#sameAs" role="tab" data-toggle="tab">External Same As</a></li>
-                        <li><a href="#constellationRelations" role="tab" data-toggle="tab">Constellation Relations</a></li>
-                        <li><a href="#resourceRelations" role="tab" data-toggle="tab">Resource Relations</a></li>
-                    </ul>
-                    </li>
-                    <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Texts <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="#conventionDeclarations" role="tab" data-toggle="tab">Convention Declarations</a></li>
-                        <li><a href="#generalContexts" role="tab" data-toggle="tab">General Contexts</a></li>
-                        <li><a href="#mandates" role="tab" data-toggle="tab">Mandates</a></li>
-                        <li><a href="#structureOrGenealogies" role="tab" data-toggle="tab">Structure or Genealogies</a></li>
-                    </ul>
-                    </li>
-                    <li><a href="#sources" role="tab" data-toggle="tab">Sources</a></li>
-
-                </ul>
+                {{ components.displayEditTabs(X, false) }}
 
                 <div class="tab-content">
 
                     <div class="tab-pane active" id="nameEntries">
-                        <h2>Basic Information</h2>
+                        <h2>Core Data</h2>
 
                         <div class="panel panel-default">
                         	<div class="panel-heading">Constellation Information</div>
@@ -135,7 +103,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                         </div>
                                     </div>
                                 </div>
-                                {{ widgets.scmModal(X, false, false, 'constellation', '1', 'Basic Info', "Constellation", data) }}
+                                {{ widgets.scmModal(X, false, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
                             </div>
                         </div>
 
@@ -145,7 +113,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, false, false, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, false, true, nameEntry, i) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -163,7 +131,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for gender in data.genders %}
-                            {{ components.displayGender(X, false, false, gender, i) }}
+                            {{ components.displayGender(X, false, true, gender, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
@@ -178,79 +146,49 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for exist in data.dates %}
-                            {{ components.displayExist(X, false, false, exist, i) }}
+                            {{ components.displayExist(X, false, true, exist, i) }}
                             {% set i = i + 1 %}
                         {% endfor %}
 
                     </div>
 
-
-                    {% set i = 0 %}
                     <div class="tab-pane" id="biogHists" style='height: auto'>
                         <h2>Biographical History</h2>
 
-                        <div class="panel-body" id="biogHist_panel_0">
-                            <div class="col-xs-10" id="biogHist_datapart_0">
-                                <input type="hidden" id="biogHist_id_0" name="biogHist_id_0" value="{{data.biogHists[0].id}}"/>
-                                <input type="hidden" id="biogHist_version_0" name="biogHist_version_0" value="{{data.biogHists[0].version}}"/>
-                                {% if data.biogHists[0].id %}
-                                    <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value=""/>
-                                {% else %}
-                                    <input type="hidden" id="biogHist_operation_0" name="biogHist_operation_0" value="insert"/>
-                                {% endif %}
-                                <div id="textarea_biogHist_text_0">
-                                    <input type="hidden" id="biogHist_text_0" name="biogHist_text_0" value="{{ data.biogHists[0].text|e }}"/>
-                                    <div class="form-control-static">{{ data.biogHists[0].text|raw }}</div>
-                                </div>
-
-
-                                <input type="hidden" id="biogHist_language_id_0" name="biogHist_language_id_0" value="{{data.biogHists[0].language.id}}"/>
-                                <input type="hidden" id="biogHist_language_version_0" name="biogHist_language_version_0" value="{{data.biogHists[0].language.version}}"/>
-                                <div class="form-group">
-                                    <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
-                                        {{ X.language.display }}
-                                    </label>
-                                    <div class="col-xs-8" id="select_biogHist_languagelanguage_{{i}}">
-                                        <input id="biogHist_languagelanguage_id_{{i}}" name="biogHist_languagelanguage_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.id }}"/>
-                                        <input id="biogHist_languagelanguage_term_{{i}}" name="biogHist_languagelanguage_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.language.term }}"/>
-                                        <input id="biogHist_languagelanguage_vocabtype_{{i}}" name="biogHist_languagelanguage_vocabtype_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                                        <input id="biogHist_languagelanguage_minlength_{{i}}" name="biogHist_languagelanguage_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ data.biogHists[0].language.language.term }}</p>
-                                    </div>
-                                </div>
-
-
-                                <div class="form-group">
-                                    <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
-                                        {{ X.script.display }}
-                                    </label>
-                                    <div class="col-xs-8" id="select_biogHist_languagescript_{{i}}">
-                                        <input id="biogHist_languagescript_id_{{i}}" name="biogHist_languagescript_id_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.id }}"/>
-                                        <input id="biogHist_languagescript_term_{{i}}" name="biogHist_languagescript_term_{{i}}" type="hidden" class="form-control" value="{{ data.biogHists[0].language.script.term }}"/>
-                                        <input id="biogHist_languagescript_vocabtype_{{i}}" name="biogHist_languagescript_vocabtype_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                                        <input id="biogHist_languagescript_minlength_{{i}}" name="biogHist_languagescript_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                                        <p class="form-control-static">{{ data.biogHists[0].language.script.term }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{ widgets.scmModal(X, false, false, "biogHist", i, "BiogHist", "BiogHist", data.biogHists[0]) }}
-                            {{ widgets.optionsList(X, false, false, "biogHist", i) }}
-                        </div>
+                            {% set i = 0 %}
+                            {% for biogHist in data.biogHists %}
+                                {{ components.displayBiogHist(X, false, true, biogHist, i) }}
+                                {% set i = i + 1 %}
+                            {% endfor %}
 
                     </div>
 
                     <div class="tab-pane" id="sameAs">
-                        <h2>Same As</h2>
+                        <h2>External CPF Relations (Same As)</h2>
 
 
 
                         {% set i = 0 %}
                         {% for other in data.otherRecordIDs %}
-                            {{ components.displaySameAs(X, false, false, other, i) }}
+                            {{ components.displaySameAs(X, false, true, other, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_sameAs_i' style='display:none;'>{{i}}</span>
+
+
+                    </div>
+
+                    <div class="tab-pane" id="entityID">
+                        <h2>Other Entity IDs (Same As)</h2>
+
+
+
+                        {% set i = 0 %}
+                        {% for other in data.entityIDs %}
+                            {{ components.displayEntityID(X, false, true, other, i) }}
+                        {% set i = i + 1 %}
+                        {% endfor %}
+                        <span id='next_entityID_i' style='display:none;'>{{i}}</span>
 
 
                     </div>
@@ -260,7 +198,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for source in data.sources %}
-                            {{ components.displaySource(X, false, false, source, i) }}
+                            {{ components.displaySource(X, false, true, source, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_source_i' style='display:none;'>{{i}}</span>
@@ -274,7 +212,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for relation in data.resourceRelations %}
-                            {{ components.displayResourceRelation(X, false, false, relation, i) }}
+                            {{ components.displayResourceRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>
@@ -282,12 +220,12 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     </div>
 
                     <div class="tab-pane" id="constellationRelations">
-                        <h2>Constellation Relations</h2>
+                        <h2>Internal CPF Relations</h2>
 
 
                         {% set i = 0 %}
                         {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, false, false, relation, i) }}
+                            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
@@ -301,7 +239,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for language in data.languagesUsed %}
-                            {{ components.displayLanguageUsed(X, false, false, language, i) }}
+                            {{ components.displayLanguageUsed(X, false, true, language, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_language_i' style='display:none;'>{{i}}</span>
@@ -314,7 +252,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                         {% set i = 0 %}
                         {% for subject in data.subjects %}
-                            {{ components.displaySubject(X, false, false, subject, i) }}
+                            {{ components.displaySubject(X, false, true, subject, i) }}
                         {% set i = i + 1 %}
                         {% endfor %}
                         <span id='next_subject_i' style='display:none;'>{{i}}</span>
@@ -327,7 +265,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for nationality in data.nationalities %}
-                                {{ components.displayNationality(X, false, false, nationality, i) }}
+                                {{ components.displayNationality(X, false, true, nationality, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_nationality_i' style='display:none;'>{{i}}</span>
@@ -338,7 +276,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for function in data.functions %}
-                                {{ components.displayFunction(X, false, false, function, i) }}
+                                {{ components.displayFunction(X, false, true, function, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_function_i' style='display:none;'>{{i}}</span>
@@ -351,7 +289,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for occupation in data.occupations %}
-                                {{ components.displayOccupation(X, false, false, occupation, i) }}
+                                {{ components.displayOccupation(X, false, true, occupation, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_occupation_i' style='display:none;'>{{i}}</span>
@@ -364,7 +302,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for legalStatus in data.legalStatuses %}
-                                {{ components.displayLegalStatus(X, false, false, legalStatus, i) }}
+                                {{ components.displayLegalStatus(X, false, true, legalStatus, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_legalStatus_i' style='display:none;'>{{i}}</span>
@@ -377,7 +315,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for place in data.places %}
-                                {{ components.displayPlace(X, false, false, place, i) }}
+                                {{ components.displayPlace(X, false, true, place, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_place_i' style='display:none;'>{{i}}</span>
@@ -390,7 +328,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for conventionDeclaration in data.conventionDeclarations %}
-                                {{ components.displayConventionDeclaration(X, false, false, conventionDeclaration, i) }}
+                                {{ components.displayConventionDeclaration(X, false, true, conventionDeclaration, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_conventionDeclaration_i' style='display:none;'>{{i}}</span>
@@ -402,7 +340,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for generalContext in data.generalContexts %}
-                                {{ components.displayGeneralContext(X, false, false, generalContext, i) }}
+                                {{ components.displayGeneralContext(X, false, true, generalContext, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_generalContext_i' style='display:none;'>{{i}}</span>
@@ -414,7 +352,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for structureOrGenealogy in data.structureOrGenealogies %}
-                                {{ components.displayStructureOrGenealogy(X, false, false, structureOrGenealogy, i) }}
+                                {{ components.displayStructureOrGenealogy(X, false, true, structureOrGenealogy, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_structureOrGenealogy_i' style='display:none;'>{{i}}</span>
@@ -425,7 +363,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
                             {% set i = 0 %}
                             {% for mandate in data.mandates %}
-                                {{ components.displayMandate(X, false, false, mandate, i) }}
+                                {{ components.displayMandate(X, false, true, mandate, i) }}
                             {% set i = i + 1 %}
                             {% endfor %}
                             <span id='next_mandate_i' style='display:none;'>{{i}}</span>
@@ -447,6 +385,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
+
+                    {% if data.preview %}
+                    <div class="alert alert-success">
+                        <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                        <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                    </div>
+                    {% else %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>
@@ -461,6 +406,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
+                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
+                                       <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="View other Constellations which may be the same as this one." data-toggle="popover" data-placement="top"></span></a>
                                 {% if user.email and permissions.Edit %}
                                     {% if data.status == 'editable' %}
                                         <a class="list-group-item list-group-item-info"
@@ -468,13 +417,27 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     {% else %}
                                         <a class="list-group-item list-group-item-danger disabled"
                                             href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                        {% if data.editingUser %}
+                                            <div class="list-group-item">
+                                                <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                                <div class="list-group" style="margin-bottom: 0px;">
+                                                    <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                        <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
-                                <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as JSON <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span></a>
-                                <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
-                            </div>
+                              </div>
+                              <h4>Export as</h4>
+                              <div class="list-group" style="margin-bottom: 0px;">
+                                  <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                                      <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                              </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">Identity Constellation Identifier(s)</h3>
@@ -488,6 +451,14 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                     <p class="form-control-static">{{ data.ark }}</p>
                                 </div>
                                 <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-xs-3" data-content="{{X.constellationid.tooltip}}" data-toggle="popover" data-placement="top">
+                                    {{ X.constellationid.display }}
+                                </label>
+                                <div class="col-xs-9">
+                                    <p class="form-control-static">{{ data.id }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -548,33 +519,19 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             </div>
         </form>
 
-<div class="modal fade" id="relationSearchPane" tabindex="-1" role="dialog" aria-labelledby="relationSearchPane">
+<div class="modal fade" id="geoPlaceInfoPane" tabindex="-1" role="dialog" aria-labelledby="geoPlaceInfoPane">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header primary">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="relationSearchLabel">Choose Relationship</h4>
+                <h4 class="modal-title" id="geoPlaceInfoPaneLabel">GeoPlace Information</h4>
             </div>
-            <div class="modal-body" id="relationSearchPaneContent">
-                <form class="form-horizontal" id="relation_search_form" onsubmit="return false;">
-                    <div class="modal-body">
-                        <p>Use the search box below to find a Constellation.  Select one by using the radio button to the left. You may view any constellation
-                        by choosing the "View" link next to the ARK</p>
-	                    <input type="hidden" id="relation-search-count" name="count" value="10">
-	                    <input type="hidden" id="relation-search-start" name="start" value="0">
-	                    <div class="form-group">
-	                        <input type="text" class="form-control"
-	                            placeholder="Search for..." id="relation-searchbox" name="term">
-	                    </div>
-
-	                    <div id="relation-results-box">
-	                    </div>
-                    </div>
-                </form>
+            <div class="modal-body" id="geoPlaceInfoPaneContent">
+                <div class="geoplace-map" id="geoPlaceMap"></div>
+                <div id="geoPlaceInfo"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Cancel</span></button>
-                <button type="button" class="btn btn-primary" id="btn_create_constellationRelation" data-dismiss="modal">Create Relation</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">Done</span></button>
             </div>
         </div>
     </div>

@@ -1,5 +1,25 @@
-{% macro topNavigation(X, user, permissions) %}
-<nav class="navbar navbar-inverse navbar-fixed-top">
+{% macro topNavigation(X, user, permissions, control) %}
+
+    {# If there is a google analytics tracking ID, then insert the Google Analytics script #}
+    {% if control.googleAnalyticsID %}
+        <script>
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+            ga('create', '{{control.googleAnalyticsID}}', 'auto');
+            ga('send', 'pageview');
+        </script>
+    {% endif %}
+
+    {% if control.interfaceVersion == "development" %}
+    <nav class="navbar navbar-inverse navbar-fixed-top navbar-development-version">
+    {% elseif control.interfaceVersion == "demo" %}
+    <nav class="navbar navbar-inverse navbar-fixed-top navbar-demo-version">
+    {% else %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+    {% endif %}
     <div class="container">
         <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -15,7 +35,10 @@
             <!-- {% if user.userName %} -->
                 <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
             <!-- {% endif %} -->
-                <li><a href="http://snac-community.iath.virginia.edu/"><i class="fa fa-comments-o" aria-hidden="true"></i> Discussion</a></li>
+                <li><a href="?command=search"><i class="fa fa-search" aria-hidden="true"></i> Search</a></li>
+            <!-- {% if user.userName %} -->
+                <li><a href="?command=browse"><i class="fa fa-book" aria-hidden="true"></i> Browse</a></li>
+            <!-- {% endif %} -->
             </ul>
             <div class="navbar-right">
                 <ul class="nav navbar-nav">
@@ -37,10 +60,11 @@
                         <li><a href="?command=dashboard"><i class="fa fa-tachometer" aria-hidden="true"></i> Dashboard</a></li>
                         {% if permissions.ViewAdminDashboard %}
                         <li><a href="?command=administrator"><i class="fa fa-cogs" aria-hidden="true"></i> Administration</a></li>
+                        <li><a href="?command=vocab_administrator"><i class="fa fa-list-alt" aria-hidden="true"></i> Vocabulary</a></li>
                         {% endif %}
                         <li role="separator" class="divider"></li>
                         <li class="dropdown-header">User Options</li>
-                        <li><a href="?command=profile"><i class="fa fa-user" aria-hidden="true"></i> User Profile</a></li>
+                        <li><a href="?command=profile"><i class="fa fa-id-card-o" aria-hidden="true"></i> User Profile</a></li>
                         <li><a href="?command=logout"><i class="fa fa-sign-out" aria-hidden="true"></i> Logout</a></li>
                     </ul>
                     </li>
@@ -52,4 +76,9 @@
         </div><!--/.nav-collapse -->
     </div>
 </nav>
+    {% if control.interfaceVersion == "development" %}
+    <p class="snac-system-notice">This is the <b>development version</b>.  Edits made to these Constellations will not be permanent.</p>
+    {% elseif control.interfaceVersion == "demo" %}
+    <p class="snac-system-notice">This is the <b>demo version</b>.  Edits made to these Constellations will not be permanent.</p>
+    {% endif %}
 {% endmacro %}

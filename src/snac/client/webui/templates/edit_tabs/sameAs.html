@@ -1,0 +1,20 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>External CPF Relations (Same As)</h2>
+
+<div class="form-group" id="add_sameAs_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_sameAs"><span class="glyphicon glyphicon-plus"></span> Add New Same-As Relation</button>
+    </div>
+</div>
+
+
+{% set i = 0 %}
+{% for other in data.otherRecordIDs %}
+    {{ components.displaySameAs(X, true, true, other, i) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_sameAs_i' style='display:none;'>{{i}}</span>
+

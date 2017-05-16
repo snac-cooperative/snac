@@ -27,17 +27,21 @@ $('.selectpicker').selectpicker();
 <script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
 <link rel="stylesheet" href="css/select2-bootstrap.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/admin.js"></script>
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/relation_search.js"></script>
+<script src="javascript/admin.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/relation_search.js{{control.noCache}}"></script>
 
 
 <script>
@@ -49,12 +53,15 @@ $(document).ready(function() {
     $("select").each(function() {
         select_replace_simple($(this));
     });
+
+    // Load the table into a datatable
+    $('.table').DataTable();
 });
 </script>
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
@@ -108,7 +115,12 @@ $(document).ready(function() {
                                 <i class="fa fa-check" aria-hidden="true"></i>
                                 {% endif %}
                             </p></td>
-                            <td><p><a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span> Edit</a></p></td>
+                            <td>
+                                <div class="btn-group" role="group" aria-label="Actions">
+                                    <a href="?command=administrator&subcommand=activity_user&userid={{editUser.userid}}" class="btn btn-warning" title="Activity"><span  class="fa fa-archive" aria-hidden="true"></span></a>
+                                    <a href="?command=administrator&subcommand=edit_user&userid={{editUser.userid}}" class="btn btn-info" title="Edit"><span  class="fa fa-pencil-square-o" aria-hidden="true"></span></a>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

@@ -295,9 +295,12 @@ class SNACControlMetadata extends AbstractData {
             return false;
         if ($this->getNote() != $other->getNote())
             return false;
-        
-        if (($this->getCitation() != null && ! $this->getCitation()->equals($other->getCitation(), $strict)) ||
-                 ($this->getCitation() == null && $other->getCitation() != null))
+
+        // Citations are special. They are Source objects, but they may not be completely filled in.  In fact, the only thing we may know
+        // about them within an SCM is their ID.  So, for equality, we may only check ID. 
+        if (($this->getCitation() !== null && $other->getCitation() === null) ||
+            ($this->getCitation() === null && $other->getCitation() !== null) ||
+            ($this->getCitation() !== null && $other->getCitation() !== null && $this->getCitation()->getID() !== $other->getCitation()->getID()))
             return false;
 
         if (($this->getDescriptiveRule() != null && ! $this->getDescriptiveRule()->equals($other->getDescriptiveRule())) ||

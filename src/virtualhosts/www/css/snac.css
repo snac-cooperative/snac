@@ -8,6 +8,7 @@ body {
     padding-top: 70px;
     padding-bottom: 30px;
 }
+
 .navbar-inverse {
     background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
     background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
@@ -16,7 +17,25 @@ body {
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1f5c7c', endColorstr='#ff18506F', GradientType=0);
     filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
     background-repeat: repeat-x;
-    border-radius: 4px;
+}
+
+.navbar-development-version {
+    background-image: -webkit-linear-gradient(top,#7D1F1F 0,#701919 100%);
+    background-image: -o-linear-gradient(top,#7D1F1F 0,#701919 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#7D1F1F),to(#701919));
+    background-image: linear-gradient(to bottom,#7D1F1F 0,#701919 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff7D1F1F', endColorstr='#ff701919', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+}
+
+
+.navbar-demo-version {
+    background-image: -webkit-linear-gradient(top,#481F7D 0,#3D1970 100%);
+    background-image: -o-linear-gradient(top,#481F7D 0,#3D1970 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#481F7D),to(#3D1970));
+    background-image: linear-gradient(to bottom,#481F7D 0,#3D1970 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff481F7D', endColorstr='#ff3D1970', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
 }
 
 
@@ -25,6 +44,41 @@ h1 {
     font-family: Roboto;
     font-weight: 300;
     margin-bottom: 35px;
+}
+
+.search-results h4 {
+    margin-top: 3px;
+    margin-bottom: 3px;
+    padding: 0px;
+}
+
+.search-results p {
+    margin-bottom: 2px;
+}
+
+.search-results p.final {
+    margin-bottom: 30px;
+}
+
+.search-results p.search-info {
+    margin-bottom: 20px;
+    font-size: 12px;
+    color: #888888;
+}
+
+.search-results p.missing {
+    color: #666666;
+    font-style: italic;
+}
+
+.search-results p.identity-info {
+    color: #666666;
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+.search-results p.identity-info span {
+    margin-right: 15px;
 }
 
 .snac-name-header {
@@ -63,7 +117,23 @@ h1 {
 .control-label-subtext {
     font-size: 12px;
     font-weight: normal;
-}.
+}
+
+.name-component-type {
+    text-align: right!important;
+}
+
+.snac-options-list {
+    text-align: center!important;
+    font-size: 10px;
+}
+
+.snac-system-notice {
+    text-align: center!important;
+    background-color: #ebccd1;
+    margin-top: -16px;
+    color: #a94442;
+}
 
 .tab-pane {
 
@@ -149,6 +219,14 @@ h1 {
     float:left;
 }
 
+.relation-icon {
+    font-size: 32px;
+}
+
+.relation-icon-caption {
+    font-size: 10px;
+}
+
 .rotated-header {
     /* Safari */
     -webkit-transform: rotate(-90deg);
@@ -181,6 +259,18 @@ td.rotate > div > span {
     padding: 5px 10px;
 }
 
+
+.geoplace-map {
+    height: 300px;
+}
+
+
+.move-handle {
+    border: 0;
+    background: transparent;
+    cursor: grab;
+}
+
 /* centered columns styles */
 .row-centered {
     text-align:center;
@@ -197,6 +287,61 @@ td.rotate > div > span {
 .subtext {
     margin-left: 22px;
     font-size: 11px;
+}
+
+.bioghist-text {
+    margin-bottom: 15px;
+}
+
+.form-group .well p, .form-group p.form-control-static {
+    word-wrap: break-word;
+}
+
+.btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {
+    text-decoration: none;
+}
+
+/* Advanced Search Information */
+#advancedSearchText dl {
+    margin-left: 25px;
+    margin-right: 25px;
+}
+
+#advancedSearchText dl dt {
+    min-width: 25px;
+    display: inline-block;
+}
+
+#advancedSearchText dl dd:after {
+    display: block;
+    content: "";
+}
+
+#advancedSearchText dd {
+    display: inline;
+}
+
+
+
+/* override JQuery Ui for autocomplete */
+.ui-widget {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+.ui-menu .ui-menu-item {
+    padding: 4px;
+    margin: 2px;
+}
+
+.ui-state-focus, .ui-widget-content .ui-state-focus {
+    background: #337ab7;
+    border: 0px;
+    color: #fff;
+}
+
+.ui-autocomplete, .ui-widget-content {
+    margin-left: 0px;
 }
 
 /* Use the following to make other colors of list items */
@@ -230,6 +375,98 @@ button.list-group-item-download.active:focus {
     border-color: #7a3583;
 }
 
+.list-group-item-history {
+    color: #2A6D88;
+    background-color: #E0E9F3;
+}
+a.list-group-item-history,
+button.list-group-item-history {
+    color: #2A6D88;
+}
+a.list-group-item-history .list-group-item-heading,
+button.list-group-item-history .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-history:hover,
+button.list-group-item-history:hover,
+a.list-group-item-history:focus,
+button.list-group-item-history:focus {
+    color: #2A6D88;
+    background-color: #C7DAEE;
+}
+a.list-group-item-history.active,
+button.list-group-item-history.active,
+a.list-group-item-history.active:hover,
+button.list-group-item-history.active:hover,
+a.list-group-item-history.active:focus,
+button.list-group-item-history.active:focus {
+    color: #fff;
+    background-color: #2A6D88;
+    border-color: #2A6D88;
+}
+
+
+.list-group-item-review {
+    color: #AE5A0B;
+    background-color: #F3ECE0;
+}
+a.list-group-item-review,
+button.list-group-item-review {
+    color: #AE5A0B;
+}
+a.list-group-item-review .list-group-item-heading,
+button.list-group-item-review .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-review:hover,
+button.list-group-item-review:hover,
+a.list-group-item-review:focus,
+button.list-group-item-review:focus {
+    color: #AE5A0B;
+    background-color: #EBD9CD;
+}
+a.list-group-item-review.active,
+button.list-group-item-review.active,
+a.list-group-item-review.active:hover,
+button.list-group-item-review.active:hover,
+a.list-group-item-review.active:focus,
+button.list-group-item-review.active:focus {
+    color: #fff;
+    background-color: #AE5A0B;
+    border-color: #AE5A0B;
+}
+
+.list-group-item-merge {
+    color: #AB307C;
+    background-color: #F3E0EF;
+}
+a.list-group-item-merge,
+button.list-group-item-merge {
+    color: #AB307C;
+}
+a.list-group-item-merge .list-group-item-heading,
+button.list-group-item-merge .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-merge:hover,
+button.list-group-item-merge:hover,
+a.list-group-item-merge:focus,
+button.list-group-item-merge:focus {
+    color: #AB307C;
+    background-color: #EBCDE1;
+}
+a.list-group-item-merge.active,
+button.list-group-item-merge.active,
+a.list-group-item-merge.active:hover,
+button.list-group-item-merge.active:hover,
+a.list-group-item-merge.active:focus,
+button.list-group-item-merge.active:focus {
+    color: #fff;
+    background-color: #AB307C;
+    border-color: #AB307C;
+}
+
+
 
 /* Use the following to define new panel styles */
 .panel-review {
@@ -251,6 +488,23 @@ button.list-group-item-download.active:focus {
     border-bottom-color: #FBDECE;
 }
 
+
+.loading-box {
+    margin-top: 80px;
+}
+
+.loading-box p {
+    font-size: 15px;
+}
+
+.loading-box i {
+    font-size: 55px;
+}
+
+/* Fix the width of font-awesome icons so their text aligns nicely beside them */
+.fa {
+    width: 1.2em;
+}
 
 @media (min-width: 992px) {
     .affix {

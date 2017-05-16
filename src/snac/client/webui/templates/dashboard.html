@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Dashboard</title>
+<title>Dashboard - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Optional theme -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
@@ -24,19 +24,29 @@ $('.selectpicker').selectpicker();
 </script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
-<script src="javascript/dashboard.js"></script>
-<script src="javascript/search.js"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/dashboard.js{{control.noCache}}"></script>
+<script src="javascript/dashboard_search.js{{control.noCache}}"></script>
+<script>
+// Inline script to help out the pop-up menu for constellations
+
+var permissions = {
+    {% for permission, value in permissions %}
+        {{permission}}: {{value}},
+    {% endfor %}
+    FakeHolder: false
+};
+</script>
 
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
 
 <div class="container snac" role="main">
@@ -53,10 +63,10 @@ $('.selectpicker').selectpicker();
             <!-- Left column -->
             <h3>Getting Started</h3>
 
-            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The first column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The second column gives quick access to view the most recently published Constellations on the SNAC prototype.</p>
+            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  This column shows the most recently published Constellations across SNAC.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column gives quick access to searching and other functionality depending on your permission level.</p>
             <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
 
-
+            <!--
             <div class="panel panel-success">
                 <div class="panel-heading">
                     <h3 class="panel-title"><span class="glyphicon glyphicon-question-sign"></span> Help</h3>
@@ -65,6 +75,20 @@ $('.selectpicker').selectpicker();
                     <p>The following links provide guides to help you.  They are also accessible at any time by the Help menu above.</p>
                     <div class="list-group">
                         <a href="#" class="list-group-item disabled">Coming Soon</a>
+                    </div>
+                </div>
+            </div>
+            -->
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <h3 class="panel-title">View Recently Published</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
+                    <div class="list-group">
+                        {% for recent in data.recents %}
+                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -99,13 +123,13 @@ $('.selectpicker').selectpicker();
                         <div class="list-group-item" style="padding: 0px;">
                             <div class="btn-group btn-group-justified">
                                 <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}"
-                                        class="btn btn-default text-left"
-                                        style="width: 80%; text-align: left; background: #fff; border: 0px; padding: 10px 15px;">
+                                        class="list-group-item text-left"
+                                        style="width: 100%; text-align: left; border: 0px; border-bottom: 1px solid #ddd; margin-bottom:-1px;">
                                     {{link.nameEntry}}
                                 </a>
                                 <span class="btn btn-default"
                                     style="width: 20%;border-right: 0px; border-top: 0px; border-bottom:0px; border-radius: 0px;"
-                                    data-toggle="modal" data-target="#constellation-settings"
+                                    data-toggle="modal" data-target="#constellation-settings" title="View more options"
                                     onClick="updateSettingsBox({{link.id}}, {{link.version}}, '{{link.nameEntry}}');">
                                     <span class="glyphicon glyphicon-cog"> </span>
                                 </span>
@@ -192,6 +216,10 @@ $('.selectpicker').selectpicker();
 
                     <div id="search-results-box">
                     </div>
+
+                    <div>
+                        <p style="margin-top: 10px; margin-bottom: 0px;"><a href="?command=search&search_type=advanced">Advanced Search</a></p>
+                    </div>
             </div>
         </form>
 
@@ -205,20 +233,6 @@ $('.selectpicker').selectpicker();
                     <div class="list-group">
                         {% for link in data.needs_review %}
                         <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="panel panel-info">
-                <div class="panel-heading">
-                    <h3 class="panel-title">View Recently Published</h3>
-                </div>
-                <div class="panel-body">
-                    <p>Browse interesting and recently published Constellations from all of SNAC</p>
-                    <div class="list-group">
-                        {% for recent in data.recents %}
-                        <a href="?command=view&constellationid={{recent.id}}" class="list-group-item">{{recent.nameEntry}}</a>
                         {% endfor %}
                     </div>
                 </div>

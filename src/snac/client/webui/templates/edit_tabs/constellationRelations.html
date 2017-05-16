@@ -1,0 +1,19 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Internal CPF Relations</h2>
+
+<div class="form-group" id="add_constellationRelation_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_constellationRelation" data-toggle="modal" data-target="#relationSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Constellation Relation</button>
+    </div>
+</div>
+
+{% set i = 0 %}
+{% for relation in data.relations %}
+    {{ components.displayConstellationRelation(X, true, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
+

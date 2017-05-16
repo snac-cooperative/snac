@@ -1,3 +1,14 @@
+/**
+ * Dashboard JS
+ *
+ * Interactions with the Dashboard
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
 function updateSettingsBox(id, version, nameEntry) {
 
     $("#settings-name").text(nameEntry);
@@ -16,17 +27,19 @@ function updateSettingsBox(id, version, nameEntry) {
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Preview the current state of this constellation in the view mode." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
 
-    // Publish
-    html += "<a href='?command=review&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
+    // Send for Review
+    html += "<a href='?command=review&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-review'>";
     html += "   <span class='glyphicon glyphicon-send'></span> Send this Constellation for Review";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Send your saved changes to a reviewer." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
 
     // Publish
-    html += "<a href='?command=publish&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
-    html += "   <span class='glyphicon glyphicon-upload'></span> Publish this Constellation";
-    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';
-    html += "</a>";
+    if (permissions.Publish) {
+        html += "<a href='?command=publish&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-warning'>";
+        html += "   <span class='glyphicon glyphicon-upload'></span> Publish this Constellation";
+        html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';
+        html += "</a>";
+    }
 
     // Delete
     /*

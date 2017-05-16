@@ -14,3 +14,6 @@ insert into appuser (username, email, fullname) values ('testing@localhost', 'te
 insert into appuser_role_link (uid, rid, is_primary) values
     ((select id from appuser where username='system@localhost'),
         (select id from role where label='System Administrator'), true);
+insert into appuser_role_link (uid, rid, is_primary) values
+    ((select id from appuser where username='testing@localhost'),
+        (select id from role where label='Editor, Full'), true);

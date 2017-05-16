@@ -1,11 +1,12 @@
 before_script:
-    - cp ~/composer.phar .
-    - php composer.phar -n -q install
+    - composer -n -q install
     - cp ~/Config.php src/snac/Config.php
+    - cp ~/users.csv install/setup_files/users.csv
     - rm -rf ~/public_html/snac_server
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates
     - ln -s `pwd`/src/snac/client/webui/languages ~/webui_languages
+    - ln -s `pwd`/src/snac/util ~/cpf_templates
     - mkdir -p coverage/ 
 
 
@@ -13,7 +14,7 @@ stages:
   - database
   - test
   - documentation
-  - coverage
+  - deploy
 
 update_database:
   script:
@@ -28,21 +29,29 @@ run_test:
     - vendor/bin/phpunit --coverage-text --colors=never
   stage: test
   only:
-    - development
     - master
 
 run_test_coverage:
   script:
-    - vendor/bin/phpunit -v --coverage-html coverage/
-    - rsync -av coverage /projects/snac_server/doc/
-  stage: coverage
+    - vendor/bin/phpunit -v --coverage-html coverage/ --coverage-text 
+    - rsync -av coverage /lv2/snac/docs/
+  stage: test
   only:
     - development
 
 generate_docs:
   script:
-    - vendor/bin/phpdoc -d src/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
-    - rsync -av doc/ /projects/snac_server/doc/
+    - vendor/bin/phpdoc -d src/ -d test/ -t doc/ -i src/snac/Config.php --template="clean" --visibility="public" --title="SNAC Programming API" --validate --defaultpackagename="snac_server" --force
+    - rsync -av doc/ /lv2/snac/docs/
   stage: documentation
   only:
     - development
+
+deployment:
+  script:
+    - ssh snac-server "cd /lv2/snac && git fetch origin && git merge"
+    - ssh snac-web "cd /lv2/snac && git fetch origin && git merge"
+  stage: deploy
+  only:
+    - master
+

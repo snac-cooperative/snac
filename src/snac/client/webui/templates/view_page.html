@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>SNAC Prototype : Viewing {{data.nameEntries.0.original}}</title>
+<title>{{data.nameEntries.0.original}} - Social Networks and Archival Context</title>
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
@@ -38,29 +38,18 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 
-<!-- Tiny MCE text editor -->
-<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
-<script>
-//tinymce.init({selector:'#biogHist', plugins:'code', min_height: 300});
-</script>
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-<!-- CodeMirror XML editor -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/codemirror.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.9.0/mode/xml/xml.js"></script>
-
-<!-- Select Upgrades -->
-<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
-<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<!-- Leaflet JS Javascript and Styles-->
+<link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
+<script src="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.js"></script>
 
 <!-- SNAC Styles -->
-<link rel="stylesheet" href="css/snac.css">
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
 
 <!-- SNAC Javascript -->
-<script src="javascript/save_actions.js"></script>
-<script src="javascript/select_loaders.js"></script>
-<script src="javascript/scripts.js"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
 
 <style>
 body {
@@ -100,10 +89,23 @@ body {
 <body role="document">
 
 {% from 'page_navigation.html' import topNavigation %}
-{{ topNavigation(X, user, permissions) }}
+{{ topNavigation(X, user, permissions, control) }}
 
+
+
+      <!-- Constellation Data -->
+      <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+      <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+      <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
 
       <div class="main_content">
+          {% if data.message %}
+              <div class="alert alert-warning alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Notice:</strong> Please update your bookmarks.  The Constellation you requested has been merged into a new identifier, <a href="{{data.message.info.redirect}}">{{data.message.info.redirect}}</a>, displayed below.
+              </div>
+          {% endif %}
+
          <div id="identity">
             <div class="name">
                <h1 style="display:inline;">
@@ -119,47 +121,79 @@ body {
                </h1>
                <a data-toggle="modal" style="display: inline; position: relative;" data-target="#alternative_names" href="#alternative_names">Alternative names</a>
 
-               {% if data.preview %}
-               <h3 style="padding-left: 30px; display: inline; color: #3c763d;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
-               {% endif %}
+
             </div>
             <div>
                <div class="biog">
                   <div class="facts">
-                     <div class="life" data-xsl="life">
-                        <dt>Dates:</dt>
-                        <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
-                        <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
-                        <dt>Gender:</dt>
-                        <dd>{{data.genders.0.term.term}}</dd>
+                     <div class="life">
+                        {% if data.dates %}
+                            <dt>Dates:</dt>
+                            {% for date in data.dates %}
+                                <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
+                                {% if date.toDate %}
+                                    <dd>{{date.toType.term}} {{date.toDate}}</dd>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        {% if data.genders.0.term.term %}
+                            <dt>Gender:</dt>
+                            <dd>{{data.genders.0.term.term}}</dd>
+                        {% endif %}
                      </div>
                      <div>
+                         {# This should eventually be pulled from the maybe same table #}
+                         {% set numRels = 0 %}
+                         {% for relation in data.relations %}
+                            {% if relation.type.term == 'mayBeSameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                         {% endfor %}
+
+                         {% if numRels > 0 %}
+                         <div data-xsl="maybeSame">
+                           <label>Maybe same as:</label>
+                            {% for relation in data.relations %}
+                                {% if relation.type.term == 'mayBeSameAs' %}
+                                <div>
+                                   <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                         </div>
+                        {% endif %}
+
                         <div data-xsl="authoritySource">
                            <label>Authority Source:</label>
                            <!-- TEMPLATE_SOURCE  -->
                         </div>
+                        {% if data.nationalities %}
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
                            {% for nat in data.nationalities %}
-                                {{ nat.term.term }},
+                               {{ nat.term.term }}{{loop.last ? '' : ','}}
                            {% endfor %}
                         </div>
+                        {% endif %}
+                        {% if data.languagesUsed %}
                         <div data-xsl="language">
                            <label>Language: </label>
                             {% for lang in data.languagesUsed %}
-                                {{ lang.language.description }},
+                                {{ lang.language.description }}{{loop.last ? '' : ','}}
+
                             {% endfor %}
                         </div>
+                        {% endif %}
                      </div>
                   </div>
                   <h2>Biographical notes:</h2>
-                  <div class="wikipedia_thumbnail" data-xsl="wikipedia_thumbnail">
+                  <div class="wikipedia_thumbnail" id="wikipediaImage">
                   </div>
                   <div class="biogHist">
                   {% if data.biogHists.0.text %}
                     {{ data.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"})|raw }}
                   {% else %}
-                    <div class="alert alert-info">not available for this record</div>
+                    <div class="alert alert-info" style="clear: both;">not available for this record</div>
                   {% endif %}
                   </div>
                   <br clear="both"></br>
@@ -177,7 +211,7 @@ body {
 
                                         {% set numRels = 0 %}
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.resource.documentType.term == 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
                                         {% endif %}
                                         {% endfor %}
@@ -197,6 +231,9 @@ body {
                                     <li>
                                        <a href="#referencedIn" data-toggle="tab">referenced in</a>
                                     </li>
+                                    <li>
+                                       <a href="#other" data-toggle="tab">other</a>
+                                    </li>
                                  </ul>
                                  <div class="tab-content">
                                     <div class="tab-pane active list" id="creatorOf">
@@ -209,10 +246,10 @@ body {
                                        </div>
                                         -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.role.term == 'creatorOf' and relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.role.term == 'creatorOf' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link}}">{{relation.content}}</a>
-                                                <div></div>
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -227,10 +264,29 @@ body {
                                        </div>
                                        -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.role.term == 'referencedIn' and relation.documentType.term == 'ArchivalResource' %}
+                                        {% if relation.role.term == 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
                                             <div class="related">
-                                                <a href="{{relation.link}}">{{relation.content}}</a>
-                                                <div></div>
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <div class="tab-pane list" id="other">
+                                       <!--
+                                          <div class="related">
+                                          <a href="http://oasis.lib.harvard.edu//oasis/deliver/deepLink?_collection=oasis&amp;uniqueId=hou01429">Autograph File, F, 1447-1994.</a>
+                                          <div>
+                                             <repository xmlns="urn:isbn:1-931666-22-9">Houghton Library, Harvard College Library, Harvard University</repository>
+                                          </div>
+                                       </div>
+                                       -->
+                                        {% for relation in data.resourceRelations %}
+                                        {% if relation.role.term != 'creatorOf' and relation.role.term != 'referencedIn' and relation.resource.documentType.term == 'ArchivalResource' %}
+                                            <div class="related">
+                                                <a href="{{relation.resource.link}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <div>{{relation.role.term}}</div>
+                                                <div>{{relation.resource.repository.nameEntries.0.original}}</div>
                                             </div>
                                         {% endif %}
                                         {% endfor %}
@@ -242,7 +298,7 @@ body {
                      </div>
                                         {% set numRels = 0 %}
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term != 'ArchivalResource' %}
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
                                             {% set numRels = numRels + 1 %}
                                         {% endif %}
                                         {% endfor %}
@@ -265,10 +321,11 @@ body {
                               </div>
                               -->
                                         {% for relation in data.resourceRelations %}
-                                        {% if relation.documentType.term != 'ArchivalResource' %}
-                                            <div class="related">
-                                                <a href="{{relation.link ? relation.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content}}</a>
-                                                <span class="arcrole">{{relation.role.term}}</span>
+                                        {% if relation.resource.documentType.term != 'ArchivalResource' %}
+                                            <div class="related" style="margin-top: 5px;">
+                                                <a href="{{relation.resource.link ? relation.resource.link : 'http://www.worldcat.org/search?q=ti:' ~ relation.content ~ '+au:' ~ data.nameEntries.0.original}}">{{relation.content|default(relation.resource.title)}}</a>
+                                                <!--<span class="arcrole">{{relation.role.term}}</span>-->
+                                                <div>{{relation.role.term}}</div>
                                                 <div></div>
                                             </div>
                                         {% endif %}
@@ -279,28 +336,29 @@ body {
                      <div class="panel panel-default" data-xsl="linkedData">
                         <div class="panel-heading">
                            <h4>
+                            {% set numRels = 0 %}
+                            {% for relation in data.otherRecordIDs %}
+                            {% if relation.type.term == 'sameAs' %}
+                                {% set numRels = numRels + 1 %}
+                            {% endif %}
+                            {% endfor %}
                               <a data-toggle="collapse" data-parent="#relations" href="#linkedData">
                                  <i style="font-size: 80%;" class="glyphicon glyphicon-new-window"></i> Related External Links
-                                 <span class="badge pull-right">{{data.otherRecordIDs|length}}</span>
+                                 <span class="badge pull-right">{{numRels}}</span>
                               </a>
                            </h4>
                         </div>
                         <div id="linkedData" class="panel-collapse collapse">
                            <div class="panel-body">
 
-                                        {% for sameas in data.otherRecordIDs %}
-                                            <div class="related">
-                                                <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
-                                            </div>
-                                        {% endfor %}
                         <!--
                               <div>
                                  <div class="sprite-icons-archivegrid"></div>
-                                 <a href="http://beta.worldcat.org/archivegrid/?p=1&amp;q=Fairchild,+Charles+S.+(Charles+Stebbins),+1842-1924">ArchiveGrid search</a>
+                                 <a href="http://beta.worldcat.org/archivegrid/?p=1&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">ArchiveGrid search</a>
                               </div>
                               <div>
                                  <div class="sprite-icons-dpla"></div>
-                                 <a href="http://dp.la/search?utf8=%E2%9C%93&amp;q=Fairchild,+Charles+S.+(Charles+Stebbins),+1842-1924">DPLA search</a>
+                                 <a href="http://dp.la/search?utf8=%E2%9C%93&amp;q={{data.nameEntries.0.original|replace({' ':'+'})}}">DPLA search</a>
                               </div>
                               <div>
                                  <div class="sprite-icons-wikipedia"></div>
@@ -319,6 +377,38 @@ body {
                                  <a href="http://www.worldcat.org/wcidentities/lccn-n88-071278">WorldCat Identities</a>
                               </div>
                         -->
+                                        {% for sameas in data.otherRecordIDs %}
+                                            {% if sameas.type.term == 'sameAs' %}
+                                                {% if 'wikipedia' in sameas.uri %}
+                                                   <div>
+                                                     <div class="sprite-icons-wikipedia"></div>
+                                                     <a href="{{sameas.uri}}">Wikipedia</a>
+                                                  </div>
+                                                  <!-- For the sake of Wikipedia, we will only ask for a wikipedia image
+                                                       if the Constellation has a wikipedia link from us. -->
+                                                   <input id="hasWikipediaLink" type="hidden" value="true"/>
+                                                {% elseif 'loc.gov/authorities' in sameas.uri %}
+                                                   <div>
+                                                     <div class="sprite-icons-idlocgov"></div>
+                                                     <a href="{{sameas.uri}}">LC Name Authority File</a>
+                                                  </div>
+                                                {% elseif 'viaf.org' in sameas.uri %}
+                                                   <div>
+                                                     <div class="sprite-icons-viaf"></div>
+                                                     <a href="{{sameas.uri}}">Virtual International Authority File</a>
+                                                  </div>
+                                                {% elseif 'worldcat.org/wcidentities' in sameas.uri %}
+                                                   <div>
+                                                     <div class="sprite-icons-worldcat"></div>
+                                                     <a href="{{sameas.uri}}">WorldCat Identities</a>
+                                                  </div>
+                                                {% else %}
+                                                    <div class="related">
+                                                        <a href="{{sameas.uri}}">{{sameas.text|default(sameas.uri)}}</a>
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
                            </div>
                         </div>
                      </div>
@@ -344,6 +434,17 @@ body {
                         </div>
                         <div id="relatedPeople" class="panel-collapse collapse">
                            <div class="panel-body">
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedPeopleDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedPeopleImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedPeopleDirect">
                               <!--
                               <div class="person">
                                  <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
@@ -351,15 +452,27 @@ body {
                                  <div></div>
                               </div>
                               -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'person' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'person' %}
+                                            <div class="person">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                   <div class="tab-pane list" id="relatedPeopleImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedPeopleImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
+
+                                   </div>
+                               </div>
+                           </div>
                            </div>
                         </div>
                      </div>
@@ -382,6 +495,17 @@ body {
                         </div>
                         <div id="relatedFamilies" class="panel-collapse collapse">
                            <div class="panel-body">
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedFamiliesDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedFamiliesImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedFamiliesDirect">
                               <!--
                               <div class="person">
                                  <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
@@ -389,16 +513,30 @@ body {
                                  <div></div>
                               </div>
                               -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'family' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'family' %}
+                                            <div class="family">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+
+                                   <div class="tab-pane list" id="relatedFamiliesImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedFamiliesImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
+
+                                   </div>
+
+                                </div>
+                            </div>
+                        </div>
                         </div>
                      </div>
 
@@ -420,139 +558,136 @@ body {
                         </div>
                         <div id="relatedOrganizations" class="panel-collapse collapse">
                            <div class="panel-body">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
-                              {% for relation in data.relations %}
-                              {% if relation.targetEntityType.term == 'corporateBody' %}
-                              <div class="person">
-                                 <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
-                        </div>
-                     </div>
+                              <div class="list">
+                                 <ul class="nav nav-tabs">
+                                    <li class="active">
+                                       <a href="#relatedOrganizationsDirect" data-toggle="tab">Direct</a>
+                                    </li>
+                                    <li>
+                                       <a href="#relatedOrganizationsImplied" data-toggle="tab">Implied</a>
+                                    </li>
+                                 </ul>
+                                 <div class="tab-content">
+                                    <div class="tab-pane active list" id="relatedOrganizationsDirect">
+                                        {% for relation in data.relations %}
+                                        {% if relation.targetEntityType.term == 'corporateBody' %}
+                                            <div class="corporateBody">
+                                                <span class="arcrole">{{relation.type.term}}</span>
+                                                <a href="?command=view&constellationid={{relation.targetConstellation}}">{{relation.content}}</a>
+                                                <div></div>
+                                            </div>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
 
-                     <h3>Related names in Original
-                        <abbr class="initialism">SNAC</abbr>
-                     </h3>
+                                   <div class="tab-pane list" id="relatedOrganizationsImplied">
+                                        <p class="text-center">
+                                            <a href="#" id="relatedOrganizationsImpliedLoad" class="btn btn-primary">Load</a>
+                                        </p>
+                                        <p class="text-center caption">
+                                            This may take some time to compute.
+                                        </p>
 
-                        {% set numRels = 0 %}
-                        {% for relation in data.relations %}
-                        {% if not relation.targetConstellation %}
-                            {% set numRels = numRels + 1 %}
-                        {% endif %}
-                        {% endfor %}
+                                   </div>
 
-                     <div class="panel panel-default" data-xsl="relatedOldSNAC">
-                        <div class="panel-heading">
-                           <h4>
-                              <a data-toggle="collapse" data-parent="#relations" href="#relatedOldSNAC">
-                                 <span class="icon-ind"></span> Relations
-                                 <span class="badge pull-right">{{numRels}}</span>
-                              </a>
-                           </h4>
-                        </div>
-                        <div id="relatedOldSNAC" class="panel-collapse collapse">
-                           <div class="panel-body">
-                              <!--
-                              <div class="person">
-                                 <a href="/ark:/99166/w6s75kzv">Bayard, Thomas F. (Thomas Francis), 1828-1898</a>
-                                 <span class="arcrole">correspondedWith</span>
-                                 <div></div>
-                              </div>
-                              -->
-                              {% for relation in data.relations %}
-                              {% if not relation.targetConstellation %}
-                              <div class="person">
-                                 <a href="{{relation.targetArkID}}">{{relation.content}}</a>
-                                 <span class="arcrole">{{relation.type.term}}</span>
-                                 <div></div>
-                              </div>
-                              {% endif %}
-                              {% endfor %}
-                           </div>
+
+                                </div>
+                            </div>
+                            </div>
                         </div>
                      </div>
                   </div>
                </div>
                <div class="others">
-                  <h3>Actions:</h3>
-                  <div class="list-group">
-                        <a class="list-group-item list-group-item-success"
-                           href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
-                      {% if user.email and permissions.Edit %}
-                        {% if data.status == 'editable' %}
-                        <a class="list-group-item list-group-item-info"
-                           href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
-                        {% else %}
-                        <a class="list-group-item list-group-item-danger disabled"
-                           href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
-                        {% endif %}
-                      {% endif %}
-                      <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as JSON <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span></a>
-                      <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><span class="glyphicon glyphicon-floppy-disk"></span> Export as EAC-CPF XML <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span></a>
+                   {% if data.preview %}
+                   <div class="alert alert-success" style="margin-top: 15px;">
+                       <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                       <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                   </div>
+                   {% else %}
+                   <div class="panel panel-info" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Constellation Options</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <h5>Visualizations</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
+                                <a class="list-group-item list-group-item-warning"
+                                   href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
+                                       <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="View other Constellations which may be the same as this one." data-toggle="popover" data-placement="top"></span></a>
+                                   <a class="list-group-item list-group-item-history"
+                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
+                          </div>
+                          <h5>Export As</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                                  <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                          </div>
+                      </div>
                   </div>
+                    {% endif %}
 
-                  {% if debug %}
-                  <h3>Debug:</h3>
-                  <div class="list-group">
 
-                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#sourceConstellation"><span class="glyphicon glyphicon-eye-open"></span> View Constellation</a>
-                      <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+                  {% if user.email and (permissions.Edit or debug) and not data.preview %}
+                   <div class="panel panel-warning" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Actions</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                           {% if user.email and permissions.Edit %}
+                          <h5>Constellation Actions</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                {% if data.status == 'editable' %}
+                                <a class="list-group-item list-group-item-info"
+                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                {% else %}
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            <div class="list-group" style="margin-bottom: 0px;">
+                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endif %}
 
+                          </div>
+                          {% endif %}
+                          {% if false %}
+                          <h5>Debug Actions</h3>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+
+                          </div>
+                          {% endif %}
+                      </div>
                   </div>
-
-                    <div class="modal fade" id="sourceConstellation" tabindex="-1" role="dialog" aria-labelledby="sourceConstellationLabel">
-                        <div class="modal-dialog" role="document" style="width:90%;">
-                            <div class="modal-content">
-                                <div class="modal-header primary">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 class="modal-title" id="sourceConstellationLabel">Constellation Source (JSON)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <pre>{{debug.constellationSource}}
-                                    </pre>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
-                        <div class="modal-dialog" role="document" style="width:90%;">
-                            <div class="modal-content">
-                                <div class="modal-header primary">
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
-                                </div>
-                                <div class="modal-body">
-                                    <pre>{{debug.serverResponse}}
-                                    </pre>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                   {% endif %}
 
-                  <h3>Subjects:</h3>
-                  <!--
-                  <div class="alert alert-info">not available for this record</div>
-                  -->
+                  <div class="panel panel-default">
+                      <div class="panel-heading">
+                          <h3 class="panel-title">Constellation Information</h3>
+                      </div>
+                      <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                          <dt><strong>Permalink:</strong></dt>
+                          <dd>{{data.ark}}</dd>
+                          <dt><strong>SNAC ID:</strong></dt>
+                          <dd>{{data.id}}</dd>
+                      </div>
 
+                  </div>
+
+                  <h4>Subjects:</h4>
                   {% if data.subjects|length > 0 %}
                     <ul>
                     <!-- {% for subject in data.subjects %} -->
@@ -563,18 +698,7 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
-                  <h3>Occupations:</h3>
-                  <!--
-                  <ul>
-                     <li>
-                        <a href="/snac/search?sectionType=cpfdescription&amp;f1-occupation=Cabinet officers">
-                           Cabinet officers.
-
-                        </a>
-                     </li>
-                  </ul>
-                  -->
-
+                  <h4>Occupations:</h4>
                   {% if data.occupations|length > 0 %}
                     <ul>
                     <!-- {% for occupation in data.occupations %} -->
@@ -585,7 +709,7 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
-               </div>
+              </div> <!-- end of others -->
                <div>
                   <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
                        aria-hidden="true">
@@ -597,9 +721,6 @@ body {
                               <h4 class="modal-title" id="myModalLabel">Alternative Names</h4>
                            </div>
                            <div title="alternative forms of name" class="extra-names modal-body">
-                              <!--
-                              <div>Fairchild, Charles Stebbins, 1842-1924</div>
-                              -->
                               {% for nameEntry in data.nameEntries %}
                                 <div>{{nameEntry.original}}</div>
                               {% endfor %}
@@ -620,13 +741,46 @@ body {
                               <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
                            </div>
                            <div class="modal-body">
-                               <!--
-                              <div>
-                                 Manuscript Division Library of
-                                             Congress
-                              </div>
-                               -->
-                               TEMPLATE_COLL_LOCATIONS
+                              {% if data.holdings|length > 0 %}
+                                  <div class="geoplace-map" id="holdingsMap">
+                                  </div>
+                                  <script>
+                                    var holdingsMapView = null;
+                                    var bounds = new L.LatLngBounds();
+                                    function displayHoldingsMap() {
+                                        if (holdingsMapView != null) {
+                                            return;
+                                        }
+                                        // Add a slight delay to the map viewing so that the modal window has time to load
+                                        setTimeout(function() {
+                                            holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+                                            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                maxZoom: 19,
+                                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                            }).addTo(holdingsMapView);
+                                            var bounds = new L.LatLngBounds();
+                                            {% for location in data.holdings %}
+                                            {% if location.latitude and location.longitude %}
+                                            var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            bounds.extend(marker.getLatLng());
+                                            {% endif %}
+                                            {% endfor %}
+                                            holdingsMapView.fitBounds(bounds);
+                                            }, 400);
+                                    }
+                                    $(document).ready(function() {
+                                        if ($('#displayHoldingsMap').exists()){
+                                            $('#displayHoldingsMap').removeClass('disabled');
+                                            $('#displayHoldingsMap').click(displayHoldingsMap);
+                                        }
+                                    });
+                                  </script>
+                                  {% for location in data.holdings %}
+                                    <div>{{location.name}}</div>
+                                  {% endfor %}
+                              {% else %}
+                                <div class="alert alert-info">no collection locations known</div>
+                              {% endif %}
                            </div>
                            <div class="modal-footer">
                               <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
@@ -638,6 +792,27 @@ body {
             </div>
          </div>
       </div>
+
+      {% if false %}
+    <div class="modal fade" id="serverResponse" tabindex="-1" role="dialog" aria-labelledby="serverResponseLabel">
+        <div class="modal-dialog" role="document" style="width:90%;">
+            <div class="modal-content">
+                <div class="modal-header primary">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="serverResponseLabel">Server Response (JSON)</h4>
+                </div>
+                <div class="modal-body">
+                    <pre>{{debug.serverResponse}}
+                    </pre>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
 
     </body>
     </html>

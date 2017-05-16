@@ -1,4 +1,16 @@
 /**
+ * Select Box Loaders
+ *
+ * Functions that can be used to replace select boxes on the edit page with
+ * pretty-formatted versions using JQuery and Select2
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
+/**
  * Replace a select that is linked to a Vocabulary search
  *
  * Replaces the select with a select2 object capable of making AJAX queries
@@ -10,7 +22,7 @@
  */
 function vocab_select_replace(selectItem, idMatch, type, minLength) {
     if (minLength === undefined) {
-        minLength = 4;
+        minLength = 2;
     }
 
         if(selectItem.attr('id').endsWith(idMatch)
@@ -43,6 +55,53 @@ function vocab_select_replace(selectItem, idMatch, type, minLength) {
                     placeholder: 'Select'
                 });
             }
+}
+
+var geoPlaceSearchResults = null;
+
+function geovocab_select_replace(selectItem, idMatch) {
+    var minLength = 2;
+
+    if(selectItem.attr('id').endsWith(idMatch)
+        && !selectItem.attr('id').endsWith("ZZ")) {
+            selectItem.select2({
+                ajax: {
+                    url: function() {
+                        var query = "?command=vocabulary&type=geo_place&format=term";
+                            query += "&entity_type="+$("#entityType").val();
+                            return query;
+                    },
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term,
+                            page: params.page
+                        };
+                    },
+                    processResults: function (data, page) {
+                        if (data.results) {
+                            geoPlaceSearchResults = data.results;
+                            var selectResults = new Array();
+                            data.results.forEach(function(result) {
+                                selectResults.push({
+                                    id: result.id,
+                                    text: result.name + " (" + result.administrationCode + ", " + result.countryCode+ ")"
+                                })
+                            });
+                            return {results: selectResults};
+                        }
+                        return { results: null };
+                    },
+                    cache: true
+                },
+                width: '100%',
+                minimumInputLength: minLength,
+                allowClear: true,
+                theme: 'bootstrap',
+                placeholder: 'Select'
+            });
+        }
 }
 
 /**

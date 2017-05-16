@@ -1,0 +1,57 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Core Data</h2>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Constellation Information</div>
+    <div class="panel-body">
+        <div class="col-xs-10">
+            <div class="form-group">
+                <label for="entityType" class="control-label col-xs-4" data-content="{{X.entitytype.tooltip}}" data-toggle="popover" data-placement="top">
+                    {{X.entitytype.display}} <span style="color: #b40404">*</span>
+                </label>
+                <div class="col-xs-8">
+                    <select id="entityType" name="entityType" class="form-control">
+                        <option></option>
+                        <option value="{{data.entityType.id}}" selected>{{data.entityType.term}}</option>
+                    </select>
+                </div>
+            </div>
+            <!--
+                <div class="form-group">
+                <label for="entityType" class="control-label col-xs-4"  data-content="{{X.snaccontrolmetadata.tooltip}}" data-toggle="popover" data-placement="top">
+                {{X.snaccontrolmetadata.display}}
+                </label>
+                <div class="col-xs-8">
+                <button type="button" class="btn btn-default" onClick="$('#sources-tab').click();">
+                Sources
+                </button>
+                </div>
+                </div>
+            -->
+        </div>
+        {{ widgets.scmModal(X, true, true, 'constellation', '1', 'Basic Info', "Constellation", data) }}
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">Name Entries <span style="color: #b40404">*</span></div>
+    <div class="panel-body" id="nameEntry_pane">
+        <div class="form-group" id="add_nameEntry_div">
+            <div class="col-xs-12 text-center">
+                <button class="btn btn-success" id="btn_add_nameEntry"><span class="glyphicon glyphicon-plus"></span> Add New Name Entry</button>
+            </div>
+        </div>
+
+        {% set i = 0 %}
+        {% for nameEntry in data.nameEntries %}
+            {{ components.displayNameEntry(X, true, true, nameEntry, i) }}
+            {% set i = i + 1 %}
+        {% endfor %}
+        <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
+    </div>
+</div>
+
+

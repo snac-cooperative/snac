@@ -55,11 +55,23 @@ class Constellation extends AbstractData {
      * From EAC-CPF tag(s):
      *
      * * eac-cpf/control/otherRecordId
-     * * eac-cpf/cpfDescription/identity/entityID
+     * * cpfRelation where type=sameAs
      *
      * @var \snac\data\SameAs[] Other record IDs by which this constellation may be known
      */
     private $otherRecordIDs = null;
+
+
+    /**
+    * EntityID List
+    *
+    * From EAC-CPF tag(s):
+    *
+    * * eac-cpf/cpfDescription/identity/entityID
+    *
+    * @var \snac\data\EntityId[] Other external record IDs by which this constellation may be known
+    */
+    private $entityIDs = null;
 
     /**
      * Maintenace Status
@@ -156,9 +168,9 @@ class Constellation extends AbstractData {
     private $nameEntries = null;
 
     /**
-     * Preferred Name Entry 
+     * Preferred Name Entry
      *
-     * @var \snac\data\NameEntry|null The preferred name entry on view (based on the viewing user) 
+     * @var \snac\data\NameEntry|null The preferred name entry on view (based on the viewing user)
      */
     private $preferredNameEntry = null;
 
@@ -307,6 +319,13 @@ class Constellation extends AbstractData {
     private $status = null;
 
     /**
+     * Images for this constellation
+     *
+     * @var \snac\data\Image[] Images
+     */
+    private $images = null;
+
+    /**
      * Constructor for the class.
      *
      * @param string[] $data A list of data suitable for fromArray(). This exists for use by internal code to
@@ -320,16 +339,16 @@ class Constellation extends AbstractData {
         $this->setMaxDateCount(\snac\Config::$MAX_LIST_SIZE);
         if ($data == null) {
             $this->entityType = null;
-            $this->otherRecordIDs = array ();
-            $this->sources = array ();
-            $this->maintenanceEvents = array ();
-            $this->nameEntries = array ();
-            $this->biogHists = array ();
-            $this->occupations = array ();
-            $this->relations = array ();
-            $this->resourceRelations = array ();
-            $this->functions = array ();
-            $this->places = array ();
+            $this->otherRecordIDs = array();
+            $this->sources = array();
+            $this->maintenanceEvents = array();
+            $this->nameEntries = array();
+            $this->biogHists = array();
+            $this->occupations = array();
+            $this->relations = array();
+            $this->resourceRelations = array();
+            $this->functions = array();
+            $this->places = array();
             $this->subjects = array();
             $this->legalStatuses = array();
             $this->genders = array();
@@ -339,6 +358,8 @@ class Constellation extends AbstractData {
             $this->generalContexts = array();
             $this->structureOrGenealogies = array();
             $this->mandates = array();
+            $this->entityIDs = array();
+            $this->images = array();
         }
         // always call the parent constructor
         parent::__construct($data);
@@ -375,6 +396,17 @@ class Constellation extends AbstractData {
     public function getOtherRecordIDs()
     {
         return $this->otherRecordIDs;
+    }
+
+    /**
+    * Get the other entityIDs
+    *
+    * @return \snac\data\EntityId[] Other entity IDs by which this constellation may be known
+    *
+    */
+    public function getEntityIDs()
+    {
+        return $this->entityIDs;
     }
 
     /**
@@ -483,7 +515,7 @@ class Constellation extends AbstractData {
     /**
      * Get the preferred name
      *
-     * Gets the preferred name entry for this constellation.  If the preferred 
+     * Gets the preferred name entry for this constellation.  If the preferred
      * name entry has been set by the server, that one is returned.  If not, it
      * gets the nameEntry in this constellation with the highest score, or the
      * first one if the scores are equal, or null if there is no name entry
@@ -497,7 +529,7 @@ class Constellation extends AbstractData {
             return null;
 
         if ($this->preferredNameEntry != null)
-            return $this->preferredNameEntry; 
+            return $this->preferredNameEntry;
 
         $max = 0;
         $id = 0;
@@ -739,6 +771,17 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Get images
+     *
+     * Returns the list of images associated with this Constellation
+     *
+     * @return \snac\data\Image[] List of Image objects
+     */
+    public function getImages() {
+        return $this->images;
+    }
+
+    /**
      * Returns this object's data as an associative array
      *
      * @param boolean $shorten optional Whether or not to include null/empty components
@@ -751,6 +794,7 @@ class Constellation extends AbstractData {
             "ark" => $this->ark,
             "entityType" => $this->entityType == null ? null : $this->entityType->toArray($shorten),
             "otherRecordIDs" => array(),
+            "entityIDs" => array(),
             "maintenanceStatus" => $this->maintenanceStatus == null ? null : $this->maintenanceStatus->toArray($shorten),
             "maintenanceAgency" => $this->maintenanceAgency,
             "maintenanceEvents" => array(),
@@ -771,7 +815,8 @@ class Constellation extends AbstractData {
             "genders" => array(),
             "generalContexts" => array(),
             "structureOrGenealogies" => array(),
-            "mandates" => array()
+            "mandates" => array(),
+            "images" => array()
         );
 
         foreach ($this->mandates as $i => $v)
@@ -794,6 +839,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->otherRecordIDs as $i => $v)
             $return["otherRecordIDs"][$i] = $v->toArray($shorten);
+
+        foreach ($this->entityIDs as $i => $v)
+            $return["entityIDs"][$i] = $v->toArray($shorten);
 
         foreach ($this->maintenanceEvents as $i => $v)
             $return["maintenanceEvents"][$i] = $v->toArray($shorten);
@@ -830,6 +878,9 @@ class Constellation extends AbstractData {
 
         foreach ($this->subjects as $i => $v)
             $return["subjects"][$i] = $v->toArray($shorten);
+
+        foreach ($this->images as $i => $v)
+            $return["images"][$i] = $v->toArray($shorten);
 
         $return = array_merge($return, parent::toArray($shorten));
 
@@ -885,6 +936,13 @@ class Constellation extends AbstractData {
             foreach ($data["otherRecordIDs"] as $i => $entry)
                 if ($entry != null)
                     $this->otherRecordIDs[$i] = new \snac\data\SameAs($entry);
+
+        unset($this->entityIDs);
+        $this->entityIDs = array();
+        if (isset($data["entityIDs"]))
+            foreach ($data["entityIDs"] as $i => $entry)
+                if ($entry != null)
+                    $this->entityIDs[$i] = new \snac\data\EntityId($entry);
 
         unset($this->maintenanceStatus);
         if (isset($data["maintenanceStatus"]) && $data["maintenanceStatus"] != null)
@@ -1039,6 +1097,14 @@ class Constellation extends AbstractData {
                     $this->places[$i] = new Place($entry);
         }
 
+        unset($this->images);
+        $this->images = array();
+        if (isset($data["images"])) {
+            foreach ($data["images"] as $i => $entry)
+                if ($entry != null)
+                    $this->images[$i] = new Image($entry);
+        }
+
         return true;
     }
 
@@ -1081,6 +1147,17 @@ class Constellation extends AbstractData {
 
         array_push($this->otherRecordIDs, $other);
     }
+
+    /**
+     * Add an alternate entityId
+     *
+     * @param \snac\data\EntityId $other The other entityId in an EntityId object
+     */
+    public function addEntityID($other) {
+
+        array_push($this->entityIDs, $other);
+    }
+
 
     /**
      * Set maintenance status
@@ -1157,7 +1234,7 @@ class Constellation extends AbstractData {
      * Set the list of name entries
      *
      * Sets the list of name entries to the list provided.  This will overwrite any other
-     * name entries currently set for this constellation. 
+     * name entries currently set for this constellation.
      *
      * @param \snac\data\NameEntry[] $nameEntries Name entry list to set
      */
@@ -1201,6 +1278,13 @@ class Constellation extends AbstractData {
     public function addBiogHist($biog) {
 
         array_push($this->biogHists, $biog);
+    }
+
+    /**
+     * Remove all BiogHist entries
+     */
+    public function removeAllBiogHists() {
+        $this->biogHists = array();
     }
 
     /**
@@ -1305,6 +1389,16 @@ class Constellation extends AbstractData {
         array_push($this->relations, $relation);
     }
 
+    /**
+     * Empty Constellation Relations
+     *
+     * Drops all constellation relations for this constellation
+     *
+     */
+    public function emptyRelations() {
+        $this->relations = array();
+    }
+
 
     /**
      * Add relation to a resource
@@ -1314,6 +1408,16 @@ class Constellation extends AbstractData {
     public function addResourceRelation($relation) {
 
         array_push($this->resourceRelations, $relation);
+    }
+
+    /**
+     * Empty Resource Relations
+     *
+     * Drop all resource relations for this constellation.
+     *
+     */
+    public function emptyResourceRelations() {
+        $this->resourceRelations = array();
     }
 
     /**
@@ -1373,6 +1477,16 @@ class Constellation extends AbstractData {
         $this->status = $status;
     }
 
+
+    /**
+     * Add an image
+     *
+     * @param \snac\data\Image $image Image to set
+     */
+    public function addImage($image) {
+        array_push($this->images, $image);
+    }
+
     /**
      *
      * {@inheritDoc}
@@ -1399,17 +1513,21 @@ class Constellation extends AbstractData {
             return false;
 
         /**
-         * Currently, we are not checking the maintenance events for equality
-            if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
-                return false;
-            if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
-                 ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
-                return false;
-            if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
-                return false;
+         * Currently, we are not checking the maintenance events or images for equality
+        *    if ($this->getMaintenanceAgency() != $other->getMaintenanceAgency())
+        *        return false;
+        *    if (($this->getMaintenanceStatus() != null && ! $this->getMaintenanceStatus()->equals($other->getMaintenanceStatus(), $strict)) ||
+        *         ($this->getMaintenanceStatus() == null && $other->getMaintenanceStatus() != null))
+        *        return false;
+        *    if (!$this->checkArrayEqual($this->getMaintenanceEvents(), $other->getMaintenanceEvents(), $strict))
+        *        return false;
+        *    if (!$this->checkArrayEqual($this->getImages(), $other->getImages(), $strict))
+        *        return false;
         **/
 
         if (!$this->checkArrayEqual($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict))
+            return false;
+        if (!$this->checkArrayEqual($this->getEntityIDs(), $other->getEntityIDs(), $strict))
             return false;
         if (!$this->checkArrayEqual($this->getSources(), $other->getSources(), $strict))
             return false;
@@ -1449,5 +1567,247 @@ class Constellation extends AbstractData {
         return true;
     }
 
+    /**
+     * Is Constellation Empty
+     *
+     * Checkes whether this constellation is empty.
+     *
+     * @return boolean True if empty, false otherwise
+     */
+    public function isEmpty() {
+        $emptyConstellation = new \snac\data\Constellation();
+
+        return $this->equals($emptyConstellation, true);
+    }
+
+    /**
+     * Update All SCM Citations
+     *
+     * This method goes through each section of the constellation, looking for SCMs and
+     * updating their citations.  If the SCM points to oldSource, this method will update
+     * it to point to newSource.
+     *
+     * @param  \snac\data\Source $oldSource Source to replace
+     * @param  \snac\data\Source $newSource Source to replace with
+     */
+    public function updateAllSCMCitations($oldSource, $newSource) {
+        parent::updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->mandates as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->structureOrGenealogies as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->generalContexts as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->biogHists as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->conventionDeclarations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nationalities as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->otherRecordIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->entityIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->languagesUsed as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->legalStatuses as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->sources as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->genders as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nameEntries as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->occupations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->relations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->resourceRelations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->functions as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->places as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->subjects as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+    }
+
+    /**
+     * Perform a diff
+     *
+     * Compares this constellation to the "other."  This method produces a "diff" of the Constellation,
+     * creating three new constellations.  First, it produces an intersection, which contains all bits
+     * that in both this and other (note first-level data must be the same -- it does not make sense to
+     * keep Name Components or SCMs that are the same without their containing NameEntry).  Second,
+     * the "this" and "other" return Constellations contain the parts of `$this` and `$other` that are NOT
+     * included in the intersection.  If any of the return constellations would be empty, they will be
+     * returned as `null` instead.
+     *
+     * This method does NOT diff maintenance history, maintenance status, or images.
+     *
+     * @param  \snac\data\Constellation $other Constellation object to diff
+     * @param boolean $strict optional If true, will check IDs and Versions.  Else (default) only checks data
+     * @return \snac\data\Constellation[] Associative array of "intersection," "this," and "other" Constellations.
+     */
+    public function diff($other, $strict = false) {
+        $return = array (
+            "intersection" => null,
+            "this" => null,
+            "other" => null
+        );
+
+        if ($other == null || ! ($other instanceof \snac\data\Constellation)) {
+            $return["this"] = $this;
+            return $return;
+        }
+
+        $intersection = new \snac\data\Constellation();
+        $first = new \snac\data\Constellation();
+        $second = new \snac\data\Constellation();
+
+
+        if ($this->getArk() === $other->getArk()) {
+            $intersection->setArkID($this->getArk());
+        }
+
+        if ($this->getEntityType() != null && $this->getEntityType()->equals($other->getEntityType(), $strict)) {
+            $intersection->setEntityType($this->getEntityType());
+        }
+
+        $result = $this->diffArray($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict);
+        $intersection->otherRecordIDs = $result["intersection"];
+        $first->otherRecordIDs = $result["first"];
+        $second->otherRecordIDs = $result["second"];
+
+        $result = $this->diffArray($this->getEntityIDs(), $other->getEntityIDs(), $strict);
+        $intersection->entityIDs = $result["intersection"];
+        $first->entityIDs = $result["first"];
+        $second->entityIDs = $result["second"];
+
+        $result = $this->diffArray($this->getSources(), $other->getSources(), $strict);
+        $intersection->sources = $result["intersection"];
+        $first->sources = $result["first"];
+        $second->sources = $result["second"];
+
+        $result = $this->diffArray($this->getLegalStatuses(), $other->getLegalStatuses(), $strict);
+        $intersection->legalStatuses = $result["intersection"];
+        $first->legalStatuses = $result["first"];
+        $second->legalStatuses = $result["second"];
+
+        $result = $this->diffArray($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict);
+        $intersection->conventionDeclarations = $result["intersection"];
+        $first->conventionDeclarations = $result["first"];
+        $second->conventionDeclarations = $result["second"];
+
+        $result = $this->diffArray($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict);
+        $intersection->languagesUsed = $result["intersection"];
+        $first->languagesUsed = $result["first"];
+        $second->languagesUsed = $result["second"];
+
+        $result = $this->diffArray($this->getNameEntries(), $other->getNameEntries(), $strict);
+        $intersection->nameEntries = $result["intersection"];
+        $first->nameEntries = $result["first"];
+        $second->nameEntries = $result["second"];
+
+        $result = $this->diffArray($this->getOccupations(), $other->getOccupations(), $strict);
+        $intersection->occupations = $result["intersection"];
+        $first->occupations = $result["first"];
+        $second->occupations = $result["second"];
+
+        $result = $this->diffArray($this->getBiogHistList(), $other->getBiogHistList(), $strict);
+        $intersection->biogHists = $result["intersection"];
+        $first->biogHists = $result["first"];
+        $second->biogHists = $result["second"];
+
+        $result = $this->diffArray($this->getRelations(), $other->getRelations(), $strict);
+        $intersection->relations = $result["intersection"];
+        $first->relations = $result["first"];
+        $second->relations = $result["second"];
+
+        $result = $this->diffArray($this->getResourceRelations(), $other->getResourceRelations(), $strict);
+        $intersection->resourceRelations = $result["intersection"];
+        $first->resourceRelations = $result["first"];
+        $second->resourceRelations = $result["second"];
+
+        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), $strict);
+        $intersection->functions = $result["intersection"];
+        $first->functions = $result["first"];
+        $second->functions = $result["second"];
+
+        $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), $strict);
+        $intersection->places = $result["intersection"];
+        $first->places = $result["first"];
+        $second->places = $result["second"];
+
+        $result = $this->diffArray($this->getSubjects(), $other->getSubjects(), $strict);
+        $intersection->subjects = $result["intersection"];
+        $first->subjects = $result["first"];
+        $second->subjects = $result["second"];
+
+        $result = $this->diffArray($this->getNationalities(), $other->getNationalities(), $strict);
+        $intersection->nationalities = $result["intersection"];
+        $first->nationalities = $result["first"];
+        $second->nationalities = $result["second"];
+
+        $result = $this->diffArray($this->getGenders(), $other->getGenders(), $strict);
+        $intersection->genders = $result["intersection"];
+        $first->genders = $result["first"];
+        $second->genders = $result["second"];
+
+        $result = $this->diffArray($this->getGeneralContexts(), $other->getGeneralContexts(), $strict);
+        $intersection->generalContexts = $result["intersection"];
+        $first->generalContexts = $result["first"];
+        $second->generalContexts = $result["second"];
+
+        $result = $this->diffArray($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict);
+        $intersection->structureOrGenealogies = $result["intersection"];
+        $first->structureOrGenealogies = $result["first"];
+        $second->structureOrGenealogies = $result["second"];
+
+        $result = $this->diffArray($this->getMandates(), $other->getMandates(), $strict);
+        $intersection->mandates = $result["intersection"];
+        $first->mandates = $result["first"];
+        $second->mandates = $result["second"];
+
+        if (!$intersection->isEmpty())
+            $return["intersection"] = $intersection;
+
+        if (!$first->isEmpty()) {
+            $first->setID($this->getID());
+            $first->setVersion($this->getVersion());
+            $first->setArkID($this->getArk());
+            $first->setEntityType($this->getEntityType());
+            $return["this"] = $first;
+        }
+
+        if (!$second->isEmpty()) {
+            $second->setID($other->getID());
+            $second->setVersion($other->getVersion());
+            $second->setArkID($other->getArk());
+            $second->setEntityType($other->getEntityType());
+            $return["other"] = $second;
+        }
+
+        return $return;
+    }
 
 }

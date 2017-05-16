@@ -1,102 +1,94 @@
+/**
+ * Search Scripts
+ *
+ * Main search scripts for SNAC
+ *
+ * @author Robbie Hott
+ * @license http://opensource.org/licenses/BSD-3-Clause BSD 3-Clause
+ * @copyright 2015 the Rector and Visitors of the University of Virginia, and
+ *            the Regents of the University of California
+ */
+
 jQuery.fn.exists = function(){return this.length>0;}
 
 
-/**
- * Set the search position (page number)
- * @param int start The starting position
- */
-function setSearchPosition(start) {
-    $('#start').val(start);
-}
+function showCompareOption() {
+    var constellation1 = null;
+    var constellation2 = null;
+    var count = 0;
+    $(".compare-checkbox").each(function() {
+        if (this.checked) {
+            count++;
+            if (constellation1 == null)
+                constellation1 = $(this).val();
+            else if (constellation2 == null)
+                constellation2 = $(this).val();
+        }
+    });
 
-/**
- * Search with AJAX and update the display of search results
- *
- * @return boolean false to play nice with the browser
- */
-function searchAndUpdate() {
-    if ($("#searchbox").val() == "" || $("#searchbox").val().length < 2) {
-        $("#search-results-box").html("");
+    if (count > 0) {
+       // Show the box with the options (disabled)
+       $("#compareButton").prop("disabled", true).removeClass('btn-primary').addClass('btn-default');
+       $("#compareBox").collapse("show");
     } else {
-        $.post("?command=search", $("#search_form").serialize(), function (data) {
-            //var previewWindow = window.open("", "Preview");
-            //previewWindow.document.write(data);
-
-            var html = "";
-            html += "<h4 class='text-left'>Search Results</h4><div class='list-group text-left' style='margin-bottom:0px'>";
-            if (data.results.length > 0) {
-                for (var key in data.results) {
-                    html += "<a href='?command=view&constellationid="+data.results[key].id+"' class='list-group-item'>"+data.results[key].nameEntry+"</a>";
-                }
-            } else {
-                html += "<a href='#' class='list-group-item list-group-item-danger'>No results found.</a>";
-            }
-            html += "</div>";
-
-            // Have pagination (total number of pages) and page (current page number) in data
-            // ... use them to help stepping through the search for multiple pages.
-
-            if (data.results.length > 0 && data.results.length < data.total) {
-                var start = $('#start').val();
-                var count = $('#count').val();
-                var prev = (data.page - 1) * count;
-                var next = (data.page + 1) * count;
-                html += "<nav><ul class='pagination'>";
-                var disabled = "";
-                var goScript = " onClick='setSearchPosition("+prev+");searchAndUpdate();return false;'";
-                if (data.page == 0) {
-                    disabled = " class='disabled'";
-                    goScript = "";
-                }
-                html += "<li"+disabled+"><a href='#' aria-label='Previous'"+goScript+"><span aria-hidden='true'>&laquo;</span></a></li>";
-                for (var i = 0; i < data.pagination; i++) {
-                    var active = '';
-                    var goScript = " onClick='setSearchPosition("+(i * count)+");searchAndUpdate();return false;'";
-                    if (i == data.page) {
-                        active = " class='active'";
-                        goScript = "";
-                    }
-                    html += "<li"+active+"><a href='#'"+goScript+">"+(i+1)+"</a></li>";
-                }
-                disabled = "";
-                goScript = " onClick='setSearchPosition("+next+");searchAndUpdate();return false;'";
-                if (data.page == data.pagination - 1) {
-                    disabled = " class='disabled'";
-                    goScript = "";
-                }
-                html += "<li"+disabled+"><a href='#' aria-label='Next'"+goScript+"><span aria-hidden='true'>&raquo;</span></a></li>";
-                html += "</ul></nav>";
-            }
-            $("#search-results-box").html(html);
-        });
+        // hide the box and disable the button
+        $("#compareButton").prop("disabled", true).removeClass('btn-primary').addClass('btn-default');
+        $("#compareBox").collapse("hide");
     }
-    return false;
+
+    if (constellation1 != null && constellation2 != null && count == 2) {
+        // Enable the option
+        console.log("Can compare " + constellation1 + " and " + constellation2);
+        $("#compare1").val(constellation1);
+        $("#compare2").val(constellation2);
+        $("#compareButton").prop("disabled", false).addClass('btn-primary').removeClass('btn-default');
+    }
 }
-
-
 /**
  * Only load this script once the document is fully loaded
  */
 $(document).ready(function() {
+    var timeoutID = null;
 
+    $('select').each(function() {
+        $(this).select2({
+            minimumResultsForSearch: Infinity,
+            allowClear: false,
+            theme: 'bootstrap'
+        });
+    });
 
+    $('#searchbox').autocomplete({
+        minLength: 4,
+        source: function(request, callback) {
+            $.post("?command=quicksearch", $("#search_form").serialize(), function (data) {
+                var results = [];
+                if (data.results.length > 0) {
+                    for (var key in data.results) {
+                        results[key] = data.results[key].nameEntries[0].original;
+                    }
+                }
+                callback(results);
+            });
+        }
+    });
 
-    // Preview button
-    if($('#searchbutton').exists()) {
-        $('#searchbutton').click(function(){
-
-            // Do the same thing as the auto-complete
-            setSearchPosition(0); searchAndUpdate();
-
+    /**
+     * If an advanced search button exists, then have it toggle the advanced search information box
+     */
+    if ($("#advanced").exists()) {
+        $("#advanced").on("change", function() {
+            if ( this.checked) {
+                $("#advancedSearchText").collapse("show");
+            } else {
+                $("#advancedSearchText").collapse("hide");
+            }
         });
     }
 
-    var timeoutID = null;
-
-
-    $('#searchbox').keyup(function() {
-        clearTimeout(timeoutID);
-        var $target = $(this);
-        timeoutID = setTimeout(function() { setSearchPosition(0); searchAndUpdate(); }, 500);
+    $(".compare-checkbox").each(function() {
+        $(this).on("change", function() {
+            showCompareOption();
+        });
     });
 });

@@ -1,0 +1,19 @@
+{% import 'widgets.html' as widgets %}
+{% import 'edit_components.html' as components %}
+{% import 'date_entry.html' as dates %}
+
+<h2>Resource Relations</h2>
+
+<div class="form-group" id="add_resourceRelation_div">
+    <div class="col-xs-12 text-center">
+        <button class="btn btn-success" id="btn_add_resourceRelation" data-toggle="modal" data-target="#resourceSearchPane" onClick='return false;'><span class="glyphicon glyphicon-plus"></span> Add New Resource Relation</button>
+    </div>
+</div>
+
+
+{% set i = 0 %}
+{% for relation in data.resourceRelations %}
+    {{ components.displayResourceRelation(X, true, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
+    {% set i = i + 1 %}
+{% endfor %}
+<span id='next_resourceRelation_i' style='display:none;'>{{i}}</span>

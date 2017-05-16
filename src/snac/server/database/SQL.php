@@ -73,6 +73,20 @@ class SQL
     {
         $this->sdb = $db;
         $this->deleted = $deletedValue;
+        $this->enableLogging();
+    }
+
+
+    /**
+     * Get the DB Connector object
+     *
+     * Utility function to return the Database connector for this SQL object.
+     *
+     * @return \snac\server\database\DatabaseConnector The database connector for this SQL object
+     */
+    public function connectorObj()
+    {
+        return $this->sdb;
     }
 
     /**
@@ -426,10 +440,6 @@ class SQL
      * Clear all user sessions
      *
      * @param integer $appUserID The user id
-     *
-     * @param string $accessToken A session token
-     *
-     * @return boolean true for active, false for inactive or not found.
      */
     public function deleteAllSession($appUserID)
     {
@@ -500,9 +510,7 @@ class SQL
      * the same email address. This simply returns the first appuser record found. See the commentary with
      * function readUser() in DBUser.php
      *
-     * Field password is not returned.
-     *
-     * @param string $userName User name, a unique string, probably the user email
+     * @param string $email Email to look up for the associated User
      *
      * @return string[] A list with keys: id, active, username, email, first, last, fullname, avatar,
      * avatar_small, avatar_large, affiliation. Or false is returned.
@@ -702,7 +710,8 @@ class SQL
      * The "id not in..." prevents adding the same role twice.
      *
      * @param integer $uid User id, aka appuser.id aka row id.
-     * @param string $roleLable A role label
+     * @param string $roleLabel A role label
+     * @return boolean True if successful, false otherwise.
      */
     public function insertRoleByLabel($uid, $roleLabel)
     {
@@ -872,13 +881,12 @@ class SQL
      *
      * Get all fields of a single role. Also, get a list of related pids, returning it as a simple array.
      *
-     * This is probably called from DBUser populateRole() and nowhere else.
-     *
      * If we really always (and only?) call selectRolePrivilegeList() from here, and nowhere else, could we do
      * a join and gain some efficiency? Calling code would have to be modified.
      *
-     * @return string[] Return list with keys same as field names. Also includes key 'pid_list' which is a
-     * list of related privilege ids.
+     * @param int $rid Role ID to look up
+     * @return string[] Return associative array of role information. Also includes key 'pid_list' which is a
+     * list of privilege ids for the given role.
      */
     public function selectRole($rid)
     {
@@ -983,6 +991,49 @@ class SQL
     }
 
     /**
+     * User for Constellation by mainID and version number
+     *
+     * Get the version_history user id editing this constellation.
+     *
+     * @param integer $mainID The constellation ID
+     *
+     * @param integer $version A specific version number. We assume that you have called some function to get
+     * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
+     *
+     * @return int The user id who most recently touched this constellation
+     */
+    public function selectCurrentUserForConstellation($mainID, $version)
+    {
+        $result = $this->sdb->query(
+                                    'select user_id from version_history where id=$1 and version=$2',
+                                    array($mainID, $version));
+        $row = $this->sdb->fetchrow($result);
+        return $row['user_id'];
+    }
+
+
+    /**
+     * Version History Log Note by mainID and version number
+     *
+     * Get the version_history log note.
+     *
+     * @param integer $mainID The constellation ID
+     *
+     * @param integer $version A specific version number. We assume that you have called some function to get
+     * a specific version number. Null is not ok, and guesses are not ok. This will not select for <$version.
+     *
+     * @return string The log note string of that version for the given mainID.
+     */
+    public function selectCurrentNoteForConstellation($mainID, $version)
+    {
+        $result = $this->sdb->query(
+                                    'select note from version_history where id=$1 and version=$2',
+                                    array($mainID, $version));
+        $row = $this->sdb->fetchrow($result);
+        return $row['note'];
+    }
+
+    /**
      * Select by status and most recent, user only
      *
      * Get a list of mainID, version for all records when the most recent matches the given status and user.
@@ -1020,16 +1071,22 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
 
         $queryString = sprintf(
-            'select aa.version, aa.id as ic_id
-            from version_history as aa,
-            (select max(bb.version) as version,bb.id from version_history as bb group by bb.id) as cc
-            where
-            aa.id=cc.id and
-            aa.version=cc.version and
-            aa.user_id=$1 and
-            aa.status = $2 %s %s', $limitStr, $offsetStr);
+                'select aa.version, aa.id as ic_id
+                    from version_history as aa,
+                        (select max(version) as version, id from version_history
+                            where id in (select distinct id from version_history where user_id=$1)
+                            group by id) as cc
+                    where
+                        aa.id=cc.id and
+                        aa.version=cc.version and
+                        aa.user_id=$1 and
+                        aa.status = $2 %s %s', $limitStr, $offsetStr);
+
+        $this->logger->addDebug("Sending the following SQL request: " . $queryString);
+
         $result = $this->sdb->query($queryString,
                                     array($appUserID, $status));
+        $this->logger->addDebug("Done request");
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1144,13 +1201,15 @@ class SQL
         $offsetStr = $this->doLOValue('offset', $offset);
         $queryString = sprintf(
             'select aa.version, aa.id as ic_id
-            from version_history as aa,
-            (select max(bb.version) as version,bb.id from version_history as bb group by bb.id) as cc
-            where
-            aa.id=cc.id and
-            aa.version=cc.version and
-            aa.status = $1
-            order by aa.version desc %s %s', $limitStr, $offsetStr);
+                from version_history as aa,
+                    (select max(version) as version, id from version_history
+                    where id in (select distinct id from version_history where status=$1)
+                    group by id) as cc
+                where
+                    aa.id=cc.id and
+                    aa.version=cc.version and
+                    aa.status = $1
+                order by aa.version desc %s %s', $limitStr, $offsetStr);
 
         $result = $this->sdb->query($queryString,
                                     array($status));
@@ -1194,38 +1253,188 @@ class SQL
     }
 
     /**
-     * select mainID by arkID
+     * select Current IC_IDs by arkID
      *
-     * nrd.ic_id is the constellation id.
-     *
-     * Do not use nrd.id. The row identifier for nrd is nrd.ic_id. Do not join to table nrd. If you need to
-     * join to the constellation use version_history.id. They are both the same, but nrd is a data table,
-     * and version_history is the "root" of the constellation.
-     *
-     * Constellation->getID() gets the ic_id aka constellation id aka nrd.ic_id aka
-     * version_history.id.
-     *
-     * non-constellation->getID() gets the row id. Non-constellation objects get the ic_id from the
-     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
-     * (again) caused confusion in the SQL below (now fixed).
+     * Returns the current IC ic_id (main_id in Tom's code) for the given Ark ID.  If the constellation pointed
+     * to by the ARK was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
      *
      * @param string $arkID The ARK id of a constellation
-     *
-     * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
      */
-    public function selectMainID($arkID)
+    public function selectCurrentMainIDsForArk($arkID)
     {
         $result = $this->sdb->query(
-            'select nrd.ic_id
-            from version_history, nrd
+            'select current_ic_id
+            from constellation_lookup
             where
-            nrd.ark_id=$1
-            and version_history.id=nrd.ic_id',
+            ark_id=$1',
             array($arkID));
-        $row = $this->sdb->fetchrow($result);
-        return $row['ic_id'];
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
     }
 
+    /**
+     * select Current IC_IDs by IC_ID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given ic_id.  If the constellation pointed
+     * to by the given ic_id was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
+     *
+     * @param integer $icid The Constellation ID of the IC to lookup
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
+     */
+    public function selectCurrentMainIDsForID($icid)
+    {
+        $result = $this->sdb->query(
+            'select current_ic_id
+            from constellation_lookup
+            where
+            ic_id=$1',
+            array($icid));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the constellation lookup table
+     *
+     * Updates the mappings for icid/ark to current icid/ark by modifiying the current values.  If
+     * the given icid and ark are not in the table, this method adds them first.  The `$currents` parameter
+     * may contain solely the other parameters, i.e. `$currents = [$icid => $ark]`, with `count($currents) = 1`,
+     * but in general the domain of this function (`$icid`, `$ark`) should NEVER appear in the range (`$currents`).
+     *
+     * This is a very tricky set of logic meant to maintain the endpoints of an implicit DAG of merge
+     * and split activity throughout the system. The lookup table maintains a list of id/ark (possibly stale) to
+     * current correct id/arks, but the lookup may not be unique (in the case of a split).  This method attempts
+     * to keep track of updates to the lookup table, such as removing duplicates on a merge of a previous split,
+     * etc.
+     *
+     * We do not store the entire DAG, but use an implicit 2-level version.  In the traditional DAG, we would need
+     * to follow the path from a queried icid down to the end of the path (no out-edges) to get the current icid(s)
+     * for that icid.  In our implicit DAG, we only store links from each node (possibly duplicated) directly to the
+     * DAG's paths' endpoint(s).  Therefore, those links must be updated when a new endpoint (on a merge) or new endpoints
+     * (on a split) are added and the DAG modified.  The DAG itself may be reconstructed from the version_history table.
+     *
+     * @param int $icid The ICID to re-map
+     * @param string $ark The Ark ID to re-map
+     * @param string[] $currents The associative array of icid->ark for current ids/arks to redirect to.
+     */
+    public function updateConstellationLookup($icid, $ark, $currents=null) {
+        if ($currents === null || empty($currents)) {
+            return;
+        }
+
+        $result = $this->sdb->query('select ic_id from constellation_lookup where ic_id = $1;', array($icid));
+        if ($this->sdb->fetchrow($result) === false) {
+            // If the ICID doesn't exist, then add it. Nothing could be pointing to it in this case.
+            foreach ($currents as $currentICID => $currentArk) {
+                $result = $this->sdb->query('insert into constellation_lookup
+                    (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                    array($icid, $ark, $currentICID, $currentArk));
+            }
+        } else if (count($currents) == 1 && isset($currents[$icid])) {
+            // If the icid and the current[icid] are both the same, then we should not redirect because id->id already exists
+            // and we don't want to accidentally delete the lookup
+            return;
+        } else {
+            // Not trying to update a self-referencing link, so we should modify the table appropriately
+            // Note: In this case, the user should NEVER ask to redirect "A" to "A" and "B"
+            //       (the domain should not be a subset of the range)
+
+            // Get anything pointing to $icid, as it will need to be redirected to each icid in the currents list
+            $result1 = $this->sdb->query('select ic_id, ark_id, current_ic_id, current_ark_id from constellation_lookup where current_ic_id = $1;', array($icid));
+            $toDelete = array();
+            $toInsert = array();
+            while($row = $this->sdb->fetchrow($result1))
+            {
+                // Keep a list if icid=>ark that will need to be rewritten to the database
+                $toInsert[$row["ic_id"]] = $row["ark_id"];
+                // We will eventually want to delete these
+                array_push($toDelete, $row);
+            }
+
+            // Build the SQL prepare string
+            $tmp = array();
+            for ($i = 1; $i <= count($currents); $i++) {
+                array_push($tmp, '$'.$i);
+            }
+            $inString = implode(",", $tmp);
+
+            // Build a cache for relevant pieces of the lookup table
+            $result2 = $this->sdb->query('select * from constellation_lookup where current_ic_id in ('.$inString.');',
+                                        array_keys($currents));
+            $cache = array();
+            while($row = $this->sdb->fetchrow($result2))
+            {
+                if (!isset($cache[$row['current_ic_id']]))
+                    $cache[$row['current_ic_id']] = array();
+                // Cache is a reverse lookup (current <- ic_id) where current is in our list of $currents
+                $cache[$row['current_ic_id']][$row['ic_id']] = $row['ark_id'];
+            }
+
+            // Do the insert of the correct redirects
+            foreach ($toInsert as $oICID => $oArk) {
+                foreach ($currents as $nICID => $nArk) {
+                    if (!isset($cache[$nICID]) || !isset($cache[$nICID][$oICID])) {
+                        // if nothing is pointing to nICID OR oICID is not pointing to nICID, then add the link
+                        $result = $this->sdb->query('insert into constellation_lookup
+                            (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                            array($oICID, $oArk, $nICID, $nArk));
+                    }
+                }
+            }
+
+            // Remove any of the old redirects that are no longer active.
+            foreach ($toDelete as $row) {
+                $result = $this->sdb->query('delete from constellation_lookup
+                    where current_ic_id = $3 and current_ark_id = $4 and
+                    current_ic_id = $1 and current_ark_id = $2;',
+                    $row);
+            }
+        }
+
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Updates the maybe same table to point any maybesame references from icid to currentICID.
+     * After doing an update, it will remove any self-referencing maybesames.
+     *
+     * @param int $icid The icid to re-map in the maybe same table
+     * @param int $currentICID The updated ICID to use instead of $icid
+     */
+    public function updateMaybeSameLinks($icid, $currentICID) {
+        $result = $this->sdb->query('update maybe_same
+            set ic_id1 = $2 where ic_id1 = $1;',
+            array($icid, $currentICID));
+        $result = $this->sdb->query('update maybe_same
+            set ic_id2 = $2 where ic_id2 = $1;',
+            array($icid, $currentICID));
+
+        // Remove any self-referencing links
+        $result = $this->sdb->query('delete from maybe_same where ic_id1 = ic_id2;', array());
+    }
+
+    /**
+     * Remove MaybeSame Links
+     *
+     * Removes the maybe same links between the two ic_ids given.
+     *
+     * @param int $icid1 One ICID
+     * @param int $icid2 Another ICID
+     */
+    public function removeMaybeSameLink($icid1, $icid2) {
+        $result = $this->sdb->query('delete from maybe_same where (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);',
+            array($icid1, $icid2));
+    }
 
     /**
      * Select records from table source by foreign key
@@ -1256,6 +1465,34 @@ class SQL
                             (select id,max(version) as version from source where fk_id=$1 and version<=$2 group by id) as bb
                             where not is_deleted and aa.id=bb.id and aa.version=bb.version');
         $result = $this->sdb->execute($qq, array($fkID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
+    /**
+     * Get all sources for Constellation
+     *
+     * Returns the list of all sources for a given ic_id and version.
+     *
+     * @param int $mainID The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of source data from the database
+     */
+    public function selectSourceList($mainID, $version)
+    {
+        $qq = 'select_source_list';
+        $this->sdb->prepare($qq,
+                            'select aa.version, aa.ic_id, aa.id, aa.text, aa.note, aa.uri, aa.language_id, aa.display_name
+                            from source as aa,
+                            (select id,max(version) as version from source where ic_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+        $result = $this->sdb->execute($qq, array($mainID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -1583,9 +1820,9 @@ class SQL
      * Get a new version but keeping the existing ic_id. This also uses DatabaseConnector->query() in an
      * attempt to be more efficient, or perhaps just less verbose.
      *
-     * @param integer $userid Foreign key to appuser.id, the current user's appuser id value.
+     * @param integer $appUserID Foreign key to appuser.id, the current user's appuser id value.
      *
-     * @param integer $role Foreign key to role.id, the role id value of the current user.
+     * @param integer $roleID Foreign key to role.id, the role id value of the current user.
      *
      * @param string $status Status value from the enum icstatus. Using an enum from the db is a bit obscure
      * to all the php code, so maybe best to move icstatus to some util class and have a method to handle
@@ -1628,7 +1865,7 @@ class SQL
      * @param integer $id Record id. If null a new one will be minted.
      * @param integer $isRange Boolean if this is a date range
      * @param string $fromDate The from date
-     * @param string $fromType, Type of from date, fk to vocabulary.id
+     * @param string $fromType Type of from date, fk to vocabulary.id
      * @param integer $fromBC Boolean if this is a BC date
      * @param string $fromNotBefore Not before this date
      * @param string $fromNotAfter Not after this date
@@ -1709,9 +1946,6 @@ class SQL
     /**
      * Select list of dates
      *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
-     *
      * Select a date knowing a date id values. selectDate() relies on the date.id being in the original table,
      * thus $did is a foreign key of the record to which this date applies. selectDate() does not know or care
      * what the other record is.
@@ -1762,10 +1996,45 @@ class SQL
     }
 
     /**
-     * Select list of place_link
+     * Select all dates for constellation
      *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) date, which is a known bug, and on the todo list for a fix.
+     * Returns an array of all Dates for a given constellation, regardless of what piece of the constellation they are
+     * actually attached to.
+     *
+     * @param integer $cid A constellation ID
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names
+     */
+    public function selectAllDatesForConstellation($cid, $version)
+    {
+        $qq = 'select_date';
+
+        $query = 'select
+        aa.id, aa.version, aa.ic_id, aa.is_range, aa.descriptive_note,
+        aa.from_date, aa.from_bc, aa.from_not_before, aa.from_not_after, aa.from_original,
+        aa.to_date, aa.to_bc, aa.to_not_before, aa.to_not_after, aa.to_original, aa.fk_table, aa.fk_id,
+        aa.from_type,aa.to_type
+        from date_range as aa,
+        (select id,max(version) as version from date_range where ic_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Select list of place_link
      *
      * Select a place. This relies on table.id==fk_id where $tid is a foreign key of the record to which this
      * place applies. We do not know or care what the other record is, and that works because all the ids come
@@ -1815,26 +2084,16 @@ class SQL
      * Insert into place_link.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $id The id
-     *
+     * @param integer $id The id (if null, one will be created)
      * @param string $confirmed Boolean confirmed by human
-     *
      * @param string $original The original string
-     *
      * @param string $geo_place_id The geo_place_id
-     *
      * @param integer $typeID Vocabulary ID of the place@localType
-     *
      * @param integer $roleID Vocabulary ID of the role
-     *
      * @param string $note A note
-     *
      * @param float $score The geoname matching score
-     *
-     * @param string $fk_id The fk_id of the related table.
-     *
      * @param string $fk_table The fk_table name
+     * @param string $fk_id The fk_id of the related table.
      *
      * @return integer $id The id of what we (might) have inserted.
      *
@@ -1879,14 +2138,43 @@ class SQL
         return $id;
     }
 
+    /**
+     * Select all snac control meta data for constellation
+     *
+     * Returns an array of all SCMs for a given constellation, regardless of what piece of the constellation they are
+     * actually attached to.
+     *
+     * @param integer $cid A constellation ID
+     *
+     * @param integer $version The constellation version. For edits this is max version of the
+     * constellation. For published, this is the published constellation version.
+     *
+     * @return string[][] A list of lists of fields/value as list keys matching the database field names: id,
+     * version, ic_id, citation_id, sub_citation, source_data, rule_id, language_id, note, fk_id, fk_table.
+     */
+    public function selectAllMetaForConstellation($cid, $version)
+    {
+        $qq = 'select_meta';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.citation_id, aa.sub_citation, aa.source_data,
+                            aa.rule_id, aa.note, aa.fk_id, aa.fk_table
+                            from scm as aa,
+                            (select id,max(version) as version from scm where ic_id=$1 and version<=$2 group by id) as bb
+                            where not is_deleted and aa.id=bb.id and aa.version=bb.version');
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
 
     /**
      * Select a snac control meta data record
-     *
-     * Note: This always gets the max version (most recent) for a given fk_id. Published records (older than
-     * an edit) will show the edit (more recent) record, which is a known bug, and on the todo list for a fix.
-     *
-     * Old comment: Select a meta data record. We expect only one record, and will only return one (or zero).
      *
      * May 6 2016: Reading the code, we will return zero or many records. I'm pretty sure that anything which
      * can have an SCM can have multiple SCM records related to it.
@@ -2102,6 +2390,48 @@ class SQL
     }
 
     /**
+     * Insert entityID record
+     *
+     * Insert an ID from external records for this constellation. For the sake of convention, we put
+     * the SQL columns in the same order as the function args.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @param int $id The id of this record, otherid.id
+     *
+     * @param string $text The text of the SameAs object.
+     *
+     * @param integer $typeID Vocabulary id foreign key for the type of this entityID. Probably the ids for
+     * ISNI, LoC MARC organization, etc.
+     *
+     * @param string $uri The URI of the other record (not currently used)
+     *
+     */
+    public function insertEntityID($vhInfo, $id, $text, $typeID, $uri)
+    {
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq = 'insert_entity_id';
+        $this->sdb->prepare($qq,
+                            'insert into entityid
+                            (version, ic_id, id, text, type, uri)
+                            values
+                            ($1, $2, $3, $4, $5, $6)');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id'],
+                                            $id,
+                                            $text,
+                                            $typeID,
+                                            $uri));
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+    /**
      * Insert otherID record
      *
      * Insert an ID from records that were merged into this constellation. For the sake of convention, we put
@@ -2155,7 +2485,7 @@ class SQL
      *
      * @param string $original The original name string
      *
-     * @param float $preference_score The preference score for ranking this as the preferred name. This
+     * @param float $preferenceScore The preference score for ranking this as the preferred name. This
      * concept may not work in a culturally diverse environment
      *
      * @param integer $nameID A table id. If null we assume this is a new record an mint a new record version
@@ -2221,13 +2551,14 @@ class SQL
         $qq_2 = 'insert_component';
         $this->sdb->prepare($qq_2,
                             'insert into name_component
-                            (version, id, name_id, nc_value, nc_label, c_order)
+                            (version, id, name_id, ic_id, nc_value, nc_label, c_order)
                             values
-                            ($1, $2, $3, $4, $5, $6)');
+                            ($1, $2, $3, $4, $5, $6, $7)');
         $this->sdb->execute($qq_2,
                             array($vhInfo['version'],
                                   $id,
                                   $nameID,
+                                  $vhInfo['ic_id'],
                                   $text,
                                   $typeID,
                                   $order));
@@ -2258,6 +2589,131 @@ class SQL
                             (select name_id,max(version) as version from name_component where name_id=$1 and version<=$2 group by name_id) as bb
                             where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version');
         $result = $this->sdb->execute($qq_2, array($nameID, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
+
+    /**
+     * Select a list of name components for an icid
+     *
+     * Select all name_component records for a constellation and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * name_component.name_id=name.id and name.ic_id = version_history.id.
+     *
+     * @param integer $icid Constellation ID.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+     */
+    public function selectAllNameComponentsForConstellation($icid, $version) {
+
+            $qq_2 = 'select_components';
+            $this->sdb->prepare($qq_2,
+                                'select aa.id, aa.name_id, aa.version, aa.nc_label, aa.nc_value, aa.c_order
+                                from
+                                    name_component as aa,
+                                    (select nc.name_id,max(nc.version) as version
+                                        from name_component nc,
+                                        (select
+                                        aa.id,aa.version, aa.ic_id
+                                        from name as aa,
+                                        (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                                        where
+                                        aa.id = bb.id and not aa.is_deleted and
+                                        aa.version = bb.version) as n
+                                     where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+                                where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version order by aa.name_id, aa.c_order;');
+            $result = $this->sdb->execute($qq_2, array($icid, $version));
+            $all = array();
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+            $this->sdb->deallocate($qq_2);
+            return $all;
+    }
+
+    /**
+     * Insert an address line
+     *
+     * Related to place where component.place_id=place.id. This is a one-sided fk relationship also used for
+     * date and language.
+     *
+     * @throws \snac\exceptions\SNACDatabaseException
+     *
+     * @param string[] $vhInfo associative list with keys: version, main_id
+     *
+     * @param integer $id Record id of this address line. If null one will be minted. The id (existing or new) is always returned.
+     *
+     * @param integer $placeID Record id of related place
+     *
+     * @param string $text Text of the address line
+     *
+     * @param integer $typeID Vocabulary fk id of the type of this address line.
+     * @param integer $order The ordering of this line in the place's address
+     *
+     * @return integer $id Return the existing id, or the newly minted id.
+     */
+    public function insertAddressLine($vhInfo, $id, $placeID, $text, $typeID, $order)
+    {
+        if ($placeID == null)
+        {
+            throw new \snac\exceptions\SNACDatabaseException("Tried to write an address line for a non-existant place");
+        }
+        if (! $id)
+        {
+            $id = $this->selectID();
+        }
+        $qq_2 = 'insert_address_line';
+        $this->sdb->prepare($qq_2,
+                            'insert into address_line
+                            (ic_id, version, id, place_id, value, label, line_order)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $this->sdb->execute($qq_2,
+                            array($vhInfo['ic_id'],
+                                  $vhInfo['version'],
+                                  $id,
+                                  $placeID,
+                                  $text,
+                                  $typeID,
+                                  $order));
+        $this->sdb->deallocate($qq_2);
+        return $id;
+    }
+
+
+    /**
+     * Select a list of address line records
+     *
+     * Select all related address line records and return a list of associated lists. This is a one-sided fk
+     * relationship also used for data such as date and language. Related to name where
+     * address_line.place_id=place.id.
+     *
+     * @param integer $placeID Record id of related place.
+     *
+     * @param inteter $version Version number.
+     *
+     * @return string[][] Return a list of associated lists, where each inner list is a single address line.
+     */
+    public function selectAddress($placeID, $version)
+    {
+        $qq_2 = 'select_address';
+        $this->sdb->prepare($qq_2,
+                            'select
+                            aa.id, aa.place_id, aa.version, aa.label, aa.value, aa.line_order
+                            from address_line as aa,
+                            (select place_id,max(version) as version from address_line
+                                where place_id=$1 and version<=$2 group by place_id) as bb
+                            where not is_deleted and aa.place_id=bb.place_id and aa.version=bb.version
+                            order by aa.line_order asc');
+        $result = $this->sdb->execute($qq_2, array($placeID, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2459,6 +2915,100 @@ class SQL
 
         $this->sdb->prepare($qq, $query);
         $result = $this->sdb->execute($qq, array($fkID, $version, $fkTable));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Get all laguages for constellation
+     *
+     * Returns the list of all languages for a given ic_id and version.
+     *
+     * @param int $cid The IC id for the constellation
+     * @param int $version The version number to get sources for
+     * @return string[] An array of arrays of language data from the database
+     */
+    public function selectAllLanguagesForConstellation($cid, $version)
+    {
+        $qq = 'select_language';
+
+        $query = 'select aa.version, aa.ic_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note,
+            aa.fk_table, aa.fk_id
+        from language as aa,
+        (select id,max(version) as version from language where ic_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($cid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Get laguages for list of resources
+     *
+     * Returns the list of all languages for a given array of resource ids.
+     *
+     * @param int[] $resourceIDs The resource IDs to grab
+     * @return string[] An array of arrays of language data from the database
+     */
+    public function selectResourceLanguagesByList($resourceIDs)
+    {
+        if (count($resourceIDs) === 0)
+            return array();
+
+        $countList = array();
+        for ($i = 1; $i <= count($resourceIDs); $i++) {
+            $countList[$i] = '$'.$i;
+        }
+        $resourceIDList = implode(",", $countList);
+        $qq = 'select_resource_language';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from resource_language as aa
+        where aa.resource_id in ('.$resourceIDList.') and  not aa.is_deleted ';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, $resourceIDs);
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Select All Languages for Resource
+     * @param  int $rid     Resource ID to look up
+     * @param  int $version Version number for the resource
+     * @return string[][]          Array of resource language data
+     */
+    public function selectAllLanguagesForResource($rid, $version)
+    {
+        $qq = 'select_language';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.language_id, aa.script_id, aa.vocabulary_source, aa.note
+        from resource_language as aa,
+        (select id,max(version) as version from resource_language where resource_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq, array($rid, $version));
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
@@ -2845,7 +3395,7 @@ class SQL
      *
      * @param string $targetArkID The ARK of the related entity
      *
-     * @param string $targetEntityType The entity type of the target relation (aka the other entity aka the related entity)
+     * @param string $targetEntityTypeID The entity type of the target relation (aka the other entity aka the related entity)
      *
      * @param integer $type A foreign key id of entityType, traditionally the xlink:arcrole of the relation
      * (aka relation type, a controlled vocabulary)
@@ -2912,26 +3462,21 @@ class SQL
      * to sql fields. Note keys in $argList have a fixed order.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @param integer $relationEntryType Vocab id value of the relation entry type, aka documentType aka xlink:role
-     * @param integer $entryType Vocab id value of entry type aka relationEntry@localType
-     * @param string $href A URI  aka xlink:href
+     * @param int $resourceID The resource ID for this relation
+     * @param int $resourceVersion The version of the resource
      * @param integer $arcRole Vocabulary id value of the arc role aka xlink:arcrole
      * @param string $relationEntry Often the name of the relation aka relationEntry
-     * @param string $objectXMLWrap Optional extra data, often an XML fragment aka objectXMLWrap
      * @param string $note A note aka descriptiveNote
-     * @param integer $id The database record id
+     * @param integer $id The database record id (if null, one will be created
      *
      * @return integer $id The record id, which might be new if this is the first insert for this resource relation.
      *
      */
     public function insertResourceRelation($vhInfo,
-                                           $relationEntryType, // aka documentType aka xlink:role
-                                           $entryType, // relationEntry@localType
-                                           $href,  // xlink:href
+                                           $resourceID,
+                                           $resourceVersion,
                                            $arcRole,  // xlink:arcrole
                                            $relationEntry, // relationEntry
-                                           $objectXMLWrap, // objectXMLWrap
                                            $note, // descriptiveNote
                                            $id)
     {
@@ -2942,27 +3487,343 @@ class SQL
         $qq = 'insert_resource_relation';
         $this->sdb->prepare($qq,
                             'insert into related_resource
-                            (version, ic_id, id, role, relation_entry_type, href, arcrole, relation_entry,
-                            object_xml_wrap, descriptive_note)
+                            (version, ic_id, id, resource_id, resource_version, arcrole, relation_entry, descriptive_note)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7, $8)');
+        /*
+         * Combine vhInfo and the remaining args into a big array for execute().
+         */
+        $execList = array($vhInfo['version'], // 1
+                          $vhInfo['ic_id'],   // 2
+                          $id,                // 3
+                          $resourceID,        // 4
+                          $resourceVersion,   // 5
+                          $arcRole,           // 6
+                          $relationEntry,     // 7
+                          $note);             // 8
+        $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /**
+     * Insert a Controlled Vocabulary Term
+     *
+     * @param  String $type        Type of the term
+     * @param  String $term        Value of the Term
+     * @param  String $uri         The URI of the term
+     * @param  String $description Term description
+     * @return int|boolean              ID on success or false on failure
+     */
+    public function insertVocabularyTerm($type,
+                                   $term,
+                                   $uri,
+                                   $description)
+    {
+        $result = $this->sdb->query('insert into vocabulary (type, value, uri, description) values ($1, $2, $3, $4) returning *;',
+                                array($type, $term, $uri, $description));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Insert Controlled GeoTerm
+     * @param  string $name        Name of the place
+     * @param  string $uri         URI for the vocab term
+     * @param  string $latitude    Latitude
+     * @param  string $longitude   Longitude
+     * @param  string $adminCode   Administration Code (state)
+     * @param  string $countryCode Country Code
+     * @return int|bool              ID on success, false on failure
+     */
+    public function insertGeoTerm($name,
+                                   $uri,
+                                   $latitude,
+                                   $longitude,
+                                   $adminCode,
+                                   $countryCode)
+    {
+        $result = $this->sdb->query('insert into geo_place (name, uri, latitude, longitude, admin_code, country_code) values ($1, $2, $3, $4, $5, $6) returning *;',
+                                array($name, $uri, $latitude, $longitude, $adminCode, $countryCode));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+    /**
+     * Get Next Resource ID
+     *
+     * Gets the next resource id number from the resource_id sequence
+     *
+     * @return int next resource id number
+     */
+    private function selectResourceID()
+    {
+        $result = $this->sdb->query('select nextval(\'resource_id_seq\') as id',array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Get Next Resource Version Number
+     *
+     * Gets the next version number from the resource_version sequence
+     *
+     * @return int next resource version number
+     */
+    private function selectResourceVersion()
+    {
+        $result = $this->sdb->query('select nextval(\'resource_version_id_seq\') as id',array());
+        $row = $this->sdb->fetchrow($result);
+        return $row['id'];
+    }
+
+    /**
+     * Current resource version by ID
+     *
+     * The max, that is: current version for ID regardless of status. This will return max for deleted as
+     * well as all other status values.
+     * @param integer $id The resource ID
+     *
+     * @return integer Latest version number from resource.version
+     *
+     */
+    public function selectCurrentResourceVersion($id)
+    {
+        $result = $this->sdb->query(
+                                    'select max(version) as version
+                                    from resource_cache
+                                    where resource_cache.id=$1',
+                                    array($id));
+        $row = $this->sdb->fetchrow($result);
+        return $row['version'];
+    }
+
+
+
+    /**
+     * Insert resource
+     *
+     * @param  int|null $resourceID      Resource ID or null if it doesn't exist
+     * @param  int|null $resourceVersion Resource version or null if it doesn't exist
+     * @param  string $title           Title of the resource
+     * @param  string $abstract        Abstract of the resource
+     * @param  string $extent          Extent of the resource
+     * @param  int $repoICID        Repository ID for the holding repository of this resource
+     * @param  int $docTypeID       Document Type ID
+     * @param  int $entryTypeID     Entity Type ID
+     * @param  text|null $link            Link for this resource
+     * @param  text|null $objectXMLWrap   Any ObjectXMLWrap XML
+     * @return string[]                  Array containing id, version
+     */
+    public function insertResource(        $resourceID,
+                                           $resourceVersion,
+                                           $title,
+                                           $abstract,
+                                           $extent,
+                                           $repoICID,
+                                           $docTypeID,
+                                           $entryTypeID,
+                                           $link,
+                                           $objectXMLWrap)
+    {
+        if (! $resourceID)
+        {
+            $resourceID = $this->selectResourceID();
+        }
+        if (! $resourceVersion) {
+            $resourceVersion = $this->selectResourceVersion();
+        }
+        $qq = 'insert_resource';
+        $this->sdb->prepare($qq,
+                            'insert into resource_cache
+                            (id, version, title, abstract, extent, repo_ic_id, type, entry_type, href, object_xml_wrap)
                             values
                             ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)');
         /*
          * Combine vhInfo and the remaining args into a big array for execute().
          */
-        $execList = array($vhInfo['version'], // 1
-                          $vhInfo['ic_id'], // 2
-                          $id, // 3
-                          $relationEntryType, // 4
-                          $entryType, // 5
-                          $href, // 6
-                          $arcRole, // 7
-                          $relationEntry, // 8
-                          $objectXMLWrap, // 9
-                          $note); // 10
+        $execList = array($resourceID,        // 1
+                          $resourceVersion,   // 2
+                          $title,             // 3
+                          $abstract,          // 4
+                          $extent,            // 5
+                          $repoICID,          // 6
+                          $docTypeID,         // 7
+                          $entryTypeID,       // 8
+                          $link,              // 9
+                          $objectXMLWrap);    // 10
+        $this->sdb->execute($qq, $execList);
+        $this->sdb->deallocate($qq);
+        return array($resourceID, $resourceVersion);
+    }
+
+    /**
+     * Insert Resource Language
+     *
+     * Insert (updated or new) version of the given language for a resource
+     *
+     * @param int $resourceID The resource ID
+     * @param int $resourceVersion The resource version
+     * @param int $id The id for this language (if null, one will be generated)
+     * @param int $languageID The language ID from the vocabulary table
+     * @param int $scriptID The script ID from the vocabulary table
+     * @param string $vocabularySource The source for this vocab term
+     * @param string $note The descriptive note for this language
+     * @return int The ID for the language just written
+     */
+    public function insertResourceLanguage($resourceID, $resourceVersion, $id, $languageID, $scriptID, $vocabularySource, $note)
+    {
+        if (! $id)
+        {
+            $id = $this->selectResourceID();
+        }
+        $qq = 'insert_resource_language';
+        $this->sdb->prepare($qq,
+                            'insert into resource_language
+                            (resource_id, version, id, language_id, script_id, vocabulary_source, note)
+                            values
+                            ($1, $2, $3, $4, $5, $6, $7)');
+        $eArgs = array($resourceID,
+                       $resourceVersion,
+                       $id,
+                       $languageID,
+                       $scriptID,
+                       $vocabularySource,
+                       $note);
+        $result = $this->sdb->execute($qq, $eArgs);
+        $this->sdb->deallocate($qq);
+        return $id;
+    }
+
+
+    /**
+     * Insert into table resource_origination_name
+     *
+     * Write the given name into the origination name table for the resource (id, version)
+     *
+     * @param int $resourceID The resource ID
+     * @param int $resourceVersion The resource version
+     * @param int $id The id of this origination name (if null, one will be generated)
+     * @param string $name The origination name
+     *
+     * @return integer $id The record id, which might be new if this is the first insert for this origination name.
+     */
+    public function insertOriginationName($resourceID, $resourceVersion,
+                               $id,
+                               $name)
+    {
+        if (! $id)
+        {
+            $id = $this->selectResourceID();
+        }
+        $qq = 'insert_origination_name';
+        $this->sdb->prepare($qq,
+                            'insert into resource_origination_name
+                            (resource_id, version, id, name)
+                            values
+                            ($1, $2, $3, $4)');
+        /*
+         * Combine vhInfo and the remaining args into a big array for execute().
+         */
+        $execList = array($resourceID,
+                          $resourceVersion,
+                          $id,
+                          $name);
         $this->sdb->execute($qq, $execList);
         $this->sdb->deallocate($qq);
         return $id;
     }
+
+    /**
+     * Select resource origination name records by list
+     *
+     * Get all the origination name data for a given list of resources
+     *
+     * TODO: This should take into account versioning
+     *
+     * @param int[] $resourceIDs The list of resource ids
+     *
+     * @return string[][] Return a list of lists. Inner list keys: id, version, name
+     */
+    public function selectOriginationNamesByList($resourceIDs)
+    {
+        if (count($resourceIDs) === 0)
+            return array();
+
+        $countList = array();
+        for ($i = 1; $i <= count($resourceIDs); $i++) {
+            $countList[$i] = '$'.$i;
+        }
+        $resourceIDList = implode(",", $countList);
+
+
+        $qq = 'select_resource_origination_name';
+
+        $query = 'select aa.version, aa.resource_id, aa.id, aa.name
+        from resource_origination_name as aa
+        where aa.resource_id in ('.$resourceIDList.') and not aa.is_deleted';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq,
+                                      $resourceIDs);
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Select resource origination name records
+     *
+     * Get all the origination name data for a given resource (id, version)
+     *
+     * @param int $resourceID The ID of the resource
+     * @param int $version The version of the resource
+     *
+     * @return string[][] Return a list of lists. Inner list keys: id, version, name
+     */
+    public function selectOriginationNames($resourceID, $version)
+    {
+        $qq = 'select_resource_origination_name';
+
+        $query = 'select aa.version, aa.id, aa.name
+        from resource_origination_name as aa,
+        (select id,max(version) as version from resource_origination_name where resource_id=$1 and version<=$2 group by id) as bb
+        where not is_deleted and aa.id=bb.id and aa.version=bb.version';
+
+        $this->sdb->prepare($qq, $query);
+
+        $result = $this->sdb->execute($qq,
+                                      array($resourceID,
+                                            $version));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+
 
     /**
      * Get a single vocabulary record
@@ -3049,9 +3910,9 @@ class SQL
                             'select
                             aa.version, aa.ic_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select ic_id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by ic_id) as bb
+                            (select id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
-                            aa.ic_id=bb.ic_id
+                            aa.id=bb.id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
@@ -3068,77 +3929,11 @@ class SQL
         return $rowList;
     }
 
-
-    /**
-     * Helper for selectOtherID()
-     *
-     * Mar 1 2016: The comment below is incomplete because we have lots of cases where there could be multiple
-     * versions. All queries deal with multiple version by using a subquery. This function is probably
-     * redundant.
-     *
-     * Select flat list of distinct id values meeting the version and ic_id constraint. Specifically a
-     * helper function for selectOtherID(). This deals with the possibility that a given otherid.id may
-     * have several versions while other otherid.id values are different (and single) versions.
-     *
-     *
-     * @param string[] $vhInfo associative list with keys: version, ic_id
-     *
-     * @return integer[] Return a list of record id values meeting the version and ic_id constriants.
-     *
-     */
-    public function matchORID($vhInfo)
-    {
-
-        $qq = 'morid';
-        $this->sdb->prepare($qq,
-                            'select
-                            distinct(id)
-                            from otherid
-                            where
-                            version=(select max(version) from otherid where version<=$1 and ic_id=$2)
-                            and ic_id=$2');
-        /*
-         * Always use key names explicitly when going from associative context to flat indexed list context.
-         */
-        $result = $this->sdb->execute($qq,
-                                      array($vhInfo['version'],
-                                            $vhInfo['ic_id']));
-        $all = array();
-        while($row = $this->sdb->fetchrow($result))
-        {
-            array_push($all, $row['id']);
-        }
-        $this->sdb->deallocate($qq);
-        return $all;
-    }
-
-
     /**
      * select other IDs
      *
      * These were originally ID values of merged records. DBUtils has code that adds an otherRecordID to a
      * Constellation object.
-     *
-     * Mar 25 2016: The fix described below only worked in certain cases. It is unclear why the subquery was
-     * not just turned into a join like all the other tables. Fixed and this query works in at least one case
-     * where the original failed. It failed when the versions were not in order.
-     *
-     * I just noticed that otherid doesn't have is_deleted. There is a historical reason for that, but I
-     * suspect history needs to be updated. Unless there is some really good reason otherid will never be
-     * deleted. Or even edited?
-     *
-     * Mar 1 2016: Legacy code here did not used to have the subquery constraining the version. As a result,
-     * that old code used matchORID() above and a foreach loop as well as a constraint in the query here. That
-     * was all fairly odd, but worked. This code now follows our idiom for ic_id and version constraint via
-     * a subquery. As far as I can tell from the full CPF test, this works. I have diff'd the parse and
-     * database versions, and the otherRecordID JSON looks correct.
-     *
-     * select
-     * id, version, ic_id, text, uri, type
-     * from otherid
-     * where
-     * version=(select max(version) from otherid where version<=$1)
-     * and ic_id=$2 order by id
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
@@ -3155,7 +3950,7 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
                             from otherid as aa,
                             (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id = bb.id and
                             aa.version = bb.version order by id asc');
 
@@ -3169,6 +3964,44 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+
+    /**
+    * select entity IDs
+    *
+    * These were originally ID values of external records for the same entity. DBUtils has code that adds an entityID to a
+    * Constellation object.
+    *
+    * @param string[] $vhInfo associative list with keys: version, ic_id
+    *
+    * @return string[] Return an associative ist of otherid rows with keys: id, version, ic_id, text, uri,
+    * type, link_type. otherid.type is an integer fk id from vocabulary, not that we need to concern
+    * ourselves with that here.
+    *
+    */
+    public function selectEntityID($vhInfo)
+    {
+        $qq = 'sedid';
+        $this->sdb->prepare($qq,
+            'select
+                    aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
+                from entityid as aa,
+                    (select id,max(version) as version from entityid where version<=$1 and ic_id=$2 group by id) as bb
+                where
+                    aa.id = bb.id and
+                    aa.version = bb.version order by id asc');
+
+        $all = array();
+        $result = $this->sdb->execute($qq, array($vhInfo['version'], $vhInfo['ic_id']));
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
 
 
     /**
@@ -3214,15 +4047,54 @@ class SQL
     }
 
     /**
-     * Insert legalStatus.
+     * Select subjects with Terms
+     *
+     * DBUtils has code to turn the return values into subjects in a Constellation object.
+     *
+     * Solve the multi-version problem by joining to a subquery.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
      *
-     * @param integer $termID Vocabulary foreign key for the term.
+     * @return string[][] Return list of an associative list with keys: id, version, ic_id,
+     * term_id.
      *
+     * There may be multiple rows returned, which is perhaps sort of obvious because the return value is a
+     * list of list.
+     *
+     */
+    public function selectSubjectWithTerms($vhInfo)
+    {
+        $qq = 'ssubj';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.term_id, v.value as term_value, v.type as term_type, v.uri as term_uri, v.description as term_description
+                            from subject aa
+                            left outer join vocabulary v on aa.term_id = v.id
+                            inner join
+                                (select id, max(version) as version from subject where version<=$1 and ic_id=$2 group by id) as bb
+                                on aa.id=bb.id and aa.version=bb.version
+                            where not aa.is_deleted');
+        /*
+         * Always use key names explicitly when going from associative context to flat indexed list context.
+         */
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
+    /**
+     * Insert legalStatus.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
      * @param integer $id Record id from this object and table.
-     *
-     * @return no return value.
+     * @param integer $termID Vocabulary foreign key for the term.
      *
      */
     public function insertLegalStatus($vhInfo, $id, $termID)
@@ -3399,25 +4271,70 @@ class SQL
         $all = array();
         while($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $rid = $row['id'];
-             * $dateList = $this->selectDate($rid, $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     // TODO Throw an exception or write a log message. Or maybe this will never, ever happen. John
-             *     // Prine says: "Stop wishing for bad luck and knocking on wood"
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+    /**
+     * Select a related identity with Terms
+     *
+     * Related identity aka cpf relation. Code in DBUtils turns the returned array into a
+     * ConstellationRelation object.
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     *
+     * @return string[][] Return a list of lists. There may be multiple relations. Each relation has keys: id,
+     * version, ic_id, related_id, related_ark, relation_entry, descriptive_node, relation_type, role,
+     * arcrole, date.
+     *
+     */
+    public function selectRelationWithTerms($vhInfo)
+    {
+        $qq = 'selectrelatedidentity';
+        $this->sdb->prepare($qq,
+                            'select
+                            aa.id, aa.version, aa.ic_id, aa.related_id, aa.related_ark,
+                            aa.relation_entry, aa.descriptive_note,
+                            aa.relation_type,
+                                relt.value as relation_type_value,
+                                relt.uri as relation_type_uri,
+                                relt.description as relation_type_description,
+                                relt.type as relation_type_type,
+                            aa.role,
+                                rolt.value as role_value,
+                                rolt.uri as role_uri,
+                                rolt.description as role_description,
+                                rolt.type as role_type,
+                            aa.arcrole,
+                                arct.value as arcrole_value,
+                                arct.uri as arcrole_uri,
+                                arct.description as arcrole_description,
+                                arct.type as arcrole_type
+                            from related_identity as aa
+                            left outer join vocabulary as relt on relt.id=aa.relation_type
+                            left outer join vocabulary as rolt on rolt.id=aa.role
+                            left outer join vocabulary as arct on arct.id=aa.arcrole
+                            inner join
+                                (select id, max(version) as version from related_identity where version<=$1 and ic_id=$2 group by id) as bb
+                                on aa.id=bb.id and aa.version=bb.version
+                            where not aa.is_deleted order by aa.relation_entry asc
+
+                            ');
+
+        $result = $this->sdb->execute($qq,
+                                      array($vhInfo['version'],
+                                            $vhInfo['ic_id']));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+    }
+
 
     /**
      * Select a related identity
@@ -3432,7 +4349,6 @@ class SQL
      * arcrole, date.
      *
      */
-
     public function selectRelation($vhInfo)
     {
         $qq = 'selectrelatedidentity';
@@ -3454,19 +4370,6 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $relationId = $row['id'];
-             * $dateList = $this->selectDate($relationId, $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     //TODO Throw warning or log
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -3474,9 +4377,37 @@ class SQL
     }
 
     /**
-     * select related archival resource records
+     * Select Related ICIDs for this target ignoring version
      *
-     * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a pgp
+     * Ignores the version, but quickly grabs all ICIDs that may still point at
+     * the given target ICID.
+     * @param  int $icid The target ICID to search
+     * @return int[][]       Associative array of [ic_id, id] constituting (ICID, resourceRelationID) pairs that may still point to this target
+     */
+    public function selectUnversionedConstellationIDsForRelationTarget($icid) {
+        $qq = 'selectrelatedicids';
+        $this->sdb->prepare($qq,
+                            'select distinct aa.ic_id, aa.id
+                            from related_identity as aa
+                            where not aa.is_deleted and
+                            aa.related_id = $1');
+
+        $result = $this->sdb->execute($qq,
+                                      array($icid));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq);
+        return $all;
+
+    }
+
+    /**
+     * select related resource records
+     *
+     * Where $vhInfo 'version' and 'ic_id'. Code in DBUtils knows how to turn the return value into a php
      * ResourceRelation object.
      *
      * @param string[] $vhInfo associative list with keys: version, ic_id
@@ -3489,16 +4420,17 @@ class SQL
     {
         $qq = 'select_related_resource';
         $this->sdb->prepare($qq,
-                            'select
-                            aa.id, aa.version, aa.ic_id,
-                            aa.relation_entry_type, aa.href, aa.relation_entry, aa.object_xml_wrap, aa.descriptive_note,
-                            aa.role,
-                            aa.arcrole
-                            from related_resource as aa,
-                            (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
-                            where not aa.is_deleted and
-                            aa.id=bb.id
-                            and aa.version=bb.version');
+            'select rr.*, r.type as document_type, r.href, r.object_xml_wrap, r.title, r.extent,
+                    r.abstract, r.repo_ic_id from
+                (select aa.id, aa.version, aa.ic_id,
+                        aa.relation_entry, aa.descriptive_note, aa.arcrole,
+                        aa.resource_id, aa.resource_version
+                    from related_resource as aa,
+                        (select id, max(version) as version from related_resource where version<=$1 and ic_id=$2 group by id) as bb
+                    where not aa.is_deleted and
+                    aa.id=bb.id
+                    and aa.version=bb.version) rr
+                left join resource_cache r on rr.resource_id = r.id and rr.resource_version = r.version');
 
         $result = $this->sdb->execute($qq,
                                       array($vhInfo['version'],
@@ -3511,6 +4443,42 @@ class SQL
         $this->sdb->deallocate($qq);
         return $all;
     }
+
+
+    /**
+     * Select Resource
+     *
+     * Gets the resource data out of the database for the given id and version.
+     *
+     * @param int $id Resource ID
+     * @param int $version Resource version
+     * @return string[] Associative array of resource data
+     */
+    public function selectResource($id, $version)
+    {
+       $qq = 'select_resource';
+       $this->sdb->prepare($qq,
+                           'select
+                           aa.id, aa.version, aa.title, aa.href, aa.abstract, aa.extent, aa.repo_ic_id,
+                           aa.object_xml_wrap, aa.type
+                           from resource_cache as aa,
+                           (select max(version) as version from resource_cache where version<=$1 and id=$2) as bb
+                           where not aa.is_deleted and
+                           aa.id=$2
+                           and aa.version=bb.version');
+
+       $result = $this->sdb->execute($qq,
+                                     array($version,
+                                           $id));
+       $all = array();
+       while ($row = $this->sdb->fetchrow($result))
+       {
+           array_push($all, $row);
+       }
+       $this->sdb->deallocate($qq);
+       return $all;
+   }
+
 
     /**
      * Select all function records
@@ -3542,18 +4510,6 @@ class SQL
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
-            /*
-             * $dateList = $this->selectDate($row['id'], $vhInfo['version']);
-             * $row['date'] = array();
-             * if (count($dateList)>=1)
-             * {
-             *     $row['date'] = $dateList[0];
-             * }
-             * if (count($dateList)>1)
-             * {
-             *     // TODO: Throw a warning or log
-             * }
-             */
             array_push($all, $row);
         }
         $this->sdb->deallocate($qq);
@@ -3658,6 +4614,44 @@ class SQL
         return $all;
     }
 
+
+    /**
+    * Select a list of name contributors for an icid
+    *
+    * Select all name_contributor records for a constellation and return a list of associated lists.
+    *
+    * @param integer $icid Constellation ID.
+    *
+    * @param inteter $version Version number.
+    *
+    * @return string[][] Return a list of associated lists, where each inner list is a single name_component.
+    */
+    public function selectAllNameContributorsForConstellation($icid, $version) {
+
+        $qq_2 = 'select_contributors';
+        $this->sdb->prepare($qq_2,
+            'select aa.id, aa.version, aa.ic_id, aa.short_name, aa.name_type, aa.rule, aa.name_id
+            from
+                name_contributor as aa,
+                (select nc.name_id,max(nc.version) as version
+                    from name_contributor nc,
+                    (select
+                    aa.id,aa.version, aa.ic_id
+                    from name as aa,
+                    (select id,max(version) as version from name where version<=$2 and ic_id=$1 group by id) as bb
+                    where
+                    aa.id = bb.id and not aa.is_deleted and
+                    aa.version = bb.version) as n
+                 where nc.name_id=n.id and nc.version<=$2 group by name_id) as bb
+            where not is_deleted and aa.name_id=bb.name_id and aa.version=bb.version order by aa.name_id, aa.id asc');
+        $result = $this->sdb->execute($qq_2, array($icid, $version));
+        $all = array();
+        while($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row);
+        }
+        $this->sdb->deallocate($qq_2);
+        return $all;
+    }
 
     /**
      * Return a test constellation
@@ -4119,8 +5113,8 @@ class SQL
      *
      * This method searches the database for a place URI and returns the entry
      *
-     * @param string $term The "type" term for what type of vocabulary to search
-     * @param string $query The string to search through the vocabulary
+     * @param string $uri The URI string to search through the vocabulary
+     * @return string[]|null Array of information about the Geo Place or null if not found
      */
     public function getPlaceByURI($uri)
     {
@@ -4179,12 +5173,15 @@ class SQL
      *
      * @return string[][] Returns a list of lists with keys id, value.
      */
-    public function searchVocabulary($term, $query, $entityTypeID)
+    public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
     {
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
                                'gender' => 1,
-                               'nationality' => 1);
+                               'nationality' => 1,
+                               'subject' => 1,
+                               'function' => 1,
+                               'occupation' => 1);
         $likeStr = "%$query%";
         if (isset($useStartsWith[$term]))
         {
@@ -4198,10 +5195,10 @@ class SQL
         if ($entityTypeID == null)
         {
             $queryStr =
-                      'select id,value
+                      'select id,value,type,uri,description
                       from vocabulary
-                      where type=$1 and value ilike $2 order by value asc limit 100';
-            $result = $this->sdb->query($queryStr, array($term, $likeStr));
+                      where type=$1 and value ilike $2 order by value asc limit $3';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr, $count));
         }
         else
         {
@@ -4241,6 +5238,173 @@ class SQL
          */
         return $all;
     }
+
+    /**
+     * Search Resources
+     *
+     * @param string $query The string to search through the vocabulary
+     * @param boolean $urlOnly optional Whether to only search the URL
+     * @return string[][] Returns a list of lists.
+     */
+    public function searchResources($query, $urlOnly = false)
+    {
+        $queryStr =
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  from resource_cache
+                  where href = $1 or title ilike $1 order by title asc';
+        if ($urlOnly) {
+            $queryStr =
+                  'select id, version, type, href, object_xml_wrap, title, extent, abstract, repo_ic_id
+                  from resource_cache
+                  where href = $1 order by title asc';
+        }
+
+        $result = $this->sdb->query($queryStr, array("%$query%"));
+
+        $all = array();
+        while($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Browse Name Index
+     *
+     * This function contains the SQL code required to browse through the name index in postgres
+     * in (mostly) alphabetical order.
+     *
+     * @param string $query The string to search for
+     * @param string $position The position of the search term in the results: before, middle, after
+     * @param string $entityType The string representation of entity type: person, corporateBody, family
+     * @param int    $icid The identity constellation ID to break ties on sorting (or 0 if ignored)
+     * @return string[] List of name index results in raw format
+     */
+    public function browseNameIndex($query, $position, $entityType, $icid)
+    {
+        $entityQuery = "";
+        if ($entityType != null && $entityType != "") {
+            // Do this for safety concerns with SQL injections...
+            switch ($entityType) {
+                case "person":
+                    $entityQuery = "and entity_type = 'person'";
+                    break;
+                case "corporateBody":
+                    $entityQuery = "and entity_type = 'corporateBody'";
+                    break;
+                case "family":
+                    $entityQuery = "and entity_type = 'family'";
+                    break;
+            }
+        }
+
+        $result = null;
+
+        if ($position == "after") {
+            $queryStr = "select * from (select * from name_index where (name_entry = $1 and ic_id >= $2) $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) a union all (select * from name_index where name_entry > $1 $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $result = $this->sdb->query($queryStr, array($query, $icid));
+        } else if ($position == "before") {
+            if ($icid !== 0) {
+                // query using the ICID as well
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry = $1 and ic_id <= $2) $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) a union all (select * from name_index where name_entry < $1 $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $result = $this->sdb->query($queryStr, array($query, $icid));
+            } else {
+                // query without the ICID, since it is meaningless
+                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry, ic_id asc;";
+                $result = $this->sdb->query($queryStr, array($query));
+            }
+        } else {
+            $queryStr =
+                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry, ic_id asc;";
+
+            $result = $this->sdb->query($queryStr, array($query));
+        }
+
+
+        $all = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param string $nameEntry The name entry to include in the index
+     * @param int $icid The ICID for this constellation
+     * @param string $ark The ARK ID for this constellation
+     * @param string $entityType The string representation of the entity type
+     * @param int $degree The degree of the constellation (number of out-edges to other constellations in snac)
+     * @param int $resources The number of resource relations for the constellation
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex($nameEntry, $icid, $ark, $entityType, $degree, $resources) {
+        // First query to see if the name is already in the index.  If so, then do an update.  Else, this is an insert.
+        $resultTest = $this->sdb->query("select * from name_index where ic_id = $1;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($resultTest))
+        {
+            array_push($check, $row);
+        }
+
+        if (empty($check)) {
+            // Doing an insert, since nothing found
+            $result = $this->sdb->query("insert into name_index 
+                                            (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
+                                            ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        } else {
+            // Doing an update, since ic_id was found
+            $result = $this->sdb->query("update name_index set 
+                                            (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
+                                            ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        }
+        return false;
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param int $icid The ICID of the constellation to remove
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex($icid) {
+        $result = $this->sdb->query("delete from name_index where ic_id = $1 returning *;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($check, $row);
+        }
+
+        if (!empty($check)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Temporary function to brute force order name components.
@@ -4515,8 +5679,8 @@ class SQL
      *
      * @param integer $groupID A group id
      *
-     * @param boolean $everyone. If true include inactive users, else only list active.
-     * 
+     * @param boolean $everyone If true include inactive users, else only list active.
+     *
      * @return integer[] List of group ID values.
      */
     public function selectUserIDsFromGroup($groupID, $everyone)
@@ -4525,10 +5689,10 @@ class SQL
         if (! $everyone) {
             /*
              * Must join with appuser to get only active users.
-             * 
+             *
              * Table names are not necessary in the select or where clause. The field names are
              * unique. However, explicitly using table names (or the alias agl) makes the intent clear.
-             */ 
+             */
             $query = "select agl.uid from appuser_group_link as agl, appuser where gid=$1 and agl.uid=appuser.id and appuser.active";
         }
         $result = $this->sdb->query($query,
@@ -4612,22 +5776,111 @@ class SQL
         }
     }
 
-    /* Not used. See insertInstitution() above */
-    /*
-     * Update a institution.
+    /**
+     * Get publish version history info
      *
-     * @param integer $rid Institution row id
+     * Currently used only the EACCPFSerializer.php for maintenanceEvent data.
      *
-     * @param string $ic_id Institution ic_id
+     * cpf.rng doesn't like milliseconds so create an ISO date without them. Note I have included the "T"
+     * which has issues.
      *
+     * https://www.postgresql.org/docs/current/static/datatype-datetime.html
+     *
+     * Note: ISO 8601 specifies the use of uppercase letter T to separate the date and time. PostgreSQL
+     * accepts that format on input, but on output it uses a space rather than T, as shown above[below]. This is for
+     * readability and for consistency with RFC 3339 as well as some other database systems.
+     *
+     * Bad: 2016-07-28 16:30:16.18485 Good: 2016-07-28T16:30:16
+     *
+     * @param string[] $vhInfo associative list with keys: version, ic_id
+     * @param boolean $listAll optional If set to true, will list all the version history.  If not set, will only
+     * list publicly available history
+     * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
-    /*
-     * public function updateInstitution($iid, $ic_id)
-     * {
-     *     $result = $this->sdb->query("update snac_institution set ic_id=$1 where id=$2",
-     *                                 array($ic_id, $iid));
-     * }
+    public function selectVersionHistory($vhInfo,$listAll = false) {
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\')';
+        if ($listAll === true)
+            $limitHistory = "";
+        $result = $this->sdb->query(
+            'select v.*, to_char(v.timestamp, \'YYYY-MM-DD"T"HH24:MI:SS\') as update_date, a.username, a.fullname
+            from version_history v, appuser a
+            where v.user_id = a.id and v.id=$1 and v.version<=$2
+                '.$limitHistory.'
+            order by v.timestamp asc',
+            array($vhInfo["ic_id"], $vhInfo["version"]));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * List MaybeSameIDs
+     *
+     * Gets a list of ICIDs that may be the same as the given parameter.
+     *
+     * @param  integer $icid IC ID for which to search
+     * @return integer[]       List of ICIDs listed to be maybe the same
      */
+    public function listMaybeSameIDsFor($icid) {
+        $result = $this->sdb->query(
+            'select ic_id1, ic_id2 from maybe_same where ic_id1=$1 or ic_id2=$1;',
+            array($icid));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            // Assign the ids as keys as well as values to ensure no duplicates
+            if ($row['ic_id1'] == $icid) {
+                $all[$row['ic_id2']] = $row['ic_id2'];
+            } else {
+                $all[$row['ic_id1']] = $row['ic_id1'];
+            }
+        }
+        return $all;
+    }
 
+    /**
+     * Insert Report
+     *
+     * Inserts the report into the database.
+     *
+     * @param string $name The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param int $userid The userid that requested the report
+     * @param int $affiliationid The affiliation of the user that requested the report
+     */
+    public function insertReport($name, $report, $userid, $affiliationid) {
+        $this->sdb->query('insert into reports (name, report, user_id, affiliation_id) values
+                            ($1, $2, $3, $4)', array($name, $report, $userid, $affiliationid));
+    }
 
+    /**
+     * Select Report By Time
+     *
+     * Reads the report from the database with the given name for the given timestamp.  By default,
+     * this method will read the latest report by that name.
+     *
+     * @param string $name The name of the report to read
+     * @param string $timestamp optional The timestamp for the report to read
+     * @return string[] The report data from the database
+     */
+    public function selectReportByTime($name, $timestamp = null) {
+        $result = null;
+        if ($timestamp == null) {
+            $result = $this->sdb->query("select * from reports where name = $1 order by timestamp desc limit 1",
+                                        array($name));
+        } else {
+            $result = $this->sdb->query("select * from reports where name = $1 and timestamp = $2",
+                                        array($name, $timestamp));
+        }
+
+        if (!$result)
+            return false;
+
+        return $this->sdb->fetchrow($result);
+    }
 }

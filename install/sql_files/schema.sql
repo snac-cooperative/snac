@@ -21,7 +21,36 @@
 -- drop table if exists control;
 -- drop table if exists pre_snac_maintenance_history;
 
-drop table if exists appuser; 
+drop view if exists biog_hist_view;
+drop view if exists convention_declaration_view;
+drop view if exists date_range_view;
+drop view if exists function_view;
+drop view if exists gender_view;
+drop view if exists general_context_view;
+drop view if exists language_view;
+drop view if exists legal_status_view;
+drop view if exists mandate_view;
+drop view if exists name_view;
+drop view if exists name_component_view;
+drop view if exists name_contributor_view;
+drop view if exists nationality_view;
+drop view if exists nrd_view;
+drop view if exists occupation_view;
+drop view if exists otherid_view;
+drop view if exists entityid_view;
+drop view if exists place_link_view;
+drop view if exists related_identity_view;
+drop view if exists related_resource_origination_name_view;
+drop view if exists related_resource_view;
+drop view if exists scm_view;
+drop view if exists structure_genealogy_view;
+drop view if exists source_view;
+drop view if exists subject_view;
+drop view if exists version_history_view;
+drop view if exists address_line_view;
+
+
+drop table if exists appuser;
 drop table if exists appuser_role_link;
 drop table if exists appuser_group;
 drop table if exists appuser_group_link;
@@ -42,8 +71,10 @@ drop table if exists nationality;
 drop table if exists nrd;
 drop table if exists occupation;
 drop table if exists otherid;
+drop table if exists entityid;
 drop table if exists place_link;
 drop table if exists related_identity;
+drop table if exists related_resource_origination_name;
 drop table if exists related_resource;
 drop table if exists privilege_role_link;
 drop table if exists privilege;
@@ -53,6 +84,8 @@ drop table if exists scm;
 drop table if exists snac_institution;
 drop table if exists structure_genealogy;
 drop table if exists source;
+drop table if exists maybe_same;
+drop table if exists stakeholder;
 -- drop table if exists split_merge_history;
 drop table if exists subject;
 drop table if exists version_history;
@@ -63,16 +96,23 @@ drop table if exists contributor;
 -- these shouldn't even be in the database anymore
 drop table if exists place;
 drop table if exists geoplace;
-
+drop table if exists address_line;
+drop table if exists unassigned_arks;
+drop table if exists resource_cache; 
+drop table if exists resource_language; 
+drop table if exists resource_origination_name;
+drop table if exists constellation_lookup;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
 
--- Feb 19 2016 stop using type icstatus 
+-- Feb 19 2016 stop using type icstatus
 -- drop data types after any tables using them have been dropped.
 -- drop type if exists icstatus;
 
 drop sequence if exists id_seq;
+drop sequence if exists "resource_id_seq";
+drop sequence if exists "resource_version_id_seq";
 
 --
 -- Sequences
@@ -93,6 +133,10 @@ CREATE SEQUENCE "id_seq";
 -- CREATE SEQUENCE "vocabulary_id_seq";
 
 CREATE SEQUENCE "version_history_id_seq";
+
+
+CREATE SEQUENCE "resource_id_seq";
+CREATE SEQUENCE "resource_version_id_seq";
 
 --
 -- Utility and meta-data tables
@@ -134,6 +178,7 @@ create table version_history (
 
 -- We will often select status='published' so we need an index
 create index version_history_idx1 on version_history(status);
+create index version_history_idx2 on version_history(user_id);
 
 
 -- Users of the system (editors, authors, researchers, admins etc)
@@ -226,7 +271,7 @@ create table session (
 -- although in historical times (before versioning) table nrd was "the" central CPF table.
 
 -- Nov 12 2015 Remove unique constraint from ark_id because it is only unique with version, ic_id.
--- Move to table: 
+-- Move to table:
 -- convention_declaration text,
 -- mandate text,
 -- general_context text,
@@ -236,8 +281,8 @@ create table session (
 -- language      text,         -- not in vocab yet, keep the string
 -- language_code int,          -- (fk to vocabulary.id) 3 letter iso language code
 -- script        text,         -- not in vocab yet, keep the string
--- script_code   int,          -- (fk to vocabulary.id) 
--- language_used int,          -- (fk to vocabulary.id) from languageUsed/language 
+-- script_code   int,          -- (fk to vocabulary.id)
+-- language_used int,          -- (fk to vocabulary.id) from languageUsed/language
 -- script_used   int,          -- (fk to vocabulary.id) from languageUsed, script (what the entity used)
 -- exist_date    int,          -- fk to date_range.id
 
@@ -346,6 +391,8 @@ create table name (
     primary key(id, version)
     );
 
+create index name_idx1 on name (ic_id, version);
+
 -- Parsed components of name string. There are multiple of these per one name.
 
 -- Note: no ic_id because this table only related to name.id, and through that to the identity
@@ -354,6 +401,7 @@ create table name (
 create table name_component (
              id int default nextval('id_seq'),
         name_id int,  -- fk to name.id
+          ic_id int,  -- fk to name.id
         version int,
      is_deleted boolean default false,
        nc_label int,  -- typeID, getType() fk to vocabulary.id, surname, forename, etc.
@@ -381,11 +429,12 @@ create table name_contributor (
     name_id        int,  -- (fk to name.id)
     short_name     text, -- short name of the contributing entity (VIAF, LC, WorldCat, NLA, etc)
     name_type      int,  -- (fk to vocabulary.id) -- type of name (authorizedForm, alternativeForm)
-    rule           int,  -- (fk to vocabulary.id) -- rule used to formulate the bame by this contributing entity 
+    rule           int,  -- (fk to vocabulary.id) -- rule used to formulate the bame by this contributing entity
     primary key(id, version)
     );
 
 create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
+create unique index name_contributor_idx2 on name_contributor(id,name_id,version);
 
 -- Jan 29 2016 The original intent is muddy, but it seems clear now that table contributor is a duplication of
 -- table name_contributor. Thus everything below is commented out. If you modify anything here, please include
@@ -394,7 +443,7 @@ create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
 -- Nov 12 2015: New think: skip the table contributor, and simply save the short_name in name_contributor. No
 -- matter what we do, there is a mess to clean up later on.
 
--- Removed from table name_contributor:    contributor_id int,  
+-- Removed from table name_contributor:    contributor_id int,
 -- (fk to contributor.id, which is a temp table until we link to SNAC records for each contributor)
 
 -- Applies only to name/authorizedForm and name/alternativeForm. contributor.short_name is contributor
@@ -428,7 +477,7 @@ create unique index name_contributor_idx1 on name_contributor(id,ic_id,version);
 -- If not birth and death, and if two dates, is_range must be true. If birth and death, one of the dates can
 -- be left empty without setting missing_from or missing_to.
 
--- Active dates may be a single (from_date) or date range. 
+-- Active dates may be a single (from_date) or date range.
 
 -- date string is iso standard (mostly), largest to smallest units, left to right. By using a string in this
 -- format, dates will sort alphbetically correctly, even for partial dates.
@@ -466,8 +515,8 @@ create table date_range (
         to_not_before    text,
         to_not_after     text,
         to_present       boolean,
-        to_original      text,                  -- the to date tag value 
-        descriptive_note text, 
+        to_original      text,                  -- the to date tag value
+        descriptive_note text,
         fk_table         text,                  -- table name of the related foreign table. Exists only as a backup
         fk_id            int,                   -- table.id of the related record
         primary          key(id, version)
@@ -493,7 +542,7 @@ create table language (
         primary         key(id, version)
         );
 
-create unique index language_idx1 on date_range(id,ic_id,version);
+create unique index language_idx1 on language(id,ic_id,version);
 
 -- From the <source> element. This appears to derive from /eac-cpf/control/source in the CPF. The href and
 -- objectXMLWrap is not consistently used. There will (often?) be a related entry in table language, related
@@ -504,9 +553,9 @@ create unique index language_idx1 on date_range(id,ic_id,version);
 -- sources, but each constellation thinks its sources are unique).  Going forward we use this table for all
 -- sources.  For example, SNACControlMetadata->citation is a Source object. Constellation->sources is a list
 -- of sources.
--- 
+--
 -- Source is not an authority or vocabulary, therefore the source links back to the original table via an fk
--- just like date. 
+-- just like date.
 
 -- Apr 4 2016. We have switched to per constellation list of sources. Finally removing type, which is always
 -- "simple", and essentially not used. Removing fk_id and fk_table since sources are linked to each
@@ -559,7 +608,7 @@ create unique index source_idx2 on source (id,version,ic_id);
 --     ic_id             int not null,
 --     is_deleted          boolean default false,
 --     maintenance_agency  text, -- ideally from a controlled vocab, but we don't have one for agencies yet.
---     maintenance_status  int,  -- (fk to vocabulary.id) 
+--     maintenance_status  int,  -- (fk to vocabulary.id)
 --     conven_dec_citation text, -- from control/conventionDeclaration/citation (currently just VIAF)
 --     primary key(id, version)
 --     );
@@ -576,8 +625,8 @@ create unique index source_idx2 on source (id,version,ic_id);
 --     ic_id int not null,
 --     is_deleted boolean default false,
 --     modified_time       date,
---     event_type          int,  -- (fk to vocabulary.id)     
---     agent_type          int,  -- (fk to vocabulary.id)     
+--     event_type          int,  -- (fk to vocabulary.id)
+--     agent_type          int,  -- (fk to vocabulary.id)
 --     agent               text,
 --     description         text,
 --     primary key(id, version)
@@ -688,7 +737,7 @@ create table related_identity (
     arcrole             int,  -- @xlink:arcrole, (fk to vocabulary.id) associatedWith, correspondedWith, etc, was relation_type
     type                int,  -- @xlink:type, always simple?
     href                text, -- @xlink:href, optional
-    relation_type       text, -- @cpfRelationType, only from AnF, maybe put in a second table
+    relation_type       int, -- @cpfRelationType, only from AnF, maybe put in a second table
     relation_entry      text, -- relationEntry (name) of the related eac-cpf record (should be unnecessary in db)
     descriptive_note    text, -- descriptiveNote, xml fragment, used only for non-ExtractedRecordId data
     extracted_record_id text, -- descriptiveNote/p/span[localType='http://socialarchive.iath.virginia.edu/control/term#ExtractedRecordId']
@@ -698,29 +747,90 @@ create table related_identity (
 
 create unique index related_identity_idx1 on related_identity(id,ic_id,version);
 
+--
 -- resourceRelation
+-- The role aka roleTerm of repo_ic_id is always http://id.loc.gov/vocabulary/relators/rps
+--
 
 create table related_resource (
     id                  int default nextval('id_seq'),
+    is_deleted          boolean default false,
+
+    -- this constellation information
     version             int not null,
-    ic_id             int not null,
-    is_deleted          boolean default false, --
-    role                int,                   -- @xlink:role, fk to vocabulary.id, type document_type, e.g. ArchivalResource
-    arcrole             int,                   -- @xlnk:arcrole, fk to vocabulary.id type document_role, creatorOf, referencedIn, etc
-    type                int,                   -- @xlink:type, fk to vocabulary.id type source_type, was field document_type, always "simple"?
-    href                text,                  -- @xlink:href, link to the resource
-    relation_type       text,                  -- @resourceRelationType, only from AnF, maybe put in a second table
-    relation_entry      text,                  -- relationEntry (name) of the related eac-cpf record (should be unnecessary in db)
-    relation_entry_type text,                  -- relationEntry@localType, AnF, always "archiva"?
-    descriptive_note text,
-    object_xml_wrap     text,                  -- from objectXMLWrap, xml
+    ic_id               int not null,
+
+    -- connection between this constellation and resource
+    arcrole             int,  -- @xlnk:arcrole, fk to vocabulary.id type document_role, creatorOf, referencedIn, etc
+
+    -- information about the resource
+    relation_entry      text, -- relationEntry — “shortcut” description of this resource
+                              -- other useful information
+    resource_id         int,
+    resource_version    int,
+    
+    descriptive_note    text,
     primary key(id, version)
-    );
+);
 
 create unique index related_resource_idx1 on related_resource(id,ic_id,version);
+create index related_resource_idx2 on related_resource(ic_id,version);
+create index related_resource_idx3 on related_resource(resource_id, resource_version);
+
+-- Resources are cached directly, but also versioned
+create table resource_cache (
+        id         int default nextval('resource_id_seq'), 
+        version    int default nextval('resource_version_id_seq'),
+        is_deleted boolean default false,
+        href       text,
+        type       int,
+        entry_type int,
+        title      text,
+        abstract   text,
+        extent     text,
+        repo_ic_id int,
+        object_xml_wrap text,
+        primary key (id, version)
+        );
+
+create index resource_idx1 on resource_cache(href);
+create index resource_idx2 on resource_cache(id, version, is_deleted);
+create index resource_idx3 on resource_cache(repo_ic_id);
+
+-- Languages relating to resources are stored identically to but separately
+-- from languages for constellations.  They have their own versioning based on
+-- resource_version!
+create table resource_language (
+        id                int default nextval('resource_id_seq'),
+        version           int not null,
+        resource_id       int not null,
+        is_deleted        boolean default false,
+        language_id       int,  -- fk to vocabulary
+        script_id         int,  -- fk to vocabulary
+        vocabulary_source text,
+        note              text,
+        primary           key(id, version)
+        );
+
+create unique index resource_language_idx1 on resource_language(id,resource_id,version);
+create index resource_language_idx2 on resource_language(language_id, script_id);
+create index resource_language_idx3 on resource_language (resource_id, is_deleted);
+
+-- Origination names are now part of resources
+create table resource_origination_name (
+    id           int default nextval('resource_id_seq'),
+    is_deleted   boolean default false,
+    version      int not null,
+    resource_id  int not null,                          
+    name_ic_id   int,                            -- ic_id of this creator
+    name         text                            -- name of creator
+);
+
+create unique index resource_origination_name_idx1 on resource_origination_name(id,resource_id,version);
+create index resource_origination_name_idx2 on resource_origination_name (resource_id, is_deleted);
 
 -- meta aka SNACControlMetadata aka SNAC Control Metadata
--- 
+--
 -- No language_id. Language is an object, and has its own table related where scm.id=language.fk_id.
 
 create table scm (
@@ -749,24 +859,39 @@ create table otherid (
         text text, -- unclear what this is parse from in CPF. See SameAs.php.
         uri  text, -- URI of the other record, might be extracted record id, fk to target version_history.ic_id
         type int,  -- type of link, MergedRecord, viafID, fk to vocabulary.id
+        is_deleted       boolean default false,
         primary    key(id, version)
     );
 
 
--- Tables needing place data use place_link to relate to geo_place. Table place_link also relates to snac meta
--- data in order to capture original strings. The php denormalizes (using more space, but optimising i/o) by
--- combining fields from place_link and geo_place into PlaceEntry.
+-- Entity id table
+create table entityid (
+        id         int default nextval('id_seq'),
+        version    int not null,
+        ic_id    int not null,
+        text text, -- text of the entityId field (ex: ISNI id, MARC organization code, etc)
+        uri  text, -- URI of the other record, might not be used (not supported in EAC-CPF)
+        type int,  -- type of id, such as ISNI, MARC org, etc
+        is_deleted       boolean default false,
+        primary    key(id, version)
+);
+
+
+-- Tables needing place data use place_link, and if there is a related geo_place then the place_link has the
+-- geo_place foreign key as well. Table place_link also relates to snac meta data in order to capture original
+-- strings. The php denormalizes (using more space, but optimising i/o) by combining fields from place_link
+-- and geo_place into PlaceEntry.
 --
 -- At one point the Constellation concept of place required two classes, and three SQL tables. One of those
--- tables was place, now commented out.
+-- tables was place, now superceded by place_link.
 --
--- Table place_link associates a place to another table. Each place_link relates to one geo_place authority
--- (controlled vocabulary) records. 
+-- Table place_link associates a place to another table. Each place_link relates to zero or one geo_place authority
+-- (controlled vocabulary) records.
 --
--- The original place text was here because it only occured once per Constellation place.
+-- The original place text is here because it only occurs once per Constellation place.
 --
--- The various matches each had their own geo_place_id, place_match_type, and confidence so they were found in
--- table place_link.
+-- When there are matches to geo_place, each match has their own geo_place_id, place_match_type, and score,
+-- therefore the matches are handled via one record per match in table place_link.
 --
 -- Table place_link and geo_place are denormalized together to create php PlaceEntry objects.
 
@@ -785,30 +910,11 @@ create table otherid (
 -- /data/merge/99166-w6p37bxz.xml:            <placeEntry>Bermuda Islands, North Atlantic Ocean</placeEntry>
 -- /data/merge/99166-w6rr6xvw.xml:            <placeEntry>Australia</placeEntry>
 
--- Feb 2 2016 table place unused. Stuff humans previously typed is in meta data related to place_link. First
--- order data which needs place uses place_link to relate to geo_place authority records.
-
--- create table place (
---     id         int default nextval('id_seq'),
---     version    int not null,
---     ic_id    int not null,
---     is_deleted boolean default false,
---     original   text, -- the original place text
---     type       int,  -- fk to vocabulary.id, from place/@localType
---     note       text, -- descriptive note, from place/descriptiveNote
---     role       int   -- fk to vocabulary.id, from place/placeRole
---     primary key(id, version)
---     );
-
--- create unique index place_idx1 on place(id,ic_id,version);
-
--- One to many linking table between place and geo_place. For the usual reasons SNAC place entry is
--- denormalized. Some of these fields are in the SNAC XML.
+-- Capture place info and serve as a one to many linking table between any other table and geo_place. This has
+-- the odd trait that there may be no related geo_place, so place_link is something of a conditional link. For
+-- the usual reasons SNAC place entry is denormalized. Some of these fields are in the SNAC XML.
 --
 -- For convenience and i/o optimization, some of these fields are denormalized in the PHP PlaceEntry object.
-
--- place_match_type int,  -- fk to vocabulary.id, likelySame, maybeSame, unmatched
--- confidence       int,  -- confidence of this link, from snac place entry
 
 create table place_link (
         id           int default nextval('id_seq'),
@@ -829,7 +935,46 @@ create table place_link (
 
 create unique index place_link_idx1 on place_link(id,ic_id,version);
 
--- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
+-- Address lines related to a place_link. Note that place_link holds place data and optionally links that data
+-- to a geo_place when possible.
+-- 
+-- The address_line mirrors the EAC-CPF addressLine tag, and is associated with place tags.  That seems to
+-- make sense so that you can have a P.O. Box address for the special collections department and a geo_place
+-- that has the lat/lon for the Small Library at UVA (for example)
+    --
+
+create table address_line (
+             id int default nextval('id_seq'),
+       place_id int,  -- fk to place.id
+          ic_id int,  -- fk to place.id
+        version int,
+     is_deleted boolean default false,
+          label int,  -- typeID, getType() fk to vocabulary.id: City, State, Street, etc..
+          value text, -- text, getText(), the string value of the address line
+     line_order int,  -- line order within this address/place, as entered.
+        primary key(id, version)
+    );
+
+create unique index address_line_idx1 on address_line(id,place_id,version);
+
+-- Maybe SameAs links, a binary relationship between Constellations that may be the same
+
+create table maybe_same (
+        ic_id1  integer,  -- fk to version_history.id
+        ic_id2  integer,  -- fk to version_history.id
+        status  integer,  -- fk to vocabulary.id, status of the maybe_same
+        note    text      -- fk to version_history.id
+);
+
+-- Stakeholder links, a binary relationship between an institution constellation
+-- and the constellation that it has a stake in.
+create table stakeholder (
+        institution_id  integer,  -- fk to version_history.id (institution's ic_id)
+        ic_id           integer   -- fk to version_history.id (constellation's ic_id)
+);
+
+
+        -- SNAC institution records. These are records in SNAC for the institutions participating in SNAC. They are used for
 -- appuser.affiliation. snac_institution.ic_id=appuser.affiliation.
 
 create table snac_institution (
@@ -853,3 +998,475 @@ create table appuser_group_link (
         gid        int,                -- fk to appuser_group.id
         is_default boolean default 'f' -- this group is a default for the given user
 );
+
+-- Table for the arks that the system may assign (queue)
+create table unassigned_arks (
+           ark text
+);
+
+
+-- Table for the constellation id mapping (DAG) for getting the correct constellation if an
+-- given an outdated ARK/ID that has been merged or split
+create table constellation_lookup (
+        ic_id           int,                        -- The main ICID (to query)
+        ark_id          text,                       -- The original ARK (to query)
+        current_ic_id   int,                        -- The current ICID for this constellation
+        current_ark_id  text,                       -- The current ARK for this constellation
+        modified        timestamp default now(),    -- The time this mapping was updated
+        note            text                        -- Any notes that may be useful
+);
+-- Forward looking index (unique)
+create index constellation_lookup_idx1 on constellation_lookup(ic_id, ark_id);
+-- Backward looking index (non-unique)
+create index constellation_lookup_idx2 on constellation_lookup(current_ic_id, current_ark_id);
+
+-- Prefill
+insert into constellation_lookup (ic_id, ark_id) select distinct ic_id, ark_id from nrd where ark_id is not null;
+update constellation_lookup set current_ic_id = ic_id, current_ark_id = ark_id;
+
+
+-- Postgres Name Index (for Browsing support)
+drop table if exists name_index;
+create table name_index (
+    name_entry       text,
+    name_entry_lower text, -- lower-cased version of the name entry
+    ark              text,
+    ic_id            int,  -- ic_id in snac
+    degree           int,  -- number of connections in snac
+    resources        int,  -- number of resources in snac
+    entity_type      text,
+    timestamp        timestamp default(now()));
+
+create unique index name_index_pk on name_index(ic_id);
+create index name_index_idx1 on name_index(name_entry_lower);
+create index name_index_idx2 on name_index(name_entry);
+create index name_index_idx3 on name_index(name_entry_lower, entity_type);
+create index name_index_idx4 on name_index(name_entry_lower, ic_id);
+create index name_index_idx5 on name_index(name_entry, ic_id);
+
+-- Report Storage and indices
+drop table if exists reports;
+drop sequence if exists report_id_seq;
+create sequence report_id_seq;
+create table reports (
+    id               int primary key default nextval('report_id_seq'),
+    name             text,
+    report           text,
+    user_id          int,  -- fk to appuser table, user that queried report
+    affiliation_id   int,  -- fk to the institution that queried the report (usually icid from user's affiliation)
+    timestamp        timestamp default(now()));
+create index reports_idx1 on reports (timestamp);
+create index reports_idx2 on reports (name, timestamp);
+create index reports_idx3 on reports (user_id, affiliation_id);
+
+-- Long list of indices that are useful in querying the database
+
+create index otherid_idx1 on otherid (ic_id, version);
+create index subject_idx2 on subject (ic_id, version);
+create index scm_idx1 on scm (id, version, ic_id);
+create index source_idx3 on source (ic_id, version);
+create index related_identity_idx2 on related_identity (ic_id, version);
+create index name_component_idx2 on name_component (name_id, version);
+create index name_contributor_idx3 on name_contributor (name_id, version);
+create index name_contributor_idx4 on name_contributor (ic_id, version);
+create index language_idx2 on language (ic_id, version);
+create index occupation_idx2 on occupation (ic_id, version);
+create index function_idx2 on function (ic_id, version);
+create index biog_hist_idx3 on biog_hist (ic_id, version);
+create index address_line_idx2 on address_line (place_id, version);
+create index address_line_idx3 on address_line (ic_id, version); 
+create index place_link_idx2 on place_link (ic_id, version);
+create index place_link_idx3 on place_link (fk_id, fk_table, version);
+create index convention_declaration_idx2 on convention_declaration (ic_id, version);
+create index gender_idx2 on gender (ic_id, version);
+create index general_context_idx2 on general_context (ic_id, version);
+create index legal_status_idx2 on legal_status (ic_id, version);
+create index language_idx3 on language (fk_id, fk_table, version);
+
+-- Views that allow us to query the most recent constellation data
+
+create or replace view address_line_view as
+select g.* 
+    from address_line g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from address_line g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view biog_hist_view as
+select g.* 
+    from biog_hist g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from biog_hist g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view convention_declaration_view as
+select g.* 
+    from convention_declaration g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from convention_declaration g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view date_range_view as
+select g.* 
+    from date_range g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from date_range g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view entityid_view as
+select g.* 
+    from entityid g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from entityid g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view function_view as
+select g.* 
+    from function g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from function g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view gender_view as
+select g.* 
+    from gender g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from gender g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view general_context_view as
+select g.* 
+    from general_context g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from general_context g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view language_view as
+select g.* 
+    from language g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from language g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view legal_status_view as
+select g.* 
+    from legal_status g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from legal_status g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view mandate_view as
+select g.* 
+    from mandate g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from mandate g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_view as
+select g.* 
+    from name g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_component_view as
+select g.* 
+    from name_component g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name_component g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view name_contributor_view as
+select g.* 
+    from name_contributor g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from name_contributor g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view nationality_view as
+select g.* 
+    from nationality g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from nationality g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view nrd_view as
+select g.* 
+    from nrd g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from nrd g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view occupation_view as
+select g.* 
+    from occupation g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from occupation g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view otherid_view as
+select g.* 
+    from otherid g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from otherid g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view place_link_view as
+select g.* 
+    from place_link g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from place_link g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view related_identity_view as
+select g.* 
+    from related_identity g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from related_identity g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view related_resource_view as
+select g.* 
+    from related_resource g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from related_resource g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view scm_view as
+select g.* 
+    from scm g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from scm g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+create or replace view subject_view as
+select g.* 
+    from subject g 
+        right join
+        (select g.id, g.ic_id, max(g.version) as version
+        from subject g 
+            left join 
+            (select id, max(version) as version 
+                from version_history 
+                where status='published' 
+                group by id) vh 
+            on vh.id = g.ic_id 
+        where g.version < vh.version
+        group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
+    where not g.is_deleted;
+
+
+-- Name Index for ordered browsing
+create table name_index (
+    nameEntry       text,
+    nameEntryLower  text, -- lower-cased version of the name entry
+    ark             text,
+    ic_id           int,  -- ic_id in snac
+    degree          int,  -- number of connections in snac
+    resources       int,  -- number of resources in snac
+    timestamp       timestamp default(now()));
+
+create unique index name_index_pk on name_index(ic_id);
+create index name_index_idx1 on name_index(nameEntryLower);
+create index name_index_idx2 on name_index(nameEntry);
+
+
+

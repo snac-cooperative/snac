@@ -5,48 +5,59 @@
     "entityType": {
         "id": "698",
         "term": "corporateBody",
-        "uri": null,
+        "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+        "type": null,
         "description": null
     },
     "otherRecordIDs": [
         {
             "dataType": "SameAs",
-            "type": null,
-            "text": null,
-            "uri": "Un seul identifiant",
-            "id": null,
-            "version": null,
-            "operation": null,
-            "dates": []
-        },
-        {
-            "dataType": "SameAs",
             "type": {
-                "id": "28222",
+                "id": "28225",
                 "term": "sameAs",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
+                "type": null,
                 "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
             "uri": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/producteur\/consultationProducteur.action?notProdId=FRAN_NP_050744",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         },
         {
             "dataType": "SameAs",
             "type": {
-                "id": "28222",
+                "id": "28225",
                 "term": "sameAs",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#sameAs",
+                "type": null,
                 "description": null
             },
             "text": "Notice Test Collectivit\u00e9",
             "uri": "http:\/\/isni.org\/isni\/Unseulidentifiant",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
+            "dates": []
+        }
+    ],
+    "entityIDs": [
+        {
+            "dataType": "EntityId",
+            "type": {
+                "id": "701",
+                "term": "unknown",
+                "uri": null,
+                "type": null,
+                "description": null
+            },
+            "text": "Un seul identifiant",
+            "uri": null,
+            "id": null,
+            "version": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -55,23 +66,36 @@
     "maintenanceEvents": [
         {
             "dataType": "MaintenanceEvent",
-            "eventType": null,
+            "eventType": {
+                "id": "400250",
+                "term": "created",
+                "uri": null,
+                "type": null,
+                "description": null
+            },
             "eventDateTime": "2014-03-20",
             "standardDateTime": null,
-            "agentType": null,
+            "agentType": {
+                "id": "400254",
+                "term": "human",
+                "uri": null,
+                "type": null,
+                "description": null
+            },
             "agent": "Florence CLAVAUD",
             "eventDescription": "F. Clavaud, 4 mars 2014 : cr\u00e9ation",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         },
         {
             "dataType": "MaintenanceEvent",
             "eventType": {
-                "id": "701",
+                "id": "704",
                 "term": "revised",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "eventDateTime": "2015-10-05",
@@ -80,13 +104,14 @@
                 "id": "687",
                 "term": "machine",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "agent": "cpf_norm.pl",
             "eventDescription": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -97,11 +122,11 @@
             "type": null,
             "displayName": "Source 1: ",
             "text": null,
-            "note": "<descriptiveNote>\n               <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n               <p>Nota : champ ancien identifiant pas accessible<\/p>\n               <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n            <\/descriptiveNote>",
+            "note": "<descriptiveNote>\n          <p>m\u00eame probl\u00e8mes que dans autres champs de type texte<\/p>\n          <p>Nota : champ ancien identifiant pas accessible<\/p>\n          <p>Une seule langue ? si nom en anglais par ex. ?<\/p>\n        <\/descriptiveNote>",
             "uri": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -109,24 +134,25 @@
         {
             "dataType": "legalStatus",
             "term": {
-                "id": "400203",
+                "id": "400206",
                 "term": "\u00e9tablissement public \u00e0 caract\u00e8re scientifique, culturel et professionnel",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
     "conventionDeclarations": [
         {
             "dataType": "ConventionDeclaration",
-            "text": "<conventionDeclaration>\n         <citation> Notice \u00e9tablie conform\u00e9ment \u00e0 la norme ICA-ISAAR (CPF) 2004, aux normes ISO 8601 pour le syst\u00e8me de normalisation des dates utilis\u00e9, ainsi que AFNOR NF Z44-061 juin 1986 Catalogage : forme et structure des vedettes noms de personne, des vedettes titres, des rubriques de classement et des titres forg\u00e9s et NF Z 44-060, d\u00e9cembre 1996 Catalogue d'auteurs et d'anonymes \u2013 Forme et structure des vedettes de collectivit\u00e9s-auteurs. <\/citation>\n      <\/conventionDeclaration>",
+            "text": "<conventionDeclaration>\n      <citation> Notice \u00e9tablie conform\u00e9ment \u00e0 la norme ICA-ISAAR (CPF) 2004, aux normes ISO 8601 pour le syst\u00e8me de normalisation des dates utilis\u00e9, ainsi que AFNOR NF Z44-061 juin 1986 Catalogage : forme et structure des vedettes noms de personne, des vedettes titres, des rubriques de classement et des titres forg\u00e9s et NF Z 44-060, d\u00e9cembre 1996 Catalogue d'auteurs et d'anonymes \u2013 Forme et structure des vedettes de collectivit\u00e9s-auteurs. <\/citation>\n    <\/conventionDeclaration>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -140,16 +166,17 @@
                 {
                     "dataType": "Contributor",
                     "type": {
-                        "id": "7655",
+                        "id": "7658",
                         "term": "authorizedForm",
                         "uri": null,
+                        "type": null,
                         "description": null
                     },
                     "rule": null,
                     "name": "ANF",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -159,14 +186,15 @@
                     "text": "Notice Test Collectivit\u00e9",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
+                        "type": null,
                         "description": null
                     },
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -176,24 +204,26 @@
                     "id": "144",
                     "term": "fre",
                     "uri": null,
+                    "type": null,
                     "description": "French"
                 },
                 "script": {
                     "id": "586",
                     "term": "Latn",
                     "uri": null,
+                    "type": null,
                     "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
                 "id": null,
                 "version": null,
-                "operation": null,
+                "operation": "insert",
                 "dates": []
             },
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         },
         {
@@ -207,21 +237,22 @@
                     "text": "Test Collectivit\u00e9",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
+                        "type": null,
                         "description": null
                     },
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
             "language": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -245,7 +276,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -261,21 +292,22 @@
                     "text": "Collectivit\u00e9 test",
                     "order": 0,
                     "type": {
-                        "id": "400225",
+                        "id": "400228",
                         "term": "Name",
                         "uri": null,
+                        "type": null,
                         "description": null
                     },
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
             "language": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -299,7 +331,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -310,16 +342,17 @@
         {
             "dataType": "Occupation",
             "term": {
-                "id": "9479",
+                "id": "9482",
                 "term": "archiviste",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "vocabularySource": "d699msirr1g-3naumnfaswc",
             "note": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -332,25 +365,27 @@
                     "id": "144",
                     "term": "fre",
                     "uri": null,
+                    "type": null,
                     "description": "French"
                 },
                 "script": {
                     "id": "586",
                     "term": "Latn",
                     "uri": null,
+                    "type": null,
                     "description": "Latin"
                 },
                 "vocabularySource": null,
                 "note": null,
                 "id": null,
                 "version": null,
-                "operation": null,
+                "operation": "insert",
                 "dates": []
             },
-            "text": "<biogHist>\n            <p>Cet \n     <span style=\"underline\">organisme fictif<\/span> est cr\u00e9\u00e9 pour faire des \n     <span style=\"bold\">tests aux Archives nationales<\/span>. \n    <\/p>\n            <p>Insertion de \n     <span style=\"italic\">caract\u00e8res sp\u00e9ciaux<\/span> : \u00ab blah \u00bb \n    <\/p>\n            <p>Pas possible de mettre un lien hypertexte ici.<\/p>\n            <p>Caract\u00e8res en exposant ?<\/p>\n            <p>Liste<\/p>\n            <list>\n               <item>item 1<\/item>\n               <item>item 2<\/item>\n            <\/list>\n         <citation>Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)<\/citation><\/biogHist>",
+            "text": "<biogHist>\n        <p>Cet \n     <span style=\"underline\">organisme fictif<\/span> est cr\u00e9\u00e9 pour faire des \n     <span style=\"bold\">tests aux Archives nationales<\/span>. \n    <\/p>\n        <p>Insertion de \n     <span style=\"italic\">caract\u00e8res sp\u00e9ciaux<\/span> : \u00ab blah \u00bb \n    <\/p>\n        <p>Pas possible de mettre un lien hypertexte ici.<\/p>\n        <p>Caract\u00e8res en exposant ?<\/p>\n        <p>Liste<\/p>\n        <list>\n          <item>item 1<\/item>\n          <item>item 2<\/item>\n        <\/list>\n        <citation>Information extraite de la notice des Archives nationals de France (FRAN_NP_050744)<\/citation>\n      <\/biogHist>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -361,20 +396,33 @@
             "targetConstellation": null,
             "sourceArkID": "FRAN_NP_050744",
             "targetArkID": null,
-            "targetEntityType": null,
-            "type": null,
+            "targetEntityType": {
+                "id": "698",
+                "term": "corporateBody",
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#CorporateBody",
+                "type": null,
+                "description": null
+            },
+            "type": {
+                "id": "400457",
+                "term": "hasParent",
+                "uri": null,
+                "type": null,
+                "description": null
+            },
             "altType": null,
             "cpfRelationType": {
-                "id": "28261",
+                "id": "28264",
                 "term": "hierarchical-parent",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "content": "Service interminist\u00e9riel des archives de France",
-            "note": "<descriptiveNote>\n               <p>test sur un lien hi\u00e9rarchique<\/p>\n            <p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span><\/p><\/descriptiveNote>",
+            "note": "<descriptiveNote>\n          <p>test sur un lien hi\u00e9rarchique<\/p>\n          <p>\n            <span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_005568<\/span>\n          <\/p>\n        <\/descriptiveNote>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -398,7 +446,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -409,25 +457,33 @@
             "targetConstellation": null,
             "sourceArkID": "FRAN_NP_050744",
             "targetArkID": null,
-            "targetEntityType": null,
+            "targetEntityType": {
+                "id": "700",
+                "term": "person",
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#Person",
+                "type": null,
+                "description": null
+            },
             "type": {
-                "id": "28231",
+                "id": "28234",
                 "term": "associatedWith",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#associatedWith",
+                "type": null,
                 "description": null
             },
             "altType": null,
             "cpfRelationType": {
-                "id": "28232",
+                "id": "28235",
                 "term": "associative",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "content": "Rocard, Michel",
-            "note": "<descriptiveNote><p><span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span><\/p><\/descriptiveNote>",
+            "note": "<descriptiveNote>\n          <p>\n            <span localType=\"http:\/\/socialarchive.iath.virginia.edu\/control\/term#ExtractedRecordId\">FRAN_NP_010089<\/span>\n          <\/p>\n        <\/descriptiveNote>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -451,7 +507,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -460,77 +516,122 @@
     "resourceRelations": [
         {
             "dataType": "ResourceRelation",
-            "documentType": {
-                "id": "696",
-                "term": "ArchivalResource",
-                "uri": null,
-                "description": null
+            "resource": {
+                "dataType": "Resource",
+                "documentType": {
+                    "id": "696",
+                    "term": "ArchivalResource",
+                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                    "type": "document_type",
+                    "description": null
+                },
+                "linkType": null,
+                "entryType": null,
+                "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
+                "source": null,
+                "title": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
+                "id": "6619786",
+                "version": "6619786",
+                "operation": null,
+                "dates": []
             },
-            "linkType": null,
-            "entryType": null,
-            "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_027886#d_1",
             "role": {
                 "id": "692",
                 "term": "creatorOf",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#creatorOf",
+                "type": null,
                 "description": null
             },
             "content": "Minist\u00e8re de l'Int\u00e9rieur. Administration d\u00e9partementale. Logement des pr\u00e9fets, sous-pr\u00e9fets, Costumes des fonctionnaires, Compatibilit\u00e9 des fonctions# Logement des pr\u00e9fets et des sous-pr\u00e9fets. #F\/2(I)\/106\/13",
-            "source": null,
-            "note": "<descriptiveNote>\n               <p>cr\u00e9ateur<\/p>\n            <\/descriptiveNote>",
+            "note": "<descriptiveNote>\n          <p>cr\u00e9ateur<\/p>\n        <\/descriptiveNote>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         },
         {
             "dataType": "ResourceRelation",
-            "documentType": {
-                "id": "696",
-                "term": "ArchivalResource",
-                "uri": null,
-                "description": null
+            "resource": {
+                "dataType": "Resource",
+                "documentType": {
+                    "id": "696",
+                    "term": "ArchivalResource",
+                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                    "type": "document_type",
+                    "description": null
+                },
+                "linkType": null,
+                "entryType": null,
+                "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
+                "source": null,
+                "title": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
+                "id": "6621730",
+                "version": "6621730",
+                "operation": null,
+                "dates": []
             },
-            "linkType": null,
-            "entryType": null,
-            "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_043100",
             "role": {
                 "id": "693",
                 "term": "referencedIn",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
+                "type": null,
                 "description": null
             },
             "content": "Minutes et r\u00e9pertoires du notaire Albert Louis MOREL d'ARLEUX, 12 ao\u00fbt 1891 - d\u00e9cembre 1903 (\u00e9tude CI)",
-            "source": null,
             "note": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         },
         {
             "dataType": "ResourceRelation",
-            "documentType": {
-                "id": "696",
-                "term": "ArchivalResource",
-                "uri": null,
-                "description": null
+            "resource": {
+                "dataType": "Resource",
+                "documentType": {
+                    "id": "696",
+                    "term": "ArchivalResource",
+                    "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#ArchivalResource",
+                    "type": "document_type",
+                    "description": null
+                },
+                "linkType": null,
+                "entryType": null,
+                "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
+                "source": null,
+                "title": "Gr\u00e2ces accord\u00e9es",
+                "abstract": null,
+                "extent": null,
+                "originationNames": [],
+                "languages": [],
+                "repository": null,
+                "id": "6619793",
+                "version": "6619793",
+                "operation": null,
+                "dates": []
             },
-            "linkType": null,
-            "entryType": null,
-            "link": "https:\/\/www.siv.archives-nationales.culture.gouv.fr\/siv\/rechercheconsultation\/consultation\/ir\/consultationIR.action?irId=FRAN_IR_041062",
             "role": {
                 "id": "693",
                 "term": "referencedIn",
-                "uri": null,
+                "uri": "http:\/\/socialarchive.iath.virginia.edu\/control\/term#referencedIn",
+                "type": null,
                 "description": null
             },
             "content": "Gr\u00e2ces accord\u00e9es",
-            "source": null,
             "note": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -538,9 +639,10 @@
         {
             "dataType": "SNACFunction",
             "term": {
-                "id": "2662",
+                "id": "2665",
                 "term": "culture",
                 "uri": null,
+                "type": null,
                 "description": null
             },
             "type": null,
@@ -548,7 +650,7 @@
             "note": null,
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
@@ -558,18 +660,20 @@
             "original": "Pierrefitte-sur-Seine",
             "type": null,
             "role": {
-                "id": "704",
+                "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
+                "type": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
-            "note": "\n                  \n               ",
+            "note": "\n          \n        ",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -593,7 +697,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -608,7 +712,7 @@
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -618,11 +722,13 @@
             "original": "Pierrefitte-sur-Seine (Seine-Saint-Denis)",
             "type": null,
             "role": {
-                "id": "704",
+                "id": "707",
                 "term": "Lieu g\u00e9n\u00e9ral",
                 "uri": null,
+                "type": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3ntxf5186--sga9u2l9iboc",
@@ -634,10 +740,10 @@
             },
             "score": 0,
             "confirmed": false,
-            "note": "\n                  \n               ",
+            "note": "\n          \n        ",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -661,7 +767,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -676,7 +782,7 @@
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -686,18 +792,20 @@
             "original": "Paris, Archives nationales",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
+                "type": null,
                 "description": null
             },
+            "address": [],
             "geoplace": null,
             "score": 0,
             "confirmed": false,
-            "note": "\n                  \n               ",
+            "note": "\n          \n        ",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -721,7 +829,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -736,7 +844,7 @@
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -746,11 +854,13 @@
             "original": "03e arrondissement",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
+                "type": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nyv8gloo-1mqax06e8pe1d",
@@ -762,10 +872,10 @@
             },
             "score": 0,
             "confirmed": false,
-            "note": "\n                  \n               ",
+            "note": "\n          \n        ",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -789,7 +899,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -804,7 +914,7 @@
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -814,11 +924,13 @@
             "original": "Francs-Bourgeois (rue des)",
             "type": null,
             "role": {
-                "id": "703",
+                "id": "706",
                 "term": "Lieu de Paris",
                 "uri": null,
+                "type": null,
                 "description": null
             },
+            "address": [],
             "geoplace": {
                 "id": null,
                 "uri": "d3nzaj2p6v--hrd7lqok52tn",
@@ -830,10 +942,10 @@
             },
             "score": 0,
             "confirmed": false,
-            "note": "\n                  \n               ",
+            "note": "\n          \n        ",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": [
                 {
                     "dataType": "SNACDate",
@@ -857,7 +969,7 @@
                     "note": null,
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ],
@@ -872,7 +984,7 @@
                     "note": "Parsed from SNAC EAC-CPF.",
                     "id": null,
                     "version": null,
-                    "operation": null,
+                    "operation": "insert",
                     "dates": []
                 }
             ]
@@ -884,36 +996,37 @@
     "generalContexts": [
         {
             "dataType": "GeneralContext",
-            "text": "<generalContext>\n            <p>idem<\/p>\n         <\/generalContext>",
+            "text": "<generalContext>\n        <p>idem<\/p>\n      <\/generalContext>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
     "structureOrGenealogies": [
         {
             "dataType": "StructureOrGenealogy",
-            "text": "<structureOrGenealogy>\n            <p>idem<\/p>\n         <\/structureOrGenealogy>",
+            "text": "<structureOrGenealogy>\n        <p>idem<\/p>\n      <\/structureOrGenealogy>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
     "mandates": [
         {
             "dataType": "Mandate",
-            "text": "<mandate>\n               <descriptiveNote>\n                  <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n               <\/descriptiveNote>\n            <\/mandate>",
+            "text": "<mandate>\n        <descriptiveNote>\n          <p>M\u00eames possibilit\u00e9s que pour champ pr\u00e9c\u00e9dent<\/p>\n        <\/descriptiveNote>\n      <\/mandate>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ],
+    "images": [],
     "id": null,
     "version": null,
-    "operation": null,
+    "operation": "insert",
     "dates": [
         {
             "dataType": "SNACDate",
@@ -934,10 +1047,10 @@
                 "notAfter": null
             },
             "isRange": true,
-            "note": "\n               \n            ",
+            "note": "<p>Date de cr\u00e9ation incertaine.<\/p>",
             "id": null,
             "version": null,
-            "operation": null,
+            "operation": "insert",
             "dates": []
         }
     ]

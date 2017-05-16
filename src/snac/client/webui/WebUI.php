@@ -93,21 +93,11 @@ class WebUI implements \snac\interfaces\ServerInterface {
         $display = new display\Display();
         $display->setLanguage("english");
 
-        // Code to take the site down for maintenance
-        if (\snac\Config::$SITE_OFFLINE) {
-            $display->setTemplate("down_page");
-            array_push($this->responseHeaders, "Content-Type: text/html");
-            $this->response = $display->getDisplay();
-            return;
-        }
-        // End Code for maintenance
-
         // Create an empty user object.  May be filled by the Session handler
         $user = null;
 
         // Create an empty list of permissions.
         $permissions = array();
-
 
         // These are the things you are allowed to do without logging in.
         $publicCommands = array(
@@ -117,8 +107,56 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "view",
                 "details",
                 "download",
-                "error"
+                "error",
+                "vocabulary",
+                "quicksearch",
+                "relations",
+                "maybesame",
+                "diff",
+                "explore",
+                "history"
         );
+
+        // These are read-only commands that are allowed in read-only mode
+        $readOnlyCommands = array(
+            "search",
+            "view",
+            "details",
+            "download",
+            "error",
+            "vocabulary",
+            "quicksearch",
+            "relations",
+            "explore",
+            "history"
+        );
+
+
+        // Code to take the site down for maintenance
+        if (\snac\Config::$SITE_OFFLINE) {
+            $display->setTemplate("down_page");
+            array_push($this->responseHeaders, "Content-Type: text/html");
+            $this->response = $display->getDisplay();
+            return;
+        }
+        // End Code for maintenance
+        // Code to take the site into read-only mode (destroys login session)
+        if (\snac\Config::$READ_ONLY) {
+            // Make sure there is no session to keep track of anymore
+            session_name("SNACWebUI");
+            session_start();
+            session_destroy();
+
+            // Overrule commands that are not read-only
+            if (!empty($this->input["command"]) &&
+                    !(in_array($this->input["command"], $readOnlyCommands))) {
+                $display->setTemplate("readonly_page");
+                array_push($this->responseHeaders, "Content-Type: text/html");
+                $this->response = $display->getDisplay();
+                return;
+            }
+        }
+        // End Code for maintenance
 
 
         // *****************************************
@@ -274,6 +312,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
             // Editing, Preview, View, and Other Commands
             case "edit":
+            case "edit_part":
                 if (isset($permissions["Edit"]) && $permissions["Edit"]) {
                     $executor->displayEditPage($this->input, $display);
                 } else {
@@ -300,6 +339,40 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "details":
                 $executor->displayDetailedViewPage($this->input, $display);
                 break;
+            case "relations":
+                $response = $executor->performRelationsQuery($this->input);
+                break;
+            case "maybesame":
+                $response = $executor->displayMaybeSameListPage($this->input, $display);
+                break;
+            case "diff":
+                $response = $executor->displayMaybeSameDiffPage($this->input, $display);
+                break;
+            case "diff_merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
+                } else {
+                    $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
+                }
+                break;
+            case "merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->processMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
+            case "merge_cancel":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->cancelMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
+            case "history":
+                $executor->displayHistoryPage($this->input, $display);
+                break;
+
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);
                 break;
@@ -311,11 +384,23 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
-                return;
+                if ($display->hasTemplate()) {
+                    break;
+                } else {
+                    return;
+                }
+            case "explore":
+                $executor->displayGridPage($display);
+                break;
 
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
+                break;
+
+            // Vocab administrator command (the sub method handles commands)
+            case "vocab_administrator":
+                $response = $executor->handleVocabAdministrator($this->input, $display, $user);
                 break;
 
             // Modification commands that return JSON
@@ -376,6 +461,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "save_resource":
+                $response = $executor->saveResource($this->input);
+                break;
+
             case "delete":
                 $response = $executor->deleteConstellation($this->input);
                 // if deleted by constellationid parameter, then send them to the dashboard.
@@ -387,14 +476,34 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            // Search commands
             case "vocabulary":
-                $response = $executor->performVocabularySearch($this->input);
+                if (isset($this->input["subcommand"]) && $this->input["subcommand"] == "read")
+                    $response = $executor->readVocabulary($this->input);
+                else
+                    $response = $executor->performVocabularySearch($this->input);
+                break;
+
+            case "quicksearch":
+                $response = $executor->performNameSearch($this->input, true);
                 break;
 
             case "search":
-                $response = $executor->performNameSearch($this->input);
+                $executor->displaySearchPage($this->input, $display);
                 break;
 
+            case "resource_search":
+                $response = $executor->performResourceSearch($this->input);
+                break;
+
+            case "browse":
+                $executor->displayBrowsePage($display);
+                break;
+            case "browse_data":
+                $response = $executor->performBrowseSearch($this->input);
+                break;
+
+            // Error command
             case "error":
                 $error = array("error" => array(
                     "type" => "Not Found",
@@ -407,7 +516,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             // If dropping through, then show the landing page
             default:
                 // The WebUI is displaying the landing page only
-                $executor->displayLandingPage($display);
+                // $executor->displayLandingPage($display);
+                // The grid page is the "new" landing page
+                $executor->displayGridPage($display);
                 break;
         }
 

@@ -1,6 +1,6 @@
 {
     "_comment" : "%%% The following are commands on the page",
-    
+
     "save" : {
         "display" : "Save",
         "tooltip" : "Save"
@@ -40,9 +40,13 @@
         "display" : "Permalink",
         "tooltip" : "The permanent identifier for this Constellation"
     },
-    
+    "constellationid" : {
+        "display" : "SNAC ID",
+        "tooltip" : "The permanent numeric SNAC identifier for this Constellation"
+    },
+
     "_comment" : "%%% Global pieces",
-    
+
     "language" : {
         "display" : "Language",
         "tooltip" : "The ISO-standard language of this data element"
@@ -55,9 +59,9 @@
         "display" : "Descriptive Note",
         "tooltip" : "A note about this data element"
     },
-    
+
     "_comment" : "%%% Languages Used",
-    
+
     "languageUsed" : {
         "display" : "Language",
         "tooltip" : "The ISO-standard language used by the identity described in this Constellation"
@@ -66,9 +70,9 @@
         "display" : "Script",
         "tooltip" : "The ISO-standard script used by the identity described in this Constellation"
     },
-    
+
     "_comment" : "%%% Name Entry pieces",
-    
+
     "nameEntry" : {
         "display" : "Name Entry",
         "plural" : "Name Entries",
@@ -106,9 +110,9 @@
         "display" : "Rules",
         "tooltip" : "Descriptive rules used to formulate this name heading"
     },
-    
+
     "_comment" : "%%% Date Pieces",
-    
+
     "existDate" : {
         "display" : "Exist Date",
         "plural" : "Exist Dates",
@@ -206,6 +210,10 @@
         "display" : "GeoPlace Confirmed",
         "tooltip" : "This GeoPlace was human-confirmed to be the same place as the one mentioned in Original above"
     },
+    "address" : {
+        "display" : "Address",
+        "tooltip" : "The physical or mailing address"
+    },
 
     "_comment" : "%%% Controlled vocabulary elements",
 
@@ -217,7 +225,7 @@
         "display" : "URI",
         "tooltip" : "The auto-populated URI for the Term selected above"
     },
-   
+
     "_comment" : "%%% XML/Text elements",
 
     "xml" : {
@@ -240,6 +248,21 @@
         "tooltip" : "The permanent link to the external identity"
     },
 
+    "_comment" : "%%% EntityID elements",
+
+    "entityIdText" : {
+        "display" : "Entity Identifier",
+        "tooltip" : "Another identifier for this identity"
+    },
+    "entityIdType" : {
+        "display" : "Type",
+        "tooltip" : "What kind of identifier this entityID contains"
+    },
+    "entityIdURI" : {
+        "display" : "URI",
+        "tooltip" : "The permanent link to the external identity"
+    },
+
     "_comment" : "%%% Constellation Relation elements",
 
     "relationTarget" : {
@@ -253,9 +276,17 @@
 
     "_comment" : "%%% Resource Relation elements",
 
+    "resourceResource" : {
+        "display" : "Resource",
+        "tooltip" : "The resource information"
+    },
+    "resourceRepository" : {
+        "display" : "Repository (SNAC ID)",
+        "tooltip" : "The numeric Identity Constellation ID (in SNAC) for the holding repository"
+    },
     "resourceText" : {
-        "display" : "Relation Text",
-        "tooltip" : "The human-readable text that appears in a relation entry"
+        "display" : "Relation Entry",
+        "tooltip" : "The text that appears in relationEntry and acts as a display title"
     },
     "resourceRole" : {
         "display" : "Role",
@@ -272,6 +303,22 @@
     "resourceXML" : {
         "display" : "ObjectXMLWrap",
         "tooltip" : "The XML of the object used to create this relationship"
+    },
+    "resourceTitle" : {
+        "display" : "Title",
+        "tooltip" : "The title of this resource"
+    },
+    "resourceAbstract" : {
+        "display" : "Abstract",
+        "tooltip" : "The abstract of this resource"
+    },
+    "resourceExtent" : {
+        "display" : "Extent",
+        "tooltip" : "The extent of this resource"
+    },
+    "resourceOriginationName" : {
+        "display" : "Origination Names",
+        "tooltip" : "The creators or 'origination names' of this resource"
     },
 
     "_comment" : "%%% Source elements",

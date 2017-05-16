@@ -2,7 +2,7 @@
 /**
  * Identity Reconciliation Engine  File
  *
- * Contains the main identity reconciliation engine code 
+ * Contains the main identity reconciliation engine code
  *
  * License:
  *
@@ -34,9 +34,16 @@ class ReconciliationEngine {
     /**
      * @var array Array of tests to perform on the string.  These will have a listing in
      * the battery of tests.  A user may chose a list of tests, a preset list,
-     * or write their own. 
-     */ 
+     * or write their own.
+     */
     private $tests;
+
+    /**
+     * @var stages\helpers\Stage[] Array of post-processing stages to apply to results after
+     * the initial set of stages have been run.  This would ideally add additional "filtering"
+     * scores onto the original collated result set.
+     */
+    private $postProcessingTests;
 
     /**
      * @var \snac\data\ReconciliationResult[] Full test results per id
@@ -61,6 +68,7 @@ class ReconciliationEngine {
         $this->raw_results = array();
         $this->tests = array();
         $this->results = array();
+        $this->postProcessingTests = array();
         $this->weight = new weights\StaticWeight();
         return;
     }
@@ -82,7 +90,7 @@ class ReconciliationEngine {
     public function addStage($stage) {
         // Load the class as a reflection
         $class = new \ReflectionClass("\\snac\\server\\identityReconciliation\\stages\\".$stage);
-        
+
         if (func_num_args() < 2) {
             // If only one argument, then create with no params
             array_push($this->tests, $class->newInstance());
@@ -96,7 +104,35 @@ class ReconciliationEngine {
             // Instantiate and add the class with the args
             array_push($this->tests, $class->newInstanceArgs($args));
         }
-            
+
+    }
+
+
+    /**
+     * Add post-processing stage
+     *
+     * Adds a stage to the list of stages to run
+     *
+     * @param string $stage name of the stage to include
+     */
+    public function addPostProcessingStage($stage) {
+        // Load the class as a reflection
+        $class = new \ReflectionClass("\\snac\\server\\identityReconciliation\\stages\\".$stage);
+
+        if (func_num_args() < 2) {
+            // If only one argument, then create with no params
+            array_push($this->postProcessingTests, $class->newInstance());
+        } else {
+            // If more than one argument, the rest are parameters to the constructor
+            $args = func_get_args();
+
+            // Remove the class name off the list
+            array_shift($args);
+
+            // Instantiate and add the class with the args
+            array_push($this->postProcessingTests, $class->newInstanceArgs($args));
+        }
+
     }
 
     /**
@@ -104,9 +140,9 @@ class ReconciliationEngine {
      *
      * This function does the reconciliation and returns the top identity from
      * the engine.  Other top identities and their corresponding score vectors
-     * may be obtained by other functions within this class.  
-     * @param \snac\data\Constellation $identity The constellation to be searched. This identity 
-     * must be in the proper form 
+     * may be obtained by other functions within this class.
+     * @param \snac\data\Constellation $identity The constellation to be searched. This identity
+     * must be in the proper form
      * @return identity The top identity by the reconciliation
      * engine
      */
@@ -122,6 +158,16 @@ class ReconciliationEngine {
         }
 
         // Fix up the results by organizing them by name, then by test
+        $this->collateResults();
+
+        // Run post-processing tests over all the testing results that apply additional filter scores
+        unset($this->rawResults);
+        $this->rawResults = array();
+        foreach ($this->postProcessingTests as $test) {
+            $this->rawResults[$test->getName()] = $test->run($identity, $this->results);
+        }
+
+        // Re-collate the post-processing tests inso the main result list
         $this->collateResults();
 
         // Generate all the scores
@@ -156,7 +202,7 @@ class ReconciliationEngine {
      * @return array The result vector for the top result
      */
     public function topVector() {
-        if (count($this->results) > 0) 
+        if (count($this->results) > 0)
             return $this->results[0]->getVector();
         else
             return null;
@@ -170,7 +216,7 @@ class ReconciliationEngine {
      * @return float The numerical value for the top result
      */
     public function topValue() {
-        if ($this->topVector() != null) 
+        if ($this->topVector() != null)
             return $this->results[0]->getStrength();
         else
             return 0;
@@ -196,12 +242,11 @@ class ReconciliationEngine {
      * them per-id.
      */
     public function collateResults() {
-        $tmp = array();
         $all = array();
         foreach ($this->rawResults as $test => $resList) {
             foreach ($resList as $res) {
                 $k = null;
-                
+
                 if ($res->getIdentity() == null) {
                     // If the identity is null, this should apply to all results
                     $all[$test] = $res->getStrength();
@@ -209,25 +254,21 @@ class ReconciliationEngine {
                     // Get Unique ID for this identity
                     $k = $res->getIdentity()->getArkID();
                     // Create entry in the array if it doesn't exist
-                    if (!array_key_exists($k, $tmp)) {
-                        $tmp[$k] = new \snac\data\ReconciliationResult();
-                        $tmp[$k]->setIdentity($res->getIdentity());
+                    if (!array_key_exists($k, $this->results)) {
+                        $this->results[$k] = new \snac\data\ReconciliationResult();
+                        $this->results[$k]->setIdentity($res->getIdentity());
                     }
                     // Store the strength value in the vector
-                    $tmp[$k]->setScore($test, $res->getStrength());
-                    $tmp[$k]->setMultipleProperties($res->getAllProperties());
+                    $this->results[$k]->setScore($test, $res->getStrength());
+                    $this->results[$k]->setMultipleProperties($res->getAllProperties());
                 }
             }
         }
         // Add any global results to every id's vector
-        foreach ($tmp as $k => $v) {
+        foreach ($this->results as &$v) {
             foreach ($all as $test => $result)
-                $tmp[$k]->setScore($test, $result);
+                $v->setScore($test, $result);
         }
-
-        // Push the results on the result array
-        foreach ($tmp as $res) 
-            array_push($this->results, $res);
     }
 
     /**
@@ -247,7 +288,7 @@ class ReconciliationEngine {
     public function getResults() {
         return array_splice($this->results,0,$this->numResults);
     }
-    
+
     /**
      * Reverse sort of results
      *
@@ -266,7 +307,3 @@ class ReconciliationEngine {
      }
 
 }
-
-
-
-?>

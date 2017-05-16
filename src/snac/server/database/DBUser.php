@@ -204,10 +204,11 @@ class DBUser
      * part of a user object. We could add an optional arg, but for now, call writePassword()
      *
      * @param \snac\data\User $user A user object.
+     * @param boolean $saveRole optionsl If true, save the roles of this user
      *
      * @return \snac\data\User Return the cloned User with the userID set (and all other fields populated)
      */
-    public function createUser($user)
+    public function createUser($user, $saveRole=false)
     {
         if (! $this->userExists($user))
         {
@@ -226,6 +227,22 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
+            
+            /*
+             * Admins can run this on behalf of another user. It requires authorization to save roles and save
+             * groups.
+             */
+            if ($saveRole) {
+
+                // go through the original passed-in user and add their roles to the system
+                foreach($user->getRoleList() as $role) {
+                    // This method will munge the list of roles attached to the user (Side-effect-full)
+                    $this->addRoleToUser($newUser, $role);
+                }
+
+                // read the full user back out to return
+                $newUser = $this->readUser($newUser);
+            }
             // $this->addDefaultRole($newUser);
             return $newUser;
         }
@@ -322,7 +339,7 @@ class DBUser
         /*
          * In fact, selectUserByEmail() returns an entire user record from the database as an associative
          * list.
-         */ 
+         */
         $appUserID = $this->sql->selectUserByEmail($email);
         if (isset($appUserID['id']))
         {
@@ -354,16 +371,16 @@ class DBUser
         $newUser = null;
         if ($newUserRec = $this->sql->selectUserByID($user->getUserID()))
         {
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         else if ($newUserRec = $this->sql->selectUserByUserName($user->getUserName()))
         {
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         else if ($newUserRec = $this->sql->selectUserByEmail($user->getEmail()))
         {
             // Warning: the returned user may not be the only user with the given email address.
-            $newUser = $this->populateUser($newUserRec);
+            $newUser = $this->populateUser($newUserRec, $user);
         }
         if ($newUser)
         {
@@ -382,10 +399,11 @@ class DBUser
      * After calling this you probably want to call addSession().
      *
      * @param string[] $record A list with keys: id, active, username, email, first, last, fullname, avatar, avatar_small, avatar_large
+     * @param \snac\data\User $userQuery optional User object with query data to read the user out of the database
      *
      * @return \snac\data\User Returns a user object or false.
      */
-    private function populateUser($record)
+    private function populateUser($record, $userQuery=null)
     {
         $user = new \snac\data\User();
         $user->setUserID($record['id']);
@@ -416,7 +434,11 @@ class DBUser
          * get the most recent. We pass true for $summary so that we get a summary constellation which only
          * has ic_id, entityType, ARK, Name entry.
          */
-        $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, true));
+        if ($userQuery != null && $userQuery->getAffiliation() != null && $userQuery->getAffiliation()->getID() == $record['affiliation']) {
+            $user->setAffiliation($userQuery->getAffiliation());
+        } else {
+            $user->setAffiliation($this->dbutil->readConstellation($record['affiliation'], null, DBUtil::$READ_MICRO_SUMMARY));
+        }
 
         $user->setPreferredRules($record['preferred_rules']);
         return $user;
@@ -528,6 +550,7 @@ class DBUser
      *
      * Return a privilege object based on the $pid ID value
      *
+     * @param int $pid Privilege ID to look up
      * @return \snac\data\Privilege A privilege object.
      */
     private function populatePrivilege($pid)
@@ -582,7 +605,10 @@ class DBUser
      * Does user have a privilege
      *
      * Returns true if the privilege exists. Build a list of all the privs, then test the list for key
-     * existence.
+     * existence.  A User has a set of Privileges beased on their Roles
+     *
+     * @param \snac\data\User $user User object for which to check privileges
+     * @param \snac\data\Privilege $privilege Privilege to test against the user
      *
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
      */
@@ -605,6 +631,7 @@ class DBUser
      * Returns true if the privilege with $label exists. Build a list of all the privilege labels, then test
      * the list for key existence.
      *
+     * @param \snac\data\User $user User object for which to check privileges
      * @param string $label Symbolic label of a privilege.
      * @return boolean True if the $user has $privilege in any of the roles, return false otherwise.
      */
@@ -765,9 +792,9 @@ class DBUser
      * Insert update a privilege. If insert, call setID() with the returned ID. Return the privilege, which if
      * inserted, will have an ID.
      *
-     * @param \snac\data\Privilege $privilege, the privilege object
+     * @param \snac\data\Privilege $privilege the privilege object
      *
-     * @return \snac\data\Privilege Privilege object, with an ID.
+     * @return \snac\data\Privilege Privilege object with it's newly associated ID
      */
     public function writePrivilege($privilege)
     {
@@ -1074,11 +1101,12 @@ class DBUser
      *
      * Return a group object based on the $pid ID value
      *
+     * @param int $gid Group ID to look up
      * @return \snac\data\Group A group object.
      */
-    private function populateGroup($pid)
+    private function populateGroup($gid)
     {
-        $row = $this->sql->selectGroup($pid);
+        $row = $this->sql->selectGroup($gid);
         $groupObj = new \snac\data\Group();
         $groupObj->setID($row['id']);
         $groupObj->setLabel($row['label']);
@@ -1127,10 +1155,10 @@ class DBUser
      * List users in a group
      *
      * @param \snac\data\Group $group The group
-     * 
+     *
      * @param boolean $everyone optional If true list both inactive and active users. If false, only list
      * active users.
-     * 
+     *
      * @return \snac\data\User[] List of users
      */
     public function listUsersInGroup($group, $everyone=false)
@@ -1222,7 +1250,7 @@ class DBUser
         $instList = array();
         foreach($rowList as $row)
         {
-            $cObj = $this->dbutil->readPublishedConstellationByID($row['ic_id'], true);
+            $cObj = $this->dbutil->readPublishedConstellationByID($row['ic_id'], DBUtil::$READ_MICRO_SUMMARY);
             array_push($instList, $cObj);
         }
         return $instList;
