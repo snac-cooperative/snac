@@ -1924,8 +1924,10 @@ class ServerExecutor {
 
                 if ($diffParts["intersection"] !== null)
                     $response["intersection"] = $diffParts["intersection"]->toArray();
-                else
-                    $response["intersection"] = null;
+                else {
+                    $c = new \snac\data\Constellation();
+                    $response["intersection"] = $c->toArray();
+                }
 
             } catch (\Exception $e) {
                 // Leaving a catch block for logging purposes
