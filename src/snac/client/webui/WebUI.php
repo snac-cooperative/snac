@@ -114,7 +114,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
-                "history"
+                "history",
+                "feedback"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -376,12 +377,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);
                 break;
-            case "dashboard":
-                $executor->displayDashboardPage($display);
-                break;
-            case "profile":
-                $executor->displayProfilePage($display);
-                break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
                 if ($display->hasTemplate()) {
@@ -391,6 +386,26 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
             case "explore":
                 $executor->displayGridPage($display);
+                break;
+
+            // User and messaging commands
+            case "dashboard":
+                $executor->displayDashboardPage($display);
+                break;
+            case "profile":
+                $executor->displayProfilePage($display);
+                break;
+            case "messages":
+                $executor->displayMessageListPage($display);
+                break;
+            case "message_read":
+                $response = $executor->readMessage($this->input);
+                break;
+            case "message_send":
+                $response = $executor->sendMessage($this->input);
+                break;
+            case "feedback":
+                $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
             // Administrator command (the sub method handles admin commands)

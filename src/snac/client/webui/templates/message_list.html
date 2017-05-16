@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Messages</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+
+
+<script>
+var currentMessage = null;
+
+function showMessage(messageID) {
+    $.get("?command=message_read&messageid="+messageID, null, function (data) {
+        if (data.result == "success") {
+            var messageDate = new Date(data.message.timestamp);
+            data.message.timestamp = messageDate.toLocaleString();
+
+            var messageBody = "This message has no content";
+            if (typeof data.message.body !== 'undefined')
+                messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
+
+            var text = $('#message_template').clone();
+            var html = text.html().replace(/MESSAGE_SUBJECT/g, data.message.subject)
+                                .replace(/MESSAGE_BODY/g, messageBody)
+                                .replace(/MESSAGE_TIMESTAMP/g, data.message.timestamp);
+            if (data.message.fromString) {
+                html = html.replace(/MESSAGE_FROM/g, data.message.fromString);
+            } else {
+                html = html.replace(/MESSAGE_FROM/g, data.message.fromUser.fullName + " ("
+                                        + data.message.fromUser.userName +")");
+            }
+            currentMessage = data.message;
+            $('#message_view_pane').html(html);
+
+            $("#reply_message").removeAttr("disabled").removeClass("disabled");
+            $("#forward_message").removeAttr("disabled").removeClass("disabled");
+        }
+    });
+}
+
+function sendMessage() {
+    $.post("?command=message_send", $("#new_message_form").serialize(), function (data) {
+        if (data.result == "success") {
+            // show success alert
+            $("#send_status_message").addClass("alert-success").html("<p>Message sent successfully.</p>");
+            $('#send_status_message').slideDown();
+
+            // After 2 seconds, we'll start doing things:
+            setTimeout(function() {
+                // close the alert
+                $('#send_status_message').slideUp();
+                $('#send_status_message').removeClass("alert-success").html("");
+
+                // Hide the modal window
+                $("#new_message_pane").modal("hide");
+
+                // clear the form
+                $("#new_message_form").find('input:text, input:password, input:file, select, textarea').val('');
+                $("#new_message_form").find('input:radio, input:checkbox')
+                     .removeAttr('checked').removeAttr('selected');
+            }, 2000);
+
+        } else {
+            // show an error alert
+            $("#send_status_message").addClass("alert-warning").html("<p>Error: "+data.message+"</p>");
+            $('#send_status_message').slideDown();
+
+            // close the alert after 10 seconds
+            setTimeout(function() {
+                $('#send_status_message').slideUp();
+                $('#send_status_message').removeClass("alert-warning").html("");
+            }, 10000);
+        }
+    });
+}
+
+function replyMessage() {
+    // Set up the new message box
+    $("#to_user").val(currentMessage.fromUser.userName);
+
+    var subject = "RE: " + currentMessage.subject;
+    if (currentMessage.subject.substring(0, 3) === "RE:")
+        subject = currentMessage.subject;
+
+    $("#subject").val(subject);
+    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+                                + currentMessage.fromUser.fullName
+                                + " (" + currentMessage.fromUser.userName + ")"
+                                + " wrote:\n\n" + currentMessage.body);
+
+    // Open the new message modal window
+    $("#new_message_pane").modal("show");
+}
+
+function forwardMessage() {
+    // Set up the new message box
+
+    var subject = "FW: " + currentMessage.subject;
+    if (currentMessage.subject.substring(0, 3) === "FW:")
+        subject = currentMessage.subject;
+
+
+    $("#subject").val(subject);
+    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+                                + currentMessage.fromUser.fullName
+                                + " (" + currentMessage.fromUser.userName + ")"
+                                + " wrote:\n\n" + currentMessage.body);
+
+    // Open the new message modal window
+    $("#new_message_pane").modal("show");
+}
+
+function cancelMessage() {
+    // Hide the modal window
+    $("#new_message_pane").modal("hide");
+
+    // clear the form
+    $("#new_message_form").find('input:text, input:password, input:file, select, textarea').val('');
+    $("#new_message_form").find('input:radio, input:checkbox')
+         .removeAttr('checked').removeAttr('selected');
+}
+
+$(document).ready(function() {
+    // Load the table into a datatable
+    $('.table').DataTable( {
+        "language": {
+            "emptyTable":     "No Messages Available"
+        }
+    });
+
+    $("#message_list tbody").delegate("tr", "click", function() {
+        var messageID = $("td:first input.messageid", this).val();
+        $("td:first span.readflag", this).text("");
+        $("#message_list tr").each(function() {$(this).removeClass("viewing");});
+        $(this).addClass("viewing");
+        showMessage(messageID);
+    });
+
+    $("#send_message").click(sendMessage);
+    $("#cancel_message").click(cancelMessage);
+    $("#reply_message").click(replyMessage);
+    $("#forward_message").click(forwardMessage);
+
+});
+</script>
+
+<style>
+    #message_list tbody {
+        cursor: pointer;
+    }
+    .viewing {
+        background-color: #c4e3f3!important;
+    }
+
+    #message_list p {
+        margin: 0px;
+    }
+
+    .panel-fullscreen {
+        display: block;
+        z-index: 9999;
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        overflow: auto;
+    }
+    .panel-actions {
+      margin-top: -20px;
+      margin-bottom: 0;
+      text-align: right;
+    }
+    .panel-actions a {
+      color:#333;
+}
+
+</style>
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <h1>Messaging Center</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="well well-lg">
+                <p><span style="font-weight: bold;">Instructions: </span>Click on a message in the table to view.  Messages open in the reading panel on the right.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+
+            <div>
+                <div style="margin-bottom: 15px;">
+                    <div class="btn-group" role="group" aria-label="Actions" style="margin-bottom: 15px;">
+                        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#new_message_pane">
+                            <i class="fa fa-pencil" aria-hidden="true"></i> New Message
+                        </button>
+                    </div>
+
+                    <div class="btn-group" role="group" aria-label="Actions" style="margin-bottom: 15px;">
+                        <button type="button" id="reply_message" class="btn btn-default disabled" disabled>
+                            <i class="fa fa-reply" aria-hidden="true"></i> Reply
+                        </button>
+                        <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
+                            <i class="fa fa-share" aria-hidden="true"></i> Forward
+                        </button>
+                        <button type="button" class="btn btn-default disabled" disabled>
+                            <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+                <table class="table" id="message_list">
+                    <thead>
+                        <tr>
+                            <th><i class="fa fa-circle" aria-hidden="true"></i></th>
+                            <th>From</th>
+                            <th>Subject</th>
+                            <th>Sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for message in data.messages %}
+                        <tr>
+                            <td><p class="text-center">
+                                <span class="readflag">
+                                {% if message.read == true %}
+                                &nbsp;
+                                {% else %}
+                                <i class="fa fa-circle" aria-hidden="true" style="color: red;"></i>
+                                {% endif %}
+                                </span>
+                                <input type="hidden" name="messageid" class="messageid" value="{{message.id}}">
+                            </p></td>
+                            <td><p>
+                                {% if message.fromString %}
+                                    {{message.fromString}}
+                                {% elseif message.fromUser %}
+                                    {{message.fromUser.fullName}}
+                                {% else %}
+                                    Unknown (ERROR)
+                                {% endif %}
+                            </p></td>
+                            <td><p>{{ message.subject }}</p></td>
+                            <td><p>{{ message.timestamp|date('Y-m-d h:i:sa') }}</p></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-default" id="message_view">
+                <div class="panel-heading"><h3 class="panel-title">Message View</h3>
+                    <ul class="list-inline panel-actions">
+                        <li><a href="#" onClick="$('#message_view').toggleClass('panel-fullscreen');return false;"><i class="fa fa-window-maximize" aria-hidden="true"></i></a></li>
+                    </ul>
+                </div>
+                <div class="panel-body" id="message_view_pane">
+                No Message selected
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="message_template" style="display:none;">
+    <div class="message">
+        <strong>MESSAGE_SUBJECT</strong><br>
+            <strong>From:</strong> MESSAGE_FROM<br>
+            <strong>Sent:</strong> MESSAGE_TIMESTAMP<br><br>
+        MESSAGE_BODY
+    </div>
+</div>
+<div class="modal fade" id="new_message_pane" tabindex="-1" role="dialog" aria-labelledby="new_message_pane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="new_message_title">New Message</h4>
+            </div>
+            <div class="modal-body" id="new_message_content">
+                <div class="row">
+                    <div class="alert alert-01" id="send_status_message" style="display: none">
+                    </div><!-- end alert -->
+                </div>
+                <form id="new_message_form">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">To</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="to_user" name="to_user" class="form-control" placeholder="SNAC Usernames (comma-separated)"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label col-xs-2">Subject</label>
+                            <div class="col-xs-10">
+                                <input type="text" id="subject" name="subject" class="form-control" placeholder=""/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-xs-12">
+                                <textarea id="body" name="body" class="form-control" rows="8" placeholder="Message Body"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" id="cancel_message"><i class="fa fa-times-circle-o" aria-hidden="true"></i>
+ Cancel</button>
+                <button type="button" class="btn btn-primary" id="send_message"><i class="fa fa-paper-plane-o" aria-hidden="true"></i>
+Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

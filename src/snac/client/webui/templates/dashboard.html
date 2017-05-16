@@ -78,7 +78,16 @@ var permissions = {
                     </div>
                 </div>
             </div>
+
             -->
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>

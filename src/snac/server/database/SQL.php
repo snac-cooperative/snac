@@ -5808,13 +5808,79 @@ class SQL
                 '.$limitHistory.'
             order by v.timestamp asc',
             array($vhInfo["ic_id"], $vhInfo["version"]));
-        $usernames = "";
+
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
+    }
+
+    public function selectMessageByID($id) {
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where m.id = $1',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return $all[0];
+
+        return array();
+
+    }
+
+    public function markMessageReadByID($id) {
+        $result = $this->sdb->query(
+            'update messages set read = TRUE where id = $1',
+            array($id));
+    }
+
+    public function insertMessage($toUser,
+                                    $fromUser,
+                                    $fromString,
+                                    $subject,
+                                    $body,
+                                    $attachmentContent,
+                                    $attachmentFilename) {
+
+        try {
+            $this->sdb->prepare("insert_message",'insert into messages
+                    (to_user, from_user, from_string, subject, body, attachment_content, attachment_filename)
+                    values ($1, $2, $3, $4, $5, $6, $7);');
+
+            $this->sdb->execute("insert_message",
+                array($toUser, $fromUser, $fromString, $subject, $body, $attachmentContent, $attachmentFilename));
+        } catch (\snac\exceptions\SNACDatabaseException $e) {
+            return false;
+        }
+        return true;
+    }
+
+    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
+        $searchUser = 'to_user';
+        if (!$toUser) {
+            $searchUser = 'from_user';
+        }
+        $readFilter = '';
+        if ($unreadOnly) {
+            $readFilter = 'and not read';
+        }
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+
     }
 
     /**
