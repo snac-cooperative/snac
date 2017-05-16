@@ -504,8 +504,10 @@ class WebUIExecutor {
             // Ask the server to do the merge
             $query = [
                 "command" => "constellation_merge",
-                "constellationid1" => $input["constellationid1"],
-                "constellationid2" => $input["constellationid2"],
+                "constellationids" => [
+                    $input["constellationid1"],
+                    $input["constellationid2"]
+                ],
                 "constellation" => $constellation->toArray()
             ];
             $this->logger->addDebug("Asking server to do the merge");
@@ -621,7 +623,7 @@ class WebUIExecutor {
                 $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
             }
         } else {
-            $this->logger->addDebug("Error page being drawn");
+            $this->logger->addDebug("Error page being drawn - no intersection");
             $this->drawErrorPage($serverResponse, $display);
         }
     }
