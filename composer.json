@@ -9,7 +9,8 @@
         "phpmailer/phpmailer": "~5.2",
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",
-        "graphaware/neo4j-php-client": "^4.0"
+        "graphaware/neo4j-php-client": "^4.0",
+        "soundasleep/html2text": "~0.5"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",

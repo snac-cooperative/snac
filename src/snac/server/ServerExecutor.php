@@ -43,6 +43,8 @@ class ServerExecutor {
      */
     private $neo4J = null;
 
+    private $mailer = null;
+
     /**
      * @var \snac\data\User Current user object
      */
@@ -75,6 +77,7 @@ class ServerExecutor {
         $this->uStore = new \snac\server\database\DBUser();
         $this->elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
         $this->neo4J = new \snac\server\neo4j\Neo4JUtil();
+        $this->mailer = new \snac\server\mailer\Mailer();
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
@@ -745,6 +748,9 @@ class ServerExecutor {
         // Send the message
         $this->uStore->writeMessage($message);
 
+        // Email the message, if needed
+        $this->mailer->sendUserMessage($message);
+
         $response["result"] = "success";
         return $response;
     }
@@ -778,6 +784,7 @@ class ServerExecutor {
 
         // Send the message
         $this->uStore->writeMessage($message);
+        $this->mailer->sendUserMessage($message);
 
         $response["result"] = "success";
         return $response;
