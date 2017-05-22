@@ -89,21 +89,23 @@ if (is_dir($argv[1])) {
     }
 
     // Washington
-    echo "Parsing: George Washington\n";
+    echo "Parsing: George Washington : ";
     $constellation = $e->parseFile($argv[1]."/99166-w6028ps4.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     // Update them to be published
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
+    echo $written->getID()."\n";
     indexESearch($written);
     // If this is published, then it should point to itself in the lookup table.
     $selfDirect = array($written);
     $dbu->updateConstellationLookup($written, $selfDirect);
 
     // Jefferson
-    echo "Parsing: Thomas Jefferson\n";
+    echo "Parsing: Thomas Jefferson : ";
     $constellation = $e->parseFile($argv[1]."/99166-w6w9576g.xml");
     $written = $dbu->writeConstellation($user, $constellation, "bulk ingest of merged", 'ingest cpf');
     // Update them to be published
+    echo $written->getID()."\n";
     $dbu->writeConstellationStatus($user, $written->getID(), "published");
     indexESearch($written);
     // If this is published, then it should point to itself in the lookup table.
