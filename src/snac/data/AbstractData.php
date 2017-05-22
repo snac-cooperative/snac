@@ -475,7 +475,16 @@ abstract class AbstractData implements \Serializable {
             }
         }
     }
-    
+
+    /**
+     * Cleanse the SCM
+     *
+     * Removes the ID and Version from SCMs and updates the operation to be
+     * INSERT.  If the operation is specified by the parameter, this method
+     * will use that operation instead of INSERT
+     *
+     * @param string $operation optional The operation to use (default is INSERT)
+     */ 
     public function cleanseSCMMetadata($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {

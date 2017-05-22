@@ -1810,6 +1810,16 @@ class Constellation extends AbstractData {
         return $return;
     }
 
+    /**
+     * Combine Into
+     *
+     * Combines the data from the Constellation passed in into this Constellation,
+     * removing IDs and version numbers for all elements except sources.  Sets all
+     * other operations to INSERT so they are considered new in this Constellation.
+     *
+     * @param \snac\data\Constellation $other The constellation to combine with this one
+     * @return boolean True if success, false otherwise (currently no failure)
+     */
     public function combine(&$other) {
         //      merge the sources, keeping a list of other's sources
         // do a diff of this and other (strict = false)
@@ -1995,7 +2005,7 @@ class Constellation extends AbstractData {
             $this->addSubject($element);
         }
 
-
+        return true;
     }
 
 }

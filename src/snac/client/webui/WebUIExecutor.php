@@ -211,6 +211,15 @@ class WebUIExecutor {
         $display->setTemplate("browse_page");
     }
 
+    /**
+     * Perform Browse Search
+     *
+     * Performs the browsing search for the browse page, returning the list
+     * to be displayed to the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function performBrowseSearch(&$input) {
         $term = "";
         $position = "middle";
@@ -533,6 +542,16 @@ class WebUIExecutor {
         }
     }
 
+    /**
+     * Process Automatic Merge
+     *
+     * Takes a list of Constellation IDs as input from the user and try to merge.  If the merge is successful,
+     * this method will load the new (merged) Constellation into the detailed view template for
+     * display to the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function processAutoMerge(&$input, &$display) {
 
         if (isset($input["mergecount"]) && is_numeric($input["mergecount"]) && $input["mergecount"] > 1) {

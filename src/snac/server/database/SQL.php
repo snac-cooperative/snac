@@ -5165,12 +5165,10 @@ class SQL
      * well in most situations where a hash aka associative list is being used in a control statement.
      *
      * @param string $term The "type" term for what type of vocabulary to search
-     *
      * @param string $query The string to search through the vocabulary
-     *
      * @param integer $entityTypeID Numeric key related to vocabulary.id where type='entity_type' of one of
      * the three entity types.
-     *
+     * @param int $count optional The number of search results to request
      * @return string[][] Returns a list of lists with keys id, value.
      */
     public function searchVocabulary($term, $query, $entityTypeID, $count = 100)

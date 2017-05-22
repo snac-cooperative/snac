@@ -4186,6 +4186,18 @@ class DBUtil
 
     }
 
+    /**
+     * Browse Name Index
+     *
+     * Browses the name index, returning the list around the search query, based on
+     * the position (either before, after, surrounding the query.
+     *
+     * @param string $query The browsing search query term
+     * @param string $position Where to put the closest match to the query: after, before, or middle
+     * @param string $entityType optional The entity type to query (null returns all)
+     * @param int $icid optional The icid to search for in case of paging through results
+     * @return string[] List of results
+     */
     public function browseNameIndex($query, $position, $entityType=null, $icid=0) {
 
         return $this->sql->browseNameIndex($query, $position, $entityType, $icid);
@@ -4197,12 +4209,10 @@ class DBUtil
      * Searches the vocabulary and returns an array of id, value pairs.
      *
      * @param string $type vocabulary type
-     *
      * @param string $query search string
-     *
-     * @param integer $entityTypeID The vocabulary.id of one of the 3 entity type records. Used for selecting
+     * @param int $entityTypeID optional The vocabulary.id of one of the 3 entity type records. Used for selecting
      * name component vocabulary sensitive to context of entity type.
-     *
+     * @param int $count optional The number of search results to request
      * @return string[][] list of results
      */
     public function searchVocabulary($type, $query, $entityTypeID=null, $count=100) {
