@@ -362,6 +362,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
                 break;
+            case "auto_merge":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->processAutoMerge($this->input, $display);
+                } else {
+                    $executor->displayPermissionDeniedPage("Merge Constellations", $display);
+                }
+                break;
             case "merge_cancel":
                 if (isset($permissions["Publish"]) && $permissions["Publish"]) {
                     $response = $executor->cancelMerge($this->input, $display);

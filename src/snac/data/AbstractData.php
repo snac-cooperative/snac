@@ -475,6 +475,21 @@ abstract class AbstractData implements \Serializable {
             }
         }
     }
+    
+    public function cleanseSCMMetadata($operation=null) {
+        $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
+        if ($operation !== null) {
+            $newOperation = $operation;
+        }
+
+        if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
+            foreach ($this->snacControlMetadata as &$scm) {
+                $scm->setID(null);
+                $scm->setVersion(null);
+                $scm->setOperation($newOperation);
+            }
+        }
+    }
 
     /**
      * Set the operation for this data

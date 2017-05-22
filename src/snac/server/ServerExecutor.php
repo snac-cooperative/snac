@@ -1435,7 +1435,7 @@ class ServerExecutor {
 
                     // Delete from Postgres Indices
                     $this->cStore->deleteFromNameIndex($constellation);
-                    
+
                     // Delete from Neo4J Indices
                     // TODO
 
@@ -2004,6 +2004,13 @@ class ServerExecutor {
                         | \snac\server\database\DBUtil::$READ_ALL_NAMES);
             }
 
+            return $this->coreMerge($constellation, $originals);
+        } else {
+            throw new \snac\exceptions\SNACInputException("Merge requires two constellation IDs and a merged constellation");
+        }
+    }
+
+    function coreMerge(&$constellation, &$originals) {
 
             // Create a version of the constellation with only Sources (for initialize step)
             $sourceConstellation = new \snac\data\Constellation();
@@ -2034,10 +2041,10 @@ class ServerExecutor {
             $constellation->setID($sourceConstellation->getID());
             $constellation->setVersion($sourceConstellation->getVersion());
             $constellation->setAllSources(array()); // empty out the source list
-            
+
             if ($constellation->getEntityType() == null)
                 $constellation->setEntityType($sourceConstellation->getEntityType());
-            
+
             $originalSources = array();
             foreach ($originals as $c) {
                 $originalSources = array_merge($originalSources, $c->getSources());
@@ -2152,7 +2159,7 @@ class ServerExecutor {
 
             // Return the fully-completed constellation from the database
             $fullWritten = $this->cStore->readConstellation($written->getID());
-            
+
             // Merge completed successfully!
             if ($fullWritten != null) {
                 $response["result"] = "success";
@@ -2161,11 +2168,73 @@ class ServerExecutor {
                 $response["result"] = "failure";
             }
 
-        } else {
-            throw new \snac\exceptions\SNACInputException("Merge requires two constellation IDs and a merged constellation");
-        }
+
 
         return $response;
+    }
+
+    function autoMergeConstellations(&$input) {
+        $response = array();
+        $this->logger->addDebug("Merging constellations");
+
+        if (isset($input["constellationids"]) && is_array($input["constellationids"])) {
+
+            if (count($input["constellationids"]) < 2) {
+                throw new \snac\exceptions\SNACInputException("Must merge at least 2 Constellations");
+            }
+
+            $info = array();
+            foreach ($input["constellationids"] as $cId) {
+                if (!is_numeric($cId)) {
+                    throw new \snac\exceptions\SNACInputException("Constellation ID $cId is not correctly formatted");
+                }
+
+                $info[$cId] = $this->cStore->readConstellationUserStatus($cId);
+
+                if (!is_array($info[$cId])) {
+                    throw new \snac\exceptions\SNACInputException("Constellation $cId does not have a current version");
+                }
+
+                // Only able to merge if the status is published OR locked editing to this user
+                if (($info[$cId]["status"] == "published") || 
+                        ($info[$cId]["status"] == "locked editing" && $this->user->getUserID() == $info[$cId]["userid"])) {
+                    $success = $this->cStore->writeConstellationStatus($this->user, $cId, "currently editing");
+                    if ($success) {
+                        $info[$cId] = $this->cStore->readConstellationUserStatus($cId);
+                    }
+                }
+                
+                if ($info[$cId]["status"] != "currently editing" || $this->user->getUserID() !== $info[$cId]["userid"]) {
+                    // Try to check out the constellation.  If it doesn't work, then we will cancel it
+                    // TODOX
+                    throw new \snac\exceptions\SNACPermissionException("User trying to merge constellations not checked out to them");
+                }
+            }
+
+            // We have multiple constellation ids that should be merged and the "merged" copy of the constellation
+            // ACTUALLY DOING THE MERGING STEPS IN THE SYSTEM
+
+            // Read full to-be-merged constellations
+            $originals = array();
+            foreach ($input["constellationids"] as $cId) {
+                $originals[$cId] = $this->cStore->readConstellation($cId, null,
+                    \snac\server\database\DBUtil::$FULL_CONSTELLATION);
+                $this->logger->addDebug("Merging from", $originals[$cId] ? $originals[$cId]->toArray() : []);
+            }
+
+            $constellation = new \snac\data\Constellation();
+            $constellation->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+
+            // Combine all the constellations into one
+            foreach ($originals as $c) {
+                $constellation->combine($c);
+            }
+            $this->logger->addDebug("Auto-Merged Constellation is ", $constellation->toArray());
+            return $this->coreMerge($constellation, $originals);
+
+        } else {
+            throw new \snac\exceptions\SNACInputException("Auto merge requires at least two constellation IDs");
+        }
     }
 
     /**
@@ -2750,15 +2819,15 @@ class ServerExecutor {
                 break;
         }
         $report = $this->cStore->readReport($reportName);
-        
+
         if ($report && $report != null && !empty($report))
-            return array("result" => "success", 
+            return array("result" => "success",
                          "reports" => json_decode($report["report"], true),
                          "timestamp" => $report["timestamp"]);
-        
+
         return array("result" => "failure");
     }
-    
+
     /**
      * Generate Report
      *

@@ -169,25 +169,11 @@ $(document).ready(function() {
                     // empty out the form
                     form.html("");
 
-                    // for all data panes (both, a, and b), copy all data into the form and then submit the form!
-                    $(".content-both").each(function() {
-                        var copy = $(this).html();
-                        form.append(copy);
-                    });
-                    $(".content-a").each(function() {
-                        var copy = $(this).html();
-                        form.append(copy);
-                    });
-                    $(".content-b").each(function() {
-                        var copy = $(this).html();
-                        form.append(copy);
-                    });
-
                     // Put the other constellation data into the form
                     var copy = $("#constellation_data").html();
                     form.append(copy);
 
-                    form.attr('action', '?command=merge').attr('method', 'post').attr('target', '_self');
+                    form.attr('action', '?command=auto_merge').attr('method', 'post').attr('target', '_self');
                     form.submit();
                 }
             }

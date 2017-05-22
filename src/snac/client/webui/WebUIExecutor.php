@@ -390,9 +390,9 @@ class WebUIExecutor {
             $editingUser = null;
             if (isset($serverResponse["editing_user"]))
                 $editingUser = $serverResponse["editing_user"];
-            
+
             $display->setTemplate("detailed_view_page");
-            
+
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
@@ -446,7 +446,7 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
-    
+
     /**
      * Display Constellation History Page
      *
@@ -531,9 +531,49 @@ class WebUIExecutor {
                 $this->drawErrorPage($serverResponse, $display);
             }
         }
-
     }
 
+    public function processAutoMerge(&$input, &$display) {
+
+        if (isset($input["mergecount"]) && is_numeric($input["mergecount"]) && $input["mergecount"] > 1) {
+            $count = $input["mergecount"];
+            $icids = array();
+            for ($i = 1; $i <= $count; $i++) {
+                if (!isset($input["constellationid" .$i])) {
+                    $this->logger->addDebug("Error page being drawn");
+                    $this->drawErrorPage(["error" => "Could not auto-merge"], $display);
+                }
+                array_push($icids, $input["constellationid" . $i]);
+            }
+
+            // Ask the server to do the merge
+            $query = [
+                "command" => "constellation_auto_merge",
+                "constellationids" => $icids
+            ];
+            
+            $this->logger->addDebug("Asking server to do the auto merge");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("detailed_view_page");
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+
+                // Since this was just merged, it is currently editable
+                $serverResponse["constellation"]["status"] = "editable";
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($serverResponse["constellation"]);
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
+        }
+    }
     /**
      * Cancel a merge
      *

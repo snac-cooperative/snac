@@ -287,6 +287,13 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->mergeConstellations($this->input);
                 break;
 
+            case "constellation_auto_merge":
+                if (!$executor->hasPermission("Publish")) {
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
+                }
+                $this->response = $executor->autoMergeConstellations($this->input);
+                break;
+
             case "read":
                 $this->response = $executor->readConstellation($this->input);
                 break;

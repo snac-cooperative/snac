@@ -1810,4 +1810,192 @@ class Constellation extends AbstractData {
         return $return;
     }
 
+    public function combine(&$other) {
+        //      merge the sources, keeping a list of other's sources
+        // do a diff of this and other (strict = false)
+        // update the "other" sources, if we can?
+        // foreach over the other and combine with this (they won't overlap: not in intersection)
+        //      - remove other's ID, Version, and set operation = INSERT
+        // return
+
+        $diff = $this->diff($other, false);
+        $combine = $diff["other"];
+
+        if ($combine == null || $combine->isEmpty()) {
+            return true;
+        }
+
+        foreach ($combine->sources as &$element) {
+            // Sources need their IDs in tact if we plan to fix up SCMs
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addSource($element);
+        }
+
+        foreach ($combine->mandates as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addMandate($element);
+        }
+
+        foreach ($combine->structureOrGenealogies as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addStructureOrGenealogy($element);
+        }
+
+        foreach ($combine->generalContexts as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addGeneralContext($element);
+        }
+
+        foreach ($combine->biogHists as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            // Add if a new one, append to the first bioghist if not
+            if (empty($this->biogHists)) {
+                $this->addBiogHist($element);
+            } else {
+                $this->biogHists[0]->append($element);
+            }
+        }
+
+        foreach ($combine->conventionDeclarations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addConventionDeclaration($element);
+        }
+
+        foreach ($combine->nationalities as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addNationality($element);
+        }
+
+        foreach ($combine->otherRecordIDs as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addOtherRecordID($element);
+        }
+
+        foreach ($combine->entityIDs as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addEntityID($element);
+        }
+
+        foreach ($combine->languagesUsed as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addLanguageUsed($element);
+        }
+
+        foreach ($combine->legalStatuses as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addLegalStatus($element);
+        }
+
+        foreach ($combine->genders as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addGender($element);
+        }
+
+        foreach ($combine->nameEntries as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+
+            foreach ($element->getContributors() as &$contributor) {
+                $contributor->setID(null);
+                $contributor->setVersion(null);
+                $contributor->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            }
+            foreach ($element->getComponents() as &$component) {
+                $component->setID(null);
+                $component->setVersion(null);
+                $component->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            }
+
+
+            $this->addNameEntry($element);
+        }
+
+        foreach ($combine->occupations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addOccupation($element);
+        }
+
+        foreach ($combine->relations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addRelation($element);
+        }
+
+        foreach ($combine->resourceRelations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addResourceRelation($element);
+        }
+
+        foreach ($combine->functions as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addFunction($element);
+        }
+
+        foreach ($combine->places as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addPlace($element);
+        }
+
+        foreach ($combine->subjects as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addSubject($element);
+        }
+
+
+    }
+
 }
