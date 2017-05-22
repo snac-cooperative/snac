@@ -121,7 +121,7 @@ function showCompareOption() {
     }
 
     // Auto-merge functionality
-    if (toCompare.length > 1 && $.exists("#autoMergeButton")) {
+    if (toCompare.length > 1 && $("#autoMergeButton").exists()) {
         $("#autoMergeButton").prop("disabled", false);
         $('#autoMergeButton').off("click");
         $('#autoMergeButton').click(function() {
