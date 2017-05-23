@@ -28,7 +28,7 @@ class NumConstellationsByType extends helpers\Report {
     /**
      * @var string The description of this report
      */
-    protected $description = "The number of Identity Constellations of each entity type";
+    protected $description = "The number of Identity Constellations of each entity type.";
 
     /**
      * @var string The type of the report data (series, text, numeric)
