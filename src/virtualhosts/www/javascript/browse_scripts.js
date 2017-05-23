@@ -130,7 +130,7 @@ function showCompareOption() {
 
                 bootbox.confirm({
                     title: "Automatic Merge",
-                    message: "This action automatically combines all data elements from all Constellations to create a merged version.  This operation cannot be undone.  Are you sure you want to continue?",
+                    message: "This action automatically combines all data elements from all <strong>"+toCompare.length+"</strong> selected Constellations to create a merged version.  This operation cannot be undone.  Are you sure you want to continue?",
                     buttons: {
                         cancel: {
                             label: '<i class="fa fa-times"></i> Cancel'
