@@ -372,6 +372,40 @@ class ServerExecutor {
         return $response;
     }
 
+    public function searchUsers(&$input) {
+        if (!isset($input["query_string"]))
+            throw new \snac\exceptions\SNACInputException("Query string required to search");
+
+        $getAll = true;
+        if (isset($input["filter"])) {
+            if ($input["filter"] == "active")
+                $getAll = false;
+        }
+        $roleFilter = null;
+        if (isset($input["role"])) {
+            $roleFilter = $input["role"];
+        }
+
+        $count = \snac\Config::$SQL_LIMIT;
+        if (isset($input["count"]))
+            $count = $input["count"];
+
+        $results = $this->uStore->searchUsers(
+                        $input["query_string"],
+                        $count,
+                        $roleFilter,
+                        $getAll);
+
+
+        $response = array();
+        $response["results"] = array();
+        foreach ($results as $result) {
+            array_push($response["results"], $result->toArray(false));
+        }
+
+        return $response;
+    }
+
     /**
      * List Users
      *
@@ -722,7 +756,7 @@ class ServerExecutor {
                         "version" => $constellation->getVersion(),
                         "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
                 );
-                $this->logger->addDebug("User was currently editing", $item);
+                $this->logger->addDebug("User has checked out", $item);
                 array_push($response["editing"], $item);
             }
         }
@@ -751,6 +785,50 @@ class ServerExecutor {
 
         // Give the editing list back in alphabetical order
         usort($response["editing_lock"],
+            function ($a, $b) {
+                return $a['nameEntry'] <=> $b['nameEntry'];
+        });
+
+        // Next look for sent for review constellations
+        $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review");
+
+        $response["review_lock"] = array ();
+        if ($editList !== false) {
+            foreach ($editList as $constellation) {
+                $item = array (
+                        "id" => $constellation->getID(),
+                        "version" => $constellation->getVersion(),
+                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                );
+                $this->logger->addDebug("User had for review", $item);
+                array_push($response["review_lock"], $item);
+            }
+        }
+
+        // Give the editing list back in alphabetical order
+        usort($response["review_lock"],
+            function ($a, $b) {
+                return $a['nameEntry'] <=> $b['nameEntry'];
+        });
+
+        // Next look for needs review by this user constellations
+        $editList = $this->cStore->listConstellationsWithStatusForUser($user, "needs review", null, null, true);
+
+        $response["review"] = array ();
+        if ($editList !== false) {
+            foreach ($editList as $constellation) {
+                $item = array (
+                        "id" => $constellation->getID(),
+                        "version" => $constellation->getVersion(),
+                        "nameEntry" => $constellation->getPreferredNameEntry()->getOriginal()
+                );
+                $this->logger->addDebug("User needed to review", $item);
+                array_push($response["review"], $item);
+            }
+        }
+
+        // Give the editing list back in alphabetical order
+        usort($response["review"],
             function ($a, $b) {
                 return $a['nameEntry'] <=> $b['nameEntry'];
         });
@@ -1067,14 +1145,12 @@ class ServerExecutor {
 
                 // Read the current summary
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
+                $info = $this->cStore->readConstellationUserStatus($constellation->getID());
 
                 $inList = false;
-                $userList = $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing");
-                foreach ($userList as $item) {
-                    if ($item->getID() == $constellation->getID()) {
-                        $inList = true;
-                        break;
-                    }
+                if ($info != null && $this->user->getUserID() == $info["userid"] &&
+                        ($info["status"] == "currently editing" || $info["status"] == "needs review")) {
+                    $inList = true;
                 }
 
                 // If this constellation is in the list of currently editing for the user OR the user has change locks permission, then unlock it
@@ -1147,34 +1223,50 @@ class ServerExecutor {
 
                 // Read the current summary
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
+                $info = $this->cStore->readConstellationUserStatus($constellation->getID());
 
                 $inList = false;
-                $userList = array_merge(
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
-                );
-                foreach ($userList as $item) {
-                    if ($item->getID() == $constellation->getID()) {
-                        $inList = true;
-                        break;
-                    }
+                if ($info != null && $this->user->getUserID() == $info["userid"] &&
+                        ($info["status"] == "currently editing" || $info["status"] == "locked editing")) {
+                    $inList = true;
                 }
 
                 // If this constellation is in the list of currently editing for the user, then send it for review
                 if ($current->getVersion() == $constellation->getVersion() && $inList) {
+
+                    $toUser = null;
+                    if (isset($input["reviewer"])) {
+                        $tmpUser = new \snac\data\User($input["reviewer"]);
+                        $toUser = $this->uStore->readUser($tmpUser);
+
+                        // If the user doesn't exist, then don't allow the review to continue
+                        if ($toUser === false) {
+                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to unknown user");
+                        }
+                        if (!$this->uStore->hasPrivilegeByLabel($toUser, "Change Locks")) {
+                            throw new \snac\exceptions\SNACInputException("Tried to send constellation for review to non-reviewer");
+                        }
+                    }
+
+                    $message = "User sending Constellation for review";
+                    if (isset($input["message"]) && $input["message"] != null && $input["message"] != "") {
+                        $message = $input["message"];
+                    }
                     $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(), "needs review",
-                            "User sending Constellation for review");
+                            $message, $toUser);
 
 
                     if (isset($result) && $result !== false) {
+                        if ($toUser != null) {
+                            // TODO: Eventually send a message to the toUser letting them know they have a constellation
+                            // to be reviewed.  If send fails, result is still true, but message should let the user
+                            // know that the server could not notify the other user.
+                        }
                         $this->logger->addDebug("successfully sent constellation for review");
                         $constellation->setVersion($result);
                         $response["constellation"] = $constellation->toArray();
                         $response["result"] = "success";
-
-
                     } else {
-
                         $this->logger->addDebug("could not send the constellation for review");
                         $response["result"] = "failure";
                         $response["error"] = "writing status failed";
@@ -1385,7 +1477,7 @@ class ServerExecutor {
 
                     // Delete from Postgres Indices
                     $this->cStore->deleteFromNameIndex($constellation);
-                    
+
                     // Delete from Neo4J Indices
                     // TODO
 
@@ -2226,15 +2318,15 @@ class ServerExecutor {
                 break;
         }
         $report = $this->cStore->readReport($reportName);
-        
+
         if ($report && $report != null && !empty($report))
-            return array("result" => "success", 
+            return array("result" => "success",
                          "reports" => json_decode($report["report"], true),
                          "timestamp" => $report["timestamp"]);
-        
+
         return array("result" => "failure");
     }
-    
+
     /**
      * Generate Report
      *

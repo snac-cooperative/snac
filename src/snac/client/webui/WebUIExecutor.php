@@ -348,9 +348,9 @@ class WebUIExecutor {
             $editingUser = null;
             if (isset($serverResponse["editing_user"]))
                 $editingUser = $serverResponse["editing_user"];
-            
+
             $display->setTemplate("detailed_view_page");
-            
+
             $constellation = $serverResponse["constellation"];
             if (\snac\Config::$DEBUG_MODE == true) {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
@@ -697,7 +697,7 @@ class WebUIExecutor {
                 return $this->saveProfile($input, $user);
                 break;
             case "users":
-                $ask = array("command"=>"admin_users"
+                $ask = array("command"=>"list_users"
                 );
                 $serverResponse = $this->connect->query($ask);
                 if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
@@ -707,7 +707,7 @@ class WebUIExecutor {
                 $display->setTemplate("admin_users");
                 break;
             case "user_list":
-                $ask = array("command"=>"admin_users",
+                $ask = array("command"=>"list_users",
                     "filter" => "active"
                 );
                 return $this->connect->query($ask);
@@ -1415,6 +1415,15 @@ class WebUIExecutor {
                      isset($serverResponse["constellation"])) {
                 $request["command"] = "review_constellation";
                 $request["constellation"] = $serverResponse["constellation"];
+
+                // Add reviewer if we have it
+                if (isset($input["reviewer"]) && $input["reviewer"] != "") {
+                    $reviewer = new \snac\data\User();
+                    $reviewer->setUserID($input["reviewer"]);
+                    $request["reviewer"] = $reviewer->toArray();
+                    $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+                }
+
                 $serverResponse = $this->connect->query($request);
                 $response["server_debug"]["review"] = $serverResponse;
                 if (isset($serverResponse["result"]))
@@ -1663,12 +1672,22 @@ class WebUIExecutor {
             return array( "result" => "failure", "error" => "No constellation or version number");
         }
 
+
+
         $this->logger->addDebug("sending constellation for review", $constellation->toArray());
 
         // Build a data structure to send to the server
         $request = array (
                 "command" => "review_constellation"
         );
+        
+        // Add reviewer if we have it
+        if (isset($input["reviewer"]) && $input["reviewer"] != "") {
+            $reviewer = new \snac\data\User();
+            $reviewer->setUserID($input["reviewer"]);
+            $request["reviewer"] = $reviewer->toArray();
+            $this->logger->addDebug("Sending for review to ".$input["reviewer"], $reviewer->toArray());
+        }
 
         // Send the query to the server
         $request["constellation"] = $constellation->toArray();
@@ -1770,9 +1789,9 @@ class WebUIExecutor {
     }
 
     /**
-     * Perform Relations Query 
+     * Perform Relations Query
      *
-     * Requests the server to read Constellation Relations for a given constellation. 
+     * Requests the server to read Constellation Relations for a given constellation.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)
@@ -1965,6 +1984,45 @@ class WebUIExecutor {
         }
 
         return array ();
+    }
+
+    public function performUserSearch(&$input) {
+        $this->logger->addDebug("Searching users");
+
+        $request = array ();
+        $request["command"] = "search_users";
+        // This is a strict query for a controlled vocabulary term
+        $queryString = "";
+        if (isset($input["q"]))
+            $queryString = $input["q"];
+        $request["query_string"] = $queryString;
+        if (isset($input["count"]))
+            $request["count"] = $input["count"];
+        if (isset($input["role"]))
+            $request["role"] = $input["role"];
+
+        // Send the query to the server
+        $serverResponse = $this->connect->query($request);
+
+        if (!isset($serverResponse["results"]))
+            return $serverResponse;
+
+        if (isset($input["format"]) && $input["format"] == "term") {
+            // keep the results as normal Term elements
+        } else {
+            $results = $serverResponse["results"];
+            $serverResponse["results"] = array();
+
+            foreach ($results as $k => $v) {
+                $serverResponse["results"][$k]["id"] = $v["userid"];
+                $serverResponse["results"][$k]["value"] = $v["fullName"] ." (".$v["userName"].")";
+                $serverResponse["results"][$k]["text"] = $serverResponse["results"][$k]["value"];
+            }
+        }
+
+        $this->logger->addDebug("Sending response back to client", $serverResponse);
+            // Send the response back to the web client
+        return $serverResponse;
     }
 
     /**

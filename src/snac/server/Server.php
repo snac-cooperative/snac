@@ -152,9 +152,15 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->userInformation();
                 break;
 
-            case "admin_users":
-                if (!$executor->hasPermission("Modify Users"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify users.");
+            case "search_users":
+                //if (!$executor->hasPermission("Edit"))
+                //    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.");
+                $this->response = $executor->searchUsers($this->input);
+                break;
+
+            case "list_users":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.");
                 $this->response = $executor->listUsers($this->input);
                 break;
 

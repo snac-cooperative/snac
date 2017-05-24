@@ -227,7 +227,7 @@ class DBUser
                                                 $user->getUserActive());
             $newUser = clone($user);
             $newUser->setUserID($appUserID);
-            
+
             /*
              * Admins can run this on behalf of another user. It requires authorization to save roles and save
              * groups.
@@ -418,6 +418,7 @@ class DBUser
         $user->setWorkEmail($record['work_email']);
         $user->setWorkPhone($record['work_phone']);
         $user->setUserActive($record['active']);
+
         /*
          * We may need the functions listUserRoles() and listGroupsForUser() for uses outside of simply building
          * user objects, although no other uses are possible as long as these functions take $user as an
@@ -1053,6 +1054,22 @@ class DBUser
             array_push($allUserList, $newUser);
         }
         return $allUserList;
+    }
+
+    public function searchUsers($query, $count, $roleFilter=null, $everyone=false) {
+        $resultList = $this->sql->searchUsers($query, $count, $roleFilter, $everyone);
+        $userList = array();
+        foreach($resultList as $user)
+        {
+            // System users only below 100
+            if ($user["id"] < 100)
+                continue;
+                
+            $newUserRec = $this->sql->selectUserByID($user["id"]);
+            $newUser = $this->populateUser($newUserRec);
+            array_push($userList, $newUser);
+        }
+        return $userList;
     }
 
     /**

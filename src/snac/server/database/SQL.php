@@ -1058,13 +1058,8 @@ class SQL
      *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
-    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset, $secondary)
     {
-        if ($status != 'locked editing' &&
-            $status != 'currently editing')
-        {
-            return array();
-        }
         $limitStr = '';
         $offsetStr = '';
         $limitStr = $this->doLOValue('limit', $limit);
@@ -1081,6 +1076,19 @@ class SQL
                         aa.version=cc.version and
                         aa.user_id=$1 and
                         aa.status = $2 %s %s', $limitStr, $offsetStr);
+        if ($secondary) {
+            $queryString = sprintf(
+                    'select aa.version, aa.id as ic_id
+                        from version_history as aa,
+                            (select max(version) as version, id from version_history
+                                where id in (select distinct id from version_history where user_id_secondary=$1)
+                                group by id) as cc
+                        where
+                            aa.id=cc.id and
+                            aa.version=cc.version and
+                            aa.user_id_secondary=$1 and
+                            aa.status = $2 %s %s', $limitStr, $offsetStr);
+        }
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1598,10 +1606,11 @@ class SQL
      * code. Something.
      *
      * @param string $note A string the user enters to identify what changed in this version.
+     * @param integer $useridSecondary optional Foreign key to appuser.id, the secondary user's appuser id value.
      *
      * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'.
      */
-    public function insertVersionHistory($mainID, $userid, $role, $status, $note)
+    public function insertVersionHistory($mainID, $userid, $role, $status, $note, $useridSecondary=null)
     {
         if (! $mainID)
         {
@@ -1611,12 +1620,12 @@ class SQL
         // We need version_history.id and version_history.id returned.
         $this->sdb->prepare($qq,
                             'insert into version_history
-                            (id, user_id, role_id, status, is_current, note)
+                            (id, user_id, role_id, status, is_current, note, user_id_secondary)
                             values
-                            ($1, $2, $3, $4, $5, $6)
+                            ($1, $2, $3, $4, $5, $6, $7)
                             returning version');
 
-        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note, $useridSecondary));
         $row = $this->sdb->fetchrow($result);
         $vhInfo['version'] = $row['version'];
         $vhInfo['ic_id'] = $mainID;
@@ -5118,6 +5127,43 @@ class SQL
         return $all;
     }
 
+    public function searchUsers($query, $count=null, $roleFilter=null, $everyone=false) {
+        $realCount = \snac\Config::$SQL_LIMIT;
+        if ($count != null)
+            $realCount = $count;
+
+        $activeFilter = "and u.active";
+        if ($everyone)
+            $activeFilter = "";
+
+        $result = null;
+
+        if ($roleFilter == null) {
+            $queryStr = "select u.id, u.fullname from appuser u
+                        where u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1
+                        $activeFilter
+                        order by u.fullname asc limit $2";
+            $result = $this->sdb->query($queryStr, array("%$query%", $realCount));
+        } else {
+            $queryStr = "select u.id, u.fullname from appuser u, appuser_role_link rl, role r
+                        where (u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1)
+                        and rl.uid = u.id and rl.rid = r.id and r.label = $2
+                        $activeFilter
+                        order by u.fullname asc limit $3";
+            $result = $this->sdb->query($queryStr, array("%$query%", $roleFilter, $realCount));
+        }
+
+        $all = array();
+        if ($result != null) {
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+        }
+        return $all;
+
+    }
+
     /**
      * Browse Name Index
      *
@@ -5205,7 +5251,7 @@ class SQL
 
         if (empty($check)) {
             // Doing an insert, since nothing found
-            $result = $this->sdb->query("insert into name_index 
+            $result = $this->sdb->query("insert into name_index
                                             (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
                                             ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
                                         array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
@@ -5217,7 +5263,7 @@ class SQL
             return $all;
         } else {
             // Doing an update, since ic_id was found
-            $result = $this->sdb->query("update name_index set 
+            $result = $this->sdb->query("update name_index set
                                             (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
                                             ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
                                         array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
