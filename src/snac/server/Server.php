@@ -153,8 +153,8 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "search_users":
-                //if (!$executor->hasPermission("Edit"))
-                //    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.");
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.");
                 $this->response = $executor->searchUsers($this->input);
                 break;
 

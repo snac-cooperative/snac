@@ -143,6 +143,9 @@ var permissions = {
                 <div class="panel-body">
                     <p>Continue where you left off on one of the following Constellations.</p>
                     <div class="list-group">
+                        {% if not data.editing %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.editing %}
                         <div class="list-group-item" style="padding: 0px;">
                             <div class="btn-group btn-group-justified">
@@ -171,6 +174,9 @@ var permissions = {
                     <p>You have the following Constellations open in a browser for editing.  You may unlock them by clicking below, however your
                     changes not previously saved may be lost.</p>
                     <div class="list-group">
+                        {% if not data.editing_lock %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.editing_lock %}
                         <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
                         {% endfor %}
@@ -234,6 +240,9 @@ var permissions = {
                     <p>You have the following Constellations that have been sent for review.  You may unlock them here to
                     continue editing them.</p>
                     <div class="list-group">
+                        {% if not data.review_lock %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.review_lock %}
                         <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
                         {% endfor %}
