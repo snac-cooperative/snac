@@ -83,6 +83,16 @@ h1 {
     font-size: 35px;
     line-height: .5em;
 }
+.snac-fullname-header {
+    font-family: Roboto;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: .5em;
+    padding-top: 15px;
+    padding-bottom: 15px;
+
+    color: #fff;
+}
 .navbar-inverse .navbar-brand,
 .navbar-inverse .navbar-nav li a {
     color: #D6E5F4;
@@ -132,12 +142,12 @@ h1 {
 }
 
 .tab-pane {
-
     border-left: 1px solid #ddd;
     border-right: 1px solid #ddd;
     border-bottom: 1px solid #ddd;
     border-radius: 0px 0px 5px 5px;
     padding: 10px;
+    margin-bottom: 20px;
 }
 
 .nav-tabs {
@@ -221,6 +231,19 @@ h1 {
 
 .relation-icon-caption {
     font-size: 10px;
+}
+
+.geoterm-heading {
+    line-height: 1em;
+}
+
+.geoterm-caption {
+    font-size: 11px; 
+    font-style:italic; 
+    color: #777777; 
+    margin-top: 0px; 
+    padding-top: 0px; 
+    margin-bottom: 5px;
 }
 
 .rotated-header {
@@ -487,4 +510,47 @@ button.list-group-item-review.active:focus {
         overflow-x: hidden;
         overflow-y: hidden; /*auto; /* Scrollable contents if viewport is shorter than content. */
     }
+}
+
+.search-box .search-entity-type-select,
+.search-box .select2 {
+    width: 18%;
+}
+
+.search-box .search-box-text {
+    width: 82%;
+}
+
+/* Search box doesn't look good below 700px */
+@media (max-width: 700px) {
+    .search-box .search-entity-type-select,
+    .search-box .select2 {
+        width: 38%;
+    }
+
+    .search-box .search-box-text {
+        width: 62%;
+    }
+}
+
+/* Really streamline when below 426px for phones */
+@media (max-width: 426px) {
+    .azgrid .row {
+       margin-left: auto;
+       margin-right: auto;
+    }
+    .azgrid .row .thumbnail {
+        text-align: center;
+    }
+    .azgrid .row .thumbnail .wikipedia_thumbnail {
+       margin-left: auto;
+       margin-right: auto;
+    }
+   .search-box .search-entity-type {
+      display: none;
+      visibility: hidden;
+    }
+   .search-box .search-box-text {
+      width: 100%;
+    } 
 }

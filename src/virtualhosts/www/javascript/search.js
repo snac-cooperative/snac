@@ -21,7 +21,8 @@ $(document).ready(function() {
         $(this).select2({
             minimumResultsForSearch: Infinity,
             allowClear: false,
-            theme: 'bootstrap'
+            theme: 'bootstrap',
+            width: ''
         });
     });
 
