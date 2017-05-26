@@ -128,7 +128,7 @@
                         <span>({{result.entityType.term}})</span>
                     </p>
                     {% if result.biogHists.0.text %}
-                        <p>{{result.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                    <p>{{result.biogHists.0.text | preg_replace('/<citation(.|\n)*?<\\/citation>/','') | striptags | truncate(500, true) }}</p>
                     {% else %}
                         <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}
