@@ -175,3 +175,23 @@
 	</div>
 </div>
 {% endmacro %}
+
+{% macro displayBiographicalExcerpt(constellation) %}
+    <h4>Biographical Excerpt</h4>
+    {% if constellation.biogHists.0.text %}
+        {% set bh = constellation.biogHists.0.text|replace({'<citation ':"<p class='source' ", '</citation>':"</p>"}) %}
+        {% set pars = bh|split('</p>') %}
+        {% if pars|length <= 3 %}
+            {{ bh|raw }}
+        {% else %}
+            {% set i = 0 %}
+            {% for par in pars %}
+                {% if i < 2 %}
+                    {{ par|raw }}</p>
+                {% endif %}
+                {% set i = i + 1 %}
+            {% endfor %}
+            <p>...</p>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
