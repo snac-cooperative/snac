@@ -83,11 +83,15 @@
                                 <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
                             </form>
                         </div>
-                        {% if permissions.Publish %}
                         <div class="col-xs-4 text-right">
+                            <button class="btn btn-default" aria-label="View your selected items" id="shoppingCartButton">
+                                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                <span class="badge" id="shoppingCartCount">0</span>
+                            </button>
+                            {% if permissions.Publish %}
                             <button class="btn btn-danger" id="autoMergeButton" disabled>Auto Merge</button>
+                            {% endif %}
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>

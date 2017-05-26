@@ -12,6 +12,7 @@ jQuery.fn.exists = function(){return this.length>0;}
 
 var count = 0;
 var toCompare = new Array();
+var recentResults = null;
 
 var first = "";
 var firstID = 0;
@@ -28,6 +29,7 @@ function queryBrowse(position, term, entityType, icid) {
         last = "";
         if (data.results.length > 0) {
             var list = "";
+            recentResults = data.results;
             first = data.results[0].name_entry;
             firstID = data.results[0].ic_id;
             last = data.results[data.results.length - 1].name_entry;
@@ -37,8 +39,8 @@ function queryBrowse(position, term, entityType, icid) {
                 var link = "<a target=\"_blank\" href=\"?command=view&constellationid="+result.ic_id+"\">"+result.name_entry+"</a>";
                 var checkbox = "<input class=\"compare-checkbox\" type=\"checkbox\" value=\""+result.ic_id+"\"";
                 var checked = false;
-                toCompare.forEach(function(icid){
-                    if (icid == result.ic_id)
+                toCompare.forEach(function(obj){
+                    if (obj.icid == result.ic_id)
                         checked = true;
                 });
                 if (checked)
@@ -81,17 +83,23 @@ function showCompareOption() {
         var checkbox = this;
         if (this.checked) {
             var found = false;
-            toCompare.forEach(function(icid) {
-                if (icid == ($(checkbox).val()))
+            toCompare.forEach(function(obj) {
+                if (obj.icid == ($(checkbox).val()))
                     found = true;
             });
             if (!found) {
-                toCompare.push(($(checkbox).val()));
+                var name = null;
+                recentResults.forEach(function(res) {
+                    if (res.ic_id == ($(checkbox).val()))
+                        name = res.name_entry;
+                });
+                toCompare.push({'icid':($(checkbox).val()), 'name':name});
+                $("#shoppingCartCount").text(toCompare.length);
             }
         } else {
             var idx = -1;
-            toCompare.forEach(function(icid, id) {
-                if (icid == ($(checkbox).val()))
+            toCompare.forEach(function(obj, id) {
+                if (obj.icid == ($(checkbox).val()))
                     idx = id;
             });
             if (idx >= 0) {
@@ -130,7 +138,16 @@ function showCompareOption() {
 
                 bootbox.confirm({
                     title: "Automatic Merge",
-                    message: "This action automatically combines all data elements from all <strong>"+toCompare.length+"</strong> selected Constellations to create a merged version.  This operation cannot be undone.  Are you sure you want to continue?",
+                    message: function() {
+                        var message = "<p>This action automatically combines all data elements from all <strong>"+toCompare.length+"</strong> of the following selected Constellations to create a merged version.</p>";
+                        message += "<ul class='list-group'>";
+                        toCompare.forEach(function(obj) {
+                            message += "<li class='list-group-item'>"+obj.name+"</li>";
+                        });
+                        message += "</ul>";
+                        message += "<p><strong>This operation cannot be undone.  Are you sure you want to continue?</strong></p>";
+                        return message;
+                    },
                     buttons: {
                         cancel: {
                             label: '<i class="fa fa-times"></i> Cancel'
@@ -146,8 +163,8 @@ function showCompareOption() {
                             var form = $("#merge_form");
                             form.html("");
                             form.append("<input type='hidden' value='"+toCompare.length+"' name='mergecount'/>");
-                            toCompare.forEach(function(icid) {
-                                form.append("<input type='hidden' value='"+icid+"' name='constellationid"+i+"'/>");
+                            toCompare.forEach(function(obj) {
+                                form.append("<input type='hidden' value='"+obj.icid+"' name='constellationid"+i+"'/>");
                                 i++;
                             });
 
@@ -196,6 +213,41 @@ $(document).ready(function() {
         $('#prevbutton').click(function() {
             disableButtons();
             return queryBrowse("before", first, $("#entityType").val(), firstID);
+        });
+
+
+        $("#shoppingCartButton").click(function() {
+            if ($("#shoppingCartButton").next('div.popover:visible').length) {
+                $("#shoppingCartButton").popover('destroy');
+            } else {
+                var html = "<p>You have the following Constellations selected:</p>";
+                html += "<ul class='list-group'>";
+                toCompare.forEach(function(obj) {
+                    html += "<li class='list-group-item'>"+obj.name+"</li>";
+                });
+                html += "</ul>";
+               
+                html += "<p class='text-center'><button id='shoppingCartEmpty' class='btn btn-default'>";
+                html += "<i class='fa fa-trash' aria-hidden='true'></i> Clear All Selections</button></p>"; 
+                
+                $("#shoppingCartButton").popover({
+                    placement: "bottom",
+                    title: "Selected Constellations",
+                    trigger: "manual",
+                    html: true,
+                    content: html
+                });
+                
+                $("#shoppingCartButton").popover('show');
+                $("#shoppingCartEmpty").click(function() {
+                    $("#shoppingCartButton").popover('destroy');
+                    toCompare = new Array();
+                    $(".compare-checkbox").each(function() {
+                        $(this).attr('checked', false);
+                    });
+                    showCompareOption();
+                });
+            }
         });
 
         enableCompareboxes();
