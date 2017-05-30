@@ -293,6 +293,11 @@ class Server implements \snac\interfaces\ServerInterface {
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
                 break;
+            
+            case "constellation_assert":
+                $this->response = $executor->makeAssertion($this->input);
+                break;
+
 
             case "read":
                 $this->response = $executor->readConstellation($this->input);

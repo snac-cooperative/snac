@@ -1004,6 +1004,12 @@ class ServerExecutor {
         return $response;
     }
 
+    public function makeAssertion(&$input) {
+        if (!isset($input["assertion"])) {
+            throw new \snac\exceptions\SNACInputException("Must specify an assertion to make");
+        }
+    }
+
     /**
      * Reassign Constellation
      *
