@@ -59,6 +59,16 @@ class Config {
     public static $PROJECT_DIR = "";
 
     /**
+     * @var string URL of the webui
+     */
+    public static $WEBUI_URL = "http://localhost";
+
+    /**
+     * @var string URL of the rest server
+     */
+    public static $REST_URL = "http://localhost:81";
+
+    /**
      *
      * @var string URL of the back-end server
      */

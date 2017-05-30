@@ -389,6 +389,9 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "profile":
                 $executor->displayProfilePage($display);
                 break;
+            case "api_info":
+                $executor->displayAPIInfoPage($display, $user);
+                break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
                 if ($display->hasTemplate()) {

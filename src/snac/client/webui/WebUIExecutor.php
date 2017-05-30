@@ -1237,6 +1237,27 @@ class WebUIExecutor {
     }
 
     /**
+     * Display API Info Page
+     *
+     * Fills the display with the API information page for the given user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param \snac\data\User $user The current user object
+     */
+    public function displayAPIInfoPage(&$display, &$user) {
+        $display->setTemplate("api_info_page");
+        $smallUser = new \snac\data\User();
+        $smallUser->setUserID($user->getUserID());
+        $smallUser->setUserName($user->getUserName());
+        $smallUser->setFullName($user->getFullName());
+        $smallUser->setToken($user->getToken());
+        $display->setData([
+            "restURL" => \snac\Config::$REST_URL,
+            "user" => json_encode($smallUser->toArray(), JSON_PRETTY_PRINT)
+        ]);
+    }
+
+    /**
      * Display Profile Page
      *
      * Fills the display with the profile page for the given user.
