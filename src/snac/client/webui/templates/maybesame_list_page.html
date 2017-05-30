@@ -26,7 +26,19 @@ $('.selectpicker').selectpicker();
 
 <!-- Tiny MCE text editor -->
 <script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
-<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+<script>
+tinymce.init({
+    selector:'textarea', 
+    min_height: 250,
+    menubar: false,
+    statusbar: false,
+    plugins: [
+        'advlist autolink lists link image charmap print preview anchor',
+        'searchreplace visualblocks code fullscreen',
+        'insertdatetime contextmenu paste code'
+    ],
+    toolbar: 'undo redo | bold italic | bullist numlist outdent indent | link',
+});</script>
 
 <!-- SNAC Stylesheet -->
 <link rel="stylesheet" href="css/snac.css{{control.noCache}}">
@@ -37,6 +49,7 @@ $('.selectpicker').selectpicker();
 
 <body role="document">
 
+{% from 'widgets.html' import displayRelationship %}
 {% from 'page_navigation.html' import topNavigation %}
 {{ topNavigation(X, user, permissions, control) }}
 
@@ -85,7 +98,7 @@ $('.selectpicker').selectpicker();
                             <span>({{maybeSame.constellation.entityType.term}})</span>
                         </p>
                         {% if maybeSame.constellation.biogHists.0.text %}
-                            <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                            <p>{{maybeSame.constellation.biogHists.0.text | striptags | slice(0, 500)}}...</p>
                         {% else %}
                             <p class="missing">No biographical history available for this identity.</p>
                         {% endif %}
@@ -93,8 +106,30 @@ $('.selectpicker').selectpicker();
                             <a href="?command=diff&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
                             {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
                             <a href="?command=diff_merge&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
+                            <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
                             {% endif %}
                         </p>
+                        {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                        <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header primary">
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                        <h4 class="modal-title" id="notSameModalTitle{{loop.index}}">Mark Not Same</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        {{ displayRelationship(data.constellation, maybeSame.constellation, 'not same as') }}
+                                        <p style="margin-bottom: 20px;">To make an official assertion that these two Constellations should never be merged, include evidence in the text field below and choose "Make Assertion."  Evidence is required for the official assertion.  If you do not have strong enough evidence, but still think they should not be merged, instead use the "Remove from Consideration" button below.</p>
+                                        <textarea></textarea>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-success">Remove from Consideration</button>
+                                        <button type="button" class="btn btn-primary">Make Assertion</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     {% endfor %}
 
                 {% else %}

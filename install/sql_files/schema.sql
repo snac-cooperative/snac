@@ -1083,6 +1083,16 @@ create index general_context_idx2 on general_context (ic_id, version);
 create index legal_status_idx2 on legal_status (ic_id, version);
 create index language_idx3 on language (fk_id, fk_table, version);
 
+drop table if exists not_same;
+create table not_same (
+    id               int primary key default nextval('id_seq'),
+    ic_id1           int,  -- fk to version_history for one constellation
+    ic_id2           int,  -- fk to version_history for other constellation
+    assertion        text, -- free-text assertion box
+    user_id          int,  -- fk to appuser table, user that made the assertion
+    timestamp        timestamp default(now()));
+create index not_same_idx1 on not_same (ic_id1, ic_id2);
+
 -- Views that allow us to query the most recent constellation data
 
 create or replace view address_line_view as
