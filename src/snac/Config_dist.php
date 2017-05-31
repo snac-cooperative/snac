@@ -143,6 +143,11 @@ class Config {
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
+    
+    /**
+     * @var string Location of the REST commands file 
+     */
+    public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
     /**
      * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
