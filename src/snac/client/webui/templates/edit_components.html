@@ -89,10 +89,14 @@
 
 {% endmacro %}
 
-{% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i) %}
+{% macro displayNameEntry(X, inEdit, showSubElements, nameEntry, i, isPrimary) %}
     {% import 'widgets.html' as widgets %}
     {% import _self as components %}
+        {% if not inEdit and isPrimary %}
+        <div class="panel panel-primary" id="nameEntry_panel_{{i}}">
+        {% else %}
         <div class="panel panel-default" id="nameEntry_panel_{{i}}">
+        {% endif %}
         <div class="panel-body">
             <div class="col-xs-10" id="nameEntry_datapart_{{i}}">
                 <input id="nameEntry_id_{{i}}" name="nameEntry_id_{{i}}" type="hidden" value="{{ nameEntry.id }}"/>
@@ -127,6 +131,7 @@
 
                     </div>
                 </div>
+                {% if inEdit %}
                 <div class="form-group">
                     <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4" data-content="{{X.preferenceScore.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.preferenceScore.display }}
@@ -136,6 +141,9 @@
                         <p class="form-control-static">{{ nameEntry.preferenceScore }}</p>
                     </div>
                 </div>
+                {% endif %}
+
+                {% if inEdit or nameEntry.language %}
                 <input type="hidden" id="nameEntry_language_id_{{i}}" name="nameEntry_language_id_{{i}}" value="{{nameEntry.language.id}}"/>
                 <input type="hidden" id="nameEntry_language_version_{{i}}" name="nameEntry_language_version_{{i}}" value="{{nameEntrys.language.version}}"/>
                 <div class="form-group">
@@ -162,6 +170,7 @@
                         <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
                     </div>
                 </div>
+                {% endif %}
             </div>
             {{ widgets.dateModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.scmModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
