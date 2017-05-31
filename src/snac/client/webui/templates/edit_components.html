@@ -723,7 +723,7 @@
 
 
 
-{% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName) %}
+{% macro displayConstellationRelation(X, inEdit, showSubElements, relation, i, entityType, preferredName, reverse) %}
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
             <div class="panel-body">
@@ -741,18 +741,33 @@
                     <input id="constellationRelation_targetEntityType_{{i}}" name="constellationRelation_targetEntityType_{{i}}" type="hidden" value="{{ relation.targetEntityType.id }}"/>
                     <div class="form-group well well-sm text-center">
                         <div class="col-xs-4 text-center">
-                            <p class="relation-icon">
-                                {% if entityType == 'person' %}
-                                <i class="fa fa-user" aria-hidden="true"></i><br/>
-                                {% elseif entityType == 'corporateBody' %}
-                                <i class="fa fa-building" aria-hidden="true"></i><br/>
-                                {% elseif entityType == 'family' %}
-                                <i class="fa fa-users" aria-hidden="true"></i><br/>
-                                {% endif %}
-                            </p>
-                            <p class="relation-icon-caption">
-                                {{ preferredName }}
-                            </p>
+                            {% if not reverse %}
+                                <p class="relation-icon">
+                                    {% if entityType == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption">
+                                    {{ preferredName }}
+                                </p>
+                            {% else %}
+                                <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
+                                    {% if relation.targetEntityType.term == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
+                                    {{relation.content}}
+                                </p>
+                            {% endif %}
                         </div>
                         <div class="col-xs-4 text-center">
                             <p class="relation-icon">
@@ -764,18 +779,33 @@
 
                         </div>
                         <div class="col-xs-4 text-center">
-                            <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
-                                {% if relation.targetEntityType.term == 'person' %}
-                                <i class="fa fa-user" aria-hidden="true"></i><br/>
-                                {% elseif relation.targetEntityType.term == 'corporateBody' %}
-                                <i class="fa fa-building" aria-hidden="true"></i><br/>
-                                {% elseif relation.targetEntityType.term == 'family' %}
-                                <i class="fa fa-users" aria-hidden="true"></i><br/>
-                                {% endif %}
-                            </p>
-                            <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
-                                {{relation.content}}
-                            </p>
+                            {% if not reverse %}
+                                <p class="relation-icon" id="constellationRelation_relationPictureIcon_{{i}}">
+                                    {% if relation.targetEntityType.term == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif relation.targetEntityType.term == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption" id="constellationRelation_relationPictureTitle_{{i}}">
+                                    {{relation.content}}
+                                </p>
+                            {% else %}
+                                <p class="relation-icon">
+                                    {% if entityType == 'person' %}
+                                    <i class="fa fa-user" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'corporateBody' %}
+                                    <i class="fa fa-building" aria-hidden="true"></i><br/>
+                                    {% elseif entityType == 'family' %}
+                                    <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                    {% endif %}
+                                </p>
+                                <p class="relation-icon-caption">
+                                    {{ preferredName }}
+                                </p>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="form-group">
