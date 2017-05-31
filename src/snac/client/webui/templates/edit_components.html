@@ -727,7 +727,11 @@
     {% import 'widgets.html' as widgets %}
         <div class="panel panel-default" id="constellationRelation_panel_{{i}}">
             <div class="panel-body">
+                {% if not showSubElements %}
+                <div class="col-xs-12" id="constellationRelation_datapart_{{i}}">
+                {% else %}
                 <div class="col-xs-10" id="constellationRelation_datapart_{{i}}">
+                {% endif %}
                     <input id="constellationRelation_id_{{i}}" name="constellationRelation_id_{{i}}" type="hidden" value="{{ relation.id }}"/>
                     <input id="constellationRelation_version_{{i}}" name="constellationRelation_version_{{i}}" type="hidden" value="{{ relation.version }}"/>
                     <input id="constellationRelation_operation_{{i}}" name="constellationRelation_operation_{{i}}" type="hidden" value="{{ relation.operation }}"/>
@@ -797,7 +801,7 @@
                             <input id="constellationRelation_type_term_{{i}}" name="constellationRelation_type_term_{{i}}" type="hidden" class="form-control" value="{{ relation.type.term }}"/>
                             <input id="constellationRelation_type_vocabtype_{{i}}" name="constellationRelation_type_vocabtype_{{i}}" type="hidden" class="form-control" value="relation_type"/>
                             <input id="constellationRelation_type_minlength_{{i}}" name="constellationRelation_type_minlength_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ relation.type.term }}</p>
+                            <p class="form-control-static" id="constellationRelation_typeText_{{i}}">{{ relation.type.term }}</p>
                         </div>
                     </div>
                     <div class="form-group">
@@ -806,7 +810,7 @@
                         </label>
                         <div class="col-xs-8" id="textarea_constellationRelation_note_{{i}}">
                             <textarea id="constellationRelation_note_{{i}}" name="constellationRelation_note_{{i}}" class="form-control" style="display:none;">{{ relation.note }}</textarea>
-                            <p class="form-control-static">{{ relation.note }}</p>
+                            <p class="form-control-static" id="constellationRelation_noteText_{{i}}">{{ relation.note }}</p>
                         </div>
                     </div>
                 </div>
