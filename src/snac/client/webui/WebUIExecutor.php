@@ -1258,6 +1258,22 @@ class WebUIExecutor {
     }
 
     /**
+     * Display API Help Page
+     *
+     * Fills the display with the API help information by reading the REST API's command
+     * documentation.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayAPIHelpPage(&$display) {
+        $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
+        $display->setTemplate("api_help_page");
+        $display->setData([
+            "commands" => $commands
+        ]);
+    }
+
+    /**
      * Display Profile Page
      *
      * Fills the display with the profile page for the given user.

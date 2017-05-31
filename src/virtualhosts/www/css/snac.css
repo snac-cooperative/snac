@@ -501,6 +501,13 @@ button.list-group-item-merge.active:focus {
     font-size: 55px;
 }
 
+.table-noborder tr {
+    border: none;
+}
+.table-noborder tbody tr td {
+    border: none;
+}
+
 /* Fix the width of font-awesome icons so their text aligns nicely beside them */
 .fa {
     width: 1.2em;
