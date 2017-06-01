@@ -1788,6 +1788,16 @@ class Constellation extends AbstractData {
         $first->mandates = $result["first"];
         $second->mandates = $result["second"];
 
+        $result = $this->diffArray($this->getDateList(), $other->getDateList(), $strict);
+        $intersection->dateList = $result["intersection"];
+        $first->dateList = $result["first"];
+        $second->dateList = $result["second"];
+
+        $result = $this->diffArray($this->getSNACControlMetadata(), $other->getSNACControlMetadata(), $strict);
+        $intersection->snacControlMetadata = $result["intersection"];
+        $first->snacControlMetadata = $result["first"];
+        $second->snacControlMetadata = $result["second"];
+        
         if (!$intersection->isEmpty())
             $return["intersection"] = $intersection;
 
@@ -1835,11 +1845,29 @@ class Constellation extends AbstractData {
             return true;
         }
 
+        // Dates, gained by AbstractData
+        foreach ($combine->getDateList() as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSubElements();
+            $this->addDate($element);
+        }
+
+        // SCM, gained by AbstractData (but shouldn't be used on the high-level constellation)
+        foreach ($combine->snacControlMetadata as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSubElements();
+            $this->addSNACControlMetadata($element);
+        }
+
         foreach ($combine->sources as &$element) {
             // Sources need their IDs in tact if we plan to fix up SCMs
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addSource($element);
         }
 
@@ -1847,7 +1875,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addMandate($element);
         }
 
@@ -1855,7 +1883,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addStructureOrGenealogy($element);
         }
 
@@ -1863,7 +1891,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addGeneralContext($element);
         }
 
@@ -1871,7 +1899,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             // Add if a new one, append to the first bioghist if not
             if (empty($this->biogHists)) {
                 $this->addBiogHist($element);
@@ -1884,7 +1912,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addConventionDeclaration($element);
         }
 
@@ -1892,7 +1920,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addNationality($element);
         }
 
@@ -1900,7 +1928,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addOtherRecordID($element);
         }
 
@@ -1908,7 +1936,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addEntityID($element);
         }
 
@@ -1916,7 +1944,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addLanguageUsed($element);
         }
 
@@ -1924,7 +1952,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addLegalStatus($element);
         }
 
@@ -1932,7 +1960,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addGender($element);
         }
 
@@ -1940,20 +1968,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
-
-            foreach ($element->getContributors() as &$contributor) {
-                $contributor->setID(null);
-                $contributor->setVersion(null);
-                $contributor->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            }
-            foreach ($element->getComponents() as &$component) {
-                $component->setID(null);
-                $component->setVersion(null);
-                $component->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            }
-
-
+            $element->cleanseSubElements();
             $this->addNameEntry($element);
         }
 
@@ -1961,7 +1976,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addOccupation($element);
         }
 
@@ -1969,7 +1984,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addRelation($element);
         }
 
@@ -1977,7 +1992,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addResourceRelation($element);
         }
 
@@ -1985,7 +2000,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addFunction($element);
         }
 
@@ -1993,7 +2008,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addPlace($element);
         }
 
@@ -2001,7 +2016,7 @@ class Constellation extends AbstractData {
             $element->setID(null);
             $element->setVersion(null);
             $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
-            $element->cleanseSCMMetadata();
+            $element->cleanseSubElements();
             $this->addSubject($element);
         }
 
