@@ -1023,7 +1023,8 @@ class ConstellationPostMapper {
                         $cData["operation"] = $this->getOperation($data);
                         $contributor->setOperation($this->getOperation($data));
                     }
-
+                    if (isset($cData["name"]))
+                        $contributor->setName($cData["name"]);
                     $contributor->setType($this->parseTerm($cData["type"]));
                     $contributor->setRule($this->parseTerm($cData["rule"]));
 
