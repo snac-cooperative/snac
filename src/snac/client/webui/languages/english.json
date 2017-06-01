@@ -94,19 +94,15 @@
         "display" : "Components",
         "tooltip" : "An ordered list of name components, each parameterized by a Part type"
     },
-    "contributor" : {
-        "display" : "Type",
-        "tooltip" : "Type of the name for a given institution"
+    "rulesForm" : {
+        "display" : "Form",
+        "tooltip" : "Type of the name based on these descriptive rules"
     },
-    "contributorName" : {
-        "display" : "Authority List",
-        "tooltip" : "The name of the authority, i.e. WorldCat"
+    "rulesSet" : {
+        "display" : "Ruleset",
+        "tooltip" : "Descriptive rules used to formulate this name heading"
     },
-    "contributorType" : {
-        "display" : "Type",
-        "tooltip" : "Type of the name for this authority"
-    },
-    "contributorRules" : {
+    "rules" : {
         "display" : "Rules",
         "tooltip" : "Descriptive rules used to formulate this name heading"
     },

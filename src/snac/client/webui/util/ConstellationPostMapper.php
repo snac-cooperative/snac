@@ -474,6 +474,7 @@ class ConstellationPostMapper {
                             $this->reconcileObject($contributor, $otherContrib);
                         }
                     }
+                    // TODO Add rule objects here
                     foreach ($nameEntry->getComponents() as $component) {
                         foreach ($other->getComponents() as $otherComponent) {
                             $this->reconcileObject($component, $otherComponent);
@@ -1001,6 +1002,32 @@ class ConstellationPostMapper {
                     $contributor->setRule($this->parseTerm($cData["rule"]));
 
                     $this->addToMapping("nameEntry_contributor_".$l, $k, $cData, $contributor);
+
+                    $nameEntry->addContributor($contributor);
+                }
+            }
+            
+            // right now, update rules if updating name entry TODO
+            // TODO: use rule not contributor going forward! need to update
+            if (isset($data["rule"])) {
+                foreach ($data["rule"] as $l => $cData) {
+                    if ($cData["id"] == "" && $cData["operation"] != "insert")
+                        continue;
+                    $this->logger->addDebug("Parsing through name rume", $cData);
+                    $contributor = new \snac\data\Contributor();
+                    $contributor->setID($cData["id"]);
+                    $contributor->setVersion($cData["version"]);
+                    if ($cData["operation"] == "insert" || $cData["operation"] == "delete")
+                        $contributor->setOperation($this->getOperation($cData));
+                    else {
+                        $cData["operation"] = $this->getOperation($data);
+                        $contributor->setOperation($this->getOperation($data));
+                    }
+
+                    $contributor->setType($this->parseTerm($cData["type"]));
+                    $contributor->setRule($this->parseTerm($cData["rule"]));
+
+                    $this->addToMapping("nameEntry_rule_".$l, $k, $cData, $contributor);
 
                     $nameEntry->addContributor($contributor);
                 }

@@ -1135,30 +1135,30 @@ function updateNameEntryHeading(i) {
 
 
 /**
- * Create a new Name Entry Contributor object on page
+ * Create a new Name Entry Rules object on page
  *
- * Puts a new Name Entry contributor object DIV on the page and attaches it correctly to the DOM and javascript.
+ * Puts a new Name Entry rule object DIV on the page and attaches it correctly to the DOM and javascript.
  *
- * @param  int     i    The index on the page of the nameEntry to add this contributor to
+ * @param  int     i    The index on the page of the nameEntry to add this rule to
  * @return boolean      false to play nice with the browser.
  */
-function newNameEntryContributor(i) {
+function newNameEntryRule(i) {
 	var nextid = 1;
-	if ($('#nameEntry_contributor_next_j_'+i).exists()) {
-	    nextid = parseInt($('#nameEntry_contributor_next_j_'+i).text());
+	if ($('#nameEntry_rule_next_j_'+i).exists()) {
+	    nextid = parseInt($('#nameEntry_rule_next_j_'+i).text());
 	}
-	console.log("Creating new name entry contributor for nameEntry " + i + " with id: " + nextid);
+	console.log("Creating new name entry rule for nameEntry " + i + " with id: " + nextid);
     somethingHasBeenEdited = true;
-    var text = $('#contributor_template').clone();
+    var text = $('#rule_template').clone();
     var html = text.html().replace(/ZZ/g, i).replace(/YY/g, nextid);
-    $('#nameEntry_contributor_add_div_'+i).before(html);
+    $('#nameEntry_rule_add_div_'+i).before(html);
 
-    $('#nameEntry_contributor_' + nextid + '_operation_' + 1).val("insert");
-    turnOnTooltips("nameEntry_contributor_" + nextid, i);
-    subMakeEditable("nameEntry_contributor_" + nextid, i);
+    $('#nameEntry_rule_' + nextid + '_operation_' + 1).val("insert");
+    turnOnTooltips("nameEntry_rule_" + nextid, i);
+    subMakeEditable("nameEntry_rule_" + nextid, i);
 
     // Put the updated version number back in the DOM
-    $('#nameEntry_contributor_next_j_'+i).text(++nextid);
+    $('#nameEntry_rule_next_j_'+i).text(++nextid);
 
     return false;
 }

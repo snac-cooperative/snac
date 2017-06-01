@@ -162,7 +162,30 @@
                         <p class="form-control-static">{{ nameEntry.language.script.term }}</p>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="control-label col-xs-4" data-content="{{X.rules.tooltip}}" data-toggle="popover" data-placement="top">
+                        {{ X.rules.display }}
+                    </label>
+                    <div class="col-xs-8 well well-sm">
+                        {% set j = 0 %}
+                        {% for contributor in nameEntry.contributors %}
+                            {{ components.displayNameRule(X, inEdit, showSubElements, contributor, i, j) }}
+                            {% set j = j + 1 %}
+                        {% endfor %}
+                        <span id='nameEntry_rule_next_j_{{i}}' style='display:none;'>{{j}}</span>
+                        
+                        <div class="form-group" id="nameEntry_rule_add_div_{{i}}">
+                            <div class="col-xs-12 text-center">
+                                <button class="btn btn-success snac-hidden" id="nameEntry_rule_add_{{i}}" 
+                                    onClick="return newNameEntryRule({{i}});" disabled>
+                                    <span class="glyphicon glyphicon-plus-sign"></span> Add Rule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
             {{ widgets.dateModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.scmModal(X, inEdit, showSubElements, "nameEntry", i, nameEntry.original, "Name Entry", nameEntry) }}
             {{ widgets.optionsListWithDate(X, inEdit, showSubElements, "nameEntry", i) }}
@@ -234,6 +257,74 @@
         </div>
 
 {% endmacro %}
+
+{% macro displayNameRule(X, inEdit, showSubElements, rule, i, j) %}
+        <div class="col-xs-12" id="nameEntry_rule_{{j}}_panel_{{i}}" style="padding-top: 5px; padding-bottom: 5px;">
+            <div id="nameEntry_rule_{{j}}_datapart_{{i}}">
+                <input type="hidden" id="nameEntry_rule_{{j}}_id_{{i}}"
+                    name="nameEntry_rule_{{j}}_id_{{i}}"
+                    value="{{rule.id}}"/>
+                <input type="hidden" id="nameEntry_rule_{{j}}_version_{{i}}"
+                    name="nameEntry_rule_{{j}}_version_{{i}}"
+                    value="{{rule.version}}"/>
+                <input type="hidden" id="nameEntry_rule_{{j}}_operation_{{i}}"
+                    name="nameEntry_rule_{{j}}_operation_{{i}}"
+                    value="{{rule.operation}}"/>
+                <div>
+                    <div class="input-group select2-bootstrap-append">
+                        <div id="select_nameEntry_rule_{{j}}_type_{{i}}" style="width: 50%">
+                            <input id="nameEntry_rule_{{j}}_type_id_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.type.id }}"/>
+                            <input id="nameEntry_rule_{{j}}_type_term_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.type.term }}"/>
+                            <input id="nameEntry_rule_{{j}}_type_vocabtype_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="name_type"/>
+                            <input id="nameEntry_rule_{{j}}_type_minlength_{{i}}"
+                                name="nameEntry_rule_{{j}}_type_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="nameEntry_rule_{{j}}_type_placeholder_{{i}}"
+                                   type="hidden" value="{{X.rulesForm.display}}"/>
+                            <p class="form-control-static">{{ rule.type.term }}</p>
+                        </div>
+                        <div id="select_nameEntry_rule_{{j}}_rule_{{i}}" style="width:50%; clear: none; float: left;">
+                            <input id="nameEntry_rule_{{j}}_rule_id_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_id_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.rule.id }}"/>
+                            <input id="nameEntry_rule_{{j}}_rule_term_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_term_{{i}}"
+                                type="hidden" class="form-control"
+                                value="{{ rule.rule.term }}"/>
+                            <input id="nameEntry_rule_{{j}}_rule_vocabtype_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_vocabtype_{{i}}"
+                                type="hidden" class="form-control" value="name_rule"/>
+                            <input id="nameEntry_rule_{{j}}_rule_minlength_{{i}}"
+                                name="nameEntry_rule_{{j}}_rule_minlength_{{i}}"
+                                type="hidden" class="form-control" value="0"/>
+                            <input id="nameEntry_rule_{{j}}_rule_placeholder_{{i}}"
+                                   type="hidden" value="{{X.rulesSet.display}}"/>
+                            <p class="form-control-static">{{ rule.rule.term ? rule.rule.term : 'unknown (' ~ rule.name ~ ')' }}</p>
+                        </div>
+
+                        <span class="input-group-btn">
+                            <button class="btn btn-danger snac-hidden"
+                                id="nameEntry_rule_{{j}}_remove_{{i}}" disabled
+                                onClick="setRepeatedDataDeleted('nameEntry_rule_{{j}}', '{{i}}'); return false;">
+                                <span class="glyphicon glyphicon-minus-sign"></span>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+{% endmacro %}
+
 
 
 {% macro displayContributor(X, inEdit, showSubElements, contributor, i, j) %}
@@ -1438,6 +1529,7 @@
                             <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
                     </div>
+                    <!--
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.scmDescriptiveRule.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmDescriptiveRule.display }}
@@ -1477,6 +1569,7 @@
                             <p class="form-control-static">{{ scm.language.script.term }}</p>
                         </div>
                     </div>
+                    -->
                     <div class="form-group">
                         <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.descriptiveNote.display }}
