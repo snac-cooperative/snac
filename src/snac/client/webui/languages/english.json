@@ -355,7 +355,7 @@
         "tooltip" : "The rule used in formulating the data element from the Source Data above"
     },
     "scmNote" : {
-        "display" : "Metadata Note",
+        "display" : "Descriptive Note",
         "tooltip" : "A note describing this assertion"
     }
 }
