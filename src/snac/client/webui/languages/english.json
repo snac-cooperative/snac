@@ -339,7 +339,7 @@
     "_comment" : "%%% SCM elements",
 
     "scmSourceData" : {
-        "display" : "Source Data",
+        "display" : "As-Recorded Data",
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {
@@ -353,5 +353,9 @@
     "scmDescriptiveRule" : {
         "display" : "Descriptive Rule",
         "tooltip" : "The rule used in formulating the data element from the Source Data above"
+    },
+    "scmNote" : {
+        "display" : "Metadata Note",
+        "tooltip" : "A note describing this assertion"
     }
 }
