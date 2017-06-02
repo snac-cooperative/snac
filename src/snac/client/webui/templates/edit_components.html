@@ -311,7 +311,15 @@
                                 type="hidden" class="form-control" value="0"/>
                             <input id="nameEntry_rule_{{j}}_rule_placeholder_{{i}}"
                                    type="hidden" value="{{X.rulesSet.display}}"/>
-                            <p class="form-control-static">{{ rule.rule.term ? rule.rule.term : 'unknown (' ~ rule.name ~ ')' }}</p>
+                            <p class="form-control-static">
+                            {% if rule.rule.term %}
+                                {{ rule.rule.term }}
+                            {% elseif rule.name %}
+                                unknown ({{rule.name}})
+                            {% else %}
+                                unknown
+                            {% endif %}
+                            </p>
                         </div>
 
                         <span class="input-group-btn">
