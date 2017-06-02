@@ -1501,6 +1501,15 @@
                     <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
                     <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value="{{ scm.operation }}"/>
                     <div class="form-group">
+                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmNote.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.scmNote.display }}
+                        </label>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_note_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.note }}</textarea>
+                            <p class="form-control-static">{{ scm.note }}</p>
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSourceData.display }}
                         </label>
@@ -1573,15 +1582,6 @@
                         </div>
                     </div>
                     -->
-                    <div class="form-group">
-                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.descriptiveNote.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_scm_{{short}}_note_{{j}}_{{i}}">
-                            <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.note }}</textarea>
-                            <p class="form-control-static">{{ scm.note }}</p>
-                        </div>
-                    </div>
 
 
                 </div>
