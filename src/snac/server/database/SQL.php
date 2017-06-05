@@ -5682,6 +5682,23 @@ class SQL
         return array();
 
     }
+    
+    public function deleteMessageByID($id) {
+        $result = $this->sdb->query(
+            'update messages set deleted = true where id = $1 returning *',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return true;
+
+        return false;
+
+    }
 
     public function markMessageReadByID($id) {
         $result = $this->sdb->query(
@@ -5720,7 +5737,7 @@ class SQL
             $readFilter = 'and not read';
         }
         $result = $this->sdb->query(
-            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where not deleted and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
             array($userid));
 
         $all = array();
