@@ -720,6 +720,56 @@ class DBUtil
         return $versions;
     }
 
+    /**
+     * List the Version History Information
+     *
+     * Gets the version history information of the given Constellation ID (mainID).  If
+     * given a version, it only returns the history up to that version number, else it will
+     * return all the history.  If the publicOnly flag is set to true, it only returns
+     * the history at publicly-viewable points, i.e. Ingest CPF, Publish, Delete, Tombstone.
+     *
+     * @param int $mainID The Constellation ID to list
+     * @param int $version optional The latest version of the history to return (else returns all)
+     * @param boolean $publicOnly optional Only return the publicly available versionings (default true)
+     * @return string[] Version History information for the Constellation
+     */ 
+    public function listVersionHistory($mainID, $version=null, $publicOnly=true) {
+        $fromVersion = $version;
+        if (!$version || !is_int($version)) {
+            $fromVersion = $this->sql->selectCurrentVersion($mainID);
+        }
+
+        $vhInfo = array ("ic_id" => $mainID, "version" => $fromVersion);
+
+        $history = $this->sql->selectVersionHistory($vhInfo, !$publicOnly);
+
+        $result = array();
+
+        //TODO Eventually this should be changed to an object
+        foreach ($history as $h) {
+            $event = [
+                'date' => $h['update_date'],
+                'userName' => $h['username'],
+                'fullName' => $h['fullname'],
+                'version' => $h['version'],
+                'status' => $h['status'],
+                'note' => $h['note']
+            ];
+            if ($event['status'] == 'ingest cpf') {
+                $event['data'] = json_decode($event['note'], true);
+                $event['note'] = "";
+            }
+            array_push($result, $event);
+        }
+
+        // give the results back in reverse order
+        usort($result,
+            function ($a, $b) {
+                return $b['version'] <=> $a['version'];
+            });
+        return $result;
+    }
+
 
     /**
      * Safely call object getID method
@@ -1861,7 +1911,7 @@ class DBUtil
         $type = null;
         $types = $this->searchVocabulary("source_type", "simple");
         if (count($types) == 1) {
-            $type = $this->populateTerm($types[0]["id"]);
+            $type = $types[0];
         }
 
         $tableName = 'source';
@@ -1942,7 +1992,7 @@ class DBUtil
             $type = null;
             $types = $this->searchVocabulary("source_type", "simple");
             if (count($types) == 1) {
-                $type = $this->populateTerm($types[0]["id"]);
+                $type = $types[0];
             }
             $newObj->setType($type);
 
@@ -2632,6 +2682,63 @@ class DBUtil
     }
 
     /**
+     * Write a Vocabulary Term
+     *
+     * Adds a new vocabulary term to the database and returns the full term with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\Term $term Vocabulary term to write
+     * @return \snac\data\Term|boolean       Term if succeeded, or false on failure
+     */
+    public function writeVocabularyTerm($term) {
+        if ($term == null || $term->getType() == null || $term->getType() == "" || $term->getTerm() == null || $term->getTerm() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\Term($term->toArray()); // deep copy
+
+        $id = $this->sql->insertVocabularyTerm($term->getType(), $term->getTerm(), $term->getURI(), $term->getDescription());
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
+
+    /**
+     * Write a Geo Term
+     *
+     * Adds a new geo term to the database and returns the full geoterm with id.  If
+     * write fails, it returns false.
+     *
+     * @param  \snac\data\GeoTerm $term Geoterm to write
+     * @return \snac\data\GeoTerm|boolean       GeoTerm if succeeded, or false on failure
+     */
+    public function writeGeoTerm($term) {
+        if ($term == null || $term->getName() == null || $term->getName() == "") {
+            return false;
+        }
+
+        $written = new \snac\data\GeoTerm($term->toArray()); // deep copy
+
+        $id = $this->sql->insertGeoTerm( $term->getName(),
+                                            $term->getURI(),
+                                            $term->getLatitude(),
+                                            $term->getLongitude(),
+                                            $term->getAdministrationCode(),
+                                            $term->getCountryCode()
+                                        );
+
+        if (!$id)
+            return false;
+
+        $written->setID($id);
+        return $written;
+    }
+
+    /**
      * Save Resource
      *
      * Save a resource
@@ -3160,19 +3267,19 @@ class DBUtil
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $revisedTerm = $this->populateTerm($searchResult[0]["id"]);
+        $revisedTerm = $searchResult[0];
 
         $searchResult = $this->searchVocabulary("agent_type", "human");
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $humanTerm = $this->populateTerm($searchResult[0]["id"]);
+        $humanTerm = $searchResult[0];
 
         $searchResult = $this->searchVocabulary("agent_type", "machine");
         if (count($searchResult) != 1) {
             return; // could not work with the vocabulary to put in maintenance information
         }
-        $machineTerm = $this->populateTerm($searchResult[0]["id"]);
+        $machineTerm = $searchResult[0];
 
 
         // Fill in the Maintenance History Events
@@ -3928,6 +4035,11 @@ class DBUtil
 
     }
 
+    public function browseNameIndex($query, $position, $entityType=null, $icid=0) {
+
+        return $this->sql->browseNameIndex($query, $position, $entityType, $icid);
+    }
+
     /**
      * Search Vocabulary
      *
@@ -3942,20 +4054,42 @@ class DBUtil
      *
      * @return string[][] list of results
      */
-    public function searchVocabulary($type, $query, $entityTypeID=null) {
+    public function searchVocabulary($type, $query, $entityTypeID=null, $count=100) {
 
         if ($type == 'geo_place') {
             $results = $this->sql->searchPlaceVocabulary($query);
             $retVal = array();
-            foreach ($results as $res) {
-                $item = array();
-                $item["id"] = $res["id"];
-                $item["value"] = $res["name"] . " (" . $res["admin_code"] . ", " . $res["country_code"] . ")";
-                array_push($retVal, $item);
+            foreach ($results as $data) {
+                $place = new \snac\data\GeoTerm();
+                $place->setAdministrationCode($data["admin_code"]);
+                $place->setCountryCode($data["country_code"]);
+                $place->setID($data["id"]);
+                $place->setLatitude($data["latitude"]);
+                $place->setLongitude($data["longitude"]);
+                $place->setName($data["name"]);
+                $place->setURI($data["uri"]);
+
+                array_push($retVal, $place);
             }
             return $retVal;
         }
-        return $this->sql->searchVocabulary($type, $query, $entityTypeID);
+        $results = $this->sql->searchVocabulary($type, $query, $entityTypeID, $count);
+        $vocabList = array();
+        foreach ($results as $result) {
+            $term = new \snac\data\Term();
+            if (isset($result["id"]))
+                $term->setID($result["id"]);
+            if (isset($result["uri"]))
+                $term->setURI($result["uri"]);
+            if (isset($result["value"]))
+                $term->setTerm($result["value"]);
+            if (isset($result["type"]))
+                $term->setType($result["type"]);
+            if (isset($result["description"]))
+                $term->setDescription($result["description"]);
+            array_push($vocabList, $term);
+        }
+        return $vocabList;
     }
 
     /**
@@ -4222,4 +4356,68 @@ class DBUtil
         return $newVersion;
     }
 
+    /**
+     * Store Report
+     *
+     * Stores the given report in the database.
+     *
+     * @param string $reportName The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param \snac\data\User $user The user who requested the report
+     */
+    public function storeReport($reportName, $report, $user) {
+        $userid = $user->getUserID();
+        $affiliationid = null;
+        if ($user->getAffiliation())
+            $affiliationid = $user->getAffiliation()->getID();
+
+        $this->sql->insertReport($reportName, $report, $userid, $affiliationid);
+    }
+
+    /**
+     * Read Report
+     *
+     * Reads a report from the database by the given name.  If given a timestamp,
+     * this method will try to read a copy of the report for that timestamp. Else,
+     * it will return the latest report by that name.
+     *
+     * @param string $reportName The name of the report
+     * @param string $timestamp optional The timestamp of the report requsted.
+     */
+    public function readReport($reportName, $timestamp = null) {
+        $reportData = $this->sql->selectReportByTime($reportName, $timestamp);
+
+        return $reportData;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to include in the name index 
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex(&$constellation) {
+        return $this->sql->updateNameIndex($constellation->getPreferredNameEntry()->getOriginal(),
+                                        $constellation->getID(),
+                                        $constellation->getArk(),
+                                        $constellation->getEntityType()->getTerm(),
+                                        count($constellation->getRelations()),
+                                        count($constellation->getResourceRelations()));
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param \snac\data\Constellation $constellation The Constellation to delete from the name index 
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex(&$constellation) {
+        return $this->sql->deleteFromNameIndex($constellation->getID());
+    }
 }

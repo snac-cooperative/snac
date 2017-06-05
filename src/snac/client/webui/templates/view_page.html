@@ -38,7 +38,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 
-<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <!-- Leaflet JS Javascript and Styles-->
 <link rel="stylesheet" href="https://npmcdn.com/leaflet@1.0.0-rc.3/dist/leaflet.css" />
@@ -121,9 +121,15 @@ body {
                <div class="biog">
                   <div class="facts">
                      <div class="life">
+                        {% if data.dates %}
                             <dt>Dates:</dt>
-                            <dd>{{data.dates.0.fromType.term}} {{data.dates.0.fromDate}}</dd>
-                            <dd>{{data.dates.0.toType.term}} {{data.dates.0.toDate}}</dd>
+                            {% for date in data.dates %}
+                                <dd>{{date.fromType.term}} {{date.fromDate}}</dd>
+                                {% if date.toDate %}
+                                    <dd>{{date.toType.term}} {{date.toDate}}</dd>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                         {% if data.genders.0.term.term %}
                             <dt>Gender:</dt>
                             <dd>{{data.genders.0.term.term}}</dd>
@@ -159,7 +165,7 @@ body {
                         <div data-xsl="nationality">
                            <label>Nationality: </label>
                            {% for nat in data.nationalities %}
-                                {{ nat.term.term }},
+                               {{ nat.term.term }}{{loop.last ? '' : ','}}
                            {% endfor %}
                         </div>
                         {% endif %}
@@ -167,7 +173,8 @@ body {
                         <div data-xsl="language">
                            <label>Language: </label>
                             {% for lang in data.languagesUsed %}
-                                {{ lang.language.description }},
+                                {{ lang.language.description }}{{loop.last ? '' : ','}}
+
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -596,6 +603,8 @@ body {
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                                 <a class="list-group-item list-group-item-warning"
                                    href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                   <a class="list-group-item list-group-item-history"
+                                      href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
                           </div>
                           <h5>Export As</h5>
                           <div class="list-group" style="margin-bottom: 0px;">
@@ -619,8 +628,20 @@ body {
                                 <a class="list-group-item list-group-item-info"
                                    href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
                                 {% else %}
-                                <a class="list-group-item list-group-item-danger disabled"
-                                   href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            <div class="list-group" style="margin-bottom: 0px;">
+                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                </a>
+                                            </div>
+                                        </div>
+                                    {% endif %}
                                 {% endif %}
                           </div>
                           {% endif %}
@@ -707,8 +728,11 @@ body {
                                   </div>
                                   <script>
                                     var holdingsMapView = null;
+                                    var bounds = new L.LatLngBounds();
                                     function displayHoldingsMap() {
-                                        if (holdingsMapView != null) return;
+                                        if (holdingsMapView != null) {
+                                            return;
+                                        }
                                         // Add a slight delay to the map viewing so that the modal window has time to load
                                         setTimeout(function() {
                                             holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
@@ -716,11 +740,14 @@ body {
                                                 maxZoom: 19,
                                                 attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                                             }).addTo(holdingsMapView);
+                                            var bounds = new L.LatLngBounds();
                                             {% for location in data.holdings %}
                                             {% if location.latitude and location.longitude %}
                                             var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            bounds.extend(marker.getLatLng());
                                             {% endif %}
                                             {% endfor %}
+                                            holdingsMapView.fitBounds(bounds);
                                             }, 400);
                                     }
                                     $(document).ready(function() {

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Browse - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- Datatables -->
+<link rel="stylesheet" href="//cdn.datatables.net/1.10.12/css/jquery.dataTables.min.css">
+<script src="//cdn.datatables.net/1.10.12/js/jquery.dataTables.min.js"></script>
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/admin.js{{control.noCache}}"></script>
+<script src="javascript/save_actions.js{{control.noCache}}"></script>
+<script src="javascript/select_loaders.js{{control.noCache}}"></script>
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+<script src="javascript/relation_search.js{{control.noCache}}"></script>
+
+
+<script>
+
+var first = "";
+var firstID = 0;
+var last = "";
+var lastID = 0;
+var datatable;
+
+function queryBrowse(position, term, entityType, icid) {
+
+    $.post("?command=browse_data&position="+position+"&term="+term+"&entity_type="+entityType+"&ic_id="+icid, null, function (data) {
+        var results = [];
+        datatable.clear();
+        first = "";
+        last = "";
+        if (data.results.length > 0) {
+            var list = "";
+            first = data.results[0].name_entry;
+            firstID = data.results[0].ic_id;
+            last = data.results[data.results.length - 1].name_entry;
+            lastID = data.results[data.results.length -1].ic_id;
+            for (var key in data.results) {
+                result = data.results[key];
+                var link = "<a target=\"_blank\" href=\"?command=view&constellationid="+result.ic_id+"\">"+result.name_entry+"</a>";
+                var row = new Array(result.ic_id, link, result.entity_type, result.resources, result.degree);
+                var node = datatable.row.add(row).draw().node();
+
+                if (position == "middle" && key == 10)
+                    $(node).css("font-weight", "bold").css("background-color", "#eeeeee");
+            }
+        }
+        enableButtons();
+    });
+    return false;
+}
+
+function disableButtons() {
+    $("#searchbutton").prop('disabled', true);
+    $("#nextbutton").prop('disabled', true);
+    $("#prevbutton").prop('disabled', true);
+}
+
+function enableButtons() {
+    $("#nextbutton").prop('disabled', false);
+    $("#prevbutton").prop('disabled', false);
+    $("#searchbutton").prop('disabled', false);
+}
+
+$(document).ready(function() {
+
+    // Use select2 to display the select dropdowns
+    // rather than the HTML default
+
+        $('select').each(function() {
+            $(this).select2({
+                minimumResultsForSearch: Infinity,
+                allowClear: false,
+                theme: 'bootstrap'
+            });
+        });
+
+        // Load the table into a datatable
+        datatable = $('.table').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
+
+        // Get the first bit of data
+        queryBrowse("after", "", "", 0);
+
+        // Set up the search/next/previous buttons
+        $('#searchbutton').click(function() {
+            disableButtons();
+            return queryBrowse("middle", $("#searchbox").val(), $("#entityType").val(), 0);
+        });
+        $('#nextbutton').click(function() {
+            disableButtons();
+            return queryBrowse("after", last, $("#entityType").val(), lastID);
+        });
+        $('#prevbutton').click(function() {
+            disableButtons();
+            return queryBrowse("before", first, $("#entityType").val(), firstID);
+        });
+
+});
+</script>
+</head>
+<body role="document">
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+<div class="container snac" role="main">
+    <h1>Browse</h1>
+
+    <div class="row">
+        <div class="col-md-12">
+
+            <form class="form-horizontal" id="search_form" method="GET">
+    			<div class="well well-lg text-center">
+    					<div class="input-group select2-bootstrap-append">
+                            <select id="entityType" name="entity_type" style="width: 18%;">
+                                <option value="" {{data.entityType == '' ? 'selected'}}>All Types</option>
+                                <option value="person" {{data.entityType == 'person' ? 'selected'}}>Person</option>
+                                <option value="corporateBody" {{data.entityType == 'corporateBody' ? 'selected'}}>Corporate Body</option>
+                                <option value="family" {{data.entityType == 'family' ? 'selected'}}>Family</option>
+                            </select>
+    						<input type="text" class="form-control" style="width: 82%;"
+    							placeholder="Browse to..." id="searchbox" name="term" value="">
+    							<span class="input-group-btn">
+    							     <button class="btn btn-default" id="searchbutton">Search</button>
+    						    </span>
+    					</div>
+    			</div>
+    		</form>
+
+            <div class="form-horizontal">
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">ID</th>
+                            <th style="width: 50%;">Name Entry</th>
+                            <th style="width: 20%;">Entity Type</th>
+                            <th style="width: 10%;">Resources</th>
+                            <th style="width: 10%;">Relations</th>
+                        </tr>
+                    </thead>
+                    <tbody id="headingList">
+                    </tbody>
+                </table>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <div class="col-sm-6">
+                    <button class="btn btn-default" id="prevbutton"><i class="fa fa-chevron-left" aria-hidden="true"></i> Previous</button>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <button class="btn btn-default" id="nextbutton">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

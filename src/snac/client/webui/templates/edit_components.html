@@ -1047,15 +1047,68 @@
                     <input id="place_id_{{i}}" name="place_id_{{i}}" type="hidden" value="{{ place.id }}"/>
                     <input id="place_version_{{i}}" name="place_version_{{i}}" type="hidden" value="{{ place.version }}"/>
                     <input id="place_operation_{{i}}" name="place_operation_{{i}}" type="hidden" value="{{ place.operation }}"/>
+                    <input id="place_original_{{i}}" name="place_original_{{i}}" type="hidden" class="form-control" value="{{ place.original }}" readonly/>
+                    <input id="place_score_{{i}}" name="place_score_{{i}}" type="hidden" class="form-control" value="{{ place.score }}"/>
+
                     <div class="form-group">
-                        <label for="place_original_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeOriginal.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeOriginal.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_place_original_{{i}}">
-                            <input id="place_original_{{i}}" name="place_original_{{i}}" type="hidden" class="form-control" value="{{ place.original }}"/>
-                            <p class="form-control-static">{{ place.original }}</p>
+                        <div class="col-xs-9">
+
+                            {% if place.confirmed and place.geoplace.id %}
+                                <h4 class="text-center" id="place_geoterm_text_{{i}}">{{place.geoplace.name}}</h4>
+                                <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</p>
+                                <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="true"/>
+                            {% else %}
+                                {% if place.original and place.original != "" %}
+                                    {% if inEdit %}
+                                        <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>Unconfirmed</em></h4>
+                                        <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">Recorded as: {{place.original}}</p>
+                                    {% else %}
+                                        <h4 class="text-center" id="place_geoterm_text_{{i}}"><em>{{place.original}}</em></h4>
+                                        <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">as recorded (not vetted)</p>
+                                    {% endif %}
+                                {% else %}
+                                    <h4 class="text-center" id="place_geoterm_text_{{i}}">--</h4>
+                                    <p class="caption text-center" id="place_geoterm_caption_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px; margin-bottom: 0px;">GeoPlace term not specified</p>
+                                {% endif %}
+                                <input id="place_confirmed_{{i}}" name="place_confirmed_{{i}}" type="hidden" class="form-control" value="false"/>
+                            {% endif %}
+                            {% if inEdit %}
+                                {% if place.geoplace.id and not place.confirmed %}
+                                    <input id="place_geoplaceSuggested_id_{{i}}" name="place_geoplaceSuggested_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                                    <p class="caption text-center" id="place_geoterm_matchconfidence_{{i}}" style="font-size: 11px; font-style:italic; color: #777777; margin-top: 0px; padding-top: 0px;">Possibly:
+                                    {{ place.geoplace.name }}
+                                    {% if place.geoplace.administrationCode or place.geoplace.countryCode %}
+                                        ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})
+                                    {% endif %}
+                                    -- {{(place.score * 100)|round(1, 'floor')}}% confidence
+                                    <a class="label label-info snac-hidden" onclick="chooseSuggestedGeoPlace('place_geoplace_id_{{i}}', {{i}}, '{{place.geoplace.id}}')">
+                                        choose</a>
+                                    </p>
+                                {% endif %}
+                            {% endif %}
+
+                        </div>
+                        <div class="col-xs-3">
+                            <div class="list-group snac-options-list">
+                            {% if place.geoplace.id and place.confirmed %}
+                                <a class="list-group-item list-group-item-download" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
+                            {% else %}
+                                <a class="list-group-item list-group-item-download disabled" id="place_geoterm_maplink_{{i}}" style="cursor: pointer;"><span class="fa fa-2x fa-map-marker" aria-hidden="true"></span><br>View GeoPlace</a>
+                            {% endif %}
+                            </div>
                         </div>
                     </div>
+
+
+                    <div class="form-group">
+                        <div class="col-xs-12" id="selectGeo_place_geoplace_{{i}}">
+                            <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
+                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }} ({{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}})"/>
+                        </div>
+                    </div>
+
+
+
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.placeType.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.placeType.display }}
@@ -1102,45 +1155,6 @@
                                 </div>
                             </div>
 
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.placeGeoTerm.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTerm.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_place_geoplace_{{i}}">
-                            <input id="place_geoplace_id_{{i}}" name="place_geoplace_id_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.id }}"/>
-                            <input id="place_geoplace_term_{{i}}" name="place_geoplace_term_{{i}}" type="hidden" class="form-control" value="{{ place.geoplace.name }}"/>
-                            <input id="place_geoplace_vocabtype_{{i}}" name="place_geoplace_vocabtype_{{i}}" type="hidden" class="form-control" value="geo_place"/>
-                            <input id="place_geoplace_minlength_{{i}}" name="place_geoplace_minlength_{{i}}" type="hidden" class="form-control" value="2"/>
-                            <p class="form-control-static">
-                                {{ place.geoplace.name }}
-                                {% if place.geoplace.id %}
-                                    <a class="label label-info" onClick="openGeoPlaceViewer('{{place.geoplace.id}}'); return false;">View</a>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="place_score_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermScore.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTermScore.display }}
-                        </label>
-                        <div class="col-xs-8" id="text_place_score_{{i}}">
-                            <input id="place_score_{{i}}" name="place_score_{{i}}" type="hidden" class="form-control" value="{{ place.score }}"/>
-                            <p class="form-control-static">{{ place.score }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="place_confirmed_{{ i }}" class="control-label col-xs-4" data-content="{{X.placeGeoTermConfirmed.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.placeGeoTermConfirmed.display }}
-                        </label>
-                        <div class="col-xs-8">
-                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_true_{{i}}" value="true"
-                                {{ place.confirmed == 't' ? 'checked' : '' }}
-                                readonly/> True</label>
-                            <label class="radio-inline"><input type="radio" name="place_confirmed_{{i}}" id="place_confirmed_false_{{i}}" value="false"
-                                {{ place.confirmed == 't' ? '' : 'checked' }}
-                                readonly/> False</label>
                         </div>
                     </div>
                     <div class="form-group">

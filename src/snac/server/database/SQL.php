@@ -76,6 +76,19 @@ class SQL
         $this->enableLogging();
     }
 
+
+    /**
+     * Get the DB Connector object
+     *
+     * Utility function to return the Database connector for this SQL object.
+     *
+     * @return \snac\server\database\DatabaseConnector The database connector for this SQL object
+     */
+    public function connectorObj()
+    {
+        return $this->sdb;
+    }
+
     /**
      * Enable logging
      *
@@ -3344,6 +3357,62 @@ class SQL
 
 
     /**
+     * Insert a Controlled Vocabulary Term
+     *
+     * @param  String $type        Type of the term
+     * @param  String $term        Value of the Term
+     * @param  String $uri         The URI of the term
+     * @param  String $description Term description
+     * @return int|boolean              ID on success or false on failure
+     */
+    public function insertVocabularyTerm($type,
+                                   $term,
+                                   $uri,
+                                   $description)
+    {
+        $result = $this->sdb->query('insert into vocabulary (type, value, uri, description) values ($1, $2, $3, $4) returning *;',
+                                array($type, $term, $uri, $description));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Insert Controlled GeoTerm
+     * @param  string $name        Name of the place
+     * @param  string $uri         URI for the vocab term
+     * @param  string $latitude    Latitude
+     * @param  string $longitude   Longitude
+     * @param  string $adminCode   Administration Code (state)
+     * @param  string $countryCode Country Code
+     * @return int|bool              ID on success, false on failure
+     */
+    public function insertGeoTerm($name,
+                                   $uri,
+                                   $latitude,
+                                   $longitude,
+                                   $adminCode,
+                                   $countryCode)
+    {
+        $result = $this->sdb->query('insert into geo_place (name, uri, latitude, longitude, admin_code, country_code) values ($1, $2, $3, $4, $5, $6) returning *;',
+                                array($name, $uri, $latitude, $longitude, $adminCode, $countryCode));
+
+        $row = $this->sdb->fetchrow($result);
+
+        if ($row && $row["id"]) {
+            return $row["id"];
+        }
+
+        return false;
+    }
+
+    /**
      * Get Next Resource ID
      *
      * Gets the next resource id number from the resource_id sequence
@@ -3690,9 +3759,9 @@ class SQL
                             'select
                             aa.version, aa.ic_id, aa.id, aa.text
                             from biog_hist as aa,
-                            (select ic_id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by ic_id) as bb
+                            (select id, max(version) as version from biog_hist where version<=$1 and ic_id=$2 group by id) as bb
                             where not aa.is_deleted and
-                            aa.ic_id=bb.ic_id
+                            aa.id=bb.id
                             and aa.version=bb.version');
         /*
          * Always use key names explicitly when going from associative context to flat indexed list context.
@@ -3730,7 +3799,7 @@ class SQL
                             aa.id, aa.version, aa.ic_id, aa.text, aa.uri, aa.type
                             from otherid as aa,
                             (select id,max(version) as version from otherid where version<=$1 and ic_id=$2 group by id) as bb
-                            where
+                            where not aa.is_deleted and
                             aa.id = bb.id and
                             aa.version = bb.version order by id asc');
 
@@ -4167,7 +4236,7 @@ class SQL
     public function selectUnversionedConstellationIDsForRelationTarget($icid) {
         $qq = 'selectrelatedicids';
         $this->sdb->prepare($qq,
-                            'select aa.ic_id, aa.id
+                            'select distinct aa.ic_id, aa.id
                             from related_identity as aa
                             where not aa.is_deleted and
                             aa.related_id = $1');
@@ -4953,7 +5022,7 @@ class SQL
      *
      * @return string[][] Returns a list of lists with keys id, value.
      */
-    public function searchVocabulary($term, $query, $entityTypeID)
+    public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
     {
         $useStartsWith = array('script_code' => 1,
                                'language_code' => 1,
@@ -4975,10 +5044,10 @@ class SQL
         if ($entityTypeID == null)
         {
             $queryStr =
-                      'select id,value
+                      'select id,value,type,uri,description
                       from vocabulary
-                      where type=$1 and value ilike $2 order by value asc limit 100';
-            $result = $this->sdb->query($queryStr, array($term, $likeStr));
+                      where type=$1 and value ilike $2 order by value asc limit $3';
+            $result = $this->sdb->query($queryStr, array($term, $likeStr, $count));
         }
         else
         {
@@ -5048,6 +5117,143 @@ class SQL
         }
         return $all;
     }
+
+    /**
+     * Browse Name Index
+     *
+     * This function contains the SQL code required to browse through the name index in postgres
+     * in (mostly) alphabetical order.
+     *
+     * @param string $query The string to search for
+     * @param string $position The position of the search term in the results: before, middle, after
+     * @param string $entityType The string representation of entity type: person, corporateBody, family
+     * @param int    $icid The identity constellation ID to break ties on sorting (or 0 if ignored)
+     * @return string[] List of name index results in raw format
+     */
+    public function browseNameIndex($query, $position, $entityType, $icid)
+    {
+        $entityQuery = "";
+        if ($entityType != null && $entityType != "") {
+            // Do this for safety concerns with SQL injections...
+            switch ($entityType) {
+                case "person":
+                    $entityQuery = "and entity_type = 'person'";
+                    break;
+                case "corporateBody":
+                    $entityQuery = "and entity_type = 'corporateBody'";
+                    break;
+                case "family":
+                    $entityQuery = "and entity_type = 'family'";
+                    break;
+            }
+        }
+
+        $result = null;
+
+        if ($position == "after") {
+            $queryStr = "select * from (select * from name_index where (name_entry = $1 and ic_id >= $2) $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) a union all (select * from name_index where name_entry > $1 $entityQuery order by name_entry_lower, name_entry, ic_id asc limit 20) order by name_entry, ic_id asc limit 20;";
+            $result = $this->sdb->query($queryStr, array($query, $icid));
+        } else if ($position == "before") {
+            if ($icid !== 0) {
+                // query using the ICID as well
+                $queryStr = "select * from (select * from (select * from name_index where (name_entry = $1 and ic_id <= $2) $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) a union all (select * from name_index where name_entry < $1 $entityQuery order by name_entry_lower desc, name_entry desc, ic_id desc limit 20) order by name_entry desc, ic_id desc limit 20) a order by name_entry asc, ic_id asc limit 20;";
+                $result = $this->sdb->query($queryStr, array($query, $icid));
+            } else {
+                // query without the ICID, since it is meaningless
+                $queryStr = "select * from (select * from name_index where name_entry_lower <= lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 20) a order by name_entry, ic_id asc;";
+                $result = $this->sdb->query($queryStr, array($query));
+            }
+        } else {
+            $queryStr =
+                "select * from (select * from name_index where name_entry_lower >= lower($1) $entityQuery order by name_entry_lower, ic_id asc limit 10) a union all (select * from name_index where name_entry_lower < lower($1) $entityQuery order by name_entry_lower desc, ic_id desc limit 10) order by name_entry, ic_id asc;";
+
+            $result = $this->sdb->query($queryStr, array($query));
+        }
+
+
+        $all = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the Name Index
+     *
+     * Checks to see if the ICID is in the name index.  If so, it will update the values there with the parameters.  Else,
+     * it will insert the new ICID and related values into the name index.
+     *
+     * @param string $nameEntry The name entry to include in the index
+     * @param int $icid The ICID for this constellation
+     * @param string $ark The ARK ID for this constellation
+     * @param string $entityType The string representation of the entity type
+     * @param int $degree The degree of the constellation (number of out-edges to other constellations in snac)
+     * @param int $resources The number of resource relations for the constellation
+     *
+     * @return string[]|boolean The updated name index values or false on failure
+     */
+    public function updateNameIndex($nameEntry, $icid, $ark, $entityType, $degree, $resources) {
+        // First query to see if the name is already in the index.  If so, then do an update.  Else, this is an insert.
+        $resultTest = $this->sdb->query("select * from name_index where ic_id = $1;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($resultTest))
+        {
+            array_push($check, $row);
+        }
+
+        if (empty($check)) {
+            // Doing an insert, since nothing found
+            $result = $this->sdb->query("insert into name_index 
+                                            (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
+                                            ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        } else {
+            // Doing an update, since ic_id was found
+            $result = $this->sdb->query("update name_index set 
+                                            (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
+                                            ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
+                                        array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
+            $all = array();
+            while($row = $this->sdb->fetchRow($result))
+            {
+                array_push($all, $row);
+            }
+            return $all;
+        }
+        return false;
+    }
+
+    /**
+     * Delete from Name Index
+     *
+     * Deletes the given ICID's values in the name index.  This would remove the name from the browsing index.
+     *
+     * @param int $icid The ICID of the constellation to remove
+     * @return boolean True if successfully deleted, False if nothing to delete (failure)
+     */
+    public function deleteFromNameIndex($icid) {
+        $result = $this->sdb->query("delete from name_index where ic_id = $1 returning *;", array($icid));
+        $check = array();
+        while($row = $this->sdb->fetchRow($result))
+        {
+            array_push($check, $row);
+        }
+
+        if (!empty($check)) {
+            return true;
+        }
+
+        return false;
+    }
+
 
     /**
      * Temporary function to brute force order name components.
@@ -5441,7 +5647,7 @@ class SQL
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
     public function selectVersionHistory($vhInfo,$listAll = false) {
-        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\')';
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstoned\' or v.status=\'ingest cpf\')';
         if ($listAll === true)
             $limitHistory = "";
         $result = $this->sdb->query(
@@ -5524,5 +5730,46 @@ class SQL
         }
         return $all;
 
+    }
+
+    /**
+     * Insert Report
+     *
+     * Inserts the report into the database.
+     *
+     * @param string $name The name of the report
+     * @param string $report The full text of the report (JSON)
+     * @param int $userid The userid that requested the report
+     * @param int $affiliationid The affiliation of the user that requested the report
+     */
+    public function insertReport($name, $report, $userid, $affiliationid) {
+        $this->sdb->query('insert into reports (name, report, user_id, affiliation_id) values
+                            ($1, $2, $3, $4)', array($name, $report, $userid, $affiliationid));
+    }
+
+    /**
+     * Select Report By Time
+     *
+     * Reads the report from the database with the given name for the given timestamp.  By default,
+     * this method will read the latest report by that name.
+     *
+     * @param string $name The name of the report to read
+     * @param string $timestamp optional The timestamp for the report to read
+     * @return string[] The report data from the database
+     */
+    public function selectReportByTime($name, $timestamp = null) {
+        $result = null;
+        if ($timestamp == null) {
+            $result = $this->sdb->query("select * from reports where name = $1 order by timestamp desc limit 1",
+                                        array($name));
+        } else {
+            $result = $this->sdb->query("select * from reports where name = $1 and timestamp = $2",
+                                        array($name, $timestamp));
+        }
+
+        if (!$result)
+            return false;
+
+        return $this->sdb->fetchrow($result);
     }
 }

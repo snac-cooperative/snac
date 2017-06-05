@@ -448,14 +448,15 @@ class ServerExecutor {
      */
     public function endSession() {
         $response = array();
-
         if ($this->user != null) {
+            $this->logger->addDebug("Ending Session for user", $this->user->toArray());
             $this->uStore->removeSession($this->user);
             $response["user"] = $this->user->toArray();
             $response["result"] = "success";
         } else {
             $response["result"] = "failure";
         }
+        $this->logger->addDebug("User Session ended");
 
         return $response;
     }
@@ -506,12 +507,79 @@ class ServerExecutor {
         } else {
             switch ($input["type"]) {
                 default:
-                    $response["results"] = $this->cStore->searchVocabulary(
+                    $response["results"] = array();
+                    $count = 100;
+                    if (isset($input["count"]))
+                        $count = $input["count"];
+                    $results = $this->cStore->searchVocabulary(
                         $input["type"],
                         $input["query_string"],
-                        $input["entity_type"]);
+                        $input["entity_type"],
+                        $count);
+                    foreach ($results as $result)
+                        array_push($response["results"], $result->toArray(false));
                     break;
             }
+        }
+
+        return $response;
+    }
+
+
+    /**
+     * Update the Controlled Vocabulary
+     *
+     * Calls saveUser to save the user information to the database.  Then returns the user object.
+     *
+     * @param string[]|null $input The input from the client
+     * @return string[] The response to send to the client
+     */
+    public function updateVocabulary(&$input) {
+        $response = array();
+        $success = false;
+        $term = null;
+
+        if (isset($input["type"]) && $input["type"] == "geo_term") {
+            $term = new \snac\data\GeoTerm($input["term"]);
+        } else {
+            $term = new \snac\data\Term($input["term"]);
+        }
+
+        if ($term->getID() == null || $term->getID() == "") {
+            // We are doing an insert
+            $writtenTerm = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $writtenTerm = $this->cStore->writeGeoTerm($term);
+            } else {
+                $writtenTerm = $this->cStore->writeVocabularyTerm($term);
+            }
+
+            if ($writtenTerm) {
+                $success = true;
+                $response["term"] = $writtenTerm->toArray();
+            } else {
+                $response["error"] = "Term could not be written";
+            }
+        } else {
+            // Get the one out of the database
+            $current = null;
+            if (isset($input["type"]) && $input["type"] == "geo_term") {
+                $current = $this->cStore->buildGeoTerm($term->getID());
+            } else {
+                $current = $this->cStore->populateTerm($term->getID());
+            }
+
+            if ($current->getType() == $term->getType() && $term->getTerm() != null && $term->getTerm() != "") {
+                // The term didn't change type and does not have an empty term field, so update
+                throw new \snac\exceptions\SNACPermissionException("Currently the system is not allowing updating terms.");
+            }
+            $response["error"] = "The term to update was not found in the database.";
+        }
+
+        if ($success === true) {
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
         }
 
         return $response;
@@ -1352,7 +1420,14 @@ class ServerExecutor {
             DBUtil::$READ_RELATIONS |
             DBUtil::$READ_RESOURCE_RELATIONS);
 
+        // Update the Elastic Search Indices
         $this->elasticSearch->writeToNameIndices($published);
+
+        // Update the Postgres Indices
+        $this->cStore->updateNameIndex($published);
+
+        // Update the Neo4J Indices
+        // TODO
     }
 
     /**
@@ -1409,8 +1484,14 @@ class ServerExecutor {
                     $response["constellation"] = $constellation->toArray();
                     $response["result"] = "success";
 
-
+                    // Delete from Elastic Search Indices
                     $this->elasticSearch->deleteFromNameIndices($constellation);
+
+                    // Delete from Postgres Indices
+                    $this->cStore->deleteFromNameIndex($constellation);
+                    
+                    // Delete from Neo4J Indices
+                    // TODO
 
                 } else {
                     $this->logger->addDebug("could not delete the constellation");
@@ -1468,9 +1549,48 @@ class ServerExecutor {
             }
             if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                 $constellation->setStatus("editable");
+            } else if ($this->hasPermission("Change Locks")) {
+                $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
+                $editingUser = new \snac\data\User();
+                $editingUser->setUserID($userStatus["userid"]);
+                $editingUser = $this->uStore->readUser($editingUser);
+                if ($editingUser)
+                    $response["editing_user"] = $editingUser->toArray();
             }
             $this->logger->addDebug("Finished checking constellation status against the user");
             $response["constellation"] = $constellation->toArray();
+            $this->logger->addDebug("Serialized constellation for output to client");
+        } catch (Exception $e) {
+            $response["error"] = $e;
+        }
+        return $response;
+
+    }
+
+    /**
+     * Get Constellation History
+     *
+     * Gets the version history information for the constellation defined on input, up to
+     * the given version (or public version).  Only returns the publicly-available versions
+     * of the constellation, such as published, tombstoned, deleted, or ingest cpf.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function getConstellationHistory(&$input) {
+        $this->logger->addDebug("Reading constellation history");
+        $reponse = array();
+        $constellation = null;
+
+        try {
+            // Read the constellation itself
+            $constellation = $this->readConstellationFromDatabase($input);
+            $response["constellation"] = $constellation->toArray();
+
+            // TODO: This should also change to going through objects and calling toArray()
+            $history = $this->cStore->listVersionHistory($constellation->getID(), $constellation->getVersion(), true);
+            $response["history"] = $history;
+
             $this->logger->addDebug("Serialized constellation for output to client");
         } catch (Exception $e) {
             $response["error"] = $e;
@@ -1915,11 +2035,14 @@ class ServerExecutor {
 
             $this->logger->addDebug("Parsing out edges and grabbing micro summaries");
             foreach ($fullConstellation->getRelations() as $rel) {
-                array_push($return["out"], array(
-                    "constellation" => $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
-                                                    \snac\server\database\DBUtil::$READ_MICRO_SUMMARY)->toArray(),
-                    "relation" => $rel->toArray()
-                ));
+                $target = $this->cStore->readPublishedConstellationByID($rel->getTargetConstellation(),
+                                                \snac\server\database\DBUtil::$READ_MICRO_SUMMARY);
+                if ($target) {
+                    array_push($return["out"], array(
+                        "constellation" => $target->toArray(),
+                        "relation" => $rel->toArray()
+                    ));
+                }
             }
 
             $this->logger->addDebug("Created postgres constellation relations response to the user");
@@ -2044,6 +2167,32 @@ class ServerExecutor {
         return $response;
     }
 
+    public function browseConstellations(&$input) {
+        $response = array();
+
+        $term = "";
+        $position = "after";
+        if (isset($input["term"]) && $input["term"] != "") {
+            $term = $input["term"];
+            // only update the position if the term is not null
+            if (isset($input["position"]) && ($input["position"] == "middle" || $input["position"] == "before"))
+                $position = $input["position"];
+        }
+        $entityType = null;
+        if (isset($input["entity_type"]))
+            $entityType = $input["entity_type"];
+        $icid = 0;
+        if (isset($input["icid"]))
+            $icid = $input["icid"];
+
+        $results = $this->cStore->browseNameIndex($term, $position, $entityType, $icid);
+
+        $response["results"] = $results;
+        $response["result"] = "success";
+
+        return $response;
+    }
+
     /**
      * Search For Constellation
      *
@@ -2137,9 +2286,16 @@ class ServerExecutor {
         $engine->addStage("ElasticOriginalNameEntry");
         $engine->addStage("ElasticNameOnly");
         $engine->addStage("ElasticSeventyFive");
-        $engine->addStage("OriginalLength");
-        $engine->addStage("MultiStage", "ElasticNameOnly", "OriginalLengthDifference");
         $engine->addStage("MultiStage", "ElasticNameOnly", "SNACDegree");
+
+        // Add post-processing stages
+        $engine->addPostProcessingStage("OriginalLength");
+        $engine->addPostProcessingStage("EntityTypeFilter");
+
+        // The original-length-difference stage skewed the results beyond recognition.  It should
+        // be re-considered before being included in the reconciliation process.  A lighter weighting
+        // could make it beneficial.
+        // $engine->addPostProcessingStage("OriginalLengthDifference");
 
         // Run the reconciliation engine against this identity
         $constellation = new \snac\data\Constellation($input["constellation"]);
@@ -2152,5 +2308,70 @@ class ServerExecutor {
             $results[$k] = $v->toArray();
         }
         return array("reconciliation" => $results, "result" => 'success');
+    }
+
+    /**
+     * Read Report
+     *
+     * Reads the report the user requested from the database and returns it to the user.  If
+     * the report doesn't exist, this method will return a failing result.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function readReport(&$input) {
+        $reportName = "General Report";
+        switch ($input["type"]) {
+            case "holdings":
+                $reportName = "Holdings";
+                break;
+            case "general":
+            default:
+                break;
+        }
+        $report = $this->cStore->readReport($reportName);
+        
+        if ($report && $report != null && !empty($report))
+            return array("result" => "success", 
+                         "reports" => json_decode($report["report"], true),
+                         "timestamp" => $report["timestamp"]);
+        
+        return array("result" => "failure");
+    }
+    
+    /**
+     * Generate Report
+     *
+     * Generates the report asked for by the user, then stores it in the database for
+     * later consumption.  A success/failure notice is returned to the user.  The user should
+     * call readReport() to get the report back for viewing.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function generateReport(&$input) {
+        $reportEngine = new \snac\server\reporting\ReportingEngine();
+        $reportName = "General Report";
+        switch ($input["type"]) {
+            case "holdings":
+                $reportName = "Holdings";
+                $reportEngine->addReport("AllHoldingInstitutions");
+                break;
+            case "general":
+            default:
+                $reportEngine->addReport("NumConstellations");
+                $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("TopEditorsThisWeek");
+                $reportEngine->addReport("PublishesLastMonth");
+                $reportEngine->addReport("TopHoldingInstitutions");
+                break;
+        }
+        $reportEngine->setPostgresConnector($this->cStore->sqlObj()->connectorObj());
+
+        $report = json_encode($reportEngine->runReports(), JSON_PRETTY_PRINT);
+
+        $this->cStore->storeReport($reportName, $report, $this->user);
+
+        return array("result" => "success");
     }
 }

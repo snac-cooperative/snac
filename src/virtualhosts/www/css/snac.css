@@ -367,6 +367,36 @@ button.list-group-item-download.active:focus {
     border-color: #7a3583;
 }
 
+.list-group-item-history {
+    color: #2A6D88;
+    background-color: #E0E9F3;
+}
+a.list-group-item-history,
+button.list-group-item-history {
+    color: #2A6D88;
+}
+a.list-group-item-history .list-group-item-heading,
+button.list-group-item-history .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-history:hover,
+button.list-group-item-history:hover,
+a.list-group-item-history:focus,
+button.list-group-item-history:focus {
+    color: #2A6D88;
+    background-color: #C7DAEE;
+}
+a.list-group-item-history.active,
+button.list-group-item-history.active,
+a.list-group-item-history.active:hover,
+button.list-group-item-history.active:hover,
+a.list-group-item-history.active:focus,
+button.list-group-item-history.active:focus {
+    color: #fff;
+    background-color: #2A6D88;
+    border-color: #2A6D88;
+}
+
 
 .list-group-item-review {
     color: #AE5A0B;
@@ -429,6 +459,11 @@ button.list-group-item-review.active:focus {
 
 .loading-box i {
     font-size: 55px;
+}
+
+/* Fix the width of font-awesome icons so their text aligns nicely beside them */
+.fa {
+    width: 1.2em;
 }
 
 @media (min-width: 992px) {

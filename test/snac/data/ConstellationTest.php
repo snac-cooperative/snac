@@ -1,6 +1,6 @@
 <?php
 /**
- * Constellation Test File 
+ * Constellation Test File
  *
  *
  * License:
@@ -14,14 +14,14 @@ namespace test\snac\data;
 
 /**
  * Constellation Test Suite
- * 
+ *
  * @author Robbie Hott
  *
  */
-class ConstellationTest extends \PHPUnit_Framework_TestCase {
+class ConstellationTest extends \PHPUnit\Framework\TestCase {
 
     /**
-     * Test that trying to read garbage instead of JSON results in not importing any data 
+     * Test that trying to read garbage instead of JSON results in not importing any data
      */
     public function testJSONGarbage() {
         $identity = new \snac\data\Constellation();
@@ -32,9 +32,9 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($jsonOrig, $identity->toJSON());
     }
-    
+
     /**
-     * Test that trying to read empty JSON instead of Constellation JSON results in not importing any data 
+     * Test that trying to read empty JSON instead of Constellation JSON results in not importing any data
      */
     public function testEmptyJSON() {
         $identity = new \snac\data\Constellation();
@@ -45,15 +45,15 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($jsonOrig, $identity->toJSON());
     }
-    
+
     /**
-     * Test that reading a JSON object, then serializing back to JSON gives the same result 
+     * Test that reading a JSON object, then serializing back to JSON gives the same result
      * Changing any constellation objects is likely to require a change here.
      */
     public function testJSONJSON() {
         $identity = new \snac\data\Constellation();
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
-        /* 
+        /*
          * rtrim() the input since some people have their editor defaulting to adding a newline at the end of
          * every file. We have to manually edit constellation_test.json. Don't let trailing whitespace at the
          * end of the file interfere with the match below.
@@ -61,24 +61,24 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
         $jsonIn = rtrim($jsonIn);
 
         $identity->fromJSON($jsonIn);
-        
+
         /*
-         * Run only this test if you uncomment the section below to update the constellation test file. 
+         * Run only this test if you uncomment the section below to update the constellation test file.
          * phpunit --filter 'testJSONJSON' ./test/snac/data/ConstellationTest.php  > test.log 2>&1 &
          * diff -y new_constellation_test.json test/snac/data/json/constellation_test.json | less
          * cp test/snac/data/json/constellation_test.json ~/constellation_test-`date +"%F-%H%M%S"`.json
          * mv new_constellation_test.json test/snac/data/json/constellation_test.json
          */
-        
-        /* 
-         * $cfile = fopen('new_constellation_test.json', 'w');
-         * fwrite($cfile, $identity->toJSON(false));
-         * fclose($cfile); 
-         */
+
+
+         //$cfile = fopen('new_constellation_test.json', 'w');
+         //fwrite($cfile, $identity->toJSON(false));
+         //fclose($cfile); 
+
 
         $this->assertEquals($jsonIn, $identity->toJSON(false));
     }
-    
+
     /**
      * Test that reading a larger JSON object, then serializing back to JSON gives the same result
      *
@@ -95,7 +95,7 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
          * Uncomment the lines below to write out a new copy of constellation_test2.json which you need to
          * verify differs only by whatever you added to the constellation.
          *
-         * Run only this test if you uncomment the section below to update the constellation test file. 
+         * Run only this test if you uncomment the section below to update the constellation test file.
          * phpunit --filter 'testJSONJSON2' ./test/snac/data/ConstellationTest.php  > test.log 2>&1 &
          * diff -y new_constellation_test2.json test/snac/data/json/constellation_test2.json | less
          * diff -y --suppress-common-lines new_constellation_test2.json test/snac/data/json/constellation_test2.json | sort -u | uniq
@@ -103,10 +103,10 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
          * mv new_constellation_test2.json test/snac/data/json/constellation_test2.json
          */
 
-        /* 
+        /*
          * $cfile = fopen('new_constellation_test2.json', 'w');
          * fwrite($cfile, $identity->toJSON(false));
-         * fclose($cfile); 
+         * fclose($cfile);
          */
 
         unset($jsonIn);
@@ -114,9 +114,9 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($arrayIn, $arrayOut);
     }
-    
+
     /**
-     * Test that reading a JSON object over another object will replace that object 
+     * Test that reading a JSON object over another object will replace that object
      */
     public function testJSONOverwrite() {
         $identity = new \snac\data\Constellation();
@@ -130,7 +130,7 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
 
         $this->assertEquals($identity->toJSON(), $identity2->toJSON());
     }
-    
+
     /**
      * Test that reading a larger JSON object multiple times does not result in memory error
      */
@@ -147,10 +147,10 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
             unset($arrayIn);
         }
     }
-    
-    
+
+
     /**
-     * Test that reading a partial JSON Object works 
+     * Test that reading a partial JSON Object works
      */
     public function testPartialJSON() {
         $identity = new \snac\data\Constellation();
@@ -165,49 +165,49 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
          * Uncomment the lines below to write out a new copy of constellation_simple.json which you need to
          * verify differs only by whatever you added to the constellation.
          *
-         * Run only this test if you uncomment the section below to update the constellation test file. 
+         * Run only this test if you uncomment the section below to update the constellation test file.
          * phpunit --filter 'testPartialJSON' ./test/snac/data/ConstellationTest.php  > test.log 2>&1 &
          * cp test/snac/data/json/constellation_simple.json ~/constellation_simple-`date +"%F-%H%M%S"`.json
          * mv new_constellation_simple.json test/snac/data/json/constellation_simple.json
          */
-        
-        /* 
+
+        /*
          * $cfile = fopen('new_constellation_simple.json', 'w');
          * fwrite($cfile, $identity->toJSON(false));
-         * fclose($cfile); 
+         * fclose($cfile);
          */
 
         $this->assertEquals($arrayIn["nameEntries"], $idArray["nameEntries"]);
     }
-    
+
     /**
      * Test empty equals
      */
     public function testEqualsEmpty() {
         $c1 = new \snac\data\Constellation();
         $c2 = new \snac\data\Constellation();
-        
+
         // equals another empty
         $this->assertTrue($c1->equals($c2));
         $this->assertTrue($c1->equals($c2, false));
-        
+
         // equals itself
         $this->assertTrue($c1->equals($c1));
         $this->assertTrue($c1->equals($c1, false));
     }
-    
+
     /**
      * Test empty equals
      */
     public function testEqualsNull() {
         $c1 = new \snac\data\Constellation();
-    
+
         // equals another empty
         $this->assertFalse($c1->equals(null));
         $this->assertFalse($c1->equals(null, false));
-    
+
     }
-    
+
     /**
      * Test that non-empty constellations are equal
      */
@@ -215,18 +215,18 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
         $c1 = new \snac\data\Constellation();
         $c2 = new \snac\data\Constellation();
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
-    
+
         $c1->fromJSON($jsonIn);
         $c2->fromJSON($jsonIn);
-    
+
         // equals another
         $this->assertTrue($c1->equals($c2));
         $this->assertTrue($c1->equals($c2, false));
-        
+
         // equals itself
         $this->assertTrue($c1->equals($c1));
         $this->assertTrue($c1->equals($c1, false));
-        
+
         $c1->setID(1);
         $this->assertFalse($c1->equals($c2));
         $this->assertTrue($c1->equals($c2, false));
@@ -242,10 +242,10 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
         $this->assertTrue($c1->equals($c2, false));
         $this->assertFalse($c2->equals($c1));
         $this->assertTrue($c2->equals($c1, false));
-        
-        
+
+
     }
-    
+
     /**
      * Test that non-empty constellations are not equal
      */
@@ -253,20 +253,20 @@ class ConstellationTest extends \PHPUnit_Framework_TestCase {
         $c1 = new \snac\data\Constellation();
         $c2 = new \snac\data\Constellation();
         $jsonIn = file_get_contents("test/snac/data/json/constellation_test.json");
-    
+
         $c1->fromJSON($jsonIn);
         $c2->fromJSON($jsonIn);
-        
+
         $date = new \snac\data\SNACDate();
         $c2->addDate($date);
-    
+
 
         $this->assertFalse($c1->equals($c2));
         $this->assertFalse($c1->equals($c2, false));
-        
+
         $this->assertFalse($c2->equals($c1));
         $this->assertFalse($c2->equals($c1, false));
-    
+
     }
 
 }

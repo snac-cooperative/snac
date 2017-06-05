@@ -16,7 +16,7 @@ namespace test\snac\util;
  * @author Tom Laudeman
  * @author Robbie Hott
  */
-class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
+class EACCPFSerializerTest extends \PHPUnit\Framework\TestCase {
 
     /**
      * DBUtil object for this class
@@ -55,6 +55,7 @@ class EACCPFSerializerTest extends \PHPUnit_Framework_TestCase {
     public function __construct()
     {
         global $log;
+        parent::__construct(); // Must call the parent constructor
         // create a log channel
         $this->logger = new \Monolog\Logger('EACCPFSerializer');
         $this->logger->pushHandler($log);
