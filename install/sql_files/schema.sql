@@ -1015,6 +1015,7 @@ create table messages (
         attachment_content      text,
         attachment_filename     text,
         read                    boolean default 'f',
+        deleted                 boolean default 'f',
         time_sent               timestamp default NOW()
 );
 create index messages_idx1 on messages (to_user, subject, read);
@@ -1477,21 +1478,3 @@ select g.*
         where g.version < vh.version
         group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
     where not g.is_deleted;
-
-
--- Name Index for ordered browsing
-create table name_index (
-    nameEntry       text,
-    nameEntryLower  text, -- lower-cased version of the name entry
-    ark             text,
-    ic_id           int,  -- ic_id in snac
-    degree          int,  -- number of connections in snac
-    resources       int,  -- number of resources in snac
-    timestamp       timestamp default(now()));
-
-create unique index name_index_pk on name_index(ic_id);
-create index name_index_idx1 on name_index(nameEntryLower);
-create index name_index_idx2 on name_index(nameEntry);
-
-
-

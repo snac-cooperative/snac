@@ -68,6 +68,11 @@ class DBUser
     private $dbutil;
 
     /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    private $logger = null;
+
+    /**
      * Constructor
      *
      * The constructor for the class. Set up a database connector, and SQL object. All database layers
@@ -75,6 +80,7 @@ class DBUser
      */
     public function __construct()
     {
+        global $log;
         $this->db = new \snac\server\database\DatabaseConnector();
         $this->dbutil = new \snac\server\database\DBUtil();
 
@@ -86,6 +92,11 @@ class DBUser
          */
 
         $this->sql = new SQL($this->db, 'deleted');
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('DBUser');
+        $this->logger->pushHandler($log);
+
     }
 
 
@@ -1291,6 +1302,25 @@ class DBUser
     }
 
 
+
+    /**
+     * Delete Message 
+     *
+     * Deletes a message from the database 
+     *
+     * @param \snac\data\Message $message   Message to delete (with ID)
+     * @return boolean True if successful, false otherwise
+     */
+    public function deleteMessage(&$message) {
+        $this->logger->addDebug("Deleting message1", $message->toArray());
+        if ($message == null || $message->getID() == null) {
+            return false;
+        }
+
+        $this->logger->addDebug("Deleting message2", $message->toArray());
+
+        return $this->sql->deleteMessageByID($message->getID());
+    }
 
     /**
      * Get Message by ID

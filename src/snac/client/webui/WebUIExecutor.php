@@ -864,6 +864,14 @@ class WebUIExecutor {
         return $serverResponse;
     }
 
+    public function deleteMessage(&$input) {
+        $ask = array("command"=>"delete_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
     public function sendFeedbackMessage(&$input) {
         $response = array();
         if (isset($input["subject"]) && isset($input["body"])) {

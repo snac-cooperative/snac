@@ -21,6 +21,7 @@
 <script language="javascript">
 $('.selectpicker').selectpicker();
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Select Upgrades -->
 <link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
@@ -42,6 +43,7 @@ $('.selectpicker').selectpicker();
 
 <script>
 var currentMessage = null;
+var messageList = null;
 
 function showMessage(messageID) {
     $.get("?command=message_read&messageid="+messageID, null, function (data) {
@@ -68,6 +70,7 @@ function showMessage(messageID) {
 
             $("#reply_message").removeAttr("disabled").removeClass("disabled");
             $("#forward_message").removeAttr("disabled").removeClass("disabled");
+            $("#delete_message").removeAttr("disabled").removeClass("disabled");
         }
     });
 }
@@ -154,9 +157,42 @@ function cancelMessage() {
          .removeAttr('checked').removeAttr('selected');
 }
 
+function deleteMessage() {
+    var messageID = currentMessage.id;
+    bootbox.confirm({
+        title: "Confirm Deletion",
+        message: "Are you sure you want to delete this message?",
+        buttons: {
+            cancel: {
+                label: '<i class="fa fa-times"></i> Cancel'
+            },
+            confirm: {
+                label: '<i class="fa fa-trash-o"></i> Delete'
+            }
+        },
+        callback: function (result) {
+            if (result) {
+                $.post("?command=message_delete", { messageid: messageID }, function (data) {
+                    if (data.result == "success") {
+                        $("#reply_message").attr("disabled", true).addClass("disabled");
+                        $("#forward_message").attr("disabled", true).addClass("disabled");
+                        $("#delete_message").attr("disabled", true).addClass("disabled");
+                        $("#message_view_pane").text("No Message selected");
+                        messageList
+                            .row($("#message_list_"+messageID))
+                            .remove()
+                            .draw();
+                        //$("#message_list_"+messageID).remove();
+                    }
+                });
+            }
+        }
+    });
+}
+
 $(document).ready(function() {
     // Load the table into a datatable
-    $('.table').DataTable( {
+    messageList = $('#message_list').DataTable( {
         "language": {
             "emptyTable":     "No Messages Available"
         }
@@ -174,6 +210,7 @@ $(document).ready(function() {
     $("#cancel_message").click(cancelMessage);
     $("#reply_message").click(replyMessage);
     $("#forward_message").click(forwardMessage);
+    $("#delete_message").click(deleteMessage);
 
 });
 </script>
@@ -246,8 +283,8 @@ $(document).ready(function() {
                         <button type="button" id="forward_message" class="btn btn-default disabled" disabled>
                             <i class="fa fa-share" aria-hidden="true"></i> Forward
                         </button>
-                        <button type="button" class="btn btn-default disabled" disabled>
-                            <i class="fa fa-trash-o" aria-hidden="true"></i> Delete
+                        <button type="button" id="delete_message" class="btn btn-default disabled" disabled>
+                            <i class="fa fa-trash" aria-hidden="true"></i> Delete
                         </button>
                     </div>
                 </div>
@@ -263,7 +300,7 @@ $(document).ready(function() {
                     </thead>
                     <tbody>
                         {% for message in data.messages %}
-                        <tr>
+                        <tr id="message_list_{{message.id}}">
                             <td><p class="text-center">
                                 <span class="readflag">
                                 {% if message.read == true %}

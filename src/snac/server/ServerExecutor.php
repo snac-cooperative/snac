@@ -703,6 +703,39 @@ class ServerExecutor {
         return $response;
     }
 
+    public function deleteMessage(&$input) {
+        if (!isset($input["messageid"])) {
+            throw new \snac\exceptions\SNACInputException("No message ID given to delete");
+        }
+        $response = array();
+
+        $message = $this->uStore->getMessageByID($input["messageid"]);
+
+        if ($message === false) {
+            throw new \snac\exceptions\SNACInputException("Message does not exist");
+        }
+        $this->logger->addDebug("Deleting message", $message->toArray());
+
+        if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
+            ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
+                $response["message"] = $message->toArray();
+        } else {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to delete the message.");
+        }
+
+        $this->logger->addDebug("Starting to delete1");
+        $success = $this->uStore->deleteMessage($message);
+        $this->logger->addDebug("Done delete");
+        if ($success)
+            $response["result"] = "success";
+        else
+            $response["result"] = "failure";
+
+        $this->logger->addDebug("Deleted", $response);
+        return $response;
+
+    }
+
     public function readMessage(&$input) {
         if (!isset($input["messageid"])) {
             throw new \snac\exceptions\SNACInputException("No message ID given to read");
@@ -2892,6 +2925,7 @@ class ServerExecutor {
             default:
                 $reportEngine->addReport("NumConstellations");
                 $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("TopEditorsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 $reportEngine->addReport("TopHoldingInstitutions");
                 break;
