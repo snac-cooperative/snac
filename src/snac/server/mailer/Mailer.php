@@ -45,9 +45,9 @@ class Mailer {
             $this->mailer->Username = \snac\Config::$EMAIL_CONFIG["username"];      // SMTP username
             $this->mailer->Password = \snac\Config::$EMAIL_CONFIG["password"];      // SMTP password
             $this->mailer->SMTPSecure = \snac\Config::$EMAIL_CONFIG["security"];    // Enable TLS encryption, `ssl` also accepted
+            $this->mailer->Host = \snac\Config::$EMAIL_CONFIG["host"];              // Specify main and backup SMTP servers
+            $this->mailer->Port = \snac\Config::$EMAIL_CONFIG["port"];              // TCP port to connect to
         }
-        $this->mailer->Host = \snac\Config::$EMAIL_CONFIG["host"];              // Specify main and backup SMTP servers
-        $this->mailer->Port = \snac\Config::$EMAIL_CONFIG["port"];              // TCP port to connect to
 
         $this->fromName = \snac\Config::$EMAIL_CONFIG["from_name"];
         $this->fromEmail = \snac\Config::$EMAIL_CONFIG["from_email"];
