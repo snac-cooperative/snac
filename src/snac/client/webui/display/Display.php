@@ -143,6 +143,14 @@ class Display {
         $this->language = json_decode(file_get_contents(\snac\Config::$TEMPLATE_LANGUAGE_DIR ."/$language.json"), true);
     }
 
+    /**
+     * Clean String
+     *
+     * Given a string, quotes it appropriately in UTF-8.
+     *
+     * @param string $string The string to clean
+     * @return string The cleaned string
+     */
     private function cleanString($string) {
         $outStr = mb_convert_encoding($string, 'UTF-8', 'UTF-8');
         $outStr = htmlentities($outStr, ENT_QUOTES, 'UTF-8');
