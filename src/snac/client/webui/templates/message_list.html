@@ -174,6 +174,9 @@ function deleteMessage() {
             if (result) {
                 $.post("?command=message_delete", { messageid: messageID }, function (data) {
                     if (data.result == "success") {
+                        $("#reply_message").attr("disabled", true).addClass("disabled");
+                        $("#forward_message").attr("disabled", true).addClass("disabled");
+                        $("#delete_message").attr("disabled", true).addClass("disabled");
                         $("#message_view_pane").text("No Message selected");
                         messageList
                             .row($("#message_list_"+messageID))
