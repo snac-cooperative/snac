@@ -11,6 +11,26 @@
 
 var currentMessage = null;
 var messageList = null;
+var tinymceInstance = null;
+
+tinymce.init({
+    selector:'textarea', 
+    min_height: 250,
+    menubar: false,
+    statusbar: false,
+    plugins: [
+        'advlist autolink lists link image charmap print preview anchor',
+        'searchreplace visualblocks code fullscreen',
+        'insertdatetime contextmenu paste code'
+    ],
+    toolbar: 'undo redo | bold italic | bullist numlist outdent indent | link',
+    setup: function (editor) {
+        editor.on('change', function () {
+            editor.save();
+        });
+        tinymceInstance = editor;
+    }
+});
 
 function showMessage(messageID) {
     $.get("?command=message_read&messageid="+messageID, null, function (data) {
@@ -20,7 +40,8 @@ function showMessage(messageID) {
 
             var messageBody = "This message has no content";
             if (typeof data.message.body !== 'undefined')
-                messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
+                //messageBody = (data.message.body).replace(/(?:\r\n|\r|\n)/g, '<br />');
+                messageBody = data.message.body;
 
             var text = $('#message_template').clone();
             var html = text.html().replace(/MESSAGE_SUBJECT/g, data.message.subject)
@@ -62,6 +83,7 @@ function sendMessage() {
                 $("#new_message_form").find('input:text, input:password, input:file, select, textarea').val('');
                 $("#new_message_form").find('input:radio, input:checkbox')
                      .removeAttr('checked').removeAttr('selected');
+                tinymceInstance.load();
             }, 2000);
 
         } else {
@@ -87,11 +109,12 @@ function replyMessage() {
         subject = currentMessage.subject;
 
     $("#subject").val(subject);
-    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+    $("#body").val("<br>\n<br>\n-- On " + currentMessage.timestamp + ", "
                                 + currentMessage.fromUser.fullName
                                 + " (" + currentMessage.fromUser.userName + ")"
-                                + " wrote:\n\n" + currentMessage.body);
-
+                                + " wrote:<br>\n<br>\n" + currentMessage.body);
+    tinymceInstance.load();
+    
     // Open the new message modal window
     $("#new_message_pane").modal("show");
 }
@@ -105,11 +128,12 @@ function forwardMessage() {
 
 
     $("#subject").val(subject);
-    $("#body").val("\n\n-- On " + currentMessage.timestamp + ", "
+    $("#body").val("<br>\n<br>\n-- On " + currentMessage.timestamp + ", "
                                 + currentMessage.fromUser.fullName
                                 + " (" + currentMessage.fromUser.userName + ")"
-                                + " wrote:\n\n" + currentMessage.body);
-
+                                + " wrote:<br>\n<br>\n" + currentMessage.body);
+    tinymceInstance.load();
+    
     // Open the new message modal window
     $("#new_message_pane").modal("show");
 }
@@ -122,6 +146,7 @@ function cancelMessage() {
     $("#new_message_form").find('input:text, input:password, input:file, select, textarea').val('');
     $("#new_message_form").find('input:radio, input:checkbox')
          .removeAttr('checked').removeAttr('selected');
+    tinymceInstance.load();
 }
 
 function deleteMessage() {
