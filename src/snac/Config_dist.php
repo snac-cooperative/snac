@@ -234,7 +234,7 @@ class Config {
     /**
      * @var string Location of the email template directory
      */
-    public static $EMAIL_TEMPLATE_DIR = "/home/jh2jf/Documents/SNAC/Development/snac/src/snac/server/mailer/templates";
+    public static $EMAIL_TEMPLATE_DIR = "/full/path/to/src/snac/server/mailer/templates";
 
     /**
      * @var boolean Whether or not to use SMTP to send emails
