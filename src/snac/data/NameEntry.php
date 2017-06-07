@@ -328,4 +328,41 @@ class NameEntry extends AbstractData {
 
         return true;
     }
+    
+    /**
+     * Cleanse all sub-elements
+     *
+     * Removes the ID and Version from sub-elements and updates the operation to be
+     * INSERT.  If the operation is specified by the parameter, this method
+     * will use that operation instead of INSERT.
+     *
+     * @param string $operation optional The operation to use (default is INSERT)
+     */ 
+    public function cleanseSubElements($operation=null) {
+        $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
+        if ($operation !== null) {
+            $newOperation = $operation;
+        }
+
+        parent::cleanseSubElements($newOperation);
+
+        foreach ($this->contributors as &$contributor) {
+            $contributor->setID(null);
+            $contributor->setVersion(null);
+            $contributor->setOperation($newOperation);
+            $contributor->cleanseSubElements($newOperation);
+        }
+        foreach ($this->components as &$component) {
+            $component->setID(null);
+            $component->setVersion(null);
+            $component->setOperation($newOperation);
+            $component->cleanseSubElements($newOperation);
+        }
+        if (isset($this->language) && $this->language != null) {
+            $this->language->setID(null);
+            $this->language->setVersion(null);
+            $this->language->setOperation($newOperation);
+            $this->language->cleanseSubElements($newOperation);
+        }
+    }
 }

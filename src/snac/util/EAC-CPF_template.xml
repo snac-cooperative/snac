@@ -25,7 +25,7 @@
         {% if other.type.uri %}
         <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
         {% else %}
-        <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
+        <otherRecordId localType="{{ other.type.term }}">{{ other.uri}}</otherRecordId>
         {% endif %}
         {% endfor %}
         <maintenanceStatus>{{data.maintenanceStatus.term}}</maintenanceStatus>
@@ -79,6 +79,13 @@
     <cpfDescription>
         <identity>
             <entityType>{{ data.entityType.term }}</entityType>
+            {% for other in data.entityIDs %}
+            {% if other.type.uri %}
+            <entityId localType="{{ other.type.uri }}">{{ other.text }}</entityId>
+            {% else %}
+            <entityId>{{ other.text }}</entityId>
+            {% endif %}
+            {% endfor %}
             {#
             We appear not to use the language element.
 

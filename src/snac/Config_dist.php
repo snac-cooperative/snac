@@ -59,6 +59,16 @@ class Config {
     public static $PROJECT_DIR = "";
 
     /**
+     * @var string URL of the webui
+     */
+    public static $WEBUI_URL = "http://localhost";
+
+    /**
+     * @var string URL of the rest server
+     */
+    public static $REST_URL = "http://localhost:81";
+
+    /**
      *
      * @var string URL of the back-end server
      */
@@ -133,6 +143,11 @@ class Config {
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
+    
+    /**
+     * @var string Location of the REST commands file 
+     */
+    public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
     /**
      * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.

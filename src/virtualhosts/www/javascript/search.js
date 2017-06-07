@@ -11,6 +11,39 @@
 
 jQuery.fn.exists = function(){return this.length>0;}
 
+
+function showCompareOption() {
+    var constellation1 = null;
+    var constellation2 = null;
+    var count = 0;
+    $(".compare-checkbox").each(function() {
+        if (this.checked) {
+            count++;
+            if (constellation1 == null)
+                constellation1 = $(this).val();
+            else if (constellation2 == null)
+                constellation2 = $(this).val();
+        }
+    });
+
+    if (count > 0) {
+       // Show the box with the options (disabled)
+       $("#compareButton").prop("disabled", true).removeClass('btn-primary').addClass('btn-default');
+       $("#compareBox").collapse("show");
+    } else {
+        // hide the box and disable the button
+        $("#compareButton").prop("disabled", true).removeClass('btn-primary').addClass('btn-default');
+        $("#compareBox").collapse("hide");
+    }
+
+    if (constellation1 != null && constellation2 != null && count == 2) {
+        // Enable the option
+        console.log("Can compare " + constellation1 + " and " + constellation2);
+        $("#compare1").val(constellation1);
+        $("#compare2").val(constellation2);
+        $("#compareButton").prop("disabled", false).addClass('btn-primary').removeClass('btn-default');
+    }
+}
 /**
  * Only load this script once the document is fully loaded
  */
@@ -52,4 +85,10 @@ $(document).ready(function() {
             }
         });
     }
+
+    $(".compare-checkbox").each(function() {
+        $(this).on("change", function() {
+            showCompareOption();
+        });
+    });
 });

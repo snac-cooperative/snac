@@ -5,6 +5,7 @@
 
 <!-- JQuery -->
 <script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
@@ -39,91 +40,8 @@
 <script src="javascript/select_loaders.js{{control.noCache}}"></script>
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/relation_search.js{{control.noCache}}"></script>
+<script src="javascript/browse_scripts.js{{control.noCache}}"></script>
 
-
-<script>
-
-var first = "";
-var firstID = 0;
-var last = "";
-var lastID = 0;
-var datatable;
-
-function queryBrowse(position, term, entityType, icid) {
-
-    $.post("?command=browse_data&position="+position+"&term="+term+"&entity_type="+entityType+"&ic_id="+icid, null, function (data) {
-        var results = [];
-        datatable.clear();
-        first = "";
-        last = "";
-        if (data.results.length > 0) {
-            var list = "";
-            first = data.results[0].name_entry;
-            firstID = data.results[0].ic_id;
-            last = data.results[data.results.length - 1].name_entry;
-            lastID = data.results[data.results.length -1].ic_id;
-            for (var key in data.results) {
-                result = data.results[key];
-                var link = "<a target=\"_blank\" href=\"?command=view&constellationid="+result.ic_id+"\">"+result.name_entry+"</a>";
-                var row = new Array(result.ic_id, link, result.entity_type, result.resources, result.degree);
-                var node = datatable.row.add(row).draw().node();
-
-                if (position == "middle" && key == 10)
-                    $(node).css("font-weight", "bold").css("background-color", "#eeeeee");
-            }
-        }
-        enableButtons();
-    });
-    return false;
-}
-
-function disableButtons() {
-    $("#searchbutton").prop('disabled', true);
-    $("#nextbutton").prop('disabled', true);
-    $("#prevbutton").prop('disabled', true);
-}
-
-function enableButtons() {
-    $("#nextbutton").prop('disabled', false);
-    $("#prevbutton").prop('disabled', false);
-    $("#searchbutton").prop('disabled', false);
-}
-
-$(document).ready(function() {
-
-    // Use select2 to display the select dropdowns
-    // rather than the HTML default
-
-        $('select').each(function() {
-            $(this).select2({
-                minimumResultsForSearch: Infinity,
-                allowClear: false,
-                theme: 'bootstrap'
-            });
-        });
-
-        // Load the table into a datatable
-        datatable = $('.table').DataTable({ "sorting": false, "searching" : false, "paging" : false, "info" : false});
-
-        // Get the first bit of data
-        queryBrowse("after", "", "", 0);
-
-        // Set up the search/next/previous buttons
-        $('#searchbutton').click(function() {
-            disableButtons();
-            return queryBrowse("middle", $("#searchbox").val(), $("#entityType").val(), 0);
-        });
-        $('#nextbutton').click(function() {
-            disableButtons();
-            return queryBrowse("after", last, $("#entityType").val(), lastID);
-        });
-        $('#prevbutton').click(function() {
-            disableButtons();
-            return queryBrowse("before", first, $("#entityType").val(), firstID);
-        });
-
-});
-</script>
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
@@ -154,13 +72,36 @@ $(document).ready(function() {
     			</div>
     		</form>
 
+            <div id="compareBox" class="collapse">
+                <div class="well well-sm">
+                    <div class="row">
+                        <div class="col-xs-8">
+                            <form class="form-horizontal" id="compare_form" method="POST" action="?command=diff">
+                                <input type="hidden" name="constellationid1" id="compare1">
+                                <input type="hidden" name="constellationid2" id="compare2">
+                                <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                                <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                            </form>
+                        </div>
+                        <div class="col-xs-4 text-right">
+                            <button class="btn btn-default" aria-label="View your selected items" id="shoppingCartButton">
+                                <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                <span class="badge" id="shoppingCartCount">0</span>
+                            </button>
+                            {% if permissions.Publish %}
+                            <button class="btn btn-danger" id="autoMergeButton" disabled>Auto Merge</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="form-horizontal">
 
                 <table class="table">
                     <thead>
                         <tr>
-                            <th style="width: 10%;">ID</th>
-                            <th style="width: 50%;">Name Entry</th>
+                            <th style="width: 4%;"></th>
+                            <th style="width: 56%;">Name Entry</th>
                             <th style="width: 20%;">Entity Type</th>
                             <th style="width: 10%;">Resources</th>
                             <th style="width: 10%;">Relations</th>
@@ -177,6 +118,23 @@ $(document).ready(function() {
                 <div class="col-sm-6 text-right">
                     <button class="btn btn-default" id="nextbutton">Next <i class="fa fa-chevron-right" aria-hidden="true"></i></button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="visibility: hidden; display: none;">
+    <form id="merge_form">
+    </form>
+</div>
+<div class="modal fade" id="please_wait_modal" tabindex="-1" role="dialog" aria-labelledby="pleaseWaitPane">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header primary">
+                <h4 class="modal-title" id="pleaseWaitPane">Merging: Please Wait</h4>
+            </div>
+            <div class="modal-body text-center" id="">
+                <p style="margin-top: 50px"><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></p>
+                <p style="margin-bottom: 50px;">Merging in progress...</p>
             </div>
         </div>
     </div>

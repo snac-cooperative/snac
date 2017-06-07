@@ -87,6 +87,11 @@ foreach ($line as $data) {
         $dbu->writeConstellationStatus($user, $written->getID(), "published");
         // index ES
         indexESearch($written);
+
+        // If this is published, then it should point to itself in the lookup table.
+        $selfDirect = array($written);
+        $dbu->updateConstellationLookup($written, $selfDirect);
+
     }
 
     /*

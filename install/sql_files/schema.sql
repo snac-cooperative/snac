@@ -101,6 +101,7 @@ drop table if exists unassigned_arks;
 drop table if exists resource_cache; 
 drop table if exists resource_language; 
 drop table if exists resource_origination_name;
+drop table if exists constellation_lookup;
 
 -- drop table if exists vocabulary_use;
 drop sequence if exists version_history_id_seq;
@@ -1003,6 +1004,27 @@ create table unassigned_arks (
            ark text
 );
 
+
+-- Table for the constellation id mapping (DAG) for getting the correct constellation if an
+-- given an outdated ARK/ID that has been merged or split
+create table constellation_lookup (
+        ic_id           int,                        -- The main ICID (to query)
+        ark_id          text,                       -- The original ARK (to query)
+        current_ic_id   int,                        -- The current ICID for this constellation
+        current_ark_id  text,                       -- The current ARK for this constellation
+        modified        timestamp default now(),    -- The time this mapping was updated
+        note            text                        -- Any notes that may be useful
+);
+-- Forward looking index (unique)
+create index constellation_lookup_idx1 on constellation_lookup(ic_id, ark_id);
+-- Backward looking index (non-unique)
+create index constellation_lookup_idx2 on constellation_lookup(current_ic_id, current_ark_id);
+
+-- Prefill
+insert into constellation_lookup (ic_id, ark_id) select distinct ic_id, ark_id from nrd where ark_id is not null;
+update constellation_lookup set current_ic_id = ic_id, current_ark_id = ark_id;
+
+
 -- Postgres Name Index (for Browsing support)
 drop table if exists name_index;
 create table name_index (
@@ -1431,20 +1453,6 @@ select g.*
         group by g.id, g.ic_id) mg on g.id = mg.id and g.version = mg.version
     where not g.is_deleted;
 
-
--- Name Index for ordered browsing
-create table name_index (
-    nameEntry       text,
-    nameEntryLower  text, -- lower-cased version of the name entry
-    ark             text,
-    ic_id           int,  -- ic_id in snac
-    degree          int,  -- number of connections in snac
-    resources       int,  -- number of resources in snac
-    timestamp       timestamp default(now()));
-
-create unique index name_index_pk on name_index(ic_id);
-create index name_index_idx1 on name_index(nameEntryLower);
-create index name_index_idx2 on name_index(nameEntry);
 
 
 

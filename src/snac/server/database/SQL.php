@@ -1253,37 +1253,188 @@ class SQL
     }
 
     /**
-     * select mainID by arkID
+     * select Current IC_IDs by arkID
      *
-     * nrd.ic_id is the constellation id.
-     *
-     * Do not use nrd.id. The row identifier for nrd is nrd.ic_id. Do not join to table nrd. If you need to
-     * join to the constellation use version_history.id. They are both the same, but nrd is a data table,
-     * and version_history is the "root" of the constellation.
-     *
-     * Constellation->getID() gets the ic_id aka constellation id aka nrd.ic_id aka
-     * version_history.id.
-     *
-     * non-constellation->getID() gets the row id. Non-constellation objects get the ic_id from the
-     * constellation, and it is not stored in the php objects themselves. I mention this (again) because it
-     * (again) caused confusion in the SQL below (now fixed).
+     * Returns the current IC ic_id (main_id in Tom's code) for the given Ark ID.  If the constellation pointed
+     * to by the ARK was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
      *
      * @param string $arkID The ARK id of a constellation
-     *
-     * @return integer The constellation ID aka mainID akd ic_id aka version_history.id.
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
      */
-    public function selectMainID($arkID)
+    public function selectCurrentMainIDsForArk($arkID)
     {
         $result = $this->sdb->query(
-            'select nrd.ic_id
-            from nrd
+            'select current_ic_id
+            from constellation_lookup
             where
-            nrd.ark_id=$1',
+            ark_id=$1',
             array($arkID));
-        $row = $this->sdb->fetchrow($result);
-        return $row['ic_id'];
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
     }
 
+    /**
+     * select Current IC_IDs by IC_ID
+     *
+     * Returns the current IC ic_id (main_id in Tom's code) for the given ic_id.  If the constellation pointed
+     * to by the given ic_id was merged, this will return the the ic_id for the good, merged record (NOT the tombstoned version).
+     * If the ic was split, it will return a list of ic_ids relating to the split.
+     *
+     * @param integer $icid The Constellation ID of the IC to lookup
+     * @return integer[] The constellation IDs aka mainIDs akd ic_ids aka version_history.ids.
+     */
+    public function selectCurrentMainIDsForID($icid)
+    {
+        $result = $this->sdb->query(
+            'select current_ic_id
+            from constellation_lookup
+            where
+            ic_id=$1',
+            array($icid));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result)) {
+            array_push($all, $row['current_ic_id']);
+        }
+        return $all;
+    }
+
+    /**
+     * Update the constellation lookup table
+     *
+     * Updates the mappings for icid/ark to current icid/ark by modifiying the current values.  If
+     * the given icid and ark are not in the table, this method adds them first.  The `$currents` parameter
+     * may contain solely the other parameters, i.e. `$currents = [$icid => $ark]`, with `count($currents) = 1`,
+     * but in general the domain of this function (`$icid`, `$ark`) should NEVER appear in the range (`$currents`).
+     *
+     * This is a very tricky set of logic meant to maintain the endpoints of an implicit DAG of merge
+     * and split activity throughout the system. The lookup table maintains a list of id/ark (possibly stale) to
+     * current correct id/arks, but the lookup may not be unique (in the case of a split).  This method attempts
+     * to keep track of updates to the lookup table, such as removing duplicates on a merge of a previous split,
+     * etc.
+     *
+     * We do not store the entire DAG, but use an implicit 2-level version.  In the traditional DAG, we would need
+     * to follow the path from a queried icid down to the end of the path (no out-edges) to get the current icid(s)
+     * for that icid.  In our implicit DAG, we only store links from each node (possibly duplicated) directly to the
+     * DAG's paths' endpoint(s).  Therefore, those links must be updated when a new endpoint (on a merge) or new endpoints
+     * (on a split) are added and the DAG modified.  The DAG itself may be reconstructed from the version_history table.
+     *
+     * @param int $icid The ICID to re-map
+     * @param string $ark The Ark ID to re-map
+     * @param string[] $currents The associative array of icid->ark for current ids/arks to redirect to.
+     */
+    public function updateConstellationLookup($icid, $ark, $currents=null) {
+        if ($currents === null || empty($currents)) {
+            return;
+        }
+
+        $result = $this->sdb->query('select ic_id from constellation_lookup where ic_id = $1;', array($icid));
+        if ($this->sdb->fetchrow($result) === false) {
+            // If the ICID doesn't exist, then add it. Nothing could be pointing to it in this case.
+            foreach ($currents as $currentICID => $currentArk) {
+                $result = $this->sdb->query('insert into constellation_lookup
+                    (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                    array($icid, $ark, $currentICID, $currentArk));
+            }
+        } else if (count($currents) == 1 && isset($currents[$icid])) {
+            // If the icid and the current[icid] are both the same, then we should not redirect because id->id already exists
+            // and we don't want to accidentally delete the lookup
+            return;
+        } else {
+            // Not trying to update a self-referencing link, so we should modify the table appropriately
+            // Note: In this case, the user should NEVER ask to redirect "A" to "A" and "B"
+            //       (the domain should not be a subset of the range)
+
+            // Get anything pointing to $icid, as it will need to be redirected to each icid in the currents list
+            $result1 = $this->sdb->query('select ic_id, ark_id, current_ic_id, current_ark_id from constellation_lookup where current_ic_id = $1;', array($icid));
+            $toDelete = array();
+            $toInsert = array();
+            while($row = $this->sdb->fetchrow($result1))
+            {
+                // Keep a list if icid=>ark that will need to be rewritten to the database
+                $toInsert[$row["ic_id"]] = $row["ark_id"];
+                // We will eventually want to delete these
+                array_push($toDelete, $row);
+            }
+
+            // Build the SQL prepare string
+            $tmp = array();
+            for ($i = 1; $i <= count($currents); $i++) {
+                array_push($tmp, '$'.$i);
+            }
+            $inString = implode(",", $tmp);
+
+            // Build a cache for relevant pieces of the lookup table
+            $result2 = $this->sdb->query('select * from constellation_lookup where current_ic_id in ('.$inString.');',
+                                        array_keys($currents));
+            $cache = array();
+            while($row = $this->sdb->fetchrow($result2))
+            {
+                if (!isset($cache[$row['current_ic_id']]))
+                    $cache[$row['current_ic_id']] = array();
+                // Cache is a reverse lookup (current <- ic_id) where current is in our list of $currents
+                $cache[$row['current_ic_id']][$row['ic_id']] = $row['ark_id'];
+            }
+
+            // Do the insert of the correct redirects
+            foreach ($toInsert as $oICID => $oArk) {
+                foreach ($currents as $nICID => $nArk) {
+                    if (!isset($cache[$nICID]) || !isset($cache[$nICID][$oICID])) {
+                        // if nothing is pointing to nICID OR oICID is not pointing to nICID, then add the link
+                        $result = $this->sdb->query('insert into constellation_lookup
+                            (ic_id, ark_id, current_ic_id, current_ark_id) values ($1, $2, $3, $4);',
+                            array($oICID, $oArk, $nICID, $nArk));
+                    }
+                }
+            }
+
+            // Remove any of the old redirects that are no longer active.
+            foreach ($toDelete as $row) {
+                $result = $this->sdb->query('delete from constellation_lookup
+                    where current_ic_id = $3 and current_ark_id = $4 and
+                    current_ic_id = $1 and current_ark_id = $2;',
+                    $row);
+            }
+        }
+
+    }
+
+    /**
+     * Update MaybeSame Links
+     *
+     * Updates the maybe same table to point any maybesame references from icid to currentICID.
+     * After doing an update, it will remove any self-referencing maybesames.
+     *
+     * @param int $icid The icid to re-map in the maybe same table
+     * @param int $currentICID The updated ICID to use instead of $icid
+     */
+    public function updateMaybeSameLinks($icid, $currentICID) {
+        $result = $this->sdb->query('update maybe_same
+            set ic_id1 = $2 where ic_id1 = $1;',
+            array($icid, $currentICID));
+        $result = $this->sdb->query('update maybe_same
+            set ic_id2 = $2 where ic_id2 = $1;',
+            array($icid, $currentICID));
+
+        // Remove any self-referencing links
+        $result = $this->sdb->query('delete from maybe_same where ic_id1 = ic_id2;', array());
+    }
+
+    /**
+     * Remove MaybeSame Links
+     *
+     * Removes the maybe same links between the two ic_ids given.
+     *
+     * @param int $icid1 One ICID
+     * @param int $icid2 Another ICID
+     */
+    public function removeMaybeSameLink($icid1, $icid2) {
+        $result = $this->sdb->query('delete from maybe_same where (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);',
+            array($icid1, $icid2));
+    }
 
     /**
      * Select records from table source by foreign key
@@ -5014,12 +5165,10 @@ class SQL
      * well in most situations where a hash aka associative list is being used in a control statement.
      *
      * @param string $term The "type" term for what type of vocabulary to search
-     *
      * @param string $query The string to search through the vocabulary
-     *
      * @param integer $entityTypeID Numeric key related to vocabulary.id where type='entity_type' of one of
      * the three entity types.
-     *
+     * @param int $count optional The number of search results to request
      * @return string[][] Returns a list of lists with keys id, value.
      */
     public function searchVocabulary($term, $query, $entityTypeID, $count = 100)
@@ -5647,7 +5796,7 @@ class SQL
      * @return string[] An associative list with keys corresponding to the version_history table columns.
      */
     public function selectVersionHistory($vhInfo,$listAll = false) {
-        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstoned\' or v.status=\'ingest cpf\')';
+        $limitHistory = 'and (v.status=\'published\' or v.status=\'ingest cpf\' or v.status=\'deleted\' or v.status=\'tombstone\' or v.status=\'ingest cpf\')';
         if ($listAll === true)
             $limitHistory = "";
         $result = $this->sdb->query(
@@ -5662,6 +5811,32 @@ class SQL
         while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
+        }
+        return $all;
+    }
+
+    /**
+     * List MaybeSameIDs
+     *
+     * Gets a list of ICIDs that may be the same as the given parameter.
+     *
+     * @param  integer $icid IC ID for which to search
+     * @return integer[]       List of ICIDs listed to be maybe the same
+     */
+    public function listMaybeSameIDsFor($icid) {
+        $result = $this->sdb->query(
+            'select ic_id1, ic_id2 from maybe_same where ic_id1=$1 or ic_id2=$1;',
+            array($icid));
+        $usernames = "";
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            // Assign the ids as keys as well as values to ensure no duplicates
+            if ($row['ic_id1'] == $icid) {
+                $all[$row['ic_id2']] = $row['ic_id2'];
+            } else {
+                $all[$row['ic_id1']] = $row['ic_id1'];
+            }
         }
         return $all;
     }

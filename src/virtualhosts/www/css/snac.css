@@ -53,6 +53,10 @@ h1 {
 }
 
 .search-results p {
+    margin-bottom: 2px;
+}
+
+.search-results p.final {
     margin-bottom: 30px;
 }
 
@@ -293,6 +297,10 @@ td.rotate > div > span {
     word-wrap: break-word;
 }
 
+.btn-sm, .btn-sm:hover, .btn-sm:active, .btn-sm:visited, .btn-sm:link {
+    text-decoration: none;
+}
+
 /* Advanced Search Information */
 #advancedSearchText dl {
     margin-left: 25px;
@@ -428,6 +436,38 @@ button.list-group-item-review.active:focus {
     border-color: #AE5A0B;
 }
 
+.list-group-item-merge {
+    color: #AB307C;
+    background-color: #F3E0EF;
+}
+a.list-group-item-merge,
+button.list-group-item-merge {
+    color: #AB307C;
+}
+a.list-group-item-merge .list-group-item-heading,
+button.list-group-item-merge .list-group-item-heading {
+    color: inherit;
+}
+a.list-group-item-merge:hover,
+button.list-group-item-merge:hover,
+a.list-group-item-merge:focus,
+button.list-group-item-merge:focus {
+    color: #AB307C;
+    background-color: #EBCDE1;
+}
+a.list-group-item-merge.active,
+button.list-group-item-merge.active,
+a.list-group-item-merge.active:hover,
+button.list-group-item-merge.active:hover,
+a.list-group-item-merge.active:focus,
+button.list-group-item-merge.active:focus {
+    color: #fff;
+    background-color: #AB307C;
+    border-color: #AB307C;
+}
+
+
+
 /* Use the following to define new panel styles */
 .panel-review {
     border-color: #FBDECE;
@@ -459,6 +499,13 @@ button.list-group-item-review.active:focus {
 
 .loading-box i {
     font-size: 55px;
+}
+
+.table-noborder tr {
+    border: none;
+}
+.table-noborder tbody tr td {
+    border: none;
 }
 
 /* Fix the width of font-awesome icons so their text aligns nicely beside them */
