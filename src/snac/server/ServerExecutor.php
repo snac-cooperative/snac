@@ -43,6 +43,9 @@ class ServerExecutor {
      */
     private $neo4J = null;
 
+    /**
+     * @var \snac\server\mailer\Mailer Email Utility class
+     */
     private $mailer = null;
 
     /**
@@ -650,24 +653,23 @@ class ServerExecutor {
     }
 
     /**
-    * List the SNAC roles
-    *
-    * List all the roles in SNAC.
-    *
-    * @return \snac\data\Role[] List of Roles
-    */
+     * List the SNAC roles
+     *
+     * List all the roles in SNAC.
+     *
+     * @return \snac\data\Role[] List of Roles
+     */
     public function listRoles() {
-
         $roleList = array();
         foreach ($this->uStore->listRoles() as $role) {
             array_push($roleList, $role->toArray());
         }
         $response = array (
-        "result" => "success",
-        "roles" =>  $roleList
-    );
-    return $response;
-}
+            "result" => "success",
+            "roles" =>  $roleList
+        );
+        return $response;
+    }
 
     /**
      * List the SNAC institutions
@@ -690,6 +692,14 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * List User Messages
+     *
+     * Returns a list of messages sent to a given user.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
     public function userMessages($input = null) {
         /*
          * Get the list of Messages for the user
@@ -703,6 +713,18 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Delete Message
+     *
+     * Deletes the message with given message id if it exists and the user has
+     * permission to delete this message (sender or recipient).  Note, this method
+     * only sets the delete flag; a message is never actually deleted.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
     public function deleteMessage(&$input) {
         if (!isset($input["messageid"])) {
             throw new \snac\exceptions\SNACInputException("No message ID given to delete");
@@ -736,6 +758,17 @@ class ServerExecutor {
 
     }
 
+    /**
+     * Read Message
+     *
+     * Given a message id on input, read the message and return it to the client, if they
+     * have permissions to read it.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
     public function readMessage(&$input) {
         if (!isset($input["messageid"])) {
             throw new \snac\exceptions\SNACInputException("No message ID given to read");
@@ -760,6 +793,16 @@ class ServerExecutor {
 
     }
 
+    /**
+     * Send Message
+     *
+     * Sends a message given on input to a user, then emails them to notify them
+     * of the message.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
     public function sendMessage(&$input) {
         if (!isset($input["message"])) {
             throw new \snac\exceptions\SNACInputException("No message given to send");
@@ -789,6 +832,16 @@ class ServerExecutor {
     }
 
 
+    /**
+     * Send Feedback
+     *
+     * Sends the given message as feedback to the correct user to handle feedback. It also
+     * emails the user to notify them of the feedback.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
     public function sendFeedback(&$input) {
         if (!isset($input["message"])) {
             throw new \snac\exceptions\SNACInputException("No feedback message given to send");

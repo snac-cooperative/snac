@@ -5817,6 +5817,14 @@ class SQL
         return $all;
     }
 
+    /**
+     * Select Message by ID
+     *
+     * Reads the message data out of the database for the given ID.
+     *
+     * @param int $id The message ID to read
+     * @return string[] The message data
+     */
     public function selectMessageByID($id) {
         $result = $this->sdb->query(
             'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where m.id = $1',
@@ -5833,7 +5841,16 @@ class SQL
         return array();
 
     }
-    
+
+    /**
+     * Delete Message
+     *
+     * Sets the deleted flag for the given message ID, denoting that this message has been deleted
+     * in the system.
+     *
+     * @param int $id The message ID to delete
+     * @return boolean True on success, false otherwise
+     */
     public function deleteMessageByID($id) {
         $result = $this->sdb->query(
             'update messages set deleted = true where id = $1 returning *',
@@ -5851,12 +5868,34 @@ class SQL
 
     }
 
+    /**
+     * Mark Message Read
+     *
+     * Marks the message with given id as read in the database.  This just sets the read flag to
+     * true.
+     *
+     * @param int $id The message ID to mark as read
+     */
     public function markMessageReadByID($id) {
         $result = $this->sdb->query(
             'update messages set read = TRUE where id = $1',
             array($id));
     }
 
+    /**
+     * Insert Message
+     *
+     * Writes the given message data into the database as a new message.
+     *
+     * @param int $toUser The user id this message is directed to
+     * @param int $fromUser The user id this message is from
+     * @param string $fromString The string representation this message is from (if no user, such as feedback from IP address)
+     * @param string $subject The subject of the message
+     * @param string $body The body of the message (HTML)
+     * @param string $attachmentContent The attached file encoded as a string
+     * @param string $attachmentFilename The filename to give the attachment on reading
+     * @return boolean True if succeeded, false otherwise
+     */
     public function insertMessage($toUser,
                                     $fromUser,
                                     $fromString,
@@ -5878,6 +5917,17 @@ class SQL
         return true;
     }
 
+    /**
+     * Select Messages for UserID
+     *
+     * Selects all non-deleted messages for the given userID.  By default, it gives both read and unread messages
+     * sent to this user.
+     *
+     * @param int $userid The userid of the user
+     * @param boolean $toUser optional Whether or not to select messages to this user (or from this user)
+     * @param boolean $unreadOnly optional Whether to query only unread messages (default false)
+     * @return string[] The list of message data for the user
+     */
     public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
         $searchUser = 'to_user';
         if (!$toUser) {

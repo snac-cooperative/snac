@@ -23,14 +23,29 @@ use \snac\Config as Config;
  */
 class Mailer {
 
+    /**
+     * @var \PHPMailer The PHP Mailer instance used to send emails
+     */
     private $mailer;
 
+    /**
+     * @var \Monolog\Logger The logger instance for this class
+     */
     private $logger;
 
+    /**
+     * @var string The name from which to send emails
+     */
     private $fromName;
 
+    /**
+     * @var string The email address from which to send emails
+     */
     private $fromEmail;
 
+    /**
+     * Constructor
+     */
     public function __construct() {
         global $log;
 
@@ -53,6 +68,15 @@ class Mailer {
         $this->fromEmail = \snac\Config::$EMAIL_CONFIG["from_email"];
     }
 
+    /**
+     * Send Mail to User
+     *
+     * Sends an email with body and subject to the given User object.
+     *
+     * @param \snac\data\User $toUser The user to send an email to
+     * @param string $subject The subject of the email
+     * @param string $body The body of the email (in HTML)
+     */
     public function sendUserMail($toUser, $subject, $body) {
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
         $this->mailer->addAddress($toUser->getEmail(), $toUser->getFullName()); // Add a recipient
@@ -80,18 +104,18 @@ class Mailer {
             $this->logger->addDebug('Message could not be sent: ' . $this->mailer->ErrorInfo);
         } 
     }
-    
+
+    /**
+     * Send Message as Email
+     *
+     * Sends a message object as an email to its recipient.
+     *
+     * @param \snac\data\Message $message The message to send via email
+     */
     public function sendUserMessage(&$message) {
         $this->logger->addDebug('Trying to send message', $message->toArray());
         $this->mailer->setFrom($this->fromEmail, $this->fromName);
         $this->mailer->addAddress($message->getToUser()->getEmail(), $message->getToUser()->getFullName()); // Add a recipient
-        //$this->mailer->addAddress('ellen@example.com');                       // Name is optional
-        //$this->mailer->addReplyTo('info@example.com', 'Information');
-        //$this->mailer->addCC('cc@example.com');
-        //$this->mailer->addBCC('bcc@example.com');
-
-        //$this->mailer->addAttachment('/var/tmp/file.tar.gz');                 // Add attachments
-        //$this->mailer->addAttachment('/tmp/image.jpg', 'new.jpg');            // Optional name
         $this->mailer->isHTML(true);                                            // Set email format to HTML
 
         $this->mailer->Subject = "SNAC Mail: " . $message->getSubject();

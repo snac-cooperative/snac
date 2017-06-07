@@ -846,6 +846,14 @@ class WebUIExecutor {
         return $filename;
     }
 
+    /**
+     * Display Message Center
+     *
+     * Loads the display with the message center (message list) template.  It also asks
+     * the server for the list of unread messages for the current user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
     public function displayMessageListPage(&$display) {
         $ask = array("command"=>"user_messages");
         $serverResponse = $this->connect->query($ask);
@@ -856,6 +864,15 @@ class WebUIExecutor {
         $display->setTemplate("message_list");
     }
 
+    /**
+     * Read Message
+     *
+     * Asks the server to read the message with given ID.  The user must have permission
+     * to read the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
     public function readMessage(&$input) {
         $ask = array("command"=>"read_message",
                     "messageid"=>$input["messageid"]);
@@ -864,6 +881,15 @@ class WebUIExecutor {
         return $serverResponse;
     }
 
+    /**
+     * Delete Message
+     * 
+     * Asks the server to delete the message given as input by ID.  The user must have
+     * permission to delete the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
     public function deleteMessage(&$input) {
         $ask = array("command"=>"delete_message",
                     "messageid"=>$input["messageid"]);
@@ -872,6 +898,15 @@ class WebUIExecutor {
         return $serverResponse;
     }
 
+    /**
+     * Send a Feedback Message
+     *
+     * Sends the feedback given in the input to the server's feedback mechanism.  If no
+     * user information is given, it will send the user's IP address for verification.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client
+     */
     public function sendFeedbackMessage(&$input) {
         $response = array();
         if (isset($input["subject"]) && isset($input["body"])) {
@@ -901,6 +936,14 @@ class WebUIExecutor {
     }
 
 
+    /**
+     * Send Message
+     *
+     * Asks the server to send the message given in the input.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
     public function sendMessage(&$input) {
         $response = array();
         if (isset($input["to_user"]) && isset($input["subject"]) && isset($input["body"])) {
