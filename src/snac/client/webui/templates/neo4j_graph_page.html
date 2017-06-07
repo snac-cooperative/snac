@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{{data.nameEntries.0.original}} - Connection Graph - Social Networks and Archival Context</title>
+
+<!-- Alchemy Javascript and Styles -->
+<link rel="stylesheet" type="text/css" href="lib/alchemy/0.4.2/styles/vendor.css">
+<link rel="stylesheet" type="text/css" href="lib/alchemy/0.4.2/alchemy.css">
+<script type="text/javascript" src="lib/alchemy/0.4.2/scripts/vendor.js"></script>
+<script type="text/javascript" src="lib/alchemy/0.4.2/alchemy.js"></script>
+
+<style type="text/css">
+div#alchemy_box { height: 800px; }
+div#graph_description { margin: 18px 0px 0px 24px; }
+</style>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Select Upgrades -->
+<link href="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="//cdnjs.cloudflare.com/ajax/libs/select2/4.0.2-rc.1/js/select2.min.js"></script>
+<link rel="stylesheet" href="css/select2-bootstrap.min.css">
+
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<!-- SNAC Styles -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC Javascript -->
+<script src="javascript/scripts.js{{control.noCache}}"></script>
+
+</head>
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+      <!-- Constellation Data -->
+      <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
+      <input id="version" name="version" type="hidden" value="{{ data.version }}"/>
+      <input id="ark" name="ark" type="hidden" value="{{ data.ark }}"/>
+
+    <div class="container snac" role="main">
+    
+    <h1>{{data.nameEntries.0.original}}</h1>
+
+    <!-- Constellation Data -->
+    <input id="constellationid" name="constellationid" type="hidden" value="{{ data.constellation.id }}"/>
+    <input id="version" name="version" type="hidden" value="{{ data.constellation.version }}"/>
+
+    <div id="alchemy_box">
+    <div id="alchemy" class="alchemy"></div>
+    </div>
+    
+    <div id="graph_description">
+    <input type="checkbox" onchange="toggle_captions(this)" id="toggle_captions" name="toggle_captions" title="Captions"> <label for="toggle_captions">Captions</label>
+    &nbsp; &nbsp; <input type="checkbox" checked onchange="toggle_force(this)" id="toggle_force" name="toggle_force" title="Force"> <label for="toggle_force">Force</label>
+    </div>
+    
+	<script type="text/javascript">
+    <!--
+	
+    function lookup(dbid)
+    {
+        var the_url = 'http://snac-dev.iath.virginia.edu/~dr3f/snac/www/';
+        the_url += '?command=view&constellationid=' + dbid;
+        window.open(the_url, '_blank');
+    }
+	
+	function preview(caption)
+    {
+        document.getElementById("graph_description").innerHTML = caption ;
+    }
+	
+	function toggle_force(e)
+    {
+        if(!e.checked) { alchemy.force.stop(); alchemy.conf.forceLocked = true; }
+        if(e.checked) { alchemy.force.start(); alchemy.conf.forceLocked = false; }
+    }
+	
+	function toggle_captions(e)
+    {
+        if(e.checked) { d3.selectAll(".alchemy text").style("display", "block"); alchemy.conf.nodeCaptionsOnByDefault = true; }
+        if(!e.checked) { d3.selectAll(".alchemy text").style("display", "none"); alchemy.conf.nodeCaptionsOnByDefault = false; }
+    }
+    
+	var some_data = {% autoescape false %} {{data.alchemy_data}} {% endautoescape %} ;
+          
+    var config = {
+    dataSource: some_data,
+	forceLocked: false,
+    directedEdges: true,
+    nodeCaptionsOnByDefault: false,
+    nodeTypes: { "dgr": ["x0", "x1", "x2"] },
+    nodeStyle: {
+        "all": { color: "#FFFFFF", borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#FFFFFF" }, highlighted: { color: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" } },
+        "x0": { color: "#00CCCC", radius: 13, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#00CCCC" }, highlighted: { color: "#00FFFF", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+        "x1": { color: "#66CC66", radius: 8, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#66CC66" }, highlighted: { color: "#CCFFFCC", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  },
+        "x2": { color: "#CCCC00", radius: 5, borderWidth: 2, borderColor: "#CCCCCC", selected: { color: "#CCCC00" }, highlighted: { color: "#FFFF00", borderColor: "#FFFFFF" }, hidden: { color: "none", borderColor: "none" }  }
+    },
+    edgeStyle: { "all": { width: 2 } },
+    nodeClick: function(n) { lookup(n.getProperties().dbid); },
+    initialScale: 1.0, 
+    initialTranslate: [0,0]
+    };
+    
+    alchemy.begin(config);
+          
+    //-->
+    </script>
+
+</div>
+</body>
+</html>

@@ -112,6 +112,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "quicksearch",
                 "relations",
                 "explore",
+                "neo4j_data",
+				"neo4j_graph",
                 "history"
         );
 
@@ -364,6 +366,15 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $executor->displayGridPage($display);
                 break;
 
+            // Neo4J visualization commands
+            case "neo4j_data":
+                $response = $executor->getNeo4JData($this->input);
+                break;
+				
+			case "neo4j_graph":
+                $executor->displayNeo4JGraphPage($this->input, $display);
+                break;
+            
             // Administrator command (the sub method handles admin commands)
             case "administrator":
                 $response = $executor->handleAdministrator($this->input, $display, $user);
