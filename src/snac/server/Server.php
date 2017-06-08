@@ -161,7 +161,9 @@ class Server implements \snac\interfaces\ServerInterface {
             case "list_users":
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.");
-            
+                $this->response = $executor->listUsers($this->input);
+                break;
+
             case "user_messages":
                 $this->response = $executor->userMessages();
                 break;

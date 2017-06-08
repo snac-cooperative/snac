@@ -1486,9 +1486,27 @@ class ServerExecutor {
 
                     if (isset($result) && $result !== false) {
                         if ($toUser != null) {
-                            // TODO: Eventually send a message to the toUser letting them know they have a constellation
-                            // to be reviewed.  If send fails, result is still true, but message should let the user
-                            // know that the server could not notify the other user.
+                            // Send a message and email to the user asked to review:
+                            $newest = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_MICRO_SUMMARY);
+                            $message = new \snac\data\Message();
+                            $message->setToUser($toUser);
+                            $message->setFromUser($this->user);
+                            $message->setSubject("Constellation for review");
+                            $msgBody = "<p>Please review my constellation.</p>";
+                            $name = "Unknown";
+                            $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
+                            $prefName = $newest->getPreferredNameEntry();
+                            if ($prefName != null)
+                                $name = $prefName->getOriginal();
+                            $msgBody .= "<p style=\"text-align: center;\"><a href=\"".\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
+                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\">$name</a></p>";
+                            $message->setBody($msgBody);
+                            
+                            // Send the message
+                            $this->uStore->writeMessage($message);
+
+                            // Email the message, if needed
+                            $this->mailer->sendUserMessage($message);
                         }
                         $this->logger->addDebug("successfully sent constellation for review");
                         $constellation->setVersion($result);

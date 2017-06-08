@@ -539,6 +539,7 @@ class Constellation extends AbstractData {
                 $id = $i;
             }
         }
+        
         return $this->nameEntries[$id];
     }
 
