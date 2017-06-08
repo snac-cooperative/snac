@@ -103,7 +103,6 @@ function sendMessage() {
 
 function replyMessage() {
     // Set up the new message box
-    $("#to_user").val(currentMessage.fromUser.userName);
 
     var subject = "RE: " + currentMessage.subject;
     if (currentMessage.subject.substring(0, 3) === "RE:")
@@ -115,7 +114,10 @@ function replyMessage() {
                                 + " (" + currentMessage.fromUser.userName + ")"
                                 + " wrote:<br>\n<br>\n" + currentMessage.body);
     tinymceInstance.load();
+    $("#to_user").html("<option></option><option value=\""+currentMessage.fromUser.userid+"\" selected>"+
+            currentMessage.fromUser.fullName + " (" + currentMessage.fromUser.userName+")</option>");
     recipient_select_replace();
+    //$("#to_user").val(currentMessage.fromUser.userID);
     
     // Open the new message modal window
     $("#new_message_pane").modal("show");
@@ -236,6 +238,7 @@ $(document).ready(function() {
 
     $("#send_message").click(sendMessage);
     $("#cancel_message").click(cancelMessage);
+    $("#cancel_message_close").click(cancelMessage);
     $("#reply_message").click(replyMessage);
     $("#forward_message").click(forwardMessage);
     $("#delete_message").click(deleteMessage);
