@@ -392,6 +392,25 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
                         <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
                     </div>
+                        {% if user.email and permissions.ChangeLocks and data.status == 'reviewable' and data.editingUser.userid != user.userid %}
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h3 class="panel-title">User Actions</h3>
+                            </div>
+                            <div class="panel-body">
+                                <p>You may perform any of the following actions on this constellation.</p>
+                                <!--
+                                <div class="list-group">
+                                    <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
+                                </div>
+                                -->
+                                <div class="list-group">
+                                    <a class="list-group-item list-group-item-review"
+                                        href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Review Constellation</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     {% else %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">

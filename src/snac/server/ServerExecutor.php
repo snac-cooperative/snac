@@ -1815,6 +1815,9 @@ class ServerExecutor {
                 if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
                     $constellation->setStatus("editable");
                 } else if ($this->hasPermission("Change Locks")) {
+                    if ($userStatus["status"] == 'needs review') {
+                        $constellation->setStatus("reviewable");
+                    }
                     $editingUser = new \snac\data\User();
                     $editingUser->setUserID($userStatus["userid"]);
                     $editingUser = $this->uStore->readUser($editingUser);
