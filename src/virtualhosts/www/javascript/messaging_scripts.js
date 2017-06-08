@@ -84,6 +84,7 @@ function sendMessage() {
                 $("#new_message_form").find('input:radio, input:checkbox')
                      .removeAttr('checked').removeAttr('selected');
                 tinymceInstance.load();
+                recipient_select_replace();
             }, 2000);
 
         } else {
@@ -114,6 +115,7 @@ function replyMessage() {
                                 + " (" + currentMessage.fromUser.userName + ")"
                                 + " wrote:<br>\n<br>\n" + currentMessage.body);
     tinymceInstance.load();
+    recipient_select_replace();
     
     // Open the new message modal window
     $("#new_message_pane").modal("show");
@@ -133,6 +135,7 @@ function forwardMessage() {
                                 + " (" + currentMessage.fromUser.userName + ")"
                                 + " wrote:<br>\n<br>\n" + currentMessage.body);
     tinymceInstance.load();
+    recipient_select_replace();
     
     // Open the new message modal window
     $("#new_message_pane").modal("show");
@@ -147,6 +150,7 @@ function cancelMessage() {
     $("#new_message_form").find('input:radio, input:checkbox')
          .removeAttr('checked').removeAttr('selected');
     tinymceInstance.load();
+    recipient_select_replace();
 }
 
 function deleteMessage() {
@@ -182,6 +186,38 @@ function deleteMessage() {
     });
 }
 
+var recipientSelector = null;
+
+function recipient_select_replace() {
+    if (recipientSelector != null)
+        $("#to_user").select2('destroy');
+    recipientSelector = $("#to_user").select2({
+        ajax: {
+            url: function() {
+                var query = "?command=user_search";
+                    return query;
+            },
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    q: params.term,
+                    page: params.page
+                };
+            },
+            processResults: function (data, page) {
+                return { results: data.results };
+            },
+            cache: true
+        },
+        width: '100%',
+        minimumInputLength: 1,
+        allowClear: true,
+        theme: 'bootstrap'
+    });
+}
+
+
 $(document).ready(function() {
     // Load the table into a datatable
     messageList = $('#message_list').DataTable( {
@@ -203,6 +239,7 @@ $(document).ready(function() {
     $("#reply_message").click(replyMessage);
     $("#forward_message").click(forwardMessage);
     $("#delete_message").click(deleteMessage);
+    recipient_select_replace(); 
 
 });
 

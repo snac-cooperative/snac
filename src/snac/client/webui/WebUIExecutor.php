@@ -956,9 +956,9 @@ class WebUIExecutor {
 
             $errors = array();
 
-            foreach ($toUsers as $toUserName) {
+            foreach ($toUsers as $toUserID) {
                 $toUser = new \snac\data\User();
-                $toUser->setUserName(trim($toUserName));
+                $toUser->setUserID(trim($toUserID));
                 $message->setToUser($toUser);
 
                 $ask = array("command"=>"send_message",
