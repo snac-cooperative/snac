@@ -121,6 +121,16 @@
                 Showing up to {{data.count * data.pagination}} of the total results.
                 {% endif %}
                 </p>
+                <form class="form-horizontal" id="compare_form" method="POST" action="?command=diff">
+                    <div id="compareBox" class="collapse">
+                    <div class="well well-sm">
+                        <input type="hidden" name="constellationid1" id="compare1">
+                        <input type="hidden" name="constellationid2" id="compare2">
+                            <button type="submit" class="btn btn-primary" id="compareButton" disabled>Compare Selected Constellations</button>
+                            <div class="form-control-static" style="margin-left: 30px;display: inline;">Select 2 Identity Constellations to access a side-by-side comparison.</div>
+                    </div>
+                    </div>
+                </form>
                 {% for result in data.results %}
                     <h4><a href="?command=view&constellationid={{result.id}}">{{result.nameEntries.0.original}}</a></h4>
                     <p class="identity-info">
@@ -132,7 +142,10 @@
                     {% else %}
                         <p class="missing">No biographical history available for this identity.</p>
                     {% endif %}
+                    <p class="final"><input class="compare-checkbox" type="checkbox" value="{{result.id}}"> Select this Identity Constellation to compare</p>
                 {% endfor %}
+
+
 
                 {% if data.pagination > 1 %}
                     <nav class="text-center"><ul class='pagination'>

@@ -68,6 +68,11 @@ class DBUser
     private $dbutil;
 
     /**
+     * @var \Monolog\Logger $logger Logger for this class
+     */
+    private $logger = null;
+
+    /**
      * Constructor
      *
      * The constructor for the class. Set up a database connector, and SQL object. All database layers
@@ -75,6 +80,7 @@ class DBUser
      */
     public function __construct()
     {
+        global $log;
         $this->db = new \snac\server\database\DatabaseConnector();
         $this->dbutil = new \snac\server\database\DBUtil();
 
@@ -86,6 +92,11 @@ class DBUser
          */
 
         $this->sql = new SQL($this->db, 'deleted');
+        
+        // create a log channel
+        $this->logger = new \Monolog\Logger('DBUser');
+        $this->logger->pushHandler($log);
+
     }
 
 
@@ -1306,4 +1317,116 @@ class DBUser
     {
         $this->sql->deleteInstitution($institutionObj->getID());
     }
+
+
+
+    /**
+     * Delete Message 
+     *
+     * Deletes a message from the database 
+     *
+     * @param \snac\data\Message $message   Message to delete (with ID)
+     * @return boolean True if successful, false otherwise
+     */
+    public function deleteMessage(&$message) {
+        $this->logger->addDebug("Deleting message1", $message->toArray());
+        if ($message == null || $message->getID() == null) {
+            return false;
+        }
+
+        $this->logger->addDebug("Deleting message2", $message->toArray());
+
+        return $this->sql->deleteMessageByID($message->getID());
+    }
+
+    /**
+     * Get Message by ID
+     *
+     * Reads a message from the database by ID
+     *
+     * @param  int $id ID of the message to read
+     * @return \snac\data\Message     Message (or false)
+     */
+    public function getMessageByID($id) {
+        $data = $this->sql->selectMessageByID($id);
+        if (empty($data)) {
+            return false;
+        }
+
+        $message = $this->populateMessage($data);
+        if (!$message->isRead()) {
+            $this->sql->markMessageReadByID($id);
+        }
+
+        return $message;
+    }
+
+    /**
+     * Write Message
+     *
+     * Writes a message into the system.  This is effectively sending a message.
+     *
+     * @param  \snac\data\Message $message Message to write
+     * @return boolean          True if sent successfully, false otherwise
+     */
+    public function writeMessage($message) {
+        $fromUser = null;
+        if ($message->getFromUser() !== null)
+            $fromUser = $message->getFromUser()->getUserID();
+        return $this->sql->insertMessage($message->getToUser()->getUserID(),
+            $fromUser, $message->getFromString(),
+            $message->getSubject(), $message->getBody(), $message->getAttachmentContent(),
+            $message->getattachmentFilename());
+    }
+
+    /**
+     * List Messages to the given user
+     *
+     * @param  \snac\data\User  $user        User in the To field
+     * @param  boolean $subjectOnly Whether or not to only return the subjects
+     * @param  boolean $unreadOnly    Whether or not to only return those that have been read
+     * @return \snac\data\Message[]               List of messages
+     */
+    public function listMessagesToUser($user, $subjectOnly=true, $unreadOnly=false) {
+        $messageData = $this->sql->selectMessagesForUserID($user->getUserID(), true, $unreadOnly);
+        $messages = array();
+        foreach ($messageData as $message) {
+            array_push($messages, $this->populateMessage($message, !$subjectOnly));
+        }
+        return $messages;
+    }
+
+    /**
+     * Populate a Message Data Object
+     *
+     * Given a data array, it fills in a message object.
+     *
+     * @param  string[]  $data               Data array from SQL call
+     * @param  boolean $includeBodyContent Whether or not to include the body content
+     * @return \snac\data\Message                      Message object
+     */
+    public function populateMessage($data, $includeBodyContent=true) {
+        if ($data == null)
+            return null;
+
+        $message = new \snac\data\Message();
+        $message->setID($data["id"]);
+        $message->setRead($this->db->pgToBool($data["read"]));
+        $message->setToUser($this->readUser(new \snac\data\User(array("userid"=>$data["to_user"]))));
+        if ($data["from_user"] != null)
+            $message->setFromUser($this->readUser(new \snac\data\User(array("userid"=>$data["from_user"]))));
+        else
+            $message->setFromString($data["from_string"]);
+        $message->setSubject($data["subject"]);
+        $message->setTimestamp($data["sent_date"]);
+
+        if ($includeBodyContent) {
+            $message->setBody($data["body"]);
+            $message->setAttachmentContent($data["attachment_content"]);
+            $message->setAttachmentFilename($data["attachment_filename"]);
+        }
+
+        return $message;
+    }
+
 }

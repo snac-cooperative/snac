@@ -82,6 +82,7 @@ var permissions = {
                     </div>
                 </div>
             </div>
+
             -->
 
             <form class="form-horizontal" id="search_form" onsubmit="return false;">
@@ -104,7 +105,7 @@ var permissions = {
                         </div>
                 </div>
             </form>
-
+            
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>
@@ -232,6 +233,14 @@ var permissions = {
         {% endif %}
         <div class="col-md-4">
             <!-- Right column -->
+
+            {% if data.messages|length > 0 %}
+            <div class="alert alert-warning">
+                <div class="">
+                    <p><strong>Notice:</strong> You have unread messages.  Please go to the messaging center to read them.</p>
+                </div>
+            </div>
+            {% endif %}
 
 
             <div class="panel panel-review">

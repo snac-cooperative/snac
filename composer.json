@@ -6,11 +6,13 @@
         "league/oauth2-google": "^1.0",
         "monolog/monolog": "^1.18",
         "elasticsearch/elasticsearch": "~2.0@beta",
+        "phpmailer/phpmailer": "~5.2",
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",
         "graphaware/neo4j-php-client": "^4.0",
         "jasny/twig-extensions": "^1.1",
-        "twig/extensions": "^1.5"
+        "twig/extensions": "^1.5",
+        "soundasleep/html2text": "~0.5"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",

@@ -123,15 +123,22 @@ class ElasticSearchUtil {
                     'type' => \snac\Config::$ELASTIC_SEARCH_BASE_TYPE,
                     'id' => $constellation->getID()
             ];
-
-            $this->connector->delete($params);
+            try {
+                $this->connector->delete($params);
+            } catch (\Exception $e) {
+                $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
+            }
             foreach ($constellation->getNameEntries() as $entry) {
                 $params = [
                     'index' => \snac\Config::$ELASTIC_SEARCH_BASE_INDEX,
                     'type' => \snac\Config::$ELASTIC_SEARCH_ALL_TYPE,
                     'id' => $entry->getID()
                 ];
-                $this->connector->delete($params);
+                try {
+                    $this->connector->delete($params);
+                } catch (\Exception $e) {
+                    $this->logger->addWarning("ConstellationID not found when deleting from elastic search index: ". $e->getMessage(), $e->getTrace());
+                }
             }
             $this->logger->addDebug("Updated elastic search to remove constellation");
         }
@@ -343,7 +350,7 @@ class ElasticSearchUtil {
      * Advanced Search SNAC Main Index
      *
      * Searches the main names index for the query using number of related resources as a factor, while also using the
-     * Elastic Search simple_query_string query that allows for wildcard, missing, and edit distance queries.  
+     * Elastic Search simple_query_string query that allows for wildcard, missing, and edit distance queries.
      * Allows for pagination by the start and count parameters.
      *
      * @param string $query The search query
@@ -444,8 +451,8 @@ class ElasticSearchUtil {
 
     /**
      * Search Elastic Search with Query
-     *      
-     * Searches the main names index for the given query body.  This is a helper function to condense the codebase. 
+     *
+     * Searches the main names index for the given query body.  This is a helper function to condense the codebase.
      *
      * @param string[] $searchBody Associative array of the Elastic Search query body
      * @param integer $start optional The result index to start from (default 0)

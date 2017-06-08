@@ -282,55 +282,97 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayViewPage(&$input, &$display) {
+        $message = null;
         $serverResponse = $this->getConstellation($input, $display);
         if (isset($serverResponse["constellation"])) {
-            $display->setTemplate("view_page");
-            $constellation = $serverResponse["constellation"];
-            $editingUser = null;
-            if (isset($serverResponse["editing_user"]))
-                $editingUser = $serverResponse["editing_user"];
+            if (isset($serverResponse["constellation"]["dataType"])) {
+                // We have only ONE constellation, so display
 
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
-                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
-            }
+                $display->setTemplate("view_page");
+                $constellation = $serverResponse["constellation"];
+                $editingUser = null;
+                if (isset($serverResponse["editing_user"]))
+                    $editingUser = $serverResponse["editing_user"];
 
-            $this->logger->addDebug("Getting Holding institution information from the resource relations");
-            $c = new \snac\data\Constellation($constellation);
-            $holdings = array();
-            foreach ($c->getResourceRelations() as $resourceRel) {
-                if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
-                    $repo = $resourceRel->getResource()->getRepository();
-                    $holdings[$repo->getID()] = array(
-                        "name" => $repo->getPreferredNameEntry()->getOriginal()
-                    );
-                    foreach ($repo->getPlaces() as $place) {
-                        if ($place->getGeoTerm() != null) {
-                            $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
-                            $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+
+                $this->logger->addDebug("Getting Holding institution information from the resource relations");
+                $c = new \snac\data\Constellation($constellation);
+                $holdings = array();
+                foreach ($c->getResourceRelations() as $resourceRel) {
+                    if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                        $repo = $resourceRel->getResource()->getRepository();
+                        $holdings[$repo->getID()] = array(
+                            "name" => $repo->getPreferredNameEntry()->getOriginal()
+                        );
+                        foreach ($repo->getPlaces() as $place) {
+                            if ($place->getGeoTerm() != null) {
+                                $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                                $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                            }
                         }
                     }
                 }
+                // Sort the holding institutions alphabetically
+                usort($holdings, function($a, $b) {
+                    return $a["name"] <=> $b["name"];
+                });
+
+                // Check for a redirect
+                if ($serverResponse["result"] == "success-notice") {
+                    $message = $serverResponse["message"];
+                }
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+
+                $display->setData(array_merge(
+                    $constellation,
+                    array(
+                        "preview"=> (isset($input["preview"])) ? true : false,
+                        "message" => $message,
+                        "holdings" => $holdings,
+                        "editingUser" => $editingUser)
+                    )
+                );
+            } else {
+                // We have multiple constellations, so redirect to split page
+                $this->displaySplitChoicePage($serverResponse, $display);
             }
-            // Sort the holding institutions alphabetically
-            usort($holdings, function($a, $b) {
-                return $a["name"] <=> $b["name"];
-            });
-
-            $this->logger->addDebug("Setting constellation data into the page template");
-
-            $display->setData(array_merge(
-                $constellation,
-                array(
-                    "preview"=> (isset($input["preview"])) ? true : false,
-                    "holdings" => $holdings,
-                    "editingUser" => $editingUser)
-                )
-            );
         } else {
             $this->logger->addDebug("Error page being drawn");
             $this->drawErrorPage($serverResponse, $display);
         }
+    }
+
+    /**
+     * Display Split Choice Page
+     *
+     * Loads the display with the split choice page.  This page is used when there are multiple
+     * Constellations returned by the server for any given single id/ark.  The user in that case
+     * must choose which Constellation to view.
+     *
+     * @param string[] $serverResponse The server response (associative array) containing multiple constellations
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displaySplitChoicePage(&$serverResponse, &$display) {
+        $display->setTemplate("split_choice_page");
+
+        // Check for a mesage
+        if ($serverResponse["result"] == "success-notice") {
+            $message = $serverResponse["message"];
+        }
+
+        $this->logger->addDebug("Setting constellation data into the page template");
+
+        $display->setData(
+            array(
+                "constellations" => $serverResponse["constellation"],
+                "message" => $message
+            )
+        );
     }
 
 
@@ -369,6 +411,43 @@ class WebUIExecutor {
     }
 
     /**
+     * Display MaybeSame List Page
+     *
+     * Fills the display object with the maybe-same list page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge buttons.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMaybeSameListPage(&$input, &$display) {
+
+        $query = array(
+            "command" => "constellation_list_maybesame",
+            "constellationid" => $input["constellationid"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["constellation"])) {
+            $display->setTemplate("maybesame_list_page");
+            $displayData = array(
+                "constellation" => $serverResponse["constellation"],
+                "mergeable" => $serverResponse["mergeable"]
+            );
+            if (isset($serverResponse["maybe_same"])) {
+                $displayData["maybeSameList"] = $serverResponse["maybe_same"];
+            }
+            if (\snac\Config::$DEBUG_MODE == true) {
+                $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+            }
+            $display->setData($displayData);
+        } else {
+            $this->logger->addDebug("Error page being drawn");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
+    
+    /**
      * Display Constellation History Page
      *
      * Loads the version history page for a given constellation input into the display.
@@ -401,6 +480,153 @@ class WebUIExecutor {
         }
     }
 
+    /**
+     * Process a Merge
+     *
+     * Takes the merged input data from the merge page, converts the merged Constellation into a
+     * Constellation object and asks the server to perform the merge.  If the merge is successful,
+     * this method will load the new (merged) Constellation into the detailed view template for
+     * display to the user.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function processMerge(&$input, &$display) {
+        // All the information should come VIA post to build the preview
+        $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
+
+        // Serialize constellation object
+        $constellation = $mapper->serializeToConstellation($input);
+
+        if ($constellation != null && isset($input["constellationid1"]) && isset($input["constellationid2"])) {
+            // Ask the server to do the merge
+            $query = [
+                "command" => "constellation_merge",
+                "constellationids" => [
+                    $input["constellationid1"],
+                    $input["constellationid2"]
+                ],
+                "constellation" => $constellation->toArray()
+            ];
+            $this->logger->addDebug("Asking server to do the merge");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+
+            if (isset($serverResponse["constellation"])) {
+                $display->setTemplate("detailed_view_page");
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+
+                // Since this was just merged, it is currently editable
+                $serverResponse["constellation"]["status"] = "editable";
+
+                $this->logger->addDebug("Setting constellation data into the page template");
+                $display->setData($serverResponse["constellation"]);
+            } else {
+                $this->logger->addDebug("Error page being drawn");
+                $this->drawErrorPage($serverResponse, $display);
+            }
+        }
+
+    }
+
+    /**
+     * Cancel a merge
+     *
+     * Tries to cancel a merge by asking the server to unlock both of the Constellations
+     * originally locked for the merge.  If successful, then returns JSON response to the client.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
+    public function cancelMerge(&$input) {
+        $request1 = array (
+            "constellationid" => $input["constellationid1"],
+            "version" => $input["version1"]
+        );
+        $response1 = $this->unlockConstellation($request1);
+
+        $request2 = array (
+            "constellationid" => $input["constellationid2"],
+            "version" => $input["version2"]
+        );
+        $response2 = $this->unlockConstellation($request2);
+
+        $response = array();
+
+        $response["server_debug"] = array();
+        $response["server_debug"]["unlock1"] = $response1;
+        $response["server_debug"]["unlock2"] = $response2;
+        if (isset($response1["error"]))
+            $response["error"] = $response1["error"];
+        if (isset($response2["error"]))
+            $response["error"] = $response2["error"];
+
+        if (!isset($response1["error"]) && !isset($response2["error"])) {
+            // successfully unlocked both constellations
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "failure";
+        }
+        return $response;
+    }
+
+    /**
+     * Display MaybeSame Diff Page
+     *
+     * Fills the display object with the maybe-same diff page.  If the user has permission
+     * and the server says that the constellations are mergeable, it will also add merge functionality.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     * @param boolean $forMerge optional Whether or not this display should include merging, default is false
+     */
+    public function displayMaybeSameDiffPage(&$input, &$display, $forMerge=false) {
+
+        $command = "constellation_diff";
+        if ($forMerge)
+            $command = "constellation_diff_merge";
+
+        $query = array(
+            "command" => $command,
+            "constellationid1" => $input["constellationid1"],
+            "constellationid2" => $input["constellationid2"]
+        );
+        $this->logger->addDebug("Sending query to the server", $query);
+        $serverResponse = $this->connect->query($query);
+        $this->logger->addDebug("Received server response", array($serverResponse));
+        if (isset($serverResponse["intersection"])) {
+            if ($forMerge === false || ($forMerge === true && $serverResponse["mergeable"] === true)) {
+                // Can only merge if the webUI has requested diff to merge (forMerge) and
+                // the server says these two are mergeable
+                $merging = $forMerge && $serverResponse["mergeable"];
+                $mergeable = $serverResponse["mergeable"];
+
+                $display->setTemplate("maybesame_diff_page");
+                $displayData = array(
+                    "constellation1" => $serverResponse["constellation1"],
+                    "constellation2" => $serverResponse["constellation2"],
+                    "intersection" => $serverResponse["intersection"],
+                    "mergeable" => $mergeable,
+                    "merging" => $merging
+                );
+                if (\snac\Config::$DEBUG_MODE == true) {
+                    $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
+                }
+                $display->setData($displayData);
+            } else {
+                // We were able to do the diff, the user wanted to merge, but the server told us we couldn't merge
+                $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+            }
+        } else {
+            $this->logger->addDebug("Error page being drawn - no intersection");
+            $this->drawErrorPage($serverResponse, $display);
+        }
+    }
 
     /**
      * Start SNAC Session
@@ -451,20 +677,26 @@ class WebUIExecutor {
      * @param \snac\client\webui\display\Display $display The display object for page creation
      */
     public function displayPreviewPage(&$input, &$display) {
-
         // If just previewing, then all the information should come VIA post to build the preview
         $mapper = new \snac\client\webui\util\ConstellationPostMapper();
+        $mapper->allowTermLookup();
+        $mapper->mapAsNewConstellation();
+
 
         // Get the constellation object
         $constellation = $mapper->serializeToConstellation($input);
 
         if ($constellation != null) {
-            $display->setTemplate("view_page");
-            if (\snac\Config::$DEBUG_MODE == true) {
-                $display->addDebugData("constellationSource", json_encode($constellation, JSON_PRETTY_PRINT));
+            $display->setTemplate("detailed_view_page");
+            if (isset($input["view"]) && $input["view"] == "hrt") {
+                $display->setTemplate("view_page");
+            }
+
+            if (\snac\Config::$DEBUG_MODE === true) {
+                $display->addDebugData("constellationSource", $constellation->toJSON());
             }
             $this->logger->addDebug("Setting constellation data into the page template");
-            $display->setData($constellation);
+            $display->setData(array_merge($constellation->toArray(), array("preview" => true)));
         }
     }
 
@@ -612,6 +844,144 @@ class WebUIExecutor {
             $filename = str_replace('/', "-", $pieces[1]);
         }
         return $filename;
+    }
+
+    /**
+     * Display Message Center
+     *
+     * Loads the display with the message center (message list) template.  It also asks
+     * the server for the list of unread messages for the current user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMessageListPage(&$display) {
+        $ask = array("command"=>"user_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $display->setData($serverResponse);
+        $display->setTemplate("message_list");
+    }
+
+    /**
+     * Read Message
+     *
+     * Asks the server to read the message with given ID.  The user must have permission
+     * to read the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function readMessage(&$input) {
+        $ask = array("command"=>"read_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Delete Message
+     * 
+     * Asks the server to delete the message given as input by ID.  The user must have
+     * permission to delete the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function deleteMessage(&$input) {
+        $ask = array("command"=>"delete_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Send a Feedback Message
+     *
+     * Sends the feedback given in the input to the server's feedback mechanism.  If no
+     * user information is given, it will send the user's IP address for verification.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client
+     */
+    public function sendFeedbackMessage(&$input) {
+        $response = array();
+        if (isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            if (isset($this->user) && $this->user !== null) {
+                $message->setFromUser($this->user);
+            } else {
+                // set this message from the IP address:
+                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+            }
+
+            $ask = array("command"=>"send_feedback",
+                        "message"=>$message->toArray());
+            $serverResponse = $this->connect->query($ask);
+
+            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                $response["result"] = "error";
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "error";
+        }
+        return $response;
+    }
+
+
+    /**
+     * Send Message
+     *
+     * Asks the server to send the message given in the input.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function sendMessage(&$input) {
+        $response = array();
+        if (isset($input["to_user"]) && isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $toUsers = explode(",", $input["to_user"]);
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            $message->setFromUser($this->user);
+
+            $errors = array();
+
+            foreach ($toUsers as $toUserName) {
+                $toUser = new \snac\data\User();
+                $toUser->setUserName(trim($toUserName));
+                $message->setToUser($toUser);
+
+                $ask = array("command"=>"send_message",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    array_push($errors, trim($toUserName));
+                }
+            }
+
+            if (!empty($errors)) {
+                $response["message"] = "Could not send to: " . implode(", ", $errors) . ".";
+            }
+
+            if (count($errors) < count($toUsers)) {
+                $response["result"] = "success";
+            }
+        } else {
+            $response["result"] = "error";
+        }
+
+        return $response;
     }
 
     /**
@@ -1789,9 +2159,11 @@ class WebUIExecutor {
     }
 
     /**
-     * Perform Relations Query
+     * Query server for relations
      *
-     * Requests the server to read Constellation Relations for a given constellation.
+     * Asks the server for the relations (in- and out-edges) for the given id or ark
+     * in the user input.  Returns the Server response directly, used by Javascript
+     * on the client.
      *
      * @param string[] $input Post/Get inputs from the webui
      * @return string[] The web ui's response to the client (array ready for json_encode)

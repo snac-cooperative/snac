@@ -1,5 +1,9 @@
-{% macro displayEditTabs(X) %}
+{% macro displayEditTabs(X, vertical) %}
+    {% if vertical == true %}
+    <ul class="nav nav-pills nav-stacked" role="tablist">
+    {% else %}
     <ul class="nav nav-tabs" role="tablist">
+    {% endif %}
         <li class="active"><a href="#nameEntries" id="nameEntriestab" role="tab" data-toggle="tab">Core Data</a></li>
         <li class="dropdown">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">History <span class="caret"></span></a>
@@ -60,7 +64,7 @@
                         <input id="gender_version_{{i}}" name="gender_version_{{i}}" type="hidden" value="{{ gender.version}}"/>
                         <input id="gender_operation_{{i}}" name="gender_operation_{{i}}" type="hidden" value="{{ gender.operation}}"/>
                         <div class="form-group">
-                            <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                            <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                                {{ X.term.display }}
                             </label>
                             <div class="col-xs-8" id="select_gender_term_{{i}}">
@@ -595,6 +599,8 @@
                                 <i class="fa fa-building" aria-hidden="true"></i><br/>
                                 {% elseif entityType == 'family' %}
                                 <i class="fa fa-users" aria-hidden="true"></i><br/>
+                                {% else %}
+                                <i class="fa fa-question" aria-hidden="true"></i><br/>
                                 {% endif %}
                             </p>
                             <p class="relation-icon-caption">
@@ -861,10 +867,10 @@
                     <input id="subject_version_{{i}}" name="subject_version_{{i}}" type="hidden" value="{{ subject.version }}"/>
                     <input id="subject_operation_{{i}}" name="subject_operation_{{i}}" type="hidden" value="{{ subject.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_subject_term_{{i}}">
+                        <div class="col-xs-8" id="select_subject_term_{{i}}">
                             <input type="hidden" id="subject_term_id_{{i}}" name="subject_term_id_{{i}}" value="{{subject.term.id}}"/>
                             <input type="hidden" id="subject_term_term_{{i}}" name="subject_term_term_{{i}}" value="{{subject.term.term}}"/>
                             <input type="hidden" id="subject_term_vocabtype_{{i}}" name="subject_term_vocabtype_{{i}}" value="subject"/>
@@ -898,10 +904,10 @@
                     <input id="nationality_version_{{i}}" name="nationality_version_{{i}}" type="hidden" value="{{ nationality.version }}"/>
                     <input id="nationality_operation_{{i}}" name="nationality_operation_{{i}}" type="hidden" value="{{ nationality.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_nationality_term_{{i}}">
+                        <div class="col-xs-8" id="select_nationality_term_{{i}}">
                             <input type="hidden" id="nationality_term_id_{{i}}" name="nationality_term_id_{{i}}" value="{{nationality.term.id}}"/>
                             <input type="hidden" id="nationality_term_term_{{i}}" name="nationality_term_term_{{i}}" value="{{nationality.term.term}}"/>
                             <input type="hidden" id="nationality_term_vocabtype_{{i}}" name="nationality_term_vocabtype_{{i}}" value="nationality"/>
@@ -936,10 +942,10 @@
                     <input id="function_version_{{i}}" name="function_version_{{i}}" type="hidden" value="{{ function.version }}"/>
                     <input id="function_operation_{{i}}" name="function_operation_{{i}}" type="hidden" value="{{ function.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{ X.term.tooltip }}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_function_term_{{i}}">
+                        <div class="col-xs-8" id="select_function_term_{{i}}">
                             <input type="hidden" id="function_term_id_{{i}}" name="function_term_id_{{i}}" value="{{function.term.id}}"/>
                             <input type="hidden" id="function_term_term_{{i}}" name="function_term_term_{{i}}" value="{{function.term.term}}"/>
                             <input type="hidden" id="function_term_vocabtype_{{i}}" name="function_term_vocabtype_{{i}}" value="function"/>
@@ -973,10 +979,10 @@
                     <input id="occupation_version_{{i}}" name="occupation_version_{{i}}" type="hidden" value="{{ occupation.version }}"/>
                     <input id="occupation_operation_{{i}}" name="occupation_operation_{{i}}" type="hidden" value="{{ occupation.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_occupation_term_{{i}}">
+                        <div class="col-xs-8" id="select_occupation_term_{{i}}">
                             <input type="hidden" id="occupation_term_id_{{i}}" name="occupation_term_id_{{i}}" value="{{occupation.term.id}}"/>
                             <input type="hidden" id="occupation_term_term_{{i}}" name="occupation_term_term_{{i}}" value="{{occupation.term.term}}"/>
                             <input type="hidden" id="occupation_term_vocabtype_{{i}}" name="occupation_term_vocabtype_{{i}}" value="occupation"/>
@@ -1010,10 +1016,10 @@
                     <input id="legalStatus_version_{{i}}" name="legalStatus_version_{{i}}" type="hidden" value="{{ legalStatus.version }}"/>
                     <input id="legalStatus_operation_{{i}}" name="legalStatus_operation_{{i}}" type="hidden" value="{{ legalStatus.operation }}"/>
                     <div class="form-group">
-                        <label class="control-label col-xs-2" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
+                        <label class="control-label col-xs-4" data-content="{{X.term.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.term.display }}
                         </label>
-                        <div class="col-xs-10" id="select_legalStatus_term_{{i}}">
+                        <div class="col-xs-8" id="select_legalStatus_term_{{i}}">
                             <input type="hidden" id="legalStatus_term_id_{{i}}" name="legalStatus_term_id_{{i}}" value="{{legalStatus.term.id}}"/>
                             <input type="hidden" id="legalStatus_term_term_{{i}}" name="legalStatus_term_term_{{i}}" value="{{legalStatus.term.term}}"/>
                             <input type="hidden" id="legalStatus_term_vocabtype_{{i}}" name="legalStatus_term_vocabtype_{{i}}" value="legal_status"/>

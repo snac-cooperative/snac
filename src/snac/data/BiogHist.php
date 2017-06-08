@@ -19,28 +19,28 @@ namespace snac\data;
  * BiogHist data storage class
  *
  * @author Robbie Hott
- *        
+ *
  */
 class BiogHist extends AbstractData {
 
     /**
-     * 
+     *
      * @var \snac\data\Language The language this biogHist was written in
      */
     private $language;
 
     /**
-     * @var string Text/XML contents of this biogHist. 
+     * @var string Text/XML contents of this biogHist.
      */
     private $text;
 
     /**
-     * Constructor. 
+     * Constructor.
      *
      * Mostly this exists to call setMaxDateCount() to a reasonable number for this class.
      *
      * @param string[] $data optional Array with data to populate this object
-     */ 
+     */
     public function __construct($data = null) {
         $this->setMaxDateCount(0);
         parent::__construct($data);
@@ -49,7 +49,7 @@ class BiogHist extends AbstractData {
 
     /**
      * Get the language this biogHist was written in
-     * 
+     *
      * @return \snac\data\Language Language of this BiogHist
      *
      */
@@ -57,16 +57,42 @@ class BiogHist extends AbstractData {
     {
         return $this->language;
     }
-    
+
     /**
      * Get the text/xml of this biogHist
      *
-     * @return string The full biogHist 
+     * @return string The full biogHist
      *
      */
     public function getText()
     {
         return $this->text;
+    }
+
+    /**
+     * Append to this BiogHist
+     *
+     * Appends the information in the given biog hist to this one.  The text field is appended
+     * to this one, the SCMs are merged, and if there is no language in this biogHist,
+     * then the language is copied.  Otherwise, the given biogHist's language will be dropped.
+     *
+     * @param  \snac\data\BiogHist $biogHist BiogHist to append
+     */
+    public function append($biogHist) {
+        if ($biogHist === null) {
+            return;
+        }
+
+        // Append the text objects
+        $this->text .= $biogHist->text;
+
+        // Combine SCMs
+        $this->snacControlMetadata = array_merge($this->snacControlMetadata, $biogHist->snacControlMetadata);
+
+        // If this biogHist's language is null or empty, pull in the given biogHist's language
+        if ($this->language === null || $this->language->isEmpty()) {
+            $this->language = $biogHist->language;
+        }
     }
 
     /**
@@ -81,7 +107,7 @@ class BiogHist extends AbstractData {
             "language" => $this->language == null ? null : $this->language->toArray($shorten),
             "text" => $this->text
         );
-            
+
         $return = array_merge($return, parent::toArray($shorten));
 
         // Shorten if necessary
@@ -124,7 +150,7 @@ class BiogHist extends AbstractData {
 
     /**
      * Set the language of this BiogHist.
-     * 
+     *
      * @param \snac\data\Language $language the language of this BiogHist
      */
     public function setLanguage($language) {
@@ -134,7 +160,7 @@ class BiogHist extends AbstractData {
 
     /**
      * Set the text/xml of this BiogHist
-     * 
+     *
      * @param string $text The full text/xml of this biogHist
      */
     public function setText($text) {
@@ -149,24 +175,24 @@ class BiogHist extends AbstractData {
      * @param \snac\data\BiogHist $other Other object
      * @param boolean $strict optional Whether or not to check id, version, and operation
      * @return boolean true on equality, false otherwise
-     *       
+     *
      * @see \snac\data\AbstractData::equals()
      */
     public function equals($other, $strict = true) {
 
         if ($other == null || !($other instanceof \snac\data\BiogHist))
             return false;
-        
+
         if (! parent::equals($other, $strict))
             return false;
-        
+
         if ($this->getText() != $other->getText())
             return false;
-        
+
         if (($this->getLanguage() != null && !$this->getLanguage()->equals($other->getLanguage(), $strict)) ||
                 ($this->getLanguage() == null && $other->getLanguage() != null))
             return false;
-        
+
         return true;
     }
 }
