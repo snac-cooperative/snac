@@ -1809,7 +1809,7 @@ class ServerExecutor {
                 // Get the list of constellations locked editing for this user
                 $inList = false;
                 $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
-                if ($userStatus["userid"] == $this->user->getUserID() && $userStatus["status"] == 'locked editing')
+                if ($this->user && $userStatus["userid"] == $this->user->getUserID() && $userStatus["status"] == 'locked editing')
                     $inList = true;
 
                 if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
