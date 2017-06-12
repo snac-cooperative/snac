@@ -233,7 +233,8 @@ class ConstellationPostMapper {
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
 
-            $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
+            if (isset($scm["descriptiveRule"]))
+                $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
 
             $scmObject->setLanguage($this->parseSubLanguage($scm, "scm_". $short, $j . "_". $i));
 
@@ -285,6 +286,9 @@ class ConstellationPostMapper {
      * @return \snac\data\Language The language object found when parsing the array
      */
     private function parseSubLanguage($object, $short, $i) {
+
+        if (!isset($object["language"]))
+            return null;
 
         // If there is no language to parse, then just return null and don't do anything
         if ($object["language"]["id"] == "" &&
