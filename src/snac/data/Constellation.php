@@ -339,16 +339,16 @@ class Constellation extends AbstractData {
         $this->setMaxDateCount(\snac\Config::$MAX_LIST_SIZE);
         if ($data == null) {
             $this->entityType = null;
-            $this->otherRecordIDs = array ();
-            $this->sources = array ();
-            $this->maintenanceEvents = array ();
-            $this->nameEntries = array ();
-            $this->biogHists = array ();
-            $this->occupations = array ();
-            $this->relations = array ();
-            $this->resourceRelations = array ();
-            $this->functions = array ();
-            $this->places = array ();
+            $this->otherRecordIDs = array();
+            $this->sources = array();
+            $this->maintenanceEvents = array();
+            $this->nameEntries = array();
+            $this->biogHists = array();
+            $this->occupations = array();
+            $this->relations = array();
+            $this->resourceRelations = array();
+            $this->functions = array();
+            $this->places = array();
             $this->subjects = array();
             $this->legalStatuses = array();
             $this->genders = array();
@@ -1281,6 +1281,13 @@ class Constellation extends AbstractData {
     }
 
     /**
+     * Remove all BiogHist entries
+     */
+    public function removeAllBiogHists() {
+        $this->biogHists = array();
+    }
+
+    /**
      * Add occupation
      *
      * @param \snac\data\Occupation $occupation Occupation to add
@@ -1560,5 +1567,445 @@ class Constellation extends AbstractData {
         return true;
     }
 
+    /**
+     * Is Constellation Empty
+     *
+     * Checkes whether this constellation is empty.
+     *
+     * @return boolean True if empty, false otherwise
+     */
+    public function isEmpty() {
+        $emptyConstellation = new \snac\data\Constellation();
+
+        return $this->equals($emptyConstellation, true);
+    }
+
+    /**
+     * Update All SCM Citations
+     *
+     * This method goes through each section of the constellation, looking for SCMs and
+     * updating their citations.  If the SCM points to oldSource, this method will update
+     * it to point to newSource.
+     *
+     * @param  \snac\data\Source $oldSource Source to replace
+     * @param  \snac\data\Source $newSource Source to replace with
+     */
+    public function updateAllSCMCitations($oldSource, $newSource) {
+        parent::updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->mandates as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->structureOrGenealogies as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->generalContexts as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->biogHists as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->conventionDeclarations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nationalities as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->otherRecordIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->entityIDs as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->languagesUsed as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->legalStatuses as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->sources as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->genders as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->nameEntries as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->occupations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->relations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->resourceRelations as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->functions as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->places as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+
+        foreach ($this->subjects as &$element)
+            $element->updateSCMCitation($oldSource, $newSource);
+    }
+
+    /**
+     * Perform a diff
+     *
+     * Compares this constellation to the "other."  This method produces a "diff" of the Constellation,
+     * creating three new constellations.  First, it produces an intersection, which contains all bits
+     * that in both this and other (note first-level data must be the same -- it does not make sense to
+     * keep Name Components or SCMs that are the same without their containing NameEntry).  Second,
+     * the "this" and "other" return Constellations contain the parts of `$this` and `$other` that are NOT
+     * included in the intersection.  If any of the return constellations would be empty, they will be
+     * returned as `null` instead.
+     *
+     * This method does NOT diff maintenance history, maintenance status, or images.
+     *
+     * @param  \snac\data\Constellation $other Constellation object to diff
+     * @param boolean $strict optional If true, will check IDs and Versions.  Else (default) only checks data
+     * @return \snac\data\Constellation[] Associative array of "intersection," "this," and "other" Constellations.
+     */
+    public function diff($other, $strict = false) {
+        $return = array (
+            "intersection" => null,
+            "this" => null,
+            "other" => null
+        );
+
+        if ($other == null || ! ($other instanceof \snac\data\Constellation)) {
+            $return["this"] = $this;
+            return $return;
+        }
+
+        $intersection = new \snac\data\Constellation();
+        $first = new \snac\data\Constellation();
+        $second = new \snac\data\Constellation();
+
+
+        if ($this->getArk() === $other->getArk()) {
+            $intersection->setArkID($this->getArk());
+        }
+
+        if ($this->getEntityType() != null && $this->getEntityType()->equals($other->getEntityType(), $strict)) {
+            $intersection->setEntityType($this->getEntityType());
+        }
+
+        $result = $this->diffArray($this->getOtherRecordIDs(), $other->getOtherRecordIDs(), $strict);
+        $intersection->otherRecordIDs = $result["intersection"];
+        $first->otherRecordIDs = $result["first"];
+        $second->otherRecordIDs = $result["second"];
+
+        $result = $this->diffArray($this->getEntityIDs(), $other->getEntityIDs(), $strict);
+        $intersection->entityIDs = $result["intersection"];
+        $first->entityIDs = $result["first"];
+        $second->entityIDs = $result["second"];
+
+        $result = $this->diffArray($this->getSources(), $other->getSources(), $strict);
+        $intersection->sources = $result["intersection"];
+        $first->sources = $result["first"];
+        $second->sources = $result["second"];
+
+        $result = $this->diffArray($this->getLegalStatuses(), $other->getLegalStatuses(), $strict);
+        $intersection->legalStatuses = $result["intersection"];
+        $first->legalStatuses = $result["first"];
+        $second->legalStatuses = $result["second"];
+
+        $result = $this->diffArray($this->getConventionDeclarations(), $other->getConventionDeclarations(), $strict);
+        $intersection->conventionDeclarations = $result["intersection"];
+        $first->conventionDeclarations = $result["first"];
+        $second->conventionDeclarations = $result["second"];
+
+        $result = $this->diffArray($this->getLanguagesUsed(), $other->getLanguagesUsed(), $strict);
+        $intersection->languagesUsed = $result["intersection"];
+        $first->languagesUsed = $result["first"];
+        $second->languagesUsed = $result["second"];
+
+        $result = $this->diffArray($this->getNameEntries(), $other->getNameEntries(), $strict);
+        $intersection->nameEntries = $result["intersection"];
+        $first->nameEntries = $result["first"];
+        $second->nameEntries = $result["second"];
+
+        $result = $this->diffArray($this->getOccupations(), $other->getOccupations(), $strict);
+        $intersection->occupations = $result["intersection"];
+        $first->occupations = $result["first"];
+        $second->occupations = $result["second"];
+
+        $result = $this->diffArray($this->getBiogHistList(), $other->getBiogHistList(), $strict);
+        $intersection->biogHists = $result["intersection"];
+        $first->biogHists = $result["first"];
+        $second->biogHists = $result["second"];
+
+        $result = $this->diffArray($this->getRelations(), $other->getRelations(), $strict);
+        $intersection->relations = $result["intersection"];
+        $first->relations = $result["first"];
+        $second->relations = $result["second"];
+
+        $result = $this->diffArray($this->getResourceRelations(), $other->getResourceRelations(), $strict);
+        $intersection->resourceRelations = $result["intersection"];
+        $first->resourceRelations = $result["first"];
+        $second->resourceRelations = $result["second"];
+
+        $result = $this->diffArray($this->getFunctions(), $other->getFunctions(), $strict);
+        $intersection->functions = $result["intersection"];
+        $first->functions = $result["first"];
+        $second->functions = $result["second"];
+
+        $result = $this->diffArray($this->getPlaces(), $other->getPlaces(), $strict);
+        $intersection->places = $result["intersection"];
+        $first->places = $result["first"];
+        $second->places = $result["second"];
+
+        $result = $this->diffArray($this->getSubjects(), $other->getSubjects(), $strict);
+        $intersection->subjects = $result["intersection"];
+        $first->subjects = $result["first"];
+        $second->subjects = $result["second"];
+
+        $result = $this->diffArray($this->getNationalities(), $other->getNationalities(), $strict);
+        $intersection->nationalities = $result["intersection"];
+        $first->nationalities = $result["first"];
+        $second->nationalities = $result["second"];
+
+        $result = $this->diffArray($this->getGenders(), $other->getGenders(), $strict);
+        $intersection->genders = $result["intersection"];
+        $first->genders = $result["first"];
+        $second->genders = $result["second"];
+
+        $result = $this->diffArray($this->getGeneralContexts(), $other->getGeneralContexts(), $strict);
+        $intersection->generalContexts = $result["intersection"];
+        $first->generalContexts = $result["first"];
+        $second->generalContexts = $result["second"];
+
+        $result = $this->diffArray($this->getStructureOrGenealogies(), $other->getStructureOrGenealogies(), $strict);
+        $intersection->structureOrGenealogies = $result["intersection"];
+        $first->structureOrGenealogies = $result["first"];
+        $second->structureOrGenealogies = $result["second"];
+
+        $result = $this->diffArray($this->getMandates(), $other->getMandates(), $strict);
+        $intersection->mandates = $result["intersection"];
+        $first->mandates = $result["first"];
+        $second->mandates = $result["second"];
+
+        if (!$intersection->isEmpty())
+            $return["intersection"] = $intersection;
+
+        if (!$first->isEmpty()) {
+            $first->setID($this->getID());
+            $first->setVersion($this->getVersion());
+            $first->setArkID($this->getArk());
+            $first->setEntityType($this->getEntityType());
+            $return["this"] = $first;
+        }
+
+        if (!$second->isEmpty()) {
+            $second->setID($other->getID());
+            $second->setVersion($other->getVersion());
+            $second->setArkID($other->getArk());
+            $second->setEntityType($other->getEntityType());
+            $return["other"] = $second;
+        }
+
+        return $return;
+    }
+
+    /**
+     * Combine Into
+     *
+     * Combines the data from the Constellation passed in into this Constellation,
+     * removing IDs and version numbers for all elements except sources.  Sets all
+     * other operations to INSERT so they are considered new in this Constellation.
+     *
+     * @param \snac\data\Constellation $other The constellation to combine with this one
+     * @return boolean True if success, false otherwise (currently no failure)
+     */
+    public function combine(&$other) {
+        //      merge the sources, keeping a list of other's sources
+        // do a diff of this and other (strict = false)
+        // update the "other" sources, if we can?
+        // foreach over the other and combine with this (they won't overlap: not in intersection)
+        //      - remove other's ID, Version, and set operation = INSERT
+        // return
+
+        $diff = $this->diff($other, false);
+        $combine = $diff["other"];
+
+        if ($combine == null || $combine->isEmpty()) {
+            return true;
+        }
+
+        foreach ($combine->sources as &$element) {
+            // Sources need their IDs in tact if we plan to fix up SCMs
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addSource($element);
+        }
+
+        foreach ($combine->mandates as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addMandate($element);
+        }
+
+        foreach ($combine->structureOrGenealogies as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addStructureOrGenealogy($element);
+        }
+
+        foreach ($combine->generalContexts as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addGeneralContext($element);
+        }
+
+        foreach ($combine->biogHists as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            // Add if a new one, append to the first bioghist if not
+            if (empty($this->biogHists)) {
+                $this->addBiogHist($element);
+            } else {
+                $this->biogHists[0]->append($element);
+            }
+        }
+
+        foreach ($combine->conventionDeclarations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addConventionDeclaration($element);
+        }
+
+        foreach ($combine->nationalities as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addNationality($element);
+        }
+
+        foreach ($combine->otherRecordIDs as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addOtherRecordID($element);
+        }
+
+        foreach ($combine->entityIDs as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addEntityID($element);
+        }
+
+        foreach ($combine->languagesUsed as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addLanguageUsed($element);
+        }
+
+        foreach ($combine->legalStatuses as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addLegalStatus($element);
+        }
+
+        foreach ($combine->genders as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addGender($element);
+        }
+
+        foreach ($combine->nameEntries as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+
+            foreach ($element->getContributors() as &$contributor) {
+                $contributor->setID(null);
+                $contributor->setVersion(null);
+                $contributor->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            }
+            foreach ($element->getComponents() as &$component) {
+                $component->setID(null);
+                $component->setVersion(null);
+                $component->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            }
+
+
+            $this->addNameEntry($element);
+        }
+
+        foreach ($combine->occupations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addOccupation($element);
+        }
+
+        foreach ($combine->relations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addRelation($element);
+        }
+
+        foreach ($combine->resourceRelations as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addResourceRelation($element);
+        }
+
+        foreach ($combine->functions as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addFunction($element);
+        }
+
+        foreach ($combine->places as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addPlace($element);
+        }
+
+        foreach ($combine->subjects as &$element) {
+            $element->setID(null);
+            $element->setVersion(null);
+            $element->setOperation(\snac\data\AbstractData::$OPERATION_INSERT);
+            $element->cleanseSCMMetadata();
+            $this->addSubject($element);
+        }
+
+        return true;
+    }
 
 }

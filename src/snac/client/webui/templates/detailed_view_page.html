@@ -72,9 +72,6 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
 
     <form class="form-horizontal" id="constellation_form">
     <h1>{{data.nameEntries.0.original}}</h1>
-               {% if data.preview %}
-               <div class="pull-right"><h2><span class='glyphicon glyphicon-eye-open'></span> Preview</h2></div>
-               {% endif %}
 
         <!-- Constellation Data -->
         <input id="constellationid" name="constellationid" type="hidden" value="{{ data.id }}"/>
@@ -86,7 +83,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
             <div class="col-md-8">
 
                 <!-- Nav tabs -->
-                {{ components.displayEditTabs(X) }}
+                {{ components.displayEditTabs(X, false) }}
 
                 <div class="tab-content">
 
@@ -388,6 +385,13 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                     <div class="alert alert-01 alert-danger" id="error-message"  style="display: none">
                         <p>An error occured while saving</p>
                     </div><!-- end alert -->
+
+                    {% if data.preview %}
+                    <div class="alert alert-success">
+                        <h3 class="text-center" style="color: #3c763d; margin-top:0px;"><span class='glyphicon glyphicon-eye-open'></span> Preview</h3>
+                        <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
+                    </div>
+                    {% else %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">User Actions</h3>
@@ -402,6 +406,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="list-group">
                                 <a class="list-group-item list-group-item-success"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
+                                <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
+                                       class="list-group-item list-group-item-merge" id="merge">
+                                       <span class="glyphicon glyphicon-random"></span> View Maybe Same
+                                       <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="View other Constellations which may be the same as this one." data-toggle="popover" data-placement="top"></span></a>
                                 {% if user.email and permissions.Edit %}
                                     {% if data.status == 'editable' %}
                                         <a class="list-group-item list-group-item-info"
@@ -429,6 +437,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                               </div>
                         </div>
                     </div>
+                    {% endif %}
                     <div class="panel panel-primary">
                         <div class="panel-heading">
                             <h3 class="panel-title">Identity Constellation Identifier(s)</h3>
@@ -454,7 +463,7 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         </div>
                     </div>
 
-                    {% if false %}
+                    {% if debug %}
                     <div class="panel panel-danger">
                         <div class="panel-heading">
                             <h3 class="panel-title">Debugging</h3>

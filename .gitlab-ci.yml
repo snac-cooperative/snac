@@ -1,6 +1,7 @@
 before_script:
     - composer -n -q install
     - cp ~/Config.php src/snac/Config.php
+    - cp ~/users.csv install/setup_files/users.csv
     - rm -rf ~/public_html/snac_server
     - ln -s `pwd`/src/virtualhosts ~/public_html/snac_server
     - ln -s `pwd`/src/snac/client/webui/templates ~/webui_templates

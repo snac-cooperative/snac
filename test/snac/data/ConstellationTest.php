@@ -70,13 +70,74 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
          * mv new_constellation_test.json test/snac/data/json/constellation_test.json
          */
 
-
          //$cfile = fopen('new_constellation_test.json', 'w');
          //fwrite($cfile, $identity->toJSON(false));
          //fclose($cfile); 
 
-
         $this->assertEquals($jsonIn, $identity->toJSON(false));
+    }
+
+    /**
+     * Test Empty Check
+     *
+     * Tests whether the isEmpty function works on both an empty and non-empty Constellation
+     */
+    public function testConstellationEmpty() {
+        $identity = new \snac\data\Constellation();
+        $this->assertTrue($identity->isEmpty(), "Empty Constellation was not determined to be empty.");
+
+        $jsonIn = file_get_contents("test/snac/data/json/constellation_test2.json");
+        $arrayIn = json_decode($jsonIn, true);
+        $identity->fromJSON($jsonIn);
+
+        $this->assertFalse($identity->isEmpty(), "Non-empty Constellation was determined to be empty.");
+    }
+
+
+    /**
+     * Test Diff
+     *
+     * Tests whether the diff function works
+     */
+    public function testConstellationDiff() {
+        $id1 = new \snac\data\Constellation();
+        $id2 = new \snac\data\Constellation();
+        $test = $id1->diff($id2);
+        $this->assertNull($test["intersection"], "Intersection of empty constellations was not null");
+        $this->assertNull($test["this"], "This of diff of empty constellations was not null");
+        $this->assertNull($test["other"], "Other of diff of empty constellations was not null");
+
+        $jsonIn = file_get_contents("test/snac/data/json/constellation_simple.json");
+        $arrayIn = json_decode($jsonIn, true);
+        $id2->fromJSON($jsonIn);
+
+        $test = $id1->diff($id2);
+        $this->assertNull($test["intersection"], "Intersection of empty and full constellations was not null");
+        $this->assertNull($test["this"], "This of diff of empty constellation with full one was not null");
+        $this->assertNotNull($test["other"], "Other of diff of empty constellation with full one was null");
+        $this->assertTrue($id2->equals($test["other"]), "The other of diff with empty should be equal to original full constellation");
+
+        $test = $id2->diff($id1);
+        $this->assertNull($test["intersection"], "Intersection of full and empty constellations was not null");
+        $this->assertNull($test["other"], "Other of diff of full with empty constellation was not null");
+        $this->assertNotNull($test["this"], "This of diff of full with empty constellation was not null");
+        $this->assertTrue($id2->equals($test["this"]), "The this of diff with empty should be equal to original full constellation");
+
+        $test = $id2->diff($id2);
+        $this->assertNotNull($test["intersection"], "Diff with itself should have full intersection");
+        $this->assertNull($test["other"], "self-diff produced non-empty other");
+        $this->assertNull($test["this"], "self-diff produced non-empty this");
+        $this->assertTrue($id2->equals($test["intersection"]), "self-diff intersection should be equal to original full constellation");
+
+
+        $id1->fromJSON($jsonIn);
+        $test = $id2->diff($id1);
+        $this->assertNotNull($test["intersection"], "Diff with identical copy should have full intersection");
+        $this->assertNull($test["other"], "diff of copy produced non-empty other");
+        $this->assertNull($test["this"], "diff of copy produced non-empty this");
+        $this->assertTrue($id1->equals($test["intersection"]), "diff of copy intersection should be equal to original full constellation 1");
+        $this->assertTrue($id2->equals($test["intersection"]), "diff of copy intersection should be equal to original full constellation 2");
+
     }
 
     /**

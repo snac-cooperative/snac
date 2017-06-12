@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ambiguous Redirect - Social Networks and Archival Context</title>
+
+<!-- JQuery -->
+<script src="//code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" integrity="sha512-dTfge/zgoMYpP7QbHy4gWMEGsbsdZeCXz7irItjcC3sPUFtf0kuFbDz/ixG7ArTxmDjLXDmezHubeNikyKGVyQ==" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css" integrity="sha384-aUGj/X2zp5rLCbBxumKTCw2Z50WgIr1vs/PFN4praOTvYXWlVyh2UtNUU0KAUhAX" crossorigin="anonymous">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+
+<!-- Helper Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
+<script language="javascript">
+$('.selectpicker').selectpicker();
+</script>
+
+<!-- Tiny MCE text editor -->
+<script src="//tinymce.cachefly.net/4.2/tinymce.min.js"></script>
+<script>tinymce.init({selector:'textarea', plugins:'code', min_height: 300});</script>
+
+<!-- SNAC Stylesheet -->
+<link rel="stylesheet" href="css/snac.css{{control.noCache}}">
+
+<!-- SNAC includes -->
+<script src="javascript/search.js{{control.noCache}}"></script>
+</head>
+
+<body role="document">
+
+{% from 'page_navigation.html' import topNavigation %}
+{{ topNavigation(X, user, permissions, control) }}
+
+
+
+    <div class="container snac" role="main">
+
+
+        <h1>Multiple Choices</h1>
+
+        {% if data.message %}
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <strong>Notice:</strong> Please update your bookmarks.
+            </div>
+        {% endif %}
+
+    	<div class="well well-lg">
+            <p>The Permalink or SNAC ID originally gieven was for a version of an Identity Constellation that now maps to a newer
+            version directly associated iwth the Identity Constellations below.  Please select from the following list to continue to
+            the desired Constellation and update your bookmarks appropriately to avioid this message in the future.</p>
+    	</div>
+
+        <div class="row">
+            <div class="col-md-12 search-results">
+                {% if data.constellations %}
+                    <p class="search-info">There are {{data.constellations|length}} Constellations referred to by this ID.
+                    </p>
+                    {% for constellation in data.constellations %}
+                        <h4><a href="?command=view&constellationid={{constellation.id}}">{{constellation.nameEntries.0.original}}</a></h4>
+                        <p class="identity-info">
+                            <span>{{constellation.ark}}</span>
+                            <span>({{constellation.entityType.term}})</span>
+                        </p>
+                        {% if constellation.biogHists.0.text %}
+                            <p>{{constellation.biogHists.0.text | striptags | slice(0,500)}}...</p>
+                        {% else %}
+                            <p class="missing">No biographical history available for this identity.</p>
+                        {% endif %}
+                    {% endfor %}
+
+                {% else %}
+                    <p>An error has occurred.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
