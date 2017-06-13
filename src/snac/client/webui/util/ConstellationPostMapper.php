@@ -232,7 +232,7 @@ class ConstellationPostMapper {
             $scmObject->setSubCitation($scm["subCitation"]);
             $scmObject->setSourceData($scm["sourceData"]);
             $scmObject->setNote($scm["note"]);
-
+            
             if (isset($scm["descriptiveRule"]))
                 $scmObject->setDescriptiveRule($this->parseTerm($scm["descriptiveRule"]));
 
@@ -287,10 +287,10 @@ class ConstellationPostMapper {
      */
     private function parseSubLanguage($object, $short, $i) {
 
+        // If there is no language to parse, then just return null and don't do anything
         if (!isset($object["language"]))
             return null;
-
-        // If there is no language to parse, then just return null and don't do anything
+        
         if ($object["language"]["id"] == "" &&
                 $object["language"]["version"] == "" &&
                 (!isset($object["languagelanguage"]) ||

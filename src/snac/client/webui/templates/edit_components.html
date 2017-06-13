@@ -1408,19 +1408,20 @@
     {% import 'widgets.html' as widgets %}
        <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
             <div class="panel-body">
-                <div class="col-sm-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
+                <div class="{{ showSubElements and inEdit ? 'col-xs-10' : 'col-xs-12' }}" id="scm_{{short}}_datapart_{{j}}_{{i}}">
                     <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
                     <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
                     <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value="{{ scm.operation }}"/>
-                    <div class="form-group">
-                        <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmSourceData.display }}
-                        </label>
-                        <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
-                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
-                            <p class="form-control-static">{{ scm.sourceData }}</p>
-                        </div>
+                    <div class="form-group well well-sm">
+                        <h5 class="text-center" style="font-weight: bold">Source Citation</h5>
+                        <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="panel panel-body scm-source-panel {{ not scm.citation.text ? 'hidden'}}">{{scm.citation.text|raw}}</p>
+                        <p id="scm_{{short}}_source_uri_{{j}}_{{i}}" class="form-control-static text-center">
+                            {% if scm.citation.uri %}
+                            <a href="{{scm.citation.uri}}" target="_blank">{{scm.citation.uri}}</a>
+                            {% endif %}
+                        </p>
                     </div>
+                    {% if inEdit %}
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmCitation.display }}
@@ -1433,59 +1434,30 @@
                             <p class="form-control-static">{{scm.citation.displayName}}</p>
                         </div>
                     </div>
+                    {% endif %}
 
 
                     <div class="form-group">
                         <label for="scm_{{short}}_subCitation_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSubCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmSubCitation.display }}
                         </label>
-                        <div class="col-xs-8" id="textarea_scm_{{short}}_subCitation_{{j}}_{{i}}">
-                            <textarea id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.subCitation }}</textarea>
+                        <div class="col-xs-8" id="text_scm_{{short}}_subCitation_{{j}}_{{i}}">
+                            <input id="scm_{{short}}_subCitation_{{j}}_{{i}}" name="scm_{{short}}_subCitation_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.subCitation }}"/>
                             <p class="form-control-static">{{ scm.subCitation }}</p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.scmDescriptiveRule.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.scmDescriptiveRule.display }}
-                            </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_descriptiveRule_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.id }}"/>
-                            <input id="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.descriptiveRule.term }}"/>
-                            <input id="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="name_rule"/>
-                            <input id="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" name="scm_{{short}}_descriptiveRule_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.descriptiveRule.term }}</p>
-                        </div>
-                    </div>
-
-                    <input type="hidden" id="scm_{{short}}_language_id_{{j}}_{{i}}" name="scm_{{short}}_language_id_{{j}}_{{i}}" value="{{scm.language.id}}"/>
-                    <input type="hidden" id="scm_{{short}}_language_version_{{j}}_{{i}}" name="scm_{{short}}_language_version_{{j}}_{{i}}" value="{{scm.language.version}}"/>
-                    <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.language.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.language.display }}
+                        <label for="scm_{{short}}_sourceData_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmSourceData.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.scmSourceData.display }}
                         </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_languagelanguage_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.language.id }}"/>
-                            <input id="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{scm.language.language.term }}"/>
-                            <input id="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="language_code"/>
-                            <input id="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagelanguage_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.language.language.term }}</p>
+                        <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
+                            <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
+                            <p class="form-control-static">{{ scm.sourceData }}</p>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label class="control-label col-xs-4" data-content="{{X.script.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.script.display }}
-                        </label>
-                        <div class="col-xs-8" id="select_scm_{{short}}_languagescript_{{j}}_{{i}}">
-                            <input id="scm_{{short}}_languagescript_id_{{j}}_{{i}}" name="scm_{{short}}_languagescript_id_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.id }}"/>
-                            <input id="scm_{{short}}_languagescript_term_{{j}}_{{i}}" name="scm_{{short}}_languagescript_term_{{j}}_{{i}}" type="hidden" class="form-control" value="{{ scm.language.script.term }}"/>
-                            <input id="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" name="scm_{{short}}_languagescript_vocabtype_{{j}}_{{i}}" type="hidden" class="form-control" value="script_code"/>
-                            <input id="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" name="scm_{{short}}_languagescript_minlength_{{j}}_{{i}}" type="hidden" class="form-control" value="0"/>
-                            <p class="form-control-static">{{ scm.language.script.term }}</p>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.descriptiveNote.tooltip}}" data-toggle="popover" data-placement="top">
-                            {{ X.descriptiveNote.display }}
+                        <label for="scm_{{short}}_note_{{j}}_{{i}}" class="control-label col-xs-4" data-content="{{X.scmNote.tooltip}}" data-toggle="popover" data-placement="top">
+                            {{ X.scmNote.display }}
                         </label>
                         <div class="col-xs-8" id="textarea_scm_{{short}}_note_{{j}}_{{i}}">
                             <textarea id="scm_{{short}}_note_{{j}}_{{i}}" name="scm_{{short}}_note_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.note }}</textarea>
