@@ -156,8 +156,6 @@ function scm_source_select_replace(selectItem, idMatch) {
             selectItem.on('change', function (evt) {
                 // TODO: Get the current selected value and update the well in the page to reflect it!
                 // Note: all the selections are available in the global lastSourceSearchResults variable.
-                console.log($(this));
-                console.log(evt); 
                 var sourceID = $(this).val();
                 var inPageID = $(this).attr("id");
                 var idArray = inPageID.split("_");
@@ -167,9 +165,6 @@ function scm_source_select_replace(selectItem, idMatch) {
                     var shortName = idArray[1];
                     lastSourceSearchResults.forEach(function(source) {
                         if (source.id == sourceID) {
-                            console.log("ID: " + source.id);
-                            console.log("URI: " + source.uri);
-                            console.log("Text: " + source.text);
                             // Update the text of the source
                             if (typeof source.text !== 'undefined')
                                 $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(source.text).removeClass('hidden');
