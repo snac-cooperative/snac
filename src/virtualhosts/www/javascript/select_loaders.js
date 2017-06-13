@@ -104,6 +104,9 @@ function geovocab_select_replace(selectItem, idMatch) {
         }
 }
 
+
+var lastSourceSearchResults = null;
+
 /**
  * Replace a select that is linked to a Constellation Source search
  *
@@ -132,7 +135,14 @@ function scm_source_select_replace(selectItem, idMatch) {
                             };
                         },
                         processResults: function (data, page) {
-                            return { results: data.results };
+                            // Modify the results to be in the format we want
+                            lastSourceSearchResults = data.results;
+                            // need id, text
+                            var results = new Array();
+                            data.results.forEach(function(res) {
+                                results.push({id: res.id, text: res.displayName});
+                            });
+                            return { results: results };
                         },
                         cache: true
                     },
@@ -142,7 +152,35 @@ function scm_source_select_replace(selectItem, idMatch) {
                     theme: 'bootstrap',
                     placeholder: 'Select'
                 });
-            }
+
+            selectItem.on('change', function (evt) {
+                // TODO: Get the current selected value and update the well in the page to reflect it!
+                // Note: all the selections are available in the global lastSourceSearchResults variable.
+                var sourceID = $(this).val();
+                var inPageID = $(this).attr("id");
+                var idArray = inPageID.split("_");
+                if (idArray.length >= 6) {
+                    var i = idArray[5];
+                    var j = idArray[4];
+                    var shortName = idArray[1];
+                    lastSourceSearchResults.forEach(function(source) {
+                        if (source.id == sourceID) {
+                            // Update the text of the source
+                            if (typeof source.text !== 'undefined')
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).html(source.text).removeClass('hidden');
+                            else
+                                $("#scm_" + shortName + "_source_text_" + j + "_" + i).text("").addClass('hidden');
+                            // Update the URI of the source
+                            if (typeof source.uri !== 'undefined')
+                                $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('<a href="'+source.uri+'" target="_blank">'+source.uri+'</a>');
+                            else
+                                $("#scm_" + shortName + "_source_uri_" + j + "_" + i).html('');
+                        }
+                    });
+                }
+            });
+
+        }
 }
 
 /**

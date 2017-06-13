@@ -209,7 +209,10 @@ function textToSelect(shortName, idStr) {
                     "<input type=\"hidden\" id=\""+shortName+"_"+name+"_minlength_"+idStr+"\" " +
                         "name=\""+shortName+"_"+name+"_minlength_"+idStr+"\" value=\""+minlength+"\"/>");
 
-            vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
+            if (name == "citation")
+                scm_source_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr);
+            else
+                vocab_select_replace($("#"+shortName+"_"+name+"_id_"+idStr), "_"+idStr, vocabtype, minlength);
 
         }
     });

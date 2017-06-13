@@ -1504,10 +1504,20 @@
     {% import 'widgets.html' as widgets %}
        <div class="panel panel-default" id="scm_{{short}}_panel_{{j}}_{{i}}">
             <div class="panel-body">
-                <div class="col-sm-10" id="scm_{{short}}_datapart_{{j}}_{{i}}">
+                <div class="{{ showSubElements and inEdit ? 'col-xs-10' : 'col-xs-12' }}" id="scm_{{short}}_datapart_{{j}}_{{i}}">
                     <input id="scm_{{short}}_id_{{j}}_{{i}}" name="scm_{{short}}_id_{{j}}_{{i}}" type="hidden" value="{{ scm.id }}"/>
                     <input id="scm_{{short}}_version_{{j}}_{{i}}" name="scm_{{short}}_version_{{j}}_{{i}}" type="hidden" value="{{ scm.version }}"/>
                     <input id="scm_{{short}}_operation_{{j}}_{{i}}" name="scm_{{short}}_operation_{{j}}_{{i}}" type="hidden" value="{{ scm.operation }}"/>
+                    <div class="form-group well well-sm">
+                        <h5 class="text-center" style="font-weight: bold">Source Citation</h5>
+                        <p id="scm_{{short}}_source_text_{{j}}_{{i}}" class="panel panel-body scm-source-panel {{ not scm.citation.text ? 'hidden'}}">{{scm.citation.text|raw}}</p>
+                        <p id="scm_{{short}}_source_uri_{{j}}_{{i}}" class="form-control-static text-center">
+                            {% if scm.citation.uri %}
+                            <a href="{{scm.citation.uri}}" target="_blank">{{scm.citation.uri}}</a>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if inEdit %}
                     <div class="form-group">
                         <label class="control-label col-xs-4" data-content="{{X.scmCitation.tooltip}}" data-toggle="popover" data-placement="top">
                             {{ X.scmCitation.display }}
@@ -1520,6 +1530,7 @@
                             <p class="form-control-static">{{scm.citation.displayName}}</p>
                         </div>
                     </div>
+                    {% endif %}
 
 
                     <div class="form-group">
