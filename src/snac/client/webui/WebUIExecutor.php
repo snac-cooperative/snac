@@ -356,10 +356,34 @@ class WebUIExecutor {
                 $display->addDebugData("constellationSource", json_encode($serverResponse["constellation"], JSON_PRETTY_PRINT));
                 $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
             }
+            
+            $this->logger->addDebug("Getting Holding institution information from the resource relations");
+            $c = new \snac\data\Constellation($constellation);
+            $holdings = array();
+            foreach ($c->getResourceRelations() as $resourceRel) {
+                if ($resourceRel->getResource() !== null && $resourceRel->getResource()->getRepository() != null) {
+                    $repo = $resourceRel->getResource()->getRepository();
+                    $holdings[$repo->getID()] = array(
+                        "name" => $repo->getPreferredNameEntry()->getOriginal()
+                    );
+                    foreach ($repo->getPlaces() as $place) {
+                        if ($place->getGeoTerm() != null) {
+                            $holdings[$repo->getID()]["latitude"] = $place->getGeoTerm()->getLatitude();
+                            $holdings[$repo->getID()]["longitude"] = $place->getGeoTerm()->getLongitude();
+                        }
+                    }
+                }
+            }
+            // Sort the holding institutions alphabetically
+            usort($holdings, function($a, $b) {
+                return $a["name"] <=> $b["name"];
+            });
+            
             $this->logger->addDebug("Setting constellation data into the page template");
             $display->setData(array_merge(
                 $constellation,
                 array("preview"=> (isset($input["preview"])) ? true : false,
+                    "holdings" => $holdings,
                     "editingUser" => $editingUser)
             ));
         } else {
