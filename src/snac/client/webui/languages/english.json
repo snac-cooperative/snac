@@ -335,7 +335,7 @@
     "_comment" : "%%% SCM elements",
 
     "scmSourceData" : {
-        "display" : "As-Recorded Data",
+        "display" : "Found Data",
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {

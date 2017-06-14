@@ -979,7 +979,12 @@ class ConstellationPostMapper {
             $nameEntry->setOperation($this->getOperation($data));
 
             $nameEntry->setOriginal($data["original"]);
-            $nameEntry->setPreferenceScore($data["preferenceScore"]);
+
+            $preferred = 0;
+            if (isset($data["preferenceScore"]) && $data["preferenceScore"] == "checked")
+                $preferred = 99;
+
+            $nameEntry->setPreferenceScore($preferred);
 
             $nameEntry->setLanguage($this->parseSubLanguage($data, "nameEntry", $k));
 

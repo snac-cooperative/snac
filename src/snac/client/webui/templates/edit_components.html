@@ -136,9 +136,11 @@
                     <label for="nameEntry_preferenceScore_{{ i }}" class="control-label col-xs-4" data-content="{{X.preferenceScore.tooltip}}" data-toggle="popover" data-placement="top">
                         {{ X.preferenceScore.display }}
                     </label>
-                    <div class="col-xs-8" id="text_nameEntry_preferenceScore_{{i}}">
-                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="hidden" class="form-control" value="{{ nameEntry.preferenceScore }}"/>
-                        <p class="form-control-static">{{ nameEntry.preferenceScore }}</p>
+                    <div class="col-xs-8" id="checkbox_nameEntry_preferenceScore_{{i}}">
+                        <input id="nameEntry_preferenceScore_{{i}}" name="nameEntry_preferenceScore_{{i}}" type="hidden" class="form-control" value="{{ isPrimary ? 'checked' }}"/>
+                        <input id="nameEntry_preferenceScore_placeholderOn_{{i}}" type="hidden" class="form-control" value="Preferred"/>
+                        <input id="nameEntry_preferenceScore_placeholderOff_{{i}}" type="hidden" class="form-control" value="Not Preferred"/>
+                        <p class="form-control-static">{{ isPrimary ? 'Preferred' : 'Not Preferred' }}</p>
                     </div>
                 </div>
                 {% endif %}

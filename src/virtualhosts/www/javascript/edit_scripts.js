@@ -142,6 +142,10 @@ function undoEdit(short, i) {
 	// restore the old content
 	$("#" + short + "_datapart_" + i).replaceWith(undoSet[short+"-"+i]);
     turnOnTooltips(short,i);
+    $("#" + short + "_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        obj.bootstrapToggle();
+    });
 }
 
 /**
@@ -216,6 +220,104 @@ function textToSelect(shortName, idStr) {
 
         }
     });
+}
+
+function textToCheckbox(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='checkbox_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^checkbox_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var placeholderOn = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOn_"+idStr).exists()) {
+                placeholderOn = $("#"+shortName+"_"+name+"_placeholderOn_"+idStr).val();
+            }
+            var placeholderOff = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOff_"+idStr).exists()) {
+                placeholderOff = $("#"+shortName+"_"+name+"_placeholderOff_"+idStr).val();
+            }
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' class='form-control' type='checkbox' value=\"checked\""+
+                    "data-on=\""+placeholderOn+"\" data-off=\""+placeholderOff+"\"";
+            if (value == 'checked')
+                html += " checked";
+            html += "/>";
+            if (placeholderOn != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOn_"+idStr+"\" " +
+                "value=\""+placeholderOn+"\"/>";
+            }
+            if (placeholderOff != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOff_"+idStr+"\" " +
+                "value=\""+placeholderOff+"\"/>";
+            }
+
+            cont.html(html);
+            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle(); 
+        }
+    });
+
+
+}
+
+
+function checkboxToText(shortName, idStr) {
+    $("#"+shortName+"_datapart_" + idStr + " div[id^='checkbox_"+shortName+"']").each(function() {
+        var cont = $(this);
+        if(cont.attr('id').endsWith("_"+idStr) && !cont.attr('id').endsWith("ZZ")) {
+            // remove the short name and "select_" from the string we're parsing
+            var divStr = cont.attr('id').replace(/^checkbox_/, "").replace(shortName + "_", "");
+            // remove the idstr to receive the name of this element
+            var regex = new RegExp("\_"+idStr+"$", "g");
+            var name = divStr.replace(regex, "");
+            var value = $("#"+shortName+"_"+name+"_"+idStr).val();
+            var checked = $("#"+shortName+"_"+name+"_"+idStr).prop('checked'); 
+            var placeholderOn = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOn_"+idStr).exists()) {
+                placeholderOn = $("#"+shortName+"_"+name+"_placeholderOn_"+idStr).val();
+            }
+            var placeholderOff = "";
+            if ($("#"+shortName+"_"+name+"_placeholderOff_"+idStr).exists()) {
+                placeholderOff = $("#"+shortName+"_"+name+"_placeholderOff_"+idStr).val();
+            }
+
+
+            var html = "<input id='"+shortName+"_"+name+"_"+idStr+"' name='"+shortName+"_"+name+"_"+
+                    idStr+"' type='hidden' value=\"";
+            if (checked)
+                html += "checked";
+            html +="\"/>";
+
+            html += "<p class='form-control-static'>";
+            if (checked) {
+                if (placeholderOn != "")
+                   html += placeholderOn;
+                else
+                   html += value;
+            } else {
+                if (placeholderOff != "")
+                   html += placeholderOff;
+            } 
+            html += "</p>";
+            if (placeholderOn != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOn_"+idStr+"\" " +
+                "value=\""+placeholderOn+"\"/>";
+            }
+            if (placeholderOff != "") {
+                html += "<input type=\"hidden\" id=\""+shortName+"_"+name+"_placeholderOff_"+idStr+"\" " +
+                "value=\""+placeholderOff+"\"/>";
+            }
+
+            $("#"+shortName+"_"+name+"_"+idStr).bootstrapToggle("destroy");
+            cont.html(html);
+        }
+    });
+
+
 }
 
 function textToInput(shortName, idStr) {
@@ -520,6 +622,7 @@ function subMakeEditable(short, i) {
 
     textToInput(short, i);
     textToTextArea(short, i);
+    textToCheckbox(short, i);
 
     var idstr = "_" + i;
 
@@ -533,6 +636,14 @@ function subMakeEditable(short, i) {
     // Enable buttons
     $("#"+short+"_datapart_" + i + " a.label").each(function() {
         $(this).removeClass("snac-hidden");
+    });
+    
+    // Enable checkboxes
+    $("#"+short+"_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.bootstrapToggle('enable');
+        }
     });
 
     // Turn on CodeMirror Editors
@@ -680,9 +791,17 @@ function subMakeUneditable(shortName, i) {
         $(this).addClass("snac-hidden");
     });
 
+    // Disable checkboxes
+    $("#"+shortName+"_datapart_" + i + " input[type='checkbox']").each(function() {
+        var obj = $(this);
+        if(obj.attr('id').endsWith(idstr) && !obj.attr('id').endsWith("ZZ")) {
+            obj.bootstrapToggle("disable");
+        }
+    });
 
     inputToText(shortName, i);
     textAreaToText(shortName, i);
+    checkboxToText(shortName, i);
     // Check for a select box
     var sawSelect = false;
     $("#"+shortName+"_datapart_" + i + " select[id^='"+shortName+"_']").each(function() {
