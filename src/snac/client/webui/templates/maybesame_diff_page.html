@@ -313,11 +313,11 @@ $(document).ready(function() {
                     <div class="btn-group" role="group" aria-label="Cancel Actions">
                         <button id="cancel_button" type="button" class="btn btn-danger" title="Cancel merge and return to the previous page."><span class="glyphicon glyphicon-remove-sign"></span> Cancel</button>
                     </div>
-                    {% elseif data.mergeable and user.email and permissions.Publish %}
+                    {% elseif data.mergeable and user.email and permissions.Merge %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">
                         <a href="?command=diff_merge&constellationid1={{data.constellation1.id}}&constellationid2={{data.constellation2.id}}" class="btn btn-info" title="Switch this compare view into merging mode."><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</a>
                     </div>
-                    {% elseif user.email and permissions.Publish %}
+                    {% elseif user.email and permissions.Merge %}
                     <div class="btn-group" role="group" aria-label="Merge Actions">
                         <span href="#" class="btn btn-info disabled" title="Notification" data-content="One or both Constellations are currently locked, so merging is not available at this time." data-toggle="popover" data-placement="top"><i class="fa fa-code-fork" aria-hidden="true"></i> Begin Merge</span>
                     </div>

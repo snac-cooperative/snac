@@ -349,28 +349,28 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayMaybeSameDiffPage($this->input, $display);
                 break;
             case "diff_merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
                 } else {
                     $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
                 }
                 break;
             case "merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->processMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
                 break;
             case "auto_merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->processAutoMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
                 break;
             case "merge_cancel":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->cancelMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);

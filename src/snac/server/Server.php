@@ -274,21 +274,21 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "constellation_diff_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->diffConstellations($this->input, true);
                 break;
 
             case "constellation_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->mergeConstellations($this->input);
                 break;
 
             case "constellation_auto_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);
