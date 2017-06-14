@@ -1500,22 +1500,17 @@ class ServerExecutor {
                 $constellation = $constellations[0];
 
                 // Get the list of constellations locked editing for this user
-                $inList = false;
+                $editable = false;
+                $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($this->user != null) {
-                    $editable = $this->cStore->listConstellationsWithStatusForUser($this->user);
-                    if ($editable !== false) {
-                        foreach ($editable as $cEdit) {
-                            if ($cEdit->getID() == $constellation->getID()) {
-                                $inList = true;
-                                break;
-                            }
-                        }
+                    if ($userStatus['userid'] == $this->user->getUserID() && $userStatus["status"] == 'locked editing') {
+                        $editable = true;
                     }
                 }
-                if ($this->cStore->readConstellationStatus($constellation->getID()) == "published" || $inList) {
+
+                if ($userStatus["status"] == "published" || $editable) {
                     $constellation->setStatus("editable");
                 } else if ($this->hasPermission("Change Locks")) {
-                    $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
                     $editingUser = new \snac\data\User();
                     $editingUser->setUserID($userStatus["userid"]);
                     $editingUser = $this->uStore->readUser($editingUser);
@@ -1537,6 +1532,9 @@ class ServerExecutor {
                         ]
                     ];
                 }
+
+                $response["maybesame_count"] = $this->cStore->countMaybeSameConstellations($constellation->getID());
+
                 $this->logger->addDebug("Finished checking constellation status against the user");
                 $response["constellation"] = $constellation->toArray();
             }

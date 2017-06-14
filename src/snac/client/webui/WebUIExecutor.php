@@ -341,6 +341,7 @@ class WebUIExecutor {
                     $constellation,
                     array(
                         "preview"=> (isset($input["preview"])) ? true : false,
+                        "maybeSameCount"=> (isset($serverResponse["maybesame_count"])) ? $serverResponse["maybesame_count"] : 0,
                         "message" => $message,
                         "holdings" => $holdings,
                         "editingUser" => $editingUser)
@@ -411,6 +412,7 @@ class WebUIExecutor {
             $display->setData(array_merge(
                 $constellation,
                 array("preview"=> (isset($input["preview"])) ? true : false,
+                    "maybeSameCount"=> (isset($serverResponse["maybesame_count"])) ? $serverResponse["maybesame_count"] : 0,
                     "editingUser" => $editingUser)
             ));
         } else {

@@ -615,10 +615,12 @@ body {
                                 <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
                                 <a class="list-group-item list-group-item-warning"
                                    href="?command=details&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-tasks"></span> Detailed View</a>
+                                {% if data.maybeSameCount > 0 %}
                                 <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
                                        class="list-group-item list-group-item-merge" id="merge">
                                        <span class="glyphicon glyphicon-random"></span> View Maybe Same
-                                       <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="View other Constellations which may be the same as this one." data-toggle="popover" data-placement="top"></span></a>
+                                       <span class="badge">{{ data.maybeSameCount }}</span></a>
+                                {% endif %}
                                    <a class="list-group-item list-group-item-history"
                                       href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
                           </div>

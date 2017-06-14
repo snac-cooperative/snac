@@ -4041,6 +4041,25 @@ class DBUtil
     }
 
     /**
+     * Count maybe-same constellations
+     *
+     * Gets a count of constellations that may be the same as the search
+     *
+     * @param  int  $icid  Identity Constellation ID for which to get maybe same
+     * @return int Count of maybesame constellations
+     */
+    public function countMaybeSameConstellations($icid) {
+        $response = array();
+
+        $icids = $this->sql->listMaybeSameIDsFor($icid);
+        
+        if ($icids === false || $icids == null)
+            return 0;
+
+        return count($icids);
+    }
+
+    /**
      * List maybe-same constellations
      *
      * Gets a list of constellations that may be the same as the search
