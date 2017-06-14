@@ -87,8 +87,8 @@
         "tooltip" : "The ordered components of the name"
     },
     "preferenceScore" : {
-        "display" : "Preference Score",
-        "tooltip" : "The numerical preference of this name entry in SNAC"
+        "display" : "Preference",
+        "tooltip" : "Whether or not this is the preferred name to display in SNAC"
     },
     "nameComponents" : {
         "display" : "Components",
