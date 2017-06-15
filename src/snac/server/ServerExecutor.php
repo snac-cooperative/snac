@@ -2880,6 +2880,7 @@ class ServerExecutor {
             default:
                 $reportEngine->addReport("NumConstellations");
                 $reportEngine->addReport("NumConstellationsByType");
+                $reportEngine->addReport("TopEditorsThisWeek");
                 $reportEngine->addReport("PublishesLastMonth");
                 $reportEngine->addReport("TopHoldingInstitutions");
                 break;

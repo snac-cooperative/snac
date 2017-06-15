@@ -112,8 +112,10 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                             <div class="panel-body" id="nameEntry_pane">
 
                                 {% set i = 0 %}
+                                {% set isPrimary = true %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, false, true, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, false, true, nameEntry, i, isPrimary) }}
+                                    {% set isPrimary = false %}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
@@ -223,13 +225,22 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <h2>Internal CPF Relations</h2>
 
 
-                        {% set i = 0 %}
-                        {% for relation in data.relations %}
-                            {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original) }}
-                        {% set i = i + 1 %}
-                        {% endfor %}
-                        <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
-
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="active"><a href="#directRelations" role="tab" data-toggle="tab">Direct</a></li>
+                            <li><a href="#impliedRelations" role="tab" data-toggle="tab" id="impliedRelationsTab">Implied</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane active" id="directRelations">
+                                {% set i = 0 %}
+                                {% for relation in data.relations %}
+                                {{ components.displayConstellationRelation(X, false, true, relation, i, data.entityType.term, data.nameEntries.0.original, false) }}
+                                {% set i = i + 1 %}
+                                {% endfor %}
+                                <span id='next_constellationRelation_i' style='display:none;'>{{i}}</span>
+                            </div>
+                            <div class="tab-pane" id="impliedRelations">
+                            </div>
+                        </div>
                     </div>
 
 
@@ -392,19 +403,16 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                         <p>This is only a preview Constellation.  It will only exist until this window is closed.</p>
                     </div>
                     {% else %}
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">
-                            <h3 class="panel-title">User Actions</h3>
-                        </div>
-                        <div class="panel-body">
-                            <p>You may perform any of the following actions on this constellation.</p>
-                            <!--
-                            <div class="list-group">
-                                <a href="#" class="list-group-item list-group-item-success" id="preview"><span class="glyphicon glyphicon-eye-open"></span> Preview</a>
-                            </div>
-                            -->
-                            <div class="list-group">
-                                <a class="list-group-item list-group-item-success"
+
+                   <div class="panel panel-info" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Constellation Options</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                           <h5>Visualizations</h5>
+                           <div class="list-group" style="margin-bottom: 0px;">
+                               <a href="#" class="list-group-item list-group-item-success disabled" data-toggle="modal" data-target="#collection_locations" id="displayHoldingsMap"><span class="glyphicon glyphicon-globe"></span> Collection Locations</a>
+                                <a class="list-group-item list-group-item-warning"
                                     href="?command=view&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-eye-open"></span> HRT View</a>
                                 {% if data.maybeSameCount > 0 %}
                                 <a href="?command=maybesame&constellationid={{data.id}}&version={{data.version}}"
@@ -412,35 +420,63 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                        <span class="glyphicon glyphicon-random"></span> View Maybe Same
                                        <span class="badge">{{ data.maybeSameCount }}</span></a>
                                 {% endif %}
-                                {% if user.email and permissions.Edit %}
-                                    {% if data.status == 'editable' %}
-                                        <a class="list-group-item list-group-item-info"
-                                            href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
-                                    {% else %}
-                                        <a class="list-group-item list-group-item-danger disabled"
-                                            href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top"><span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation</a>
-                                        {% if data.editingUser %}
-                                            <div class="list-group-item">
-                                                <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
-                                                <div class="list-group" style="margin-bottom: 0px;">
-                                                    <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
-                                                        <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
-                                                    </a>
-                                                </div>
+                               <a class="list-group-item list-group-item-history"
+                                  href="?command=history&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-time"></span> Constellation History</a>
+                           </div>
+                           <h5>Export As</h5>
+                           <div class="list-group" style="margin-bottom: 0px;">
+                               <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
+                               <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
+                           </div>
+                       </div>
+                   </div>
+
+
+                  {% if user.email and (permissions.Edit or debug) %}
+                   <div class="panel panel-warning" style="margin-top: 15px;">
+                       <div class="panel-heading">
+                           <h3 class="panel-title">Actions</h3>
+                       </div>
+                       <div class="panel-body" style="padding: 10px; margin-bottom: 2px;">
+                           {% if user.email and permissions.Edit %}
+                          <h5>Constellation Actions</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                                {% if data.status == 'editable' %}
+                                <a class="list-group-item list-group-item-info"
+                                   href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                {% else %}
+                                    <a class="list-group-item list-group-item-danger disabled"
+                                       href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">
+                                        <span class="glyphicon glyphicon-ban-circle"></span> Edit Constellation
+                                    </a>
+                                    {% if data.editingUser %}
+                                        <div class="list-group-item">
+                                            <p class="text-center">This Constellation is currently being edited by {{data.editingUser.fullName}}</p>
+                                            <div class="list-group" style="margin-bottom: 0px;">
+                                                <a href="mailto:{{data.editingUser.email}}" class="list-group-item list-group-item-info">
+                                                    <i class="fa fa-paper-plane-o" aria-hidden="true"></i> Send Message
+                                                </a>
                                             </div>
-                                        {% endif %}
+                                        </div>
                                     {% endif %}
                                 {% endif %}
-                              </div>
-                              <h4>Export as</h4>
-                              <div class="list-group" style="margin-bottom: 0px;">
-                                  <a href="?command=download&type=constellation_json&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file" aria-hidden="true"></i></span> Constellation JSON<!--<span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as a JSON file." data-toggle="popover" data-placement="top"></span>--></a>
-                                      <a href="?command=download&type=eac-cpf&constellationid={{data.id}}" class="list-group-item list-group-item-download"><i class="fa fa-file-code-o" aria-hidden="true"></i> EAC-CPF XML<!-- <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Export the curent version of this constellation as an EAC-CPF XML file." data-toggle="popover" data-placement="top"></span>--></a>
-                              </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="panel panel-primary">
+                          </div>
+                          {% endif %}
+                          {% if false %}
+                          <h5>Debug Actions</h5>
+                          <div class="list-group" style="margin-bottom: 0px;">
+                              <a href="#" class="list-group-item list-group-item-danger" data-toggle="modal" data-target="#serverResponse"><span class="glyphicon glyphicon-log-in"></span> View Full Server Response</a>
+
+                          </div>
+                          {% endif %}
+                      </div>
+                  </div>
+                  {% endif %}
+                  {% endif %}
+
+
+
+                    <div class="panel panel-default">
                         <div class="panel-heading">
                             <h3 class="panel-title">Identity Constellation Identifier(s)</h3>
                         </div>
@@ -539,6 +575,66 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
     </div>
 </div>
 
+                  <div class="modal fade" id="collection_locations" tabindex="-1" role="dialog"
+                       aria-hidden="true">
+                     <div class="modal-dialog">
+                        <div class="modal-content">
+                           <div class="modal-header">
+                              <button type="button" class="close" data-dismiss="modal" aria-labelledby="colLocLabel"
+                                      aria-hidden="true">×</button>
+                              <h4 class="modal-title" id="colLocLabel">Collection Locations</h4>
+                           </div>
+                           <div class="modal-body">
+                              {% if data.holdings|length > 0 %}
+                                  <div class="geoplace-map" id="holdingsMap">
+                                  </div>
+                                  <script>
+                                    var holdingsMapView = null;
+                                    var bounds = new L.LatLngBounds();
+                                    function displayHoldingsMap() {
+                                        if (holdingsMapView != null) {
+                                            return;
+                                        }
+                                        // Add a slight delay to the map viewing so that the modal window has time to load
+                                        setTimeout(function() {
+                                            holdingsMapView = L.map('holdingsMap').setView([0,0],1);//setView([35.092344, -39.023438], 2);
+                                            L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                                                maxZoom: 19,
+                                                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                                            }).addTo(holdingsMapView);
+                                            var bounds = new L.LatLngBounds();
+                                            {% for location in data.holdings %}
+                                            {% if location.latitude and location.longitude %}
+                                            var marker = L.marker([{{location.latitude}}, {{location.longitude}}]).addTo(holdingsMapView).bindPopup("{{location.name}}");
+                                            bounds.extend(marker.getLatLng());
+                                            {% endif %}
+                                            {% endfor %}
+                                            holdingsMapView.fitBounds(bounds);
+                                            }, 400);
+                                    }
+                                    $(document).ready(function() {
+                                        if ($('#displayHoldingsMap').exists()){
+                                            $('#displayHoldingsMap').removeClass('disabled');
+                                            $('#displayHoldingsMap').click(displayHoldingsMap);
+                                        }
+                                    });
+                                  </script>
+                                  {% for location in data.holdings %}
+                                    <div>{{location.name}}</div>
+                                  {% endfor %}
+                              {% else %}
+                                <div class="alert alert-info">no collection locations known</div>
+                              {% endif %}
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+    </div>
+    <div id="constellationRelation_template" style="display:none">
+    {{ components.displayConstellationRelation(X, false, false, null, 'ZZ', data.entityType.term, data.nameEntries.0.original, true) }}
     </div>
     </body>
     </html>

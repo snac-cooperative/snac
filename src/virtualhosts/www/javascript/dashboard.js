@@ -22,7 +22,7 @@ function updateSettingsBox(id, version, nameEntry) {
     html += "</a>";
 
     // Preview
-    html += "<a href='?command=view&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-success'>";
+    html += "<a href='?command=view&constellationid="+id+"&version="+version+"&preview=1' class='list-group-item list-group-item-success'>";
     html += "   <span class='glyphicon glyphicon-eye-open'></span> Preview this Constellation";
     html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Preview the current state of this constellation in the view mode." data-toggle="popover" data-placement="right"></span>';
     html += "</a>";
