@@ -2232,10 +2232,7 @@ class WebUIExecutor {
                         $response["results"] = array ();
                         foreach ($constellation->getSources() as $source) {
                             array_push($response["results"],
-                                    array (
-                                            "id" => $source->getID(),
-                                            "text" => $source->getDisplayName()
-                                    ));
+                                    $source->toArray());
                         }
                         $this->logger->addDebug("created the following response list of sources", $response);
                         return $response;

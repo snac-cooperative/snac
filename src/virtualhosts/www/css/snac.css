@@ -293,6 +293,10 @@ td.rotate > div > span {
     margin-bottom: 15px;
 }
 
+.scm-source-panel {
+    margin-bottom: 0px;
+}
+
 .form-group .well p, .form-group p.form-control-static {
     word-wrap: break-word;
 }
