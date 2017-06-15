@@ -51,6 +51,7 @@
 <script src="javascript/scripts.js{{control.noCache}}"></script>
 <script src="javascript/wikipedia_image.js{{control.noCache}}"></script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
 <style>
 body {
     padding-top: 70px;
@@ -163,10 +164,6 @@ body {
                          </div>
                         {% endif %}
 
-                        <div data-xsl="authoritySource">
-                           <label>Authority Source:</label>
-                           <!-- TEMPLATE_SOURCE  -->
-                        </div>
                         {% if data.nationalities %}
                         <div data-xsl="nationality">
                            <label>Nationality: </label>

@@ -8,7 +8,9 @@
         "elasticsearch/elasticsearch": "~2.0@beta",
         "snac/ark-manager": "*",
         "snac/eac-validator": "*",
-        "graphaware/neo4j-php-client": "^4.0"
+        "graphaware/neo4j-php-client": "^4.0",
+        "jasny/twig-extensions": "^1.1",
+        "twig/extensions": "^1.5"
     },
     "require-dev": {
         "phpdocumentor/phpdocumentor": "*",

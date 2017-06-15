@@ -220,6 +220,35 @@ function affiliation_select_replace(selectItem) {
             }
 }
 
+function reviewer_select_replace(selectItem) {
+        if(selectItem != null) {
+                selectItem.select2({
+                    ajax: {
+                        url: function() {
+                            var query = "?command=user_search&role=Reviewer";
+                                return query;
+                        },
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term,
+                                page: params.page
+                            };
+                        },
+                        processResults: function (data, page) {
+                            return { results: data.results };
+                        },
+                        cache: true
+                    },
+                    width: '100%',
+                    minimumInputLength: 1,
+                    allowClear: false,
+                    theme: 'bootstrap'
+                });
+            }
+}
+
 function select_replace(selectItem, idMatch) {
         if(selectItem.attr('id').endsWith(idMatch)
             && !selectItem.attr('id').endsWith("ZZ")) {
@@ -270,4 +299,8 @@ $(document).ready(function() {
     // Replace the Affiliation dropdowns, if one exists
     if ($("#affiliationid").exists())
         affiliation_select_replace($("#affiliationid"));
+
+    // Replace the User search dropdown, if one exists
+    if ($("#reviewersearchbox").exists())
+        reviewer_select_replace($("#reviewersearchbox"));
 });

@@ -169,6 +169,7 @@ create table version_history (
         is_locked  boolean default false,         -- (not used, see status) boolean, true is locked by version_history.user_id
         user_id    int,                           -- fk to appuser.id
         role_id    int,                           -- fk to role.id, defaults to users primary role, but can be any role the user has
+        user_id_secondary    int,                 -- fk to appuser.id for secondary user (ie. sent for review to ..)
         timestamp  timestamp default now(),       -- now()
         status     text,                          -- a curated list of status terms.
         is_current boolean,                       -- (not used) most current published, optional field to enhance performance
@@ -179,7 +180,7 @@ create table version_history (
 -- We will often select status='published' so we need an index
 create index version_history_idx1 on version_history(status);
 create index version_history_idx2 on version_history(user_id);
-
+create index version_history_idx5 on version_history(user_id_secondary);
 
 -- Users of the system (editors, authors, researchers, admins etc)
 -- SQL reserved word 'user', instead of always quoting it, change table name to appuser.

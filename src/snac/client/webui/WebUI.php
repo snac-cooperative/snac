@@ -516,6 +516,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->performBrowseSearch($this->input);
                 break;
 
+            case "user_search":
+                $response = $executor->performUserSearch($this->input);
+                break;
+
             // Error command
             case "error":
                 $error = array("error" => array(

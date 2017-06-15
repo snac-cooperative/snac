@@ -179,6 +179,8 @@ class Display {
         $twig = new \Twig_Environment($loader, array(
                 //'cache' => \snac\Config::$TEMPLATE_CACHE,
             ));
+        $twig->addExtension(new \Jasny\Twig\PcreExtension());
+        $twig->addExtension(new \Twig_Extensions_Extension_Text());
 
         return $twig->render($this->templateFileName, $this->data);
 

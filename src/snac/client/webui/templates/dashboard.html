@@ -43,6 +43,8 @@ var permissions = {
 };
 </script>
 
+<meta name="viewport" content="initial-scale = 1.0" />
+
 </head>
 <body role="document">
 {% from 'page_navigation.html' import topNavigation %}
@@ -59,13 +61,15 @@ var permissions = {
         </div><!-- end alert -->
     </div>
     <div class="row">
+        <div class="col-md-12">
+            <div class="well well-md">
+                <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows the most recently published Constellations across SNAC and provides searching.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column shows constellations you have out for review and other information depending on your permission level.</p>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-4">
             <!-- Left column -->
-            <h3>Getting Started</h3>
-
-            <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  This column shows the most recently published Constellations across SNAC.  The second column shows Constellations you have checked out for editing and those you are currently editing in other browser windows.  It also provides a button to create a new Constellation object.  The last column gives quick access to searching and other functionality depending on your permission level.</p>
-            <!-- <p>Welcome, {{ user.firstName|default('SNAC User') }}, this is your dashboard.  The left column shows your current and early-stage edits, the center column displays Constellations later in the review process, and the right-most column gives quick access to recently published Constellations.</p> -->
-
             <!--
             <div class="panel panel-success">
                 <div class="panel-heading">
@@ -79,6 +83,28 @@ var permissions = {
                 </div>
             </div>
             -->
+
+            <form class="form-horizontal" id="search_form" onsubmit="return false;">
+                <div class="well well-lg text-center">
+                        <input type="hidden" id="count" name="count" value="10">
+                        <input type="hidden" id="start" name="start" value="0">
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                placeholder="Search for..." id="searchbox" name="term">
+                                <span class="input-group-btn">
+                                     <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
+                                </span>
+                        </div>
+
+                        <div id="search-results-box">
+                        </div>
+
+                        <div>
+                            <p style="margin-top: 10px; margin-bottom: 0px;"><a href="?command=search&search_type=advanced">Advanced Search</a></p>
+                        </div>
+                </div>
+            </form>
+
             <div class="panel panel-info">
                 <div class="panel-heading">
                     <h3 class="panel-title">View Recently Published</h3>
@@ -119,6 +145,9 @@ var permissions = {
                 <div class="panel-body">
                     <p>Continue where you left off on one of the following Constellations.</p>
                     <div class="list-group">
+                        {% if not data.editing %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.editing %}
                         <div class="list-group-item" style="padding: 0px;">
                             <div class="btn-group btn-group-justified">
@@ -147,6 +176,9 @@ var permissions = {
                     <p>You have the following Constellations open in a browser for editing.  You may unlock them by clicking below, however your
                     changes not previously saved may be lost.</p>
                     <div class="list-group">
+                        {% if not data.editing_lock %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.editing_lock %}
                         <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
                         {% endfor %}
@@ -202,26 +234,23 @@ var permissions = {
             <!-- Right column -->
 
 
-        <form class="form-horizontal" id="search_form" onsubmit="return false;">
-            <div class="well well-lg text-center">
-                    <input type="hidden" id="count" name="count" value="10">
-                    <input type="hidden" id="start" name="start" value="0">
-                    <div class="input-group">
-                        <input type="text" class="form-control"
-                            placeholder="Search for..." id="searchbox" name="term">
-                            <span class="input-group-btn">
-                                 <button class="btn btn-default" type="button" id="searchbutton" name="searchbutton">Search</button>
-                            </span>
+            <div class="panel panel-review">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Locked for Review</h3>
+                </div>
+                <div class="panel-body">
+                    <p>You have the following Constellations that have been sent for review.  You may unlock them here to
+                    continue editing them.</p>
+                    <div class="list-group">
+                        {% if not data.review_lock %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
+                        {% for link in data.review_lock %}
+                        <a href="?command=unlock&constellationid={{link.id}}&version={{link.version}}" class="list-group-item"><span class="pull-right"> <i class="fa fa-unlock" aria-hidden="true"></i> </span> {{link.nameEntry}}</a>
+                        {% endfor %}
                     </div>
-
-                    <div id="search-results-box">
-                    </div>
-
-                    <div>
-                        <p style="margin-top: 10px; margin-bottom: 0px;"><a href="?command=search&search_type=advanced">Advanced Search</a></p>
-                    </div>
+                </div>
             </div>
-        </form>
 
             {% if permissions.ChangeLocks %}
             <div class="panel panel-review">
@@ -230,7 +259,20 @@ var permissions = {
                 </div>
                 <div class="panel-body">
                     <p>The following Constellations need review.  Select one to check it out and begin editing.</p>
+                    <p>Sent directly to you</p>
                     <div class="list-group">
+                        {% if not data.review %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
+                        {% for link in data.review %}
+                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                        {% endfor %}
+                    </div>
+                    <p>Sent to any reviewers</p>
+                    <div class="list-group">
+                        {% if not data.needs_review %}
+                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                        {% endif %}
                         {% for link in data.needs_review %}
                         <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
                         {% endfor %}
