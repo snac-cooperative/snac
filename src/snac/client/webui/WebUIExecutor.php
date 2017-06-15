@@ -932,6 +932,144 @@ class WebUIExecutor {
     }
 
     /**
+     * Display Message Center
+     *
+     * Loads the display with the message center (message list) template.  It also asks
+     * the server for the list of unread messages for the current user.
+     *
+     * @param \snac\client\webui\display\Display $display The display object for page creation
+     */
+    public function displayMessageListPage(&$display) {
+        $ask = array("command"=>"user_messages");
+        $serverResponse = $this->connect->query($ask);
+        if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success')
+            return $this->drawErrorPage($serverResponse, $display);
+
+        $display->setData($serverResponse);
+        $display->setTemplate("message_list");
+    }
+
+    /**
+     * Read Message
+     *
+     * Asks the server to read the message with given ID.  The user must have permission
+     * to read the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function readMessage(&$input) {
+        $ask = array("command"=>"read_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Delete Message
+     * 
+     * Asks the server to delete the message given as input by ID.  The user must have
+     * permission to delete the message or the server will return an error.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function deleteMessage(&$input) {
+        $ask = array("command"=>"delete_message",
+                    "messageid"=>$input["messageid"]);
+        $serverResponse = $this->connect->query($ask);
+
+        return $serverResponse;
+    }
+
+    /**
+     * Send a Feedback Message
+     *
+     * Sends the feedback given in the input to the server's feedback mechanism.  If no
+     * user information is given, it will send the user's IP address for verification.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client
+     */
+    public function sendFeedbackMessage(&$input) {
+        $response = array();
+        if (isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            if (isset($this->user) && $this->user !== null) {
+                $message->setFromUser($this->user);
+            } else {
+                // set this message from the IP address:
+                $message->setFromString("anonymous_user@".$_SERVER['REMOTE_ADDR']);
+            }
+
+            $ask = array("command"=>"send_feedback",
+                        "message"=>$message->toArray());
+            $serverResponse = $this->connect->query($ask);
+
+            if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                $response["result"] = "error";
+            }
+            $response["result"] = "success";
+        } else {
+            $response["result"] = "error";
+        }
+        return $response;
+    }
+
+
+    /**
+     * Send Message
+     *
+     * Asks the server to send the message given in the input.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string The response to the client 
+     */
+    public function sendMessage(&$input) {
+        $response = array();
+        if (isset($input["to_user"]) && isset($input["subject"]) && isset($input["body"])) {
+            // split out the users to send to
+            $toUsers = explode(",", $input["to_user"]);
+            $message = new \snac\data\Message();
+            $message->setSubject($input["subject"]);
+            $message->setBody($input["body"]);
+            $message->setFromUser($this->user);
+
+            $errors = array();
+
+            foreach ($toUsers as $toUserID) {
+                $toUser = new \snac\data\User();
+                $toUser->setUserID(trim($toUserID));
+                $message->setToUser($toUser);
+
+                $ask = array("command"=>"send_message",
+                            "message"=>$message->toArray());
+                $serverResponse = $this->connect->query($ask);
+
+                if (!isset($serverResponse["result"]) || $serverResponse["result"] != 'success') {
+                    array_push($errors, trim($toUserName));
+                }
+            }
+
+            if (!empty($errors)) {
+                $response["message"] = "Could not send to: " . implode(", ", $errors) . ".";
+            }
+
+            if (count($errors) < count($toUsers)) {
+                $response["result"] = "success";
+            }
+        } else {
+            $response["result"] = "error";
+        }
+
+        return $response;
+    }
+
+    /**
      * Handle Administrative tasks
      *
      * Fills the display object with the requested admin page for the given user.

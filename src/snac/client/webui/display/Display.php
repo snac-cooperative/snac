@@ -144,6 +144,20 @@ class Display {
     }
 
     /**
+     * Clean String
+     *
+     * Given a string, quotes it appropriately in UTF-8.
+     *
+     * @param string $string The string to clean
+     * @return string The cleaned string
+     */
+    private function cleanString($string) {
+        $outStr = mb_convert_encoding($string, 'UTF-8', 'UTF-8');
+        $outStr = htmlentities($outStr, ENT_QUOTES, 'UTF-8');
+        return $outStr;
+    }
+
+    /**
      * Generate the page to return
      *
      * @return string Page to return to the user
@@ -156,12 +170,15 @@ class Display {
 
         $this->data["control"] = array();
 
+        // Put some PHP variables into the control section
+        $this->data["control"]["currentURL"] = $this->cleanString("http://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+        $this->data["control"]["referringURL"] = $this->cleanString(isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : "unknown");
+
         if (isset(\snac\Config::$INTERFACE_VERSION)) {
             if (\snac\Config::$INTERFACE_VERSION === "development")
                 $this->data["control"]["interfaceVersion"] = "development";
             if (\snac\Config::$INTERFACE_VERSION === "demo")
                 $this->data["control"]["interfaceVersion"] = "demo";
-
         }
 
         if (isset(\snac\Config::$GOOGLE_ANALYTICS_TRACKING_ID) &&

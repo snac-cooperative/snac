@@ -246,5 +246,29 @@ class Config {
      */
     public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
 
+    /**
+     * @var string Location of the email template directory
+     */
+    public static $EMAIL_TEMPLATE_DIR = "/full/path/to/src/snac/server/mailer/templates";
+
+    /**
+     * @var boolean Whether or not to use SMTP to send emails
+     */
+    public static $EMAIL_SMTP = false;
+
+    /**
+     * @var string[] Email configuration.  If not using SMTP, only from_email and from_name need to be set
+     */
+    public static $EMAIL_CONFIG = array (
+        "host" => "smtp.gmail.com",
+        "smtp_auth" => true,
+        "username" => "user@gmail.com",
+        "password" => "password",
+        "security" => "tls",
+        "port" => 25, //587,
+        "from_email" => "",
+        "from_name" => "SNAC Web"
+    );
+
 
 }

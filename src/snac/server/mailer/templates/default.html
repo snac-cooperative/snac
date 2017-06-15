@@ -1,0 +1,68 @@
+<html>
+<style>
+body {
+    width: 100%;
+    background-color: #ddd;
+}
+.container {
+    background-color: #fff;
+    border: 1px solid #000;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px #888888;
+}
+.titlebar {
+    background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#1f5c7c),to(#18596F));
+    background-image: linear-gradient(to bottom,#1f5c7c 0,#18596F 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1f5c7c', endColorstr='#ff18506F', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    background-repeat: repeat-x;
+    border-radius: 9px 9px 0px 0px;
+}
+
+.infobar {
+    background-color: #eee;
+    padding: 5px 25px;
+}
+
+.infobar h3 {
+    padding: 0px;
+    margin: 0px;
+}
+
+.titlebar h1 {
+    margin: 0px;
+    padding: 10px;
+    color: #fff;
+    font-family: "DejaVu Serif", "Cambria", serif;
+}
+
+.body {
+    padding: 25px;
+}
+</style>
+<body>
+    <div class="container">
+        <div class="titlebar">
+        <h1>snac mail</h1>
+        </div>
+        {% if subject or fromUser or fromString %}
+            <div class="infobar">
+                <h3>{{subject}}</h3>
+                {% if fromUser %}
+                <p>From: {{fromUser.fullName}} ({{fromUser.userName}})</p>
+                {% elseif fromString %}
+                <p>From: {{fromString}}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+        <div class="body">
+            {{ body|raw }}
+        </div>
+    </div>
+</body>
+</html>

@@ -44,6 +44,11 @@ class ServerExecutor {
     private $neo4J = null;
 
     /**
+     * @var \snac\server\mailer\Mailer Email Utility class
+     */
+    private $mailer = null;
+
+    /**
      * @var \snac\data\User Current user object
      */
     private $user = null;
@@ -75,6 +80,7 @@ class ServerExecutor {
         $this->uStore = new \snac\server\database\DBUser();
         $this->elasticSearch = new \snac\server\elastic\ElasticSearchUtil();
         $this->neo4J = new \snac\server\neo4j\Neo4JUtil();
+        $this->mailer = new \snac\server\mailer\Mailer();
         $this->logger->addDebug("Starting ServerExecutor");
 
         $this->permissions = array();
@@ -681,24 +687,23 @@ class ServerExecutor {
     }
 
     /**
-    * List the SNAC roles
-    *
-    * List all the roles in SNAC.
-    *
-    * @return \snac\data\Role[] List of Roles
-    */
+     * List the SNAC roles
+     *
+     * List all the roles in SNAC.
+     *
+     * @return \snac\data\Role[] List of Roles
+     */
     public function listRoles() {
-
         $roleList = array();
         foreach ($this->uStore->listRoles() as $role) {
             array_push($roleList, $role->toArray());
         }
         $response = array (
-        "result" => "success",
-        "roles" =>  $roleList
-    );
-    return $response;
-}
+            "result" => "success",
+            "roles" =>  $roleList
+        );
+        return $response;
+    }
 
     /**
      * List the SNAC institutions
@@ -718,6 +723,190 @@ class ServerExecutor {
             "result" => "success",
             "constellation" =>  $constellationList
         );
+        return $response;
+    }
+
+    /**
+     * List User Messages
+     *
+     * Returns a list of messages sent to a given user.
+     *
+     * @param string[] $input Input array from the Server object
+     * @return string[] The response to send to the client
+     */
+    public function userMessages($input = null) {
+        /*
+         * Get the list of Messages for the user
+         */
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesToUser($this->user, false);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
+        $response["result"] = "success";
+        return $response;
+    }
+
+    /**
+     * Delete Message
+     *
+     * Deletes the message with given message id if it exists and the user has
+     * permission to delete this message (sender or recipient).  Note, this method
+     * only sets the delete flag; a message is never actually deleted.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
+    public function deleteMessage(&$input) {
+        if (!isset($input["messageid"])) {
+            throw new \snac\exceptions\SNACInputException("No message ID given to delete");
+        }
+        $response = array();
+
+        $message = $this->uStore->getMessageByID($input["messageid"]);
+
+        if ($message === false) {
+            throw new \snac\exceptions\SNACInputException("Message does not exist");
+        }
+        $this->logger->addDebug("Deleting message", $message->toArray());
+
+        if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
+            ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
+                $response["message"] = $message->toArray();
+        } else {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to delete the message.");
+        }
+
+        $this->logger->addDebug("Starting to delete1");
+        $success = $this->uStore->deleteMessage($message);
+        $this->logger->addDebug("Done delete");
+        if ($success)
+            $response["result"] = "success";
+        else
+            $response["result"] = "failure";
+
+        $this->logger->addDebug("Deleted", $response);
+        return $response;
+
+    }
+
+    /**
+     * Read Message
+     *
+     * Given a message id on input, read the message and return it to the client, if they
+     * have permissions to read it.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @throws \snac\exceptions\SNACPermissionException
+     * @return string[] The response to send to the client
+     */
+    public function readMessage(&$input) {
+        if (!isset($input["messageid"])) {
+            throw new \snac\exceptions\SNACInputException("No message ID given to read");
+        }
+        $response = array();
+
+        $message = $this->uStore->getMessageByID($input["messageid"]);
+
+        if ($message === false) {
+            throw new \snac\exceptions\SNACInputException("Message does not exist");
+        }
+
+        if (($message->getToUser() !== null && $message->getToUser()->getUserID() === $this->user->getUserID()) ||
+            ($message->getFromUser() !== null && $message->getFromUser()->getUserID() === $this->user->getUserID())) {
+                $response["message"] = $message->toArray();
+        } else {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to read the message.");
+        }
+
+        $response["result"] = "success";
+        return $response;
+
+    }
+
+    /**
+     * Send Message
+     *
+     * Sends a message given on input to a user, then emails them to notify them
+     * of the message.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function sendMessage(&$input) {
+        if (!isset($input["message"])) {
+            throw new \snac\exceptions\SNACInputException("No message given to send");
+        }
+        $response = array();
+
+        $message = new \snac\data\Message($input["message"]);
+
+        if ($message->getFromUser() === null || $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send messages as another user.");
+        }
+        $toUser = $this->uStore->readUser($message->getToUser());
+        if ($toUser === false) {
+            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+        }
+
+        $message->setToUser($toUser);
+
+        // Send the message
+        $this->uStore->writeMessage($message);
+
+        // Email the message, if needed
+        $this->mailer->sendUserMessage($message);
+
+        $response["result"] = "success";
+        return $response;
+    }
+
+
+    /**
+     * Send Feedback
+     *
+     * Sends the given message as feedback to the correct user to handle feedback. It also
+     * emails the user to notify them of the feedback.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACInputException
+     * @return string[] The response to send to the client
+     */
+    public function sendFeedback(&$input) {
+        if (!isset($input["message"])) {
+            throw new \snac\exceptions\SNACInputException("No feedback message given to send");
+        }
+        $response = array();
+
+        $message = new \snac\data\Message($input["message"]);
+        $this->logger->addDebug("Message received", $message->toArray());
+
+        if ($message->getFromUser() === null && $message->getFromString() === null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent completely anonymously.");
+        } else if ($message->getFromUser() !== null && $this->user !== null && $message->getFromUser()->getUserID() !== $this->user->getUserID()) {
+            throw new \snac\exceptions\SNACPermissionException("User does not have permission to send feedback as another user.");
+        } else if ($message->getFromUser() === null && $this->user !== null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be anonymous if the user is logged in.");
+        } else if ($message->getFromUser() !== null && $this->user === null) {
+            throw new \snac\exceptions\SNACPermissionException("Feedback can't be sent from a user if they are not logged in.");
+        }
+        $tmpUser = new \snac\data\User();
+        $tmpUser->setUserName("jh2jf@virginia.edu");
+        $toUser = $this->uStore->readUser($tmpUser);
+        if ($toUser === false) {
+            throw new \snac\exceptions\SNACUserException("Recipient User does not exist.");
+        }
+        $message->setToUser($toUser);
+
+        // Send the message
+        $this->uStore->writeMessage($message);
+        $this->mailer->sendUserMessage($message);
+
+        $response["result"] = "success";
         return $response;
     }
 
@@ -766,6 +955,14 @@ class ServerExecutor {
             array_push($response["groups"], $group->toArray());
         }
 
+        /*
+         * Get the list of Messages for the user
+         */
+        $response["messages"] = array();
+        $messages = $this->uStore->listMessagesToUser($user, true, true);
+        foreach ($messages as $message) {
+            array_push($response["messages"], $message->toArray());
+        }
 
         /*
          * Get the list of Constellations locked or checked out to the user
@@ -1289,9 +1486,27 @@ class ServerExecutor {
 
                     if (isset($result) && $result !== false) {
                         if ($toUser != null) {
-                            // TODO: Eventually send a message to the toUser letting them know they have a constellation
-                            // to be reviewed.  If send fails, result is still true, but message should let the user
-                            // know that the server could not notify the other user.
+                            // Send a message and email to the user asked to review:
+                            $newest = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_MICRO_SUMMARY);
+                            $message = new \snac\data\Message();
+                            $message->setToUser($toUser);
+                            $message->setFromUser($this->user);
+                            $message->setSubject("Constellation for review");
+                            $msgBody = "<p>Please review my constellation.</p>";
+                            $name = "Unknown";
+                            $this->logger->addDebug("Sending message for reviewer", $newest->toArray());
+                            $prefName = $newest->getPreferredNameEntry();
+                            if ($prefName != null)
+                                $name = $prefName->getOriginal();
+                            $msgBody .= "<p style=\"text-align: center;\"><a href=\"".\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
+                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\">$name</a></p>";
+                            $message->setBody($msgBody);
+                            
+                            // Send the message
+                            $this->uStore->writeMessage($message);
+
+                            // Email the message, if needed
+                            $this->mailer->sendUserMessage($message);
                         }
                         $this->logger->addDebug("successfully sent constellation for review");
                         $constellation->setVersion($result);
@@ -1591,7 +1806,6 @@ class ServerExecutor {
 
                 $constellation = $constellations[0];
 
-                // Get the list of constellations locked editing for this user
                 $editable = false;
                 $userStatus = $this->cStore->readConstellationUserStatus($constellation->getID());
                 if ($this->user != null) {
@@ -1603,6 +1817,9 @@ class ServerExecutor {
                 if ($userStatus["status"] == "published" || $editable) {
                     $constellation->setStatus("editable");
                 } else if ($this->hasPermission("Change Locks")) {
+                    if ($userStatus["status"] == 'needs review') {
+                        $constellation->setStatus("reviewable");
+                    }
                     $editingUser = new \snac\data\User();
                     $editingUser->setUserID($userStatus["userid"]);
                     $editingUser = $this->uStore->readUser($editingUser);

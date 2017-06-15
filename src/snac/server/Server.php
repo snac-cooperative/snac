@@ -164,6 +164,26 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->listUsers($this->input);
                 break;
 
+            case "user_messages":
+                $this->response = $executor->userMessages();
+                break;
+
+            case "read_message":
+                $this->response = $executor->readMessage($this->input);
+                break;
+
+            case "send_message":
+                $this->response = $executor->sendMessage($this->input);
+                break;
+            
+            case "delete_message":
+                $this->response = $executor->deleteMessage($this->input);
+                break;
+
+            case "send_feedback":
+                $this->response = $executor->sendFeedback($this->input);
+                break;
+
             case "edit_user":
                 $this->response = $executor->userInformation($this->input);
                 break;
