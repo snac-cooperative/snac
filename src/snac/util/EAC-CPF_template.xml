@@ -392,10 +392,10 @@
             resRel.role, xlink:arcrole, creatorOf, referencedIn
             #}
             {% for resRel in data.resourceRelations %}
-            {% if resRel.documentType.uri %}
-            {% set xlink_role = resRel.documentType.uri %}
+            {% if resRel.resource.documentType.uri %}
+            {% set xlink_role = resRel.resource.documentType.uri %}
             {% else %}
-            {% set xlink_role = resRel.documentType.term %}
+            {% set xlink_role = resRel.resource.documentType.term %}
             {% endif %}
             {% if resRel.role.uri %}
             {% set xlink_arcrole = resRel.role.uri %}
