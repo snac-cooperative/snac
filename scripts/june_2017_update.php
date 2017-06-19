@@ -124,6 +124,8 @@ while ($res = $db->fetchRow($result)) {
 echo "    Matching:\t $matching\n    Inverse:\t $inverse\n    NonMatch:\t $nonmatch\n\n";
 
 
+$handle = $db->getHandle();
+
 echo "DB Query: Create Lookup Table\n\n";
 $query = "
 -- Table for the constellation id mapping (DAG) for getting the correct constellation if an
@@ -141,7 +143,7 @@ create index constellation_lookup_idx1 on constellation_lookup(ic_id, ark_id);
 -- Backward looking index (non-unique)
 create index constellation_lookup_idx2 on constellation_lookup(current_ic_id, current_ark_id);
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
 
 echo "DB Query: Fill lookup table\n\n";
 $query = "
@@ -149,7 +151,8 @@ $query = "
 insert into constellation_lookup (ic_id, ark_id) select distinct ic_id, ark_id from nrd where ark_id is not null;
 update constellation_lookup set current_ic_id = ic_id, current_ark_id = ark_id;
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 
 echo "DB Query: Version History Updates\n\n";
@@ -158,7 +161,8 @@ $query = "
 alter table version_history add column user_id_secondary int;
 create index version_history_idx5 on version_history(user_id_secondary);
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 echo "DB Query: Messaging\n\n";
 $query = "
@@ -181,7 +185,8 @@ create index messages_idx2 on messages (from_user, subject, read);
 create index messages_idx3 on messages (from_string);
 create index messages_idx4 on messages (to_user, from_user, from_string);
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 echo "DB Query: Merge Permissions\n\n";
 $query = "
@@ -194,24 +199,28 @@ insert into privilege_role_link (rid, pid)
 select (select id from role where label='System Administrator'), id from privilege where 
     label in ('Merge');
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 
 echo "DB Query: Delete MaybeSameAs Relations\n\n";
 $query = "
 delete from related_identity where arcrole=28270;
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 
 echo "DB Query: Delete Name Contributors without rules\n\n";
 $query = "
 delete from name_contributor where rule is null; 
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
 
 echo "DB Query: Change vocabulary type for maybeSameAs Relation type\n\n";
 $query = "
 update vocabulary set type = 'maybesame_type' where id = 28270;
 ";
-$result = $db->query($query, array());
+$result = \pg_query($handle, $query);
+
