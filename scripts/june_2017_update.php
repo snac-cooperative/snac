@@ -194,9 +194,6 @@ $query = "
 -- Merge permissions
 insert into privilege (label, description) values ('Merge', 'Merge Constellations') returning id;
 insert into privilege_role_link (rid, pid)
-select (select id from role where label='Administrator'), id from privilege where 
-    label in ('Merge');
-insert into privilege_role_link (rid, pid)
 select (select id from role where label='System Administrator'), id from privilege where 
     label in ('Merge');
 ";
