@@ -122,9 +122,9 @@ function showCompareOption() {
         var constellation1 = toCompare[0];
         var constellation2 = toCompare[1];
         // Enable the option
-        console.log("Can compare " + constellation1 + " and " + constellation2);
-        $("#compare1").val(constellation1);
-        $("#compare2").val(constellation2);
+        console.log("Can compare " + constellation1.icid + " and " + constellation2.icid);
+        $("#compare1").val(constellation1.icid);
+        $("#compare2").val(constellation2.icid);
         $("#compareButton").prop("disabled", false).addClass('btn-primary').removeClass('btn-default');
     }
 
