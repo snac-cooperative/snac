@@ -708,6 +708,21 @@ body {
                     <div class="alert alert-info">not available for this record</div>
                   {% endif %}
 
+                  <h4>Places:</h4>
+                  {% if data.places|length > 0 %}
+                    <ul>
+                    <!-- {% for place in data.places %} -->
+                        {% if place.confirmed and place.geoplace.id %}
+                            <li>{{place.geoplace.administrationCode}}, {{place.geoplace.countryCode}}</li>
+                        {% elseif place.original and place.original != "" %}
+                            <li>{{place.original}} <em>(as recorded)</em></li>
+                        {% endif %}
+                    <!-- {% endfor %} -->
+                    </ul>
+                  {% else %}
+                    <div class="alert alert-info">not available for this record</div>
+                  {% endif %}
+
               </div> <!-- end of others -->
                <div>
                   <div class="modal fade" id="alternative_names" tabindex="-1" role="dialog"
