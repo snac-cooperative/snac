@@ -14,6 +14,7 @@
 
 <!-- Latest compiled and minified JavaScript -->
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js" integrity="sha512-K1qjQ+NcF2TYO/eI3M6v8EiNYZfA95pQumfvcVrTHtwQVDG+aHRqLi/ETn2uB+1JqwYqVG3LIvdm9lj6imS/pQ==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script>
 
 <!-- Helper Scripts -->
 <!--
@@ -464,6 +465,9 @@ $.fn.modal.Constructor.prototype.enforceFocus = $.noop;
                                 {% if data.status == 'editable' %}
                                 <a class="list-group-item list-group-item-info"
                                    href="?command=edit&constellationid={{data.id}}&version={{data.version}}"><span class="glyphicon glyphicon-pencil"></span> Edit Constellation</a>
+                                <a class="list-group-item list-group-item-danger" id="reserveForEdit"
+                                   href="#"><i class="fa fa-fw fa-bookmark" aria-hidden="true"></i>
+                                   <span id="reserveForEditText">Reserve for Editing</span></a>
                                 {% else %}
                                     <a class="list-group-item list-group-item-danger disabled"
                                        href="#" title="Notice" data-content="This Constellation is currently being edited by someone else." data-toggle="popover" data-placement="top">

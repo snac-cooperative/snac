@@ -15,6 +15,9 @@ jQuery.fn.exists = function(){return this.length>0;}
 var geoMapView = null;
 var impliedRelationsLoaded = false;
 
+// Reservations for Edit
+var reservedForEdit = false;
+
 /**
  * Open the GeoPlace display
  *
@@ -190,6 +193,38 @@ if ($('#impliedRelationsTab').exists()){
     };
     $('#impliedRelationsTab').click(loadFunction);
 }
+
+
+
+if ($('#reserveForEdit').exists()){
+    var reserveEditFunction = function() {
+        $("#reserveForEdit").addClass("disabled");
+        if (!reservedForEdit) {
+            $.get("?command=checkout&constellationid="+$('#constellationid').val()+"&version="+$('#version').val(), null, function (data) {
+                if (data.result == 'success') {
+                    bootbox.alert({
+                        title: "Reserved",
+                        message: "Constellation successfully reserved for edit."
+                    });
+
+                    $("#reserveForEditText").text("Reserved");
+                    reservedForEdit = true;
+                } else {
+                    bootbox.alert({
+                        title: "Error",
+                        message: "Constellation could not be reserved.  You may have already reserved or edited this Constellation, or another user has it checked out."
+                    });
+                    $("#reserveForEditText").text("Non-Reservable");
+                    reservedForEdit = true;
+                }
+            });
+        }
+        // Keep the page from changing
+        return false;
+    };
+
+    $('#reserveForEdit').click(reserveEditFunction);
+};
 
 
 // Load tooltips

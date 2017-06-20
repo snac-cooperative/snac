@@ -492,6 +492,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "checkout":
+                $response = $executor->checkoutConstellation($this->input);
+                break;
+
             case "save_resource":
                 $response = $executor->saveResource($this->input);
                 break;

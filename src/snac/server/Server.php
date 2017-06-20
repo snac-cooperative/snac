@@ -238,6 +238,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->writeConstellation($this->input);
                 break;
 
+            case "checkout_constellation":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to checkout constellations.");
+                $this->response = $executor->checkoutConstellation($this->input);
+                break;
+
             case "unlock_constellation":
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to unlock constellations.");
