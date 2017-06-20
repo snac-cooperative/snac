@@ -178,6 +178,7 @@ create table messages (
         attachment_content      text,
         attachment_filename     text,
         read                    boolean default 'f',
+        deleted                 boolean default 'f',
         time_sent               timestamp default NOW()
 );
 create index messages_idx1 on messages (to_user, subject, read);
