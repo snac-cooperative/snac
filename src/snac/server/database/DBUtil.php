@@ -643,6 +643,8 @@ class DBUtil
      * @param integer $offset optional An offset to jump into the list of records in the database. Optional defaults to
      * a config value. Must be -1 for all, or an integer. Default to the config when missing.
      *
+     * @param boolean $secondary optional Whether to search the version_history by secondary user for this status (default false)
+     *
      * @return \snac\data\Constellation[] A list of PHP constellation object (which might be summary objects),
      * or an empty array when there are no constellations.
      */
@@ -3459,7 +3461,7 @@ class DBUtil
      * @param string $status The new status value. 'deleted' is allowed, and will cause the constellation to
      * be deleted. The status must be one of the known values.
      * @param string $note optional text note to write to the version_history table.
-     * @param \snac\data\User $user The secondary user on the version update, such as "sent for review to X"
+     * @param \snac\data\User $userSecondary The secondary user on the version update, such as "sent for review to X"
      *
      * @return integer|boolean Returns the new version number on success or false on failure.
      *

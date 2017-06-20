@@ -377,6 +377,15 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Search the Users 
+     *
+     * Searches the current users of the system based on the query from the input.  Returns a list
+     * of those matching users. 
+     *
+     * @param string[] $input The input from the client
+     * @return string[] The response to send to the client
+     */
     public function searchUsers(&$input) {
         if (!isset($input["query_string"]))
             throw new \snac\exceptions\SNACInputException("Query string required to search");

@@ -2515,6 +2515,15 @@ class WebUIExecutor {
         return array ();
     }
 
+    /**
+     * Perform User Search
+     *
+     * Asks the Server to search the current users of the system for the given search terms.  Returns
+     * the list of results as a JSON-ready web ui response.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function performUserSearch(&$input) {
         $this->logger->addDebug("Searching users");
 
