@@ -269,23 +269,32 @@ var permissions = {
                 </div>
                 <div class="panel-body">
                     <p>The following Constellations need review.  Select one to check it out and begin editing.</p>
-                    <p>Sent directly to you</p>
-                    <div class="list-group">
-                        {% if not data.review %}
-                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
-                        {% endif %}
-                        {% for link in data.review %}
-                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                        {% endfor %}
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Sent directly to you</div>
+                        <div class="panel-body">
+                            <div class="list-group" style="margin-bottom: 0px;">
+                                {% if not data.review %}
+                                <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                                {% endif %}
+                                {% for link in data.review %}
+                                <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
-                    <p>Sent to any reviewers</p>
-                    <div class="list-group">
-                        {% if not data.needs_review %}
-                        <span href="#" class="list-group-item disabled">No Constellations Available</span>
-                        {% endif %}
-                        {% for link in data.needs_review %}
-                        <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
-                        {% endfor %}
+                    
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Sent to any reviewers</div>
+                        <div class="panel-body">
+                            <div class="list-group" style="margin-bottom: 0px;">
+                                {% if not data.needs_review %}
+                                <span href="#" class="list-group-item disabled">No Constellations Available</span>
+                                {% endif %}
+                                {% for link in data.needs_review %}
+                                <a href="?command=edit&constellationid={{link.id}}&version={{link.version}}" class="list-group-item">{{link.nameEntry}}</a>
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
