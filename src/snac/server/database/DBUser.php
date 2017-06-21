@@ -1067,6 +1067,19 @@ class DBUser
         return $allUserList;
     }
 
+    /**
+     * Search Users
+     *
+     * Search through the list of users in the system.  By default, it will search users
+     * of every role but only active users.  It will not return any user with id less than 100,
+     * that is, system users.
+     *
+     * @param string $query The search string to look for
+     * @param int $count The number of results to return
+     * @param string $roleFilter optional Limit the search to only users with this role (default null)
+     * @param boolean $everyone optional Whether or not to show inactive users (default false)
+     * @return \snac\data\User[] List of users that match the query
+     */
     public function searchUsers($query, $count, $roleFilter=null, $everyone=false) {
         $resultList = $this->sql->searchUsers($query, $count, $roleFilter, $everyone);
         $userList = array();

@@ -1056,6 +1056,8 @@ class SQL
      * @param integer $offset An offset to jump into the list of records in the database. Not optional
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
+     * @param boolean $secondary Whether to search the secondary user field rather than the primary user field.
+     *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
     public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset, $secondary)
@@ -5276,6 +5278,20 @@ class SQL
         return $all;
     }
 
+    /**
+     * Search Users 
+     *
+     * Search the users in the appuser table of the database.  Returns only the userid and
+     * full name of the query.  Searches the string in the full name, user name, and email
+     * columns.
+     *
+     * @param string $query The string to search through the user tables
+     * @param int $count optional The number of results to return (default null)
+     * @param string $roleFilter optional Role name by which to filter the results (default null)
+     * @param boolean $everyone optional Whether to include inactive users (default false)
+     *
+     * @return string[][] Returns a list of lists of search results.
+     */
     public function searchUsers($query, $count=null, $roleFilter=null, $everyone=false) {
         $realCount = \snac\Config::$SQL_LIMIT;
         if ($count != null)
