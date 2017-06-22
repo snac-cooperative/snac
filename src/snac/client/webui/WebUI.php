@@ -250,6 +250,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 session_name("SNACWebUI");
                 session_start();
 
+                if (isset($this->input["r"])) {
+                    $_SESSION['redirect_postlogin'] = $this->input["r"];
+                }
+                
                 // if the user wants to log in, then send them to the login server
                 $authUrl = $provider->getAuthorizationUrl();
                 header('Location: ' . $authUrl);
@@ -269,6 +273,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // Set the user details in the session
                 $_SESSION['user_details'] = serialize($ownerDetails);
+
+                $redirect = "index.php?command=dashboard";
+                if (isset($_SESSION['redirect_postlogin'])) {
+                    $tmp = $_SESSION['redirect_postlogin'];
+                    if (strstr($tmp, 'command') !== false && strstr($tmp, 'logout') === false)
+                        $redirect = htmlspecialchars_decode(urldecode($tmp));
+                    unset($_SESSION['redirect_postlogin']);
+                }
 
                 $tokenUnserialized = unserialize($_SESSION['token']);
                 $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
@@ -294,7 +306,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $_SESSION['snac_user'] = serialize($user);
 
                 // Go directly to the Dashboard, do not pass Go, do not collect $200
-                header('Location: index.php?command=dashboard');
+                header("Location: $redirect");
                 return;
 
             case "logout":
