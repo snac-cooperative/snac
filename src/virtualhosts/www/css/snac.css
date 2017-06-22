@@ -377,6 +377,17 @@ td.rotate > div > span {
     margin-left: 0px;
 }
 
+
+.list-group-constellationlist {
+    width:70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.list-group-constellationlist a {
+    text-align: center;
+}
+
 /* Use the following to make other colors of list items */
 .list-group-item-download {
     color: #7a3583;

@@ -1507,8 +1507,10 @@ class ServerExecutor {
                             $prefName = $newest->getPreferredNameEntry();
                             if ($prefName != null)
                                 $name = $prefName->getOriginal();
-                            $msgBody .= "<p style=\"text-align: center;\"><a href=\"".\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
-                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\">$name</a></p>";
+                            $msgBody .= "<div class=\"list-group list-group-constellationlist\"><a href=\""
+                                .\snac\Config::$WEBUI_URL."?command=details&amp;constellationid=".
+                                $newest->getID()."&amp;version=".$newest->getVersion()."&amp;preview=1\"".
+                                "class=\"constellation constellation-review list-group-item list-group-item-success\">$name</a></div>";
                             $message->setBody($msgBody);
                             
                             // Send the message
