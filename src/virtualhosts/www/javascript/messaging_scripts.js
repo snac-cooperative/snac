@@ -225,7 +225,8 @@ $(document).ready(function() {
     messageList = $('#message_list').DataTable( {
         "language": {
             "emptyTable":     "No Messages Available"
-        }
+        },
+        "order": [[ 3, "desc" ]]
     });
 
     $("#message_list tbody").delegate("tr", "click", function() {
