@@ -1599,7 +1599,7 @@
                         </label>
                         <div class="col-xs-8" id="textarea_scm_{{short}}_sourceData_{{j}}_{{i}}">
                             <textarea id="scm_{{short}}_sourceData_{{j}}_{{i}}" name="scm_{{short}}_sourceData_{{j}}_{{i}}" class="form-control" style="display:none;">{{ scm.sourceData }}</textarea>
-                            <p class="form-control-static">{{ scm.sourceData }}</p>
+                            <p class="form-control-static">{{ scm.sourceData | replace({" ": "&nbsp;"}) | raw | nl2br }}</p>
                         </div>
                     </div>
                     <div class="form-group">
