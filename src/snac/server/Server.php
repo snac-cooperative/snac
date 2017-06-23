@@ -152,10 +152,36 @@ class Server implements \snac\interfaces\ServerInterface {
                 $this->response = $executor->userInformation();
                 break;
 
-            case "admin_users":
-                if (!$executor->hasPermission("Modify Users"))
-                    throw new \snac\exceptions\SNACPermissionException("User not authorized to modify users.");
+            case "search_users":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to search users.");
+                $this->response = $executor->searchUsers($this->input);
+                break;
+
+            case "list_users":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to view users.");
                 $this->response = $executor->listUsers($this->input);
+                break;
+
+            case "user_messages":
+                $this->response = $executor->userMessages();
+                break;
+
+            case "read_message":
+                $this->response = $executor->readMessage($this->input);
+                break;
+
+            case "send_message":
+                $this->response = $executor->sendMessage($this->input);
+                break;
+            
+            case "delete_message":
+                $this->response = $executor->deleteMessage($this->input);
+                break;
+
+            case "send_feedback":
+                $this->response = $executor->sendFeedback($this->input);
                 break;
 
             case "edit_user":
@@ -210,6 +236,12 @@ class Server implements \snac\interfaces\ServerInterface {
                 if (!$executor->hasPermission("Edit"))
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to update constellations.");
                 $this->response = $executor->writeConstellation($this->input);
+                break;
+
+            case "checkout_constellation":
+                if (!$executor->hasPermission("Edit"))
+                    throw new \snac\exceptions\SNACPermissionException("User not authorized to checkout constellations.");
+                $this->response = $executor->checkoutConstellation($this->input);
                 break;
 
             case "unlock_constellation":
@@ -274,21 +306,21 @@ class Server implements \snac\interfaces\ServerInterface {
                 break;
 
             case "constellation_diff_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->diffConstellations($this->input, true);
                 break;
 
             case "constellation_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->mergeConstellations($this->input);
                 break;
 
             case "constellation_auto_merge":
-                if (!$executor->hasPermission("Publish")) {
+                if (!$executor->hasPermission("Merge")) {
                     throw new \snac\exceptions\SNACPermissionException("User not authorized to merge constellations.");
                 }
                 $this->response = $executor->autoMergeConstellations($this->input);

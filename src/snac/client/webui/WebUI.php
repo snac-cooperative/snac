@@ -114,7 +114,8 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 "maybesame",
                 "diff",
                 "explore",
-                "history"
+                "history",
+                "feedback"
         );
 
         // These are read-only commands that are allowed in read-only mode
@@ -249,6 +250,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 session_name("SNACWebUI");
                 session_start();
 
+                if (isset($this->input["r"])) {
+                    $_SESSION['redirect_postlogin'] = $this->input["r"];
+                }
+                
                 // if the user wants to log in, then send them to the login server
                 $authUrl = $provider->getAuthorizationUrl();
                 header('Location: ' . $authUrl);
@@ -268,6 +273,14 @@ class WebUI implements \snac\interfaces\ServerInterface {
 
                 // Set the user details in the session
                 $_SESSION['user_details'] = serialize($ownerDetails);
+
+                $redirect = "index.php?command=dashboard";
+                if (isset($_SESSION['redirect_postlogin'])) {
+                    $tmp = $_SESSION['redirect_postlogin'];
+                    if (strstr($tmp, 'command') !== false && strstr($tmp, 'logout') === false)
+                        $redirect = htmlspecialchars_decode(urldecode($tmp));
+                    unset($_SESSION['redirect_postlogin']);
+                }
 
                 $tokenUnserialized = unserialize($_SESSION['token']);
                 $ownerDetailsUnserialized = unserialize($_SESSION['user_details']);
@@ -293,7 +306,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $_SESSION['snac_user'] = serialize($user);
 
                 // Go directly to the Dashboard, do not pass Go, do not collect $200
-                header('Location: index.php?command=dashboard');
+                header("Location: $redirect");
                 return;
 
             case "logout":
@@ -349,28 +362,28 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 $response = $executor->displayMaybeSameDiffPage($this->input, $display);
                 break;
             case "diff_merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->displayMaybeSameDiffPage($this->input, $display, true);
                 } else {
                     $executor->displayPermissionDeniedPage("Compare Constellations for Merge", $display);
                 }
                 break;
             case "merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->processMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
                 break;
             case "auto_merge":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->processAutoMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
                 break;
             case "merge_cancel":
-                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->cancelMerge($this->input, $display);
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
@@ -383,12 +396,6 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "preview":
                 $executor->displayPreviewPage($this->input, $display);
                 break;
-            case "dashboard":
-                $executor->displayDashboardPage($display);
-                break;
-            case "profile":
-                $executor->displayProfilePage($display);
-                break;
             case "download":
                 $this->response = $executor->handleDownload($this->input, $display, $this->responseHeaders);
                 if ($display->hasTemplate()) {
@@ -398,6 +405,35 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
             case "explore":
                 $executor->displayGridPage($display);
+                break;
+
+            // User and messaging commands
+            case "dashboard":
+                $executor->displayDashboardPage($display);
+                break;
+            case "profile":
+                $executor->displayProfilePage($display);
+                break;
+            case "api_key":
+                $executor->displayAPIInfoPage($display, $user);
+                break;
+            case "api_help":
+                $executor->displayAPIHelpPage($display, $user);
+                break;
+            case "messages":
+                $executor->displayMessageListPage($display);
+                break;
+            case "message_read":
+                $response = $executor->readMessage($this->input);
+                break;
+            case "message_send":
+                $response = $executor->sendMessage($this->input);
+                break;
+            case "message_delete":
+                $response = $executor->deleteMessage($this->input);
+                break;
+            case "feedback":
+                $response = $executor->sendFeedbackMessage($this->input);
                 break;
 
             // Administrator command (the sub method handles admin commands)
@@ -468,6 +504,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 }
                 break;
 
+            case "checkout":
+                $response = $executor->checkoutConstellation($this->input);
+                break;
+
             case "save_resource":
                 $response = $executor->saveResource($this->input);
                 break;
@@ -508,6 +548,10 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 break;
             case "browse_data":
                 $response = $executor->performBrowseSearch($this->input);
+                break;
+
+            case "user_search":
+                $response = $executor->performUserSearch($this->input);
                 break;
 
             // Error command

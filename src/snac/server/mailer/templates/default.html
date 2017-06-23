@@ -1,0 +1,110 @@
+<html>
+<style>
+body {
+    width: 100%;
+    background-color: #ddd;
+}
+.container {
+    background-color: #fff;
+    border: 1px solid #000;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px #888888;
+}
+.titlebar {
+    background-image: -webkit-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -o-linear-gradient(top,#1f5c7c 0,#18596F 100%);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#1f5c7c),to(#18596F));
+    background-image: linear-gradient(to bottom,#1f5c7c 0,#18596F 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1f5c7c', endColorstr='#ff18506F', GradientType=0);
+    filter: progid:DXImageTransform.Microsoft.gradient(enabled=false);
+    background-repeat: repeat-x;
+    border-radius: 9px 9px 0px 0px;
+}
+
+.infobar {
+    background-color: #eee;
+    padding: 5px 25px;
+}
+
+.infobar h3 {
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+
+.infobar p {
+    padding-top: 0px;
+    margin-top: 3px;
+}
+
+.titlebar h1 {
+    margin: 0px;
+    margin-left: 15px;
+    padding: 10px;
+    color: #fff;
+    font-family: "DejaVu Serif", "Cambria", serif;
+}
+
+.body {
+    padding: 25px;
+}
+
+
+
+.constellation-review:hover {
+    color: #3c763d;
+    background-color: #d0e9c6;
+
+}
+
+.constellation-review {
+    color: #3c763d;
+    background-color: #dff0d8;
+}
+.constellation {
+    position: relative;
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+    width: 350px;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    text-shadow: 0 1px 0 rgba(255,255,255,.2);
+    line-height: 1.42857143;
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    margin-bottom: 0;
+    border-bottom-right-radius: 4px;
+    border-top-right-radius: 4px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+</style>
+<body>
+    <div class="container">
+        <div class="titlebar">
+        <h1>snac mail</h1>
+        </div>
+        <!--{% if subject or fromUser or fromString %}-->
+            <div class="infobar">
+                <h3>{{subject}}</h3>
+                <!--{% if fromUser %}-->
+                <p>From: {{fromUser.fullName}} ({{fromUser.userName}})</p>
+                <!--{% elseif fromString %}-->
+                <p>From: {{fromString}}</p>
+                <!--{% endif %}-->
+            </div>
+        <!--{% endif %}-->
+        <div class="body">
+            {{ body|raw }}
+        </div>
+    </div>
+</body>
+</html>

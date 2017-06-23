@@ -59,6 +59,16 @@ class Config {
     public static $PROJECT_DIR = "";
 
     /**
+     * @var string URL of the webui
+     */
+    public static $WEBUI_URL = "http://localhost";
+
+    /**
+     * @var string URL of the rest server
+     */
+    public static $REST_URL = "http://localhost:81";
+
+    /**
      *
      * @var string URL of the back-end server
      */
@@ -133,6 +143,11 @@ class Config {
      *  @var integer Default for limit selectListByStatus() and selectEditList()
      */
     public static $SQL_LIMIT = 42;
+    
+    /**
+     * @var string Location of the REST commands file 
+     */
+    public static $REST_COMMAND_FILE = "full/path/to/src/snac/client/rest/commands.json";
 
     /**
      * @var string Location of the cpf.rng RELAX NG files, and probably other stuff as well.
@@ -230,6 +245,30 @@ class Config {
      * @var string Google Analytics Tracking ID (of the form UA-xxxxxxxx-x)
      */
     public static $GOOGLE_ANALYTICS_TRACKING_ID = null;
+
+    /**
+     * @var string Location of the email template directory
+     */
+    public static $EMAIL_TEMPLATE_DIR = "/full/path/to/src/snac/server/mailer/templates";
+
+    /**
+     * @var boolean Whether or not to use SMTP to send emails
+     */
+    public static $EMAIL_SMTP = false;
+
+    /**
+     * @var string[] Email configuration.  If not using SMTP, only from_email and from_name need to be set
+     */
+    public static $EMAIL_CONFIG = array (
+        "host" => "smtp.gmail.com",
+        "smtp_auth" => true,
+        "username" => "user@gmail.com",
+        "password" => "password",
+        "security" => "tls",
+        "port" => 25, //587,
+        "from_email" => "",
+        "from_name" => "SNAC Web"
+    );
 
 
 }

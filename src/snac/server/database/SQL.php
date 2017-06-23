@@ -1056,15 +1056,12 @@ class SQL
      * @param integer $offset An offset to jump into the list of records in the database. Not optional
      * here. Must be -1 for all, or a number. The higher level calling code has a default from the config.
      *
+     * @param boolean $secondary Whether to search the secondary user field rather than the primary user field.
+     *
      * @return string[] Associative list with keys 'version', 'ic_id'. Values are integers.
      */
-    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset)
+    public function selectEditList($appUserID, $status = 'locked editing', $limit, $offset, $secondary)
     {
-        if ($status != 'locked editing' &&
-            $status != 'currently editing')
-        {
-            return array();
-        }
         $limitStr = '';
         $offsetStr = '';
         $limitStr = $this->doLOValue('limit', $limit);
@@ -1081,6 +1078,19 @@ class SQL
                         aa.version=cc.version and
                         aa.user_id=$1 and
                         aa.status = $2 %s %s', $limitStr, $offsetStr);
+        if ($secondary) {
+            $queryString = sprintf(
+                    'select aa.version, aa.id as ic_id
+                        from version_history as aa,
+                            (select max(version) as version, id from version_history
+                                where id in (select distinct id from version_history where user_id_secondary=$1)
+                                group by id) as cc
+                        where
+                            aa.id=cc.id and
+                            aa.version=cc.version and
+                            aa.user_id_secondary=$1 and
+                            aa.status = $2 %s %s', $limitStr, $offsetStr);
+        }
 
         $this->logger->addDebug("Sending the following SQL request: " . $queryString);
 
@@ -1749,10 +1759,11 @@ class SQL
      * code. Something.
      *
      * @param string $note A string the user enters to identify what changed in this version.
+     * @param integer $useridSecondary optional Foreign key to appuser.id, the secondary user's appuser id value.
      *
      * @return string[] $vhInfo An assoc list with keys 'version', 'ic_id'.
      */
-    public function insertVersionHistory($mainID, $userid, $role, $status, $note)
+    public function insertVersionHistory($mainID, $userid, $role, $status, $note, $useridSecondary=null)
     {
         if (! $mainID)
         {
@@ -1762,12 +1773,12 @@ class SQL
         // We need version_history.id and version_history.id returned.
         $this->sdb->prepare($qq,
                             'insert into version_history
-                            (id, user_id, role_id, status, is_current, note)
+                            (id, user_id, role_id, status, is_current, note, user_id_secondary)
                             values
-                            ($1, $2, $3, $4, $5, $6)
+                            ($1, $2, $3, $4, $5, $6, $7)
                             returning version');
 
-        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note));
+        $result = $this->sdb->execute($qq, array($mainID, $userid, $role, $status, true, $note, $useridSecondary));
         $row = $this->sdb->fetchrow($result);
         $vhInfo['version'] = $row['version'];
         $vhInfo['ic_id'] = $mainID;
@@ -5268,6 +5279,57 @@ class SQL
     }
 
     /**
+     * Search Users 
+     *
+     * Search the users in the appuser table of the database.  Returns only the userid and
+     * full name of the query.  Searches the string in the full name, user name, and email
+     * columns.
+     *
+     * @param string $query The string to search through the user tables
+     * @param int $count optional The number of results to return (default null)
+     * @param string $roleFilter optional Role name by which to filter the results (default null)
+     * @param boolean $everyone optional Whether to include inactive users (default false)
+     *
+     * @return string[][] Returns a list of lists of search results.
+     */
+    public function searchUsers($query, $count=null, $roleFilter=null, $everyone=false) {
+        $realCount = \snac\Config::$SQL_LIMIT;
+        if ($count != null)
+            $realCount = $count;
+
+        $activeFilter = "and u.active";
+        if ($everyone)
+            $activeFilter = "";
+
+        $result = null;
+
+        if ($roleFilter == null) {
+            $queryStr = "select u.id, u.fullname from appuser u
+                        where u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1
+                        $activeFilter
+                        order by u.fullname asc limit $2";
+            $result = $this->sdb->query($queryStr, array("%$query%", $realCount));
+        } else {
+            $queryStr = "select u.id, u.fullname from appuser u, appuser_role_link rl, role r
+                        where (u.fullname ilike $1 or u.username ilike $1 or u.email ilike $1)
+                        and rl.uid = u.id and rl.rid = r.id and r.label = $2
+                        $activeFilter
+                        order by u.fullname asc limit $3";
+            $result = $this->sdb->query($queryStr, array("%$query%", $roleFilter, $realCount));
+        }
+
+        $all = array();
+        if ($result != null) {
+            while($row = $this->sdb->fetchrow($result))
+            {
+                array_push($all, $row);
+            }
+        }
+        return $all;
+
+    }
+
+    /**
      * Browse Name Index
      *
      * This function contains the SQL code required to browse through the name index in postgres
@@ -5354,7 +5416,7 @@ class SQL
 
         if (empty($check)) {
             // Doing an insert, since nothing found
-            $result = $this->sdb->query("insert into name_index 
+            $result = $this->sdb->query("insert into name_index
                                             (ic_id, ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) values
                                             ($1, $2, $3, $4, lower($4), $5, $6, now()) returning *;",
                                         array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
@@ -5366,7 +5428,7 @@ class SQL
             return $all;
         } else {
             // Doing an update, since ic_id was found
-            $result = $this->sdb->query("update name_index set 
+            $result = $this->sdb->query("update name_index set
                                             (ark, entity_type, name_entry, name_entry_lower, degree, resources, timestamp) =
                                             ($2, $3, $4, lower($4), $5, $6, now()) where ic_id = $1 returning *;",
                                         array($icid, $ark, $entityType, $nameEntry, $degree, $resources));
@@ -5806,13 +5868,146 @@ class SQL
                 '.$limitHistory.'
             order by v.timestamp asc',
             array($vhInfo["ic_id"], $vhInfo["version"]));
-        $usernames = "";
+
         $all = array();
         while ($row = $this->sdb->fetchrow($result))
         {
             array_push($all, $row);
         }
         return $all;
+    }
+
+    /**
+     * Select Message by ID
+     *
+     * Reads the message data out of the database for the given ID.
+     *
+     * @param int $id The message ID to read
+     * @return string[] The message data
+     */
+    public function selectMessageByID($id) {
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where m.id = $1',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return $all[0];
+
+        return array();
+
+    }
+
+    /**
+     * Delete Message
+     *
+     * Sets the deleted flag for the given message ID, denoting that this message has been deleted
+     * in the system.
+     *
+     * @param int $id The message ID to delete
+     * @return boolean True on success, false otherwise
+     */
+    public function deleteMessageByID($id) {
+        $result = $this->sdb->query(
+            'update messages set deleted = true where id = $1 returning *',
+            array($id));
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+
+        if (count($all) === 1)
+            return true;
+
+        return false;
+
+    }
+
+    /**
+     * Mark Message Read
+     *
+     * Marks the message with given id as read in the database.  This just sets the read flag to
+     * true.
+     *
+     * @param int $id The message ID to mark as read
+     */
+    public function markMessageReadByID($id) {
+        $result = $this->sdb->query(
+            'update messages set read = TRUE where id = $1',
+            array($id));
+    }
+
+    /**
+     * Insert Message
+     *
+     * Writes the given message data into the database as a new message.
+     *
+     * @param int $toUser The user id this message is directed to
+     * @param int $fromUser The user id this message is from
+     * @param string $fromString The string representation this message is from (if no user, such as feedback from IP address)
+     * @param string $subject The subject of the message
+     * @param string $body The body of the message (HTML)
+     * @param string $attachmentContent The attached file encoded as a string
+     * @param string $attachmentFilename The filename to give the attachment on reading
+     * @return boolean True if succeeded, false otherwise
+     */
+    public function insertMessage($toUser,
+                                    $fromUser,
+                                    $fromString,
+                                    $subject,
+                                    $body,
+                                    $attachmentContent,
+                                    $attachmentFilename) {
+
+        try {
+            $this->sdb->prepare("insert_message",'insert into messages
+                    (to_user, from_user, from_string, subject, body, attachment_content, attachment_filename)
+                    values ($1, $2, $3, $4, $5, $6, $7);');
+
+            $this->sdb->execute("insert_message",
+                array($toUser, $fromUser, $fromString, $subject, $body, $attachmentContent, $attachmentFilename));
+        } catch (\snac\exceptions\SNACDatabaseException $e) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Select Messages for UserID
+     *
+     * Selects all non-deleted messages for the given userID.  By default, it gives both read and unread messages
+     * sent to this user.
+     *
+     * @param int $userid The userid of the user
+     * @param boolean $toUser optional Whether or not to select messages to this user (or from this user)
+     * @param boolean $unreadOnly optional Whether to query only unread messages (default false)
+     * @return string[] The list of message data for the user
+     */
+    public function selectMessagesForUserID($userid, $toUser=true, $unreadOnly=false) {
+        $searchUser = 'to_user';
+        if (!$toUser) {
+            $searchUser = 'from_user';
+        }
+        $readFilter = '';
+        if ($unreadOnly) {
+            $readFilter = 'and not read';
+        }
+        $result = $this->sdb->query(
+            'select m.*,to_char(m.time_sent, \'YYYY-MM-DD"T"HH24:MI:SS\') as sent_date from messages m where not deleted and '.$searchUser.' = $1 '.$readFilter.' order by m.time_sent desc',
+            array($userid));
+
+        $all = array();
+        while ($row = $this->sdb->fetchrow($result))
+        {
+            array_push($all, $row);
+        }
+        return $all;
+
     }
 
     /**

@@ -87,26 +87,22 @@
         "tooltip" : "The ordered components of the name"
     },
     "preferenceScore" : {
-        "display" : "Preference Score",
-        "tooltip" : "The numerical preference of this name entry in SNAC"
+        "display" : "Preference",
+        "tooltip" : "Whether or not this is the preferred name to display in SNAC"
     },
     "nameComponents" : {
         "display" : "Components",
         "tooltip" : "An ordered list of name components, each parameterized by a Part type"
     },
-    "contributor" : {
-        "display" : "Type",
-        "tooltip" : "Type of the name for a given institution"
+    "rulesForm" : {
+        "display" : "Form",
+        "tooltip" : "Type of the name based on these descriptive rules"
     },
-    "contributorName" : {
-        "display" : "Authority List",
-        "tooltip" : "The name of the authority, i.e. WorldCat"
+    "rulesSet" : {
+        "display" : "Ruleset",
+        "tooltip" : "Descriptive rules used to formulate this name heading"
     },
-    "contributorType" : {
-        "display" : "Type",
-        "tooltip" : "Type of the name for this authority"
-    },
-    "contributorRules" : {
+    "rules" : {
         "display" : "Rules",
         "tooltip" : "Descriptive rules used to formulate this name heading"
     },
@@ -339,7 +335,7 @@
     "_comment" : "%%% SCM elements",
 
     "scmSourceData" : {
-        "display" : "Source Data",
+        "display" : "Found Data",
         "tooltip" : "The data for the described data element, as it appeared in the source"
     },
     "scmCitation" : {
@@ -353,5 +349,9 @@
     "scmDescriptiveRule" : {
         "display" : "Descriptive Rule",
         "tooltip" : "The rule used in formulating the data element from the Source Data above"
+    },
+    "scmNote" : {
+        "display" : "Descriptive Note",
+        "tooltip" : "A note describing this assertion"
     }
 }

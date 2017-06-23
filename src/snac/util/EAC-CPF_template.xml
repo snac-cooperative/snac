@@ -25,7 +25,7 @@
         {% if other.type.uri %}
         <otherRecordId localType="{{ other.type.uri }}">{{ other.uri}}</otherRecordId>
         {% else %}
-        <otherRecordId localType="other.type.term">{{ other.uri}}</otherRecordId>
+        <otherRecordId localType="{{ other.type.term }}">{{ other.uri}}</otherRecordId>
         {% endif %}
         {% endfor %}
         <maintenanceStatus>{{data.maintenanceStatus.term}}</maintenanceStatus>
@@ -79,6 +79,13 @@
     <cpfDescription>
         <identity>
             <entityType>{{ data.entityType.term }}</entityType>
+            {% for other in data.entityIDs %}
+            {% if other.type.uri %}
+            <entityId localType="{{ other.type.uri }}">{{ other.text }}</entityId>
+            {% else %}
+            <entityId>{{ other.text }}</entityId>
+            {% endif %}
+            {% endfor %}
             {#
             We appear not to use the language element.
 
@@ -385,10 +392,10 @@
             resRel.role, xlink:arcrole, creatorOf, referencedIn
             #}
             {% for resRel in data.resourceRelations %}
-            {% if resRel.documentType.uri %}
-            {% set xlink_role = resRel.documentType.uri %}
+            {% if resRel.resource.documentType.uri %}
+            {% set xlink_role = resRel.resource.documentType.uri %}
             {% else %}
-            {% set xlink_role = resRel.documentType.term %}
+            {% set xlink_role = resRel.resource.documentType.term %}
             {% endif %}
             {% if resRel.role.uri %}
             {% set xlink_arcrole = resRel.role.uri %}

@@ -47,7 +47,7 @@
 
         {% set i = 0 %}
         {% for nameEntry in data.nameEntries %}
-            {{ components.displayNameEntry(X, true, true, nameEntry, i) }}
+            {{ components.displayNameEntry(X, true, true, nameEntry, i, false) }}
             {% set i = i + 1 %}
         {% endfor %}
         <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>

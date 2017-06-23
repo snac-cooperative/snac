@@ -499,4 +499,28 @@ class Place extends AbstractData {
         return true;
     }
 
+    /**
+     * Cleanse all sub-elements
+     *
+     * Removes the ID and Version from sub-elements and updates the operation to be
+     * INSERT.  If the operation is specified by the parameter, this method
+     * will use that operation instead of INSERT.
+     *
+     * @param string $operation optional The operation to use (default is INSERT)
+     */ 
+    public function cleanseSubElements($operation=null) {
+        $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
+        if ($operation !== null) {
+            $newOperation = $operation;
+        }
+
+        parent::cleanseSubElements($newOperation);
+
+        foreach ($this->address as &$addressLine) {
+            $addressLine->setID(null);
+            $addressLine->setVersion(null);
+            $addressLine->setOperation($newOperation);
+            $addressLine->cleanseSubElements($newOperation);
+        }
+    }
 }

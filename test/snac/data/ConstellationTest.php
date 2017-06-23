@@ -330,4 +330,32 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
 
     }
 
+    /**
+     * Test that combining constellations removes all ids
+     */
+    public function testCombine() {
+        $c1 = new \snac\data\Constellation();
+        $c2 = new \snac\data\Constellation();
+        $c3 = new \snac\data\Constellation();
+        $jsonIn = file_get_contents("test/snac/data/json/constellation_test_wIDs.json");
+
+        $c2->fromJSON($jsonIn);
+        $c3->fromJSON($jsonIn);
+        $this->assertTrue($c2->equals($c3));
+        
+        $c1->combine($c2);
+        // Combining has the side effect of wiping out $c2.
+        $diff = $c2->diff($c1, true);
+        $this->assertTrue($diff["this"] == null && $diff["other"] == null);
+        $this->assertFalse($diff["intersection"] == null);
+
+        $c2->setArkID(null);
+        $c2->setID(null);
+        $c2->setVersion(null);
+        $c2->setEntityType(null);
+
+        $this->assertTrue($c1->equals($c2));
+
+    }
+
 }

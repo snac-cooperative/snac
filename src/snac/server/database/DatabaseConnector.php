@@ -262,5 +262,15 @@ class DatabaseConnector {
         }
     }
 
+    /**
+     * Get the DB Handle
+     *
+     * This method returns the handle to the database.   This should never be used except in scripting.
+     *
+     * @return \resource Database handle for postgres connection
+     */
+    public function getHandle() {
+        return $this->dbHandle;
+    }
 
 }

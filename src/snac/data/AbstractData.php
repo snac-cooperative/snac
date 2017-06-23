@@ -477,25 +477,37 @@ abstract class AbstractData implements \Serializable {
     }
 
     /**
-     * Cleanse the SCM
+     * Cleanse all sub-elements
      *
-     * Removes the ID and Version from SCMs and updates the operation to be
+     * Removes the ID and Version from sub-elements and updates the operation to be
      * INSERT.  If the operation is specified by the parameter, this method
-     * will use that operation instead of INSERT
+     * will use that operation instead of INSERT.
+     *
+     * This includes SCM and Date from AbstractData. Override for other objects like
+     * Language in names.
      *
      * @param string $operation optional The operation to use (default is INSERT)
      */ 
-    public function cleanseSCMMetadata($operation=null) {
+    public function cleanseSubElements($operation=null) {
         $newOperation = \snac\data\AbstractData::$OPERATION_INSERT;
         if ($operation !== null) {
             $newOperation = $operation;
         }
 
+        if (isset($this->dateList) && $this->dateList !== null) {
+            foreach ($this->dateList as &$date) {
+                $date->setID(null);
+                $date->setVersion(null);
+                $date->setOperation($newOperation);
+                $date->cleanseSubElements($newOperation);
+            }
+        }
         if (isset($this->snacControlMetadata) && $this->snacControlMetadata !== null) {
             foreach ($this->snacControlMetadata as &$scm) {
                 $scm->setID(null);
                 $scm->setVersion(null);
                 $scm->setOperation($newOperation);
+                $scm->cleanseSubElements($newOperation);
             }
         }
     }

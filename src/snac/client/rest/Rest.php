@@ -79,12 +79,19 @@ class Rest implements \snac\interfaces\ServerInterface {
      */
     public function run() {
 
-        $connect = new ServerConnect();
-        
-        $serverResponse = $connect->query($this->input);
-        
-        $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
-        
+        $commands = json_decode(file_get_contents(\snac\Config::$REST_COMMAND_FILE), true);
+        if (isset($this->input["command"]) && in_array($this->input["command"], array_keys($commands))) {
+            $connect = new ServerConnect();
+            $serverResponse = $connect->query($this->input);
+            $this->response = json_encode($serverResponse, JSON_PRETTY_PRINT);
+        } else if (isset($this->input["command"]) && $this->input["command"] == "help") {
+            $this->response = json_encode([
+                "help" => "Available Commands are listed below.",
+                "commands" => $commands
+            ], JSON_PRETTY_PRINT);
+        } else {
+            throw new \snac\exceptions\SNACInputException("Unknown Command. Use 'help' command for available options.");
+        } 
         return;
     }
 
