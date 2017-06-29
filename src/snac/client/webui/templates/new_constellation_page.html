@@ -23,6 +23,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/css/bootstrap-select.min.css">
 -->
 
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+<script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
 <!-- Tiny MCE text editor
 <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
 <script>
@@ -135,7 +138,7 @@ $(document).ready(function() {
 
                                 {% set i = 0 %}
                                 {% for nameEntry in data.nameEntries %}
-                                    {{ components.displayNameEntry(X, true, false, nameEntry, i) }}
+                                    {{ components.displayNameEntry(X, true, false, nameEntry, i, false) }}
                                 {% set i = i + 1 %}
                                 {% endfor %}
                                 <span id='next_nameEntry_i' style='display:none;'>{{i}}</span>
