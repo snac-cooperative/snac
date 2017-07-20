@@ -40,15 +40,15 @@ function updateSettingsBox(id, version, nameEntry) {
         html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Publish your saved changes, making them publicly available." data-toggle="popover" data-placement="right"></span>';
         html += "</a>";
     }
-
+    
     // Delete
-    /*
-    html += "<a href='?command=delete&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-danger'";
-    html += "       onClick=\"return window.confirm('Are your sure you want to delete "+nameEntry+"?');\">";
-    html += "   <span class='glyphicon glyphicon-trash'></span> Delete this Constellation";
-    html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Delete this constellation from SNAC." data-toggle="popover" data-placement="right"></span>';
-    html += "</a>";
-    */
+    if (permissions.Delete) {
+        html += "<a href='?command=delete&constellationid="+id+"&version="+version+"' class='list-group-item list-group-item-danger'";
+        html += "       onClick=\"return window.confirm('Are your sure you want to delete "+nameEntry+"?');\">";
+        html += "   <span class='glyphicon glyphicon-trash'></span> Delete this Constellation";
+        html += '   <span class="pull-right glyphicon glyphicon-question-sign" title="Help" data-content="Delete this constellation from SNAC." data-toggle="popover" data-placement="right"></span>';
+        html += "</a>";
+    }
 
     $("#settings-actions").html(html);
 
