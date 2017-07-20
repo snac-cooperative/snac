@@ -45,6 +45,47 @@ tinymce.init({
 
 <!-- SNAC includes -->
 <script src="javascript/search.js{{control.noCache}}"></script>
+
+<script>
+
+function removeConsideration(icid1, icid2, id) {
+    
+    // Send the request by ajax
+    $.get("?command=", null, function (data) {
+        // Check the return value from the ajax. If success, then go to dashboard
+        if (data.result == "success") {
+            // We removed from the list
+            console.log(data);
+            
+            $('#notSameModal'+id).modal('toggle');
+            $('#result'+id).css('opacity', '0.2');
+            $('#result'+id+" .final").empty();
+        } else {
+            // An error occurred
+        }
+    });
+
+}
+
+function notSameAssert(icid1, icid2, id) {
+    // Send the request by ajax
+    $.get("?command=", null, function (data) {
+        // Check the return value from the ajax. If success, then go to dashboard
+        if (data.result == "success") {
+            // We removed from the list
+            console.log(data);
+            
+            $('#notSameModal'+id).modal('toggle');
+            $('#result'+id).css('opacity', '0.2');
+            $('#result'+id+" .final").empty();
+        } else {
+            // An error occurred
+        }
+    });
+}
+
+</script>
+
 </head>
 
 <body role="document">
@@ -92,6 +133,7 @@ tinymce.init({
                     <p class="search-info">There are {{data.maybeSameList|length}} possible matching Constellations.
                     </p>
                     {% for maybeSame in data.maybeSameList %}
+                        <div id="result{{loop.index}}">
                         <h4><a href="?command=view&constellationid={{maybeSame.constellation.id}}">{{maybeSame.constellation.nameEntries.0.original}}</a></h4>
                         <p class="identity-info">
                             <span>{{maybeSame.constellation.ark}}</span>
@@ -109,6 +151,7 @@ tinymce.init({
                             <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
                             {% endif %}
                         </p>
+                        </div>
                         {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
                         <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
                             <div class="modal-dialog" role="document">
@@ -120,11 +163,11 @@ tinymce.init({
                                     <div class="modal-body">
                                         {{ displayRelationship(data.constellation, maybeSame.constellation, 'not same as') }}
                                         <p style="margin-bottom: 20px;">To make an official assertion that these two Constellations should never be merged, include evidence in the text field below and choose "Make Assertion."  Evidence is required for the official assertion.  If you do not have strong enough evidence, but still think they should not be merged, instead use the "Remove from Consideration" button below.</p>
-                                        <textarea></textarea>
+                                        <textarea id="notSameModalReason{{loop.index}}"></textarea>
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-success">Remove from Consideration</button>
-                                        <button type="button" class="btn btn-primary">Make Assertion</button>
+                                        <button type="button" class="btn btn-success" onClick="removeConsideration({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Remove from Consideration</button>
+                                        <button type="button" class="btn btn-primary" onClick="notSameAssert({{data.constellation.id}}, {{maybeSame.constellation.id}}, {{loop.index}});">Make Assertion</button>
                                     </div>
                                 </div>
                             </div>
