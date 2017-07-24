@@ -1323,6 +1323,35 @@ class ServerExecutor {
         return $response;
     }
 
+    public function addMaybeSameConstellation(&$input) {
+        $response = array();
+        $assertion = "User-denoted maybe-same";
+        if (isset($input["assertion"]) && $input["assertion"] != "") {
+            $assertion = $input["assertion"];
+        }
+
+        $response["result"] = "failure";
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            $success = true;
+            for($i = 0; $i < count($input["constellationids"]) - 1; $i++) {
+                for($j = $i+1; $j < count($input["constellationids"]); $j++) {
+                    $constellation1 = new \snac\data\Constellation();
+                    $constellation1->setID($input["constellationids"][$i]);
+                    $constellation2 = new \snac\data\Constellation();
+                    $constellation2->setID($input["constellationids"][$j]);
+                    $success = $success && $this->cStore->addMaybeSameLink($constellation1, $constellation2, $this->user, $assertion);
+                }
+            }
+            if ($success)
+                $response["result"] = "success";
+            else
+                $response["error"] = "One or more add maybe same link operations did not succeed";
+        }
+
+        $response["debug"] = $input;
+        return $response;
+    }
+
     public function removeMaybeSameConstellation(&$input) {
         $response = array();
         $response["result"] = "failure";

@@ -358,6 +358,13 @@ class WebUI implements \snac\interfaces\ServerInterface {
             case "maybesame":
                 $response = $executor->displayMaybeSameListPage($this->input, $display);
                 break;
+            case "add_maybesame":
+                if (isset($permissions["Publish"]) && $permissions["Publish"]) {
+                    $response = $executor->addMaybeSameAssertion($this->input);
+                } else {
+                    $executor->displayPermissionDeniedPage("Add Maybe Same", $display);
+                }
+                break;
             case "assert_notsame":
                 $response = $executor->processNotSameAssertion($this->input);
                 break;
@@ -384,7 +391,7 @@ class WebUI implements \snac\interfaces\ServerInterface {
                 } else {
                     $executor->displayPermissionDeniedPage("Merge Constellations", $display);
                 }
-                break;
+                break;  
             case "merge_cancel":
                 if (isset($permissions["Merge"]) && $permissions["Merge"]) {
                     $response = $executor->cancelMerge($this->input, $display);

@@ -485,6 +485,38 @@ class WebUIExecutor {
 
     }
 
+    public function addMaybeSameAssertion(&$input) {
+        if (isset($input["maybesamecount"]) && is_numeric($input["maybesamecount"]) && $input["maybesamecount"] > 1) {
+            $count = $input["maybesamecount"];
+            $icids = array();
+            for ($i = 1; $i <= $count; $i++) {
+                if (!isset($input["constellationid" .$i])) {
+                    $this->logger->addDebug("Error page being drawn");
+                    $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
+                }
+                array_push($icids, $input["constellationid" . $i]);
+            }
+
+            // Ask the server to do the merge
+            $query = [
+                "constellationids" => $icids
+            ];
+
+            $query["command"] = "constellation_add_maybesame";
+            
+            if (isset($input["statement"])) {
+                $query["assertion"] = $input["statement"];
+            }
+
+            $this->logger->addDebug("Asking server to make the maybe-same assertion");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            
+            return $serverResponse;
+        }
+        return "An error occurred";   
+
+    }
     /**
      * Display MaybeSame List Page
      *
@@ -659,6 +691,7 @@ class WebUIExecutor {
             }
         }
     }
+
     /**
      * Cancel a merge
      *

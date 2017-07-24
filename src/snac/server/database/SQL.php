@@ -1423,7 +1423,7 @@ class SQL
 
     public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
         $result = $this->sdb->query("insert into maybe_same 
-                (ic_id1, ic_id2, user_id, assertion) 
+                (ic_id1, ic_id2, user_id, note) 
                 values ($1, $2, $3, $4) returning *;",
             array($icid1, $icid2, $userid, $assertion));
         return true;
