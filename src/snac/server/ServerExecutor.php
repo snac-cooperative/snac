@@ -1296,10 +1296,27 @@ class ServerExecutor {
 
         $response["result"] = "failure";
         
-        switch($input["type"]) {
-            case "not_same":
-                $response["result"] = "success";
-                break;
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            switch($input["type"]) {
+                case "not_same":
+                    // Just in case, make sure there are no maybe-same links for these constellations
+                    $this->removeMaybeSameConstellation($input);
+                    $success = true;
+                    for($i = 0; $i < count($input["constellationids"]) - 1; $i++) {
+                        for($j = $i+1; $j < count($input["constellationids"]); $j++) {
+                            $constellation1 = new \snac\data\Constellation();
+                            $constellation1->setID($input["constellationids"][$i]);
+                            $constellation2 = new \snac\data\Constellation();
+                            $constellation2->setID($input["constellationids"][$j]);
+                            $success = $success && $this->cStore->addNotSameAssertion($constellation1, $constellation2, $this->user, $input["assertion"]);
+                        }
+                    }
+                    if ($success)
+                        $response["result"] = "success";
+                    else
+                        $response["error"] = "Could not make assertions for all Constellation pairs";
+                    break;
+            }
         }
 
         $response["debug"] = $input;

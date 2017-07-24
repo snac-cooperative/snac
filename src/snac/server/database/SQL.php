@@ -1412,6 +1412,25 @@ class SQL
 
     }
 
+
+    public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
+        $result = $this->sdb->query("insert into not_same 
+                (ic_id1, ic_id2, user_id, assertion) 
+                values ($1, $2, $3, $4) returning *;",
+            array($icid1, $icid2, $userid, $assertion));
+        return true;
+    }
+
+    public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
+        $result = $this->sdb->query("insert into maybe_same 
+                (ic_id1, ic_id2, user_id, assertion) 
+                values ($1, $2, $3, $4) returning *;",
+            array($icid1, $icid2, $userid, $assertion));
+        return true;
+    }
+
+
+
     /**
      * Update MaybeSame Links
      *

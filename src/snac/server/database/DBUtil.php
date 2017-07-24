@@ -3549,6 +3549,32 @@ class DBUtil
         return true;
     }
 
+    public function addNotSameAssertion(&$constellation1, &$constellation2, &$user, $assertion) {
+        if ($constellation1 === null || $constellation2 === null || $user == null || $assertion == null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->addNotSameAssertion($constellation1->getID(), $constellation2->getID(),
+                                        $user->getUserID(), $assertion);
+        
+        return true;
+    }
+    
+    public function addMaybeSameLink(&$constellation1, &$constellation2, &$user, $assertion = "") {
+        if ($constellation1 === null || $constellation2 === null || $user == null)
+            return false;
+
+        if ($constellation1->getID() === null || $constellation2->getID() === null)
+            return false;
+
+        $this->sql->addMaybeSameLink($constellation1->getID(), $constellation2->getID(),
+                                        $user->getUserID(), $assertion);
+        
+        return true;
+    }
+
     /**
      * Remove MaybeSame Link
      *
