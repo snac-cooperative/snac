@@ -48,15 +48,21 @@ tinymce.init({
 
 <script>
 
+function copyInfo(icid1, icid2, id) {
+    $("#constellationid2").val(icid2);
+    $("#statement").val(tinymce.get("notSameModalReason"+id).getContent());
+}
+
 function removeConsideration(icid1, icid2, id) {
-    
+   
+    copyInfo(icid1, icid2, id); 
+    $("#assert").val("false");
     // Send the request by ajax
-    $.get("?command=", null, function (data) {
+    $.post("?command=assert_notsame", $("#submitForm").serialize(), function (data) {
         // Check the return value from the ajax. If success, then go to dashboard
+        console.log(data);
         if (data.result == "success") {
             // We removed from the list
-            console.log(data);
-            
             $('#notSameModal'+id).modal('toggle');
             $('#result'+id).css('opacity', '0.2');
             $('#result'+id+" .final").empty();
@@ -68,13 +74,14 @@ function removeConsideration(icid1, icid2, id) {
 }
 
 function notSameAssert(icid1, icid2, id) {
+    copyInfo(icid1, icid2, id);
+    $("#assert").val("true");
     // Send the request by ajax
-    $.get("?command=", null, function (data) {
+    $.post("?command=assert_notsame", $("#submitForm").serialize(), function (data) {
         // Check the return value from the ajax. If success, then go to dashboard
+        console.log(data);
         if (data.result == "success") {
             // We removed from the list
-            console.log(data);
-            
             $('#notSameModal'+id).modal('toggle');
             $('#result'+id).css('opacity', '0.2');
             $('#result'+id+" .final").empty();
@@ -148,11 +155,13 @@ function notSameAssert(icid1, icid2, id) {
                             <a href="?command=diff&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-success">Compare</a>
                             {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
                             <a href="?command=diff_merge&constellationid1={{data.constellation.id}}&constellationid2={{maybeSame.constellation.id}}" class="btn-sm btn-danger">Compare to Merge</a>
+                            {% endif %}
+                            {% if user.email and permissions.Publish %}
                             <a href="#" class="btn-sm btn-warning" data-toggle="modal" data-target="#notSameModal{{loop.index}}">Mark Not Same</a>
                             {% endif %}
                         </p>
                         </div>
-                        {% if data.mergeable and maybeSame.mergeable and user.email and permissions.Publish %}
+                        {% if user.email and permissions.Publish %}
                         <div class="modal fade" id="notSameModal{{loop.index}}" tabindex="-1" role="dialog" aria-labelledby="notSameModalTitle{{loop.index}}">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
@@ -181,5 +190,12 @@ function notSameAssert(icid1, icid2, id) {
             </div>
         </div>
     </div>
+    <form id="submitForm">
+        <input type="hidden" name="constellationid1" id="constellationid1" value="{{data.constellation.id}}">
+        <input type="hidden" name="constellationid2" id="constellationid2" value="">
+        <input type="hidden" name="assertcount" id="assertcount" value="2">
+        <input type="hidden" name="assert" id="assert" value="">
+        <input type="hidden" name="statement" id="statement" value="">
+    </form>
 </body>
 </html>

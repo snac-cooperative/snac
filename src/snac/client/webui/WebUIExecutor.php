@@ -444,6 +444,46 @@ class WebUIExecutor {
             $this->drawErrorPage($serverResponse, $display);
         }
     }
+    
+    public function processNotSameAssertion(&$input) {
+        if (isset($input["assertcount"]) && is_numeric($input["assertcount"]) && $input["assertcount"] > 1) {
+            $count = $input["assertcount"];
+            $icids = array();
+            for ($i = 1; $i <= $count; $i++) {
+                if (!isset($input["constellationid" .$i])) {
+                    $this->logger->addDebug("Error page being drawn");
+                    $this->drawErrorPage(["error" => "Could not Make Assertion"], $display);
+                }
+                array_push($icids, $input["constellationid" . $i]);
+            }
+
+            // Ask the server to do the merge
+            $query = [
+                "constellationids" => $icids
+            ];
+
+            if (isset($input["assert"]) && $input["assert"] == "true") {
+                $query["command"] = "constellation_assert";
+                $query["type"] = "not_same";
+                
+                if (!isset($input["statement"]) || $input["statement"] == "") {
+                   return array("response" => "failure", "error" => "Need statement with assertion"); 
+                }
+                $query["assertion"] = $input["statement"];
+
+            } else {
+                $query["command"] = "constellation_remove_maybesame";
+            }
+
+            $this->logger->addDebug("Asking server to make the assertion");
+            $serverResponse = $this->connect->query($query);
+            $this->logger->addDebug("Received server response", array($serverResponse));
+            
+            return $serverResponse;
+
+        }   
+
+    }
 
     /**
      * Display MaybeSame List Page

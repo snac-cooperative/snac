@@ -1289,9 +1289,47 @@ class ServerExecutor {
     }
 
     public function makeAssertion(&$input) {
-        if (!isset($input["assertion"])) {
+        $response = array();
+        if (!isset($input["assertion"]) || !isset($input["type"])) {
             throw new \snac\exceptions\SNACInputException("Must specify an assertion to make");
         }
+
+        $response["result"] = "failure";
+        
+        switch($input["type"]) {
+            case "not_same":
+                $response["result"] = "success";
+                break;
+        }
+
+        $response["debug"] = $input;
+        return $response;
+    }
+
+    public function removeMaybeSameConstellation(&$input) {
+        $response = array();
+        $response["result"] = "failure";
+        if (isset($input["constellationids"]) && is_array($input["constellationids"]) && count($input["constellationids"]) > 1) {
+            $success = true;
+            foreach ($input["constellationids"] as $i=>$icid1) {
+                foreach ($input["constellationids"] as $j=>$icid2) {
+                    if ($icid1 != $icid2) {
+                        $constellation1 = new \snac\data\Constellation();
+                        $constellation1->setID($icid1);
+                        $constellation2 = new \snac\data\Constellation();
+                        $constellation2->setID($icid2);
+                        $success = $success && $this->cStore->removeMaybeSameLink($constellation1, $constellation2);
+                    }
+                }
+            }
+            if ($success)
+                $response["result"] = "success";
+            else
+                $response["error"] = "One or more remove maybe same link operations did not succeed";
+        }
+
+        $response["debug"] = $input;
+        return $response;
     }
 
     /**
