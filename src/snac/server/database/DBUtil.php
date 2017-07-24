@@ -3549,6 +3549,18 @@ class DBUtil
         return true;
     }
 
+    /**
+     * Add Not-Same Assertion
+     *
+     * Adds a not-same assertion between the two constellations given as parameters.  Assumes that the not_same table is
+     * bi-directional and only inserts one direction in the table.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @param \snac\data\User $user The user making the not-same assertion
+     * @param string $assertion The note/reason to include for the assertion
+     * @return boolean true on success, false otherwise
+     */
     public function addNotSameAssertion(&$constellation1, &$constellation2, &$user, $assertion) {
         if ($constellation1 === null || $constellation2 === null || $user == null || $assertion == null)
             return false;
@@ -3562,6 +3574,18 @@ class DBUtil
         return true;
     }
     
+    /**
+     * Add MaybeSame Link
+     *
+     * Adds a maybe_same link between the two constellations given as parameters.  Assumes that the maybesame table is
+     * bi-directional and only inserts one direction in the table.
+     *
+     * @param \snac\data\Constellation $constellation1 The first constellation
+     * @param \snac\data\Constellation $constellation2 The second constellation
+     * @param \snac\data\User $user The user making the maybe-same assertion
+     * @param string $assertion optional A note to include for the assertion
+     * @return boolean true on success, false otherwise
+     */
     public function addMaybeSameLink(&$constellation1, &$constellation2, &$user, $assertion = "") {
         if ($constellation1 === null || $constellation2 === null || $user == null)
             return false;

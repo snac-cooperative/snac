@@ -1288,6 +1288,16 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Make Assertion about Constellations 
+     *
+     * Processes and adds assertions about the given constellelation IDs (in input).  Requires a type of assertion,
+     * and currently supports "not_same" relations.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function makeAssertion(&$input) {
         $response = array();
         if (!isset($input["assertion"]) || !isset($input["type"])) {
@@ -1323,6 +1333,15 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Add Maybe-Same Relationship 
+     *
+     * Adds maybe-same relationships between the given constellations in the input.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function addMaybeSameConstellation(&$input) {
         $response = array();
         $assertion = "User-denoted maybe-same";
@@ -1352,6 +1371,15 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Remove Maybe-Same Relationship 
+     *
+     * Removes the maybe-same relationships between the given constellations in the input.
+     *
+     * @param string[] $input Input array from the Server object
+     * @throws \snac\exceptions\SNACException
+     * @return string[] The response to send to the client
+     */
     public function removeMaybeSameConstellation(&$input) {
         $response = array();
         $response["result"] = "failure";

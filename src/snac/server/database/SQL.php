@@ -1412,7 +1412,18 @@ class SQL
 
     }
 
-
+    /**
+     * Add Not-Same Assertion 
+     *
+     * Add a not-same assertion between icid1 and icid2, made by the given user and 
+     * having the given assertion statement.
+     *
+     * @param int $icid1 The first ICID
+     * @param int $icid2 The second ICID
+     * @param int $userid The ID of the asserting user
+     * @param string $assertion The assertion to include with the link
+     * @return boolean True if successful
+     */
     public function addNotSameAssertion($icid1, $icid2, $userid, $assertion) {
         $result = $this->sdb->query("insert into not_same 
                 (ic_id1, ic_id2, user_id, assertion) 
@@ -1421,6 +1432,18 @@ class SQL
         return true;
     }
 
+    /**
+     * Add Maybe-Same Link 
+     *
+     * Add a maybe-same link between icid1 and icid2, made by the given user and 
+     * having the given assertion statement.
+     *
+     * @param int $icid1 The first ICID
+     * @param int $icid2 The second ICID
+     * @param int $userid The ID of the asserting user
+     * @param string $assertion The assertion to include with the link
+     * @return boolean True if successful
+     */
     public function addMaybeSameLink($icid1, $icid2, $userid, $assertion) {
         $result = $this->sdb->query("insert into maybe_same 
                 (ic_id1, ic_id2, user_id, note) 

@@ -445,6 +445,14 @@ class WebUIExecutor {
         }
     }
     
+    /**
+     * Add Not-same Assertion 
+     *
+     * Add a not-same assertion between the Constellations given by the parameters.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function processNotSameAssertion(&$input) {
         if (isset($input["assertcount"]) && is_numeric($input["assertcount"]) && $input["assertcount"] > 1) {
             $count = $input["assertcount"];
@@ -485,6 +493,14 @@ class WebUIExecutor {
 
     }
 
+    /**
+     * Add Maybe-same Assertion 
+     *
+     * Add a maybe-same assertion between the Constellations given by the parameters.
+     *
+     * @param string[] $input Post/Get inputs from the webui
+     * @return string[] The web ui's response to the client (array ready for json_encode)
+     */
     public function addMaybeSameAssertion(&$input) {
         if (isset($input["maybesamecount"]) && is_numeric($input["maybesamecount"]) && $input["maybesamecount"] > 1) {
             $count = $input["maybesamecount"];
@@ -517,6 +533,7 @@ class WebUIExecutor {
         return "An error occurred";   
 
     }
+
     /**
      * Display MaybeSame List Page
      *
