@@ -3573,7 +3573,34 @@ class DBUtil
         
         return true;
     }
-    
+
+
+    function readAssertion(&$assertion, $uStore=null) {
+        if ($assertion === null || $assertion->getType() === null || count($assertion->getConstellations()) != 2) {
+            return false;
+        }
+        list($c1, $c2) = $assertion->getConstellations();
+        $assertData = $this->sql->readAssertion($assertion->getType(), $c1->getID(), $c2->getID()); 
+
+        if ($assertData == null) {
+            return false;
+        }
+        
+        $fullAssert = new \snac\data\Assertion();
+        $fullAssert->setID($assertData["id"]);
+        $fullAssert->setType($assertData["type"]);
+        $fullAssert->setText($assertData["assertion"]);
+        $user = new \snac\data\User();
+        $user->setUserID($assertData["user_id"]);
+        if ($uStore !== null) {
+            $user = $uStore->readUser($user);
+        }
+        $fullAssert->setUser($user);
+        $fullAssert->addConstellation($this->readConstellation($assertData["ic_id1"], null, DBUtil::$READ_MICRO_SUMMARY));
+        $fullAssert->addConstellation($this->readConstellation($assertData["ic_id2"], null, DBUtil::$READ_MICRO_SUMMARY));
+        return $fullAssert;    
+    }
+
     /**
      * Add MaybeSame Link
      *

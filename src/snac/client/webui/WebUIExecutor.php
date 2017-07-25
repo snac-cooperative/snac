@@ -789,13 +789,25 @@ class WebUIExecutor {
                     "mergeable" => $mergeable,
                     "merging" => $merging
                 );
+                if (isset($serverResponse["assertion"]))
+                    $displayData["assertion"] = $serverResponse["assertion"];
+
                 if (\snac\Config::$DEBUG_MODE == true) {
                     $display->addDebugData("serverResponse", json_encode($serverResponse, JSON_PRETTY_PRINT));
                 }
                 $display->setData($displayData);
             } else {
                 // We were able to do the diff, the user wanted to merge, but the server told us we couldn't merge
-                $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+                if (isset($serverResponse["assertion"])) {
+                    // We have a reason why
+                    $assert = new \snac\data\Assertion($serverResponse["assertion"]);
+                    $message = "<p>Constellations were asserted to be different by <strong>" .
+                        $assert->getUser()->getFullName() . "</strong>.  They gave the following reasoning for this assertion:</p>" .
+                        $assert->getText();
+                    $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> $message]], $display);
+                } else {
+                    $this->drawErrorPage(["error" => ["type" => "Constellation Merge Error", "message"=> "Could not open both Constellations for editing to perform a merge."]], $display);
+                }
             }
         } else {
             $this->logger->addDebug("Error page being drawn - no intersection");

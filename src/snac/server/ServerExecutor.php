@@ -2329,6 +2329,34 @@ class ServerExecutor {
         return $response;
     }
 
+    function isMergeable($cId1, $cId2) {
+        $status1 = $this->cStore->readConstellationStatus($cId1);
+        $status2 = $this->cStore->readConstellationStatus($cId2);
+
+        // If both are published, then check assertions
+        if ($status1 == "published" && $status2 == "published") {
+            $c1 = new \snac\data\Constellation();
+            $c1->setID($cId1);
+            $c2 = new \snac\data\Constellation();
+            $c2->setID($cId2);
+            $assert = new \snac\data\Assertion();
+            $assert->addConstellation($c1);
+            $assert->addConstellation($c2);
+            $assert->setType("not_same");
+
+            $result = $this->cStore->readAssertion($assert, $this->uStore);
+
+            if ($result === false) {
+                return true;
+            } else {
+                return $result;
+            }
+
+        }
+
+        return null;
+    }
+
     /**
      * Compute Constellation Diff
      *
@@ -2355,17 +2383,11 @@ class ServerExecutor {
         if (isset($input["constellationid1"]) && isset($input["constellationid1"])) {
             // If two constellations were given
             try {
-                // Read the constellation statuses
-                $this->logger->addDebug("Reading constellation statuses from the database");
-
                 $cId1 = $input["constellationid1"];
-                $status1 = $this->cStore->readConstellationStatus($cId1);
-
                 $cId2 = $input["constellationid2"];
-                $status2 = $this->cStore->readConstellationStatus($cId2);
-
+                $mergeable = $this->isMergeable($cId1, $cId2);
                 // Right now, only published constellations can be merged, so that we can keep a "clean" history
-                if ($status1 == "published" && $status2 == "published") {
+                if ($mergeable === true) {
                     $response["mergeable"] = true;
 
                     // If they asked to start the merge, then check these constellations out to that user as
@@ -2397,6 +2419,9 @@ class ServerExecutor {
                     }
                 } else {
                     $response["mergeable"] = false;
+                    if ($mergeable !== null) {
+                        $response["assertion"] = $mergeable->toArray();
+                    }
                 }
                 $this->logger->addDebug("Reading Constellations from the database");
                 $constellation1 = $this->cStore->readConstellation($cId1, null, \snac\server\database\DBUtil::$FULL_CONSTELLATION);

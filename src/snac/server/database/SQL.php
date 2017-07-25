@@ -1432,6 +1432,28 @@ class SQL
         return true;
     }
 
+    public function readAssertion($type, $icid1, $icid2) {
+        if ($type == "not_same") {
+            $result = $this->sdb->query("select * from not_same where
+                (ic_id1 = $1 and ic_id2 = $2) or (ic_id2 = $1 and ic_id1 = $2);",
+                array($icid1, $icid2));
+            $all = array();
+
+            while($row = $this->sdb->fetchrow($result)) {
+                array_push($all, $row);
+            }
+
+            if (count($all) != 1) {
+                return null;
+            }
+
+            $return = $all[0];
+            $return["type"] = $type;
+            return $return;
+        }
+        return null;
+    }
+
     /**
      * Add Maybe-Same Link 
      *
