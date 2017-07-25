@@ -3590,6 +3590,7 @@ class DBUtil
         $fullAssert->setID($assertData["id"]);
         $fullAssert->setType($assertData["type"]);
         $fullAssert->setText($assertData["assertion"]);
+        $fullAssert->setTimestamp($assertData["timestamp"]);
         $user = new \snac\data\User();
         $user->setUserID($assertData["user_id"]);
         if ($uStore !== null) {
