@@ -197,7 +197,7 @@ class ConstellationTest extends \PHPUnit\Framework\TestCase {
      */
     public function testJSONExtreme() {
 
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             $identity = new \snac\data\Constellation();
             $jsonIn = file_get_contents("test/snac/data/json/constellation_test2.json");
             $identity->fromJSON($jsonIn);

@@ -1835,30 +1835,33 @@ class ServerExecutor {
                 // and then only publish if the user has permission (it was locked to them, etc).
 
                 $current = $this->cStore->readConstellation($constellation->getID(), null, DBUtil::$READ_NRD);
-
-                $inList = false;
-                $userList = array_merge(
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "currently editing"),
-                    $this->cStore->listConstellationsWithStatusForUser($this->user, "locked editing")
-                );
-                foreach ($userList as $item) {
-                    if ($item->getID() == $constellation->getID()) {
-                        $inList = true;
-                        break;
-                    }
+                
+                $info = $this->cStore->readConstellationUserStatus($constellation->getID());
+                if ($info === null) {
+                    throw new \snac\exceptions\SNACDatabaseException("The current constellation did not have a valid status");
                 }
+                $currentStatus = $info["status"];
+                $currentUserID = $info["userid"];
+                $currentNote = $info["note"];
+
+                
+                $inList = false;
+                if ($currentUserID == $this->user->getUserID() &&
+                    ($currentStatus == 'currently editing' || $currentStatus == 'locked editing')) {
+                        $inList = true;
+                    }
 
                 $result = false;
 
                 // If this constellation is the correct version, and the user was editing it, then delete it
                 if ($current->getVersion() == $constellation->getVersion() && $inList) {
 
-                    // TODO: Replace this with the correct method to delete
-                    $result = $constellation->getVersion();
-                    //$result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
-                      //                                                  "published", "User published constellation");
+                    // Update the constellation status to deleted
+                    $result = $this->cStore->writeConstellationStatus($this->user, $constellation->getID(),
+                                                                        "deleted", "User deleted constellation");
                 }
 
+                // If the update worked, then finish out the delete
                 if (isset($result) && $result !== false) {
                     $this->logger->addDebug("successfully published constellation");
                     // Return the passed-in constellation from the user, with the new version number
@@ -1874,6 +1877,8 @@ class ServerExecutor {
 
                     // Delete from Neo4J Indices
                     // TODO
+
+                    // Since the Constellation still "exists" we should leave it in the DAG table
 
                 } else {
                     $this->logger->addDebug("could not delete the constellation");
