@@ -1432,6 +1432,17 @@ class SQL
         return true;
     }
 
+    /**
+     * Read Assertion
+     *
+     * Reads out the assertion data from the database for the given type between
+     * these two Constellation IDs.  If none exists, it will return null.
+     *
+     * @param string $type The type of the assertion (i.e. "not_same")
+     * @param int $icid1 One IC ID
+     * @param int $icid2 Another IC ID
+     * @return string[]|null The array of data or null if no assertion exists
+     */
     public function readAssertion($type, $icid1, $icid2) {
         if ($type == "not_same") {
             $result = $this->sdb->query("select * from not_same where

@@ -3575,6 +3575,20 @@ class DBUtil
     }
 
 
+    /**
+     * Read Assertion
+     *
+     * Reads an assertion out of the database.  Given a bare-bones assertion with the two Constellations and a
+     * type, it will read the full assertion out of the database.  If no assertion of that type exists between
+     * the two Constellations, then it will return false.
+     *
+     * If given a handle to the DBUser object, it will also pull back the full User information to include
+     * in the assertion for the user that made the assertion.
+     *
+     * @param \snac\data\Assertion $assertion The bare-bones assertion object to look up
+     * @param \snac\server\database\DBUser $uStore optional A handle to the DBUser object to get User information
+     * @return \snac\data\Assertion|boolean The complete assertion or false if none exists
+     */
     function readAssertion(&$assertion, $uStore=null) {
         if ($assertion === null || $assertion->getType() === null || count($assertion->getConstellations()) != 2) {
             return false;

@@ -2329,6 +2329,19 @@ class ServerExecutor {
         return $response;
     }
 
+    /**
+     * Check Mergability
+     *
+     * Checks if two Constellations, given by their ICIDs are mergeable.  If they are, this will
+     * return boolean true.  If they are not, then this will return the Assertion object that
+     * determines why they are non-mergeable or false if they are not mergeable because one or
+     * both is currently checked out to another user.
+     *
+     * @param int $cId1 One Constellation ID
+     * @param int $cId2 Another Constellation ID
+     * @return \snac\data\Assertion|boolean True if mergeable, false if unmergeable for editing reasons, or an
+     *                                      Assertion if they are unmergeable because of a user-assertion
+     */
     function isMergeable($cId1, $cId2) {
         $status1 = $this->cStore->readConstellationStatus($cId1);
         $status2 = $this->cStore->readConstellationStatus($cId2);

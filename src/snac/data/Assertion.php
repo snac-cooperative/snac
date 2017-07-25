@@ -65,42 +65,92 @@ class Assertion extends AbstractData {
     }
 
 
+    /**
+     * Set Timestamp
+     *
+     * @param string $timestamp Timestamp
+     */
     public function setTimestamp($timestamp) {
         $this->timestamp = $timestamp;
     }
 
+    /**
+     * Add Constellation
+     *
+     * @param \snac\data\Constellation $constellation Constellation object to add to the assertion
+     */
     public function addConstellation($constellation) {
         array_push($this->constellations, $constellation);
     }
 
+    /**
+     * Set Text
+     *
+     * @param string $text User-supplied text of the assertion (reasoning)
+     */
     public function setText($text) {
         $this->text = $text;
     }
 
+    /**
+     * Set User
+     *
+     * @param \snac\data\User $user The User making the assertion
+     */
     public function setUser($user) {
         $this->user = $user;
     }
 
+    /**
+     * Set Type
+     *
+     * @param string $type The type of the assertion being made
+     */
     public function setType($type) {
         $this->type = $type;
     }
 
+    /**
+     * Get Type
+     *
+     * @return string The type of the assertion being made
+     */
     public function getType() {
         return $this->type;
     }
 
+    /**
+     * Get User
+     *
+     * @return \snac\data\User The user who made the assertion
+     */
     public function getUser() {
         return $this->user;
     }
 
+    /**
+     * Get Text
+     *
+     * @return string The assertion reasoning
+     */
     public function getText() {
         return $this->text;
     }
 
+    /**
+     * Get Timestamp
+     *
+     * @return string The tiem the assertion was made
+     */
     public function getTimestamp() {
         return $this->timestamp;
     }
 
+    /**
+     * Get Constellations
+     *
+     * @return \snac\data\Constellation[] The array of Constellations in this assertion
+     */
     public function getConstellations() {
         return $this->constellations;
     }
